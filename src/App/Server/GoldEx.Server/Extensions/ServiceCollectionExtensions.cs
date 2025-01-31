@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Reflection;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
@@ -19,32 +18,6 @@ namespace GoldEx.Server.Extensions;
 
 internal static class ServiceCollectionExtensions
 {
-    internal static IServiceCollection InitializeDefaultCulture(this IServiceCollection services)
-    {
-        var culture = new CultureInfo("fa-IR")
-        {
-            NumberFormat =
-            {
-                NegativeSign = "-",
-                NumberDecimalSeparator = "."
-            },
-            DateTimeFormat =
-            {
-                ShortDatePattern = "yyyy/MM/dd",
-                FirstDayOfWeek = DayOfWeek.Saturday,
-                ShortestDayNames = ["ی", "د", "س", "چ", "پ", "ج", "ش"],
-                MonthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty]
-            }
-        };
-
-        CultureInfo.CurrentCulture = culture;
-        CultureInfo.CurrentUICulture = culture;
-        CultureInfo.DefaultThreadCurrentCulture = culture;
-        CultureInfo.DefaultThreadCurrentUICulture = culture;
-
-        return services;
-    }
-
     internal static IServiceCollection AddControllers(this IServiceCollection services, IConfiguration configuration)
     {
         services

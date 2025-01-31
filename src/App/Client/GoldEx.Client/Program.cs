@@ -1,9 +1,8 @@
+using GoldEx.Client;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddAuthorizationCore();
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddAuthenticationStateDeserialization();
+builder.Services.AddClient(builder.HostEnvironment);
 
 await builder.Build().RunAsync();

@@ -1,5 +1,6 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
-using GoldEx.Server.Extensions;
+﻿using GoldEx.Server.Extensions;
+using GoldEx.Client.Extensions;
+using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 
 namespace GoldEx.Server;
 
@@ -9,7 +10,6 @@ public static class DependencyInjection
     {
         services.InitializeDefaultCulture()
             .AddControllers(configuration)
-            //.AddClient(configuration)
             .AddComponents()
             .AddStorage(configuration)
             .AddAuth()
