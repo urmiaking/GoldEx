@@ -4,6 +4,7 @@ using GoldEx.Server.Components;
 using GoldEx.Server.Extensions;
 using GoldEx.Client;
 using System.Reflection;
+using GoldEx.Client.Extensions;
 using GoldEx.Server;
 using GoldEx.Server.Application;
 using GoldEx.Server.Infrastructure;
@@ -40,6 +41,7 @@ bool SetupServices()
         var configuration = builder.Configuration;
 
         builder.Services
+            .AddClient()
             .AddServer(configuration)
             .AddApplication()
             .AddInfrastructure();

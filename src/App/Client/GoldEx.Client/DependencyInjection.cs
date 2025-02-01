@@ -9,11 +9,11 @@ internal static class DependencyInjection
     internal static IServiceCollection AddClient(this IServiceCollection services, IWebAssemblyHostEnvironment environment)
     {
         services.InitializeDefaultCulture()
+            .AddClient()
             .AddAuthServices()
             .AddServices()
             .AddJsonOptions()
-            .AddHttpClientService(environment)
-            .AddMudServices();
+            .AddHttpClientService(environment);
 
         return services;
     }

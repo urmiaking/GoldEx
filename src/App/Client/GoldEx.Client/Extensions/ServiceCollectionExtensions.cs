@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
+using MudBlazor.Services;
 
 namespace GoldEx.Client.Extensions;
 
@@ -75,6 +76,12 @@ public static class ServiceCollectionExtensions
             return client;
         });
 
+        return services;
+    }
+
+    public static IServiceCollection AddClient(this IServiceCollection services)
+    {
+        services.AddMudServices();
         return services;
     }
 }
