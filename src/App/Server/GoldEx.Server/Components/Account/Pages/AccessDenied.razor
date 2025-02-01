@@ -1,8 +1,28 @@
 ﻿@page "/Account/AccessDenied"
 
-<PageTitle>Access denied</PageTitle>
+<PageTitle>عدم دسترسی</PageTitle>
 
-<header>
-    <h1 class="text-danger">Access denied</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-</header>
+<div class="container d-flex flex-column flex-fill">
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">عدم دسترسی</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.Error" />
+                    <p>
+                        کاربر گرامی، با عرض پوزش، شما مجوز دسترسی به منابع مورد درخواست را ندارید.<br />
+                        جهت ادامه کار، میتوانید از صفحات زیر اقدام نمائید.<br />
+                    </p>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Primary">صفحه اصلی</MudButton>
+                <MudButton Href="/account/login" StartIcon="@Icons.Material.Filled.Key" Color="Color.Primary">ورود به سامانه</MudButton>
+            </MudCardActions>   
+        </MudCard>
+    </MudStack>
+</div>
