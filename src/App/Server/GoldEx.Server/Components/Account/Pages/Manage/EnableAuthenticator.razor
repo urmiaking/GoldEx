@@ -14,67 +14,72 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<EnableAuthenticator> Logger
 
-<PageTitle>Configure authenticator app</PageTitle>
+<PageTitle>پیکربندی برنامه Authenticator</PageTitle>
 
-@if (recoveryCodes is not null)
+@if (_recoveryCodes is not null)
 {
-    <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" />
+    <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_message" />
 }
 else
 {
-    <StatusMessage Message="@message" />
-    <h3>Configure authenticator app</h3>
-    <div>
-        <p>To use an authenticator app go through the following steps:</p>
-        <ol class="list">
-            <li>
-                <p>
-                    Download a two-factor authenticator app like Microsoft Authenticator for
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
-                    Google Authenticator for
-                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
-                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
-                </p>
-            </li>
-            <li>
-                <p>Scan the QR Code or enter this key <kbd>@sharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
-                <div class="alert alert-info">Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423">enable QR code generation</a>.</div>
-                <div></div>
-                <div data-url="@authenticatorUri"></div>
-            </li>
-            <li>
-                <p>
-                    Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
-                    with a unique code. Enter the code in the confirmation box below.
-                </p>
-                <div class="row">
-                    <div class="col-xl-6">
-                        <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
-                            <DataAnnotationsValidator />
-                            <div class="form-floating mb-3">
-                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="Enter the code" />
-                                <label for="Input.Code" class="control-label form-label">Verification Code</label>
-                                <ValidationMessage For="() => Input.Code" class="text-danger" />
-                            </div>
-                            <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
-                            <ValidationSummary class="text-danger" role="alert" />
-                        </EditForm>
-                    </div>
-                </div>
-            </li>
-        </ol>
-    </div>
+    <MudText Typo="Typo.h6" GutterBottom="true">پیکربندی برنامه Authenticator</MudText>
+
+    <StatusMessage Message="@_message" />
+
+    <MudText Typo="Typo.body1" GutterBottom="true">برای استفاده از برنامه Authenticator مراحل زیر را دنبال کنید:</MudText>
+
+    <ol class="list">
+        <li>
+            <MudText Typo="Typo.body2">
+                یک برنامه احراز هویت دو مرحله‌ای مانند Microsoft Authenticator را برای
+                <MudLink Target="_blank" Href="https://go.microsoft.com/fwlink/?Linkid=825072">اندروید</MudLink> و
+                <MudLink Target="_blank" Href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</MudLink> یا
+                Google Authenticator را برای
+                <MudLink Target="_blank" Href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">اندروید</MudLink> و
+                <MudLink Target="_blank" Href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</MudLink> دانلود کنید.
+            </MudText>
+        </li>
+        <li>
+            <MudText Typo="Typo.body2">
+                کد QR را اسکن کنید یا این کلید را در برنامه احراز هویت دو مرحله‌ای خود وارد کنید. فاصله‌ها و حروف بزرگ و کوچک مهم نیستند:
+            </MudText>
+
+            <MudAlert Variant="Variant.Text" Severity="Severity.Info" Icon="@Icons.Material.Filled.Key">@_sharedKey</MudAlert>
+
+            <MudText Typo="Typo.body2">
+                نحوه <MudLink Target="_blank" Href="https://go.microsoft.com/fwlink/?Linkid=852423">فعال کردن تولید کد QR</MudLink> را بیاموزید.
+            </MudText>
+
+            <div data-url="@_authenticatorUri"></div>
+        </li>
+        <li>
+            <MudText Typo="Typo.body2">
+                پس از اسکن کد QR یا وارد کردن کلید بالا، برنامه احراز هویت دو مرحله‌ای شما یک کد منحصر به فرد را در اختیار شما قرار می‌دهد. کد را در کادر تأیید زیر وارد کنید.
+            </MudText>
+
+            <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem md="12">
+                        <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="کد تایید" HelperText="لطفا کد را وارد کنید" />
+                    </MudItem>
+                    <MudItem md="12">
+                        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">اعتبارسنجی</MudStaticButton>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </li>
+    </ol>
 }
 
 @code {
     private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
-    private string? message;
-    private AppUser user = default!;
-    private string? sharedKey;
-    private string? authenticatorUri;
-    private IEnumerable<string>? recoveryCodes;
+    private string? _message;
+    private AppUser _user = default!;
+    private string? _sharedKey;
+    private string? _authenticatorUri;
+    private IEnumerable<string>? _recoveryCodes;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -84,9 +89,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        _user = await UserAccessor.GetRequiredUserAsync(HttpContext);
 
-        await LoadSharedKeyAndQrCodeUriAsync(user);
+        await LoadSharedKeyAndQrCodeUriAsync(_user);
     }
 
     private async Task OnValidSubmitAsync()
@@ -94,28 +99,28 @@ else
         // Strip spaces and hyphens
         var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-        var is2faTokenValid = await UserManager.VerifyTwoFactorTokenAsync(
-            user, UserManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+        var is2FaTokenValid = await UserManager.VerifyTwoFactorTokenAsync(
+            _user, UserManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
 
-        if (!is2faTokenValid)
+        if (!is2FaTokenValid)
         {
-            message = "Error: Verification code is invalid.";
+            _message = "خطا: کد وارد شده معتبر نیست.";
             return;
         }
 
-        await UserManager.SetTwoFactorEnabledAsync(user, true);
-        var userId = await UserManager.GetUserIdAsync(user);
+        await UserManager.SetTwoFactorEnabledAsync(_user, true);
+        var userId = await UserManager.GetUserIdAsync(_user);
         Logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
 
-        message = "Your authenticator app has been verified.";
+        _message = "برنامه Authenticator شما با موفقیت به GoldEx متصل شد!";
 
-        if (await UserManager.CountRecoveryCodesAsync(user) == 0)
+        if (await UserManager.CountRecoveryCodesAsync(_user) == 0)
         {
-            recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            _recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, 10);
         }
         else
         {
-            RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, HttpContext);
+            RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", _message, HttpContext);
         }
     }
 
@@ -129,16 +134,16 @@ else
             unformattedKey = await UserManager.GetAuthenticatorKeyAsync(user);
         }
 
-        sharedKey = FormatKey(unformattedKey!);
+        _sharedKey = FormatKey(unformattedKey!);
 
         var email = await UserManager.GetEmailAsync(user);
-        authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
+        _authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
     }
 
-    private string FormatKey(string unformattedKey)
+    private static string FormatKey(string unformattedKey)
     {
         var result = new StringBuilder();
-        int currentPosition = 0;
+        var currentPosition = 0;
         while (currentPosition + 4 < unformattedKey.Length)
         {
             result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
@@ -165,9 +170,9 @@ else
     private sealed class InputModel
     {
         [Required]
-        [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [StringLength(7, ErrorMessage = "اندازه {0} باید حداقل {2} و حداکثر {1} حرف باشد", MinimumLength = 6)]
         [DataType(DataType.Text)]
-        [Display(Name = "Verification Code")]
+        [Display(Name = "کد تایید")]
         public string Code { get; set; } = "";
     }
 }

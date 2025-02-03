@@ -10,26 +10,26 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ResetAuthenticator> Logger
 
-<PageTitle>Reset authenticator key</PageTitle>
+<PageTitle>بازنشانی کد Authenticator</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">بازنشانی کد Authenticator</MudText>
 
 <StatusMessage />
-<h3>Reset authenticator key</h3>
-<div class="alert alert-warning" role="alert">
-    <p>
-        <span class="glyphicon glyphicon-warning-sign"></span>
-        <strong>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</strong>
-    </p>
-    <p>
-        This process disables 2FA until you verify your authenticator app.
-        If you do not complete your authenticator app configuration you may lose access to your account.
-    </p>
-</div>
-<div>
-    <form @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
-        <AntiforgeryToken />
-        <button class="btn btn-danger" type="submit">Reset authenticator key</button>
-    </form>
-</div>
+
+<MudAlert Severity="Severity.Warning" Variant="Variant.Text">
+    ر صورت بازنشانی کلید احراز هویت، برنامه احراز هویت شما تا پیکربندی مجدد آن غیرفعال خواهد شد.
+</MudAlert>
+
+<MudText Typo="Typo.body2" Class="my-4">
+    این فرآیند، تأیید هویت دو مرحله‌ای را تا زمان تأیید برنامه احراز هویت شما غیرفعال می‌کند.
+    در صورت عدم تکمیل پیکربندی برنامه احراز هویت، احتمال از دسترسی به حساب کاربری شما وجود دارد.
+</MudText>
+
+<form @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
+    <AntiforgeryToken />
+
+    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">بازنشانی</MudStaticButton>
+</form>
 
 @code {
     [CascadingParameter]
@@ -47,7 +47,7 @@
 
         RedirectManager.RedirectToWithStatus(
             "Account/Manage/EnableAuthenticator",
-            "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.",
+            "کلید برنامه احراز هویت شما بازنشانی گردیده است، لازم است برنامه احراز هویت خود را با کلید جدید پیکربندی نمایید.",
             HttpContext);
     }
 }
