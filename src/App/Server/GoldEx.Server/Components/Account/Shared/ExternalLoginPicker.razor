@@ -6,14 +6,12 @@
 @inject SignInManager<AppUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-@if (externalLogins.Length == 0)
+@if (_externalLogins.Length == 0)
 {
-    <div>
-        <p>
-            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-            about setting up this ASP.NET application to support logging in via external services</a>.
-        </p>
-    </div>
+    <MudAlert Variant="Variant.Text" Severity="Severity.Warning">هیچ سرویس خارجی برای ورود به سیستم تنظیم نشده است</MudAlert>
+    <MudText Typo="Typo.body1" Class="pt-4">
+        لطفا با مدیر سیستم ارتباط بگیرید
+    </MudText>
 }
 else
 {
@@ -22,9 +20,9 @@ else
             <AntiforgeryToken />
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
             <p>
-                @foreach (var provider in externalLogins)
+                @foreach (var provider in _externalLogins)
                 {
-                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="ورود با استفاده از حساب @provider.DisplayName">@provider.DisplayName</button>
                 }
             </p>
         </div>
@@ -32,13 +30,13 @@ else
 }
 
 @code {
-    private AuthenticationScheme[] externalLogins = [];
+    private AuthenticationScheme[] _externalLogins = [];
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
+        _externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
     }
 }

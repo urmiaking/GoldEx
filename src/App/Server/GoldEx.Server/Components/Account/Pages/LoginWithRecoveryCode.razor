@@ -11,14 +11,14 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWithRecoveryCode> Logger
 
-<PageTitle>Recovery code verification</PageTitle>
+<PageTitle>تایید کد بازیابی</PageTitle>
 
-<h1>Recovery code verification</h1>
+<h1>تایید کد بازیابی</h1>
 <hr />
-<StatusMessage Message="@message" />
+<StatusMessage Message="@_message" />
 <p>
-    You have requested to log in with a recovery code. This login will not be remembered until you provide
-    an authenticator app code at log in or disable 2FA and log in again.
+    شما درخواست کرده‌اید که با یک کد بازیابی وارد شوید.
+    این ورود به سیستم تا زمانی که یک کد برنامه احراز هویت را هنگام ورود به سیستم ارائه دهید یا احراز هویت دو مرحله‌ای را غیرفعال و دوباره وارد شوید، ذخیره نخواهد شد.
 </p>
 <div class="row">
     <div class="col-md-4">
@@ -26,18 +26,18 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
-                <label for="Input.RecoveryCode" class="form-label">Recovery Code</label>
+                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="کد بازیابی" />
+                <label for="Input.RecoveryCode" class="form-label">کد بازیابی</label>
                 <ValidationMessage For="() => Input.RecoveryCode" class="text-danger" />
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">ورود</button>
         </EditForm>
     </div>
 </div>
 
 @code {
-    private string? message;
-    private AppUser user = default!;
+    private string? _message;
+    private AppUser _user = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -48,7 +48,7 @@
     protected override async Task OnInitializedAsync()
     {
         // Ensure the user has gone through the username & password screen first
-        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
+        _user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
             throw new InvalidOperationException("Unable to load two-factor authentication user.");
     }
 
@@ -58,7 +58,7 @@
 
         var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
-        var userId = await UserManager.GetUserIdAsync(user);
+        var userId = await UserManager.GetUserIdAsync(_user);
 
         if (result.Succeeded)
         {
@@ -67,13 +67,13 @@
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("User account locked out.");
+            Logger.LogWarning("حساب شما مسدود شده است");
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
             Logger.LogWarning("Invalid recovery code entered for user with ID '{UserId}' ", userId);
-            message = "Error: Invalid recovery code entered.";
+            _message = "خطا: کد بازیابی اشتباه است";
         }
     }
 
@@ -81,7 +81,7 @@
     {
         [Required]
         [DataType(DataType.Text)]
-        [Display(Name = "Recovery Code")]
+        [Display(Name = "کد بازیابی")]
         public string RecoveryCode { get; set; } = "";
     }
 }

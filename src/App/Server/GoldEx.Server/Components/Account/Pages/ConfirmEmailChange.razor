@@ -11,14 +11,14 @@
 @inject SignInManager<AppUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Confirm email change</PageTitle>
+<PageTitle>تایید تغییر ایمیل</PageTitle>
 
-<h1>Confirm email change</h1>
+<h1>تایید تغییر ایمیل</h1>
 
-<StatusMessage Message="@message" />
+<StatusMessage Message="@_message" />
 
 @code {
-    private string? message;
+    private string? _message;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -37,13 +37,13 @@
         if (UserId is null || Email is null || Code is null)
         {
             RedirectManager.RedirectToWithStatus(
-                "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
+                "Account/Login", "خطا: لینک تأیید تغییر ایمیل معتبر نیست", HttpContext);
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
-            message = "Unable to find user with Id '{userId}'";
+            _message = "کاربری با آیدی '{userId}' پیدا نشد";
             return;
         }
 
@@ -51,7 +51,7 @@
         var result = await UserManager.ChangeEmailAsync(user, Email, code);
         if (!result.Succeeded)
         {
-            message = "Error changing email.";
+            _message = "خطا در تغییر ایمیل";
             return;
         }
 
@@ -60,11 +60,11 @@
         var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
         if (!setUserNameResult.Succeeded)
         {
-            message = "Error changing user name.";
+            _message = "خطا در تغییر نام کاربری";
             return;
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        message = "Thank you for confirming your email change.";
+        _message = "از تأیید ایمیلتان متشکریم.";
     }
 }
