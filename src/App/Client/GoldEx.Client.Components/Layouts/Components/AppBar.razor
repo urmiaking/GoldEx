@@ -16,7 +16,7 @@
 
     [Inject] private IThemeService? ThemeService { get; set; }  
 
-    private string DarkLightModeButtonIcon => ThemeService?.IsDarkMode == true ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode;
+    private string DarkLightModeButtonIcon => ThemeService?.IsDarkMode == true ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
 
     private void DrawerToggle()
     {

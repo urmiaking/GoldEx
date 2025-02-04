@@ -17,7 +17,6 @@
     </div>
 </MudRTLProvider>
 
-
 @code {
     private readonly MudTheme _theme = new()
         {
@@ -68,9 +67,12 @@
             }
         };
 
-    [Inject] private IThemeService? ThemeService { get; set; }
+    public bool IsDarkMode { get; set; }
 
-    protected override void OnInitialized()
+    [Inject] private IThemeService? ThemeService { get; set; }
+    [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
     {
         if (ThemeService is ThemeService service)
         {
@@ -78,14 +80,39 @@
             IsDarkMode = service.IsDarkMode;
         }
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     public void OnToggleMode(object? sender, EventArgs e)
     {
         IsDarkMode = ThemeService?.IsDarkMode ?? false;
+        SetThemeMode(IsDarkMode);
         StateHasChanged();
     }
 
-    public bool IsDarkMode { get; set; }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadTheme();
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task LoadTheme()
+    {
+        var themeMode = await LocalStorage.GetItemAsStringAsync("IsDarkMode");
+
+        if (!string.IsNullOrEmpty(themeMode) && bool.TryParse(themeMode, out var isDarkMode))
+            SetThemeMode(isDarkMode);
+    }
+
+    private void SetThemeMode(bool isDarkMode)
+    {
+        IsDarkMode = isDarkMode;
+        LocalStorage.SetItemAsStringAsync("IsDarkMode", IsDarkMode.ToString());
+        StateHasChanged();
+    }
 }

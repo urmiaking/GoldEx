@@ -11,7 +11,7 @@ public partial class App
         ? null
         : GetRenderMode();
 
-    private IComponentRenderMode? GetRenderMode()
+    private IComponentRenderMode GetRenderMode()
     {
         if (HttpContext.Request.Path.StartsWithSegments("/ssr"))
             return RenderMode.InteractiveServer;
