@@ -1,6 +1,6 @@
-﻿using GoldEx.Client.Extensions;
+﻿using GoldEx.Client.Components;
+using GoldEx.Client.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using MudBlazor.Services;
 
 namespace GoldEx.Client;
 
@@ -14,6 +14,8 @@ internal static class DependencyInjection
             .AddServices()
             .AddJsonOptions()
             .AddHttpClientService(environment);
+
+        services.AddScoped<IThemeService, ThemeService>();
 
         return services;
     }

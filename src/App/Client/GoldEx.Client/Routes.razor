@@ -1,6 +1,8 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@using GoldEx.Client.Components.Layouts
+
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="[typeof(BaseLayout).Assembly]">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
             <NotAuthorized>
                 <RedirectToLogin />
             </NotAuthorized>
