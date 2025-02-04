@@ -1,0 +1,17 @@
+﻿<MudDrawer id="nav-drawer" @bind-Open="IsDrawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <NavMenu />
+</MudDrawer>
+
+@code
+{
+    [Parameter]
+    public EventCallback OnDrawerToggle { get; set; }
+
+    [Parameter]
+    public bool IsDrawerOpen { get; set; }
+
+    private void DrawerToggle()
+    {
+        OnDrawerToggle.InvokeAsync();
+    }
+}

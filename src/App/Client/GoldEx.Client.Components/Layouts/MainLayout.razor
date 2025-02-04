@@ -1,0 +1,20 @@
+﻿@inherits LayoutComponentBase
+@layout BaseLayout
+
+<MudLayout>
+    <AppBar OnDrawerToggle="HandleDrawerToggle" IsDrawerOpen="_drawerOpen" />
+    <Drawer OnDrawerToggle="HandleDrawerToggle" IsDrawerOpen="_drawerOpen" />
+    <MudMainContent Class="mt-16 pa-4">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code
+{
+    private bool _drawerOpen = true;
+
+    private void HandleDrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
