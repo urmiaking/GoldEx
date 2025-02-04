@@ -1,5 +1,6 @@
-﻿using GoldEx.Client.Components;
+﻿using GoldEx.Client.Components.Services;
 using GoldEx.Client.Extensions;
+using GoldEx.Shared.Abstractions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace GoldEx.Client;

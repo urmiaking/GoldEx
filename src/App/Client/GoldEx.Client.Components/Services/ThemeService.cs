@@ -1,4 +1,6 @@
-﻿namespace GoldEx.Client.Components;
+﻿using GoldEx.Shared.Abstractions;
+
+namespace GoldEx.Client.Components.Services;
 
 public class ThemeService : IThemeService
 {
@@ -10,10 +12,4 @@ public class ThemeService : IThemeService
         IsDarkMode = !IsDarkMode;
         OnToggleMode?.Invoke(this, EventArgs.Empty);
     }
-}
-
-public interface IThemeService
-{
-    bool IsDarkMode { get; }
-    void ToggleMode();
 }

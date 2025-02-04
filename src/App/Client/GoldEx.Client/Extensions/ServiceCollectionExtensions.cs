@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
+using Blazored.LocalStorage;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
 using MudBlazor.Services;
@@ -82,6 +83,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddClient(this IServiceCollection services)
     {
         services.AddMudServices();
+        services.AddBlazoredLocalStorage();
         return services;
     }
 }
