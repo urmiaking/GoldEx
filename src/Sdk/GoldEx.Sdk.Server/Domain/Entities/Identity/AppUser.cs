@@ -25,4 +25,6 @@ public class AppUser : IdentityUser<Guid>
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
     }
+
+    public void SetName(string name) => Name = name;
 }
