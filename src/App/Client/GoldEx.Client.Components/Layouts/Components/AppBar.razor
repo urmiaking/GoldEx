@@ -1,5 +1,5 @@
 ﻿<MudAppBar Elevation="1">
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(_ => DrawerToggle())" />
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
     <MudImage Src="/assets/logo/logo512.png" Alt="گلدکس" Height="32" Class="ml-3 mr-2" /> <MudText Typo="Typo.h5">گلدکس</MudText>
     <MudSpacer />
     <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
@@ -16,7 +16,10 @@
 
     [Inject] private IThemeService? ThemeService { get; set; }  
 
-    private string DarkLightModeButtonIcon => ThemeService?.IsDarkMode == true ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
+    private string DarkLightModeButtonIcon =>
+        ThemeService?.IsDarkMode == true
+            ? Icons.Material.Filled.DarkMode
+            : Icons.Material.Filled.LightMode;
 
     private void DrawerToggle()
     {
