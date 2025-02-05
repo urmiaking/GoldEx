@@ -15,14 +15,14 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
         var accountGroup = endpoints.MapGroup("/Account");
 
-        accountGroup.MapGet("/Logout", async (
+        accountGroup.MapPost("/Logout", async (
             ClaimsPrincipal user,
             SignInManager<AppUser> signInManager,
-            [FromQuery] string returnUrl) =>
+            [FromForm] string? returnUrl = null) =>
         {
             await signInManager.SignOutAsync();
-            return TypedResults.LocalRedirect($"~/{returnUrl}");
-        });
+            return TypedResults.LocalRedirect($"~/{returnUrl ?? ""}");
+        }).DisableAntiforgery();
 
         accountGroup.MapPost("/Login", async (SignInManager<AppUser> signInManager, [FromBody]LoginVm model) =>
         {

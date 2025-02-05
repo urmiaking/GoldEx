@@ -44,13 +44,16 @@ else
                 کد QR را اسکن کنید یا این کلید را در برنامه احراز هویت دو مرحله‌ای خود وارد کنید. فاصله‌ها و حروف بزرگ و کوچک مهم نیستند:
             </MudText>
 
-            <MudAlert Variant="Variant.Text" Severity="Severity.Info" Icon="@Icons.Material.Filled.Key">@_sharedKey</MudAlert>
-
-            <MudText Typo="Typo.body2">
-                نحوه <MudLink Target="_blank" Href="https://go.microsoft.com/fwlink/?Linkid=852423">فعال کردن تولید کد QR</MudLink> را بیاموزید.
-            </MudText>
-
-            <div data-url="@_authenticatorUri"></div>
+            <MudAlert Variant="Variant.Text" Severity="Severity.Info" Icon="@Icons.Material.Filled.Key" ContentAlignment="HorizontalAlignment.Start">
+                @_sharedKey
+                <MudItem Class="mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="300" width="300" stroke="none" 
+                         version="1.1" viewBox="0 0 50 50">
+                        <rect width="300" height="300" fill="#ffffff" />
+                        <path d="@_svgGraphicsPath" fill="#000000" />
+                    </svg>
+                </MudItem>
+            </MudAlert>
         </li>
         <li>
             <MudText Typo="Typo.body2">
@@ -78,7 +81,7 @@ else
     private string? _message;
     private AppUser _user = default!;
     private string? _sharedKey;
-    private string? _authenticatorUri;
+    private string? _svgGraphicsPath;
     private IEnumerable<string>? _recoveryCodes;
 
     [CascadingParameter]
@@ -137,7 +140,9 @@ else
         _sharedKey = FormatKey(unformattedKey!);
 
         var email = await UserManager.GetEmailAsync(user);
-        _authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
+        var authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
+        var qr = QrCode.EncodeText(authenticatorUri, QrCode.Ecc.Medium);
+        _svgGraphicsPath = qr.ToGraphicsPath();
     }
 
     private static string FormatKey(string unformattedKey)
@@ -162,7 +167,7 @@ else
         return string.Format(
             CultureInfo.InvariantCulture,
             AuthenticatorUriFormat,
-            UrlEncoder.Encode("Microsoft.AspNetCore.Identity.UI"),
+            UrlEncoder.Encode("GoldEx"),
             UrlEncoder.Encode(email),
             unformattedKey);
     }

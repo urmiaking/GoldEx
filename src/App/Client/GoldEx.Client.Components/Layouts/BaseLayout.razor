@@ -28,10 +28,26 @@
                 DrawerBackground = "#ffffff",
                 GrayLight = "#e8e8e8",
                 GrayLighter = "#f9f9f9",
+
+                // Option 1: Using the predefined Material Color Name
+                Primary = Colors.Blue.Default, // Blue (you can also use Colors.Blue.Normal)
+                Secondary = Colors.Blue.Accent1, // Blue accent (optional)
+
+                // Option 2: If you want more control, use hex codes directly:
+                // Primary = "#FFC107",  // Amber
+                // Secondary = "#FF9800", // Amber accent (optional)
+
+                // If you want to use amber for specific components (e.g., buttons):
+                // Warning = Colors.Amber.Darken2,  // Example: Amber for warnings
+                // Error = Colors.Red.Accent4, // Example: Red for errors (if needed)
+                // Info = Colors.Blue.Lighten1, // Example: Blue for info (if needed)
+                // Success = Colors.Green.Normal, // Example: Green for success (if needed)
+
             },
             PaletteDark = new PaletteDark
             {
-                Primary = "#7e6fff",
+                Primary = Colors.Blue.Default, // Blue
+                Secondary = Colors.Blue.Accent2, // Blue accent (optional)
                 Surface = "#1e1e2d",
                 Background = "#1a1a27",
                 BackgroundGray = "#151521",
