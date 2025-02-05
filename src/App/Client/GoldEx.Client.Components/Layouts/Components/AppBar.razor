@@ -8,11 +8,9 @@
 
 @code
 {
-    [Parameter]
-    public EventCallback OnDrawerToggle { get; set; }
+    [Parameter] public EventCallback<bool> DrawerOpenChanged { get; set; }
 
-    [Parameter]
-    public bool IsDrawerOpen { get; set; }
+    [Parameter] public bool DrawerOpen { get; set; }
 
     [Inject] private IThemeService? ThemeService { get; set; }  
 
@@ -23,7 +21,8 @@
 
     private void DrawerToggle()
     {
-        OnDrawerToggle.InvokeAsync();
+        DrawerOpen = !DrawerOpen;
+        DrawerOpenChanged.InvokeAsync(DrawerOpen);
     }
 
     private void DarkModeToggle(MouseEventArgs args)
