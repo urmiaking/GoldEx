@@ -1,18 +1,44 @@
-﻿<MudAppBar Elevation="1">
+﻿<MudAppBar Elevation="1" Dense="true">
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
     <MudImage Src="/assets/logo/logo512.png" Alt="گلدکس" Height="32" Class="ml-3 mr-2" /> <MudText Typo="Typo.h5">گلدکس</MudText>
     <MudSpacer />
     <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
-    <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+
+    <MudIconButton Color="Color.Inherit" Edge="Edge.End" OnClick="ToggleProfile">
+        <MudAvatar Size="Size.Small" Color="Color.Secondary">M</MudAvatar>
+    </MudIconButton>
+
+    <MudPopover Elevation="5" Open="@_isProfileOpen" Fixed="false" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft" Class="px-4 pt-4">
+        <MudIconButton OnClick="@ToggleProfile" Class="p-0 m-0" Color="Color.Error" Icon="@Icons.Material.Filled.Close"></MudIconButton>
+        <div class="d-flex flex-column align-center">
+            <MudAvatar Size="Size.Large" Color="Color.Secondary">S.A</MudAvatar>
+            <MudText Typo="Typo.h6" Class="mt-2">@_username</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Dark">System Administrator</MudText>
+        </div>
+
+        <MudDivider Class="my-4"/>
+        
+        <MudStack Class="gap-0" Row="true" StretchItems="StretchItems.Middle" Spacing="2" Wrap="Wrap.Wrap">
+            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.ManageAccounts" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@NavigateToProfile">مدیریت حساب</MudButton>
+            <MudButton Size="Size.Small" Class="mt-2 mb-4" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Logout" Color="Color.Error" FullWidth="true" OnClick="@Logout">خروج</MudButton>
+        </MudStack>
+        
+    </MudPopover>
 </MudAppBar>
 
 @code
 {
+    private bool _isProfileOpen;
+    private void ToggleProfile()
+    {
+        _isProfileOpen = !_isProfileOpen;
+    }
+
     [Parameter] public EventCallback<bool> DrawerOpenChanged { get; set; }
 
     [Parameter] public bool DrawerOpen { get; set; }
 
-    [Inject] private IThemeService? ThemeService { get; set; }  
+    [Inject] private IThemeService? ThemeService { get; set; }
 
     private string DarkLightModeButtonIcon =>
         ThemeService?.IsDarkMode == true
@@ -29,4 +55,21 @@
     {
         ThemeService?.ToggleMode();
     }
+
+    private string _username = "User Name"; // You might get this from authentication state.
+
+    private void Logout()
+    {
+        // Implement your logout logic here (e.g., invalidate authentication cookie)
+        Console.WriteLine("Logout clicked"); // Placeholder
+    }
+
+    private void NavigateToProfile()
+    {
+        // Implement navigation to user profile page.
+        NavigationManager.NavigateTo("/Account/Manage", forceLoad:true); // Example: Replace "/profile" with your profile page route.
+        Console.WriteLine("Profile clicked"); // Placeholder
+    }
+
+    [Inject] private NavigationManager NavigationManager { get; set; } // Inject NavigationManager
 }
