@@ -4,6 +4,7 @@
 @using System.Text
 @using System.Text.Encodings.Web
 @using GoldEx.Sdk.Server.Domain.Entities.Identity
+@using GoldEx.Server.Common.Enums
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using GoldEx.Server.Services
@@ -16,13 +17,14 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@layout BaseLayout
 
 <PageTitle>ثبت نام</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">ثبت نام</MudText>
+<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
+    <MudPaper Elevation="4" Class="p-4">
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">ثبت نام</MudText>
 
-<MudGrid>
-    <MudItem md="6">
         <StatusMessage Message="@Message" />
         <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
@@ -30,32 +32,41 @@
             <MudText Typo="Typo.body1" GutterBottom="true">ساخت حساب جدید</MudText>
 
             <MudGrid>
-                <MudItem md="12">
+                <MudItem xs="12">
+                    <MudStaticTextField For="@(() => Input.Name)" @bind-Value="Input.Name"
+                                        Label="نام" Placeholder="نام و نام خانوادگی"
+                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "name" }, { "aria-required", "true" } } )"></MudStaticTextField>
+                </MudItem>
+                <MudItem xs="12">
                     <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
                                         Label="ایمیل" Placeholder="name@example.com"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } } )"></MudStaticTextField>
+                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } })"></MudStaticTextField>
                 </MudItem>
-                <MudItem md="12">
+                <MudItem xs="12">
+                    <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
+                                        Label="شماره تلفن" Placeholder="09141234567"
+                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "phone-number" } })"></MudStaticTextField>
+                </MudItem>
+                <MudItem xs="12">
                     <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
                                         Label="رمز عبور" InputType="InputType.Password" Placeholder="رمز عبور"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
                 </MudItem>
-                <MudItem md="12">
+                <MudItem xs="12">
                     <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
                                         Label="تکرار رمز عبور" InputType="InputType.Password" Placeholder="تکرار رمز عبور"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
                 </MudItem>
-                <MudItem md="12">
-                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ثبت نام</MudStaticButton>
+                <MudItem xs="12">
+                    <MudStaticButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" FormAction="FormAction.Submit">ثبت نام</MudStaticButton>
                 </MudItem>
             </MudGrid>
         </EditForm>
-    </MudItem>
-    <MudItem md="6">
-        <MudText Typo="Typo.body1" GutterBottom="true">استفاده از حساب خارجی برای ثبت نام</MudText>
-        <ExternalLoginPicker />
-    </MudItem>
-</MudGrid>
+        <MudDivider Class="my-4" />
+
+        <ExternalLoginPicker InvokeSource="InvokeSource.Register" />
+    </MudPaper>
+</MudContainer>
 
 @code {
     private IEnumerable<IdentityError>? _identityErrors;
@@ -70,7 +81,15 @@
 
     public async Task RegisterUser(EditContext editContext)
     {
-        var user = CreateUser();
+        var model = editContext.Model as InputModel;
+
+        var user = CreateUser(model);
+
+        if (user is null)
+        {
+            _identityErrors = [new IdentityError { Code = "CreateUserFailed", Description = "Can't create an instance of 'AppUser'." }];
+            return;
+        }
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
@@ -105,11 +124,11 @@
         RedirectManager.RedirectTo(ReturnUrl);
     }
 
-    private static AppUser CreateUser()
+    private static AppUser? CreateUser(InputModel? model)
     {
         try
         {
-            return Activator.CreateInstance<AppUser>();
+            return model != null ? new AppUser(model.Name, model.Email, model.Email, model.PhoneNumber) : null;
         }
         catch
         {
@@ -130,9 +149,17 @@
     private sealed class InputModel
     {
         [Required]
+        [Display(Name = "نام")]
+        public string Name { get; set; } = "";
+
+        [Required]
         [EmailAddress]
         [Display(Name = "ایمیل")]
         public string Email { get; set; } = "";
+
+        [Phone]
+        [Display(Name = "شماره تلفن")]
+        public string? PhoneNumber { get; set; } = "";
 
         [Required]
         [StringLength(100, ErrorMessage = "طول {0} حداقل باید {2} و حداکثر {1} حرف باشد", MinimumLength = 6)]

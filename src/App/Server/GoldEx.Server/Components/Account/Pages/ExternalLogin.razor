@@ -139,7 +139,7 @@
         }
 
         var emailStore = GetEmailStore();
-        var user = CreateUser();
+        var user = new AppUser(Input.Email.Split('@')[0], Input.Email, Input.Email);
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -173,19 +173,6 @@
         }
 
         _message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
-    }
-
-    private static AppUser CreateUser()
-    {
-        try
-        {
-            return Activator.CreateInstance<AppUser>();
-        }
-        catch
-        {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(AppUser)}'. " +
-                $"Ensure that '{nameof(AppUser)}' is not an abstract class and has a parameterless constructor");
-        }
     }
 
     private IUserEmailStore<AppUser> GetEmailStore()
