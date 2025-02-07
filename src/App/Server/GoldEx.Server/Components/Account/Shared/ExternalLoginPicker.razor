@@ -1,4 +1,6 @@
-﻿@using GoldEx.Sdk.Server.Domain.Entities.Identity
+﻿@using GoldEx.Sdk.Common.Extensions
+@using GoldEx.Sdk.Server.Domain.Entities.Identity
+@using GoldEx.Server.Common.Enums
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using GoldEx.Server.Services
@@ -6,14 +8,8 @@
 @inject SignInManager<AppUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-@if (_externalLogins.Length == 0)
-{
-    <MudAlert Variant="Variant.Text" Severity="Severity.Warning" Dense="true" ContentAlignment="HorizontalAlignment.Start">هیچ سرویس خارجی برای ورود به سیستم تنظیم نشده است</MudAlert>
-    <MudText Typo="Typo.body1" Class="pt-4">
-        لطفا با مدیر سیستم ارتباط بگیرید
-    </MudText>
-}
-else
+
+@if (_externalLogins.Length > 0)
 {
     <form class="form-horizontal" action="Account/PerformExternalLogin" method="post">
         <div>
@@ -22,7 +18,20 @@ else
             <p>
                 @foreach (var provider in _externalLogins)
                 {
-                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="ورود با استفاده از حساب @provider.DisplayName">@provider.DisplayName</button>
+                    <input type="hidden" name="provider" value="@provider.Name" />
+
+                    if (!string.IsNullOrEmpty(provider.DisplayName) && provider.DisplayName.Contains("Google"))
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit" StartIcon="@Icons.Custom.Brands.Google">
+                            @InvokeSource.GetDisplayName() با حساب گوگل
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit">
+                            @InvokeSource.GetDisplayName() با حساب @provider.DisplayName
+                        </MudButton>
+                    }
                 }
             </p>
         </div>
@@ -34,6 +43,8 @@ else
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
+
+    [Parameter] public InvokeSource InvokeSource { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

@@ -2,6 +2,7 @@
 
 @using System.ComponentModel.DataAnnotations
 @using GoldEx.Sdk.Server.Domain.Entities.Identity
+@using GoldEx.Server.Common.Enums
 @using GoldEx.Server.Services
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
@@ -14,6 +15,8 @@
 @layout BaseLayout
 
 <PageTitle>ورود</PageTitle>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
     <MudPaper Elevation="4" Class="p-4">
@@ -42,14 +45,20 @@
                 <MudItem xs="12" Class="m-0 p-0">
                     <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
                 </MudItem>
-                <MudItem xs="12">
-                    <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
-                </MudItem>
-                <MudItem xs="12">
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudItem xs="12" Class="mb-0">
+                        <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
+                    </MudItem>
+                }
+                
+                <MudItem xs="12" Class="mt-0">
                     <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
                 </MudItem>
             </MudGrid>
         </EditForm>
+        <MudDivider Class="my-4" />
+        <ExternalLoginPicker InvokeSource="InvokeSource.Login" />
 
         <MudGrid Class="mt-1">
             <MudItem xs="12">
@@ -57,10 +66,6 @@
             </MudItem>
         </MudGrid>
 
-        <MudDivider Class="my-4" />
-
-        <MudText GutterBottom="true" Typo="Typo.body1">استفاده از سرویس خارجی</MudText>
-        <ExternalLoginPicker />
     </MudPaper>
 </MudContainer>
 
