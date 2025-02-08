@@ -1,3 +1,17 @@
-﻿@using GoldEx.Server.Components.Account.Shared
+﻿@using System.Text
+@using System.Text.Encodings.Web
+@using System.Globalization
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http.Features
+@using GoldEx.Server.Components.Account.Shared
+@using GoldEx.Sdk.Server.Domain.Entities.Identity
+@using GoldEx.Server.Services
+@using GoldEx.Server.Application.Extensions
+@using GoldEx.Shared.Routings
+
+
 @layout ManageLayout
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]

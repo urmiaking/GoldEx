@@ -1,8 +1,4 @@
-﻿@page "/Account/Manage/Disable2fa"
-
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using Microsoft.AspNetCore.Identity
-@using GoldEx.Server.Services
+﻿@attribute [Route(ClientRoutes.Accounts.Manage.Disable2Fa)]
 
 @inject UserManager<AppUser> UserManager
 @inject IdentityUserAccessor UserAccessor

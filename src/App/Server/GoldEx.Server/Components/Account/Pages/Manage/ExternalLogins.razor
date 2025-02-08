@@ -1,9 +1,4 @@
-﻿@page "/Account/Manage/ExternalLogins"
-
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using GoldEx.Server.Services
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Identity
+﻿@attribute [Route(ClientRoutes.Accounts.Manage.ExternalLogins)]
 
 @inject UserManager<AppUser> UserManager
 @inject SignInManager<AppUser> SignInManager

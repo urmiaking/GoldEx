@@ -1,15 +1,27 @@
 ﻿@inherits LayoutComponentBase
 @layout MainLayout
 
-<MudText Typo="Typo.h3" GutterBottom="true">مدیریت حساب</MudText>
+<MudBreadcrumbs Items="_breadcrumbs">
+    <SeparatorTemplate>
+        <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+    </SeparatorTemplate>
+</MudBreadcrumbs>
 
 <MudGrid>
-    <MudItem md="5">
+    <MudItem md="3">
         <MudText Typo="Typo.h6" GutterBottom="true">تنظیمات حساب کاربری</MudText>
         <ManageNavMenu />
     </MudItem>
-    <MudItem md="7">
+    <MudItem md="9">
         @Body
     </MudItem>
 </MudGrid>
 
+@code
+{
+    private readonly List<BreadcrumbItem> _breadcrumbs =
+    [
+        new BreadcrumbItem("صفحه اصلی", href: "/", icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("مدیریت حساب", href: "/Account/Manage", icon: Icons.Material.Filled.ManageAccounts)
+    ];
+}

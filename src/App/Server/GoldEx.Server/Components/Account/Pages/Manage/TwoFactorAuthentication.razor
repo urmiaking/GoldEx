@@ -1,9 +1,4 @@
-﻿@page "/Account/Manage/TwoFactorAuthentication"
-
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using GoldEx.Server.Services
-@using Microsoft.AspNetCore.Http.Features
-@using Microsoft.AspNetCore.Identity
+﻿@attribute [Route(ClientRoutes.Accounts.Manage.TwoFactorAuthentication)]
 
 @inject UserManager<AppUser> UserManager
 @inject SignInManager<AppUser> SignInManager

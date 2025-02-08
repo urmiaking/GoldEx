@@ -1,8 +1,4 @@
-﻿@page "/Account/Manage/ResetAuthenticator"
-
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using GoldEx.Server.Services
-@using Microsoft.AspNetCore.Identity
+﻿@attribute [Route(ClientRoutes.Accounts.Manage.ResetAuthenticator)]
 
 @inject UserManager<AppUser> UserManager
 @inject SignInManager<AppUser> SignInManager

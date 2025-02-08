@@ -1,8 +1,4 @@
-﻿@page "/Account/Manage/GenerateRecoveryCodes"
-
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using GoldEx.Server.Services
-@using Microsoft.AspNetCore.Identity
+﻿@attribute [Route(ClientRoutes.Accounts.Manage.GenerateRecoveryCodes)]
 
 @inject UserManager<AppUser> UserManager
 @inject IdentityUserAccessor UserAccessor
