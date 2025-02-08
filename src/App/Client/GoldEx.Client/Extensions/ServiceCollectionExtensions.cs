@@ -7,6 +7,8 @@ using Blazored.LocalStorage;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
 using MudBlazor.Services;
+using GoldEx.Client.Services;
+using GoldEx.Sdk.Client.Abstractions;
 
 namespace GoldEx.Client.Extensions;
 
@@ -84,6 +86,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddMudServices();
         services.AddBlazoredLocalStorage();
+        services.AddScoped<IBusyIndicator, BusyIndicator>();
         return services;
     }
 }
