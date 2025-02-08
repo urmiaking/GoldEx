@@ -13,16 +13,21 @@
         <div class="d-flex flex-column align-center">
             <MudAvatar Size="Size.Large" Color="Color.Secondary">S.A</MudAvatar>
             <MudText Typo="Typo.h6" Class="mt-2">@_username</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Dark">System Administrator</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Dark">
+                <AuthorizeView>
+                    @context.User.Identity?.Name
+                </AuthorizeView>
+            </MudText>
         </div>
 
-        <MudDivider Class="my-4"/>
-        
-        <MudStack Class="gap-0" Row="true" StretchItems="StretchItems.Middle" Spacing="2" Wrap="Wrap.Wrap">
-            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.ManageAccounts" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@NavigateToProfile">مدیریت حساب</MudButton>
-            <MudButton Size="Size.Small" Class="mt-2 mb-4" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Logout" Color="Color.Error" FullWidth="true" OnClick="@Logout">خروج</MudButton>
-        </MudStack>
-        
+        <MudDivider Class="my-4" />
+
+        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.ManageAccounts" Class="mt-2" 
+                   Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@NavigateToProfile">مدیریت حساب</MudButton>
+        <MudButton Size="Size.Small" Class="mt-2 mb-4" Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Logout" Color="Color.Error" FullWidth="true" OnClick="@Logout">خروج</MudButton>
+
+
     </MudPopover>
 </MudAppBar>
 
@@ -67,7 +72,7 @@
     private void NavigateToProfile()
     {
         // Implement navigation to user profile page.
-        NavigationManager.NavigateTo("/Account/Manage", forceLoad:true); // Example: Replace "/profile" with your profile page route.
+        NavigationManager.NavigateTo("/Account/Manage", forceLoad: true); // Example: Replace "/profile" with your profile page route.
         Console.WriteLine("Profile clicked"); // Placeholder
     }
 
