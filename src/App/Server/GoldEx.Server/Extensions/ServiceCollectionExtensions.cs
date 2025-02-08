@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Server.Api.Identity;
 using GoldEx.Server.Services;
+using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 
@@ -93,17 +94,43 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddAuth(this IServiceCollection services)
+    internal static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
         services.AddCascadingAuthenticationState();
 
-        services.AddAuthentication()
-            .AddCookie(GoldExSignInManager<AppUser>.GoldExScheme,
-                       config =>
-                       {
-                           config.ExpireTimeSpan = TimeSpan.FromHours(1);
-                       });
+        var clientId = configuration["Authentication:Google:ClientId"];
+        var clientSecret = configuration["Authentication:Google:ClientSecret"];
+
+        var isGoogleAuthConfigured = !string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret);
+
+        if (isGoogleAuthConfigured)
+        {
+            services.AddAuthentication(o =>
+                {
+                    // This forces challenge results to be handled by Google OpenID Handler
+                    o.DefaultChallengeScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
+                    // This forces forbid results to be handled by Google OpenID Handler
+                    o.DefaultForbidScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
+                    // Default scheme that will handle everything else. Use the Identity Cookie Scheme as the default.
+                    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie(GoldExSignInManager<AppUser>.GoldExScheme,
+                    config =>
+                    {
+                        config.ExpireTimeSpan = TimeSpan.FromHours(1);
+                    })
+                .AddGoogleOpenIdConnect(options =>
+                {
+                    options.ClientId = clientId;
+                    options.ClientSecret = clientSecret;
+                });
+        }
+        else
+        {
+            services.AddAuthentication()
+                .AddCookie(GoldExSignInManager<AppUser>.GoldExScheme, config => config.ExpireTimeSpan = TimeSpan.FromHours(1));
+        }
 
         services.AddIdentity<AppUser, AppRole>()
             .AddEntityFrameworkStores<GoldExDbContext>()
