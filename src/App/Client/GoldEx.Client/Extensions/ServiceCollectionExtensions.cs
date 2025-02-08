@@ -9,6 +9,7 @@ using GoldEx.Shared;
 using MudBlazor.Services;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Client.Abstractions;
+using MudBlazor;
 
 namespace GoldEx.Client.Extensions;
 
@@ -84,7 +85,12 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddClient(this IServiceCollection services)
     {
-        services.AddMudServices();
+        services.AddMudServices(config =>
+        {
+            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        });
+
+        services.AddLocalization();
         services.AddBlazoredLocalStorage();
         services.AddScoped<IBusyIndicator, BusyIndicator>();
         return services;
