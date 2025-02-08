@@ -1,10 +1,4 @@
-﻿@page "/Account/LoginWith2fa"
-
-@using System.ComponentModel.DataAnnotations
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using Microsoft.AspNetCore.Identity
-@using GoldEx.Server.Services
-@using GoldEx.Server.Components.Account.Shared
+﻿@attribute [Route(ClientRoutes.Accounts.LoginWith2Fa)]
 
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager

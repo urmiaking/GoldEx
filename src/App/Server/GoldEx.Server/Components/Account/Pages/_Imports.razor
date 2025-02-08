@@ -1,4 +1,17 @@
-﻿@using MudBlazor.StaticInput
+﻿@using System.Text
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Authentication
+@using GoldEx.Server.Common.Enums
+@using GoldEx.Sdk.Server.Domain.Entities.Identity
+@using GoldEx.Server.Services
+@using GoldEx.Server.Components.Account.Shared
+@using GoldEx.Shared.Routings
+@using MudBlazor.StaticInput
 @using Net.Codecrete.QrCodeGenerator
+
 
 @attribute [ExcludeFromInteractiveRouting]

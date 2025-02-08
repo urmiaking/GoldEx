@@ -1,11 +1,4 @@
-﻿@page "/Account/RegisterConfirmation"
-
-@using System.Text
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
-@using GoldEx.Server.Services
-@using GoldEx.Server.Components.Account.Shared
+﻿@attribute [Route(ClientRoutes.Accounts.RegisterConfirmation)]
 
 @inject UserManager<AppUser> UserManager
 @inject IEmailSender<AppUser> EmailSender

@@ -1,14 +1,4 @@
-﻿@page "/Account/ExternalLogin"
-
-@using System.ComponentModel.DataAnnotations
-@using System.Security.Claims
-@using System.Text
-@using System.Text.Encodings.Web
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
-@using GoldEx.Server.Services
-@using GoldEx.Server.Components.Account.Shared
+﻿@attribute [Route(ClientRoutes.Accounts.ExternalLogin)]
 
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager

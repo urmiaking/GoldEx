@@ -1,11 +1,4 @@
-﻿@page "/Account/ConfirmEmail"
-
-@using System.Text
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using GoldEx.Server.Services
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
-@using GoldEx.Server.Components.Account.Shared
+﻿@attribute [Route(ClientRoutes.Accounts.ConfirmEmail)]
 
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
