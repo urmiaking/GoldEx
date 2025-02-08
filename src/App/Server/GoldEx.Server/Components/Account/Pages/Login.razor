@@ -2,6 +2,7 @@
 
 @using System.ComponentModel.DataAnnotations
 @using GoldEx.Sdk.Server.Domain.Entities.Identity
+@using GoldEx.Server.Common.Enums
 @using GoldEx.Server.Services
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
@@ -11,55 +12,62 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@layout BaseLayout
 
 <PageTitle>ورود</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">ورود به سامانه</MudText>
+<script src="https://accounts.google.com/gsi/client" async></script>
 
-<MudGrid>
-    <MudItem md="6">
+<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
+    <MudPaper Elevation="4" Class="p-4">
+        <MudStack AlignItems="AlignItems.Center">
+            <MudItem>
+                <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+            </MudItem>
+            <MudItem>
+                <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">ورود به گلدکس</MudText>
+            </MudItem>
+        </MudStack>
+
         <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
             <DataAnnotationsValidator />
-
-            <MudText GutterBottom="true" Typo="Typo.body1">استفاده از حساب داخلی</MudText>
-
             <MudGrid>
-                <MudItem md="12">
+                <MudItem xs="12">
                     <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
                                         Label="آدرس ایمیل" Placeholder="name@example.com"
                                         UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
                 </MudItem>
-                <MudItem md="12">
+                <MudItem xs="12">
                     <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
                                         Label="رمز عبور" InputType="InputType.Password" Placeholder="رمز عبور"
                                         UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" } } )" />
                 </MudItem>
-                <MudItem md="12">
+                <MudItem xs="12" Class="m-0 p-0">
                     <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
                 </MudItem>
-                <MudItem md="12">
-                    <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
-                </MudItem>
-                <MudItem md="12">
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudItem xs="12" Class="mb-0">
+                        <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
+                    </MudItem>
+                }
+                
+                <MudItem xs="12" Class="mt-0">
                     <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
                 </MudItem>
             </MudGrid>
         </EditForm>
+        <MudDivider Class="my-4" />
+        <ExternalLoginPicker InvokeSource="InvokeSource.Login" />
 
-        <MudGrid Class="mt-4">
-            <MudItem md="12">
+        <MudGrid Class="mt-1">
+            <MudItem xs="12">
                 <MudLink Href="Account/ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
-                <MudLink Href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">ثبت نام</MudLink><br />
-                <MudLink Href="Account/ResendEmailConfirmation">ارسال مجدد ایمیل فعالسازی</MudLink>
             </MudItem>
         </MudGrid>
-    </MudItem>
-    <MudItem md="6">
-        <MudText GutterBottom="true" Typo="Typo.body1">استفاده از سرویس خارجی</MudText>
 
-        <ExternalLoginPicker />
-    </MudItem>
-</MudGrid>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private string? _errorMessage;

@@ -10,4 +10,8 @@
     <ProjectReference Include="..\GoldEx.Sdk.Common\GoldEx.Sdk.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Abstractions\" />
+  </ItemGroup>
+
 </Project>
