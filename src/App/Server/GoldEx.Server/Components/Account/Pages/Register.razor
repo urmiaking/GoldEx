@@ -138,20 +138,20 @@
 
     private sealed class InputModel
     {
-        [Required]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [Display(Name = "نام")]
         public string Name { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [EmailAddress]
         [Display(Name = "ایمیل")]
         public string Email { get; set; } = "";
 
-        [Phone]
+        [Phone(ErrorMessage = "فرمت {0} اشتباه است")]
         [Display(Name = "شماره تلفن")]
         public string? PhoneNumber { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [StringLength(100, ErrorMessage = "طول {0} حداقل باید {2} و حداکثر {1} حرف باشد", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "رمز عبور")]
