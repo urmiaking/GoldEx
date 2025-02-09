@@ -1,7 +1,7 @@
 ﻿@using GoldEx.Server.Services
 @if (!string.IsNullOrEmpty(DisplayMessage))
 {
-    <MudAlert Variant="Variant.Outlined" Severity="@Severity" ContentAlignment="HorizontalAlignment.Start" Dense="true">@DisplayMessage</MudAlert>
+    <MudAlert Class="mb-2" Variant="Variant.Outlined" Severity="@Severity" ContentAlignment="HorizontalAlignment.Start" Dense="true">@DisplayMessage</MudAlert>
 }
 
 @code {

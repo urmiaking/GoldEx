@@ -8,42 +8,48 @@
 <PageTitle>مدیریت ایمیل</PageTitle>
 
 <MudText Typo="Typo.h6" GutterBottom="true">مدیریت ایمیل</MudText>
+<hr />
 
 <StatusMessage Message="@_message" />
+@if (!_isEmailConfirmed)
+{
+    <MudText Typo="Typo.body1" GutterBottom="true">ارسال ایمیل فعالسازی</MudText>
+    <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
+        <AntiforgeryToken />
+        <MudGrid>
+            <MudItem lg="6" md="12">
+                <MudStack Row AlignItems="AlignItems.Center">
+                    <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل" Disabled="true" />
 
-<form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
-    <AntiforgeryToken />
-</form>
+                    <MudStaticButton Size="Size.Large" StartIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Filled" Color="Color.Primary" FormAction="FormAction.Submit">
+                        فعالسازی
+                    </MudStaticButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </form>
+}
+<br />
+<MudText Typo="Typo.body1" GutterBottom="true">تغییر آدرس ایمیل ورود</MudText>
 <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
     <DataAnnotationsValidator />
 
     <MudGrid>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل فعلی" Disabled="true" />
+        </MudItem>
+        
+        <MudItem lg="8" md="12">
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudStaticTextField @bind-Value="@Input.NewEmail" For="@(() => Input.NewEmail)"
+                                    UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "email" }, { "aria-required", "true" } } )"
+                                    Label="ایمیل جدید" Variant="Variant.Outlined" />
 
-        @if (_isEmailConfirmed)
-        {
-            <MudItem md="12">
-                <MudStaticTextField Value="@_email" Label="ایمیل" Placeholder="لطفا ایمیل خود را وارد کنید" Disabled="true" AdornmentIcon="Icons.Material.Filled.Check" AdornmentColor="Color.Success" />
-            </MudItem>
-        }
-        else
-        {
-            <MudItem md="12">
-                <MudStaticTextField Value="@_email" Label="ایمیل" Placeholder="لطفا ایمیل خود را وارد کنید" Disabled="true" />
-            </MudItem>
-            <MudItem md="12">
-                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ارسال ایمیل فعالسازی</MudStaticButton>
-            </MudItem>
-        }
-
-        <MudItem md="12">
-            <MudStaticTextField @bind-Value="@Input.NewEmail" For="@(() => Input.NewEmail)" 
-                                UserAttributes="@(new() { { "autocomplete", "email" }, { "aria-required", "true" } } )" 
-                                Label="ایمیل جدید" HelperText="لطفا ایمیل جدید خود را وارد کنید" />
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                                 FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Autorenew">ذخیره</MudStaticButton>
+            </MudStack>
         </MudItem>
 
-        <MudItem md="12">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">تغییر ایمیل</MudStaticButton>
-        </MudItem>
     </MudGrid>
 </EditForm>
 
@@ -111,8 +117,8 @@
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [EmailAddress(ErrorMessage = "فرمت {0} صحیح نمی باشد")]
         [Display(Name = "ایمیل جدید")]
         public string? NewEmail { get; set; }
     }

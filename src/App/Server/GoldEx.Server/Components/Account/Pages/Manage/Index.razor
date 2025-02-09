@@ -8,27 +8,29 @@
 <PageTitle>پروفایل کاربری</PageTitle>
 
 <MudText Typo="Typo.h6" GutterBottom="true">پروفایل کاربری</MudText>
-
+<hr/>
 <StatusMessage />
+
+<MudText Typo="Typo.body1" GutterBottom="true">ویرایش مشخصات فردی</MudText>
 
 <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
     <DataAnnotationsValidator />
 
     <MudGrid>
-        <MudItem md="12">
-            <MudStaticTextField Value="@_username" Label="نام کاربری" Disabled="true" Placeholder="نام کاربری" />
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" Value="@_username" Label="ایمیل" Disabled="true" />
         </MudItem>
-        <MudItem md="12">
-            <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
-                                Label="شماره تلفن" HelperText="لطفا شماره تلفن خود را وارد کنید"
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "tel-national" } } )" />
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.Name)" @bind-Value="Input.Name"
+                                Label="نام و نام خانوادگی"/>
         </MudItem>
-        <MudItem md="12">
-            <MudStaticTextField For="@(() => Input.Name)" @bind-Value="Input.Name"
-                                Label="نام و نام خانوادگی" HelperText="لطفا نام و نام خانوادگی خود را وارد کنید" />
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
+                                Label="شماره تلفن" UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "tel-national" } })"/>
         </MudItem>
-        <MudItem md="12">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ذخیره</MudStaticButton>
+        <MudItem xs="12" Class="d-flex justify-content-lg-end">
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                             FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Save">ذخیره</MudStaticButton>
         </MudItem>
     </MudGrid>
 </EditForm>
@@ -82,7 +84,7 @@
 
     private sealed class InputModel
     {
-        [Phone(ErrorMessage = "فرمت شماره تلفن صحیح نمی باشد")]
+        [Phone(ErrorMessage = "فرمت {0} صحیح نمی باشد")]
         [Display(Name = "شماره تلفن")]
         public string? PhoneNumber { get; set; }
 

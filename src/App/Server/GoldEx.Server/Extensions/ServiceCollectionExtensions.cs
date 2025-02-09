@@ -14,6 +14,7 @@ using GoldEx.Server.Services;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace GoldEx.Server.Extensions;
 
