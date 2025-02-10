@@ -3,6 +3,7 @@ using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Components.Account.Pages;
 using GoldEx.Server.Components.Account.Pages.Manage;
 using GoldEx.Server.Components.Account.Pages.ViewModels;
+using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
@@ -18,46 +19,45 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        var accountGroup = endpoints.MapGroup("/Account");
+        var accountGroup = endpoints.MapGroup(ApiRoutes.Account.Base);
 
-        accountGroup.MapPost("/Logout", async (
-            ClaimsPrincipal user,
+        accountGroup.MapGet($"/{ApiRoutes.Account.Logout}", async (
             SignInManager<AppUser> signInManager,
-            [FromForm] string? returnUrl = null) =>
+            [FromQuery] string? returnUrl = null) =>
         {
             await signInManager.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl ?? ""}");
         }).DisableAntiforgery();
 
-        accountGroup.MapPost("/Login", async (SignInManager<AppUser> signInManager, [FromBody]LoginVm model) =>
+        accountGroup.MapPost($"/{ApiRoutes.Account.Login}", async (SignInManager<AppUser> signInManager, [FromBody]LoginVm model) =>
         {
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, lockoutOnFailure: true);
 
             return result.Succeeded ? Results.Ok() : Results.Forbid();
         });
 
-        accountGroup.MapPost("/PerformExternalLogin", (
+        accountGroup.MapPost($"/{ApiRoutes.Account.PerformExternalLogin}", (
             HttpContext context,
             [FromServices] SignInManager<AppUser> signInManager,
             [FromForm] string provider,
             [FromForm] string returnUrl) =>
         {
             IEnumerable<KeyValuePair<string, StringValues>> query = [
-                new("ReturnUrl", returnUrl),
-                new("Action", ExternalLogin.LoginCallbackAction)];
+                new KeyValuePair<string, StringValues>("ReturnUrl", returnUrl),
+                new KeyValuePair<string, StringValues>("Action", ExternalLogin.LoginCallbackAction)];
 
             var redirectUrl = UriHelper.BuildRelative(
                 context.Request.PathBase,
-                "/Account/ExternalLogin",
+                ClientRoutes.Accounts.ExternalLogin,
                 QueryString.Create(query));
 
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return TypedResults.Challenge(properties, [provider]);
         });
 
-        var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
+        var manageGroup = accountGroup.MapGroup($"/{ApiRoutes.Account.Manage.Base}").RequireAuthorization();
 
-        manageGroup.MapPost("/LinkExternalLogin", async (
+        manageGroup.MapPost($"/{ApiRoutes.Account.Manage.LinkExternalLogin}", async (
             HttpContext context,
             [FromServices] SignInManager<AppUser> signInManager,
             [FromForm] string provider) =>
@@ -67,7 +67,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
             var redirectUrl = UriHelper.BuildRelative(
                 context.Request.PathBase,
-                "/Account/Manage/ExternalLogins",
+                ClientRoutes.Accounts.Manage.ExternalLogins,
                 QueryString.Create("Action", ExternalLogins.LinkLoginCallbackAction));
 
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, signInManager.UserManager.GetUserId(context.User));

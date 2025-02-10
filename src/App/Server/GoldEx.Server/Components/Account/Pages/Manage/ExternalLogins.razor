@@ -48,8 +48,7 @@
 @if (_otherLogins?.Count > 0)
 {
     <MudText Typo="Typo.body1" GutterBottom="true">افزودن لینک حساب خارجی</MudText>
-    <!-- TODO: add ApiUrl here -->
-    <form class="form-horizontal" action="Account/Manage/LinkExternalLogin" method="post">
+    <form class="form-horizontal" action="@ApiUrls.Account.LinkExternalLogin()" method="post">
         <AntiforgeryToken />
         <div>
             <p>
