@@ -15,14 +15,14 @@
 else
 {
     <MudText Typo="Typo.h6" GutterBottom="true">پیکربندی برنامه Authenticator</MudText>
-
+    <hr />
     <StatusMessage Message="@_message" />
 
     <MudText Typo="Typo.body1" GutterBottom="true">برای استفاده از برنامه Authenticator مراحل زیر را دنبال کنید:</MudText>
 
     <ol class="list">
         <li>
-            <MudText Typo="Typo.body2">
+            <MudText Typo="Typo.body2" Class="mt-2 mb-2">
                 یک برنامه احراز هویت دو مرحله‌ای مانند Microsoft Authenticator را برای
                 <MudLink Target="_blank" Href="https://go.microsoft.com/fwlink/?Linkid=825072">اندروید</MudLink> و
                 <MudLink Target="_blank" Href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</MudLink> یا
@@ -32,34 +32,36 @@ else
             </MudText>
         </li>
         <li>
-            <MudText Typo="Typo.body2">
-                کد QR را اسکن کنید یا این کلید را در برنامه احراز هویت دو مرحله‌ای خود وارد کنید. فاصله‌ها و حروف بزرگ و کوچک مهم نیستند:
+            <MudText Typo="Typo.body2" Class="mt-2 mb-2">
+                کد QR زیر را اسکن کنید یا این کلید را در برنامه احراز هویت دو مرحله‌ای خود وارد کنید. (فاصله‌ها و حروف بزرگ و کوچک مهم نیستند):
             </MudText>
 
             <MudAlert Variant="Variant.Text" Severity="Severity.Info" Icon="@Icons.Material.Filled.Key" ContentAlignment="HorizontalAlignment.Start">
                 @_sharedKey
                 <MudItem Class="mt-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="300" width="300" stroke="none" 
+                    <svg xmlns="http://www.w3.org/2000/svg" height="200" width="200" stroke="none" 
                          version="1.1" viewBox="0 0 50 50">
-                        <rect width="300" height="300" fill="#ffffff" />
+                        <rect width="200" height="200" fill="#ffffff" />
                         <path d="@_svgGraphicsPath" fill="#000000" />
                     </svg>
                 </MudItem>
             </MudAlert>
         </li>
         <li>
-            <MudText Typo="Typo.body2">
+            <MudText Typo="Typo.body2" Class="mt-2 mb-2">
                 پس از اسکن کد QR یا وارد کردن کلید بالا، برنامه احراز هویت دو مرحله‌ای شما یک کد منحصر به فرد را در اختیار شما قرار می‌دهد. کد را در کادر تأیید زیر وارد کنید.
             </MudText>
 
             <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
                 <DataAnnotationsValidator />
-                <MudGrid>
-                    <MudItem md="12">
-                        <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="کد تایید" HelperText="لطفا کد را وارد کنید" />
+                <MudGrid Class="align-center">
+                    <MudItem md="8" xs="12">
+                        <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="کد تایید" Variant="Variant.Outlined" />
                     </MudItem>
-                    <MudItem md="12">
-                        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">اعتبارسنجی</MudStaticButton>
+                    <MudItem md="4" xs="12">
+                        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                                         StartIcon="@Icons.Material.Filled.SystemSecurityUpdateGood" 
+                                         FullWidth="true" FormAction="FormAction.Submit">اعتبارسنجی</MudStaticButton>
                     </MudItem>
                 </MudGrid>
             </EditForm>

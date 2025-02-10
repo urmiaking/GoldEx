@@ -6,25 +6,28 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ResetAuthenticator> Logger
 
-<PageTitle>بازنشانی کد Authenticator</PageTitle>
+<PageTitle>بازنشانی برنامه Authenticator</PageTitle>
 
-<MudText Typo="Typo.h6" GutterBottom="true">بازنشانی کد Authenticator</MudText>
+<MudText Typo="Typo.h6" GutterBottom="true">بازنشانی برنامه Authenticator</MudText>
+
+<hr />
 
 <StatusMessage />
 
 <MudAlert Severity="Severity.Warning" Variant="Variant.Text" ContentAlignment="HorizontalAlignment.Start">
-    در صورت بازنشانی کلید احراز هویت، برنامه احراز هویت شما تا پیکربندی مجدد آن غیرفعال خواهد شد.
+    در صورت بازنشانی کلید احراز هویت، برنامه Authenticator شما تا پیکربندی مجدد آن غیرفعال خواهد شد.
 </MudAlert>
 
 <MudText Typo="Typo.body2" Class="my-4">
-    این فرآیند، تأیید هویت دو مرحله‌ای را تا زمان تأیید برنامه احراز هویت شما غیرفعال می‌کند.
-    در صورت عدم تکمیل پیکربندی برنامه احراز هویت، احتمال از دسترسی به حساب کاربری شما وجود دارد.
+    این فرآیند، تأیید هویت دو مرحله‌ای را تا زمان پیکربندی مجدد، غیرفعال می‌کند.
+    در صورت عدم پیکربندی مجدد برنامه Authenticator، امنیت حساب شما فقط با رمز عبور ایستا تامین خواهد شد.
 </MudText>
 
 <form @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
     <AntiforgeryToken />
 
-    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">بازنشانی</MudStaticButton>
+    <MudStaticButton StartIcon="@Icons.Material.Filled.Update" Variant="Variant.Filled" 
+                     Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">بازنشانی</MudStaticButton>
 </form>
 
 @code {
