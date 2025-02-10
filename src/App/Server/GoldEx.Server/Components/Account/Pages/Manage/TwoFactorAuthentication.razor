@@ -9,6 +9,8 @@
 
 <MudText Typo="Typo.h6" GutterBottom="true">احراز هویت دو مرحله ای (2FA)</MudText>
 
+<hr />
+
 <StatusMessage />
 
 @if (_canTrack)
@@ -54,23 +56,31 @@
         <MudLink Href="Account/Manage/GenerateRecoveryCodes">بازنشانی کدهای بازیابی</MudLink>
     }
 
-    <MudText Typo="Typo.h6" GutterBottom="true">برنامه Authenticator</MudText>
+    <MudText Typo="Typo.h6" GutterBottom="true">لینک حساب به برنامه Authenticator</MudText>
 
     @if (!_hasAuthenticator)
     {
-        <MudLink Href="Account/Manage/EnableAuthenticator">افزودن برنامه Authenticator</MudLink>
+        <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="Account/Manage/EnableAuthenticator" Variant="Variant.Filled"
+                   FullWidth="true" Size="Size.Large" Color="Color.Primary">افزودن برنامه Authenticator</MudButton>
         <br />
     }
     else
     {
-        <MudLink Href="Account/Manage/EnableAuthenticator">تنظیم برنامه Authenticator</MudLink>
-        <br />
-        <MudLink Href="Account/Manage/ResetAuthenticator">بازنشانی برنامه Authenticator</MudLink>
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="Account/Manage/EnableAuthenticator" Variant="Variant.Filled"
+                           FullWidth="true" Size="Size.Large" Color="Color.Primary">پیکربندی برنامه Authenticator</MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudButton StartIcon="@Icons.Material.Filled.Autorenew" Href="Account/Manage/ResetAuthenticator" Variant="Variant.Filled"
+                           FullWidth="true" Size="Size.Large" Color="Color.Primary">بازنشانی برنامه Authenticator</MudButton>
+            </MudItem>
+        </MudGrid>
     }
 }
 else
 {
-    <MudAlert Variant="Variant.Text" Severity="Severity.Error">سیاست حریم خصوصی و کوکی‌ها پذیرفته پذیرفته نشده است.</MudAlert>
+    <MudAlert Variant="Variant.Text" Severity="Severity.Error">سیاست حریم خصوصی و کوکی‌ها پذیرفته نشده است.</MudAlert>
 
     <MudText Typo="Typo.body1" Class="pt-4">
         شما باید قبل از فعال کردن تأیید دومرحله‌ای، سیاست را بپذیرید
