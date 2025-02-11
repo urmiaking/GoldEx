@@ -1,17 +1,14 @@
-﻿@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using Microsoft.AspNetCore.Identity
-
-@inject SignInManager<AppUser> SignInManager
+﻿@inject SignInManager<AppUser> SignInManager
 
 <MudNavMenu>
-    <MudNavLink Href="Account/Manage" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">پروفایل</MudNavLink>
-    <MudNavLink Href="Account/Manage/Email" Icon="@Icons.Material.Filled.Email">ایمیل</MudNavLink>
-    <MudNavLink Href="Account/Manage/ChangePassword" Icon="@Icons.Material.Filled.Lock">رمز عبور</MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Accounts.Manage.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">پروفایل</MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Accounts.Manage.Email" Icon="@Icons.Material.Filled.Email">ایمیل</MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Accounts.Manage.ChangePassword" Icon="@Icons.Material.Filled.Lock">رمز عبور</MudNavLink>
     @if (_hasExternalLogins)
     {
-        <MudNavLink Href="Account/Manage/ExternalLogins" Icon="@Icons.Material.Filled.PhoneLocked">احراز هویت خارجی</MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Accounts.Manage.ExternalLogins" Icon="@Icons.Material.Filled.PhoneLocked">احراز هویت خارجی</MudNavLink>
     }
-    <MudNavLink Href="Account/Manage/TwoFactorAuthentication" Icon="@Icons.Material.Filled.LockClock">احراز هویت دو مرحله ای</MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Accounts.Manage.TwoFactorAuthentication" Icon="@Icons.Material.Filled.LockClock">احراز هویت دو مرحله ای</MudNavLink>
 </MudNavMenu>
 
 @code {

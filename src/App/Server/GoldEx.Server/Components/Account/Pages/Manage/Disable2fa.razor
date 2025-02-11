@@ -16,7 +16,7 @@
     </p>
     <p>
         غیرفعال کردن تأیید هویت دو مرحله‌ای، کلیدهای استفاده شده در برنامه‌های احراز هویت را تغییر نمی‌دهد.
-        اگر می‌خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید <a href="Account/Manage/ResetAuthenticator">کلیدهای احراز هویت خود را بازنشانی کنید.</a>
+        اگر می‌خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید <a href="@ClientRoutes.Accounts.Manage.ResetAuthenticator">کلیدهای احراز هویت خود را بازنشانی کنید.</a>
     </p>
 </div>
 
@@ -52,7 +52,7 @@
         var userId = await UserManager.GetUserIdAsync(_user);
         Logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", userId);
         RedirectManager.RedirectToWithStatus(
-            "Account/Manage/TwoFactorAuthentication",
+            ClientRoutes.Accounts.Manage.TwoFactorAuthentication,
             "تأیید هویت دو مرحله‌ای غیرفعال شده است. شما می‌توانید هنگام تنظیم برنامه احراز هویت، دوباره تأیید هویت دو مرحله‌ای را فعال کنید.",
             HttpContext);
     }

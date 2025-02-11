@@ -4,30 +4,50 @@
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWithRecoveryCode> Logger
+@layout BaseLayout
 
-<PageTitle>تایید کد بازیابی</PageTitle>
+<PageTitle>ورود با کد بازیابی</PageTitle>
 
-<h1>تایید کد بازیابی</h1>
-<hr />
-<StatusMessage Message="@_message" />
-<p>
-    شما درخواست کرده‌اید که با یک کد بازیابی وارد شوید.
-    این ورود به سیستم تا زمانی که یک کد برنامه احراز هویت را هنگام ورود به سیستم ارائه دهید یا احراز هویت دو مرحله‌ای را غیرفعال و دوباره وارد شوید، ذخیره نخواهد شد.
-</p>
-<div class="row">
-    <div class="col-md-4">
+<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
+    <MudPaper Elevation="4" Class="p-4">
+        <MudStack AlignItems="AlignItems.Center">
+            <MudItem>
+                <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+            </MudItem>
+            <MudItem>
+                <MudText Align="Align.Center" Typo="Typo.h3">ورود به گلدکس</MudText>
+            </MudItem>
+            <MudItem>
+                <MudText Align="Align.Center" Typo="Typo.h6" GutterBottom="true">ورود با کد بازیابی</MudText>
+            </MudItem>
+        </MudStack>
         <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="کد بازیابی" />
-                <label for="Input.RecoveryCode" class="form-label">کد بازیابی</label>
-                <ValidationMessage For="() => Input.RecoveryCode" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">ورود</button>
+            
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudStaticTextField For="@(() => Input.RecoveryCode)" @bind-Value="Input.RecoveryCode"
+                                        Label="کد بازیابی" Class="my-2"
+                                        UserAttributes="@(new Dictionary<string, object?> { { "aria-required", "true" } } )" />
+                </MudItem>
+            </MudGrid>
+
+            <StatusMessage Message="@_message" Severity="Severity.Error" />
+
+            <MudItem xs="12" Class="mt-2">
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
+            </MudItem>
         </EditForm>
-    </div>
-</div>
+        <MudDivider />
+        <MudGrid Class="mt-1">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info">
+                    توجه: کدهای بازیابی یکبار مصرف بوده و پس از یک بار ورود موفقت آمیز، قابل مصرف نمی باشد.
+                </MudAlert>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private string? _message;
@@ -62,7 +82,7 @@
         else if (result.IsLockedOut)
         {
             Logger.LogWarning("حساب شما مسدود شده است");
-            RedirectManager.RedirectTo("Account/Lockout");
+            RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
         }
         else
         {
@@ -73,7 +93,7 @@
 
     private sealed class InputModel
     {
-        [Required]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [DataType(DataType.Text)]
         [Display(Name = "کد بازیابی")]
         public string RecoveryCode { get; set; } = "";

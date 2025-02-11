@@ -62,13 +62,13 @@
     {
         if (RemoteError is not null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", $"Error from external provider: {RemoteError}", HttpContext);
+            RedirectManager.RedirectToWithStatus(ClientRoutes.Accounts.Login, $"Error from external provider: {RemoteError}", HttpContext);
         }
 
         var info = await SignInManager.GetExternalLoginInfoAsync();
         if (info is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+            RedirectManager.RedirectToWithStatus(ClientRoutes.Accounts.Login, "Error loading external login information.", HttpContext);
         }
 
         _externalLoginInfo = info;
@@ -83,7 +83,7 @@
 
             // We should only reach this page via the login callback, so redirect back to
             // the login page if we get here some other way.
-            RedirectManager.RedirectTo("Account/Login");
+            RedirectManager.RedirectTo(ClientRoutes.Accounts.Login);
         }
     }
 
@@ -91,7 +91,7 @@
     {
         if (_externalLoginInfo is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+            RedirectManager.RedirectToWithStatus(ClientRoutes.Accounts.Login, "Error loading external login information.", HttpContext);
         }
 
         // Sign in the user with this external login provider if the user already has a login.
@@ -111,7 +111,7 @@
         }
         else if (result.IsLockedOut)
         {
-            RedirectManager.RedirectTo("Account/Lockout");
+            RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
         }
 
         // If the user does not have an account, then ask the user to create an account.
@@ -125,7 +125,7 @@
     {
         if (_externalLoginInfo is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "در هنگام تأیید اطلاعات ورود از سرویس خارجی، مشکلی پیش آمد.", HttpContext);
+            RedirectManager.RedirectToWithStatus(ClientRoutes.Accounts.Login, "در هنگام تأیید اطلاعات ورود از سرویس خارجی، مشکلی پیش آمد.", HttpContext);
         }
 
         var emailStore = GetEmailStore();
@@ -147,14 +147,14 @@
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
                 var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-                    NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+                    NavigationManager.ToAbsoluteUri(ClientRoutes.Accounts.ConfirmEmail).AbsoluteUri,
                     new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
                 await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
                 // If account confirmation is required, we need to show the link if we don't have a real email sender
                 if (UserManager.Options.SignIn.RequireConfirmedAccount)
                 {
-                    RedirectManager.RedirectTo("Account/RegisterConfirmation", new Dictionary<string, object?> { ["email"] = Input.Email });
+                    RedirectManager.RedirectTo(ClientRoutes.Accounts.RegisterConfirmation, new Dictionary<string, object?> { ["email"] = Input.Email });
                 }
 
                 await SignInManager.SignInAsync(user, isPersistent: false, _externalLoginInfo.LoginProvider);

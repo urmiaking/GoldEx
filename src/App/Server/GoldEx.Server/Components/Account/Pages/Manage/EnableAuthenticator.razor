@@ -54,7 +54,7 @@ else
 
             <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
                 <DataAnnotationsValidator />
-                <MudGrid Class="align-center">
+                <MudGrid Class="align-baseline">
                     <MudItem md="8" xs="12">
                         <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="کد تایید" Variant="Variant.Outlined" />
                     </MudItem>
@@ -117,7 +117,7 @@ else
         }
         else
         {
-            RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", _message, HttpContext);
+            RedirectManager.RedirectToWithStatus(ClientRoutes.Accounts.Manage.TwoFactorAuthentication, _message, HttpContext);
         }
     }
 
@@ -168,7 +168,7 @@ else
 
     private sealed class InputModel
     {
-        [Required]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [StringLength(7, ErrorMessage = "اندازه {0} باید حداقل {2} و حداکثر {1} حرف باشد", MinimumLength = 6)]
         [DataType(DataType.Text)]
         [Display(Name = "کد تایید")]

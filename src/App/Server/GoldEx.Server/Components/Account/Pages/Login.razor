@@ -47,7 +47,7 @@
             </MudGrid>
         </EditForm>
         <MudDivider Class="my-4" />
-        <ExternalLoginPicker InvokeSource="InvokeSource.Login" />
+        <ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
 
         <MudGrid Class="mt-1">
             <MudItem xs="12">
@@ -81,8 +81,6 @@
 
     public async Task LoginUser()
     {
-        // This doesn't count login failures towards account lockout
-        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
         if (result.Succeeded)
         {
@@ -92,13 +90,13 @@
         else if (result.RequiresTwoFactor)
         {
             RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
+                ClientRoutes.Accounts.LoginWith2Fa,
                 new Dictionary<string, object?> { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
         }
         else if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
-            RedirectManager.RedirectTo("Account/Lockout");
+            RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
         }
         else
         {
