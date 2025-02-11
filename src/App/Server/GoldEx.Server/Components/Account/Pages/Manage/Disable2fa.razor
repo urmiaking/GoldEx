@@ -7,23 +7,29 @@
 
 <PageTitle>غیرفعال سازی رمز دو مرحله ای (2FA)</PageTitle>
 
-<StatusMessage />
-<h3>غیرفعال سازی رمز دو مرحله ای (2FA)</h3>
+<MudText Typo="Typo.h6" GutterBottom="true">غیرفعال سازی رمز دو مرحله ای (2FA)</MudText>
 
-<div class="alert alert-warning" role="alert">
+<hr />
+
+<StatusMessage />
+
+<MudAlert Severity="Severity.Warning" ContentAlignment="HorizontalAlignment.Start">
     <p>
         <strong>انجام این عملیات باعث غیرفعال سازی تایید دو مرحله ای می گردد</strong>
     </p>
     <p>
         غیرفعال کردن تأیید هویت دو مرحله‌ای، کلیدهای استفاده شده در برنامه‌های احراز هویت را تغییر نمی‌دهد.
-        اگر می‌خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید <a href="@ClientRoutes.Accounts.Manage.ResetAuthenticator">کلیدهای احراز هویت خود را بازنشانی کنید.</a>
+        اگر می‌خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید <MudLink href="@ClientRoutes.Accounts.Manage.ResetAuthenticator">کلیدهای احراز هویت خود را بازنشانی کنید.</MudLink>
     </p>
-</div>
+</MudAlert>
 
-<div>
+<div class="mt-2">
     <form @formname="disable-2fa" @onsubmit="OnSubmitAsync" method="post">
         <AntiforgeryToken />
-        <button class="btn btn-danger" type="submit">غیرفعال سازی 2FA</button>
+        
+        <MudStaticButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" 
+                         StartIcon="@Icons.Material.Filled.DoDisturb"
+                         FullWidth="true" FormAction="FormAction.Submit">غیرفعال سازی 2FA</MudStaticButton>
     </form>
 </div>
 
