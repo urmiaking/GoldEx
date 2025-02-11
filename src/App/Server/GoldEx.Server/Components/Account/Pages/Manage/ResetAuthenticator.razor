@@ -45,7 +45,7 @@
         await SignInManager.RefreshSignInAsync(user);
 
         RedirectManager.RedirectToWithStatus(
-            "Account/Manage/EnableAuthenticator",
+            ClientRoutes.Accounts.Manage.EnableAuthenticator,
             "کلید برنامه احراز هویت شما بازنشانی گردیده است، لازم است برنامه احراز هویت خود را با کلید جدید پیکربندی نمایید.",
             HttpContext);
     }

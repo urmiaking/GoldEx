@@ -29,8 +29,9 @@
     {
         if (UserId is null || Email is null || Code is null)
         {
+            // TODO: need to be tested cause original url was Account/login
             RedirectManager.RedirectToWithStatus(
-                "Account/Login", "خطا: لینک تأیید تغییر ایمیل معتبر نیست", HttpContext);
+                ClientRoutes.Accounts.Login, "خطا: لینک تأیید تغییر ایمیل معتبر نیست", HttpContext);
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
@@ -48,8 +49,8 @@
             return;
         }
 
-        // In our UI email and user name are one and the same, so when we update the email
-        // we need to update the user name.
+        // In our UI email and username are one and the same, so when we update the email
+        // we need to update the username.
         var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
         if (!setUserNameResult.Succeeded)
         {

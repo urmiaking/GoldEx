@@ -17,50 +17,56 @@
 {
     if (_is2FaEnabled)
     {
-        if (_recoveryCodesLeft == 0)
+        <MudText Typo="Typo.body1" GutterBottom="true">احراز هویت 2FA</MudText>
+
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" md="6">
+                <MudButton StartIcon="@Icons.Material.Filled.SyncDisabled" Href="@ClientRoutes.Accounts.Manage.Disable2Fa" Variant="Variant.Filled"
+                           Size="Size.Large" FullWidth="true" Color="Color.Error">غیرفعال سازی 2FA</MudButton>
+            </MudItem>
+            @if (_isMachineRemembered)
+            {
+                <MudItem xs="12" md=6>
+                    <form @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
+                        <AntiforgeryToken />
+
+                        <MudStaticButton StartIcon="@Icons.Material.Filled.RemoveCircle" Variant="Variant.Filled" Color="Color.Error"
+                                         FullWidth="true" Size="Size.Large" FormAction="FormAction.Submit">فراموشی این مرورگر</MudStaticButton>
+
+                    </form>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudText Typo="Typo.body1" GutterBottom="true">کدهای بازیابی</MudText>
+
+        switch (_recoveryCodesLeft)
         {
-            <MudAlert Variant="Variant.Text" Severity="Severity.Error">شما دیگر کد بازیابی ندارید.</MudAlert>
-
-            <MudText Typo="Typo.body1" Class="pt-4">
-                شما قبل از ورود باید <MudLink Href="Account/Manage/GenerateRecoveryCodes">کدهای بازیابی جدیدی</MudLink> تولید کنید
-            </MudText>
-        }
-        else if (_recoveryCodesLeft == 1)
-        {
-            <MudAlert Variant="Variant.Text" Severity="Severity.Warning">شما 1 کد بازیابی قابل استفاده دارید</MudAlert>
-
-            <MudText Typo="Typo.body1" Class="pt-4">
-                شما می توانید <MudLink Href="Account/Manage/GenerateRecoveryCodes">کدهای بازیابی جدیدی</MudLink> تولید کنید.
-            </MudText>
-        }
-        else if (_recoveryCodesLeft <= 3)
-        {
-            <MudAlert Variant="Variant.Text" Severity="Severity.Warning">شما @_recoveryCodesLeft کد بازیابی قابل استفاده دارید.</MudAlert>
-
-            <MudText Typo="Typo.body1" Class="pt-4">
-                شما باید <MudLink Href="Account/Manage/GenerateRecoveryCodes">کدهای بازیابی جدیدی</MudLink> تولید کنید
-            </MudText>
+            case 0:
+                <MudAlert ContentAlignment="HorizontalAlignment.Start" Variant="Variant.Text" Severity="Severity.Error">
+                    هیچ کد بازیابی قابل استفاده برای ورود باقی نمانده است. شما باید <MudLink Href="@ClientRoutes.Accounts.Manage.GenerateRecoveryCodes">کدهای بازیابی جدیدی</MudLink> ایجاد کنید
+                </MudAlert>
+                break;
+            case <= 3:
+                <MudAlert ContentAlignment="HorizontalAlignment.Start" Variant="Variant.Text" Severity="Severity.Warning">
+                    فقط @_recoveryCodesLeft کد بازیابی قابل استفاده باقی مانده است. شما باید <MudLink Href="@ClientRoutes.Accounts.Manage.GenerateRecoveryCodes">کدهای بازیابی جدیدی</MudLink> ایجاد کنید
+                </MudAlert>
+                break;
         }
 
-        if (_isMachineRemembered)
-        {
-            <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
-                <AntiforgeryToken />
-
-                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">فراموشی این مرورگر</MudStaticButton>
-            </form>
-        }
-
-        <MudLink Href="Account/Manage/Disable2fa">غیرفعال سازی احراز هویت دو مرحله ای</MudLink>
-        <br />
-        <MudLink Href="Account/Manage/GenerateRecoveryCodes">بازنشانی کدهای بازیابی</MudLink>
+        <MudGrid Class="py-4">
+            <MudItem xs="12" md="6">
+                <MudButton StartIcon="@Icons.Material.Filled.Autorenew" Href="@ClientRoutes.Accounts.Manage.GenerateRecoveryCodes" Variant="Variant.Filled"
+                           FullWidth="true" Size="Size.Large" Color="Color.Primary">بازنشانی کدهای بازیابی</MudButton>
+            </MudItem>
+        </MudGrid>
     }
 
-    <MudText Typo="Typo.h6" GutterBottom="true">لینک حساب به برنامه Authenticator</MudText>
+    <MudText Typo="Typo.body1" GutterBottom="true">برنامه Authenticator</MudText>
 
     @if (!_hasAuthenticator)
     {
-        <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="Account/Manage/EnableAuthenticator" Variant="Variant.Filled"
+        <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="@ClientRoutes.Accounts.Manage.EnableAuthenticator" Variant="Variant.Filled"
                    FullWidth="true" Size="Size.Large" Color="Color.Primary">افزودن برنامه Authenticator</MudButton>
         <br />
     }
@@ -68,12 +74,12 @@
     {
         <MudGrid>
             <MudItem xs="12" md="6">
-                <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="Account/Manage/EnableAuthenticator" Variant="Variant.Filled"
-                           FullWidth="true" Size="Size.Large" Color="Color.Primary">پیکربندی برنامه Authenticator</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="@ClientRoutes.Accounts.Manage.EnableAuthenticator" Variant="Variant.Filled"
+                           FullWidth="true" Size="Size.Large" Color="Color.Primary">پیکربندی Authenticator</MudButton>
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudButton StartIcon="@Icons.Material.Filled.Autorenew" Href="Account/Manage/ResetAuthenticator" Variant="Variant.Filled"
-                           FullWidth="true" Size="Size.Large" Color="Color.Primary">بازنشانی برنامه Authenticator</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Autorenew" Href="@ClientRoutes.Accounts.Manage.ResetAuthenticator" Variant="Variant.Filled"
+                           FullWidth="true" Size="Size.Large" Color="Color.Primary">بازنشانی Authenticator</MudButton>
             </MudItem>
         </MudGrid>
     }

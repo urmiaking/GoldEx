@@ -6,14 +6,17 @@
 
 <PageTitle>ایجاد کدهای ریکاوری برای احراز هویت دو مرحله‌ای</PageTitle>
 
+<MudText Typo="Typo.h6" GutterBottom="true">ایجاد کدهای بازیابی برای احراز هویت دو مرحله‌ای</MudText>
+
+<hr />
+
 @if (_recoveryCodes is not null)
 {
     <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_message" />
 }
 else
 {
-    <h3>ایجاد کدهای بازیابی برای احراز هویت دو مرحله‌ای</h3>
-    <div class="alert alert-warning" role="alert">
+    <MudAlert Severity="Severity.Warning" ContentAlignment="HorizontalAlignment.Start">
         <p>
             <span class="glyphicon glyphicon-warning-sign"></span>
             <strong>این کدها را در جای امنی قرار دهید.</strong>
@@ -23,13 +26,16 @@ else
         </p>
         <p>
             تولید کدهای بازیابی جدید، کلیدهای استفاده شده در برنامه‌های احراز هویت را تغییر نمی‌دهد.
-            اگر می‌خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید <a href="Account/Manage/ResetAuthenticator">کلیدهای احراز هویت خود را بازنشانی کنید.</a>
+            اگر می‌خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید <MudLink href="@ClientRoutes.Accounts.Manage.ResetAuthenticator">کلیدهای احراز هویت خود را بازنشانی کنید.</MudLink>
         </p>
-    </div>
+    </MudAlert>
+
     <div>
         <form @formname="generate-recovery-codes" @onsubmit="OnSubmitAsync" method="post">
             <AntiforgeryToken />
-            <button class="btn btn-danger" type="submit">تولید کلیدهای بازیابی</button>
+            
+            <MudStaticButton StartIcon="@Icons.Material.Filled.Autorenew" Variant="Variant.Filled" Color="Color.Primary"
+                             Size="Size.Large" FormAction="FormAction.Submit">تولید کلیدهای بازیابی</MudStaticButton>
         </form>
     </div>
 }

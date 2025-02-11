@@ -1,15 +1,15 @@
-﻿<StatusMessage Message="@StatusMessage" />
-<h3>کدهای بازیابی</h3>
-<div class="alert alert-warning" role="alert">
+﻿<MudText Typo="Typo.h6">کدهای بازیابی</MudText>
+<StatusMessage Message="@StatusMessage" />
+<MudAlert ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Warning">
     <p>
         <strong>این کدها را در مکان امنی قرار دهید</strong>
     </p>
     <p>
         اگر دستگاه خود را گم کنید و کدهای بازیابی را نداشته باشید، دسترسی به حساب خود را از دست خواهید داد.
     </p>
-</div>
+</MudAlert>
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12 mt-2 text-center">
         @foreach (var recoveryCode in RecoveryCodes)
         {
             <div>

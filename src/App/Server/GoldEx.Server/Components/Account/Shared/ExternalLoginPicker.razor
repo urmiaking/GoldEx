@@ -1,17 +1,9 @@
-﻿@using GoldEx.Sdk.Common.Extensions
-@using GoldEx.Sdk.Server.Domain.Entities.Identity
-@using GoldEx.Server.Common.Enums
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Identity
-@using GoldEx.Server.Services
-
-@inject SignInManager<AppUser> SignInManager
+﻿@inject SignInManager<AppUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
-
 
 @if (_externalLogins.Length > 0)
 {
-    <form class="form-horizontal" action="Account/PerformExternalLogin" method="post">
+    <form class="form-horizontal" action="@ApiUrls.Account.PerformExternalLogin()" method="post">
         <div>
             <AntiforgeryToken />
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
@@ -23,13 +15,13 @@
                     if (!string.IsNullOrEmpty(provider.DisplayName) && provider.DisplayName.Contains("Google"))
                     {
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit" StartIcon="@Icons.Custom.Brands.Google">
-                            @InvokeSource.GetDisplayName() با حساب گوگل
+                            @ExternalLoginPickerSource.GetDisplayName() با حساب گوگل
                         </MudButton>
                     }
                     else
                     {
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit">
-                            @InvokeSource.GetDisplayName() با حساب @provider.DisplayName
+                            @ExternalLoginPickerSource.GetDisplayName() با حساب @provider.DisplayName
                         </MudButton>
                     }
                 }
@@ -44,7 +36,7 @@
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    [Parameter] public InvokeSource InvokeSource { get; set; }
+    [Parameter] public ExternalLoginSource ExternalLoginPickerSource { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

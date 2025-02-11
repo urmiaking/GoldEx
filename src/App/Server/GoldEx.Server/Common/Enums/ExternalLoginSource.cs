@@ -2,7 +2,7 @@
 
 namespace GoldEx.Server.Common.Enums;
 
-public enum InvokeSource
+public enum ExternalLoginSource
 {
     [Display(Name = "ورود")]
     Login,

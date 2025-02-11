@@ -25,7 +25,7 @@
 {
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
-        new BreadcrumbItem("صفحه اصلی", href: "/", icon: Icons.Material.Filled.Home),
-    new BreadcrumbItem("مدیریت حساب", href: "/Account/Manage", icon: Icons.Material.Filled.ManageAccounts)
+        new BreadcrumbItem("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
+    new BreadcrumbItem("مدیریت حساب", href: ClientRoutes.Accounts.Manage.Index, icon: Icons.Material.Filled.ManageAccounts)
     ];
 }
