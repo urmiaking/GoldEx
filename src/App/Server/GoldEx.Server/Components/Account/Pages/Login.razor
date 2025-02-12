@@ -3,60 +3,55 @@
 @inject SignInManager<AppUser> SignInManager
 @inject ILogger<Login> Logger
 @inject IdentityRedirectManager RedirectManager
-@layout BaseLayout
+@layout EmptyBoxLayout
 
 <PageTitle>ورود</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
-    <MudPaper Elevation="4" Class="p-4">
-        <MudStack AlignItems="AlignItems.Center">
-            <MudItem>
-                <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
-            </MudItem>
-            <MudItem>
-                <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">ورود به گلدکس</MudText>
-            </MudItem>
-        </MudStack>
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">ورود به گلدکس</MudText>
+    </MudItem>
+</MudStack>
 
-        <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-            <DataAnnotationsValidator />
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
-                                        Label="آدرس ایمیل" Placeholder="name@example.com"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
-                </MudItem>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                        Label="رمز عبور" InputType="InputType.Password" Placeholder="رمز عبور"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" } } )" />
-                </MudItem>
-                <MudItem xs="12" Class="m-0 p-0">
-                    <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
-                </MudItem>
-                @if (!string.IsNullOrEmpty(_errorMessage))
-                {
-                    <MudItem xs="12" Class="mb-0">
-                        <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
-                    </MudItem>
-                }
-                
-                <MudItem xs="12" Class="mt-0">
-                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-        <MudDivider Class="my-4" />
-        <ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
-
-        <MudGrid Class="mt-1">
-            <MudItem xs="12">
-                <MudLink Href="Account/ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
+<EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
+                                Label="آدرس ایمیل" Placeholder="name@example.com"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
+                                Label="رمز عبور" InputType="InputType.Password" Placeholder="رمز عبور"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" } } )" />
+        </MudItem>
+        <MudItem xs="12" Class="m-0 p-0">
+            <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
+        </MudItem>
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudItem xs="12" Class="mb-0">
+                <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
             </MudItem>
-        </MudGrid>
+        }
 
-    </MudPaper>
-</MudContainer>
+        <MudItem xs="12" Class="mt-0">
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+<MudDivider Class="my-4" />
+<ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
+
+<MudGrid Class="mt-1">
+    <MudItem xs="12">
+        <MudLink Href="Account/ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
+    </MudItem>
+</MudGrid>
 
 @code {
     private string? _errorMessage;

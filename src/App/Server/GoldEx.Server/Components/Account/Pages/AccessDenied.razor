@@ -1,28 +1,34 @@
 ﻿@attribute [Route(ClientRoutes.Accounts.AccessDenied)]
+@layout EmptyBoxLayout
 
 <PageTitle>عدم دسترسی</PageTitle>
 
-<div class="container d-flex flex-column flex-fill">
-    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
-        <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">عدم دسترسی</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudStack AlignItems="AlignItems.Center">
-                    <MudIcon Icon="@Icons.Material.Filled.Error" />
-                    <p>
-                        کاربر گرامی، با عرض پوزش، شما مجوز دسترسی به منابع مورد درخواست را ندارید.<br />
-                        جهت ادامه کار، میتوانید از صفحات زیر اقدام نمائید.<br />
-                    </p>
-                </MudStack>
-            </MudCardContent>
-            <MudCardActions>
-                <MudButton Href="@ClientRoutes.Home.Index" StartIcon="@Icons.Material.Filled.Home" Color="Color.Primary">صفحه اصلی</MudButton>
-                <MudButton Href="@ClientRoutes.Accounts.Login" StartIcon="@Icons.Material.Filled.Key" Color="Color.Primary">ورود به سامانه</MudButton>
-            </MudCardActions>   
-        </MudCard>
-    </MudStack>
-</div>
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">عدم دسترسی</MudText>
+    </MudItem>
+
+    <div class="container d-flex flex-column flex-fill">
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+            <MudCard>
+                <MudCardContent>
+                    <MudStack AlignItems="AlignItems.Start">
+                        <p>
+                            کاربر گرامی، با عرض پوزش، شما مجوز دسترسی به منابع مورد درخواست را ندارید.<br />
+                            جهت ادامه کار، میتوانید از صفحات زیر اقدام نمائید.<br />
+                        </p>
+                    </MudStack>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Href="@ClientRoutes.Home.Index" StartIcon="@Icons.Material.Filled.Home" Color="Color.Primary">صفحه اصلی</MudButton>
+                    <MudSpacer></MudSpacer>
+                    <MudButton Variant="Variant.Filled" Href="@ClientRoutes.Accounts.Login" StartIcon="@Icons.Material.Filled.Key" Color="Color.Primary">ورود به سامانه</MudButton>
+                </MudCardActions>   
+            </MudCard>
+        </MudStack>
+    </div>
+
+</MudStack>

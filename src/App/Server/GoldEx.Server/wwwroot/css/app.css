@@ -56,3 +56,7 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.min-vh-100 {
+    min-height: 100vh;
+}

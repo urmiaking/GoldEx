@@ -1,8 +1,23 @@
 ﻿@attribute [Route(ClientRoutes.Accounts.Lockout)]
+@layout EmptyBoxLayout
 
-<PageTitle>مسدود شدن</PageTitle>
+<PageTitle>حساب مسدود</PageTitle>
 
-<header>
-    <h1 class="text-danger">مسدود</h1>
-    <p class="text-danger" role="alert">حساب شما مسدود شده است لطفا بعدا مجددا امتحان کنید.</p>
-</header>
+
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h5" GutterBottom="true">حساب شما مسدود شده است</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.body1">حساب شما به دلیل تلاش های ناموفق مکرر برای ورود مسدود شده است</MudText>
+    </MudItem>
+    <MudItem>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="Color.Primary" Href="@ClientRoutes.Accounts.Login">ورود به سامانه</MudButton>
+    </MudItem>
+</MudStack>

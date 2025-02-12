@@ -27,9 +27,7 @@ public static class ClientRoutes
             public const string SetPassword = $"{ManagePrefix}/SetPassword";
             public const string TwoFactorAuthentication = $"{ManagePrefix}/TwoFactorAuthentication";
         }
-       
-
-
+        
         public const string Register = $"{AccountPrefix}/Register";
         public const string Login = $"{AccountPrefix}/Login";
         public const string Logout = $"{AccountPrefix}/Logout";

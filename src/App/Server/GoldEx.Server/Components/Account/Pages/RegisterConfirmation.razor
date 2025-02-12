@@ -1,29 +1,29 @@
 ﻿@attribute [Route(ClientRoutes.Accounts.RegisterConfirmation)]
 
-@inject UserManager<AppUser> UserManager
+@* @inject UserManager<AppUser> UserManager
 @inject IEmailSender<AppUser> EmailSender
 @inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager
+@inject IdentityRedirectManager RedirectManager *@
+@layout EmptyBoxLayout
 
 <PageTitle>تایید ثبت نام</PageTitle>
 
-<h1>تایید ثبت نام</h1>
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">تایید ثبت نام</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Typo="Typo.body1">لطفا ایمیل خود را جهت تایید ثبت نام چک کنید</MudText>
+    </MudItem>
+</MudStack>
 
-<StatusMessage Message="@_statusMessage" />
-
-@if (_emailConfirmationLink is not null)
-{
-    <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@_emailConfirmationLink">Click here to confirm your account</a>
-    </p>
-}
-else
-{
-    <p role="alert">لطفا برای تکمیل ثبت نام، ایمیل خود را چک کنید</p>
-}
-
-@code {
+@* @code {
     private string? _emailConfirmationLink;
     private string? _statusMessage;
 
@@ -56,8 +56,8 @@ else
             var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             _emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
-                NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+                NavigationManager.ToAbsoluteUri(ClientRoutes.Accounts.ConfirmEmail).AbsoluteUri,
                 new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
         }
     }
-}
+} *@

@@ -4,58 +4,54 @@
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWith2fa> Logger
-@layout BaseLayout
+@layout EmptyBoxLayout
 
 <PageTitle>احراز هویت دو مرحله ای</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
-    <MudPaper Elevation="4" Class="p-4">
-        <MudStack AlignItems="AlignItems.Center">
-            <MudItem>
-                <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
-            </MudItem>
-            <MudItem>
-                <MudText Align="Align.Center" Typo="Typo.h3">ورود به گلدکس</MudText>
-            </MudItem>
-            <MudItem>
-                <MudText Align="Align.Center" Typo="Typo.h6" GutterBottom="true">رمز دو مرحله ای</MudText>
-            </MudItem>
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3">ورود به گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h6" GutterBottom="true">رمز دو مرحله ای</MudText>
+    </MudItem>
 
-        </MudStack>
-        <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
+</MudStack>
+<EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <DataAnnotationsValidator />
 
-            <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
-            <input type="hidden" name="RememberMe" value="@RememberMe"/>
+    <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+    <input type="hidden" name="RememberMe" value="@RememberMe" />
 
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.TwoFactorCode)" @bind-Value="Input.TwoFactorCode"
-                                        Label="کد برنامه Authenticator"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "aria-required", "true" } } )" />
-                </MudItem>
-                <MudItem xs="12" Class="m-0 p-0 mt-2">
-                    <MudStaticCheckBox For="@(() => Input.RememberMachine)" @bind-Value="Input.RememberMachine">این دستگاه را به خاطر بسپار</MudStaticCheckBox>
-                </MudItem>
-            </MudGrid>
-            
-            <StatusMessage Message="@_message" Severity="Severity.Error" />
-            
-            <MudItem xs="12" Class="mt-2">
-                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
-            </MudItem>
-        </EditForm>
-        <MudDivider />
-        <MudGrid Class="mt-1">
-            <MudItem xs="12">
-                <p>
-                    به دستگاهی که برنامه Authenticator روی آن نصب است، دسترسی ندارید؟
-                     می توانید با <a class="mud-link mud-primary-text mud-link-underline-hover" href="@ClientRoutes.Accounts.LoginWithRecoveryCode.AppendQueryString(new { ReturnUrl })">کد بازیابی</a> وارد شوید.
-                </p>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
-</MudContainer>
+    <MudGrid>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.TwoFactorCode)" @bind-Value="Input.TwoFactorCode"
+                                Label="کد برنامه Authenticator"
+                                UserAttributes="@(new Dictionary<string, object?> { { "aria-required", "true" } } )" />
+        </MudItem>
+        <MudItem xs="12" Class="m-0 p-0 mt-2">
+            <MudStaticCheckBox For="@(() => Input.RememberMachine)" @bind-Value="Input.RememberMachine">این دستگاه را به خاطر بسپار</MudStaticCheckBox>
+        </MudItem>
+    </MudGrid>
+
+    <StatusMessage Message="@_message" Severity="Severity.Error" />
+
+    <MudItem xs="12" Class="mt-2">
+        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
+    </MudItem>
+</EditForm>
+<MudDivider />
+<MudGrid Class="mt-1">
+    <MudItem xs="12">
+        <p>
+            به دستگاهی که برنامه Authenticator روی آن نصب است، دسترسی ندارید؟
+            می توانید با <a class="mud-link mud-primary-text mud-link-underline-hover" href="@ClientRoutes.Accounts.LoginWithRecoveryCode.AppendQueryString(new { ReturnUrl })">کد بازیابی</a> وارد شوید.
+        </p>
+    </MudItem>
+</MudGrid>
 
 @code {
     private string? _message;
