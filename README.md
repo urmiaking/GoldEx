@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-blueviolet)](https://dotnet.microsoft.com/en-us/platform/get-started/get-9-sdk)
 [![Blazor Web App](https://img.shields.io/badge/Blazor-WebAssembly-brightgreen)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
-[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-orange)](https://blog.cleancoder.com/uncle-bob-the-clean-architecture/)
+![Domain-Driven Design](https://img.shields.io/badge/Domain--Driven--Design-DDD-blue)
 
 GoldEx is an invoicing and inventory management program designed specifically for jewelry stores. It empowers jewelers to efficiently track sales, manage inventory, generate reports, and streamline their overall business operations. Built with Blazor Web App in .NET 9 and adhering to Clean Architecture principles, GoldEx offers a modern, maintainable, and scalable solution.
 
@@ -27,6 +27,7 @@ GoldEx is an invoicing and inventory management program designed specifically fo
 GoldEx is in its early stages of development.  The following features are currently implemented:
 
 * **User Authentication:** Basic login and registration functionality is working. Users can create accounts and log in.
+* **Account Management:** Two factor authentication and Google authentication has been added
 
 ## Features (Planned)
 
