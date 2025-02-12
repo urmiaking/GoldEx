@@ -5,7 +5,7 @@
 [![Blazor Web App](https://img.shields.io/badge/Blazor-WebAssembly-brightgreen)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 ![Domain-Driven Design](https://img.shields.io/badge/Domain--Driven--Design-DDD-blue)
 
-GoldEx is an invoicing and inventory management program designed specifically for jewelry stores. It empowers jewelers to efficiently track sales, manage inventory, generate reports, and streamline their overall business operations. Built with Blazor Web App in .NET 9 and adhering to Clean Architecture principles, GoldEx offers a modern, maintainable, and scalable solution.
+GoldEx is an invoicing and inventory management program designed specifically for jewelry stores. It empowers jewelers to efficiently track sales, manage inventory, generate reports, and streamline their overall business operations. Built with Blazor Web App in .NET 9 and adhering to DDD Architecture principles, GoldEx offers a modern, maintainable, and scalable solution.
 
 **Note: This project is currently under active development.  Features and functionality are subject to change.**
 
@@ -44,10 +44,9 @@ The following features are planned for future releases:
 
 - **.NET 9:** The cross-platform framework for building modern applications.
 - **Blazor Web App:** A framework for building interactive web UIs with C#.
-- **Clean Architecture:** A software design principle that separates concerns and promotes maintainability.
-- **Entity Framework Core:** (Likely used for data access - confirm and update if different) An ORM for database interactions.
-- **(Database):**  Specify the database used (e.g., SQL Server, PostgreSQL, SQLite).
-- **(Other Libraries/Frameworks):** List any other significant libraries or frameworks used.
+- **DDD Architecture:** A software design principle that separates concerns and promotes maintainability.
+- **Entity Framework Core:** An ORM for database interactions.
+- **(Database):** SQL Server
 
 ## Getting Started
 
@@ -102,8 +101,8 @@ GoldEx/
 * **App:** This folder encapsulates the main application logic, split into Server (backend API) and Client (Blazor frontend).  The Shared project holds common resources.
     * **Server:** Contains projects related to the backend API.
         * **GoldEx.Server:** The main API project, likely containing controllers and services that handle requests.
-        * **GoldEx.Server.Application:** Implements the application logic, use cases, and business rules of the API.  This is where the Clean Architecture's "Application Layer" resides.
-        * **GoldEx.Server.Domain:** Defines the core domain entities, events, and interfaces. This is the "Domain Layer" in Clean Architecture.
+        * **GoldEx.Server.Application:** Implements the application logic, use cases, and business rules of the API.
+        * **GoldEx.Server.Domain:** Defines the core domain entities, events, and interfaces.
         * **GoldEx.Server.Infrastructure:** Provides implementations for interfaces defined in the Domain project.  This includes data access (e.g., using Entity Framework Core), logging, and other infrastructure concerns.  This is the "Infrastructure Layer."
     * **Client:** Contains the Blazor WebAssembly application.
         * **GoldEx.Client:** The main Blazor project, setting up the UI and handling user interactions.
