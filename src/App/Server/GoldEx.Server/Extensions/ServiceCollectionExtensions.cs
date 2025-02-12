@@ -10,11 +10,13 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Server.Api.Identity;
+using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using GoldEx.Shared.Settings;
 
 namespace GoldEx.Server.Extensions;
 
@@ -47,7 +49,7 @@ internal static class ServiceCollectionExtensions
         services.DiscoverServices();
         //services.AddSharedServices();
 
-        services.AddSingleton<IEmailSender<AppUser>, IdentityNoOpEmailSender>();
+        services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
 
         return services;
     }
@@ -77,6 +79,13 @@ internal static class ServiceCollectionExtensions
 
         return services;
     }
+    
+    internal static IServiceCollection AddSettings(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
+
+        return services;
+    }
 
     internal static IServiceCollection AddComponents(this IServiceCollection services)
     {
@@ -100,10 +109,10 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
         services.AddCascadingAuthenticationState();
 
-        var clientId = configuration["Authentication:Google:ClientId"];
-        var clientSecret = configuration["Authentication:Google:ClientSecret"];
+        var googleClientId = configuration["Authentication:Google:ClientId"];
+        var googleClientSecret = configuration["Authentication:Google:ClientSecret"];
 
-        var isGoogleAuthConfigured = !string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret);
+        var isGoogleAuthConfigured = !string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret);
 
         if (isGoogleAuthConfigured)
         {
@@ -123,8 +132,8 @@ internal static class ServiceCollectionExtensions
                     })
                 .AddGoogleOpenIdConnect(options =>
                 {
-                    options.ClientId = clientId;
-                    options.ClientSecret = clientSecret;
+                    options.ClientId = googleClientId;
+                    options.ClientSecret = googleClientSecret;
                 });
         }
         else

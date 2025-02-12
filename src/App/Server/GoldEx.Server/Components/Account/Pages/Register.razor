@@ -7,56 +7,53 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
-@layout BaseLayout
+@layout EmptyBoxLayout
 
 <PageTitle>ثبت نام</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
-    <MudPaper Elevation="4" Class="p-4">
-        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">ثبت نام</MudText>
 
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator />
+<MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">ثبت نام</MudText>
 
-            <MudText Typo="Typo.body1" GutterBottom="true">ساخت حساب جدید</MudText>
+<StatusMessage Message="@Message" />
+<EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+    <DataAnnotationsValidator />
 
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.Name)" @bind-Value="Input.Name"
-                                        Label="نام" Placeholder="نام و نام خانوادگی"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "name" }, { "aria-required", "true" } } )"></MudStaticTextField>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
-                                        Label="ایمیل" Placeholder="name@example.com"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } })"></MudStaticTextField>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
-                                        Label="شماره تلفن" Placeholder="09141234567"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "phone-number" } })"></MudStaticTextField>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                        Label="رمز عبور" InputType="InputType.Password" Placeholder="رمز عبور"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
-                                        Label="تکرار رمز عبور" InputType="InputType.Password" Placeholder="تکرار رمز عبور"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudStaticButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" FormAction="FormAction.Submit">ثبت نام</MudStaticButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-        <MudDivider Class="my-4" />
+    <MudText Typo="Typo.body1" GutterBottom="true">ساخت حساب جدید</MudText>
 
-        <ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Register" />
-    </MudPaper>
-</MudContainer>
+    <MudGrid>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.Name)" @bind-Value="Input.Name"
+                                Label="نام" Placeholder="نام و نام خانوادگی"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "name" }, { "aria-required", "true" } } )"></MudStaticTextField>
+        </MudItem>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
+                                Label="ایمیل" Placeholder="name@example.com"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } })"></MudStaticTextField>
+        </MudItem>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
+                                Label="شماره تلفن" Placeholder="09141234567"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "phone-number" } })"></MudStaticTextField>
+        </MudItem>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
+                                Label="رمز عبور" InputType="InputType.Password" Placeholder="رمز عبور"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } })" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
+                                Label="تکرار رمز عبور" InputType="InputType.Password" Placeholder="تکرار رمز عبور"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } })" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" FormAction="FormAction.Submit">ثبت نام</MudStaticButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+<MudDivider Class="my-4" />
+
+<ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Register" />
 
 @code {
     private IEnumerable<IdentityError>? _identityErrors;
@@ -98,7 +95,7 @@
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            NavigationManager.ToAbsoluteUri(ClientRoutes.Accounts.ConfirmEmail).AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
@@ -106,7 +103,7 @@
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {
             RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
+                ClientRoutes.Accounts.RegisterConfirmation,
                 new Dictionary<string, object?> { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
         }
 

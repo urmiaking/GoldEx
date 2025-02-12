@@ -13,15 +13,23 @@
 <StatusMessage Message="@_message" />
 @if (!_isEmailConfirmed)
 {
+    <MudAlert Severity="Severity.Warning" ContentAlignment="HorizontalAlignment.Start">
+        <p>
+            آدرس ایمیل شما تایید نشده است. برای تایید ایمیل خود، گزینه فعالسازی را انتخاب کنید
+        </p>
+        <p>
+            در صورت عدم تایید آدرس ایمیل، امکان بازیابی حساب خود را <strong>نخواهید داشت</strong>
+        </p>
+    </MudAlert>
     <MudText Typo="Typo.body1" GutterBottom="true">ارسال ایمیل فعالسازی</MudText>
-    <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
+    <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post" class="mb-2">
         <AntiforgeryToken />
         <MudGrid>
             <MudItem lg="6" md="12">
                 <MudStack Row AlignItems="AlignItems.Center">
                     <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل" Disabled="true" />
 
-                    <MudStaticButton Size="Size.Large" StartIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Filled" Color="Color.Primary" FormAction="FormAction.Submit">
+                    <MudStaticButton Size="Size.Large" StartIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Filled" Color="Color.Success" FormAction="FormAction.Submit">
                         فعالسازی
                     </MudStaticButton>
                 </MudStack>
@@ -29,7 +37,6 @@
         </MudGrid>
     </form>
 }
-<br />
 <MudText Typo="Typo.body1" GutterBottom="true">تغییر آدرس ایمیل ورود</MudText>
 <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
     <DataAnnotationsValidator />

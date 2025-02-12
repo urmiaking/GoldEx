@@ -3,12 +3,21 @@
 @inject UserManager<AppUser> UserManager
 @inject IEmailSender<AppUser> EmailSender
 @inject NavigationManager NavigationManager
+@layout EmptyBoxLayout
 
 <PageTitle>ارسال مجدد ایمیل فعالسازی</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">ارسال مجدد ایمیل فعالسازی</MudText>
-
-<MudText Typo="Typo.body1" GutterBottom="true">ایمیل خود را وارد کنید</MudText>
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">ارسال مجدد ایمیل فعالسازی</MudText>
+    </MudItem>
+</MudStack>
 
 <StatusMessage Message="@_message" />
 
@@ -18,7 +27,7 @@
     <MudGrid>
         <MudItem md="12">
             <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
-                                Label="ایمیل" Placeholder="name@example.com"
+                                Label="ایمیل" Variant="Variant.Outlined"
                                 UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
         </MudItem>
         <MudItem md="12">
@@ -46,7 +55,7 @@
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            NavigationManager.ToAbsoluteUri(ClientRoutes.Accounts.ConfirmEmail).AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
@@ -55,7 +64,7 @@
 
     private sealed class InputModel
     {
-        [Required]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [EmailAddress]
         public string Email { get; set; } = "";
     }

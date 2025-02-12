@@ -3,12 +3,27 @@
 @inject UserManager<AppUser> UserManager
 @inject SignInManager<AppUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
+@layout EmptyBoxLayout
 
 <PageTitle>تایید تغییر ایمیل</PageTitle>
 
-<h1>تایید تغییر ایمیل</h1>
-
-<StatusMessage Message="@_message" />
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h5" GutterBottom="true">تایید تغییر ایمیل</MudText>
+    </MudItem>
+    <MudItem>
+        <StatusMessage Message="@_message" />
+    </MudItem>
+    <MudItem>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="Color.Primary" Href="@ClientRoutes.Accounts.Login">ورود به سامانه</MudButton>
+    </MudItem>
+</MudStack>
 
 @code {
     private string? _message;
@@ -29,7 +44,6 @@
     {
         if (UserId is null || Email is null || Code is null)
         {
-            // TODO: need to be tested cause original url was Account/login
             RedirectManager.RedirectToWithStatus(
                 ClientRoutes.Accounts.Login, "خطا: لینک تأیید تغییر ایمیل معتبر نیست", HttpContext);
         }
@@ -59,6 +73,6 @@
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        _message = "از تأیید ایمیلتان متشکریم.";
+        _message = "ایمیل شما با موفقیت تغییر یافت!";
     }
 }

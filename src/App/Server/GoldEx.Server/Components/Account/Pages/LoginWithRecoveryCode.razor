@@ -4,50 +4,46 @@
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWithRecoveryCode> Logger
-@layout BaseLayout
+@layout EmptyBoxLayout
 
 <PageTitle>ورود با کد بازیابی</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto mt-5">
-    <MudPaper Elevation="4" Class="p-4">
-        <MudStack AlignItems="AlignItems.Center">
-            <MudItem>
-                <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
-            </MudItem>
-            <MudItem>
-                <MudText Align="Align.Center" Typo="Typo.h3">ورود به گلدکس</MudText>
-            </MudItem>
-            <MudItem>
-                <MudText Align="Align.Center" Typo="Typo.h6" GutterBottom="true">ورود با کد بازیابی</MudText>
-            </MudItem>
-        </MudStack>
-        <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudStaticTextField For="@(() => Input.RecoveryCode)" @bind-Value="Input.RecoveryCode"
-                                        Label="کد بازیابی" Class="my-2"
-                                        UserAttributes="@(new Dictionary<string, object?> { { "aria-required", "true" } } )" />
-                </MudItem>
-            </MudGrid>
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3">ورود به گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h6" GutterBottom="true">ورود با کد بازیابی</MudText>
+    </MudItem>
+</MudStack>
+<EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <DataAnnotationsValidator />
 
-            <StatusMessage Message="@_message" Severity="Severity.Error" />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.RecoveryCode)" @bind-Value="Input.RecoveryCode"
+                                Label="کد بازیابی" Class="my-2"
+                                UserAttributes="@(new Dictionary<string, object?> { { "aria-required", "true" } } )" />
+        </MudItem>
+    </MudGrid>
 
-            <MudItem xs="12" Class="mt-2">
-                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
-            </MudItem>
-        </EditForm>
-        <MudDivider />
-        <MudGrid Class="mt-1">
-            <MudItem xs="12">
-                <MudAlert Severity="Severity.Info">
-                    توجه: کدهای بازیابی یکبار مصرف بوده و پس از یک بار ورود موفقت آمیز، قابل مصرف نمی باشد.
-                </MudAlert>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
-</MudContainer>
+    <StatusMessage Message="@_message" Severity="Severity.Error" />
+
+    <MudItem xs="12" Class="mt-2">
+        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
+    </MudItem>
+</EditForm>
+<MudDivider />
+<MudGrid Class="mt-1">
+    <MudItem xs="12">
+        <MudAlert Severity="Severity.Info">
+            توجه: کدهای بازیابی یکبار مصرف بوده و پس از یک بار ورود موفقت آمیز، قابل مصرف نمی باشد.
+        </MudAlert>
+    </MudItem>
+</MudGrid>
 
 @code {
     private string? _message;

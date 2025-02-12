@@ -7,33 +7,44 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ExternalLogin> Logger
+@layout EmptyBoxLayout
 
 <PageTitle>ثبت نام</PageTitle>
 
-<StatusMessage Message="@_message" />
-<h1>ثبت نام</h1>
-<h2>حساب @ProviderDisplayName خود را متصل کنید</h2>
-<MudDivider />
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h5" GutterBottom="true">تکمیل ثبت نام</MudText>
+    </MudItem>
+    <MudItem>
+        <StatusMessage Message="@_message" />
+    </MudItem>
+    <MudItem>
+        <MudAlert Severity="Severity.Info">
+            شما با موفقیت وارد حساب <strong>@ProviderDisplayName</strong> خود شدید.
+            لطفاً در کادر زیر ایمیل خود را برای ورود به گلدکس وارد کنید و برای تکمیل فرایند، روی دکمه ثبت نام کلیک کنید.
+        </MudAlert>
+    </MudItem>
+</MudStack>
+<EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
+    <DataAnnotationsValidator />
 
-<div class="alert alert-info">
-    شما با موفقیت وارد حساب <strong>@ProviderDisplayName</strong> خود شدید.
-    لطفاً در زیر ایمیل خود را برای این سایت وارد کنید و برای تکمیل ورود، روی دکمه ثبت نام کلیک کنید.
-</div>
-
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="email" placeholder="لطفا ایمیل خو را وارد کنید" />
-                <label for="Input.Email" class="form-label">آدرس ایمیل</label>
-                <ValidationMessage For="() => Input.Email" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">ثبت نام</button>
-        </EditForm>
-    </div>
-</div>
+    <MudGrid Class="mt-2 mb-2">
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email" Variant="Variant.Outlined"
+                                Label="آدرس ایمیل" FullWidth="true"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
+        </MudItem>
+    </MudGrid>
+    <MudItem xs="12" Class="mt-0">
+        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">تکمیل ثبت نام</MudStaticButton>
+    </MudItem>
+</EditForm>
 
 @code {
     public const string LoginCallbackAction = "LoginCallback";
@@ -176,7 +187,7 @@
 
     private sealed class InputModel
     {
-        [Required]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         [EmailAddress]
         public string Email { get; set; } = "";
     }

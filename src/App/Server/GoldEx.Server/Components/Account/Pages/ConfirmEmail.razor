@@ -1,12 +1,27 @@
 ﻿@attribute [Route(ClientRoutes.Accounts.ConfirmEmail)]
-
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
+@layout EmptyBoxLayout
 
 <PageTitle>تایید ایمیل</PageTitle>
 
-<h1>تایید ایمیل</h1>
-<StatusMessage Message="@_statusMessage" />
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h5" GutterBottom="true">تایید ایمیل</MudText>
+    </MudItem>
+    <MudItem>
+        <StatusMessage Message="@_statusMessage" />
+    </MudItem>
+    <MudItem>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="Color.Primary" Href="@ClientRoutes.Accounts.Login">ورود به سامانه</MudButton>
+    </MudItem>
+</MudStack>
 
 @code {
     private string? _statusMessage;
@@ -37,7 +52,7 @@
         {
             var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
             var result = await UserManager.ConfirmEmailAsync(user, code);
-            _statusMessage = result.Succeeded ? "از تأیید ایمیلتان متشکریم" : "خطا در تایید آدرس ایمیل";
+            _statusMessage = result.Succeeded ? "حساب کاربری شما با موفقیت تایید شد." : "لینک تایید ایمیل منقضی شده است لطفا مجددا امتحان کنید.";
         }
     }
 }
