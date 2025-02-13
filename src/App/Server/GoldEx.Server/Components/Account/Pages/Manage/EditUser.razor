@@ -1,0 +1,290 @@
+﻿@attribute [Authorize(Roles = BuiltinRoles.Administrators)]
+@attribute [Route(ClientRoutes.Accounts.Manage.EditUser)]
+
+@inject UserManager<AppUser> UserManager
+
+<PageTitle>ویرایش کاربر</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">ویرایش کاربر</MudText>
+<hr />
+
+<StatusMessage Message="@_message" />
+
+<MudText Typo="Typo.body1" GutterBottom="true">ویرایش مشخصات فردی</MudText>
+
+<EditForm Model="ProfileInput" FormName="profile" OnValidSubmit="OnProfileValidSubmitAsync" method="post">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" Value="@_username" Label="ایمیل" Disabled="true" />
+        </MudItem>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => ProfileInput.Name)" @bind-Value="ProfileInput.Name"
+                                Label="نام و نام خانوادگی" />
+        </MudItem>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => ProfileInput.PhoneNumber)" @bind-Value="ProfileInput.PhoneNumber"
+                                Label="شماره تلفن" UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "tel-national" } })" />
+        </MudItem>
+        <MudItem xs="12" Class="d-flex justify-content-lg-end">
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
+                             FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Save">ذخیره</MudStaticButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@if (_hasPassword)
+{
+    <MudText Class="mt-4" Typo="Typo.body1" GutterBottom="true">تغییر رمز عبور حساب داخلی</MudText>
+
+    <EditForm Model="ChangePasswordInput" FormName="change-password" OnValidSubmit="OnPasswordChangeValidSubmitAsync" method="post">
+        <DataAnnotationsValidator />
+
+        <MudGrid>
+            <MudItem lg="6" md="12">
+                <MudStaticTextField For="@(() => ChangePasswordInput.NewPassword)" @bind-Value="ChangePasswordInput.NewPassword" InputType="InputType.Password" Variant="Variant.Outlined"
+                                    Label="رمز عبور جدید"
+                                    UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+            </MudItem>
+            <MudItem lg="6" md="12">
+                <MudStaticTextField For="@(() => ChangePasswordInput.ConfirmPassword)" @bind-Value="ChangePasswordInput.ConfirmPassword" InputType="InputType.Password" Variant="Variant.Outlined"
+                                    Label="تکرار رمز عبور جدید"
+                                    UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+            </MudItem>
+            <MudItem xs="12" Class="d-flex justify-content-lg-end">
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
+                                 FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Save">ذخیره</MudStaticButton>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+}
+else
+{
+    <MudText Class="mt-4" Typo="Typo.body1" GutterBottom="true">تعریف رمز عبور برای حساب داخلی</MudText>
+
+    <EditForm Model="SetPasswordInput" FormName="set-password" OnValidSubmit="OnSetPasswordValidSubmitAsync" method="post">
+        <DataAnnotationsValidator />
+
+        <MudGrid>
+            <MudItem lg="6" md="12">
+                <MudStaticTextField For="@(() => SetPasswordInput.NewPassword)" @bind-Value="SetPasswordInput.NewPassword" InputType="InputType.Password"
+                                    Label="رمز عبور جدید" Variant="Variant.Outlined"
+                                    UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+            </MudItem>
+            <MudItem lg="6" md="12">
+                <MudStaticTextField For="@(() => SetPasswordInput.ConfirmPassword)" @bind-Value="SetPasswordInput.ConfirmPassword" InputType="InputType.Password"
+                                    Label="تکرار رمز عبور جدید" Variant="Variant.Outlined"
+                                    UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+            </MudItem>
+            <MudItem xs="12" Class="d-flex justify-content-lg-end">
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
+                                 FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Save">ذخیره</MudStaticButton>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+}
+
+@if (!_isEmailConfirmed)
+{
+    <MudText Class="mt-4" Typo="Typo.body1" GutterBottom="true">فعالسازی ایمیل</MudText>
+    <form @onsubmit="OnVerifyEmailAsync" @formname="verify-email" id="verify-email-form" method="post" class="mb-2">
+        <AntiforgeryToken />
+        <MudGrid>
+            <MudItem lg="6" md="12">
+                <MudStack Row AlignItems="AlignItems.Center">
+                    <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل" Disabled="true" />
+
+                    <MudStaticButton Size="Size.Medium" StartIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Filled" Color="Color.Success" FormAction="FormAction.Submit">
+                        فعالسازی
+                    </MudStaticButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </form>
+}
+<MudText Typo="Typo.body1" GutterBottom="true">تغییر نام کاربری حساب داخلی</MudText>
+<EditForm Model="ChangeEmailInput" FormName="change-email" OnValidSubmit="OnChangeEmailValidSubmitAsync" method="post">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل فعلی" Disabled="true" />
+        </MudItem>
+
+        <MudItem lg="8" md="12">
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudStaticTextField @bind-Value="@ChangeEmailInput.NewEmail" For="@(() => ChangeEmailInput.NewEmail)"
+                                    UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "email" }, { "aria-required", "true" } } )"
+                                    Label="ایمیل جدید" Variant="Variant.Outlined" />
+
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
+                                 FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Autorenew">ذخیره</MudStaticButton>
+            </MudStack>
+        </MudItem>
+
+    </MudGrid>
+</EditForm>
+
+@code
+{
+    private string? _message;
+    private AppUser _user = default!;
+    private string? _username;
+    private string? _phoneNumber;
+    private string? _name;
+    private string? _email;
+    private bool _isEmailConfirmed;
+    private bool _hasPassword;
+
+    [Parameter] public Guid Id { get; set; }
+
+    [SupplyParameterFromForm(FormName = "profile")]
+    private ProfileInputModel ProfileInput { get; set; } = new();
+
+    [SupplyParameterFromForm(FormName = "change-password")]
+    private ChangePasswordInputModel ChangePasswordInput { get; set; } = new();
+
+    [SupplyParameterFromForm(FormName = "set-password")]
+    private SetPasswordInputModel SetPasswordInput { get; set; } = new();
+
+    [SupplyParameterFromForm(FormName = "change-email")]
+    private ChangeEmailInputModel ChangeEmailInput { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = await UserManager.Users.FirstOrDefaultAsync(x => x.Id == Id) ?? throw new NotFoundException();
+        _username = await UserManager.GetUserNameAsync(_user);
+        _phoneNumber = await UserManager.GetPhoneNumberAsync(_user);
+        _hasPassword = await UserManager.HasPasswordAsync(_user);
+        _email = await UserManager.GetEmailAsync(_user);
+        _isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(_user);
+        _name = _user.Name;
+
+        ProfileInput.PhoneNumber ??= _phoneNumber;
+        ProfileInput.Name ??= _name;
+        ChangeEmailInput.NewEmail ??= _email;
+    }
+
+    private async Task OnProfileValidSubmitAsync()
+    {
+        if (ProfileInput.PhoneNumber != _phoneNumber)
+        {
+            var setPhoneResult = await UserManager.SetPhoneNumberAsync(_user, ProfileInput.PhoneNumber);
+            if (!setPhoneResult.Succeeded)
+            {
+                _message = "خطا: ثبتِ شماره تلفن کاربر با خطا مواجه شد";
+            }
+        }
+
+        if (ProfileInput.Name != _name && !string.IsNullOrEmpty(ProfileInput.Name))
+        {
+            var setNameResult = await UserManager.SetFullNameAsync(_user, ProfileInput.Name);
+            if (!setNameResult.Succeeded)
+            {
+                _message = "خطا: ثبتِ نام کاربر با خطا مواجه شد";
+            }
+        }
+
+        _message = "مشخصات کاربر با موفقیت ویرایش شد";
+    }
+
+    private async Task OnPasswordChangeValidSubmitAsync()
+    {
+        var resetPasswordToken = await UserManager.GeneratePasswordResetTokenAsync(_user);
+
+        var resetPasswordResult = await UserManager.ResetPasswordAsync(_user, resetPasswordToken, ChangePasswordInput.NewPassword);
+        if (!resetPasswordResult.Succeeded)
+        {
+            _message = $"Error: {string.Join(",", resetPasswordResult.Errors.Select(error => error.Description))}";
+            return;
+        }
+
+        _message = "رمز عبور کاربر با موفقیت تغییر یافت";
+    }
+
+    private async Task OnSetPasswordValidSubmitAsync()
+    {
+        var addPasswordResult = await UserManager.AddPasswordAsync(_user, SetPasswordInput.NewPassword!);
+        if (!addPasswordResult.Succeeded)
+        {
+            _message = $"Error: {string.Join(",", addPasswordResult.Errors.Select(error => error.Description))}";
+            return;
+        }
+
+        _message = "رمز عبور کاربر با موفقیت تنظیم شد";
+    }
+
+    private async Task OnChangeEmailValidSubmitAsync()
+    {
+        if (ChangeEmailInput.NewEmail is null || ChangeEmailInput.NewEmail == _email)
+        {
+            _message = "آدرس ایمیل کاربر تغییر نکرده است";
+            return;
+        }
+
+        var token = await UserManager.GenerateChangeEmailTokenAsync(_user, ChangeEmailInput.NewEmail);
+
+        await UserManager.ChangeEmailAsync(_user, ChangeEmailInput.NewEmail, token);
+
+        _message = "ایمیل کاربر با موفقیت تغییر یافت";
+    }
+
+    private async Task OnVerifyEmailAsync()
+    {
+        if (_email is null)
+            return;
+        
+        var token = await UserManager.GenerateEmailConfirmationTokenAsync(_user);
+
+        await UserManager.ConfirmEmailAsync(_user, token);
+        
+        _message = "ایمیل کاربر با موفقیت فعالسازی شد";
+    }
+
+    private sealed class ProfileInputModel
+    {
+        [Phone(ErrorMessage = "فرمت {0} صحیح نمی باشد")]
+        [Display(Name = "شماره تلفن")]
+        public string? PhoneNumber { get; set; }
+
+        [Display(Name = "نام و نام خانوادگی کاربر")]
+        public string? Name { get; set; }
+    }
+
+    private sealed class ChangePasswordInputModel
+    {
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [StringLength(100, ErrorMessage = "اندازه {0} حداقل باید {2} و حداکثر {1} حرف باشد", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "رمز جدید")]
+        public string NewPassword { get; set; } = "";
+
+        [DataType(DataType.Password)]
+        [Display(Name = "تکرار رمز جدید")]
+        [Compare(nameof(NewPassword), ErrorMessage = "رمز عبور و رمز عبور جدید مطابقت ندارند")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+
+    private sealed class SetPasswordInputModel
+    {
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [StringLength(100, ErrorMessage = "طول {0} حداقل باید {2} و حداکثر {1} حرف باشد", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "رمز عبور جدید")]
+        public string? NewPassword { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "تکرار رمز عبور جدید")]
+        [Compare(nameof(NewPassword), ErrorMessage = "رمز عبور و رمز عبور جدید مطابقت ندارند")]
+        public string? ConfirmPassword { get; set; }
+    }
+
+    private sealed class ChangeEmailInputModel
+    {
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [EmailAddress(ErrorMessage = "فرمت {0} صحیح نمی باشد")]
+        [Display(Name = "ایمیل جدید")]
+        public string? NewEmail { get; set; }
+    }
+}
