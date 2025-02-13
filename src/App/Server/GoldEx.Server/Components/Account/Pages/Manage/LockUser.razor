@@ -1,0 +1,49 @@
+﻿@attribute [Authorize(Roles = BuiltinRoles.Administrators)]
+@attribute [Route(ClientRoutes.Accounts.Manage.LockUser)]
+
+@inject UserManager<AppUser> UserManager
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<PageTitle>قفل کردن حساب کاربری</PageTitle>
+
+
+<MudText Typo="Typo.h6" GutterBottom="true">قفل حساب کاربری</MudText>
+<hr />
+
+<MudText Typo="Typo.body1" GutterBottom="true">آیا از قفل کردن حساب کاربری @_user?.Email اطمینان دارید؟</MudText>
+
+<MudStack Spacing="2" Row Justify="Justify.FlexStart" Class="mt-4">
+    <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => OnLockUser())">بله</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Success" Href="@ClientRoutes.Accounts.Manage.UserList">خیر</MudButton>
+</MudStack>
+
+@code
+{
+    private AppUser? _user;
+
+    [Parameter] public Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = await UserManager.Users.FirstOrDefaultAsync(x => x.Id == Id);
+
+        if (_user == null)
+        {
+            NavigationManager.NavigateTo(ClientRoutes.Accounts.Manage.UserList);
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnLockUser()
+    {
+        if (_user != null)
+        {
+            await UserManager.SetLockoutEndDateAsync(_user, DateTimeOffset.MaxValue);
+
+            NavigationManager.NavigateTo(ClientRoutes.Accounts.Manage.UserList);
+        }
+    }
+}

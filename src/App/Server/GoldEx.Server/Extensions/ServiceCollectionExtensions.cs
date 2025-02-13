@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Reflection;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
-using GoldEx.Server.Components.Account;
 using GoldEx.Server.Infrastructure;
 using Mapster;
 using MapsterMapper;
@@ -15,7 +14,6 @@ using GoldEx.Server.Services;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using GoldEx.Shared.Settings;
 
 namespace GoldEx.Server.Extensions;

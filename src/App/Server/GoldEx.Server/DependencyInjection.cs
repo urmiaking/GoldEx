@@ -3,7 +3,6 @@ using GoldEx.Client.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Client.Components.Services;
 using GoldEx.Shared.Abstractions;
-using GoldEx.Shared.Settings;
 
 namespace GoldEx.Server;
 

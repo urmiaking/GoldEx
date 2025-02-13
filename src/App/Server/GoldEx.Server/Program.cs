@@ -107,6 +107,7 @@ void SetupPipeline()
     app.MapControllers();
     app.MapRazorComponents<App>()
         .AddInteractiveWebAssemblyRenderMode()
+        .AddInteractiveServerRenderMode()
         .AddAdditionalAssemblies(additionalAssemblies);
 
     app.MapAdditionalIdentityEndpoints();

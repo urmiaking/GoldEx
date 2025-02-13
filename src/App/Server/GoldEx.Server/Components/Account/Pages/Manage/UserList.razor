@@ -1,0 +1,71 @@
+﻿@attribute [Route(ClientRoutes.Accounts.Manage.UserList)]
+@attribute [Authorize(Roles = BuiltinRoles.Administrators)]
+
+@inject UserManager<AppUser> UserManager
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<PageTitle>لیست کاربران</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">لیست کاربران سایت</MudText>
+
+<hr />
+
+<MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
+    <thead>
+        <tr>
+            <th>ایمیل</th>
+            <th>نام کاربر</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var user in _users)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.Name</td>
+                <td>
+                    <MudIconButton Size="Size.Small" Href="@ClientRoutes.Accounts.Manage.EditUser.FormatRoute(new { id = user.Id})"
+                                   Color="Color.Primary" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+                    @if (user.LockoutEnd > DateTime.Now)
+                    {
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.LockOpen" Color="Color.Success"
+                                       OnClick="@(() => UnlockUser(user))"></MudIconButton>
+                    }
+                    else
+                    {
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Lock" Color="Color.Error"
+                                       OnClick="@(() => LockUser(user.Id))"></MudIconButton>
+                    }
+                </td>
+            </tr>
+        }
+
+
+    </tbody>
+</MudSimpleTable>
+
+@code
+{
+    private List<AppUser> _users = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _users = await UserManager.Users.ToListAsync();
+        
+        await base.OnInitializedAsync();
+    }
+
+    private async Task UnlockUser(AppUser user)
+    {
+        await UserManager.SetLockoutEndDateAsync(user, null);
+    }
+
+    private void LockUser(Guid id)
+    {
+        NavigationManager.NavigateTo(ClientRoutes.Accounts.Manage.LockUser.FormatRoute(new { id }));
+    }
+}
