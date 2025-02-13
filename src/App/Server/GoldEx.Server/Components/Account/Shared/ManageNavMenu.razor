@@ -1,4 +1,6 @@
-﻿@inject SignInManager<AppUser> SignInManager
+﻿@using GoldEx.Sdk.Common
+
+@inject SignInManager<AppUser> SignInManager
 
 <MudNavMenu>
     <MudNavLink Href="@ClientRoutes.Accounts.Manage.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">پروفایل</MudNavLink>
@@ -9,13 +11,24 @@
         <MudNavLink Href="@ClientRoutes.Accounts.Manage.ExternalLogins" Icon="@Icons.Material.Filled.PhoneLocked">احراز هویت خارجی</MudNavLink>
     }
     <MudNavLink Href="@ClientRoutes.Accounts.Manage.TwoFactorAuthentication" Icon="@Icons.Material.Filled.LockClock">احراز هویت دو مرحله ای</MudNavLink>
+    @if (_isAdmin)
+    {
+        <MudNavLink Href="@ClientRoutes.Accounts.Manage.UserList" Icon="@Icons.Material.Filled.SupervisorAccount">لیست کاربران</MudNavLink>
+    }
 </MudNavMenu>
 
-@code {
+@code 
+{
     private bool _hasExternalLogins;
+    private bool _isAdmin;
+    private AppUser _user = default!;
+
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        _isAdmin = HttpContext.User.IsInRole(BuiltinRoles.Administrators);
+
         _hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
     }
 }
