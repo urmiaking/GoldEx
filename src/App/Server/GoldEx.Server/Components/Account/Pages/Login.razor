@@ -40,19 +40,20 @@
         }
 
         <MudItem xs="12" Class="mt-0">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Login">ورود به سامانه</MudStaticButton>
         </MudItem>
     </MudGrid>
 </EditForm>
-<MudGrid Class="mt-2">
-    <MudItem xs="12">
+<MudGrid Class="mt-1">
+    <MudItem xs="6">
         <MudButton StartIcon="@Icons.Material.Filled.Phone" Variant="Variant.Filled" FullWidth="true" Color="Color.Primary" Href="@ClientRoutes.Accounts.LoginWithPhoneNumber">ورود با شماره تلفن</MudButton>
     </MudItem>
+    <MudItem xs="6">
+        <ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
+    </MudItem>
 </MudGrid>
-<MudDivider Class="my-4" />
-<ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
 
-<MudGrid Class="mt-1">
+<MudGrid>
     <MudItem xs="12">
         <MudLink Href="@ClientRoutes.Accounts.ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
     </MudItem>
