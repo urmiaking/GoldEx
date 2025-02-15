@@ -33,7 +33,8 @@ public static class ClientRoutes
         
         public const string Register = $"{AccountPrefix}/Register";
         public const string Login = $"{AccountPrefix}/Login";
-        public const string Logout = $"{AccountPrefix}/Logout";
+        public const string LoginWithPhoneNumber = $"{AccountPrefix}/LoginWithPhoneNumber";
+        public const string VerifyPhoneNumber = $"{AccountPrefix}/VerifyPhoneNumber";
         public const string ForgotPassword = $"{AccountPrefix}/ForgotPassword";
         public const string ForgotPasswordConfirmation = $"{AccountPrefix}/ForgotPasswordConfirmation";
         public const string ConfirmEmail = $"{AccountPrefix}/ConfirmEmail";

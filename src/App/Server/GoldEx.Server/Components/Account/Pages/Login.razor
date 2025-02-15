@@ -44,12 +44,17 @@
         </MudItem>
     </MudGrid>
 </EditForm>
+<MudGrid Class="mt-2">
+    <MudItem xs="12">
+        <MudButton StartIcon="@Icons.Material.Filled.Phone" Variant="Variant.Filled" FullWidth="true" Color="Color.Primary" Href="@ClientRoutes.Accounts.LoginWithPhoneNumber">ورود با شماره تلفن</MudButton>
+    </MudItem>
+</MudGrid>
 <MudDivider Class="my-4" />
 <ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
 
 <MudGrid Class="mt-1">
     <MudItem xs="12">
-        <MudLink Href="Account/ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
+        <MudLink Href="@ClientRoutes.Accounts.ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
     </MudItem>
 </MudGrid>
 
@@ -74,7 +79,7 @@
         }
     }
 
-    public async Task LoginUser()
+    private async Task LoginUser()
     {
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
         if (result.Succeeded)
