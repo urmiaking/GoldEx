@@ -32,7 +32,7 @@ public static class ClientRoutes
             public const string NewUser = $"{ManagePrefix}/NewUser";
         }
         
-        public const string Register = $"{AccountPrefix}/Register";
+        //public const string Register = $"{AccountPrefix}/Register";
         public const string Login = $"{AccountPrefix}/Login";
         public const string LoginWithPhoneNumber = $"{AccountPrefix}/LoginWithPhoneNumber";
         public const string VerifyPhoneNumber = $"{AccountPrefix}/VerifyPhoneNumber";
