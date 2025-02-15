@@ -1,0 +1,111 @@
+﻿@using Microsoft.Extensions.Caching.Memory
+@attribute [Route(ClientRoutes.Accounts.LoginWithPhoneNumber)]
+
+@inject UserManager<AppUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject IMemoryCache MemoryCache
+@inject ILogger<LoginWithPhoneNumber> Logger
+@inject ISmsSender SmsSender
+@layout EmptyBoxLayout
+
+<PageTitle>ورود با شماره تلفن</PageTitle>
+
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3">ورود به گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h6" GutterBottom="true">ورود با شماره تلفن</MudText>
+    </MudItem>
+</MudStack>
+
+<EditForm Model="Input" method="post" OnValidSubmit="OnValidLoginSubmit" FormName="login-phoneNumber">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
+                                Label="شماره تلفن" Placeholder="09123456789"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "tel" }, { "aria-required", "true" } } )" />
+        </MudItem>
+        <MudItem xs="12" Class="m-0 p-0">
+            <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
+        </MudItem>
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudItem xs="12" Class="mb-0">
+                <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
+            </MudItem>
+        }
+
+        <MudItem xs="12" Class="mt-0">
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">ورود</MudStaticButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+<MudGrid Class="mt-1">
+    <MudItem xs="12">
+        <MudLink Href="@ClientRoutes.Accounts.Login">ورود با نام کاربری و رمز عبور</MudLink><br />
+    </MudItem>
+</MudGrid>
+
+@code {
+    private string? _errorMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+    }
+
+    private async Task OnValidLoginSubmit()
+    {
+        var user = await UserManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == Input.PhoneNumber);
+
+        if (user is null)
+        {
+            _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
+            return;
+        }
+
+        var code = IntExtensions.GenerateRandomNumber();
+
+        MemoryCache.Set(user.Id, code, TimeSpan.FromMinutes(5));
+
+        var smsSent = await SmsSender.SendAsync(Input.PhoneNumber, $"کد ورود: {code}");
+
+        if (smsSent)
+        {
+            RedirectManager.RedirectTo(ClientRoutes.Accounts.VerifyPhoneNumber,
+                 new Dictionary<string, object?> { ["phoneNumber"] = Input.PhoneNumber, ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        }
+        else
+        {
+            _errorMessage = "خطا: ارسال پیامک با خطا مواجه شد";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [Phone]
+        public string PhoneNumber { get; set; } = "";
+
+        [Display(Name = "مرا بخاطر بسپار")]
+        public bool RememberMe { get; set; }
+    }
+}

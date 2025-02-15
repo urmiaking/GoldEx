@@ -1,0 +1,111 @@
+﻿@attribute [Route(ClientRoutes.Accounts.VerifyPhoneNumber)]
+
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<VerifyPhoneNumber> Logger
+@inject IMemoryCache MemoryCache
+@inject ISmsSender SmsSender
+@layout EmptyBoxLayout
+
+<PageTitle>تایید شماره تلفن</PageTitle>
+
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem>
+        <MudImage Src="/assets/logo/logo512.png" Alt="Logo" Height="50" />
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">گلدکس</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Align="Align.Center" Typo="Typo.h5" GutterBottom="true">تایید شماره تلفن</MudText>
+    </MudItem>
+    <MudItem>
+        <MudText Typo="Typo.body1" GutterBottom="true">کد تایید به شماره تلفن شما ارسال شد. لطفا آن را وارد کنید.</MudText>
+    </MudItem>
+</MudStack>
+
+<EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" method="post" FormName="verify-phoneNumber">
+    <DataAnnotationsValidator />
+    
+    <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+    <input type="hidden" name="RememberMe" value="@RememberMe" />
+
+    <MudItem xs="12" Class="mb-4">
+        <MudStaticTextField For="@(() => Input.Code)" @bind-Value="Input.Code"
+                            Label="کد تایید"
+                            UserAttributes="@(new Dictionary<string, object?> { { "aria-required", "true" } } )" />
+    </MudItem>
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudItem xs="12" Class="mb-0">
+            <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
+        </MudItem>
+    }
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Login" FullWidth="true"
+                   Color="Color.Primary" ButtonType="ButtonType.Submit">تایید</MudButton>
+    </MudItem>
+</EditForm>
+
+@code
+{
+    private string? _errorMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "phoneNumber")]
+    private string? PhoneNumber { get; set; }
+
+    [SupplyParameterFromQuery(Name = "rememberMe")]
+    private bool RememberMe { get; set; }
+
+    private async Task OnValidSubmitAsync()
+    {
+        var user = await UserManager.Users.FirstOrDefaultAsync(x => x.PhoneNumber == PhoneNumber);
+
+        if (user is null)
+        {
+            RedirectManager.RedirectTo(ClientRoutes.Accounts.LoginWithPhoneNumber);
+        }
+
+        var code = MemoryCache.Get(user.Id);
+
+        var token = code?.ToString();
+
+        if (string.IsNullOrEmpty(token))
+        {
+            _errorMessage = "کد تایید وارد شده صحیح نمی‌باشد";
+        }
+
+        var isValidToken = Input.Code == token;
+
+        if (!isValidToken)
+        {
+            _errorMessage = "کد تایید وارد شده صحیح نمی‌باشد";
+            return;
+        }
+
+        user.PhoneNumberConfirmed = true;
+        await UserManager.UpdateAsync(user);
+
+        await SignInManager.SignInAsync(user, RememberMe);
+
+        RedirectManager.RedirectTo(ReturnUrl);
+
+    }
+
+    public class InputModel
+    {
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [Display(Name = "کد تایید")]
+        public string Code { get; set; } = string.Empty;
+    }
+}

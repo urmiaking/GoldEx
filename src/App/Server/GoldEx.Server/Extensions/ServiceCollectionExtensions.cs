@@ -81,6 +81,7 @@ internal static class ServiceCollectionExtensions
     internal static IServiceCollection AddSettings(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
+        services.Configure<SmsSettings>(configuration.GetSection(nameof(SmsSettings)));
 
         return services;
     }
@@ -186,13 +187,13 @@ internal static class ServiceCollectionExtensions
             options.Password.RequiredUniqueChars = 1;
 
             // Lockout settings.
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.AllowedForNewUsers = true;
 
             // User settings.
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            options.User.RequireUniqueEmail = false;
+            options.User.RequireUniqueEmail = true;
         });
         services.ConfigureOptions<ConfigureSecurityStampOptions>();
 
