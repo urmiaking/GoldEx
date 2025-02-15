@@ -16,7 +16,6 @@
             <MudNavLink Href="@ApiUrls.Account.Logout(_currentUrl)" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">خروج</MudNavLink>
         </Authorized>
         <NotAuthorized>
-            <MudNavLink Href="Account/Register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Register</MudNavLink>
             <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Login</MudNavLink>
         </NotAuthorized>
     </AuthorizeView>

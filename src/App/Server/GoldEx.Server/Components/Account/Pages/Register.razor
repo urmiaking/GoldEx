@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Accounts.Register)]
+﻿@* @attribute [Route(ClientRoutes.Accounts.Register)]
 
 @inject UserManager<AppUser> UserManager
 @inject IUserStore<AppUser> UserStore
@@ -160,3 +160,4 @@
         public string ConfirmPassword { get; set; } = "";
     }
 }
+ *@

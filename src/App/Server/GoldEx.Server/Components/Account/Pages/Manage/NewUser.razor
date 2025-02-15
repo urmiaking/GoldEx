@@ -87,6 +87,8 @@
             await UserManager.ConfirmEmailAsync(user, code);
         }
 
+        await UserManager.AddToRoleAsync(user, BuiltinRoles.Owners);
+
         RedirectManager.RedirectTo(ClientRoutes.Accounts.Manage.UserList);
     }
 

@@ -125,11 +125,13 @@
             RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
         }
 
-        // If the user does not have an account, then ask the user to create an account.
-        if (_externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-        {
-            Input.Email = _externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
-        }
+        // If the user does not have an account, then bye bye!
+        RedirectManager.RedirectToWithStatus(ClientRoutes.Accounts.Login, "حساب خارجی شما در سامانه ثبت نشده است", HttpContext);
+
+        // if (_externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+        // {
+        //     Input.Email = _externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
+        // }
     }
 
     private async Task OnValidSubmitAsync()
