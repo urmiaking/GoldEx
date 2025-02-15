@@ -29,6 +29,7 @@ public static class ClientRoutes
             public const string UserList = $"{ManagePrefix}/UserList";
             public const string EditUser = $"{ManagePrefix}/EditUser/{{id:guid}}";
             public const string LockUser = $"{ManagePrefix}/LockUser/{{id:guid}}";
+            public const string NewUser = $"{ManagePrefix}/NewUser";
         }
         
         public const string Register = $"{AccountPrefix}/Register";

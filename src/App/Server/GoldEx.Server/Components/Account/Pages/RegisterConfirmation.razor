@@ -1,9 +1,5 @@
 ﻿@attribute [Route(ClientRoutes.Accounts.RegisterConfirmation)]
 
-@* @inject UserManager<AppUser> UserManager
-@inject IEmailSender<AppUser> EmailSender
-@inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager *@
 @layout EmptyBoxLayout
 
 <PageTitle>تایید ثبت نام</PageTitle>
@@ -22,42 +18,3 @@
         <MudText Typo="Typo.body1">لطفا ایمیل خود را جهت تایید ثبت نام چک کنید</MudText>
     </MudItem>
 </MudStack>
-
-@* @code {
-    private string? _emailConfirmationLink;
-    private string? _statusMessage;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromQuery]
-    private string? Email { get; set; }
-
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (Email is null)
-        {
-            RedirectManager.RedirectTo("");
-        }
-
-        var user = await UserManager.FindByEmailAsync(Email);
-        if (user is null)
-        {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            _statusMessage = "کاربری با ایمیل وارد شده پیدا نشد";
-        }
-        else if (EmailSender is IdentityNoOpEmailSender)
-        {
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
-            var userId = await UserManager.GetUserIdAsync(user);
-            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            _emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
-                NavigationManager.ToAbsoluteUri(ClientRoutes.Accounts.ConfirmEmail).AbsoluteUri,
-                new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
-        }
-    }
-} *@

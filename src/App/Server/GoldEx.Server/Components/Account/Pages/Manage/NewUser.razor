@@ -1,0 +1,137 @@
+﻿@attribute [Route(ClientRoutes.Accounts.Manage.NewUser)]
+@attribute [Authorize(Roles = BuiltinRoles.Administrators)]
+
+@inject UserManager<AppUser> UserManager
+@inject IUserStore<AppUser> UserStore
+@inject ILogger<NewUser> Logger
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>افزودن کاربر جدید</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">افزودن کاربر جدید</MudText>
+<hr />
+<StatusMessage Message="@Message" />
+
+<MudText Typo="Typo.body1" GutterBottom="true">مشخصات فردی</MudText>
+
+<EditForm Model="Input" FormName="add-user" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" @bind-Value="@Input.Email" Label="ایمیل" />
+        </MudItem>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.Name)" @bind-Value="Input.Name"
+                                Label="نام و نام خانوادگی" />
+        </MudItem>
+        <MudItem lg="4" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
+                                Label="شماره تلفن" />
+        </MudItem>
+        <MudItem lg="6" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.Password)" @bind-Value="Input.Password"
+                                Label="رمز عبور" InputType="InputType.Password" />
+        </MudItem>
+        <MudItem lg="6" md="12">
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
+                                Label="تکرار رمز عبور" InputType="InputType.Password" />
+        </MudItem>
+        <MudItem xs="12" Class="d-flex justify-content-lg-end">
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                             FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Save">ذخیره</MudStaticButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code
+{
+    private IEnumerable<IdentityError>? _identityErrors;
+    private string? Message => _identityErrors is null ? null : $"Error: {string.Join(", ", _identityErrors.Select(error => error.Description))}";
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private async Task OnValidSubmitAsync(EditContext editContext)
+    {
+        var model = editContext.Model as InputModel;
+
+        var user = CreateUser(model);
+
+        if (user is null)
+        {
+            _identityErrors = [new IdentityError { Code = "CreateUserFailed", Description = "Can't create an instance of 'AppUser'." }];
+            return;
+        }
+
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            _identityErrors = result.Errors;
+            return;
+        }
+
+        Logger.LogInformation("User created a new account with password.");
+
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+
+        if (UserManager.Options.SignIn.RequireConfirmedAccount)
+        {
+            await UserManager.ConfirmEmailAsync(user, code);
+        }
+
+        RedirectManager.RedirectTo(ClientRoutes.Accounts.Manage.UserList);
+    }
+
+    private static AppUser? CreateUser(InputModel? model)
+    {
+        try
+        {
+            return model != null ? new AppUser(model.Name, model.Email, model.Email, model.PhoneNumber) : null;
+        }
+        catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(AppUser)}'. " +
+                                                $"Ensure that '{nameof(AppUser)}' is not an abstract class and has a parameterless constructor.");
+        }
+    }
+
+    private IUserEmailStore<AppUser> GetEmailStore()
+    {
+        if (!UserManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException("The default UI requires a user store with email support.");
+        }
+        return (IUserEmailStore<AppUser>)UserStore;
+    }
+
+    private sealed class InputModel
+    {
+        [Phone(ErrorMessage = "فرمت {0} صحیح نمی باشد")]
+        [Display(Name = "شماره تلفن")]
+        public string PhoneNumber { get; set; } = default!;
+
+        [Required(ErrorMessage = "وارد کردن {0} الزامی است")]
+        [Display(Name = "نام و نام خانوادگی کاربر")]
+        public string Name { get; set; } = default!;
+
+        [Required(ErrorMessage = "وارد کردن {0} الزامی است")]
+        [Display(Name = "رمز عبور")]
+        public string Password { get; set; } = default!;
+
+        [Compare(nameof(Password), ErrorMessage = "رمز عبور و تکرار آن باید یکسان باشند")]
+        [Display(Name = "تکرار رمز عبور")]
+        public string ConfirmPassword { get; set; } = default!;
+
+        [Required(ErrorMessage = "وارد کردن {0} الزامی است")]
+        [Display(Name = "ایمیل")]
+        public string Email { get; set; }
+    }
+}

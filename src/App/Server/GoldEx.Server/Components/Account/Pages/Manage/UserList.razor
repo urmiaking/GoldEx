@@ -12,50 +12,47 @@
 
 <hr />
 
-<MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:250px;">
-    <thead>
-        <tr>
-            <th>ایمیل</th>
-            <th>نام کاربر</th>
-            <th>عملیات</th>
-        </tr>
-    </thead>
-    <tbody>
+<MudButton Variant="Variant.Filled" Class="mb-2" StartIcon="@Icons.Material.Filled.PersonAdd" 
+           Color="Color.Success" FullWidth="true" Href="@ClientRoutes.Accounts.Manage.NewUser">افزودن کاربر جدید</MudButton>
 
-        @foreach (var user in _users)
-        {
-            <tr>
-                <td>@user.Email</td>
-                <td>@user.Name</td>
-                <td>
-                    <MudIconButton Size="Size.Small" Href="@ClientRoutes.Accounts.Manage.EditUser.FormatRoute(new { id = user.Id})"
-                                   Color="Color.Primary" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
-                    @if (user.LockoutEnd > DateTime.Now)
-                    {
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.LockOpen" Color="Color.Success"
-                                       OnClick="@(() => UnlockUser(user))"></MudIconButton>
-                    }
-                    else
-                    {
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Lock" Color="Color.Error"
-                                       OnClick="@(() => LockUser(user.Id))"></MudIconButton>
-                    }
-                </td>
-            </tr>
-        }
-
-
-    </tbody>
-</MudSimpleTable>
+<MudTable Items="@_users" Hover="true" Breakpoint="Breakpoint.Xs" Elevation="3" Dense="true" Loading="@_loading" FixedHeader="true" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>ایمیل</MudTh>
+        <MudTh>نام کاربر</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ایمیل">@context.Email</MudTd>
+        <MudTd DataLabel="نام کاربر">@context.Name</MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudButton Size="Size.Small" Href="@ClientRoutes.Accounts.Manage.EditUser.FormatRoute(new { id = context.Id })" Variant="Variant.Filled"
+                           Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit">ویرایش</MudButton>
+                @if (context.LockoutEnd > DateTime.Now)
+                {
+                    <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.LockOpen" Color="Color.Success" Variant="Variant.Filled"
+                               OnClick="@(() => UnlockUser(context))">فعالسازی</MudButton>
+                }
+                else
+                {
+                    <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Lock" Color="Color.Error" Variant="Variant.Filled"
+                               OnClick="@(() => LockUser(context.Id))">غیرفعالسازی</MudButton>
+                }
+            </div>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
 @code
 {
     private List<AppUser> _users = [];
+    private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
         _users = await UserManager.Users.ToListAsync();
-        
+        _loading = false;
+
         await base.OnInitializedAsync();
     }
 
