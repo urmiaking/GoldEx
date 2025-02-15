@@ -5,6 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    
+    <link href="@Assets["manifest.webmanifest"]" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="@Assets["icon-512.png"]" />
+    <link rel="apple-touch-icon" sizes="192x192" href="@Assets["icon-192.png"]" />
+
     <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["GoldEx.Server.styles.css"]" />
     <link rel="stylesheet" href="@Assets["css/app.css"]" />
@@ -25,6 +30,7 @@
     <script src="_framework/blazor.web.js"></script>
 
     <script src=@Assets["_content/MudBlazor/MudBlazor.min.js"]></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 
 </html>
