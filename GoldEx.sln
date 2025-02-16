@@ -33,6 +33,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldEx.Sdk.Client", "src\Sd
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldEx.Sdk.Common", "src\Sdk\GoldEx.Sdk.Common\GoldEx.Sdk.Common.csproj", "{B491D17A-659A-4078-A72E-3ADE38D3D015}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Tests", "3. Tests", "{29FCF0D7-2B60-43CD-9704-947461A785AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldEx.Tests.Server", "src\Tests\GoldEx.Tests.Server\GoldEx.Tests.Server.csproj", "{28BF27DC-430C-4D2E-9A10-A70D87AC343C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +83,10 @@ Global
 		{B491D17A-659A-4078-A72E-3ADE38D3D015}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B491D17A-659A-4078-A72E-3ADE38D3D015}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B491D17A-659A-4078-A72E-3ADE38D3D015}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28BF27DC-430C-4D2E-9A10-A70D87AC343C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28BF27DC-430C-4D2E-9A10-A70D87AC343C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28BF27DC-430C-4D2E-9A10-A70D87AC343C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28BF27DC-430C-4D2E-9A10-A70D87AC343C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +105,6 @@ Global
 		{AA6CB97A-990E-4EF2-89F0-72FD1D035BC3} = {4E0FC2B0-2743-44D3-879B-B1B8CA707607}
 		{BF801738-A7C4-4E15-8AA4-E4AD50B08700} = {4E0FC2B0-2743-44D3-879B-B1B8CA707607}
 		{B491D17A-659A-4078-A72E-3ADE38D3D015} = {4E0FC2B0-2743-44D3-879B-B1B8CA707607}
+		{28BF27DC-430C-4D2E-9A10-A70D87AC343C} = {29FCF0D7-2B60-43CD-9704-947461A785AC}
 	EndGlobalSection
 EndGlobal

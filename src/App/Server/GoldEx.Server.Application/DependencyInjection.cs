@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using GoldEx.Server.Application.BackgroundServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Server.Application;
@@ -7,7 +8,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        //services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        services.AddHostedService<CoinPriceBackgroundService>();
+        services.AddHostedService<CurrencyPriceBackgroundService>();
+        services.AddHostedService<GramPriceBackgroundService>();
+        services.AddHostedService<OuncePriceBackgroundService>();
 
         services.DiscoverServices();
         return services;
