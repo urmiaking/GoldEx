@@ -21,6 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Infrastructure\DTOs\Enums\" />
 		<Folder Include="Infrastructure\Extensions\Configurations\" />
 	</ItemGroup>
 

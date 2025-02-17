@@ -1,9 +1,11 @@
 ﻿using System.Globalization;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
+using GoldEx.Sdk.Server.Infrastructure.DTOs.Enums;
 
 namespace GoldEx.Server.Infrastructure.Services.Price.DTOs;
 
-public static class PriceResponseMapper
+public static class TalaIrApiResponseMapper
 {
     public static List<PriceResponse> MapCoinPrices(TalaIrApiResponse? response)
     {
@@ -19,16 +21,12 @@ public static class PriceResponseMapper
                 if (double.TryParse(coin.Value.Value.Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var currentValue))
                 {
                     priceResponses.Add(new PriceResponse(
-                        coin.Value.Title, // Title (Coin Name)
+                        coin.Value.Title.ToPersianChars(), // Title (Coin Name)
                         currentValue, // Current Value
-                        coin.Value.RequestDate, // Last Update
-                        coin.Value.Change // Daily Change Rate
+                        coin.Value.LastUpdate, // Last Update
+                        coin.Value.Change, // Daily Change Rate
+                        PriceType.Coin // Price Type
                     ));
-                }
-                else
-                {
-                    // Handle parsing errors, e.g., log a message or skip the entry
-                    Console.WriteLine($"Error parsing value for {coin.Value.Title}: {coin.Value.Title}");
                 }
             }
         }
@@ -51,18 +49,13 @@ public static class PriceResponseMapper
                 if (double.TryParse(gold.Value.Value.Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var currentValue))
                 {
                     priceResponses.Add(new PriceResponse(
-                        gold.Value.Title, // Title (Gold Name)
+                        gold.Value.Title.ToPersianChars(), // Title (Gold Name)
                         currentValue, // Current Value
-                        gold.Value.RequestDate, // Last Update
-                        gold.Value.Change // Daily Change Rate
+                        gold.Value.LastUpdate, // Last Update
+                        gold.Value.Change, // Daily Change Rate
+                        PriceType.Gold // Price Type
                     ));
                 }
-                else
-                {
-                    // Handle parsing errors, e.g., log a message or skip the entry
-                    Console.WriteLine($"Error parsing value for {gold.Value.Title}: {gold.Value.Value}");
-                }
-
             }
 
         }
@@ -85,18 +78,13 @@ public static class PriceResponseMapper
                 if (double.TryParse(currency.Value.Value.Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var currentValue))
                 {
                     priceResponses.Add(new PriceResponse(
-                        currency.Value.Title, // Title (Currency Name)
+                        currency.Value.Title.ToPersianChars(), // Title (Currency Name)
                         currentValue, // Current Value
-                        currency.Value.RequestDate, // Last Update
-                        currency.Value.Change // Daily Change Rate
+                        currency.Value.LastUpdate, // Last Update
+                        currency.Value.Change, // Daily Change Rate
+                        PriceType.Currency // Price Type
                     ));
                 }
-                else
-                {
-                    // Handle parsing errors, e.g., log a message or skip the entry
-                    Console.WriteLine($"Error parsing value for {currency.Value.Title}: {currency.Value.Value}");
-                }
-
             }
         }
 
@@ -113,10 +101,11 @@ public static class PriceResponseMapper
         if (double.TryParse(gold18.Value.Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var currentValue))
         {
             return new PriceResponse(
-                gold18.Title, // Title
+                gold18.Title.ToPersianChars(), // Title
                 currentValue, // Current Value
-                gold18.RequestDate, // Last Update
-                gold18.Change // Daily Change Rate
+                gold18.LastUpdate, // Last Update
+                gold18.Change, // Daily Change Rate
+                PriceType.Gold // Price Type
             );
         }
 
@@ -133,10 +122,11 @@ public static class PriceResponseMapper
         if (double.TryParse(dollar.Value.Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var currentValue))
         {
             return new PriceResponse(
-                dollar.Title, // Title
+                dollar.Title.ToPersianChars(), // Title
                 currentValue, // Current Value
-                dollar.RequestDate, // Last Update
-                dollar.Change // Daily Change Rate
+                dollar.LastUpdate, // Last Update
+                dollar.Change, // Daily Change Rate
+                PriceType.Currency // Price Type
             );
         }
         return null;

@@ -10,8 +10,7 @@ public static class DependencyInjection
     {
         services.AddHostedService<CoinPriceBackgroundService>();
         services.AddHostedService<CurrencyPriceBackgroundService>();
-        services.AddHostedService<GramPriceBackgroundService>();
-        services.AddHostedService<OuncePriceBackgroundService>();
+        services.AddHostedService<GoldPriceBackgroundService>();
 
         services.DiscoverServices();
         return services;

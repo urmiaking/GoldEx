@@ -20,7 +20,7 @@ public class CoinInfo
     public long UnitTimeStamp { get; set; }
 
     [JsonPropertyName("jdate")]
-    public string RequestDate { get; set; } = default!;
+    public string LastUpdate { get; set; } = default!;
 
     [JsonPropertyName("v_fa")]
     public string ValueInPersian { get; set; } = default!;
@@ -47,7 +47,7 @@ public class GoldInfo
     public long UnitTimeStamp { get; set; }
 
     [JsonPropertyName("jdate")]
-    public string RequestDate { get; set; } = default!;
+    public string LastUpdate { get; set; } = default!;
 
     [JsonPropertyName("v_fa")]
     public string ValueInPersian { get; set; } = default!;
@@ -74,7 +74,7 @@ public class CurrencyInfo
     public long UnitTimeStamp { get; set; }
 
     [JsonPropertyName("jdate")]
-    public string RequestDate { get; set; } = default!;
+    public string LastUpdate { get; set; } = default!;
 
     [JsonPropertyName("v_fa")]
     public string ValueInPersian { get; set; } = default!;
