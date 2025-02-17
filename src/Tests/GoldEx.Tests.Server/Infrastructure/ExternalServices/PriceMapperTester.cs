@@ -19,13 +19,13 @@ public class PriceMapperTester
         {
             CoinPrice = new Dictionary<string, CoinInfo>
             {
-                { "sekke-gad", new CoinInfo { Title = "قديم", Value = "70,500,000", RequestDate = "2024-07-27", Change = "100,000 (0.14%)" } },
-                { "sekke-jad", new CoinInfo { Title = "جديد", Value = "74,300,000", RequestDate = "2024-07-27", Change = "100,000 (0.13%)" } }
+                { "sekke-gad", new CoinInfo { Title = "قديم", Value = "70,500,000", LastUpdate = "2024-07-27", Change = "100,000 (0.14%)" } },
+                { "sekke-jad", new CoinInfo { Title = "جديد", Value = "74,300,000", LastUpdate = "2024-07-27", Change = "100,000 (0.13%)" } }
             }
         };
 
         // Act (Call the method under test)
-        var prices = PriceResponseMapper.MapCoinPrices(responses);
+        var prices = TalaIrApiResponseMapper.MapCoinPrices(responses);
 
         // Assert (Check the results)
         Assert.That(prices, Is.Not.Null);
@@ -52,13 +52,13 @@ public class PriceMapperTester
         {
             GoldPrice = new Dictionary<string, GoldInfo>
             {
-                { "gold_ounce", new GoldInfo { Title = "اونس طلا", Value = "2,882.23", RequestDate = "2024-07-27", Change = "-0.32 (0.01%)" } },
-                { "gold_24k", new GoldInfo { Title = "طلای 24 عیار", Value = "8,724,000", RequestDate = "2024-07-27", Change = "-9,233 (0.11%)" } } // Example of another Gold item
+                { "gold_ounce", new GoldInfo { Title = "اونس طلا", Value = "2,882.23", LastUpdate = "2024-07-27", Change = "-0.32 (0.01%)" } },
+                { "gold_24k", new GoldInfo { Title = "طلای 24 عیار", Value = "8,724,000", LastUpdate = "2024-07-27", Change = "-9,233 (0.11%)" } } // Example of another Gold item
             }
         };
 
         // Act (Call the method to map Gold prices)
-        var prices = PriceResponseMapper.MapGoldPrices(responses); // Assuming you have a MapGoldPrices method
+        var prices = TalaIrApiResponseMapper.MapGoldPrices(responses); // Assuming you have a MapGoldPrices method
 
         // Assert (Check the results)
         Assert.That(prices, Is.Not.Null);
@@ -85,8 +85,8 @@ public class PriceMapperTester
         {
             CurrencyPrice = new Dictionary<string, CurrencyInfo>
                 {
-                    { "arz_dolar", new CurrencyInfo { Title = "دلار", Value = "1739645575", RequestDate = "2024-07-27", Change = "-30,440 (100%)", UnitTimeStamp = 1739728180 } },
-                    { "arz_euro", new CurrencyInfo { Title = "یورو", Value = "0", RequestDate = "2024-07-27", Change = "-32,500 (100%)" } } // Example of another currency
+                    { "arz_dolar", new CurrencyInfo { Title = "دلار", Value = "1739645575", LastUpdate = "2024-07-27", Change = "-30,440 (100%)", UnitTimeStamp = 1739728180 } },
+                    { "arz_euro", new CurrencyInfo { Title = "یورو", Value = "0", LastUpdate = "2024-07-27", Change = "-32,500 (100%)" } } // Example of another currency
                 }
         };
 
@@ -97,7 +97,7 @@ public class PriceMapperTester
         Assert.That(dateTime, Is.EqualTo(DateTime.Parse("2/16/2025 5:49:40 PM")));
 
         // Act (Call the method to map Currency prices)
-        var prices = PriceResponseMapper.MapCurrencyPrices(responses); // Assuming you have a MapCurrencyPrices method
+        var prices = TalaIrApiResponseMapper.MapCurrencyPrices(responses); // Assuming you have a MapCurrencyPrices method
 
         // Assert (Check the results)
         Assert.That(prices, Is.Not.Null);

@@ -1,12 +1,10 @@
 ﻿using System.Net.Http.Json;
-using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Infrastructure.Services.Price.DTOs;
 
 namespace GoldEx.Server.Infrastructure.Services.Price;
 
-[ScopedService]
 public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
 {
     public async Task<List<PriceResponse>> GetCoinPriceAsync(CancellationToken cancellationToken = default)
@@ -17,7 +15,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
-            return PriceResponseMapper.MapCoinPrices(content);
+            return TalaIrApiResponseMapper.MapCoinPrices(content);
         }
         catch (Exception e)
         {
@@ -34,7 +32,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
-            return PriceResponseMapper.MapGoldPrices(content);
+            return TalaIrApiResponseMapper.MapGoldPrices(content);
         }
         catch (Exception e)
         {
@@ -51,7 +49,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
-            return PriceResponseMapper.MapCurrencyPrices(content);
+            return TalaIrApiResponseMapper.MapCurrencyPrices(content);
         }
         catch (Exception e)
         {
@@ -68,7 +66,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
-            return PriceResponseMapper.GetGram18Price(content);
+            return TalaIrApiResponseMapper.GetGram18Price(content);
         }
         catch (Exception e)
         {
@@ -85,7 +83,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
-            return PriceResponseMapper.GetDollarPrice(content);
+            return TalaIrApiResponseMapper.GetDollarPrice(content);
         }
         catch (Exception e)
         {

@@ -1,17 +1,18 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
-using GoldEx.Sdk.Server.Infrastructure.DTOs;
-using GoldEx.Server.Application.Services.Abstractions;
-using GoldEx.Server.Domain.PriceAggregate;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using GoldEx.Sdk.Server.Infrastructure.DTOs;
+using GoldEx.Sdk.Server.Infrastructure.DTOs.Enums;
+using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Domain.PriceAggregate;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
-public class CurrencyPriceBackgroundService(IServiceScopeFactory serviceScopeFactory, ILogger<CurrencyPriceBackgroundService> logger) : BackgroundService
+public class GoldPriceBackgroundService(IServiceScopeFactory serviceScopeFactory, ILogger<GoldPriceBackgroundService> logger) : BackgroundService
 {
-    private const string ClassName = nameof(CurrencyPriceBackgroundService);
+    private const string ClassName = nameof(GoldPriceBackgroundService);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,11 +28,11 @@ public class CurrencyPriceBackgroundService(IServiceScopeFactory serviceScopeFac
 
                 var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
 
-                var list = await priceFetcher.GetCurrencyPriceAsync(stoppingToken);
+                var list = await priceFetcher.GetGoldPriceAsync(stoppingToken);
 
-                await AddToDb(list, priceService, stoppingToken);
-
-                await Task.Delay(12_000, stoppingToken);
+                await AddToDb(list, priceService, stoppingToken);    
+                
+                await Task.Delay(10_000, stoppingToken);
             }
         }
         catch (Exception e)
