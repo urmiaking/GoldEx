@@ -20,6 +20,7 @@
 	</ItemGroup>
 	              
 	<ItemGroup>
+	  <Folder Include="Pages\Home\ViewModels\" />
 	  <Folder Include="wwwroot\assets\screenshots\" />
 	</ItemGroup>
 

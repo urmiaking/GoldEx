@@ -158,7 +158,7 @@ public class GoldExComponentBase : ComponentBase, IDisposable
         }
 
 #if !RELEASE
-        throw exception;
+        // throw exception;
 #endif
     }
 

@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
+using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
-using GoldEx.Sdk.Server.Infrastructure.DTOs.Enums;
 
 namespace GoldEx.Server.Infrastructure.Services.Price.DTOs;
 

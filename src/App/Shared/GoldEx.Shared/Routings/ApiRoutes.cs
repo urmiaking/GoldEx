@@ -18,4 +18,11 @@ public static class ApiRoutes
 
         }
     }
+
+    public class Price
+    {
+        public const string Base = "/Price";
+
+        public const string GetLatestPrices = "GetLatestPrices";
+    }
 }

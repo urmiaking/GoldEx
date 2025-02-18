@@ -2,9 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Globalization;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
-using GoldEx.Sdk.Server.Infrastructure.DTOs.Enums;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.PriceAggregate;
 
