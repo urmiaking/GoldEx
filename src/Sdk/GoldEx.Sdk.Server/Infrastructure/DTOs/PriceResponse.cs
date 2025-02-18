@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.DTOs.Enums;
+﻿using GoldEx.Sdk.Common.Definitions;
 
 namespace GoldEx.Sdk.Server.Infrastructure.DTOs;
 

@@ -4,12 +4,15 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
 using Blazored.LocalStorage;
+using GoldEx.Client.Components.Services;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
 using MudBlazor.Services;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Client.Abstractions;
 using MudBlazor;
+using GoldEx.Shared.Routings;
+using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Extensions;
 
@@ -59,6 +62,7 @@ public static class ServiceCollectionExtensions
     internal static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.DiscoverServices();
+        services.AddScoped<IPriceClientService, PriceClientService>();
 
         return services;
     }

@@ -1,5 +1,5 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Sdk.Server.Infrastructure.DTOs.Enums;
+﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Server.Domain.Entities;
 
 namespace GoldEx.Server.Domain.PriceAggregate;
 

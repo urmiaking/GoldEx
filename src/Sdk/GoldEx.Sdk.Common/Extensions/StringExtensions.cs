@@ -136,4 +136,20 @@ public static class StringExtensions
             .Replace('۹', '9')
             ;
     }
+
+    public static string FormatPrice(this string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return string.Empty;
+        
+        var cleanedInput = Regex.Replace(input, @"[^\d+-]", "");
+
+        if (!long.TryParse(cleanedInput, out var number))
+            return "Invalid input";
+        
+        var formattedNumber = number.ToString("#,##0", CultureInfo.InvariantCulture);
+
+        return $"{formattedNumber} تومان";
+
+    }
 }
