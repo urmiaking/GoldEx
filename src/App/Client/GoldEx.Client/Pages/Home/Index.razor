@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using GoldEx.Shared.Routings
 
 <PageTitle>صفحه اصلی</PageTitle>
 
@@ -19,12 +20,13 @@
         <AuthorizeView>
             <NotAuthorized>
                 <div class="col-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-end p-5">
-                    <MudButton Href="/account/login" Variant="Variant.Filled" Color="Color.Primary">
+                    <MudButton Href="@ClientRoutes.Accounts.Login" Variant="Variant.Filled" Color="Color.Primary">
                         ورود به حساب کاربری
                     </MudButton>
                 </div>
             </NotAuthorized>
         </AuthorizeView>
     </div>
+
     <PriceBoard Class="mt-2"/>
 </MudContainer>
