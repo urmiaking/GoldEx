@@ -65,8 +65,6 @@ public partial class PriceBoard
     public override void Dispose()
     {
         _timer?.Dispose();
-        CancellationTokenSource.Cancel(); 
-        CancellationTokenSource.Dispose();
         base.Dispose();
     }
 }

@@ -11,10 +11,14 @@ using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Server.Api.Identity;
 using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
+using GoldEx.Shared.Routings;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using GoldEx.Shared.Settings;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using GoldEx.Server.Infrastructure.HealthChecks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Server.Extensions;
 
@@ -45,7 +49,6 @@ internal static class ServiceCollectionExtensions
 
         services.AddDatabaseDeveloperPageExceptionFilter();
         services.DiscoverServices();
-        //services.AddSharedServices();
 
         services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
 
@@ -98,7 +101,12 @@ internal static class ServiceCollectionExtensions
 
     internal static IServiceCollection AddStorage(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSqlServer<GoldExDbContext>(configuration.GetConnectionString("GoldEx"));
+        var connectionString = configuration.GetConnectionString("GoldEx");
+
+        if (string.IsNullOrEmpty(connectionString))
+            throw new Exception("GoldEx connection string is not available");
+
+        services.AddSqlServer<GoldExDbContext>(connectionString);
 
         return services;
     }
@@ -196,6 +204,34 @@ internal static class ServiceCollectionExtensions
             options.User.RequireUniqueEmail = true;
         });
         services.ConfigureOptions<ConfigureSecurityStampOptions>();
+
+        return services;
+    }
+
+    internal static IServiceCollection AddAppHealthCheck(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHealthChecks()
+            .AddSqlServer(configuration.GetConnectionString("GoldEx")!, healthQuery: "select 1",
+                name: "SQL Database Server",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: ["Database"])
+            .AddCheck<TalaIrHealthCheck>(
+                name: "Tala.ir price fetcher api",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: ["External API"])
+            .AddCheck<MemoryHealthCheck>(
+                name:"Memory Check",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: ["Memory"]);
+
+        services.AddHealthChecksUI(opt =>
+            {
+                opt.SetEvaluationTimeInSeconds(60); //time in seconds between check    
+                opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
+                opt.SetApiMaxActiveRequests(1); //api requests concurrency    
+                opt.AddHealthCheckEndpoint("GoldEx Service Health Checker", ApiRoutes.Health.Base); //map health check api
+            })
+            .AddInMemoryStorage();
 
         return services;
     }

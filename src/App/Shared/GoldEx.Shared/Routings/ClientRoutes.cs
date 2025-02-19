@@ -52,4 +52,9 @@ public static class ClientRoutes
         public const string ResetPassword = $"{AccountPrefix}/ResetPassword";
         public const string ResetPasswordConfirmation = $"{AccountPrefix}/ResetPasswordConfirmation";
     }
+
+    public static class Health
+    {
+        public const string Base = "/HealthCheck";
+    }
 }

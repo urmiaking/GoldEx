@@ -4,7 +4,7 @@ public static class ApiRoutes
 {
     public static class Account
     {
-        public const string Base = "/Account";
+        public const string Base = "/api/Account";
 
         public const string Login = "Login";
         public const string Logout = "Logout";
@@ -21,8 +21,13 @@ public static class ApiRoutes
 
     public class Price
     {
-        public const string Base = "/Price";
+        public const string Base = "/api/Price";
 
         public const string GetLatestPrices = "GetLatestPrices";
+    }
+
+    public class Health
+    {
+        public const string Base = "/api/Health";
     }
 }
