@@ -19,7 +19,8 @@ public static class DependencyInjection
             .AddSwagger()
             .AddMapster()
             .AddCache()
-            .AddSettings(configuration);
+            .AddSettings(configuration)
+            .AddAppHealthCheck(configuration);
 
         services.AddScoped<IThemeService, ThemeService>();
 

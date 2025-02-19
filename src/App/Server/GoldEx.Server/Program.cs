@@ -9,6 +9,10 @@ using GoldEx.Client.Extensions;
 using GoldEx.Server;
 using GoldEx.Server.Application;
 using GoldEx.Server.Infrastructure;
+using GoldEx.Shared.Routings;
+using HealthChecks.UI.Client;
+using HealthChecks.UI.Configuration;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var logger = GetStartupLogger();
 
@@ -111,6 +115,19 @@ void SetupPipeline()
         .AddAdditionalAssemblies(additionalAssemblies);
 
     app.MapAdditionalIdentityEndpoints();
+
+    //HealthCheck Middleware
+    app.MapHealthChecks(ApiRoutes.Health.Base, new HealthCheckOptions
+    {
+        Predicate = _ => true,
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
+    app.UseHealthChecksUI(delegate (Options options)
+    {
+        options.UIPath = ClientRoutes.Health.Base;
+        options.AsideMenuOpened = false;
+        options.PageTitle = "GoldEx Health Monitor";
+    });
 }
 
 ILogger GetStartupLogger()

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Infrastructure;
 
 public class GoldExDbContext(
-    DbContextOptions options,
+    DbContextOptions<GoldExDbContext> options,
     IPublisher publisher)
     : GoldExDbContextBase<AppUser, AppRole, Guid, AppUserClaim, AppUserRole, AppUserLogin, AppRoleClaim, AppUserToken>(
         options,

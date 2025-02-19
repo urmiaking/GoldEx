@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Infrastructure.Services.Price.DTOs;
+using GoldEx.Shared.Routings;
 
 namespace GoldEx.Server.Infrastructure.Services.Price;
 
@@ -11,7 +12,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
     {
         try
         {
-            var response = await httpClient.GetAsync("https://www.tala.ir/ajax/price", cancellationToken);
+            var response = await httpClient.GetAsync(ExternalRoutes.TalaIr, cancellationToken);
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
@@ -28,7 +29,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
     {
         try
         {
-            var response = await httpClient.GetAsync("https://www.tala.ir/ajax/price", cancellationToken);
+            var response = await httpClient.GetAsync(ExternalRoutes.TalaIr, cancellationToken);
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
@@ -45,7 +46,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
     {
         try
         {
-            var response = await httpClient.GetAsync("https://www.tala.ir/ajax/price", cancellationToken);
+            var response = await httpClient.GetAsync(ExternalRoutes.TalaIr, cancellationToken);
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
@@ -62,7 +63,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
     {
         try
         {
-            var response = await httpClient.GetAsync("https://www.tala.ir/ajax/price", cancellationToken);
+            var response = await httpClient.GetAsync(ExternalRoutes.TalaIr, cancellationToken);
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
@@ -79,7 +80,7 @@ public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
     {
         try
         {
-            var response = await httpClient.GetAsync("https://www.tala.ir/ajax/price", cancellationToken);
+            var response = await httpClient.GetAsync(ExternalRoutes.TalaIr, cancellationToken);
 
             var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
 
