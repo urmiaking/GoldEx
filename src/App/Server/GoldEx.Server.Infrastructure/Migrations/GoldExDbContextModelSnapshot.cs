@@ -17,7 +17,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -256,7 +256,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("PriceType")
+                    b.Property<string>("IconUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("MarketType")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -267,6 +271,42 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Prices", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.PriceHistoryAggregate.PriceHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("CurrentValue")
+                        .HasColumnType("float");
+
+                    b.Property<string>("DailyChangeRate")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LastUpdate")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("PriceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PriceId");
+
+                    b.ToTable("PriceHistories", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppRoleClaim", b =>
@@ -332,41 +372,15 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("GoldEx.Server.Domain.PriceAggregate.Price", b =>
+            modelBuilder.Entity("GoldEx.Server.Domain.PriceHistoryAggregate.PriceHistory", b =>
                 {
-                    b.OwnsMany("GoldEx.Server.Domain.PriceAggregate.PriceHistory", "PriceHistories", b1 =>
-                        {
-                            b1.Property<Guid>("PriceId")
-                                .HasColumnType("uniqueidentifier");
+                    b.HasOne("GoldEx.Server.Domain.PriceAggregate.Price", "Price")
+                        .WithMany("PriceHistories")
+                        .HasForeignKey("PriceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<double>("CurrentValue")
-                                .HasColumnType("float");
-
-                            b1.Property<string>("DailyChangeRate")
-                                .IsRequired()
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar(50)");
-
-                            b1.Property<string>("LastUpdate")
-                                .IsRequired()
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar(50)");
-
-                            b1.HasKey("PriceId", "Id");
-
-                            b1.ToTable("PriceHistories", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("PriceId");
-                        });
-
-                    b.Navigation("PriceHistories");
+                    b.Navigation("Price");
                 });
 
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppRole", b =>
@@ -385,6 +399,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("Tokens");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.PriceAggregate.Price", b =>
+                {
+                    b.Navigation("PriceHistories");
                 });
 #pragma warning restore 612, 618
         }

@@ -2,4 +2,4 @@
 
 namespace GoldEx.Shared.DTOs;
 
-public record GetPriceResponse(string Title, string Value, string Change, string LastUpdate, PriceType Type);
+public record GetPriceResponse(string Title, string Value, string Unit, string Change, string LastUpdate, string? IconUrl, MarketType Type);

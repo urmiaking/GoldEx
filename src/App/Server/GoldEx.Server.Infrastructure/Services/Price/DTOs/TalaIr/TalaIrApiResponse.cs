@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace GoldEx.Server.Infrastructure.Services.Price.DTOs;
+namespace GoldEx.Server.Infrastructure.Services.Price.DTOs.TalaIr;
 
 public class TalaIrApiResponse
 {

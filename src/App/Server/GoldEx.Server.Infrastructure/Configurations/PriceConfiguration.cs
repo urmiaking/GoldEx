@@ -18,22 +18,15 @@ public class PriceConfiguration : IEntityTypeConfiguration<Price>
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(x => x.PriceType)
+        builder.Property(x => x.IconUrl)
+            .HasMaxLength(500);
+
+        builder.Property(x => x.MarketType)
             .IsRequired();
 
-        builder.OwnsMany(x => x.PriceHistories, Configure);
-    }
-
-    private void Configure(OwnedNavigationBuilder<Price, PriceHistory> builder)
-    {
-        builder.ToTable("PriceHistories");
-
-        builder.Property(x => x.DailyChangeRate)
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(x => x.LastUpdate)
-            .HasMaxLength(50)
-            .IsRequired();
+        builder.HasMany(x => x.PriceHistories)
+            .WithOne(x => x.Price)
+            .HasForeignKey(x => x.PriceId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

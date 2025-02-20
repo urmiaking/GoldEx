@@ -121,7 +121,7 @@ void SetupPipeline()
     {
         Predicate = _ => true,
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
+    }).RequireAuthorization();
     app.UseHealthChecksUI(delegate (Options options)
     {
         options.UIPath = ClientRoutes.Health.Base;

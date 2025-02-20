@@ -3,10 +3,21 @@ using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 
-namespace GoldEx.Server.Infrastructure.Services.Price.DTOs;
+namespace GoldEx.Server.Infrastructure.Services.Price.DTOs.TalaIr;
 
 public static class TalaIrApiResponseMapper
 {
+    public static List<PriceResponse> MapAllPrices(TalaIrApiResponse? response)
+    {
+        var list = new List<PriceResponse>();
+
+        list.AddRange(MapGoldPrices(response));
+        list.AddRange(MapCurrencyPrices(response));
+        list.AddRange(MapCoinPrices(response));
+
+        return list;
+    }
+
     public static List<PriceResponse> MapCoinPrices(TalaIrApiResponse? response)
     {
         List<PriceResponse> priceResponses = [];
@@ -23,9 +34,11 @@ public static class TalaIrApiResponseMapper
                     priceResponses.Add(new PriceResponse(
                         coin.Value.Title.ToPersianChars(), // Title (Coin Name)
                         currentValue, // Current Value
+                        "تومان",
                         coin.Value.LastUpdate, // Last Update
                         coin.Value.Change, // Daily Change Rate
-                        PriceType.Coin // Price Type
+                        "",
+                        MarketType.Coin // Market Type
                     ));
                 }
             }
@@ -33,7 +46,6 @@ public static class TalaIrApiResponseMapper
 
         return priceResponses;
     }
-
 
     public static List<PriceResponse> MapGoldPrices(TalaIrApiResponse? response)
     {
@@ -51,9 +63,11 @@ public static class TalaIrApiResponseMapper
                     priceResponses.Add(new PriceResponse(
                         gold.Value.Title.ToPersianChars(), // Title (Gold Name)
                         currentValue, // Current Value
+                        "تومان",
                         gold.Value.LastUpdate, // Last Update
                         gold.Value.Change, // Daily Change Rate
-                        PriceType.Gold // Price Type
+                        "",
+                        MarketType.Gold // Market Type
                     ));
                 }
             }
@@ -62,7 +76,6 @@ public static class TalaIrApiResponseMapper
 
         return priceResponses;
     }
-
 
     public static List<PriceResponse> MapCurrencyPrices(TalaIrApiResponse? response)
     {
@@ -80,9 +93,11 @@ public static class TalaIrApiResponseMapper
                     priceResponses.Add(new PriceResponse(
                         currency.Value.Title.ToPersianChars(), // Title (Currency Name)
                         currentValue, // Current Value
+                        "تومان",
                         currency.Value.LastUpdate, // Last Update
                         currency.Value.Change, // Daily Change Rate
-                        PriceType.Currency // Price Type
+                        "",
+                        MarketType.Currency // Price Type
                     ));
                 }
             }
@@ -103,9 +118,11 @@ public static class TalaIrApiResponseMapper
             return new PriceResponse(
                 gold18.Title.ToPersianChars(), // Title
                 currentValue, // Current Value
+                "تومان",
                 gold18.LastUpdate, // Last Update
                 gold18.Change, // Daily Change Rate
-                PriceType.Gold // Price Type
+                "",
+                MarketType.Gold // Market Type
             );
         }
 
@@ -124,9 +141,11 @@ public static class TalaIrApiResponseMapper
             return new PriceResponse(
                 dollar.Title.ToPersianChars(), // Title
                 currentValue, // Current Value
+                "تومان",
                 dollar.LastUpdate, // Last Update
                 dollar.Change, // Daily Change Rate
-                PriceType.Currency // Price Type
+                "",
+                MarketType.Currency // Price Type
             );
         }
         return null;

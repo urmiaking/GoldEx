@@ -9,14 +9,13 @@ namespace GoldEx.Server.Infrastructure.Repositories;
 [ScopedService]
 public class PriceRepository(GoldExDbContext context) : RepositoryBase<Price>(context), IPriceRepository
 {
-    public async Task<List<Price>> GetLatestPricesAsync(CancellationToken cancellationToken = default)
+    public Task<List<Price>> GetLatestPricesAsync(CancellationToken cancellationToken = default)
     {
-        var latestPrices = (await Query
-                .Where(x => x.PriceHistories.Any())
-                .ToListAsync(cancellationToken))
-            .Select(p => Price.CreateFromSnapshot(p.Id, p.Title, p.PriceType, p.GetLatestPriceHistory()!));
-
-        return latestPrices.ToList();
+        return Query
+            .Include(p => p.PriceHistories!
+                .OrderByDescending(ph => ph.Id)
+                .Take(1))
+            .ToListAsync(cancellationToken);
     }
 
     public Task<List<Price>> GetListAsync(CancellationToken cancellationToken = default)
