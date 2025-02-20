@@ -33,7 +33,6 @@ public class MemoryHealthCheck(IOptionsMonitor<MemoryCheckOptions> options) : IH
 public class MemoryCheckOptions
 {
     public string MemoryStatus { get; set; } = default!;
-    //public int Threshold { get; set; }
     // Failure threshold (in bytes)
     public long Threshold { get; set; } = 1024L * 1024L * 1024L;
 }

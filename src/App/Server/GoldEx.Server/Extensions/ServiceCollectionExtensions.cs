@@ -226,7 +226,7 @@ internal static class ServiceCollectionExtensions
 
         services.AddHealthChecksUI(opt =>
             {
-                opt.SetEvaluationTimeInSeconds(60); //time in seconds between check    
+                opt.SetEvaluationTimeInSeconds(60); //time in seconds between check
                 opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
                 opt.SetApiMaxActiveRequests(1); //api requests concurrency    
                 opt.AddHealthCheckEndpoint("GoldEx Service Health Checker", ApiRoutes.Health.Base); //map health check api
