@@ -1,13 +1,30 @@
 ﻿using System.Net.Http.Json;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
-using GoldEx.Server.Infrastructure.Services.Price.DTOs;
+using GoldEx.Server.Infrastructure.Services.Price.DTOs.TalaIr;
 using GoldEx.Shared.Routings;
 
 namespace GoldEx.Server.Infrastructure.Services.Price;
 
-public class PriceFetcher(HttpClient httpClient) : IPriceFetcher
+public class TalaIrPriceFetcher(HttpClient httpClient) : IPriceFetcher
 {
+    public async Task<List<PriceResponse>> GetPriceAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync(ExternalRoutes.TalaIr, cancellationToken);
+
+            var content = await response.Content.ReadFromJsonAsync<TalaIrApiResponse>(cancellationToken);
+
+            return TalaIrApiResponseMapper.MapAllPrices(content);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     public async Task<List<PriceResponse>> GetCoinPriceAsync(CancellationToken cancellationToken = default)
     {
         try

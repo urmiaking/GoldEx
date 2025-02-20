@@ -1,10 +1,10 @@
-﻿using GoldEx.Server.Infrastructure.Services.Price.DTOs;
+﻿using GoldEx.Server.Infrastructure.Services.Price.DTOs.TalaIr;
 using System.Globalization;
 
 namespace GoldEx.Tests.Server.Infrastructure.ExternalServices;
 
 [TestFixture]
-public class PriceMapperTester
+public class TalaIrPriceMapperTester
 {
     [SetUp]
     public void Setup()
@@ -35,13 +35,13 @@ public class PriceMapperTester
         Assert.That(oldCoin, Is.Not.Null);
         Assert.That(oldCoin.CurrentValue, Is.EqualTo(70500000)); // Check the parsed value
         Assert.That(oldCoin.LastUpdate, Is.EqualTo("2024-07-27"));
-        Assert.That(oldCoin.DailyChangeRate, Is.EqualTo("100,000 (0.14%)"));
+        Assert.That(oldCoin.Change, Is.EqualTo("100,000 (0.14%)"));
 
         var newCoin = prices.FirstOrDefault(p => p.Title == "جديد");
         Assert.That(newCoin, Is.Not.Null);
         Assert.That(newCoin.CurrentValue, Is.EqualTo(74300000)); // Check the parsed value
         Assert.That(newCoin.LastUpdate, Is.EqualTo("2024-07-27"));
-        Assert.That(newCoin.DailyChangeRate, Is.EqualTo("100,000 (0.13%)"));
+        Assert.That(newCoin.Change, Is.EqualTo("100,000 (0.13%)"));
     }
 
     [Test]
@@ -68,13 +68,13 @@ public class PriceMapperTester
         Assert.That(goldOunce, Is.Not.Null);
         Assert.That(goldOunce.CurrentValue, Is.EqualTo(2882.23));
         Assert.That(goldOunce.LastUpdate, Is.EqualTo("2024-07-27"));
-        Assert.That(goldOunce.DailyChangeRate, Is.EqualTo("-0.32 (0.01%)"));
+        Assert.That(goldOunce.Change, Is.EqualTo("-0.32 (0.01%)"));
 
         var gold24K = prices.FirstOrDefault(p => p.Title == "طلای 24 عیار");
         Assert.That(gold24K, Is.Not.Null);
         Assert.That(gold24K.CurrentValue, Is.EqualTo(8724000));
         Assert.That(gold24K.LastUpdate, Is.EqualTo("2024-07-27"));
-        Assert.That(gold24K.DailyChangeRate, Is.EqualTo("-9,233 (0.11%)"));
+        Assert.That(gold24K.Change, Is.EqualTo("-9,233 (0.11%)"));
     }
 
     [Test]
@@ -117,7 +117,7 @@ public class PriceMapperTester
         }
 
         Assert.That(dollar.LastUpdate, Is.EqualTo("2024-07-27"));
-        Assert.That(dollar.DailyChangeRate, Is.EqualTo("-30,440 (100%)"));
+        Assert.That(dollar.Change, Is.EqualTo("-30,440 (100%)"));
 
         var euro = prices.FirstOrDefault(p => p.Title == "یورو");
         Assert.That(euro, Is.Not.Null);
@@ -132,6 +132,6 @@ public class PriceMapperTester
         }
 
         Assert.That(euro.LastUpdate, Is.EqualTo("2024-07-27"));
-        Assert.That(euro.DailyChangeRate, Is.EqualTo("-32,500 (100%)"));
+        Assert.That(euro.Change, Is.EqualTo("-32,500 (100%)"));
     }
 }

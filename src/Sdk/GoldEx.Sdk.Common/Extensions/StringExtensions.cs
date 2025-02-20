@@ -149,7 +149,14 @@ public static class StringExtensions
         
         var formattedNumber = number.ToString("#,##0", CultureInfo.InvariantCulture);
 
-        return $"{formattedNumber} تومان";
+        return $"{formattedNumber}";
+    }
 
+    public static string FormatDateString(this string dateStr)
+    {
+        if (string.IsNullOrEmpty(dateStr) || dateStr.Length != 8)
+            return string.Empty;
+
+        return $"{dateStr[..4]}/{dateStr.Substring(4, 2)}/{dateStr.Substring(6, 2)}";
     }
 }

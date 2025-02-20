@@ -1,8 +1,10 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Price;
+using GoldEx.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using System.Text.Json;
 
 namespace GoldEx.Server.Infrastructure;
 
@@ -12,13 +14,21 @@ public static class DependencyInjection
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-        services.AddHttpClient("PriceApi");
-
-        services.AddScoped<IPriceFetcher, PriceFetcher>(sp =>
+        services.AddHttpClient("TalaIrApi");
+        services.AddScoped<IPriceFetcher, TalaIrPriceFetcher>(sp =>
         {
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            var httpClient = httpClientFactory.CreateClient("PriceApi");
-            return new PriceFetcher(httpClient);
+            var httpClient = httpClientFactory.CreateClient("TalaIrApi");
+            return new TalaIrPriceFetcher(httpClient);
+        });
+
+        services.AddHttpClient("SignalApi");
+
+        services.AddScoped<IPriceFetcher, SignalPriceFetcher>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient("SignalApi");
+            return new SignalPriceFetcher(httpClient, Utilities.GetJsonOptions());
         });
 
         services.DiscoverServices();

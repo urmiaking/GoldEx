@@ -2,21 +2,21 @@
 
 namespace GoldEx.Tests.Server.Infrastructure.ExternalServices;
 
-public class PriceFetcherTester
+public class TalaIrPriceFetcherTester
 {
-    private PriceFetcher _priceFetcher;
+    private TalaIrPriceFetcher _talaPriceFetcher;
 
     [SetUp]
     public void Setup()
     {
-        _priceFetcher = new PriceFetcher(new HttpClient());
+        _talaPriceFetcher = new TalaIrPriceFetcher(new HttpClient());
     }
 
     [Test]
     public async Task GetCoinPriceAsync_ShouldReturnCoinPrices()
     {
         // Act
-        var actual = await _priceFetcher.GetCoinPriceAsync();
+        var actual = await _talaPriceFetcher.GetCoinPriceAsync();
         // Assert
         Assert.That(actual, Is.Not.Null);
         Assert.That(actual.Count, Is.GreaterThan(0));
@@ -26,7 +26,7 @@ public class PriceFetcherTester
     public async Task GetGoldPriceAsync_ShouldReturnGoldPrices()
     {
         // Act
-        var actual = await _priceFetcher.GetGoldPriceAsync();
+        var actual = await _talaPriceFetcher.GetGoldPriceAsync();
         // Assert
         Assert.That(actual, Is.Not.Null);
         Assert.That(actual.Count, Is.GreaterThan(0));
@@ -36,7 +36,7 @@ public class PriceFetcherTester
     public async Task GetCurrencyPriceAsync_ShouldReturnCurrencyPrice()
     {
         // Act
-        var actual = await _priceFetcher.GetCurrencyPriceAsync();
+        var actual = await _talaPriceFetcher.GetCurrencyPriceAsync();
         // Assert
         Assert.That(actual, Is.Not.Null);
         Assert.That(actual.Count, Is.GreaterThan(0));
@@ -46,7 +46,7 @@ public class PriceFetcherTester
     public async Task GetGram18PriceAsync_ShouldReturnGram18Price()
     {
         // Act
-        var actual = await _priceFetcher.GetGram18PriceAsync();
+        var actual = await _talaPriceFetcher.GetGram18PriceAsync();
         // Assert
         Assert.That(actual, Is.Not.Null);
     }
@@ -55,7 +55,7 @@ public class PriceFetcherTester
     public async Task GetDollarPriceAsync_ShouldReturnDollarPrice()
     {
         // Act
-        var actual = await _priceFetcher.GetDollarPriceAsync();
+        var actual = await _talaPriceFetcher.GetDollarPriceAsync();
         // Assert
         Assert.That(actual, Is.Not.Null);
     }

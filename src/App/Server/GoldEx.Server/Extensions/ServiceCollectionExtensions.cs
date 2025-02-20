@@ -215,8 +215,8 @@ internal static class ServiceCollectionExtensions
                 name: "SQL Database Server",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: ["Database"])
-            .AddCheck<TalaIrHealthCheck>(
-                name: "Tala.ir price fetcher api",
+            .AddCheck<SignalHealthCheck>(
+                name: "Signal price fetcher api",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: ["External API"])
             .AddCheck<MemoryHealthCheck>(

@@ -8,9 +8,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddHostedService<CoinPriceBackgroundService>();
-        services.AddHostedService<CurrencyPriceBackgroundService>();
-        services.AddHostedService<GoldPriceBackgroundService>();
+        services.AddHostedService<PriceUpdaterBackgroundService>();
+        services.AddHostedService<PriceHistoryCleanupBackgroundService>();
 
         services.DiscoverServices();
         return services;

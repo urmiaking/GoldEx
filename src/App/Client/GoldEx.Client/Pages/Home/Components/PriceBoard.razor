@@ -25,7 +25,7 @@
     </GroupHeaderTemplate>
     <RowTemplate>
         <MudTd DataLabel="عنوان">@context.Title</MudTd>
-        <MudTd DataLabel="قیمت">@context.Value.FormatPrice()</MudTd>
+        <MudTd DataLabel="قیمت">@context.Value</MudTd>
         <MudTd DataLabel="تغییرات">
             @if (context.Change.Contains("-"))
             {

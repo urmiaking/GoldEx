@@ -2,7 +2,7 @@
 
 namespace GoldEx.Sdk.Common.Definitions;
 
-public enum PriceType
+public enum MarketType
 {
     [Display(Name = "سکه")]
     Coin,
@@ -11,5 +11,11 @@ public enum PriceType
     Gold,
 
     [Display(Name = "ارز")]
-    Currency
+    Currency,
+
+    [Display(Name = "حباب سکه")]
+    BubbleCoin,
+
+    [Display(Name = "پارسیان")]
+    ParsianCoin
 }
