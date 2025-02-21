@@ -38,8 +38,11 @@ public static class ServiceProviderExtensions
         var admin = await accountService.FindUserAsync("admin");
 
         if (admin is null)
+        {
             await accountService.CreateUserAsync(new AppUser("مدیر سامانه", "admin@admin.com", "admin@admin.com", "09905492104"),
-                "admin", [BuiltinRoles.Administrators]);
+                            "admin", [BuiltinRoles.Administrators]);
+        }
+
     }
 
     private static async Task PopulateAdministratorClaimsAsync(IEnumerable<IApplicationPolicyProvider> policyProviders, IAccountService accountService)

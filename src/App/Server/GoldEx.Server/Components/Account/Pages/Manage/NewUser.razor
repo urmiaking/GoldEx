@@ -88,6 +88,7 @@
         }
 
         await UserManager.AddToRoleAsync(user, BuiltinRoles.Owners);
+        await UserManager.AddClaimsAsync(user, [new Claim(ClaimTypes.Surname, Input.Name)]);
 
         RedirectManager.RedirectTo(ClientRoutes.Accounts.Manage.UserList);
     }
