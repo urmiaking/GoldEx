@@ -1,0 +1,33 @@
+﻿@using GoldEx.Shared.Routings
+@inherits GoldEx.Client.Components.Components.GoldExComponentBase
+
+<MudIconButton Color="Color.Inherit" Edge="Edge.End" OnClick="ToggleProfile">
+    <MudAvatar Size="Size.Small" Color="Color.Secondary">M</MudAvatar>
+</MudIconButton>
+
+<MudPopover Elevation="5" Open="@_isProfileOpen" Fixed="false" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft" Class="px-4 pt-4">
+    <MudIconButton OnClick="@ToggleProfile" Class="p-0 m-0" Color="Color.Error" Icon="@Icons.Material.Filled.Close"></MudIconButton>
+
+    <div class="d-flex flex-column align-center">
+        <MudBadge Color="@_color" Overlap="true" Bordered="true">
+            <MudAvatar Size="Size.Large" Color="Color.Secondary">S.A</MudAvatar>
+        </MudBadge>
+        <MudText Typo="Typo.h6" Class="mt-2">@_username</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Dark">
+            <AuthorizeView>
+                @context.User.Identity?.Name
+            </AuthorizeView>
+        </MudText>
+    </div>
+
+    <MudDivider Class="my-4" />
+
+    <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.ManageAccounts" Class="mt-2"
+               Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@NavigateToProfile">مدیریت حساب</MudButton>
+    <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Healing" Class="mt-2"
+               Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Href="@ClientRoutes.Health.Base">وضعیت سلامت</MudButton>
+    <MudButton Size="Size.Small" Class="mt-2 mb-4" Variant="Variant.Filled"
+               StartIcon="@Icons.Material.Filled.Logout" Color="Color.Error" FullWidth="true" Href="@ApiRoutes.Account.Logout">خروج</MudButton>
+
+
+</MudPopover>

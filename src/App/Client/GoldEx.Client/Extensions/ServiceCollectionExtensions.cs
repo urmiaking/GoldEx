@@ -63,6 +63,7 @@ public static class ServiceCollectionExtensions
     {
         services.DiscoverServices();
         services.AddScoped<IPriceClientService, PriceClientService>();
+        services.AddScoped<IHealthClientService, HealthClientService>();
 
         return services;
     }

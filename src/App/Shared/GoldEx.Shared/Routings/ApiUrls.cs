@@ -24,4 +24,9 @@ public class ApiUrls
     {
         public static string GetLatestPrices() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetLatestPrices);
     }
+
+    public class Health
+    {
+        public static string Get() => BuildUrl(ApiRoutes.Health.Base);
+    }
 }
