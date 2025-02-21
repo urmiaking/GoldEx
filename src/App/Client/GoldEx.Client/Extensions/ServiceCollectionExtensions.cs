@@ -11,7 +11,6 @@ using MudBlazor.Services;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Client.Abstractions;
 using MudBlazor;
-using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Extensions;
@@ -64,6 +63,7 @@ public static class ServiceCollectionExtensions
         services.DiscoverServices();
         services.AddScoped<IPriceClientService, PriceClientService>();
         services.AddScoped<IHealthClientService, HealthClientService>();
+        services.AddScoped<IImageClientService, ImageClientService>();
 
         return services;
     }

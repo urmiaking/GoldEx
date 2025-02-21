@@ -16,7 +16,7 @@ public partial class PriceBoard
     {
         GroupName = "گروه",
         Indentation = false,
-        Expandable = false,
+        Expandable = true,
         Selector = e => e.Type.GetDisplayName()
     };
 

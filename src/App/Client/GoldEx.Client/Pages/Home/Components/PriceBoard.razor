@@ -1,49 +1,62 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Shared.Routings
+@inherits GoldExComponentBase
 
-<MudText Typo="Typo.h4" GutterBottom="true" Class="@Class">قیمت ارز، طلا و سکه</MudText>
+<MudExpansionPanels Elevation="3">
+    <MudExpansionPanel Text="قیمت ارز، طلا و سکه">
+        <MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" Height="450px" FixedHeader="true" Elevation="0"
+                  Items="@_items"
+                  GroupBy="@_groupDefinition"
+                  GroupHeaderStyle="background-color:var(--mud-palette-background-gray);"
+                  GroupFooterClass="mb-4">
+            <ColGroup>
+                <col />
+                <col />
+                <col />
+                <col />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh></MudTh>
+                <MudTh>عنوان</MudTh>
+                <MudTh>قیمت</MudTh>
+                <MudTh>تغییرات</MudTh>
+                <MudTh>تاریخ بروزرسانی</MudTh>
+            </HeaderContent>
+            <GroupHeaderTemplate>
+                <!-- TODO: fix rtl-->
+                <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.Key}")</MudTh>
+            </GroupHeaderTemplate>
+            <RowTemplate>
+                @if (!string.IsNullOrEmpty(context.IconUrl))
+                {
+                    <MudTd DataLabel="">
+                        <MudAvatar Size="Size.Small">
+                            <MudImage Src="@ApiUrls.Images.GetImage(context.IconUrl)" Alt="img" />
+                        </MudAvatar>
+                    </MudTd>
+                }
 
-<MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" Height="500px" FixedHeader="true" Elevation="2"
-          Items="@_items"
-          GroupBy="@_groupDefinition"
-          GroupHeaderStyle="background-color:var(--mud-palette-background-gray);"
-          GroupFooterClass="mb-4">
-    <ColGroup>
-        <col />
-        <col />
-        <col />
-        <col />
-    </ColGroup>
-    <HeaderContent>
-        <MudTh>عنوان</MudTh>
-        <MudTh>قیمت</MudTh>
-        <MudTh>تغییرات</MudTh>
-        <MudTh>تاریخ بروزرسانی</MudTh>
-    </HeaderContent>
-    <GroupHeaderTemplate>
-        <!-- TODO: fix rtl-->
-        <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.Key}")</MudTh>
-    </GroupHeaderTemplate>
-    <RowTemplate>
-        <MudTd DataLabel="عنوان">@context.Title</MudTd>
-        <MudTd DataLabel="قیمت">@context.Value</MudTd>
-        <MudTd DataLabel="تغییرات">
-            @if (context.Change.Contains("-"))
-            {
-                <div class="red-text">
-                    @context.Change
-                </div>
-            }
-            else if (!context.Change.Contains("0%"))
-            {
-                <div class="green-text">
-                    @context.Change
-                </div>
-            }
-            else
-            {
-                @context.Change
-            }
-        </MudTd>
-        <MudTd DataLabel="تاریخ بروزرسانی">@context.LastUpdate</MudTd>
-    </RowTemplate>
-</MudTable>
+                <MudTd DataLabel="عنوان">@context.Title</MudTd>
+                <MudTd DataLabel="قیمت">@context.Value</MudTd>
+                <MudTd DataLabel="تغییرات">
+                    @if (context.Change.Contains("-"))
+                    {
+                        <div class="red-text">
+                            @context.Change
+                        </div>
+                    }
+                    else if (!context.Change.Contains("0%"))
+                    {
+                        <div class="green-text">
+                            @context.Change
+                        </div>
+                    }
+                    else
+                    {
+                        @context.Change
+                    }
+                </MudTd>
+                <MudTd DataLabel="تاریخ بروزرسانی">@context.LastUpdate</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudExpansionPanel>
+</MudExpansionPanels>

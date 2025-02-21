@@ -29,4 +29,10 @@ public class ApiUrls
     {
         public static string Get() => BuildUrl(ApiRoutes.Health.Base);
     }
+
+    public class Images
+    {
+        public static string GetImage(string imageUrl) => BuildUrl(ApiRoutes.Images.Base, ApiRoutes.Images.GetImage)
+            .AppendQueryString(new { imageUrl });
+    }
 }
