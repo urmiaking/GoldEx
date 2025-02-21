@@ -30,4 +30,11 @@ public static class ApiRoutes
     {
         public const string Base = "/api/Health";
     }
+
+    public class Images
+    {
+        public const string Base = "/api/Images";
+
+        public const string GetImage = "GetImage";
+    }
 }
