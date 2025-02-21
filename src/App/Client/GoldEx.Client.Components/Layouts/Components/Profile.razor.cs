@@ -1,5 +1,7 @@
-﻿using GoldEx.Shared.Routings;
+﻿using GoldEx.Client.Components.Extensions;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
+using Microsoft.AspNetCore.Components.Routing;
 using MudBlazor;
 
 namespace GoldEx.Client.Components.Layouts.Components;
@@ -7,8 +9,10 @@ namespace GoldEx.Client.Components.Layouts.Components;
 public partial class Profile
 {
     private bool _isProfileOpen;
-    private Color _color = Color.Warning;
-    private string _username = "User Name";
+    private string? _currentUrl;
+    private Color _color = Color.Dark;
+    private string? _username;
+    private string _status = "در حال بررسی...";
 
     private IHealthClientService HealthService => GetRequiredService<IHealthClientService>();
 
@@ -22,10 +26,12 @@ public partial class Profile
             var response = await HealthService.GetAsync(CancellationTokenSource.Token);
 
             _color = response.Status == "Healthy" ? Color.Success : Color.Warning;
+            _status = response.Status == "Healthy" ? "آنلاین" : "اختلال در سرویس ها";
         }
         catch
         {
             _color = Color.Error;
+            _status = "آفلاین";
         }
         finally
         {
@@ -39,16 +45,35 @@ public partial class Profile
 
         if (_isProfileOpen)
         {
+            _username = User?.GetDisplayName();
             await CheckServerHealthAsync();
         }
         else
         {
-            _color = Color.Warning;
+            _color = Color.Dark;
         }
     }
 
-    private void NavigateToProfile()
+    private void NavigateToAccountManagement()
     {
         Navigation.NavigateTo(ClientRoutes.Accounts.Manage.Index, forceLoad: true);
+    }
+
+    protected override void OnInitialized()
+    {
+        _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _currentUrl = Navigation.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public override void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        base.Dispose();
     }
 }

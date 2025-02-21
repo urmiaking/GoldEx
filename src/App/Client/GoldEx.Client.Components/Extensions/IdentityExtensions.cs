@@ -6,12 +6,11 @@ public static class IdentityExtensions
 {
     public static string GetDisplayName(this ClaimsPrincipal principal)
     {
-        var firstNameClaim = principal.FindFirst(ClaimTypes.GivenName);
-        var lastNameClaim = principal.FindFirst(ClaimTypes.Surname);
+        var fullNameClaim = principal.FindFirst(ClaimTypes.GivenName);
 
-        if (firstNameClaim == null && lastNameClaim == null)
+        if (fullNameClaim == null)
             return principal.Identity?.Name ?? "N/A";
 
-        return $"{firstNameClaim?.Value} {lastNameClaim?.Value}".Trim();
+        return $"{fullNameClaim.Value}".Trim();
     }
 }

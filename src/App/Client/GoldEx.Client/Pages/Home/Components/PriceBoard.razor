@@ -9,10 +9,10 @@
                   GroupHeaderStyle="background-color:var(--mud-palette-background-gray);"
                   GroupFooterClass="mb-4">
             <ColGroup>
-                <col />
-                <col />
-                <col />
-                <col />
+                <col/>
+                <col/>
+                <col/>
+                <col/>
             </ColGroup>
             <HeaderContent>
                 <MudTh></MudTh>
@@ -30,7 +30,7 @@
                 {
                     <MudTd DataLabel="">
                         <MudAvatar Size="Size.Small">
-                            <MudImage Src="@ApiUrls.Images.GetImage(context.IconUrl)" Alt="img" />
+                            <MudImage Src="@ApiUrls.Images.GetImage(context.IconUrl)" Alt="img"/>
                         </MudAvatar>
                     </MudTd>
                 }
@@ -41,13 +41,13 @@
                     @if (context.Change.Contains("-"))
                     {
                         <div class="red-text">
-                            @context.Change
+                            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon> @context.Change
                         </div>
                     }
-                    else if (!context.Change.Contains("0%"))
+                    else if (!context.Change.Contains("(0%"))
                     {
                         <div class="green-text">
-                            @context.Change
+                            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp"></MudIcon> @context.Change
                         </div>
                     }
                     else

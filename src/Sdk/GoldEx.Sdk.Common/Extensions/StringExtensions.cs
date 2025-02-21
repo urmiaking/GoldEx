@@ -137,26 +137,29 @@ public static class StringExtensions
             ;
     }
 
-    public static string FormatPrice(this string input)
-    {
-        if (string.IsNullOrEmpty(input))
-            return string.Empty;
-        
-        var cleanedInput = Regex.Replace(input, @"[^\d+-]", "");
-
-        if (!long.TryParse(cleanedInput, out var number))
-            return "Invalid input";
-        
-        var formattedNumber = number.ToString("#,##0", CultureInfo.InvariantCulture);
-
-        return $"{formattedNumber}";
-    }
-
     public static string FormatDateString(this string dateStr)
     {
         if (string.IsNullOrEmpty(dateStr) || dateStr.Length != 8)
             return string.Empty;
 
         return $"{dateStr[..4]}/{dateStr.Substring(4, 2)}/{dateStr.Substring(6, 2)}";
+    }
+
+    public static string GetInitials(this string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return string.Empty;
+
+        // Handle both English and Arabic names correctly.
+        var names = Regex.Split(name.Trim(), @"\s+"); // Split by any whitespace
+
+        return names.Length == 0 ? "" : names.Where(n => !string.IsNullOrEmpty(n)).Aggregate("", (current, n) => current + n[..1]);
+    }
+
+
+    public static string GetInitialsWithPeriods(this string name)
+    {
+        var initials = GetInitials(name);
+        return string.Join(".", initials.ToCharArray()); // Add periods
     }
 }
