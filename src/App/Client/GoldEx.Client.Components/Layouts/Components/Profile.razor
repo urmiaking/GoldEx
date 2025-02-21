@@ -8,7 +8,7 @@
         <MudIconButton Color="Color.Inherit" Edge="Edge.End" OnClick="ToggleProfile" Icon="@Icons.Material.Filled.Person">
         </MudIconButton>
 
-        <MudPopover Elevation="5" Open="@_isProfileOpen" Fixed="false" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft" Class="px-4 pt-4">
+        <MudPopover Open="@_isProfileOpen" Fixed="false" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft" Class="px-4 pt-4">
             <MudIconButton OnClick="@ToggleProfile" Class="p-0 m-0" Color="Color.Error" Icon="@Icons.Material.Filled.Close"></MudIconButton>
 
             <div class="d-flex flex-column align-center">
