@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authorization;
 using GoldEx.Shared.Settings;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using GoldEx.Server.Infrastructure.HealthChecks;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Server.Extensions;
@@ -48,10 +49,12 @@ internal static class ServiceCollectionExtensions
         });
 
         services.AddDatabaseDeveloperPageExceptionFilter();
-        services.DiscoverServices();
 
-        services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
+        services.AddSingleton<IEmailSender<AppUser>, IdentityEmailSender>();
+        services.AddSingleton<IEmailSender, EmailSender>();
         services.AddHttpContextAccessor();
+
+        services.DiscoverServices();
 
         return services;
     }
