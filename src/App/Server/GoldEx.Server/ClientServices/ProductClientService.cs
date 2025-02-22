@@ -7,7 +7,6 @@ using GoldEx.Shared.Services;
 using MapsterMapper;
 using System.Security.Claims;
 using GoldEx.Sdk.Server.Application.Exceptions;
-using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.ClientServices;
 
@@ -40,10 +39,16 @@ internal class ProductClientService(IProductService service, IHttpContextAccesso
         var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
 
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            throw new InvalidOperationException("User ID not found or invalid.");
+            throw new InvalidOperationException("Invalid User ID.");
 
-        var product = new Product(request.Name, request.Barcode, request.Weight, request.Wage, request.ProductType,
-            request.WageType, request.CaratType, userId);
+        var product = new Product(request.Name,
+            request.Barcode,
+            request.Weight,
+            request.Wage,
+            request.ProductType,
+            request.WageType,
+            request.CaratType,
+            userId);
 
         product.SetCreatedUserId(userId);
 
