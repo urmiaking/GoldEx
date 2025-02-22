@@ -1,5 +1,7 @@
 ﻿using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Shared.DTOs;
+using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.Products;
 using Mapster;
 
 namespace GoldEx.Server.Common;
@@ -25,5 +27,11 @@ public class MapsterConfig : IRegister
 
         #endregion
 
+        #region Product
+
+        config.NewConfig<Product, GetProductResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
+
+        #endregion
     }
 }

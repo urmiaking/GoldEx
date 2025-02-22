@@ -8,7 +8,6 @@
 
 	<ItemGroup>
 		<Folder Include="Extensions\" />
-		<Folder Include="DTOs\" />
 		<Folder Include="Services\" />
 		<Folder Include="Settings\" />
 	</ItemGroup>

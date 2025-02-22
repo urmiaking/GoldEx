@@ -1,23 +1,29 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using FluentValidation;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Server.Application.Services;
 
-//TODO: add validators
 [ScopedService]
-public class PriceService(IPriceRepository priceRepository) : IPriceService
+internal class PriceService(IPriceRepository repository, IValidator<Price> validator) : IPriceService
 {
-    public Task CreateAsync(Price price, CancellationToken cancellationToken = default)
-        => priceRepository.CreateAsync(price, cancellationToken);
+    public async Task CreateAsync(Price price, CancellationToken cancellationToken = default)
+    {
+        await validator.ValidateAndThrowAsync(price, cancellationToken);
+        await repository.CreateAsync(price, cancellationToken);
+    }
 
-    public Task UpdateAsync(Price price, CancellationToken cancellationToken = default)
-        => priceRepository.UpdateAsync(price, cancellationToken);
+    public async Task UpdateAsync(Price price, CancellationToken cancellationToken = default)
+    {
+        await validator.ValidateAndThrowAsync(price, cancellationToken);
+        await repository.UpdateAsync(price, cancellationToken);
+    }
 
     public Task<List<Price>> GetLatestPricesAsync(CancellationToken cancellationToken = default)
-        => priceRepository.GetLatestPricesAsync(cancellationToken);
+        => repository.GetLatestPricesAsync(cancellationToken);
 
     public Task<List<Price>> GetListAsync(CancellationToken cancellationToken = default)
-        => priceRepository.GetListAsync(cancellationToken);
+        => repository.GetListAsync(cancellationToken);
 }

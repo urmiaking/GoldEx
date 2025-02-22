@@ -57,4 +57,10 @@ public static class ClientRoutes
     {
         public const string Base = "/HealthCheck";
     }
+
+    public static class Products
+    {
+        private const string ProductsPrefix = "/products";
+        public const string Index = $"{ProductsPrefix}";
+    }
 }
