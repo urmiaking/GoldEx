@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs;
+﻿using GoldEx.Shared.DTOs.Prices;
 
 namespace GoldEx.Shared.Services;
 

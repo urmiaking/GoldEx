@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
-using GoldEx.Shared.DTOs;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Services;
 using MapsterMapper;
 

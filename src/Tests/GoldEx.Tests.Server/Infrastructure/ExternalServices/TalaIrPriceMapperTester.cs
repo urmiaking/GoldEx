@@ -31,13 +31,13 @@ public class TalaIrPriceMapperTester
         Assert.That(prices, Is.Not.Null);
         Assert.That(prices.Count, Is.EqualTo(2)); // Check the number of returned prices
 
-        var oldCoin = prices.FirstOrDefault(p => p.Title == "قديم");
+        var oldCoin = prices.FirstOrDefault(p => p.Title == "قدیم");
         Assert.That(oldCoin, Is.Not.Null);
         Assert.That(oldCoin.CurrentValue, Is.EqualTo(70500000)); // Check the parsed value
         Assert.That(oldCoin.LastUpdate, Is.EqualTo("2024-07-27"));
         Assert.That(oldCoin.Change, Is.EqualTo("100,000 (0.14%)"));
 
-        var newCoin = prices.FirstOrDefault(p => p.Title == "جديد");
+        var newCoin = prices.FirstOrDefault(p => p.Title == "جدید");
         Assert.That(newCoin, Is.Not.Null);
         Assert.That(newCoin.CurrentValue, Is.EqualTo(74300000)); // Check the parsed value
         Assert.That(newCoin.LastUpdate, Is.EqualTo("2024-07-27"));

@@ -22,8 +22,7 @@ public class SignalHealthCheck(IHttpClientFactory httpClientFactory) : IHealthCh
         }
         catch (Exception e)
         {
-            return HealthCheckResult.Unhealthy("Signal endpoint is unhealthy and has exception: ", e);
+            return HealthCheckResult.Unhealthy($"Signal endpoint is unhealthy and has exception: {e.Message}", e);
         }
-        
     }
 }

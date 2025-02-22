@@ -1,5 +1,5 @@
-﻿@page "/"
-@using GoldEx.Shared.Routings
+﻿@attribute [Route(ClientRoutes.Home.Index)]
+@inherits GoldExComponentBase
 
 <PageTitle>صفحه اصلی</PageTitle>
 
@@ -30,6 +30,7 @@
             <PriceBoard Class="mt-2" />
         </MudExpansionPanel>
         <MudExpansionPanel Text="اجناس من">
+            <ProductsList />
         </MudExpansionPanel>
     </MudExpansionPanels>
 </MudContainer>

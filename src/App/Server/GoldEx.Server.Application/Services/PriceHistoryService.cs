@@ -6,7 +6,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-public class PriceHistoryService(IPriceHistoryRepository repository) : IPriceHistoryService
+internal class PriceHistoryService(IPriceHistoryRepository repository) : IPriceHistoryService
 {
     public Task CreateAsync(PriceHistory priceHistory, CancellationToken cancellationToken = default)
         => repository.CreateAsync(priceHistory, cancellationToken);

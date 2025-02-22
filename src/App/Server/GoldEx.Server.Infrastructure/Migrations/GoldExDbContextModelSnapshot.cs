@@ -309,6 +309,49 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.ToTable("PriceHistories", (string)null);
                 });
 
+            modelBuilder.Entity("GoldEx.Server.Domain.ProductAggregate.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CaratType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ProductType")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Wage")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("WageType")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedUserId");
+
+                    b.ToTable("Products", (string)null);
+                });
+
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppRoleClaim", b =>
                 {
                     b.HasOne("GoldEx.Sdk.Server.Domain.Entities.Identity.AppRole", "Role")
@@ -381,6 +424,17 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Price");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.ProductAggregate.Product", b =>
+                {
+                    b.HasOne("GoldEx.Sdk.Server.Domain.Entities.Identity.AppUser", "CreatedUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedUser");
                 });
 
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppRole", b =>

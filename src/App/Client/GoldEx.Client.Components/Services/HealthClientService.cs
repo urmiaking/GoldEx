@@ -1,9 +1,9 @@
 ﻿using System.Net.Http.Json;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Shared.DTOs;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 using System.Text.Json;
+using GoldEx.Shared.DTOs.Application;
 
 namespace GoldEx.Client.Components.Services;
 

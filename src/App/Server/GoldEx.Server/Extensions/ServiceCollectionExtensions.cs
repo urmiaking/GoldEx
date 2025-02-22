@@ -51,6 +51,7 @@ internal static class ServiceCollectionExtensions
         services.DiscoverServices();
 
         services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
+        services.AddHttpContextAccessor();
 
         return services;
     }

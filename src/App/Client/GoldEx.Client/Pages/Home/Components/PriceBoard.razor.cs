@@ -1,5 +1,5 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.DTOs;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;

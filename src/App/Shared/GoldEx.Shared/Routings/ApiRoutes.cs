@@ -37,4 +37,15 @@ public static class ApiRoutes
 
         public const string GetImage = "GetImage";
     }
+
+    public class Products
+    {
+        public const string Base = "/api/Products";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string GetByBarcode = "barcode/{barcode}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+    }
 }

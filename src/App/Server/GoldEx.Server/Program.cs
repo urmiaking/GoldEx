@@ -4,7 +4,6 @@ using GoldEx.Server.Components;
 using GoldEx.Server.Extensions;
 using GoldEx.Client;
 using System.Reflection;
-using GoldEx.Client.Components.Layouts;
 using GoldEx.Client.Extensions;
 using GoldEx.Server;
 using GoldEx.Server.Application;

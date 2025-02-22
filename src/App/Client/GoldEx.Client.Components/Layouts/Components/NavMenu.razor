@@ -4,20 +4,14 @@
 @inject NavigationManager NavigationManager
 
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">صفحه اصلی</MudNavLink>
-    <MudNavLink Href="counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">شمارنده</MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">صفحه اصلی</MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Products.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart">اجناس من</MudNavLink>
 
-    <MudNavLink Href="weather" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">آب و هوا</MudNavLink>
-
-    <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">نیازمند احراز هویت</MudNavLink>
     <AuthorizeView>
         <Authorized>
-            <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">مدیریت حساب</MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Accounts.Manage.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">مدیریت حساب</MudNavLink>
             <MudNavLink Href="@ApiUrls.Account.Logout(_currentUrl)" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">خروج</MudNavLink>
         </Authorized>
-        <NotAuthorized>
-            <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Login</MudNavLink>
-        </NotAuthorized>
     </AuthorizeView>
 </MudNavMenu>
 

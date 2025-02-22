@@ -64,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPriceClientService, PriceClientService>();
         services.AddScoped<IHealthClientService, HealthClientService>();
         services.AddScoped<IImageClientService, ImageClientService>();
+        services.AddScoped<IProductClientService, ProductClientService>();
 
         return services;
     }

@@ -1,6 +1,8 @@
-﻿namespace GoldEx.Sdk.Common.Data;
+﻿using GoldEx.Sdk.Common.Definitions;
 
-public record RequestFilter(int? Skip = null, int? Take = null, string? Search = null)
+namespace GoldEx.Sdk.Common.Data;
+
+public record RequestFilter(int? Skip = null, int? Take = null, string? Search = null, string? SortLabel = null, SortDirection? SortDirection = null)
 {
     public int? Skip { get; set; } = Skip;
 }

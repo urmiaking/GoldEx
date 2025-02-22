@@ -1,8 +1,4 @@
-﻿using System.Formats.Asn1;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-
-namespace GoldEx.Shared.DTOs;
+﻿namespace GoldEx.Shared.DTOs.Application;
 
 public record HealthCheckResponse
 {
