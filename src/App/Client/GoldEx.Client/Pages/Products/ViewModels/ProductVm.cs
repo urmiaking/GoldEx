@@ -21,13 +21,13 @@ public class ProductVm
     public double? Wage { get; set; }
 
     [Display(Name = "نوع اجرت")]
-    public WageType? WageType { get; set; } = default!;
+    public WageType? WageType { get; set; }
 
     [Display(Name = "نوع کالا")]
-    public ProductType ProductType { get; set; } = default!;
+    public ProductType ProductType { get; set; }
 
     [Display(Name = "عیار")]
-    public CaratType CaratType { get; set; } = default!;
+    public CaratType CaratType { get; set; }
 
 
     internal static ProductVm CreateFrom(GetProductResponse item)

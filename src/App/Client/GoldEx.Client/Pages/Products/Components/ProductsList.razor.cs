@@ -3,12 +3,15 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
 public partial class ProductsList
 {
-    private MudTable<ProductVm>? _table;
+    private MudTable<ProductVm> _table = new ();
+    private string? _searchString;
+
     private IProductClientService ProductService => GetRequiredService<IProductClientService>();
 
     private Task OnRemoveProduct(ProductVm model)
@@ -32,7 +35,7 @@ public partial class ProductsList
             SetBusy();
             CancelToken();
 
-            var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, null, state.SortLabel,
+            var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
                 state.SortDirection switch
                 {
                     SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
@@ -61,5 +64,16 @@ public partial class ProductsList
         }
 
         return result;
+    }
+
+    private void OnSearch(string text)
+    {
+        _searchString = text;
+        _table.ReloadServerData();
+    }
+
+    private void PageChanged(int i)
+    {
+        _table.NavigateTo(i - 1);
     }
 }

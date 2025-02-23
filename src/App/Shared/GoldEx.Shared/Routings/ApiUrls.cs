@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
 
 namespace GoldEx.Shared.Routings;
 
@@ -38,7 +39,7 @@ public class ApiUrls
 
     public class Products
     {
-        public static string GetList() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList);
+        public static string GetList(RequestFilter filter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList).AppendQueryString(filter);
         public static string Get(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Get).FormatRoute(new { id });
         public static string GetByBarcode(string barcode) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
             .AppendQueryString(new { barcode });

@@ -1,17 +1,24 @@
 ﻿@inherits GoldExComponentBase
 
 <MudTable T="ProductVm" MultiSelection="true" Hover="true" @ref="_table" Dense="true" ServerData="LoadProductsAsync">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">اجناس من</MudText>
+        <MudSpacer />
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="Barcode" T="string">بارکد</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="ProductType" T="string">نوع کالا</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Name" T="string">عنوان</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Weight" T="string">وزن</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Wage" T="string">اجرت ساخت</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Carat" T="string">عیار</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Barcode" T="ProductVm">بارکد</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="ProductType" T="ProductVm">نوع کالا</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Name" T="ProductVm">عنوان</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Weight" T="ProductVm">وزن</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Wage" T="ProductVm">اجرت ساخت</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Carat" T="ProductVm">عیار</MudTableSortLabel></MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="بارکد">@context.Barcode</MudTd>
+
         <MudTd DataLabel="نوع کالا">@context.ProductType.GetDisplayName()</MudTd>
         <MudTd DataLabel="عنوان">@context.Name</MudTd>
         <MudTd DataLabel="وزن">@(context.Weight + " گرم")</MudTd>
@@ -33,9 +40,19 @@
         </MudTd>
     </RowTemplate>
     <NoRecordsContent>
-        <MudText>هیچ جنسی یافت نشد</MudText>
+        <MudText>هیچ جنسی در انبار ثبت نشده است</MudText>
     </NoRecordsContent>
     <LoadingContent>
         <MudText>در حال بارگذاری</MudText>
     </LoadingContent>
+    <PagerContent>
+        <div class="d-flex flex-column align-center">
+            <MudPagination SelectedChanged="PageChanged"
+                           Color="Color.Primary"
+                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
+                           Class="pa-4"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+        </div>
+    </PagerContent>
 </MudTable>
