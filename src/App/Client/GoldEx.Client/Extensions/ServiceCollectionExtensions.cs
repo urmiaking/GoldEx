@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
 using Blazored.LocalStorage;
 using GoldEx.Client.Components.Services;
+using GoldEx.Client.Data;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
 using MudBlazor.Services;
@@ -12,6 +13,7 @@ using GoldEx.Client.Services;
 using GoldEx.Sdk.Client.Abstractions;
 using MudBlazor;
 using GoldEx.Shared.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Client.Extensions;
 
@@ -99,6 +101,16 @@ public static class ServiceCollectionExtensions
         services.AddLocalization();
         services.AddBlazoredLocalStorage();
         services.AddScoped<IBusyIndicator, BusyIndicator>();
+
+        services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
+        {
+            optionsBuilder
+#if RELEASE
+                .UseModel(OfflineDbContextModel.Instance) // use generated compiled model in order to make db context optimized
+#endif
+                .UseSqlite("Data Source=Offline-ClientDb.db");
+        }, async (sp, dbContext) => await dbContext.Database.MigrateAsync());
+
         return services;
     }
 }
