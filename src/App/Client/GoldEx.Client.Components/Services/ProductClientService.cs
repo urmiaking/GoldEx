@@ -12,7 +12,7 @@ public class ProductClientService(HttpClient client, JsonSerializerOptions jsonO
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.GetList(), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

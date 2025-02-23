@@ -29,7 +29,7 @@ public class ProductRepository(GoldExDbContext context) : RepositoryBase<Product
 
         // Apply search filter
         if (!string.IsNullOrEmpty(filter.Search))
-            query = query.Where(x => x.Name.Contains(filter.Search) || x.Barcode.Contains(filter.Search));
+            query = query.Where(x => x.Name.Contains(filter.Search) || x.Barcode.Contains(filter.Search) || x.Name.Contains(filter.Search));
         
         // Apply sorting
         if (!string.IsNullOrEmpty(filter.SortLabel) && filter.SortDirection != null && filter.SortDirection != SortDirection.None)
