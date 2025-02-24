@@ -4,7 +4,12 @@
 <PageTitle>صفحه اصلی</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large">
-    <div class="row">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+    <div class="row mt-4">
         <div class="col-12 col-md-6">
             <MudText Typo="Typo.h4" Style="font-weight: 500"> میز خدمات الکترونیکی گلدکس</MudText>
             <div class="my-4">
@@ -27,10 +32,10 @@
     </div>
     <MudExpansionPanels Elevation="3">
         <MudExpansionPanel Text="قیمت ارز، طلا و سکه">
-            <PriceBoard Class="mt-2" />
+            <PriceBoard Class="mt-2"/>
         </MudExpansionPanel>
         <MudExpansionPanel Text="اجناس من">
-            <ProductsList />
+            <ProductsList/>
         </MudExpansionPanel>
     </MudExpansionPanels>
 </MudContainer>
