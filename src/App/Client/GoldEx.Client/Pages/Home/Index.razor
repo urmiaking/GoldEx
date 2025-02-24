@@ -30,13 +30,20 @@
     </AuthorizeView>
 
     <MudExpansionPanels Elevation="3">
-        <MudExpansionPanel Text="قیمت ارز، طلا و سکه">
-            <PriceBoard Class="mt-2" />
+        <MudExpansionPanel Text="قیمت ارز، طلا و سکه" ExpandedChanged="OnPriceBoardExpandedChanged">
+            @_priceBoardContent
         </MudExpansionPanel>
+
         <AuthorizeView>
-            <MudExpansionPanel Text="اجناس من">
-                <ProductsList />
+            <MudExpansionPanel Text="اجناس موجود" ExpandedChanged="OnProductsListExpandedChanged">
+                @_productListContent
             </MudExpansionPanel>
+            <MudExpansionPanel Text="فاکتورهای من"></MudExpansionPanel>
+            <MudExpansionPanel Text="گزارش گیری"></MudExpansionPanel>
+            <MudExpansionPanel Text="اجناس فروخته شده"></MudExpansionPanel>
+            <MudExpansionPanel Text="لیست بدهی ها"></MudExpansionPanel>
+            <MudExpansionPanel Text="اسناد حسابداری"></MudExpansionPanel>
         </AuthorizeView>
+
     </MudExpansionPanels>
 </MudContainer>
