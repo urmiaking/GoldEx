@@ -1,28 +1,15 @@
 ﻿using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Services;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
 using MudBlazor;
-using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
 public partial class ProductsList
 {
-    private MudTable<ProductVm> _table = new ();
     private string? _searchString;
-
-    private IProductClientService ProductService => GetRequiredService<IProductClientService>();
-
-    private Task OnRemoveProduct(ProductVm model)
-    {
-        throw new NotImplementedException();
-    }
-
-    private Task OnEditProduct(ProductVm model)
-    {
-        throw new NotImplementedException();
-    }
+    private MudTable<ProductVm> _table = new ();
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
 
     private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -66,14 +53,42 @@ public partial class ProductsList
         return result;
     }
 
-    private void OnSearch(string text)
+    private async Task OnSearch(string text)
     {
         _searchString = text;
-        _table.ReloadServerData();
+        await _table.ReloadServerData();
     }
 
     private void PageChanged(int i)
     {
         _table.NavigateTo(i - 1);
+    }
+
+    public async Task OnCreateProduct()
+    {
+        var dialog = await DialogService.ShowAsync<Create>("افزودن جنس جدید", _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
+            await _table.ReloadServerData();
+        }
+    }
+
+    private Task OnRemoveProduct(ProductVm model)
+    {
+        throw new NotImplementedException();
+    }
+
+    private Task OnEditProduct(ProductVm model)
+    {
+        throw new NotImplementedException();
+    }
+
+    private Task OnRemoveSelectedProducts()
+    {
+        throw new NotImplementedException();
     }
 }

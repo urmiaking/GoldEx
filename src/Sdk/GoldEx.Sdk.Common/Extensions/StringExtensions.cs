@@ -156,10 +156,15 @@ public static class StringExtensions
         return names.Length == 0 ? "" : names.Where(n => !string.IsNullOrEmpty(n)).Aggregate("", (current, n) => current + n[..1]);
     }
 
-
     public static string GetInitialsWithPeriods(this string name)
     {
         var initials = GetInitials(name);
         return string.Join(".", initials.ToCharArray()); // Add periods
+    }
+
+    public static string GenerateRandomBarcode()
+    {
+        var randomNumber = IntExtensions.GenerateRandomNumber(10000000, 99999999);
+        return randomNumber.ToString();
     }
 }
