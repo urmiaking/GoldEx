@@ -34,8 +34,10 @@
         <MudExpansionPanel Text="قیمت ارز، طلا و سکه">
             <PriceBoard Class="mt-2"/>
         </MudExpansionPanel>
-        <MudExpansionPanel Text="اجناس من">
-            <ProductsList/>
-        </MudExpansionPanel>
+        <AuthorizeView>
+            <MudExpansionPanel Text="اجناس من">
+                <ProductsList/>
+            </MudExpansionPanel>
+        </AuthorizeView>
     </MudExpansionPanels>
 </MudContainer>
