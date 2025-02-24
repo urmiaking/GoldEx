@@ -9,13 +9,16 @@ public class ProductVm
     public Guid Id { get; set; }
 
     [Display(Name = "نام جنس")]
+    [Required(ErrorMessage = "نام جنس الزامی است")]
     public string Name { get; set; } = default!;
 
     [Display(Name = "بارکد")]
+    [Required(ErrorMessage = "بارکد الزامی است")]
     public string Barcode { get; set; } = default!;
 
     [Display(Name = "وزن")]
-    public double Weight { get; set; }
+    [Required(ErrorMessage = "وزن الزامی است")]
+    public double? Weight { get; set; }
 
     [Display(Name = "اجرت")]
     public double? Wage { get; set; }
@@ -29,6 +32,8 @@ public class ProductVm
     [Display(Name = "عیار")]
     public CaratType CaratType { get; set; }
 
+    internal static ProductVm CreateDefaultInstance() => new()
+        { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
 
     internal static ProductVm CreateFrom(GetProductResponse item)
     {
@@ -43,5 +48,33 @@ public class ProductVm
             ProductType = item.ProductType,
             CaratType = item.CaratType
         };
+    }
+
+    internal static CreateProductRequest ToCreateRequest(ProductVm item)
+    {
+        return new CreateProductRequest
+        (
+            item.Name,
+            item.Barcode,
+            item.Weight ?? 0,
+            item.Wage,
+            item.WageType,
+            item.ProductType,
+            item.CaratType
+        );
+    }
+
+    internal static UpdateProductRequest ToUpdateRequest(ProductVm item)
+    {
+        return new UpdateProductRequest
+        (
+            item.Name,
+            item.Barcode,
+            item.Weight ?? 0,
+            item.Wage,
+            item.WageType,
+            item.ProductType,
+            item.CaratType
+        );
     }
 }

@@ -9,34 +9,33 @@
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
-    <div class="row mt-4">
-        <div class="col-12 col-md-6">
-            <MudText Typo="Typo.h4" Style="font-weight: 500"> میز خدمات الکترونیکی گلدکس</MudText>
-            <div class="my-4">
-                <AuthorizeView>
-                    <Authorized>
-                        <strong>@context.User.GetDisplayName()، </strong> به سامانه گلدکس خوش آمدید
-                    </Authorized>
-                </AuthorizeView>
-            </div>
-        </div>
-        <AuthorizeView>
-            <NotAuthorized>
-                <div class="col-12 col-md-6 d-flex align-items-center justify-content-center justify-content-md-end p-5">
+    <AuthorizeView>
+        <NotAuthorized>
+            <div class="row mt-4">
+                <div class="col-12 col-md-8">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        <MudText Typo="Typo.h4" Style="font-weight: 500">سامانه یکپارچه طلا و جواهر گلدکس</MudText>
+                    </MudHidden>
+                    <div class="my-4">
+                        لطفا برای استفاده از امکانات سامانه، وارد حساب کاربری خود شوید
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center justify-content-md-end ">
                     <MudButton Href="@ClientRoutes.Accounts.Login" Variant="Variant.Filled" Color="Color.Primary">
                         ورود به حساب کاربری
                     </MudButton>
                 </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </div>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+
     <MudExpansionPanels Elevation="3">
         <MudExpansionPanel Text="قیمت ارز، طلا و سکه">
-            <PriceBoard Class="mt-2"/>
+            <PriceBoard Class="mt-2" />
         </MudExpansionPanel>
         <AuthorizeView>
             <MudExpansionPanel Text="اجناس من">
-                <ProductsList/>
+                <ProductsList />
             </MudExpansionPanel>
         </AuthorizeView>
     </MudExpansionPanels>

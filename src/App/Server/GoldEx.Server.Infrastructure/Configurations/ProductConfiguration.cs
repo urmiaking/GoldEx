@@ -1,5 +1,4 @@
-﻿using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Server.Domain.ProductAggregate;
+﻿using GoldEx.Server.Domain.ProductAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

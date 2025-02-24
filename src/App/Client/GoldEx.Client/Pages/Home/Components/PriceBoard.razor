@@ -42,7 +42,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon> @context.Change
                 </div>
             }
-            else if (!context.Change.Contains("(0%"))
+            else if (!context.Change.Contains("(0.00%)"))
             {
                 <div class="green-text">
                     <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp"></MudIcon> @context.Change
@@ -50,7 +50,7 @@
             }
             else
             {
-                @context.Change
+                <MudIcon Icon="@Icons.Material.Filled.Remove"></MudIcon> @context.Change
             }
         </MudTd>
         <MudTd DataLabel="تاریخ بروزرسانی">@context.LastUpdate</MudTd>

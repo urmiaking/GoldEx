@@ -11,14 +11,14 @@ public class CreateProductValidator : AbstractValidator<Product>
     public CreateProductValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("عنوان کالا نمی تواند خالی باشد")
-            .MaximumLength(50).WithMessage("طول عنوان کالا نمی تواند بیشتر از 50 کاراکتر باشد");
+            .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
+            .MaximumLength(50).WithMessage("طول عنوان جنس نمی تواند بیشتر از 50 کاراکتر باشد");
 
         RuleFor(x => x.Barcode)
-            .NotEmpty().WithMessage("بارکد کالا نمی تواند خالی باشد");
+            .NotEmpty().WithMessage("بارکد جنس نمی تواند خالی باشد");
 
         RuleFor(x => x.Weight)
-            .GreaterThan(0).WithMessage("وزن کالا نمی تواند صفر باشد");
+            .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
 
         RuleFor(x => x.CreatedUserId)
             .NotEqual(Guid.Empty)
@@ -45,5 +45,9 @@ public class CreateProductValidator : AbstractValidator<Product>
             RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای سکه ها، طلای آبشده و کهنه نباید وارد شود");
             RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای سکه ها، طلای آبشده و کهنه نباید وارد شود");
         });
+
+        RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
+
+        RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
     }
 }
