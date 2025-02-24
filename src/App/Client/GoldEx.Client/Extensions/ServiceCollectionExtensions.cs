@@ -105,9 +105,6 @@ public static class ServiceCollectionExtensions
         services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
         {
             optionsBuilder
-#if RELEASE
-                .UseModel(OfflineDbContextModel.Instance) // use generated compiled model in order to make db context optimized
-#endif
                 .UseSqlite("Data Source=Offline-ClientDb.db");
         }, async (sp, dbContext) => await dbContext.Database.MigrateAsync());
 
