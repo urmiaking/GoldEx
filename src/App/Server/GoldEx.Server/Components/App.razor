@@ -27,8 +27,9 @@
 
 <body>
     <Routes @rendermode="RenderModeForPage" />
-    <script src="_framework/blazor.web.js"></script>
 
+    <script src=@Assets["_framework/blazor.web.js"]></script>
+    <script src=@Assets["_content/Bit.Besql/bit-besql.js"]></script>
     <script src=@Assets["_content/MudBlazor/MudBlazor.min.js"]></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
