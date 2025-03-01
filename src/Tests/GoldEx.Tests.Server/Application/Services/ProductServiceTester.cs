@@ -1,5 +1,5 @@
-﻿using GoldEx.Server.Application.Validators;
-using GoldEx.Server.Domain.ProductAggregate;
+﻿using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.Application.Validators;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Tests.Server.Application.Services;
@@ -7,14 +7,14 @@ namespace GoldEx.Tests.Server.Application.Services;
 [TestFixture]
 public class ProductServiceTester
 {
-    private CreateProductValidator _createProductValidator;
-    private DeleteProductValidator _deleteProductValidator;
+    private CreateProductValidator<Product> _createProductValidator;
+    private DeleteProductValidator<Product> _deleteProductValidator;
 
     [SetUp]
     public void SetUp()
     {
-        _createProductValidator = new CreateProductValidator();
-        _deleteProductValidator = new DeleteProductValidator();
+        _createProductValidator = new CreateProductValidator<Product>();
+        _deleteProductValidator = new DeleteProductValidator<Product>();
     }
 
     [Test]

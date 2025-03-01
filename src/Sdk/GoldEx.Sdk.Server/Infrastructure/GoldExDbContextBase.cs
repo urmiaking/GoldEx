@@ -1,8 +1,8 @@
-﻿using MediatR;
+﻿using GoldEx.Sdk.Common.Interceptors;
+using MediatR;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using GoldEx.Sdk.Server.Infrastructure.Interceptors;
 using GoldEx.Sdk.Server.Infrastructure.Extensions.Configurations;
 
 namespace GoldEx.Sdk.Server.Infrastructure;

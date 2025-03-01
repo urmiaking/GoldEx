@@ -1,17 +1,18 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Services;
 using MapsterMapper;
 using System.Security.Claims;
 using GoldEx.Sdk.Server.Application.Exceptions;
+using GoldEx.Shared.Application.Services.Abstractions;
+using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 
 namespace GoldEx.Server.ClientServices;
 
 [ScopedService]
-internal class ProductClientService(IProductService service, IHttpContextAccessor httpContextAccessor, IMapper mapper) : IProductClientService
+internal class ProductClientService(IProductService<Product> service, IHttpContextAccessor httpContextAccessor, IMapper mapper) : IProductClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {

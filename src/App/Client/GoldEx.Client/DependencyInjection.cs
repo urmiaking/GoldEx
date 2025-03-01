@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Components.Services;
 using GoldEx.Client.Extensions;
+using GoldEx.Client.Offline;
 using GoldEx.Shared.Abstractions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -10,11 +11,12 @@ internal static class DependencyInjection
     internal static IServiceCollection AddClient(this IServiceCollection services, IWebAssemblyHostEnvironment environment)
     {
         services.InitializeDefaultCulture()
-            .AddClient()
+            .AddClientServices()
             .AddAuthServices()
             .AddServices()
             .AddJsonOptions()
-            .AddHttpClientService(environment);
+            .AddHttpClientService(environment)
+            .AddOfflineClient();
 
         services.AddScoped<IThemeService, ThemeService>();
 

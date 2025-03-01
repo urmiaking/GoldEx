@@ -4,10 +4,11 @@ using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure;
-using GoldEx.Server.Infrastructure.Repositories;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Infrastructure.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace GoldEx.Tests.Server.Infrastructure.Repositories;
 
@@ -15,7 +16,7 @@ namespace GoldEx.Tests.Server.Infrastructure.Repositories;
 public class ProductRepositoryTester
 {
     private GoldExDbContext _dbContext;
-    private ProductRepository _productRepository;
+    private ProductRepository<Product> _productRepository;
 
     [SetUp]
     public void Setup()
@@ -28,7 +29,7 @@ public class ProductRepositoryTester
         _dbContext = new GoldExDbContext(options, new Mediator(new ServiceContainer()));
         _dbContext.Database.EnsureDeleted(); // Ensure a clean database for each test
         _dbContext.Database.EnsureCreated();
-        _productRepository = new ProductRepository(_dbContext);
+        _productRepository = new ProductRepository<Product>(null);
 
         // Seed some test data
         SeedData();

@@ -10,8 +10,6 @@ internal class DbContextFactory : IDesignTimeDbContextFactory<GoldExDbContext>
         var builder = new DbContextOptionsBuilder<GoldExDbContext>();
         builder.UseSqlServer();
         var options = builder.Options;
-
-        //var assembly = typeof(Gender).Assembly;
         
         return new GoldExDbContext(options, null!);
     }

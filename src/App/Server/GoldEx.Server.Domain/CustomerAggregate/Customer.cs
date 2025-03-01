@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Shared.Domain.Entities;
 
 namespace GoldEx.Server.Domain.CustomerAggregate;
 

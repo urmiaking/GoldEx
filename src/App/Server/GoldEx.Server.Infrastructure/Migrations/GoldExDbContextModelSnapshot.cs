@@ -417,13 +417,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             modelBuilder.Entity("GoldEx.Server.Domain.PriceHistoryAggregate.PriceHistory", b =>
                 {
-                    b.HasOne("GoldEx.Server.Domain.PriceAggregate.Price", "Price")
+                    b.HasOne("GoldEx.Server.Domain.PriceAggregate.Price", null)
                         .WithMany("PriceHistories")
                         .HasForeignKey("PriceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Price");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.ProductAggregate.Product", b =>
