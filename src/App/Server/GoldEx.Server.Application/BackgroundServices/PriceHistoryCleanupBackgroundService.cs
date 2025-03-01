@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Application.Services.Abstractions;
+﻿using GoldEx.Server.Domain.PriceHistoryAggregate;
+using GoldEx.Shared.Application.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ public class PriceHistoryCleanupBackgroundService(IServiceScopeFactory serviceSc
             {
                 using var scope = serviceScopeFactory.CreateScope();
 
-                var priceHistoryService = scope.ServiceProvider.GetRequiredService<IPriceHistoryService>();
+                var priceHistoryService = scope.ServiceProvider.GetRequiredService<IPriceHistoryService<PriceHistory>>();
 
                 var deletedRowsCount = await priceHistoryService.CleanupAsync(stoppingToken);
 

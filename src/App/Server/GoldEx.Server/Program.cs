@@ -45,7 +45,7 @@ bool SetupServices()
         var configuration = builder.Configuration;
 
         builder.Services
-            .AddClient()
+            .AddClientServices()
             .AddServer(configuration)
             .AddApplication()
             .AddInfrastructure();

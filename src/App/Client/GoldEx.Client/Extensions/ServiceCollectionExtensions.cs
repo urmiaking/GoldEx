@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Blazored.LocalStorage;
 using GoldEx.Client.Components.Services;
-using GoldEx.Client.Data;
+using GoldEx.Client.Offline.Infrastructure;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
 using MudBlazor.Services;
@@ -91,22 +92,32 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddClient(this IServiceCollection services)
+    public static IServiceCollection AddClientServices(this IServiceCollection services)
     {
+        if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
+            services.AddClientOnlyServices();
+
+        services.AddClientAndServerServices();
+
+        return services;
+    }
+
+    public static IServiceCollection AddClientOnlyServices(this IServiceCollection services)
+    {
+        return services;
+    }
+
+    public static IServiceCollection AddClientAndServerServices(this IServiceCollection services)
+    {
+        services.AddBlazoredLocalStorage();
+
         services.AddMudServices(config =>
         {
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
         });
 
         services.AddLocalization();
-        services.AddBlazoredLocalStorage();
         services.AddScoped<IBusyIndicator, BusyIndicator>();
-
-        services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
-        {
-            optionsBuilder
-                .UseSqlite("Data Source=Offline-ClientDb.db");
-        }, async (sp, dbContext) => await dbContext.Database.MigrateAsync());
 
         return services;
     }

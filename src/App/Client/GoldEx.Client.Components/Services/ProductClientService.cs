@@ -1,25 +1,30 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Client.Offline.Domain.ProductAggregate;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Components.Services;
 
-public class ProductClientService(HttpClient client, JsonSerializerOptions jsonOptions) : IProductClientService
+public class ProductClientService(HttpClient client, JsonSerializerOptions jsonOptions, IProductService<Product> offlineService) : IProductClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
+        var products = await offlineService.GetListAsync(filter, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+        throw new NotImplementedException();
+        //using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
 
-        var result = await response.Content.ReadFromJsonAsync<PagedList<GetProductResponse>>(jsonOptions, cancellationToken);
+        //if (!response.IsSuccessStatusCode)
+        //    throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        return result ?? throw new UnexpectedHttpResponseException();
+        //var result = await response.Content.ReadFromJsonAsync<PagedList<GetProductResponse>>(jsonOptions, cancellationToken);
+
+        //return result ?? throw new UnexpectedHttpResponseException();
     }
 
     public async Task<GetProductResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
@@ -48,6 +53,11 @@ public class ProductClientService(HttpClient client, JsonSerializerOptions jsonO
 
     public async Task CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
     {
+        var product = new Product(request.Name, request.Barcode, request.Weight, request.Wage,
+            request.ProductType, request.WageType, request.CaratType);
+
+        await offlineService.CreateAsync(product, cancellationToken);
+
         using var response = await client.PostAsJsonAsync(ApiUrls.Products.Create(), request, jsonOptions, cancellationToken);
 
         if (!response.IsSuccessStatusCode)

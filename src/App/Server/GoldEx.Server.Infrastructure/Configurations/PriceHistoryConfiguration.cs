@@ -1,4 +1,5 @@
 ﻿using GoldEx.Server.Domain.PriceHistoryAggregate;
+using GoldEx.Shared.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,18 +9,6 @@ public class PriceHistoryConfiguration : IEntityTypeConfiguration<PriceHistory>
 {
     public void Configure(EntityTypeBuilder<PriceHistory> builder)
     {
-        builder.ToTable("PriceHistories");
-
-        builder.Property(x => x.DailyChangeRate)
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(x => x.LastUpdate)
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(x => x.Unit)
-            .HasMaxLength(50)
-            .IsRequired();
+        PriceHistoryBaseConfiguration.Configure(builder);
     }
 }

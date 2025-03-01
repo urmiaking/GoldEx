@@ -1,14 +1,14 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.DTOs;
-using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceHistoryAggregate;
+using GoldEx.Shared.Application.Services.Abstractions;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
 public static class BackgroundServiceHelper
 {
     public static async Task InsertToDb(List<PriceResponse> apiPriceItems, List<Price> databasePriceItems,
-        IPriceService priceService, IPriceHistoryService priceHistoryService, CancellationToken stoppingToken = default)
+        IPriceService<Price, PriceHistory> priceService, IPriceHistoryService<PriceHistory> priceHistoryService, CancellationToken stoppingToken = default)
     {
         foreach (var apiPrice in apiPriceItems)
         {

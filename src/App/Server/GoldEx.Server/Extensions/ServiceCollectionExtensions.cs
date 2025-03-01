@@ -20,6 +20,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using GoldEx.Server.Infrastructure.HealthChecks;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
+using GoldEx.Client.Offline.Infrastructure;
+using GoldEx.Shared.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Extensions;
 
@@ -110,7 +113,12 @@ internal static class ServiceCollectionExtensions
         if (string.IsNullOrEmpty(connectionString))
             throw new Exception("GoldEx connection string is not available");
 
-        services.AddSqlServer<GoldExDbContext>(connectionString);
+        services.AddDbContextFactory<GoldExDbContext>(options =>
+        {
+            options.UseSqlServer(connectionString);
+        });
+
+        services.AddScoped<IGoldExDbContextFactory, GoldExDbContextFactory>();
 
         return services;
     }
