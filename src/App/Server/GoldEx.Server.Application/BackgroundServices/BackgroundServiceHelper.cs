@@ -1,7 +1,9 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.DTOs;
+﻿using GoldEx.Sdk.Server.Application.Extensions;
+using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceHistoryAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
+using MimeKit;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
@@ -20,7 +22,21 @@ public static class BackgroundServiceHelper
                 {
                     throw new InvalidDataException();
                 }
-                dbPrice = new Price(apiPrice.Title, apiPrice.MarketType, apiPrice.IconUrl);
+
+                string? imageFileBase64Content = null;
+
+
+                if (!string.IsNullOrEmpty(apiPrice.IconUrl))
+                {
+                    var (base64String, contentType) = await ImageToBase64Converter.ConvertImageUrlToBase64(apiPrice.IconUrl);
+
+                    if (base64String != null && contentType != null)
+                    {
+                        imageFileBase64Content = ImageToBase64Converter.GenerateBase64ImageSrc(base64String, contentType);
+                    }
+                }
+
+                dbPrice = new Price(apiPrice.Title, apiPrice.MarketType, imageFileBase64Content);
                 await priceService.CreateAsync(dbPrice, stoppingToken);
             }
 

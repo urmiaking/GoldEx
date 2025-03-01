@@ -24,11 +24,11 @@
         <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.Key}")</MudTh>
     </GroupHeaderTemplate>
     <RowTemplate>
-        @if (!string.IsNullOrEmpty(context.IconUrl))
+        @if (!string.IsNullOrEmpty(context.IconFileBase64))
         {
             <MudTd DataLabel="">
                 <MudAvatar Size="Size.Small">
-                    <MudImage Src="@ApiUrls.Images.GetImage(context.IconUrl)" Alt="img" />
+                    <MudImage Src="@context.IconFileBase64" Alt="img" />
                 </MudAvatar>
             </MudTd>
         }

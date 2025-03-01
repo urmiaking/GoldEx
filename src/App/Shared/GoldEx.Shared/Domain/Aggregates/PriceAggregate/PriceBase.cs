@@ -7,11 +7,11 @@ namespace GoldEx.Shared.Domain.Aggregates.PriceAggregate;
 public readonly record struct PriceId(Guid Value);
 public abstract class PriceBase<TPriceHistory> : EntityBase<PriceId> where TPriceHistory : PriceHistoryBase
 {
-    protected PriceBase(string title, MarketType marketType, string? iconUrl = null) : base(new PriceId(Guid.NewGuid()))
+    protected PriceBase(string title, MarketType marketType, string? iconFile = null) : base(new PriceId(Guid.NewGuid()))
     {
         Title = title;
         MarketType = marketType;
-        IconUrl = iconUrl;
+        IconFile = iconFile;
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -19,7 +19,7 @@ public abstract class PriceBase<TPriceHistory> : EntityBase<PriceId> where TPric
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public string Title { get; private set; }
-    public string? IconUrl { get; private set; }
+    public string? IconFile { get; private set; }
     public MarketType MarketType { get; private set; }
     public ICollection<TPriceHistory>? PriceHistories { get; private set; }
 }

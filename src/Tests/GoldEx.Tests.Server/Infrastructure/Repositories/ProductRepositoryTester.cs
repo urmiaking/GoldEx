@@ -38,6 +38,7 @@ public class ProductRepositoryTester
     [TearDown]
     public void TearDown()
     {
+        _productRepository.Dispose();
         _dbContext.Dispose();
     }
 
