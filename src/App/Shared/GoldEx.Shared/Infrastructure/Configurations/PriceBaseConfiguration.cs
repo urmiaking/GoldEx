@@ -21,8 +21,7 @@ public static class PriceBaseConfiguration
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(x => x.IconUrl)
-            .HasMaxLength(500);
+        builder.Property(x => x.IconFile);
 
         builder.Property(x => x.MarketType)
             .IsRequired();

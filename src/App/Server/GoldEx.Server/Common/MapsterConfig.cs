@@ -23,7 +23,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.LastUpdate,
                 src => src.PriceHistories!.Any() ? src.PriceHistories!.First().LastUpdate : string.Empty)
             .Map(dest => dest.Type, src => src.MarketType)
-            .Map(dest => dest.IconUrl, src => src.IconUrl);
+            .Map(dest => dest.IconFileBase64, src => src.IconFile);
 
         #endregion
 

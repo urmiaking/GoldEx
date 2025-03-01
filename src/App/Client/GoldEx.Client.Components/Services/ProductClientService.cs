@@ -10,11 +10,11 @@ using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Components.Services;
 
-public class ProductClientService(HttpClient client, JsonSerializerOptions jsonOptions, IProductService<Product> offlineService) : IProductClientService
+public class ProductClientService(HttpClient client, JsonSerializerOptions jsonOptions, IProductService<Product> service) : IProductClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
-        var products = await offlineService.GetListAsync(filter, cancellationToken);
+        var products = await service.GetListAsync(filter, cancellationToken);
 
         throw new NotImplementedException();
         //using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
@@ -56,7 +56,7 @@ public class ProductClientService(HttpClient client, JsonSerializerOptions jsonO
         var product = new Product(request.Name, request.Barcode, request.Weight, request.Wage,
             request.ProductType, request.WageType, request.CaratType);
 
-        await offlineService.CreateAsync(product, cancellationToken);
+        await service.CreateAsync(product, cancellationToken);
 
         using var response = await client.PostAsJsonAsync(ApiUrls.Products.Create(), request, jsonOptions, cancellationToken);
 
