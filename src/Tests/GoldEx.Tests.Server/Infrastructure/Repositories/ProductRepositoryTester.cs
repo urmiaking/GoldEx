@@ -8,7 +8,6 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Infrastructure.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace GoldEx.Tests.Server.Infrastructure.Repositories;
 
@@ -29,7 +28,8 @@ public class ProductRepositoryTester
         _dbContext = new GoldExDbContext(options, new Mediator(new ServiceContainer()));
         _dbContext.Database.EnsureDeleted(); // Ensure a clean database for each test
         _dbContext.Database.EnsureCreated();
-        _productRepository = new ProductRepository<Product>(null);
+
+        _productRepository = new ProductRepository<Product>(new GoldExDbContextFactory(null));
 
         // Seed some test data
         SeedData();
@@ -56,8 +56,7 @@ public class ProductRepositoryTester
 
         foreach (var product in products)
         {
-            _productRepository.Create(product);
-            _productRepository.SaveAsync().Wait();
+            _productRepository.CreateAsync(product).Wait();
             Task.Delay(100); // Delay to ensure CreatedAt is different for each product
         }
     }
@@ -128,6 +127,7 @@ public class ProductRepositoryTester
         Assert.That(result.Data[2].Name, Is.EqualTo("Product B"));
         Assert.That(result.Data[3].Name, Is.EqualTo("Product A"));
     }
+
     [Test]
     public async Task GetListAsync_WithInvalidSortLabel_ReturnsDefaultSortedList()
     {
@@ -139,5 +139,4 @@ public class ProductRepositoryTester
         Assert.That(result.Data.Count, Is.EqualTo(4));
         Assert.That(result.Data[0].Name, Is.EqualTo("Product A")); // Defaults to CreatedAt
     }
-
 }

@@ -28,7 +28,7 @@ public static class DependencyInjection
         {
             optionsBuilder
                 .UseSqlite("Data Source=Offline-ClientDb.db");
-        }, async (_, dbContext) => await dbContext.Database.MigrateAsync());
+        }, async (_, dbContext) => await dbContext.Database.EnsureCreatedAsync());
 
         services.AddScoped<IGoldExDbContextFactory, OfflineDbContextFactory>();
 
@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<CreateProductValidator<Product>>();
         services.AddScoped<UpdateProductValidator<Product>>();
         services.AddScoped<DeleteProductValidator<Product>>();
+        services.AddScoped<PriceValidator<Price, PriceHistory>>();
 
         services.DiscoverServices();
         return services;

@@ -152,6 +152,9 @@ public class GoldExComponentBase : ComponentBase, IDisposable
             case HttpRequestFailedException or HttpRequestException:
                 AddErrorToast("عدم امکان برقراری ارتباط با سرور");
                 break;
+            case HttpRequestFailedToFetchException:
+                AddWarningToast("شما آفلاین هستید");
+                break;
             default:
                 AddErrorToast($"{exception.GetType()}. {Localizer[exception.Message]}");
                 break;
