@@ -4,6 +4,19 @@ using System.Text.Json.Serialization;
 
 namespace GoldEx.Sdk.Common.Exceptions;
 
+public class HttpRequestFailedToFetchException : Exception
+{
+    public HttpRequestFailedToFetchException(string message) : base(message)
+    {
+        
+    }
+
+    public HttpRequestFailedToFetchException()
+    {
+        
+    }
+}
+
 public class HttpRequestFailedException(HttpStatusCode statusCode, string message) : Exception(message)
 {
     public HttpRequestFailedException(HttpStatusCode statusCode) : this(statusCode, $"Request failed with status {statusCode}.")
