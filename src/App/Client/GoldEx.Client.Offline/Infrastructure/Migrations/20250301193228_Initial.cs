@@ -17,7 +17,7 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    IconUrl = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    IconFile = table.Column<string>(type: "TEXT", nullable: true),
                     MarketType = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -30,7 +30,9 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Synced = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsModified = table.Column<bool>(type: "INTEGER", nullable: false),
+                    LastModifiedDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    IsSynced = table.Column<bool>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Barcode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Weight = table.Column<double>(type: "REAL", nullable: false),

@@ -88,15 +88,21 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsModified")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSynced")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ProductType")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Synced")
                         .HasColumnType("INTEGER");
 
                     b.Property<double?>("Wage")
