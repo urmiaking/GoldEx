@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    [Migration("20250228122932_ChangeNavigationProperties")]
-    partial class ChangeNavigationProperties
+    [Migration("20250301193039_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -259,9 +259,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("IconUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<string>("IconFile")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MarketType")
                         .HasColumnType("int");
@@ -330,6 +329,15 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<Guid>("CreatedUserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsModified")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSynced")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()

@@ -18,7 +18,7 @@ public abstract class EntityBase<TId> : EntityBase
 {
     public TId Id { get; protected set; }
 
-    public EntityBase(TId id)
+    protected EntityBase(TId id)
     {
         Id = id;
     }
@@ -26,4 +26,22 @@ public abstract class EntityBase<TId> : EntityBase
 #pragma warning disable CS8618 
     protected EntityBase() { }
 #pragma warning restore CS8618 
+}
+
+public abstract class SyncableEntityBase<TId> : EntityBase<TId>
+    where TId : notnull
+{
+    public bool IsModified { get; protected set; }
+    public DateTime? LastModifiedDate { get; protected set; }
+    public bool IsSynced { get; protected set; }
+
+    protected SyncableEntityBase(TId id) : base(id) { }
+
+#pragma warning disable CS8618
+    protected SyncableEntityBase() { }
+#pragma warning restore CS8618
+
+    public void SetModified(bool isModified) => IsModified = isModified;
+    public void SetLastModifiedDate(DateTime date) => LastModifiedDate = date;
+    public void SetSynced(bool isSynced) => IsSynced = isSynced;
 }

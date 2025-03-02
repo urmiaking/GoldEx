@@ -3,7 +3,6 @@ using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceHistoryAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
-using MimeKit;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
@@ -24,7 +23,6 @@ public static class BackgroundServiceHelper
                 }
 
                 string? imageFileBase64Content = null;
-
 
                 if (!string.IsNullOrEmpty(apiPrice.IconUrl))
                 {

@@ -12,7 +12,7 @@ public class ProductBase(
     ProductType productType,
     WageType? wageType,
     CaratType caratType)
-    : EntityBase<ProductId>(new ProductId(Guid.NewGuid()))
+    : SyncableEntityBase<ProductId>(new ProductId(Guid.NewGuid()))
 {
     public string Name { get; private set; } = name;
     public string Barcode { get; private set; } = barcode;

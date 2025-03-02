@@ -10,9 +10,4 @@ public class Product(
     double? wage,
     ProductType productType,
     WageType? wageType,
-    CaratType caratType) : ProductBase(name, barcode, weight, wage, productType, wageType, caratType)
-{
-    public bool Synced { get; set; }
-
-    public void SetSynced(bool synced) => Synced = synced;
-}
+    CaratType caratType) : ProductBase(name, barcode, weight, wage, productType, wageType, caratType);

@@ -7,16 +7,21 @@ using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
+using MapsterMapper;
 
 namespace GoldEx.Client.Components.Services;
 
-public class ProductClientService(HttpClient client, JsonSerializerOptions jsonOptions, IProductService<Product> service) : IProductClientService
+public class ProductClientService(
+    HttpClient client,
+    JsonSerializerOptions jsonOptions,
+    IMapper mapper,
+    IProductService<Product> service) : IProductClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
         var products = await service.GetListAsync(filter, cancellationToken);
 
-        throw new NotImplementedException();
+        return mapper.Map<PagedList<GetProductResponse>>(products);
         //using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
 
         //if (!response.IsSuccessStatusCode)
@@ -58,10 +63,10 @@ public class ProductClientService(HttpClient client, JsonSerializerOptions jsonO
 
         await service.CreateAsync(product, cancellationToken);
 
-        using var response = await client.PostAsJsonAsync(ApiUrls.Products.Create(), request, jsonOptions, cancellationToken);
+        //using var response = await client.PostAsJsonAsync(ApiUrls.Products.Create(), request, jsonOptions, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+        //if (!response.IsSuccessStatusCode)
+        //    throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
     public async Task UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)

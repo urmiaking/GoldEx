@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Client.Offline.Infrastructure.Migrations
 {
     [DbContext(typeof(OfflineDbContext))]
-    [Migration("20250301162856_ChangeImageUrl")]
-    partial class ChangeImageUrl
+    [Migration("20250301193228_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,15 +91,21 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsModified")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSynced")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ProductType")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Synced")
                         .HasColumnType("INTEGER");
 
                     b.Property<double?>("Wage")

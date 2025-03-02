@@ -28,6 +28,20 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Prices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    IconFile = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MarketType = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Prices", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -68,6 +82,29 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PriceHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CurrentValue = table.Column<double>(type: "float", nullable: false),
+                    LastUpdate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    DailyChangeRate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PriceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PriceHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PriceHistories_Prices_PriceId",
+                        column: x => x.PriceId,
+                        principalTable: "Prices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RoleClaims",
                 columns: table => new
                 {
@@ -86,6 +123,35 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsModified = table.Column<bool>(type: "bit", nullable: false),
+                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsSynced = table.Column<bool>(type: "bit", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Barcode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Weight = table.Column<double>(type: "float", nullable: false),
+                    Wage = table.Column<double>(type: "float", nullable: true),
+                    ProductType = table.Column<int>(type: "int", nullable: false),
+                    CaratType = table.Column<int>(type: "int", nullable: false),
+                    WageType = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_Users_CreatedUserId",
+                        column: x => x.CreatedUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -174,6 +240,16 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_PriceHistories_PriceId",
+                table: "PriceHistories",
+                column: "PriceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CreatedUserId",
+                table: "Products",
+                column: "CreatedUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
                 table: "RoleClaims",
                 column: "RoleId");
@@ -220,6 +296,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "Customers");
 
             migrationBuilder.DropTable(
+                name: "PriceHistories");
+
+            migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
                 name: "RoleClaims");
 
             migrationBuilder.DropTable(
@@ -233,6 +315,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Prices");
 
             migrationBuilder.DropTable(
                 name: "Roles");
