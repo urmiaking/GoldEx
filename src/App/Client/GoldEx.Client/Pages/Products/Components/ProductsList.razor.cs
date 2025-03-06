@@ -99,14 +99,22 @@ public partial class ProductsList
         }
     }
 
-    private Task OnEditProduct(ProductVm model)
+    private async Task OnEditProduct(ProductVm model)
     {
-        throw new NotImplementedException();
-    }
+        var parameters = new DialogParameters<Update>
+        {
+            { x => x.Model, model }
+        };
 
-    private Task OnRemoveSelectedProducts()
-    {
-        throw new NotImplementedException();
+        var dialog = await DialogService.ShowAsync<Update>("ویرایش جنس", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("جنس با موفقیت ویرایش شد.");
+            await _table.ReloadServerData();
+        }
     }
 
     private async Task OnSyncProducts()

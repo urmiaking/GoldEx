@@ -7,6 +7,6 @@ namespace GoldEx.Client.Abstractions.LocalServices;
 public interface IProductLocalClientService : IProductClientService
 {
     Task SetSyncedAsync(Guid id, CancellationToken cancellationToken = default);
-    Task CreateAsync(CreateProductRequest request, ModifyStatus status, CancellationToken cancellationToken = default);
+    Task CreateAsSyncedAsync(CreateProductRequest request, CancellationToken cancellationToken = default);
     Task UpdateAsync(Guid id, UpdateProductRequest request, ModifyStatus status, CancellationToken cancellationToken = default);
 }

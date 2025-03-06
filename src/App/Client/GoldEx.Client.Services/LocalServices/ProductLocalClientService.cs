@@ -59,14 +59,24 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
         item.SetProductType(request.ProductType);
         item.SetWageType(request.WageType);
         item.SetCaratType(request.CaratType);
-        item.SetLastModifiedDate(DateTime.UtcNow);
 
+        // In case the item is synced, status changes to updated otherwise the previous status remains. e,g. Created
+        if (item.Status == ModifyStatus.Synced)
+            item.SetStatus(ModifyStatus.Updated);
+        
         await service.UpdateAsync(item, cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(new ProductId(id), cancellationToken) ?? throw new NotFoundException();
+
+        // In case the item is created locally and is not synced to server, it will be deleted permanently
+        if (item.Status == ModifyStatus.Created)
+        {
+            await service.DeleteAsync(item, true, cancellationToken);
+            return;
+        }
 
         if (deletePermanently)
         {
@@ -75,7 +85,6 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
         else
         {
             item.SetStatus(ModifyStatus.Deleted);
-            item.SetLastModifiedDate(DateTime.UtcNow);
             await service.UpdateAsync(item, cancellationToken);
         }   
     }
@@ -97,7 +106,7 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
         await service.UpdateAsync(item, cancellationToken);
     }
 
-    public async Task CreateAsync(CreateProductRequest request, ModifyStatus status, CancellationToken cancellationToken = default)
+    public async Task CreateAsSyncedAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
     {
         var product = new Product(new ProductId(request.Id),
             request.Name,
@@ -108,7 +117,7 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
             request.WageType,
             request.CaratType);
 
-        product.SetStatus(status);
+        product.SetStatus(ModifyStatus.Synced);
 
         await service.CreateAsync(product, cancellationToken);
     }
@@ -125,7 +134,6 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
         item.SetProductType(request.ProductType);
         item.SetWageType(request.WageType);
         item.SetCaratType(request.CaratType);
-        item.SetLastModifiedDate(DateTime.UtcNow);
         item.SetStatus(status);
 
         await service.UpdateAsync(item, cancellationToken);

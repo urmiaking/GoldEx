@@ -6,24 +6,15 @@ using MudBlazor;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
-public partial class Create
+public partial class Update
 {
-    private readonly ProductVm _model = ProductVm.CreateDefaultInstance();
+    [Parameter] public ProductVm Model { get; set; } = default!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
     private bool _processing;
-
-    [CascadingParameter] 
-    private IMudDialogInstance MudDialog { get; set; } = default!;
-
     private IProductClientService ProductService => GetRequiredService<IProductClientService>();
 
-    protected override void OnInitialized()
-    {
-        GenerateBarcode();
-
-        base.OnInitialized();
-    }
-
-    private async Task OnValidSubmit()
+    public async Task OnValidSubmit()
     {
         try
         {
@@ -32,9 +23,10 @@ public partial class Create
 
             SetBusy();
             CancelToken();
+
             _processing = true;
-            
-            await ProductService.CreateAsync(ProductVm.ToCreateRequest(_model));
+
+            await ProductService.UpdateAsync(Model.Id, ProductVm.ToUpdateRequest(Model), CancellationTokenSource.Token);
 
             MudDialog.Close(DialogResult.Ok(true));
         }
@@ -49,7 +41,7 @@ public partial class Create
         }
     }
 
-    private void GenerateBarcode() => _model.Barcode = StringExtensions.GenerateRandomBarcode();
+    private void GenerateBarcode() => Model.Barcode = StringExtensions.GenerateRandomBarcode();
 
     private void Close() => MudDialog.Cancel();
 }

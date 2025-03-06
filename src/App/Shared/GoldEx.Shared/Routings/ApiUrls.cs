@@ -40,7 +40,9 @@ public class ApiUrls
             .AppendQueryString(new { barcode });
 
         public static string Create() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Create);
-        public static string Update() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Update);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Update).FormatRoute(new { id });
 
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Delete).FormatRoute(new { id });
