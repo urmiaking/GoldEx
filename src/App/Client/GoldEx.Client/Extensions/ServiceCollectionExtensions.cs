@@ -113,6 +113,7 @@ public static class ServiceCollectionExtensions
         services.AddMudServices(config =>
         {
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            config.SnackbarConfiguration.HideTransitionDuration = 1500;
         });
 
         services.AddLocalization();

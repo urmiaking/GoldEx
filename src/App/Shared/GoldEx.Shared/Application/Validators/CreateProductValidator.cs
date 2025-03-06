@@ -12,16 +12,12 @@ public class CreateProductValidator<T> : AbstractValidator<T> where T : ProductB
             .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
             .MaximumLength(50).WithMessage("طول عنوان جنس نمی تواند بیشتر از 50 کاراکتر باشد");
 
+        // TODO: make sure the barcode is unique
         RuleFor(x => x.Barcode)
             .NotEmpty().WithMessage("بارکد جنس نمی تواند خالی باشد");
 
         RuleFor(x => x.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
-
-        // TODO: add this to server validator
-        //RuleFor(x => x.CreatedUserId)
-        //    .NotEqual(Guid.Empty)
-        //    .WithMessage("کاربر نامعتبر");
 
         When(product => product.ProductType == ProductType.Gold, () =>
         {
@@ -39,10 +35,10 @@ public class CreateProductValidator<T> : AbstractValidator<T> where T : ProductB
                 .WithMessage("نوع اجرت برای جواهر، فقط می تواند دلاری یا ریالی باشد");
         });
 
-        When(product => product.ProductType != ProductType.Gold && product.ProductType != ProductType.Jewelry, () =>
+        When(product => product.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>
         {
-            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای سکه ها، طلای آبشده و کهنه نباید وارد شود");
-            RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای سکه ها، طلای آبشده و کهنه نباید وارد شود");
+            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
+            RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
         });
 
         RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");

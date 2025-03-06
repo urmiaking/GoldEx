@@ -19,58 +19,53 @@ public class ProductSyncService(
 {
     private async Task SyncToServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)
     {
-        var isOnline = await networkStatusService.IsOnlineAsync(cancellationToken);
+        var pendingProducts = await productLocalService.GetPendingsAsync(checkPointDate, cancellationToken);
 
-        if (isOnline)
+        foreach (var product in pendingProducts)
         {
-            var pendingProducts = await productLocalService.GetPendingsAsync(checkPointDate, cancellationToken);
-
-            foreach (var product in pendingProducts)
+            switch (product.Status)
             {
-                switch (product.Status)
-                {
-                    case ModifyStatus.Created:
-                        {
-                            var request = new CreateProductRequest(product.Id,
-                                product.Name,
-                                product.Barcode,
-                                product.Weight,
-                                product.Wage,
-                                product.WageType,
-                                product.ProductType,
-                                product.CaratType);
+                case ModifyStatus.Created:
+                    {
+                        var request = new CreateProductRequest(product.Id,
+                            product.Name,
+                            product.Barcode,
+                            product.Weight,
+                            product.Wage,
+                            product.WageType,
+                            product.ProductType,
+                            product.CaratType);
 
-                            await productHttpService.CreateAsync(request, cancellationToken);
-                            await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
-                            break;
-                        }
-                    case ModifyStatus.Updated:
-                        {
-                            var request = new UpdateProductRequest(product.Name,
-                                product.Barcode,
-                                product.Weight,
-                                product.Wage,
-                                product.WageType,
-                                product.ProductType,
-                                product.CaratType);
+                        await productHttpService.CreateAsync(request, cancellationToken);
+                        await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
+                        break;
+                    }
+                case ModifyStatus.Updated:
+                    {
+                        var request = new UpdateProductRequest(product.Name,
+                            product.Barcode,
+                            product.Weight,
+                            product.Wage,
+                            product.WageType,
+                            product.ProductType,
+                            product.CaratType);
 
-                            await productHttpService.UpdateAsync(product.Id, request, cancellationToken);
-                            await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
-                            break;
-                        }
-                    case ModifyStatus.Deleted:
-                        await productHttpService.DeleteAsync(product.Id, false, cancellationToken);
-                        await productLocalService.DeleteAsync(product.Id, true, cancellationToken);
+                        await productHttpService.UpdateAsync(product.Id, request, cancellationToken);
+                        await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
                         break;
-                    case ModifyStatus.Synced:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    }
+                case ModifyStatus.Deleted:
+                    await productHttpService.DeleteAsync(product.Id, false, cancellationToken);
+                    await productLocalService.DeleteAsync(product.Id, true, cancellationToken);
+                    break;
+                case ModifyStatus.Synced:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-
-            await checkpointService.AddCheckPointAsync(nameof(Product), cancellationToken);
         }
+
+        await checkpointService.AddCheckPointAsync(nameof(Product), cancellationToken);
     }
 
     private async Task SyncFromServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)
@@ -96,7 +91,7 @@ public class ProductSyncService(
                         product.ProductType,
                         product.CaratType);
 
-                    await productLocalService.CreateAsync(createRequest, ModifyStatus.Synced, cancellationToken);
+                    await productLocalService.CreateAsSyncedAsync(createRequest, cancellationToken);
                 }
                 else if (product.IsDeleted is null or false)
                 {

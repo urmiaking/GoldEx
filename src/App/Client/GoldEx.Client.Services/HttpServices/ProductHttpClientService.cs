@@ -58,7 +58,7 @@ public class ProductHttpClientService(
 
     public async Task UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
     {
-        using var response = await client.PutAsJsonAsync(ApiUrls.Products.Update(), request, jsonOptions, cancellationToken);
+        using var response = await client.PutAsJsonAsync(ApiUrls.Products.Update(id), request, jsonOptions, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

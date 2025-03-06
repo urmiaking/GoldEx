@@ -71,7 +71,6 @@ public class ProductClientService(IProductService<Product> service, IHttpContext
         product.SetWageType(request.WageType);
         product.SetProductType(request.ProductType);
         product.SetCaratType(request.CaratType);
-        product.SetLastModifiedDate(DateTime.UtcNow);
 
         await service.UpdateAsync(product, cancellationToken);
     }
