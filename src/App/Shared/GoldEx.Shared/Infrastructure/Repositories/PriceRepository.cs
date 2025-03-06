@@ -13,7 +13,7 @@ public class PriceRepository<TPrice, TPriceHistory>(IGoldExDbContextFactory fact
     {
         await InitializeDbContextAsync();
 
-        return await Query
+        return await NonDeletedQuery
             .Include(p => p.PriceHistories!
                 .OrderByDescending(ph => ph.Id)
                 .Take(1))
@@ -23,6 +23,6 @@ public class PriceRepository<TPrice, TPriceHistory>(IGoldExDbContextFactory fact
     public async Task<List<TPrice>> GetListAsync(CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
-        return await Query.ToListAsync(cancellationToken);
+        return await NonDeletedQuery.ToListAsync(cancellationToken);
     }
 }

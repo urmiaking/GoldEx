@@ -17,6 +17,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\GoldEx.Client.Components\GoldEx.Client.Components.csproj" />
+		<ProjectReference Include="..\GoldEx.Client.Services\GoldEx.Client.Services.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

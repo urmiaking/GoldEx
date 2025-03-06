@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
+using System.Globalization;
 
 namespace GoldEx.Shared.Routings;
 
@@ -31,12 +32,6 @@ public class ApiUrls
         public static string Get() => BuildUrl(ApiRoutes.Health.Base);
     }
 
-    public class Images
-    {
-        public static string GetImage(string imageUrl) => BuildUrl(ApiRoutes.Images.Base, ApiRoutes.Images.GetImage)
-            .AppendQueryString(new { imageUrl });
-    }
-
     public class Products
     {
         public static string GetList(RequestFilter filter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList).AppendQueryString(filter);
@@ -46,7 +41,18 @@ public class ApiUrls
 
         public static string Create() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Create);
         public static string Update() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Update);
-        public static string Delete(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Delete).FormatRoute(new { id });
 
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Delete).FormatRoute(new { id });
+        public static string GetPendingItems(DateTime checkpointDate) =>
+            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetPendingItems).FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
+
+    private static CultureInfo EnCulture => new("en-US")
+    {
+        DateTimeFormat =
+        {
+            DateSeparator = "-"
+        }
+    };
 }

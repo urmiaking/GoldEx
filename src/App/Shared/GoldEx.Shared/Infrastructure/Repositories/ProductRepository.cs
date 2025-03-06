@@ -1,9 +1,11 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
+using GoldEx.Shared.Domain.Entities;
 using GoldEx.Shared.Infrastructure.Extensions;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 namespace GoldEx.Shared.Infrastructure.Repositories;
 
@@ -13,14 +15,14 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
     {
         await InitializeDbContextAsync();
 
-        return await Query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     public async Task<T?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
 
-        return await Query.FirstOrDefaultAsync(x => x.Barcode == barcode, cancellationToken);
+        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Barcode == barcode, cancellationToken);
     }
 
     public async Task<PagedList<T>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
@@ -30,7 +32,7 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
 
         await InitializeDbContextAsync();
 
-        var query = Query.AsNoTracking();
+        var query = NonDeletedQuery;
 
         // Apply search filter
         if (!string.IsNullOrEmpty(filter.Search))
@@ -44,7 +46,7 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
         else
         {
             // Default sorting if no sort criteria is provided
-            query = query.OrderByDescending(x => x.CreatedAt);
+            query = query.OrderByDescending(x => x.LastModifiedDate);
         }
 
         var totalRecords = await query.CountAsync(cancellationToken);
@@ -54,5 +56,38 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
         var list = await query.ToListAsync(cancellationToken);
 
         return new PagedList<T> { Data = list, Skip = filter.Skip ?? 0, Take = filter.Take ?? 100, Total = totalRecords };
+    }
+
+    public async Task<List<T>> GetPendingItemsAsync(DateTime checkpointDate,
+        CancellationToken cancellationToken = default)
+    {
+        await InitializeDbContextAsync();
+
+        List<T> list = [];
+
+        // ClientSide pending items
+        if (typeof(T).IsAssignableTo(typeof(ITrackableEntity)))
+        {
+            list = await AllQuery.ToListAsync(cancellationToken);
+
+            list = list.AsQueryable()
+                .Where($"{nameof(ITrackableEntity.Status)}<>{(int)ModifyStatus.Synced}")
+                .Where(x => x.LastModifiedDate >= checkpointDate)
+                .OrderBy(x => x.LastModifiedDate)
+                .ToList();
+        }
+
+        // Serverside pending items
+        if (typeof(T).IsAssignableTo(typeof(ISoftDeleteEntity)))
+        {
+            list = await AllQuery.ToListAsync(cancellationToken);
+
+            list = await AllQuery
+                .Where(x => x.LastModifiedDate >= checkpointDate)
+                .OrderBy(x => x.LastModifiedDate)
+                .ToListAsync(cancellationToken);
+        }
+
+        return list;
     }
 }

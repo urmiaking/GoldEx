@@ -3,6 +3,7 @@
 namespace GoldEx.Shared.DTOs.Products;
 
 public record CreateProductRequest(
+    Guid Id,
     string Name,
     string Barcode,
     double Weight,

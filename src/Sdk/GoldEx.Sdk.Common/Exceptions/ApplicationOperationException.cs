@@ -1,3 +1,3 @@
-﻿namespace GoldEx.Sdk.Server.Application.Exceptions;
+﻿namespace GoldEx.Sdk.Common.Exceptions;
 
 public abstract class ApplicationOperationException(string message) : Exception(message);

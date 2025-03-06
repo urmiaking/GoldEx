@@ -1,4 +1,6 @@
-﻿namespace GoldEx.Sdk.Server.Application.Exceptions;
+﻿using GoldEx.Sdk.Common.Exceptions;
+
+namespace GoldEx.Sdk.Server.Application.Exceptions;
 
 public class UnauthorizedException(string message) : ApplicationOperationException(message)
 {

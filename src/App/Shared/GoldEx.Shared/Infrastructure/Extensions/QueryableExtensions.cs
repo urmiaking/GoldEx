@@ -12,7 +12,8 @@ public static class QueryableExtensions
         return tracking ? source.AsTracking() : source.AsNoTracking();
     }
 
-    public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string sortLabel, SortDirection sortDirection, string defaultSortProperty = "CreatedAt") where T : class
+    public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string sortLabel, SortDirection sortDirection,
+        string defaultSortProperty = "LastModifiedDate") where T : class
     {
         var property = typeof(T).GetProperty(sortLabel, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
         var parameter = Expression.Parameter(typeof(T), "x");

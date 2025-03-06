@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Products.ViewModels;
+﻿using GoldEx.Client.Abstractions.SyncServices;
+using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Services;
 using MudBlazor;
@@ -10,6 +11,8 @@ public partial class ProductsList
     private string? _searchString;
     private MudTable<ProductVm> _table = new ();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
+
+    private IProductSyncService SyncService => GetRequiredService<IProductSyncService>();
 
     private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -77,9 +80,23 @@ public partial class ProductsList
         }
     }
 
-    private Task OnRemoveProduct(ProductVm model)
+    private async Task OnRemoveProduct(ProductVm model)
     {
-        throw new NotImplementedException();
+        var parameters = new DialogParameters<Remove>
+        {
+            { x => x.Id, model.Id },
+            { x => x.ProductName, model.Name }
+        };
+
+        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("جنس با موفقیت حذف شد.");
+            await _table.ReloadServerData();
+        }
     }
 
     private Task OnEditProduct(ProductVm model)
@@ -90,5 +107,26 @@ public partial class ProductsList
     private Task OnRemoveSelectedProducts()
     {
         throw new NotImplementedException();
+    }
+
+    private async Task OnSyncProducts()
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            await SyncService.SynchronizeAsync(CancellationTokenSource.Token);
+
+            AddSuccessToast("تمامی اجناس با سرور همگام سازی شدند!");
+        }
+        catch (Exception e)
+        {
+            AddExceptionToast(e);
+        }
+        finally
+        {
+            SetIdeal();
+        }
     }
 }

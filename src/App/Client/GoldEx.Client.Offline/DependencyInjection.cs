@@ -15,6 +15,7 @@ using GoldEx.Client.Offline.Infrastructure;
 using GoldEx.Shared.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using GoldEx.Sdk.Common.Interceptors;
 
 namespace GoldEx.Client.Offline;
 
@@ -22,13 +23,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddOfflineClient(this IServiceCollection services)
     {
-        services.AddMapsterConfig();
-
         services.AddBesqlDbContextFactory<OfflineDbContext>((_, optionsBuilder) =>
         {
-            optionsBuilder
-                .UseSqlite("Data Source=Offline-ClientDb.db");
-        }, async (_, dbContext) => await dbContext.Database.EnsureCreatedAsync());
+            optionsBuilder.UseSqlite("Data Source=Offline-ClientDb.db");
+            optionsBuilder.AddInterceptors(new PersianizerInterceptor());
+        });
 
         services.AddScoped<IGoldExDbContextFactory, OfflineDbContextFactory>();
 
@@ -47,17 +46,6 @@ public static class DependencyInjection
         services.AddScoped<PriceValidator<Price, PriceHistory>>();
 
         services.DiscoverServices();
-        return services;
-    }
-
-    internal static IServiceCollection AddMapsterConfig(this IServiceCollection services)
-    {
-        var globalSettings = TypeAdapterConfig.GlobalSettings;
-
-        globalSettings.Scan(Assembly.GetExecutingAssembly());
-        services.AddSingleton(globalSettings);
-        services.AddScoped<IMapper, ServiceMapper>();
-        
         return services;
     }
 }

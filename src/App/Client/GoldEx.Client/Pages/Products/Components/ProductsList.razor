@@ -13,6 +13,14 @@
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateProduct())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
         </MudHidden>
+        
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-16" Color="Color.Success" EndIcon="@Icons.Material.Filled.Sync" OnClick="@(_ => OnSyncProducts())" Size="Size.Small" Variant="Variant.Filled">همگام سازی</MudButton>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="@Color.Success" Icon="@Icons.Material.Filled.Sync" OnClick="@(_ => OnSyncProducts())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
+        </MudHidden>
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortLabel="Barcode" T="ProductVm">بارکد</MudTableSortLabel></MudTh>

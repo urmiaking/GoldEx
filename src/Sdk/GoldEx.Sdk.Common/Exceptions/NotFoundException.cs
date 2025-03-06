@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Sdk.Server.Application.Exceptions;
+﻿namespace GoldEx.Sdk.Common.Exceptions;
 
 public class NotFoundException(string message) : ApplicationOperationException(message)
 {

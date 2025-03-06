@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Client.Offline.Infrastructure.Migrations
 {
     [DbContext(typeof(OfflineDbContext))]
-    [Migration("20250301193228_Initial")]
+    [Migration("20250305215820_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -19,6 +19,24 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
+
+            modelBuilder.Entity("GoldEx.Client.Offline.Domain.CheckpointAggregate.Checkpoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Checkpoints", (string)null);
+                });
 
             modelBuilder.Entity("GoldEx.Client.Offline.Domain.PriceAggregate.Price", b =>
                 {
@@ -88,16 +106,7 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                     b.Property<int>("CaratType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsModified")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsSynced")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("LastModifiedDate")
+                    b.Property<DateTime>("LastModifiedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -106,6 +115,9 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ProductType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
                     b.Property<double?>("Wage")

@@ -1,35 +1,27 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using GoldEx.Client.Offline.Domain.ProductAggregate;
+using GoldEx.Client.Abstractions.HttpServices;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
-using MapsterMapper;
 
-namespace GoldEx.Client.Components.Services;
+namespace GoldEx.Client.Services.HttpServices;
 
-public class ProductClientService(
+public class ProductHttpClientService(
     HttpClient client,
-    JsonSerializerOptions jsonOptions,
-    IMapper mapper,
-    IProductService<Product> service) : IProductClientService
+    JsonSerializerOptions jsonOptions) : IProductHttpClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
-        var products = await service.GetListAsync(filter, cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
 
-        return mapper.Map<PagedList<GetProductResponse>>(products);
-        //using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        //if (!response.IsSuccessStatusCode)
-        //    throw HttpRequestFailedException.GetException(response.StatusCode, response);
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetProductResponse>>(jsonOptions, cancellationToken);
 
-        //var result = await response.Content.ReadFromJsonAsync<PagedList<GetProductResponse>>(jsonOptions, cancellationToken);
-
-        //return result ?? throw new UnexpectedHttpResponseException();
+        return result ?? throw new UnexpectedHttpResponseException();
     }
 
     public async Task<GetProductResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
@@ -58,15 +50,10 @@ public class ProductClientService(
 
     public async Task CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
     {
-        var product = new Product(request.Name, request.Barcode, request.Weight, request.Wage,
-            request.ProductType, request.WageType, request.CaratType);
+        using var response = await client.PostAsJsonAsync(ApiUrls.Products.Create(), request, jsonOptions, cancellationToken);
 
-        await service.CreateAsync(product, cancellationToken);
-
-        //using var response = await client.PostAsJsonAsync(ApiUrls.Products.Create(), request, jsonOptions, cancellationToken);
-
-        //if (!response.IsSuccessStatusCode)
-        //    throw HttpRequestFailedException.GetException(response.StatusCode, response);
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
     public async Task UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
@@ -77,11 +64,24 @@ public class ProductClientService(
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
-        using var response = await client.PutAsJsonAsync(ApiUrls.Products.Delete(id), jsonOptions, cancellationToken);
+        using var response = await client.DeleteAsync(ApiUrls.Products.Delete(id), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task<List<GetPendingProductResponse>> GetPendingsAsync(DateTime checkpointDate,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Products.GetPendingItems(checkpointDate), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetPendingProductResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
     }
 }

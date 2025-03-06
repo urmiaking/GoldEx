@@ -31,13 +31,6 @@ public static class ApiRoutes
         public const string Base = "/api/Health";
     }
 
-    public class Images
-    {
-        public const string Base = "/api/Images";
-
-        public const string GetImage = "GetImage";
-    }
-
     public class Products
     {
         public const string Base = "/api/Products";
@@ -47,5 +40,6 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
+        public const string GetPendingItems = "pending-items/{checkPointDate}";
     }
 }

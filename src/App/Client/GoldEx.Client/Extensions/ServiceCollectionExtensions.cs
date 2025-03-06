@@ -5,16 +5,17 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Blazored.LocalStorage;
-using GoldEx.Client.Components.Services;
-using GoldEx.Client.Offline.Infrastructure;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
 using MudBlazor.Services;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Client.Abstractions;
 using MudBlazor;
-using GoldEx.Shared.Services;
-using Microsoft.EntityFrameworkCore;
+using GoldEx.Client.Components.Services;
+using GoldEx.Shared.Abstractions;
+using Mapster;
+using MapsterMapper;
+using System.Reflection;
 
 namespace GoldEx.Client.Extensions;
 
@@ -64,10 +65,6 @@ public static class ServiceCollectionExtensions
     internal static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.DiscoverServices();
-        services.AddScoped<IPriceClientService, PriceClientService>();
-        services.AddScoped<IHealthClientService, HealthClientService>();
-        services.AddScoped<IImageClientService, ImageClientService>();
-        services.AddScoped<IProductClientService, ProductClientService>();
 
         return services;
     }
@@ -92,7 +89,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddClientServices(this IServiceCollection services)
+    public static IServiceCollection AddClientServerServices(this IServiceCollection services)
     {
         if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
             services.AddClientOnlyServices();
@@ -104,6 +101,8 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddClientOnlyServices(this IServiceCollection services)
     {
+        services.AddClientServices();
+
         return services;
     }
 
@@ -118,6 +117,18 @@ public static class ServiceCollectionExtensions
 
         services.AddLocalization();
         services.AddScoped<IBusyIndicator, BusyIndicator>();
+        services.AddScoped<IThemeService, ThemeService>();
+
+        return services;
+    }
+
+    internal static IServiceCollection AddMapsterConfig(this IServiceCollection services)
+    {
+        var globalSettings = TypeAdapterConfig.GlobalSettings;
+
+        globalSettings.Scan(Assembly.GetExecutingAssembly());
+        services.AddSingleton(globalSettings);
+        services.AddScoped<IMapper, ServiceMapper>();
 
         return services;
     }
