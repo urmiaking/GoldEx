@@ -13,4 +13,5 @@ public interface IProductRepository<T> : IRepository,
     Task<T?> GetAsync(ProductId id, CancellationToken cancellationToken = default);
     Task<T?> GetAsync(string barcode, CancellationToken cancellationToken = default);
     Task<PagedList<T>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default);
+    Task<List<T>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default);
 }

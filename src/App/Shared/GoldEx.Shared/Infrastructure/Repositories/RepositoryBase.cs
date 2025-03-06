@@ -4,6 +4,8 @@ using GoldEx.Shared.Infrastructure.Extensions;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Linq.Dynamic.Core;
+using GoldEx.Sdk.Common.Definitions;
 
 namespace GoldEx.Shared.Infrastructure.Repositories;
 
@@ -17,7 +19,27 @@ public abstract class RepositoryBase<TEntity>(IGoldExDbContextFactory contextFac
 
     protected DbContext Context => _context ?? throw new InvalidOperationException("DbContext is not initialized.");
 
-    public virtual IQueryable<TEntity> Query => Context.Set<TEntity>().SetTracking(Tracking);
+    public virtual IQueryable<TEntity> NonDeletedQuery
+    {
+        get
+        {
+            var query = Context.Set<TEntity>().SetTracking(Tracking);
+
+            if (typeof(TEntity).IsAssignableTo(typeof(ISoftDeleteEntity)))
+            {
+                return query.Where($"{nameof(ISoftDeleteEntity.IsDeleted)}={false}");
+            }
+
+            if (typeof(TEntity).IsAssignableTo(typeof(ISoftDeleteEntity)))
+            {
+                return query.Where($"{nameof(ISoftDeleteEntity)}<>{ModifyStatus.Deleted}");
+            }
+
+            return query;
+        }
+    }
+
+    public virtual IQueryable<TEntity> AllQuery => Context.Set<TEntity>().SetTracking(Tracking);
 
     public virtual void AsNoTracking() => Tracking = false;
     public virtual void AsTracking() => Tracking = true;
@@ -47,32 +69,47 @@ public abstract class RepositoryBase<TEntity>(IGoldExDbContextFactory contextFac
     {
         await InitializeDbContextAsync();
 
-        Context.Set<TEntity>().Add(entity);
-        await Context.SaveChangesAsync(cancellationToken);
-
-        //Create(entity);
-        //await SaveAsync(cancellationToken);
+        Create(entity);
+        await SaveAsync(cancellationToken);
     }
 
     public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
 
+        if (entity is ISyncableEntity syncableEntity)
+            syncableEntity.SetLastModifiedDate(DateTime.UtcNow);
+
         Update(entity);
         await SaveAsync(cancellationToken);
     }
 
-    public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteAsync(TEntity entity, bool deletePermanently = false,
+        CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
-       
-        Delete(entity);
-        await SaveAsync(cancellationToken);
+
+        if (!deletePermanently && entity is ISoftDeleteEntity softDeleteEntity)
+        {
+            softDeleteEntity.SetDeleted();
+
+            if (entity is ISyncableEntity syncableEntity)
+                syncableEntity.SetLastModifiedDate(DateTime.UtcNow);
+
+            await UpdateAsync(entity, cancellationToken);
+        }
+        else
+        {
+            Delete(entity);
+            await SaveAsync(cancellationToken);
+        }
     }
 
     protected async Task InitializeDbContextAsync()
     {
         _context ??= await contextFactory.CreateDbContextAsync();
+
+        Context.Set<TEntity>();
     }
 
     public void Dispose()

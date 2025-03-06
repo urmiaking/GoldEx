@@ -56,9 +56,18 @@ public class ProductsController(IProductClientService service) : ApiControllerBa
 
     [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     [HttpDelete(ApiRoutes.Products.Delete)]
-    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await service.DeleteAsync(id, cancellationToken);
+        await service.DeleteAsync(id, false, cancellationToken);
         return Ok();
+    }
+
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+    [HttpGet(ApiRoutes.Products.GetPendingItems)]
+    public async Task<IActionResult> GetPendingsAsync(DateTime checkPointDate, CancellationToken cancellationToken)
+    {
+        var list = await service.GetPendingsAsync(checkPointDate, cancellationToken);
+
+        return Ok(list);
     }
 }

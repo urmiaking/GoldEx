@@ -1,0 +1,11 @@
+﻿@inherits GoldExComponentBase
+
+<MudDialog>
+    <DialogContent>
+        <MudText>آیا از حذف جنس @ProductName مطمئن هستید؟</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">لغو</MudButton>
+        <MudButton Color="@Color.Error" Variant="Variant.Filled" OnClick="OnValidSubmit" EndIcon="@Icons.Material.Filled.Delete">حذف</MudButton>
+    </DialogActions>
+</MudDialog>

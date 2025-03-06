@@ -32,6 +32,10 @@ public class MapsterConfig : IRegister
         config.NewConfig<Product, GetProductResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);
 
+        config.NewConfig<Product, GetPendingProductResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.IsDeleted, src => src.IsDeleted);
+
         #endregion
     }
 }

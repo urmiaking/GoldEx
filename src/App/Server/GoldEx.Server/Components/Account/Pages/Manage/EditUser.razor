@@ -1,4 +1,5 @@
-﻿@attribute [Authorize(Roles = BuiltinRoles.Administrators)]
+﻿@using GoldEx.Sdk.Common.Exceptions
+@attribute [Authorize(Roles = BuiltinRoles.Administrators)]
 @attribute [Route(ClientRoutes.Accounts.Manage.EditUser)]
 
 @inject UserManager<AppUser> UserManager

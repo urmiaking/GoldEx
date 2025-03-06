@@ -5,14 +5,14 @@ using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Services;
 using MapsterMapper;
 using System.Security.Claims;
-using GoldEx.Sdk.Server.Application.Exceptions;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 
 namespace GoldEx.Server.ClientServices;
 
 [ScopedService]
-internal class ProductClientService(IProductService<Product> service, IHttpContextAccessor httpContextAccessor, IMapper mapper) : IProductClientService
+public class ProductClientService(IProductService<Product> service, IHttpContextAccessor httpContextAccessor, IMapper mapper) : IProductClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -42,7 +42,8 @@ internal class ProductClientService(IProductService<Product> service, IHttpConte
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             throw new InvalidOperationException("Invalid User ID.");
 
-        var product = new Product(request.Name,
+        var product = new Product(new ProductId(request.Id),
+            request.Name,
             request.Barcode,
             request.Weight,
             request.Wage,
@@ -61,7 +62,7 @@ internal class ProductClientService(IProductService<Product> service, IHttpConte
         var product = await service.GetAsync(new ProductId(id), cancellationToken);
 
         if (product is null)
-            throw new NotFoundException("کالا یافت نشد");
+            throw new NotFoundException("جنس یافت نشد");
 
         product.SetName(request.Name);
         product.SetBarcode(request.Barcode);
@@ -70,17 +71,26 @@ internal class ProductClientService(IProductService<Product> service, IHttpConte
         product.SetWageType(request.WageType);
         product.SetProductType(request.ProductType);
         product.SetCaratType(request.CaratType);
+        product.SetLastModifiedDate(DateTime.UtcNow);
 
         await service.UpdateAsync(product, cancellationToken);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
         var product = await service.GetAsync(new ProductId(id), cancellationToken);
 
         if (product is null)
-            throw new NotFoundException("کالا یافت نشد");
+            throw new NotFoundException("جنس یافت نشد");
 
-        await service.DeleteAsync(product, cancellationToken);
+        await service.DeleteAsync(product, deletePermanently, cancellationToken);
+    }
+
+    public async Task<List<GetPendingProductResponse>> GetPendingsAsync(DateTime checkpointDate,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await service.GetPendingItemsAsync(checkpointDate, cancellationToken);
+
+        return mapper.Map<List<GetPendingProductResponse>>(items);
     }
 }

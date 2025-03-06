@@ -26,10 +26,10 @@ public class ProductService<T>(
         await repository.UpdateAsync(product, cancellationToken);
     }
 
-    public async Task DeleteAsync(T product, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(T product, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
         await deleteValidator.ValidateAndThrowAsync(product, cancellationToken);
-        await repository.DeleteAsync(product, cancellationToken);
+        await repository.DeleteAsync(product, deletePermanently, cancellationToken);
     }
 
     public Task<T?> GetAsync(ProductId id, CancellationToken cancellationToken = default)
@@ -40,4 +40,7 @@ public class ProductService<T>(
 
     public Task<PagedList<T>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
         => repository.GetListAsync(filter, cancellationToken);
+
+    public Task<List<T>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
+        => repository.GetPendingItemsAsync(checkpointDate, cancellationToken);
 }

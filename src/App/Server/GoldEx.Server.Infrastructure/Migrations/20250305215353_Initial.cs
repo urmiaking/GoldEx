@@ -131,9 +131,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsModified = table.Column<bool>(type: "bit", nullable: false),
-                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsSynced = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Barcode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Weight = table.Column<double>(type: "float", nullable: false),
@@ -141,7 +139,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     ProductType = table.Column<int>(type: "int", nullable: false),
                     CaratType = table.Column<int>(type: "int", nullable: false),
                     WageType = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -1,25 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
+﻿using GoldEx.Shared.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Client.Offline.Infrastructure;
 
-public class OfflineDbContextFactory : IDesignTimeDbContextFactory<OfflineDbContext>
+public class OfflineDbContextFactory(IServiceProvider serviceProvider) : IGoldExDbContextFactory
 {
-    public OfflineDbContext CreateDbContext(string[] args)
-    {
-        throw new Exception("CreateDbContext is not supported in bit Besql, use CreateDbContextAsync instead.");
-    }
+    private IDbContextFactory<OfflineDbContext> Factory => serviceProvider.GetRequiredService<IDbContextFactory<OfflineDbContext>>();
 
-    public async Task<OfflineDbContext> CreateDbContextAsync(string[] args)
+    public async Task<DbContext> CreateDbContextAsync()
     {
-        var optionsBuilder = new DbContextOptionsBuilder<OfflineDbContext>();
-        optionsBuilder.UseSqlite("Data Source=GoldExDb.db");
+        var dbContext = await Factory.CreateDbContextAsync();
 
-        return new OfflineDbContext(optionsBuilder.Options);
-    }
-
-    OfflineDbContext IDesignTimeDbContextFactory<OfflineDbContext>.CreateDbContext(string[] args)
-    {
-        return CreateDbContextAsync(args).GetAwaiter().GetResult();
+        return dbContext;
     }
 }

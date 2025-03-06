@@ -33,7 +33,7 @@ public class ProductVm
     public CaratType CaratType { get; set; }
 
     internal static ProductVm CreateDefaultInstance() => new()
-        { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
+        { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = GoldEx.Shared.Enums.WageType.Percent };
 
     internal static ProductVm CreateFrom(GetProductResponse item)
     {
@@ -54,6 +54,7 @@ public class ProductVm
     {
         return new CreateProductRequest
         (
+            Guid.NewGuid(),
             item.Name,
             item.Barcode,
             item.Weight ?? 0,

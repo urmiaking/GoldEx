@@ -7,11 +7,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Folder Include="Application\Abstractions\" />
+	  <Compile Remove="Common\**" />
+	  <EmbeddedResource Remove="Common\**" />
+	  <None Remove="Common\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Folder Include="Domain\PriceAggregate\" />
 		<Folder Include="Domain\ProductAggregate\" />
-		<Folder Include="Infrastructure\Configurations\" />
-		<Folder Include="Infrastructure\Repositories\Abstractions\" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -19,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bit.Besql" Version="9.4.0" />
+		<PackageReference Include="Bit.Besql" Version="9.5.1" />
 		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
 	</ItemGroup>
 

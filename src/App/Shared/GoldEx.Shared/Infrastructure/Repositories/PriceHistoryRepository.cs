@@ -15,7 +15,7 @@ public class PriceHistoryRepository<T>(IGoldExDbContextFactory factory) : Reposi
         await InitializeDbContextAsync();
 
         // 1. Get all PriceIds that have more than 10 history entries.
-        var priceIdsToCleanup = await Query
+        var priceIdsToCleanup = await NonDeletedQuery
             .GroupBy(ph => ph.PriceId)
             .Where(g => g.Count() > 10)
             .Select(g => g.Key)
@@ -24,7 +24,7 @@ public class PriceHistoryRepository<T>(IGoldExDbContextFactory factory) : Reposi
         foreach (var priceId in priceIdsToCleanup)
         {
             // 2. Get the PriceHistories for the current PriceId, ordered by LastUpdate.
-            var histories = await Query
+            var histories = await NonDeletedQuery
                 .Where(ph => ph.PriceId == priceId)
                 .OrderBy(ph => ph.Id) // Important: Order by LastUpdate (EF.Property if string)
                 .ToListAsync(cancellationToken);

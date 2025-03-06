@@ -12,6 +12,19 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Checkpoints",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    EntityName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    DateTime = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Checkpoints", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Prices",
                 columns: table => new
                 {
@@ -30,9 +43,7 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    IsModified = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LastModifiedDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    IsSynced = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Barcode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Weight = table.Column<double>(type: "REAL", nullable: false),
@@ -40,7 +51,7 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                     ProductType = table.Column<int>(type: "INTEGER", nullable: false),
                     CaratType = table.Column<int>(type: "INTEGER", nullable: false),
                     WageType = table.Column<int>(type: "INTEGER", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    LastModifiedDate = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,6 +90,9 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Checkpoints");
+
             migrationBuilder.DropTable(
                 name: "PriceHistories");
 

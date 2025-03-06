@@ -1,11 +1,11 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Shared.DTOs.Application;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
-using System.Text.Json;
-using GoldEx.Shared.DTOs.Application;
 
-namespace GoldEx.Client.Components.Services;
+namespace GoldEx.Client.Services.ClientServices;
 
 public class HealthClientService(HttpClient client, JsonSerializerOptions jsonOptions) : IHealthClientService
 {

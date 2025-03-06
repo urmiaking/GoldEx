@@ -321,19 +321,13 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<int>("CaratType")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<Guid>("CreatedUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsModified")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsSynced")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModifiedDate")
+                    b.Property<DateTime>("LastModifiedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")

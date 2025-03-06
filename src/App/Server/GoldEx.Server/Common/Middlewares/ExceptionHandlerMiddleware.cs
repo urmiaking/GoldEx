@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Server.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
