@@ -1,5 +1,4 @@
 ﻿using GoldEx.Client.Offline.Domain.PriceAggregate;
-using GoldEx.Client.Offline.Domain.PriceHistoryAggregate;
 using GoldEx.Shared.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

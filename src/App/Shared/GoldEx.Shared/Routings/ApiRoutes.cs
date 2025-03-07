@@ -24,6 +24,7 @@ public static class ApiRoutes
         public const string Base = "/api/Price";
 
         public const string GetLatestPrices = "GetLatestPrices";
+        public const string GetPendings = "GetPendings/{checkpointDate}";
     }
 
     public class Health

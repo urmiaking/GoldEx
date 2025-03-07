@@ -57,5 +57,5 @@ public class ProductBase : EntityBase<ProductId>, ISyncableEntity
     public void SetProductType(ProductType productType) => ProductType = productType;
     public void SetCaratType(CaratType caratType) => CaratType = caratType;
     public void SetWageType(WageType? wageType) => WageType = wageType;
-    public void SetLastModifiedDate(DateTime date) => LastModifiedDate = date;
+    public void SetLastModifiedDate() => LastModifiedDate = DateTime.UtcNow;
 }

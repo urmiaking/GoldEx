@@ -3,7 +3,6 @@ using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using GoldEx.Client.Offline.Domain.PriceAggregate;
-using GoldEx.Client.Offline.Domain.PriceHistoryAggregate;
 using GoldEx.Client.Offline.Domain.ProductAggregate;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared.Application.Services;
@@ -36,9 +35,6 @@ public static class DependencyInjection
 
         services.AddScoped<IPriceRepository<Price, PriceHistory>, PriceRepository<Price, PriceHistory>>();
         services.AddScoped<IPriceService<Price, PriceHistory>, PriceService<Price, PriceHistory>>();
-
-        services.AddScoped<IPriceHistoryRepository<PriceHistory>, PriceHistoryRepository<PriceHistory>>();
-        services.AddScoped<IPriceHistoryService<PriceHistory>, PriceHistoryService<PriceHistory>>(); 
 
         services.AddScoped<CreateProductValidator<Product>>();
         services.AddScoped<UpdateProductValidator<Product>>();

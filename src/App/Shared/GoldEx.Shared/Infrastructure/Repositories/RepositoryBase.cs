@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq.Dynamic.Core;
 using GoldEx.Sdk.Common.Definitions;
+using System.Reflection;
 
 namespace GoldEx.Shared.Infrastructure.Repositories;
 
@@ -69,6 +70,21 @@ public abstract class RepositoryBase<TEntity>(IGoldExDbContextFactory contextFac
     {
         await InitializeDbContextAsync();
 
+        if (entity is ISyncableEntity syncableEntity)
+            syncableEntity.SetLastModifiedDate();
+
+        var properties = typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        foreach (var property in properties)
+        {
+            if (typeof(ISyncableEntity).IsAssignableFrom(property.PropertyType))
+            {
+                if (property.GetValue(entity) is ISyncableEntity navigationProperty)
+                {
+                    navigationProperty.SetLastModifiedDate();
+                }
+            }
+        }
+
         Create(entity);
         await SaveAsync(cancellationToken);
     }
@@ -78,7 +94,19 @@ public abstract class RepositoryBase<TEntity>(IGoldExDbContextFactory contextFac
         await InitializeDbContextAsync();
 
         if (entity is ISyncableEntity syncableEntity)
-            syncableEntity.SetLastModifiedDate(DateTime.UtcNow);
+            syncableEntity.SetLastModifiedDate();
+
+        var properties = typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        foreach (var property in properties)
+        {
+            if (typeof(ISyncableEntity).IsAssignableFrom(property.PropertyType))
+            {
+                if (property.GetValue(entity) is ISyncableEntity navigationProperty)
+                {
+                    navigationProperty.SetLastModifiedDate();
+                }
+            }
+        }
 
         Update(entity);
         await SaveAsync(cancellationToken);
@@ -94,7 +122,19 @@ public abstract class RepositoryBase<TEntity>(IGoldExDbContextFactory contextFac
             softDeleteEntity.SetDeleted();
 
             if (entity is ISyncableEntity syncableEntity)
-                syncableEntity.SetLastModifiedDate(DateTime.UtcNow);
+                syncableEntity.SetLastModifiedDate();
+
+            var properties = typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var property in properties)
+            {
+                if (typeof(ISyncableEntity).IsAssignableFrom(property.PropertyType))
+                {
+                    if (property.GetValue(entity) is ISyncableEntity navigationProperty)
+                    {
+                        navigationProperty.SetLastModifiedDate();
+                    }
+                }
+            }
 
             await UpdateAsync(entity, cancellationToken);
         }

@@ -85,23 +85,22 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "PriceHistories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PriceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CurrentValue = table.Column<double>(type: "float", nullable: false),
                     LastUpdate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DailyChangeRate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    PriceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PriceHistories", x => x.Id);
+                    table.PrimaryKey("PK_PriceHistories", x => x.PriceId);
                     table.ForeignKey(
                         name: "FK_PriceHistories_Prices_PriceId",
                         column: x => x.PriceId,
                         principalTable: "Prices",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -236,11 +235,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriceHistories_PriceId",
-                table: "PriceHistories",
-                column: "PriceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CreatedUserId",

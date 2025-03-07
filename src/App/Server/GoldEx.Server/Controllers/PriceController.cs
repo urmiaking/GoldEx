@@ -15,4 +15,12 @@ public class PriceController(IPriceClientService priceService) : ApiControllerBa
 
         return Ok(list);
     }
+
+    [HttpGet(ApiRoutes.Price.GetPendings)]
+    public async Task<IActionResult> GetPendings(DateTime checkpointDate, CancellationToken cancellationToken = default)
+    {
+        var list = await priceService.GetPendingsAsync(checkpointDate, cancellationToken);
+
+        return Ok(list);
+    }
 }

@@ -13,15 +13,12 @@ public class MapsterConfig : IRegister
         #region Price
 
         config.NewConfig<Price, GetPriceResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Title, src => src.Title)
-            .Map(dest => dest.Value,
-                src => src.PriceHistories!.Any()
-                    ? $"{src.PriceHistories!.First().CurrentValue:N0} {src.PriceHistories!.First().Unit}"
-                    : "0")
-            .Map(dest => dest.Change,
-                src => src.PriceHistories!.Any() ? src.PriceHistories!.First().DailyChangeRate : string.Empty)
-            .Map(dest => dest.LastUpdate,
-                src => src.PriceHistories!.Any() ? src.PriceHistories!.First().LastUpdate : string.Empty)
+            .Map(dest => dest.Value, src => src.PriceHistory.CurrentValue.ToString("N0"))
+            .Map(dest => dest.Change, src => src.PriceHistory.DailyChangeRate)
+            .Map(dest => dest.LastUpdate, src => src.PriceHistory.LastUpdate)
+            .Map(dest => dest.Unit, src => src.PriceHistory.Unit)
             .Map(dest => dest.Type, src => src.MarketType)
             .Map(dest => dest.IconFileBase64, src => src.IconFile);
 

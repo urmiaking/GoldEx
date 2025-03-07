@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="ProductAggregate\" />
-    <Folder Include="PriceAggregate\" />
   </ItemGroup>
 
 </Project>

@@ -272,42 +272,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.ToTable("Prices", (string)null);
                 });
 
-            modelBuilder.Entity("GoldEx.Server.Domain.PriceHistoryAggregate.PriceHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("CurrentValue")
-                        .HasColumnType("float");
-
-                    b.Property<string>("DailyChangeRate")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("LastUpdate")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<Guid>("PriceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PriceId");
-
-                    b.ToTable("PriceHistories", (string)null);
-                });
-
             modelBuilder.Entity("GoldEx.Server.Domain.ProductAggregate.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -417,12 +381,43 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("GoldEx.Server.Domain.PriceHistoryAggregate.PriceHistory", b =>
+            modelBuilder.Entity("GoldEx.Server.Domain.PriceAggregate.Price", b =>
                 {
-                    b.HasOne("GoldEx.Server.Domain.PriceAggregate.Price", null)
-                        .WithMany("PriceHistories")
-                        .HasForeignKey("PriceId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.OwnsOne("GoldEx.Server.Domain.PriceAggregate.PriceHistory", "PriceHistory", b1 =>
+                        {
+                            b1.Property<Guid>("PriceId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<double>("CurrentValue")
+                                .HasColumnType("float");
+
+                            b1.Property<string>("DailyChangeRate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)");
+
+                            b1.Property<DateTime>("LastModifiedDate")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("LastUpdate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)");
+
+                            b1.Property<string>("Unit")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)");
+
+                            b1.HasKey("PriceId");
+
+                            b1.ToTable("PriceHistories", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("PriceId");
+                        });
+
+                    b.Navigation("PriceHistory")
                         .IsRequired();
                 });
 
@@ -453,11 +448,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("Tokens");
 
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("GoldEx.Server.Domain.PriceAggregate.Price", b =>
-                {
-                    b.Navigation("PriceHistories");
                 });
 #pragma warning restore 612, 618
         }

@@ -5,7 +5,6 @@ using GoldEx.Server.Application.Factories;
 using GoldEx.Server.Application.Services;
 using GoldEx.Server.Application.Validators;
 using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Server.Domain.PriceHistoryAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Application.Services;
 using GoldEx.Shared.Application.Services.Abstractions;
@@ -20,13 +19,11 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddHostedService<PriceUpdaterBackgroundService>();
-        services.AddHostedService<PriceHistoryCleanupBackgroundService>();
 
         services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
 
         services.AddScoped<IProductService<Product>, ServerProductService>();
         services.AddScoped<IPriceService<Price, PriceHistory>, PriceService<Price, PriceHistory>>();
-        services.AddScoped<IPriceHistoryService<PriceHistory>, PriceHistoryService<PriceHistory>>();
 
         services.AddScoped<CreateServerProductValidator>();
         services.AddScoped<UpdateServerProductValidator>();

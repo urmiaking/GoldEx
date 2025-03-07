@@ -63,31 +63,25 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
     {
         await InitializeDbContextAsync();
 
-        List<T> list = [];
-
         // ClientSide pending items
         if (typeof(T).IsAssignableTo(typeof(ITrackableEntity)))
         {
-            list = await AllQuery.ToListAsync(cancellationToken);
-
-            list = list.AsQueryable()
+            return await AllQuery
                 .Where($"{nameof(ITrackableEntity.Status)}<>{(int)ModifyStatus.Synced}")
-                .Where(x => x.LastModifiedDate >= checkpointDate)
-                .OrderBy(x => x.LastModifiedDate)
-                .ToList();
-        }
-
-        // Serverside pending items
-        if (typeof(T).IsAssignableTo(typeof(ISoftDeleteEntity)))
-        {
-            list = await AllQuery.ToListAsync(cancellationToken);
-
-            list = await AllQuery
                 .Where(x => x.LastModifiedDate >= checkpointDate)
                 .OrderBy(x => x.LastModifiedDate)
                 .ToListAsync(cancellationToken);
         }
 
-        return list;
+        // Serverside pending items
+        if (typeof(T).IsAssignableTo(typeof(ISoftDeleteEntity)))
+        {
+            return await AllQuery
+                .Where(x => x.LastModifiedDate >= checkpointDate)
+                .OrderBy(x => x.LastModifiedDate)
+                .ToListAsync(cancellationToken);
+        }
+
+        return [];
     }
 }
