@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Offline.Domain.PriceHistoryAggregate;
-using GoldEx.Sdk.Common.Definitions;
+﻿using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
 
 namespace GoldEx.Client.Offline.Domain.PriceAggregate;

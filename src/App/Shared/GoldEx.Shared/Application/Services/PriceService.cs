@@ -2,7 +2,6 @@
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Application.Validators;
 using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
-using GoldEx.Shared.Domain.Aggregates.PriceHistoryAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Services;
@@ -12,6 +11,9 @@ public class PriceService<TPrice, TPriceHistory>(IPriceRepository<TPrice, TPrice
     where TPrice : PriceBase<TPriceHistory>
     where TPriceHistory : PriceHistoryBase
 {
+    public Task<TPrice?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        => repository.GetAsync(new PriceId(id), cancellationToken);
+
     public async Task CreateAsync(TPrice price, CancellationToken cancellationToken = default)
     {
         await validator.ValidateAndThrowAsync(price, cancellationToken);
@@ -24,9 +26,9 @@ public class PriceService<TPrice, TPriceHistory>(IPriceRepository<TPrice, TPrice
         await repository.UpdateAsync(price, cancellationToken);
     }
 
+    public Task<List<TPrice>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
+        => repository.GetPendingsAsync(checkpointDate, cancellationToken);
+
     public Task<List<TPrice>> GetLatestPricesAsync(CancellationToken cancellationToken = default)
         => repository.GetLatestPricesAsync(cancellationToken);
-
-    public Task<List<TPrice>> GetListAsync(CancellationToken cancellationToken = default)
-        => repository.GetListAsync(cancellationToken);
 }

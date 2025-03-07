@@ -51,7 +51,7 @@ public partial class PriceBoard
 
     private Task StartTimer()
     {
-        _timer = new Timer(TimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+        _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 
         return Task.CompletedTask;
     }

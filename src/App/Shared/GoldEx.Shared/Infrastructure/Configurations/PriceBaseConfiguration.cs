@@ -1,5 +1,4 @@
 ﻿using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
-using GoldEx.Shared.Domain.Aggregates.PriceHistoryAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,9 +25,24 @@ public static class PriceBaseConfiguration
         builder.Property(x => x.MarketType)
             .IsRequired();
 
-        builder.HasMany(x => x.PriceHistories)
-            .WithOne()
-            .HasForeignKey(x => x.PriceId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.OwnsOne(x => x.PriceHistory, Config);
+    }
+
+    private static void Config<TPrice, TPriceHistory>(OwnedNavigationBuilder<TPrice, TPriceHistory> builder)
+        where TPrice : PriceBase<TPriceHistory> where TPriceHistory : PriceHistoryBase
+    {
+        builder.ToTable("PriceHistories");
+
+        builder.Property(x => x.DailyChangeRate)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        builder.Property(x => x.LastUpdate)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        builder.Property(x => x.Unit)
+            .HasMaxLength(50)
+            .IsRequired();
     }
 }

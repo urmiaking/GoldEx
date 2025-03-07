@@ -1,7 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
-using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Server.Domain.PriceHistoryAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,13 +22,12 @@ public class PriceUpdaterBackgroundService(IServiceScopeFactory serviceScopeFact
                 using var scope = serviceScopeFactory.CreateScope();
 
                 var priceService = scope.ServiceProvider.GetRequiredService<IPriceService<Price, PriceHistory>>();
-                var priceHistoryService = scope.ServiceProvider.GetRequiredService<IPriceHistoryService<PriceHistory>>();
                 var priceFetcher = scope.ServiceProvider.GetRequiredService<IPriceFetcher>();
 
-                var apiPriceItems = await priceFetcher.GetPriceAsync(stoppingToken);
-                var databasePriceItems = await priceService.GetListAsync(stoppingToken);
+                var apiPrices = await priceFetcher.GetPriceAsync(stoppingToken);
+                var dbPrices = await priceService.GetLatestPricesAsync(stoppingToken);
 
-                await BackgroundServiceHelper.InsertToDb(apiPriceItems, databasePriceItems, priceService, priceHistoryService, stoppingToken);
+                await BackgroundServiceHelper.AddOrUpdatePrices(apiPrices, dbPrices, priceService, stoppingToken);
                 await Task.Delay(30_000, stoppingToken);
             }
         }

@@ -34,7 +34,7 @@
         }
 
         <MudTd DataLabel="عنوان">@context.Title</MudTd>
-        <MudTd DataLabel="قیمت">@context.Value</MudTd>
+        <MudTd DataLabel="قیمت">@context.Value @context.Unit</MudTd>
         <MudTd DataLabel="تغییرات">
             @if (context.Change.Contains("-"))
             {

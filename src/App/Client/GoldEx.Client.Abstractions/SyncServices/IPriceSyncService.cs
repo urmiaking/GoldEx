@@ -1,3 +1,3 @@
 ﻿namespace GoldEx.Client.Abstractions.SyncServices;
 
-public interface IProductSyncService : ISyncService;
+public interface IPriceSyncService : ISyncService;

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Client.Offline.Infrastructure.Migrations
 {
     [DbContext(typeof(OfflineDbContext))]
-    [Migration("20250305215820_Initial")]
+    [Migration("20250307073554_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -59,40 +59,6 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                     b.ToTable("Prices", (string)null);
                 });
 
-            modelBuilder.Entity("GoldEx.Client.Offline.Domain.PriceHistoryAggregate.PriceHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double>("CurrentValue")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("DailyChangeRate")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LastUpdate")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("PriceId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PriceId");
-
-                    b.ToTable("PriceHistories", (string)null);
-                });
-
             modelBuilder.Entity("GoldEx.Client.Offline.Domain.ProductAggregate.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -134,18 +100,44 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                     b.ToTable("Products", (string)null);
                 });
 
-            modelBuilder.Entity("GoldEx.Client.Offline.Domain.PriceHistoryAggregate.PriceHistory", b =>
-                {
-                    b.HasOne("GoldEx.Client.Offline.Domain.PriceAggregate.Price", null)
-                        .WithMany("PriceHistories")
-                        .HasForeignKey("PriceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("GoldEx.Client.Offline.Domain.PriceAggregate.Price", b =>
                 {
-                    b.Navigation("PriceHistories");
+                    b.OwnsOne("GoldEx.Client.Offline.Domain.PriceAggregate.PriceHistory", "PriceHistory", b1 =>
+                        {
+                            b1.Property<Guid>("PriceId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<double>("CurrentValue")
+                                .HasColumnType("REAL");
+
+                            b1.Property<string>("DailyChangeRate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("TEXT");
+
+                            b1.Property<DateTime>("LastModifiedDate")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("LastUpdate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Unit")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("PriceId");
+
+                            b1.ToTable("PriceHistories", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("PriceId");
+                        });
+
+                    b.Navigation("PriceHistory")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

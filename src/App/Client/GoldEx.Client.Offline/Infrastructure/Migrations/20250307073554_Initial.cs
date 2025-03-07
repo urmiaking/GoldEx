@@ -62,29 +62,23 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                 name: "PriceHistories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    PriceId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CurrentValue = table.Column<double>(type: "REAL", nullable: false),
                     LastUpdate = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Unit = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     DailyChangeRate = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    PriceId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    LastModifiedDate = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PriceHistories", x => x.Id);
+                    table.PrimaryKey("PK_PriceHistories", x => x.PriceId);
                     table.ForeignKey(
                         name: "FK_PriceHistories_Prices_PriceId",
                         column: x => x.PriceId,
                         principalTable: "Prices",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriceHistories_PriceId",
-                table: "PriceHistories",
-                column: "PriceId");
         }
 
         /// <inheritdoc />

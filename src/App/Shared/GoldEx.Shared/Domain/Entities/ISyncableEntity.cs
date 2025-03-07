@@ -3,5 +3,5 @@
 public interface ISyncableEntity
 {
     DateTime LastModifiedDate { get; }
-    void SetLastModifiedDate(DateTime date);
+    void SetLastModifiedDate();
 }

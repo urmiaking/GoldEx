@@ -1,15 +1,14 @@
 ﻿using GoldEx.Sdk.Server.Application.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Server.Domain.PriceHistoryAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
 public static class BackgroundServiceHelper
 {
-    public static async Task InsertToDb(List<PriceResponse> apiPriceItems, List<Price> databasePriceItems,
-        IPriceService<Price, PriceHistory> priceService, IPriceHistoryService<PriceHistory> priceHistoryService, CancellationToken stoppingToken = default)
+    public static async Task AddOrUpdatePrices(List<PriceResponse> apiPriceItems, List<Price> databasePriceItems,
+        IPriceService<Price, PriceHistory> priceService, CancellationToken stoppingToken = default)
     {
         foreach (var apiPrice in apiPriceItems)
         {
@@ -17,11 +16,6 @@ public static class BackgroundServiceHelper
 
             if (dbPrice is null)
             {
-                if (string.IsNullOrEmpty(apiPrice.Title))
-                {
-                    throw new InvalidDataException();
-                }
-
                 string? imageFileBase64Content = null;
 
                 if (!string.IsNullOrEmpty(apiPrice.IconUrl))
@@ -35,11 +29,20 @@ public static class BackgroundServiceHelper
                 }
 
                 dbPrice = new Price(apiPrice.Title, apiPrice.MarketType, imageFileBase64Content);
+
+                var priceHistory = new PriceHistory(apiPrice.CurrentValue, apiPrice.LastUpdate, apiPrice.Change, apiPrice.Unit);
+                dbPrice.SetPriceHistory(priceHistory);
+
                 await priceService.CreateAsync(dbPrice, stoppingToken);
             }
-
-            var priceHistory = new PriceHistory(dbPrice.Id, apiPrice.CurrentValue, apiPrice.LastUpdate, apiPrice.Change, apiPrice.Unit);
-            await priceHistoryService.CreateAsync(priceHistory, stoppingToken);
+            else
+            {
+                if (dbPrice.PriceHistory.LastUpdate != apiPrice.LastUpdate)
+                {
+                    dbPrice.SetPriceHistory(new PriceHistory(apiPrice.CurrentValue, apiPrice.LastUpdate, apiPrice.Change, apiPrice.Unit));
+                    await priceService.UpdateAsync(dbPrice, stoppingToken);
+                }
+            }
         }
     }
 }

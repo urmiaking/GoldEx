@@ -21,7 +21,7 @@ public static class SignalApiResponseMapper
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
                 let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName ?? item.Name,
+                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
                     lastUpdate,
@@ -39,7 +39,7 @@ public static class SignalApiResponseMapper
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
                 let iconUrl = item.IconUrl
                 where item.Name is "usDollar" or "euro"
-                select new PriceResponse(item.PersianName ?? item.Name,
+                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
                     lastUpdate,
@@ -57,7 +57,7 @@ public static class SignalApiResponseMapper
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
                 let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName ?? item.Name,
+                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
                     lastUpdate,
@@ -74,7 +74,7 @@ public static class SignalApiResponseMapper
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
                 let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName ?? item.Name,
+                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
                     lastUpdate,
@@ -91,7 +91,7 @@ public static class SignalApiResponseMapper
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
                 let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName ?? item.Name,
+                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
                     lastUpdate,
@@ -116,7 +116,7 @@ public static class SignalApiResponseMapper
         if (item is null)
             throw new NotSupportedException("geram18 is not available in response");
 
-        var title = item.PersianName ?? item.Name;
+        var title = item.PersianName?.ToPersianChars() ?? item.Name;
         var currentValue = ParseDouble(item.Close);
         var unit = item.Unit;
         var change = FormatChange(item.Change, item.PercentChange);
@@ -139,7 +139,7 @@ public static class SignalApiResponseMapper
         if (item is null)
             throw new NotSupportedException("usDollar is not available in response");
 
-        var title = item.PersianName ?? item.Name;
+        var title = item.PersianName?.ToPersianChars() ?? item.Name;
         var currentValue = ParseDouble(item.Close);
         var unit = item.Unit;
         var change = FormatChange(item.Change, item.PercentChange);

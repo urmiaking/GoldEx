@@ -25,6 +25,9 @@ public class ApiUrls
     public class Price
     {
         public static string GetLatestPrices() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetLatestPrices);
+
+        public static string GetPendings(DateTime checkpointDate) => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetPendings)
+            .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     public class Health
@@ -47,7 +50,8 @@ public class ApiUrls
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Delete).FormatRoute(new { id });
         public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetPendingItems).FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetPendingItems)
+                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     private static CultureInfo EnCulture => new("en-US")

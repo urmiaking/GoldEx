@@ -1,5 +1,4 @@
 ﻿using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
-using GoldEx.Shared.Domain.Aggregates.PriceHistoryAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions.Base;
 
 namespace GoldEx.Shared.Infrastructure.Repositories.Abstractions;
@@ -11,5 +10,6 @@ public interface IPriceRepository<TPrice, TPriceHistory> : IRepository,
     where TPriceHistory : PriceHistoryBase
 {
     Task<List<TPrice>> GetLatestPricesAsync(CancellationToken cancellationToken = default);
-    Task<List<TPrice>> GetListAsync(CancellationToken cancellationToken = default);
+    Task<TPrice?> GetAsync(PriceId id, CancellationToken cancellationToken = default);
+    Task<List<TPrice>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default);
 }

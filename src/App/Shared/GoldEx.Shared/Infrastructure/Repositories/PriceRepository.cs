@@ -1,5 +1,5 @@
 ﻿using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
-using GoldEx.Shared.Domain.Aggregates.PriceHistoryAggregate;
+using GoldEx.Shared.Domain.Entities;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,16 +13,30 @@ public class PriceRepository<TPrice, TPriceHistory>(IGoldExDbContextFactory fact
     {
         await InitializeDbContextAsync();
 
-        return await NonDeletedQuery
-            .Include(p => p.PriceHistories!
-                .OrderByDescending(ph => ph.Id)
-                .Take(1))
-            .ToListAsync(cancellationToken);
+        return await NonDeletedQuery.ToListAsync(cancellationToken);
     }
 
-    public async Task<List<TPrice>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<TPrice?> GetAsync(PriceId id, CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
-        return await NonDeletedQuery.ToListAsync(cancellationToken);
+        
+        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public async Task<List<TPrice>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
+    {
+        await InitializeDbContextAsync();
+
+        List<TPrice> result = [];
+
+        if (typeof(TPriceHistory).IsAssignableTo(typeof(ISyncableEntity)))
+        {
+            result = await NonDeletedQuery
+                .Where(x => x.PriceHistory.LastModifiedDate >= checkpointDate)
+                .OrderBy(x => x.PriceHistory.LastModifiedDate)
+                .ToListAsync(cancellationToken);
+        }
+
+        return result;
     }
 }

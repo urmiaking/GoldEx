@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
-using GoldEx.Shared.Domain.Aggregates.PriceHistoryAggregate;
 
 namespace GoldEx.Shared.Application.Validators;
 
