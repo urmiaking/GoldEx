@@ -45,7 +45,7 @@
                         <MudItem xs="10">
                             <MudTextField Label="بارکد" @bind-Value="_model.Barcode" For="@(() => _model.Barcode)" Variant="Variant.Outlined" Margin="Margin.Dense" />
                         </MudItem>
-                        <MudItem xs="2">
+                        <MudItem xs="2" Class="pr-2">
                             <MudIconButton Color="Color.Primary" OnClick="@(_ => GenerateBarcode())" Icon="@Icons.Material.Filled.Refresh" Variant="Variant.Filled"></MudIconButton>
                         </MudItem>
                     </MudStack>
