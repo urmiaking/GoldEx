@@ -33,7 +33,7 @@ public abstract class RepositoryBase<TEntity>(IGoldExDbContextFactory contextFac
 
             if (typeof(TEntity).IsAssignableTo(typeof(ITrackableEntity)))
             {
-                return query.Where($"{nameof(ITrackableEntity)}<>{ModifyStatus.Deleted}");
+                return query.Where($"{nameof(ITrackableEntity.Status)}<>{(int)ModifyStatus.Deleted}");
             }
 
             return query;

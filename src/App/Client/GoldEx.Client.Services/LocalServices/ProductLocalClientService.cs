@@ -50,8 +50,11 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
 
     public async Task UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
     {
-        var item = await service.GetAsync(new ProductId(id), cancellationToken) ?? throw new NotFoundException();
+        var item = await service.GetAsync(new ProductId(id), cancellationToken);
 
+        if (item is null)
+            return;
+        
         item.SetName(request.Name);
         item.SetBarcode(request.Barcode);
         item.SetWeight(request.Weight);
@@ -69,7 +72,10 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
 
     public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
-        var item = await service.GetAsync(new ProductId(id), cancellationToken) ?? throw new NotFoundException();
+        var item = await service.GetAsync(new ProductId(id), cancellationToken);
+
+        if (item is null)
+            return;
 
         // In case the item is created locally and is not synced to server, it will be deleted permanently
         if (item.Status == ModifyStatus.Created)
@@ -99,7 +105,7 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
 
     public async Task SetSyncedAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await service.GetAsync(new ProductId(id), cancellationToken) ?? throw new NotFoundException();
+        var item = await service.GetAsync(new ProductId(id), cancellationToken) ?? throw new NotFoundException("جنس مورد نظر یافت نشد");
 
         item.SetStatus(ModifyStatus.Synced);
 
@@ -122,11 +128,13 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
         await service.CreateAsync(product, cancellationToken);
     }
 
-    public async Task UpdateAsync(Guid id, UpdateProductRequest request, ModifyStatus status,
-        CancellationToken cancellationToken = default)
+    public async Task UpdateAsSyncAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
     {
-        var item = await service.GetAsync(new ProductId(id), cancellationToken) ?? throw new NotFoundException();
+        var item = await service.GetAsync(new ProductId(id), cancellationToken);
 
+        if (item is null)
+            return;
+        
         item.SetName(request.Name);
         item.SetBarcode(request.Barcode);
         item.SetWeight(request.Weight);
@@ -134,7 +142,8 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
         item.SetProductType(request.ProductType);
         item.SetWageType(request.WageType);
         item.SetCaratType(request.CaratType);
-        item.SetStatus(status);
+
+        item.SetStatus(ModifyStatus.Synced);
 
         await service.UpdateAsync(item, cancellationToken);
     }
