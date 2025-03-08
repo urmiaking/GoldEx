@@ -82,7 +82,6 @@ public class ProductSyncService(
                 {
                     await productLocalService.DeleteAsync(incomingProduct.Id, true, cancellationToken);
                 }
-                // Incoming product is available on client and not deleted so update it
                 else
                 {
                     var localProduct = await productLocalService.GetAsync(incomingProduct.Id, cancellationToken);
