@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Abstractions.SyncServices;
-using GoldEx.Client.Pages.Products.ViewModels;
+﻿using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Services;
 using MudBlazor;
@@ -11,8 +10,6 @@ public partial class ProductsList
     private string? _searchString;
     private MudTable<ProductVm> _table = new ();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
-
-    private IProductSyncService SyncService => GetRequiredService<IProductSyncService>();
 
     private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -114,27 +111,6 @@ public partial class ProductsList
         {
             AddSuccessToast("جنس با موفقیت ویرایش شد.");
             await _table.ReloadServerData();
-        }
-    }
-
-    private async Task OnSyncProducts()
-    {
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            await SyncService.SynchronizeAsync(CancellationTokenSource.Token);
-
-            AddSuccessToast("تمامی اجناس با سرور همگام سازی شدند!");
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
         }
     }
 }

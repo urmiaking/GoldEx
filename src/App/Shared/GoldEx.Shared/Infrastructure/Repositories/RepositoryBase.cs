@@ -31,9 +31,9 @@ public abstract class RepositoryBase<TEntity>(IGoldExDbContextFactory contextFac
                 return query.Where($"{nameof(ISoftDeleteEntity.IsDeleted)}={false}");
             }
 
-            if (typeof(TEntity).IsAssignableTo(typeof(ISoftDeleteEntity)))
+            if (typeof(TEntity).IsAssignableTo(typeof(ITrackableEntity)))
             {
-                return query.Where($"{nameof(ISoftDeleteEntity)}<>{ModifyStatus.Deleted}");
+                return query.Where($"{nameof(ITrackableEntity)}<>{ModifyStatus.Deleted}");
             }
 
             return query;

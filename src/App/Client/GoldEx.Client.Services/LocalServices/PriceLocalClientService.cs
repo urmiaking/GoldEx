@@ -3,6 +3,7 @@ using GoldEx.Client.Offline.Domain.PriceAggregate;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.Application.Services.Abstractions;
+using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
 using GoldEx.Shared.DTOs.Prices;
 using MapsterMapper;
 
@@ -27,7 +28,7 @@ public class PriceLocalClientService(IPriceService<Price, PriceHistory> priceSer
 
     public async Task CreateAsync(CreatePriceRequest request, CancellationToken cancellationToken = default)
     {
-        var price = new Price(request.Title, request.Type, request.IconFileBase64);
+        var price = new Price(new PriceId(request.Id), request.Title, request.Type, request.IconFileBase64);
 
         price.SetPriceHistory(new PriceHistory(double.Parse(request.Value), request.LastUpdate, request.Change, request.Unit));
 

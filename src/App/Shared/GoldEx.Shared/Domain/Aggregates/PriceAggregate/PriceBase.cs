@@ -13,6 +13,13 @@ public abstract class PriceBase<TPriceHistory> : EntityBase<PriceId> where TPric
         IconFile = iconFile;
     }
 
+    protected PriceBase(PriceId id, string title, MarketType marketType, string? iconFile = null) : base(id)
+    {
+        Title = title;
+        MarketType = marketType;
+        IconFile = iconFile;
+    }
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     protected PriceBase()
     {
