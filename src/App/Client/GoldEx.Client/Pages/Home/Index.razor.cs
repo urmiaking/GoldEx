@@ -19,7 +19,7 @@ public partial class Index
     {
         if (newVal)
         {
-            await Task.Delay(50);
+            await Task.Delay(0);
             _productListContent = builder =>
             {
                 builder.OpenComponent(0, typeof(ProductsList));
@@ -38,7 +38,7 @@ public partial class Index
     {
         if (newVal)
         {
-            await Task.Delay(50);
+            await Task.Delay(0);
             _priceBoardContent = builder =>
             {
                 builder.OpenComponent(0, typeof(PriceBoard));
