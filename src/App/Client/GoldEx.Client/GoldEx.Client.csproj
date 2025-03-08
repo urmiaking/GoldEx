@@ -22,6 +22,7 @@
 
 	<ItemGroup>
 		<Folder Include="Pages\Home\ViewModels\" />
+		<Folder Include="Pages\Tools\" />
 		<Folder Include="wwwroot\assets\screenshots\" />
 	</ItemGroup>
 
