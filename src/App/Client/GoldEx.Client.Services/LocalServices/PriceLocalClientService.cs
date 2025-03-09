@@ -53,4 +53,18 @@ public class PriceLocalClientService(IPriceService<Price, PriceHistory> priceSer
     {
         throw new NotImplementedException();
     }
+
+    public async Task<GetPriceResponse?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
+    {
+        var price = await priceService.GetGram18PriceAsync(cancellationToken);
+
+        return price is null ? null : mapper.Map<GetPriceResponse>(price);
+    }
+
+    public async Task<GetPriceResponse?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default)
+    {
+        var price = await priceService.GetUsDollarPriceAsync(cancellationToken);
+
+        return price is null ? null : mapper.Map<GetPriceResponse>(price);
+    }
 }

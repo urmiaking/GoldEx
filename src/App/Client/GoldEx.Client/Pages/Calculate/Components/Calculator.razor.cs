@@ -2,6 +2,7 @@
 using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
@@ -25,6 +26,49 @@ public partial class Calculator
     private double? _tax;
     private double? _finalPrice;
     private string? _additionalPricesFieldHelperText;
+
+    private IPriceClientService PriceService => GetRequiredService<IPriceClientService>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await LoadPricesAsync();
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task LoadPricesAsync()
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            var gram18Price = await PriceService.GetGram18PriceAsync(CancellationTokenSource.Token);
+            var usDollarPrice = await PriceService.GetUsDollarPriceAsync(CancellationTokenSource.Token);
+
+            if (gram18Price is not null)
+            {
+                _model.GramPrice = double.Parse(gram18Price.Value) / 10;
+                _gramPriceFieldHelperText = $"{_model.GramPrice:N0} تومان";
+            }
+
+            if (usDollarPrice is not null)
+            {
+                _model.UsDollarPrice = double.Parse(usDollarPrice.Value) / 10;
+                _usDollarPriceFieldHelperText = $"{_model.UsDollarPrice:N0} تومان";
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            SetIdeal();
+        }
+    }
 
     private async Task Calculate()
     {

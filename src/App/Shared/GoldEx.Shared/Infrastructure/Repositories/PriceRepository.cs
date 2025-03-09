@@ -39,4 +39,20 @@ public class PriceRepository<TPrice, TPriceHistory>(IGoldExDbContextFactory fact
 
         return result;
     }
+
+    public async Task<TPrice?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
+    {
+        await InitializeDbContextAsync();
+
+        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Title.Contains("18 عیار"), cancellationToken);
+    }
+
+    public async Task<TPrice?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default)
+    {
+        await InitializeDbContextAsync();
+
+        var result = await NonDeletedQuery.FirstOrDefaultAsync(x => x.Title.Contains("دلار"), cancellationToken);
+
+        return result;
+    }
 }

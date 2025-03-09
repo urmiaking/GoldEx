@@ -12,4 +12,6 @@ public interface IPriceRepository<TPrice, TPriceHistory> : IRepository,
     Task<List<TPrice>> GetLatestPricesAsync(CancellationToken cancellationToken = default);
     Task<TPrice?> GetAsync(PriceId id, CancellationToken cancellationToken = default);
     Task<List<TPrice>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default);
+    Task<TPrice?> GetGram18PriceAsync(CancellationToken cancellationToken = default);
+    Task<TPrice?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default);
 }

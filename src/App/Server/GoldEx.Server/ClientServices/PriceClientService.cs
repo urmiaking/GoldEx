@@ -23,4 +23,14 @@ public class PriceClientService(IPriceService<Price, PriceHistory> priceService,
 
         return mapper.Map<List<GetPriceResponse>>(items);
     }
+
+    public Task<GetPriceResponse?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetPriceResponse?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
