@@ -33,7 +33,9 @@
         <MudExpansionPanel Text="قیمت ارز، طلا و سکه" ExpandedChanged="OnPriceBoardExpandedChanged">
             @_priceBoardContent
         </MudExpansionPanel>
-
+        <MudExpansionPanel Text="محاسبه گر" ExpandedChanged="OnCalculatorExpandedChanged">
+            @_calculatorContent
+        </MudExpansionPanel>
         <AuthorizeView>
             <MudExpansionPanel Text="اجناس موجود" ExpandedChanged="OnProductsListExpandedChanged">
                 @_productListContent

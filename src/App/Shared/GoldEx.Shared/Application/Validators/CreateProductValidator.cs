@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Infrastructure.Repositories;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Validators;
@@ -25,20 +24,12 @@ public class CreateProductValidator<T> : AbstractValidator<T> where T : ProductB
         RuleFor(x => x.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
 
-        When(product => product.ProductType == ProductType.Gold, () =>
+        When(product => product.ProductType is ProductType.Gold or ProductType.Jewelry, () =>
         {
-            RuleFor(product => product.Wage).NotNull().WithMessage("اجرت ساخت برای طلا الزامی است");
+            RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
             RuleFor(product => product.WageType)
-                .Must(wageType => wageType is WageType.Percent or WageType.Rial)
-                .WithMessage("نوع اجرت برای طلا، فقط میتواند ریالی یا درصدی باشد");
-        });
-
-        When(product => product.ProductType == ProductType.Jewelry, () =>
-        {
-            RuleFor(product => product.Wage).NotNull().WithMessage("اجرت ساخت برای جواهر الزامی است");
-            RuleFor(product => product.WageType)
-                .Must(wageType => wageType is WageType.Dollar or WageType.Rial)
-                .WithMessage("نوع اجرت برای جواهر، فقط می تواند دلاری یا ریالی باشد");
+                .NotNull()
+                .WithMessage("لطفا نوع اجرت را وارد کنید");
         });
 
         When(product => product.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>

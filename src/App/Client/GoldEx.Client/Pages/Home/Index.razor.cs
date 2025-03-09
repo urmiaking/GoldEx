@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Home.Components;
+﻿using GoldEx.Client.Pages.Calculate.Components;
+using GoldEx.Client.Pages.Home.Components;
 using GoldEx.Client.Pages.Products.Components;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Components;
@@ -14,6 +15,7 @@ public partial class Index
     ];
     private RenderFragment? _productListContent;
     private RenderFragment? _priceBoardContent;
+    private RenderFragment? _calculatorContent;
 
     private async Task OnProductsListExpandedChanged(bool newVal)
     {
@@ -49,6 +51,25 @@ public partial class Index
         else
         {
             Task.Delay(350).ContinueWith(t => { _priceBoardContent = null; StateHasChanged(); }).CatchAndLog();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnCalculatorExpandedChanged(bool newVal)
+    {
+        if (newVal)
+        {
+            await Task.Delay(0);
+            _calculatorContent = builder =>
+            {
+                builder.OpenComponent(0, typeof(Calculator));
+                builder.CloseComponent();
+            };
+            StateHasChanged();
+        }
+        else
+        {
+            Task.Delay(350).ContinueWith(t => { _calculatorContent = null; StateHasChanged(); }).CatchAndLog();
             StateHasChanged();
         }
     }
