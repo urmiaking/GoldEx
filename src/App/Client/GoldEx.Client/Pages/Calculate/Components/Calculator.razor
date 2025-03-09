@@ -1,0 +1,184 @@
+﻿@inherits GoldExComponentBase
+
+<MudForm Model="_model" @ref="@_from" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
+    <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
+        <MudRadioGroup For="() => _model.ProductType"
+                       T="ProductType"
+                       Value="_model.ProductType"
+                       ValueChanged="OnProductTypeChanged">
+            <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
+            <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
+            <MudRadio Value="ProductType.UsedGold" Color="Color.Tertiary">طلای کهنه</MudRadio>
+        </MudRadioGroup>
+    </div>
+
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+        <MudGrid Justify="Justify.Center" Spacing="4">
+            <MudItem xs="12" sm="6">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentText="تومان"
+                              Value="_model.GramPrice"
+                              ValueChanged="OnGramPriceChanged"
+                              For="() => _model.GramPrice"
+                              HelperText="@_gramPriceFieldHelperText"
+                              Immediate="true"
+                              Label="نرخ گرم 18 عیار"
+                              T="double"
+                              Variant="Variant.Outlined"></MudTextField>
+            </MudItem>
+            
+            @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudTextField Adornment="Adornment.End"
+                                  AdornmentText="تومان"
+                                  For="() => _model.UsDollarPrice"
+                                  HelperText="@_usDollarPriceFieldHelperText"
+                                  Immediate="true"
+                                  Label="نرخ دلار"
+                                  T="double?"
+                                  Value="_model.UsDollarPrice"
+                                  ValueChanged="OnDollarPriceChanged"
+                                  Variant="Variant.Outlined"></MudTextField>
+                </MudItem>
+            }
+            
+            <MudItem xs="12" sm="6">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentText="گرم"
+                              For="() => _model.Weight"
+                              Immediate="true"
+                              Label="وزن"
+                              T="double"
+                              Value="_model.Weight"
+                              ValueChanged="OnWeightChanged"
+                              Variant="Variant.Outlined"></MudTextField>
+            </MudItem>
+            
+            @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudSelect Adornment="Adornment.End"
+                               For="() => _model.CaratType"
+                               Immediate="true"
+                               Label="عیار"
+                               T="CaratType"
+                               Value="_model.CaratType"
+                               ValueChanged="OnCaratTypeChanged"
+                               Variant="Variant.Outlined">
+                        @foreach (CaratType caratType in Enum.GetValues(typeof(CaratType)))
+                        {
+                            <MudSelectItem Value="@caratType">@caratType.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudSelect Adornment="Adornment.End"
+                               For="() => _model.WageType"
+                               Immediate="true"
+                               Label="نوع اجرت"
+                               @ref="_wageTypeField"
+                               T="WageType?"
+                               Value="_model.WageType"
+                               ValueChanged="OnWageTypeChanged"
+                               Variant="Variant.Outlined">
+                        <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
+                        @foreach (WageType wageType in Enum.GetValues(typeof(WageType)))
+                        {
+                            <MudSelectItem Value="@((WageType?)wageType)">@wageType.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Adornment="Adornment.End"
+                                  AdornmentText="@_wageFieldAdornmentText"
+                                  For="() => _model.Wage"
+                                  HelperText="@_wageFieldHelperText"
+                                  Immediate="true"
+                                  Label="اجرت ساخت"
+                                  @ref="_wageField"
+                                  T="double?"
+                                  Value="_model.Wage"
+                                  ValueChanged="OnWageChanged"
+                                  Variant="Variant.Outlined"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Percent"
+                                  For="() => _model.Profit"
+                                  Immediate="true"
+                                  Label="سود فروش"
+                                  @ref="_profitField"
+                                  T="double"
+                                  Value="_model.Profit"
+                                  ValueChanged="OnProfitChanged"
+                                  Variant="Variant.Outlined"></MudTextField>
+                </MudItem>
+            }
+            
+            <MudItem xs="12" sm="6">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentText="تومان"
+                              For="() => _model.AdditionalPrices"
+                              HelperText="@_additionalPricesFieldHelperText"
+                              Immediate="true"
+                              Label="هزینه های اضافه"
+                              T="double?"
+                              Value="_model.AdditionalPrices"
+                              ValueChanged="OnAdditionalPricesChanges"
+                              Variant="Variant.Outlined"></MudTextField>
+            </MudItem>
+        </MudGrid>
+        @if (_finalPrice.HasValue && _finalPrice.Value is not 0)
+        {
+            <MudExpansionPanels Class="mt-4">
+                <MudExpansionPanel Text="@($"قیمت نهایی جنس : {_finalPrice:N0} تومان")">
+                    <div class="d-flex flex-column gap-3 mt-2">
+                        @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? "× (750 / 735)" : "")</MudText>
+                                <MudText>@_rawPrice.Value.ToString("N0") تومان</MudText>
+                            </div>
+                        }
+                        @if (_wage.HasValue && _wage.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <MudText>اجرت ساخت: @(_model.WageType is WageType.Dollar or WageType.Rial ? "مبلغ ثابت" : $"{_model.Wage}% قیمت طلا")</MudText>
+                                <MudText>@_wage.Value.ToString("N0") تومان</MudText>
+                            </div>
+                        }
+                        @if (_profit.HasValue && _profit.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.Profit%</MudText>
+                                <MudText>@_profit.Value.ToString("N0") تومان</MudText>
+                            </div>
+                        }
+                        @if (_tax.HasValue && _tax.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.Tax%</MudText>
+                                <MudText>@_tax.Value.ToString("N0") تومان</MudText>
+                            </div>
+                        }
+                        @if (_model.AdditionalPrices.HasValue && _model.AdditionalPrices.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <MudText>هزینه های اضافه</MudText>
+                                <MudText>@_model.AdditionalPrices.Value.ToString("N0") تومان</MudText>
+                            </div>
+                        }
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <MudText>مجموع:</MudText>
+                            <MudText Typo="Typo.h6">@_finalPrice.Value.ToString("N0") تومان</MudText>
+                        </div>
+                    </div>
+                    
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        }
+        
+    </MudContainer>
+</MudForm>
