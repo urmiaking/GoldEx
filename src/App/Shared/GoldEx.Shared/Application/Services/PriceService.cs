@@ -29,6 +29,12 @@ public class PriceService<TPrice, TPriceHistory>(IPriceRepository<TPrice, TPrice
     public Task<List<TPrice>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
         => repository.GetPendingsAsync(checkpointDate, cancellationToken);
 
+    public Task<TPrice?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
+        => repository.GetGram18PriceAsync(cancellationToken);
+
+    public Task<TPrice?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default)
+        => repository.GetUsDollarPriceAsync(cancellationToken);
+
     public Task<List<TPrice>> GetLatestPricesAsync(CancellationToken cancellationToken = default)
         => repository.GetLatestPricesAsync(cancellationToken);
 }

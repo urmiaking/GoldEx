@@ -11,4 +11,6 @@ public interface IPriceService<TPrice, TPriceHistory>
     Task CreateAsync(TPrice price, CancellationToken cancellationToken = default);
     Task UpdateAsync(TPrice price, CancellationToken cancellationToken = default);
     Task<List<TPrice>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default);
+    Task<TPrice?> GetGram18PriceAsync(CancellationToken cancellationToken = default);
+    Task<TPrice?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default);
 }

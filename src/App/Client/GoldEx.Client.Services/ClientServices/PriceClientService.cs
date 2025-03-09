@@ -20,4 +20,18 @@ public class PriceClientService(IPriceSyncService syncService, IPriceLocalClient
     {
         throw new NotImplementedException();
     }
+
+    public async Task<GetPriceResponse?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
+    {
+        await syncService.SynchronizeAsync(cancellationToken);
+
+        return await localService.GetGram18PriceAsync(cancellationToken);
+    }
+
+    public async Task<GetPriceResponse?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default)
+    {
+        await syncService.SynchronizeAsync(cancellationToken);
+
+        return await localService.GetUsDollarPriceAsync(cancellationToken);
+    }
 }

@@ -34,4 +34,14 @@ public class PriceHttpClientService(HttpClient client, JsonSerializerOptions jso
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public Task<GetPriceResponse?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GetPriceResponse?> GetUsDollarPriceAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
