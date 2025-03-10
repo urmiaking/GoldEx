@@ -7,4 +7,6 @@ public class Checkpoint(string entityName) : EntityBase<CheckpointId>(new Checkp
 {
     public string EntityName { get; private set; } = entityName;
     public DateTime DateTime { get; private set; } = DateTime.UtcNow;
+
+    public void SetDateTime() => DateTime = DateTime.UtcNow;
 }

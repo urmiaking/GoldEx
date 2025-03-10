@@ -4,7 +4,8 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions.Base;
 namespace GoldEx.Client.Offline.Infrastructure.Repositories.Abstractions;
 
 public interface ICheckPointRepository : IRepository,
-    ICreateRepository<Checkpoint>
+    ICreateRepository<Checkpoint>,
+    IUpdateRepository<Checkpoint>
 {
     Task<Checkpoint?> GetLastCheckPointAsync(string entityName, CancellationToken cancellationToken = default);
 }
