@@ -16,7 +16,7 @@ public class CheckPointRepository(IGoldExDbContextFactory contextFactory) : Repo
         await InitializeDbContextAsync();
 
         return await NonDeletedQuery
-            .SetTracking(false)
+            .SetTracking(true)
             .Where(c => c.EntityName == entityName)
             .OrderByDescending(x => x.DateTime)
             .FirstOrDefaultAsync(cancellationToken);

@@ -13,4 +13,7 @@ public class CheckpointService(ICheckPointRepository repository) : ICheckpointSe
 
     public Task AddCheckPointAsync(Checkpoint checkPoint, CancellationToken cancellationToken = default)
         => repository.CreateAsync(checkPoint, cancellationToken);
+
+    public Task UpdateAsync(Checkpoint checkPoint, CancellationToken cancellationToken = default)
+        => repository.UpdateAsync(checkPoint, cancellationToken);
 }

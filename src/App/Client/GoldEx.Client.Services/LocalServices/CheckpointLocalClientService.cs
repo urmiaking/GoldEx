@@ -19,8 +19,15 @@ public class CheckpointLocalClientService(IMapper mapper, ICheckpointService ser
 
     public async Task AddCheckPointAsync(string entityName, CancellationToken cancellationToken = default)
     {
-        var checkPoint = new Checkpoint(entityName);
+        var checkPoint = await service.GetLastCheckPointAsync(entityName, cancellationToken);
 
-        await service.AddCheckPointAsync(checkPoint, cancellationToken);
+        if (checkPoint is null)
+        {
+            await service.AddCheckPointAsync(new Checkpoint(entityName), cancellationToken);
+            return;
+        }
+
+        checkPoint.SetDateTime();
+        await service.UpdateAsync(checkPoint, cancellationToken);
     }
 }

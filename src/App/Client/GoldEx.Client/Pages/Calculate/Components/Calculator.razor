@@ -1,19 +1,23 @@
 ﻿@inherits GoldExComponentBase
 
-<div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
-    <MudTextField Adornment="Adornment.End"
-                  AdornmentIcon="@Icons.Material.Filled.QrCode"
-                  AutoFocus="true"
-                  Clearable="true"
-                  HelperText="@_barcodeFieldHelperText"
-                  Label="بارکد جنس"
-                  Immediate="true"
-                  OnClearButtonClick="OnBarcodeCleared"
-                  T="string"
-                  Value="_barcode"
-                  ValueChanged="OnBarcodeChanged"
-                  Variant="Variant.Outlined"></MudTextField>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
+            <MudTextField Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.QrCode"
+                          AutoFocus="true"
+                          Clearable="true"
+                          HelperText="@_barcodeFieldHelperText"
+                          Label="بارکد جنس"
+                          Immediate="true"
+                          OnClearButtonClick="OnBarcodeCleared"
+                          T="string"
+                          Value="_barcode"
+                          ValueChanged="OnBarcodeChanged"
+                          Variant="Variant.Outlined"></MudTextField>
+        </div>
+    </Authorized>
+</AuthorizeView>
 
 <MudForm Model="_model" @ref="@_from" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
     <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
