@@ -1,5 +1,20 @@
 ﻿@inherits GoldExComponentBase
 
+<div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
+    <MudTextField Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Material.Filled.QrCode"
+                  AutoFocus="true"
+                  Clearable="true"
+                  HelperText="@_barcodeFieldHelperText"
+                  Label="بارکد جنس"
+                  Immediate="true"
+                  OnClearButtonClick="OnBarcodeCleared"
+                  T="string"
+                  Value="_barcode"
+                  ValueChanged="OnBarcodeChanged"
+                  Variant="Variant.Outlined"></MudTextField>
+</div>
+
 <MudForm Model="_model" @ref="@_from" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
     <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
         <MudRadioGroup For="() => _model.ProductType"
@@ -19,15 +34,15 @@
                 <MudTextField Adornment="Adornment.End"
                               AdornmentText="تومان"
                               For="() => _model.GramPrice"
-                              HelperText="@_gramPriceFieldHelperText" 
-                              Immediate="true" 
+                              HelperText="@_gramPriceFieldHelperText"
+                              Immediate="true"
                               Label="نرخ گرم 18 عیار"
                               T="double"
                               Value="_model.GramPrice"
                               ValueChanged="OnGramPriceChanged"
                               Variant="Variant.Outlined"></MudTextField>
             </MudItem>
-            
+
             @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
             {
                 <MudItem xs="12" sm="6">
@@ -43,7 +58,7 @@
                                   Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
             }
-            
+
             <MudItem xs="12" sm="6">
                 <MudTextField Adornment="Adornment.End"
                               AdornmentText="گرم"
@@ -55,7 +70,7 @@
                               ValueChanged="OnWeightChanged"
                               Variant="Variant.Outlined"></MudTextField>
             </MudItem>
-            
+
             @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
             {
                 <MudItem xs="12" sm="6">
@@ -117,7 +132,7 @@
                                   Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
             }
-            
+
             <MudItem xs="12" sm="6">
                 <MudTextField Adornment="Adornment.End"
                               AdornmentText="تومان"
@@ -176,10 +191,10 @@
                             <MudText Typo="Typo.h6">@_finalPrice.Value.ToString("N0") تومان</MudText>
                         </div>
                     </div>
-                    
+
                 </MudExpansionPanel>
             </MudExpansionPanels>
         }
-        
+
     </MudContainer>
 </MudForm>
