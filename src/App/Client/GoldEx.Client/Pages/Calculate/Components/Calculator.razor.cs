@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
@@ -26,12 +27,18 @@ public partial class Calculator
     private double? _tax;
     private double? _finalPrice;
     private string? _additionalPricesFieldHelperText;
+    private string? _barcode;
+    private string? _barcodeFieldHelperText;
 
     private IPriceClientService PriceService => GetRequiredService<IPriceClientService>();
+    private IProductClientService ProductService => GetRequiredService<IProductClientService>();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadPricesAsync();
+        if (firstRender)
+        {
+            await LoadPricesAsync();
+        }
         await base.OnAfterRenderAsync(firstRender);
     }
 
@@ -61,8 +68,7 @@ public partial class Calculator
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            AddExceptionToast(e);
         }
         finally
         {
@@ -81,6 +87,14 @@ public partial class Calculator
             _profit = CalculatorHelper.CalculateProfit(_model, _rawPrice.Value, _wage.Value);
             _tax = CalculatorHelper.CalculateTax(_model, _wage.Value, _profit.Value);
             _finalPrice = CalculatorHelper.CalculateFinalPrice(_model, _rawPrice.Value, _wage.Value, _profit.Value, _tax.Value);
+        }
+        else
+        {
+            _rawPrice = null;
+            _wage = null;
+            _profit = null;
+            _tax = null;
+            _finalPrice = null;
         }
     }
 
@@ -203,5 +217,59 @@ public partial class Calculator
         _additionalPricesFieldHelperText = additionalPrices.HasValue ? $"{additionalPrices:N0} تومان" : null;
 
         await Calculate();
+    }
+
+    private async Task OnBarcodeChanged(string barcode)
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            var response = await ProductService.GetAsync(barcode, CancellationTokenSource.Token);
+
+            if (response != null)
+            {
+                _model.Weight = response.Weight;
+                _model.CaratType = response.CaratType;
+                _model.Wage = response.Wage;
+                _model.WageType = response.WageType;
+                _model.ProductType = response.ProductType;
+                _barcodeFieldHelperText = response.Name;
+            }
+            else
+            {
+                _barcode = null;
+            }
+        }
+        catch (Exception e)
+        {
+            AddExceptionToast(e);
+        }
+        finally
+        {
+            _barcode = barcode;
+            await Calculate();
+            SetIdeal();
+        }
+    }
+
+    private async void OnBarcodeCleared(MouseEventArgs args)
+    {
+        _barcode = null;
+        _barcodeFieldHelperText = null;
+
+        ResetModel();
+        await Calculate();
+    }
+
+    private void ResetModel()
+    {
+        _model.Weight = 0;
+        _model.CaratType = CaratType.Eighteen;
+        _model.Wage = 0;
+        _model.WageType = null;
+        _model.AdditionalPrices = null;
+        _model.Profit = 7;
     }
 }
