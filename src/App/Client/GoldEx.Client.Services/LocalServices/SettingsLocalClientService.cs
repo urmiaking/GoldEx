@@ -36,7 +36,8 @@ public class SettingsLocalClientService(ISettingsService<Settings> service, IMap
         settings.SetAddress(request.Address);
         settings.SetPhoneNumber(request.PhoneNumber);
         settings.SetTax(request.Tax);
-        settings.SetProfit(request.Profit);
+        settings.SetGoldProfit(request.GoldProfit);
+        settings.SetJewelryProfit(request.JewelryProfit);
 
         await service.UpdateAsync(settings, cancellationToken);
     }
@@ -56,6 +57,6 @@ public class SettingsLocalClientService(ISettingsService<Settings> service, IMap
             return;
 
         await service.CreateAsync(new Settings(new SettingsId(request.Id), request.InstitutionName, request.Address,
-            request.PhoneNumber, request.Tax, request.Profit), cancellationToken);
+            request.PhoneNumber, request.Tax, request.GoldProfit, request.JewelryProfit), cancellationToken);
     }
 }

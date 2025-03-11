@@ -28,24 +28,25 @@
             </div>
         </NotAuthorized>
     </AuthorizeView>
-
-    <MudExpansionPanels Elevation="3">
-        <MudExpansionPanel Text="قیمت ارز، طلا و سکه" ExpandedChanged="OnPriceBoardExpandedChanged">
-            @_priceBoardContent
-        </MudExpansionPanel>
-        <MudExpansionPanel Text="محاسبه گر" ExpandedChanged="OnCalculatorExpandedChanged">
-            @_calculatorContent
-        </MudExpansionPanel>
+    
+    <MudTabs Elevation="4" Color="Color.Transparent" Centered="true">
+        <MudTabPanel Text="قیمت ارز، طلا و سکه" Icon="@Icons.Material.Filled.AttachMoney">
+            <PriceBoard Class="mt-2" Elevation="4" />
+        </MudTabPanel>
+        <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate">
+            <Calculator />
+        </MudTabPanel>
         <AuthorizeView>
-            <MudExpansionPanel Text="اجناس موجود" ExpandedChanged="OnProductsListExpandedChanged">
-                @_productListContent
-            </MudExpansionPanel>
-            <MudExpansionPanel Text="فاکتورهای من"></MudExpansionPanel>
-            <MudExpansionPanel Text="گزارش گیری"></MudExpansionPanel>
-            <MudExpansionPanel Text="اجناس فروخته شده"></MudExpansionPanel>
-            <MudExpansionPanel Text="لیست بدهی ها"></MudExpansionPanel>
-            <MudExpansionPanel Text="اسناد حسابداری"></MudExpansionPanel>
+            <Authorized>
+                <MudTabPanel Text="اجناس من" Icon="@Icons.Material.Filled.Warehouse">
+                    <ProductsList Class="mt-2" Elevation="4" />
+                </MudTabPanel>
+                <MudTabPanel Text="فاکتورهای من"></MudTabPanel>
+                <MudTabPanel Text="گزارش گیری"></MudTabPanel>
+                <MudTabPanel Text="اجناس فروخته شده"></MudTabPanel>
+                <MudTabPanel Text="لیست بدهی ها"></MudTabPanel>
+                <MudTabPanel Text="اسناد حسابداری"></MudTabPanel>
+            </Authorized>
         </AuthorizeView>
-
-    </MudExpansionPanels>
+    </MudTabs>
 </MudContainer>

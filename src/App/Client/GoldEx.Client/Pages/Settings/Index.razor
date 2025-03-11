@@ -57,10 +57,18 @@
         <MudItem xs="12" sm="4">
             <MudTextField Adornment="Adornment.End"
                           AdornmentIcon="@Icons.Material.Filled.Percent"
-                          @bind-Value="_model.Profit"
+                          @bind-Value="_model.GoldProfit"
                           Variant="Variant.Outlined"
-                          Label="سود"
-                          For="() => _model.Profit"></MudTextField>
+                          Label="سود طلا"
+                          For="() => _model.GoldProfit"></MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudTextField Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Percent"
+                          @bind-Value="_model.JewelryProfit"
+                          Variant="Variant.Outlined"
+                          Label="سود جواهر"
+                          For="() => _model.JewelryProfit"></MudTextField>
         </MudItem>
     </MudGrid>
     

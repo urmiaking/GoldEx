@@ -8,11 +8,13 @@ public class Settings : SettingsBase
         string address,
         string phoneNumber,
         double tax,
-        double profit) : base(institutionName,
+        double goldProfit,
+        double jewelryProfit) : base(institutionName,
         address,
         phoneNumber,
         tax,
-        profit)
+        goldProfit,
+        jewelryProfit)
     {
     }
 
@@ -21,12 +23,14 @@ public class Settings : SettingsBase
         string address,
         string phoneNumber,
         double tax,
-        double profit) : base(id,
+        double goldProfit,
+        double jewelryProfit) : base(id,
         institutionName,
         address,
         phoneNumber,
         tax,
-        profit)
+        goldProfit,
+        jewelryProfit)
     {
     }
 }

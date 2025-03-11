@@ -23,14 +23,17 @@ public class SettingsVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public double Tax { get; set; }
 
-    [Display(Name = "سود")]
+    [Display(Name = "سود طلا")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public double Profit { get; set; }
-
+    public double GoldProfit { get; set; }
+    
+    [Display(Name = "سود جواهر")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public double JewelryProfit { get; set; }
 
     public UpdateSettingsRequest ToRequest()
     {
-        return new UpdateSettingsRequest(InstitutionName, Address, PhoneNumber, Tax, Profit);
+        return new UpdateSettingsRequest(InstitutionName, Address, PhoneNumber, Tax, GoldProfit, JewelryProfit);
     }
 
     public static SettingsVm CreateFromRequest(GetSettingsResponse response)
@@ -42,7 +45,8 @@ public class SettingsVm
             Address = response.Address,
             PhoneNumber = response.PhoneNumber,
             Tax = response.Tax,
-            Profit = response.Profit
+            GoldProfit = response.GoldProfit,
+            JewelryProfit = response.JewelryProfit
         };
     }
 }

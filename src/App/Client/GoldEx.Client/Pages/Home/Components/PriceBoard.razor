@@ -1,8 +1,7 @@
-﻿@using GoldEx.Shared.Routings
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
-<MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" Height="450px" FixedHeader="true" Elevation="0"
-          Items="@_items"
+<MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" Height="450px" FixedHeader="true" Elevation="@Elevation"
+          Items="@_items" Class="@Class"
           GroupBy="@_groupDefinition"
           GroupHeaderStyle="background-color:var(--mud-palette-background-gray);"
           GroupFooterClass="mb-4">
