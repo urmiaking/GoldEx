@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Application.Services.Abstractions;
-using GoldEx.Shared.Application.Validators;
+using GoldEx.Shared.Application.Validators.Products;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 

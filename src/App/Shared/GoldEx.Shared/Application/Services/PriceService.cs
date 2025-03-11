@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using GoldEx.Shared.Application.Services.Abstractions;
-using GoldEx.Shared.Application.Validators;
+using GoldEx.Shared.Application.Validators.Prices;
 using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 

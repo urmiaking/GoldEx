@@ -1,0 +1,31 @@
+﻿@using GoldEx.Client.Components.Layouts
+@inherits LayoutComponentBase
+@layout MainLayout
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <MudGrid>
+        <MudItem md="3">
+            <MudText Typo="Typo.h6" GutterBottom="true">تنظیمات برنامه</MudText>
+            <hr />
+            <SettingsNavMenu />
+        </MudItem>
+        <MudItem md="9">
+            @Body
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code
+{
+    private readonly List<BreadcrumbItem> _breadcrumbs =
+    [
+        new BreadcrumbItem("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("تنظیمات", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Settings)
+    ];
+}

@@ -5,6 +5,8 @@ using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Infrastructure;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using System.Security.Claims;
+using GoldEx.Server.Domain.SettingsAggregate;
+using GoldEx.Shared.Application.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Extensions;
@@ -27,6 +29,8 @@ public static class ServiceProviderExtensions
 
     private static async Task EnsureDatabasePopulated(IServiceProvider serviceProvider)
     {
+        await PopulateDefaultSettingsAsync(serviceProvider);
+
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();
 
@@ -42,7 +46,6 @@ public static class ServiceProviderExtensions
             await accountService.CreateUserAsync(new AppUser("مدیر سامانه", "admin@admin.com", "admin@admin.com", "09905492104"),
                             "admin", [BuiltinRoles.Administrators]);
         }
-
     }
 
     private static async Task PopulateAdministratorClaimsAsync(IEnumerable<IApplicationPolicyProvider> policyProviders, IAccountService accountService)
@@ -69,6 +72,19 @@ public static class ServiceProviderExtensions
                     }
                 }
             }
+        }
+    }
+
+    private static async Task PopulateDefaultSettingsAsync(IServiceProvider provider)
+    {
+        var settingsService = provider.GetRequiredService<ISettingsService<Settings>>();
+
+        var settings = await settingsService.GetAsync();
+
+        if (settings is null)
+        {
+            await settingsService.CreateAsync(new Settings("جواهری دمو", "ارومیه خیابان مدنی 2، پلاک 17",
+                "04431934291 - 04431934119", 9, 7));
         }
     }
 }

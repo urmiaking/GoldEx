@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.DTOs.Application;
+﻿namespace GoldEx.Shared.DTOs.Health;
 
 public record HealthCheckResponse
 {

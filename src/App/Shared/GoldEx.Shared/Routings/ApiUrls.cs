@@ -54,6 +54,16 @@ public class ApiUrls
                 .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
+    public class Settings
+    {
+        public static string Get() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.GetAll);
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Get).FormatRoute(new { id });
+        public static string Update(Guid id) => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Update).FormatRoute(new { id });
+        public static string GetUpdate(DateTime checkpointDate) =>
+            BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.GetUpdate)
+                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+    }
+
     private static CultureInfo EnCulture => new("en-US")
     {
         DateTimeFormat =

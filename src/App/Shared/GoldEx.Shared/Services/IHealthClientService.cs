@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Application;
+﻿using GoldEx.Shared.DTOs.Health;
 
 namespace GoldEx.Shared.Services;
 

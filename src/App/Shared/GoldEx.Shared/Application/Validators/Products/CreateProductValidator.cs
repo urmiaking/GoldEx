@@ -3,7 +3,7 @@ using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
-namespace GoldEx.Shared.Application.Validators;
+namespace GoldEx.Shared.Application.Validators.Products;
 
 public class CreateProductValidator<T> : AbstractValidator<T> where T : ProductBase
 {
@@ -16,7 +16,6 @@ public class CreateProductValidator<T> : AbstractValidator<T> where T : ProductB
             .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
             .MaximumLength(50).WithMessage("طول عنوان جنس نمی تواند بیشتر از 50 کاراکتر باشد");
 
-        // TODO: make sure the barcode is unique
         RuleFor(x => x.Barcode)
             .NotEmpty().WithMessage("بارکد جنس نمی تواند خالی باشد")
             .MustAsync(BeUniqueBarcode).WithMessage("بارکد جنس نباید تکراری باشد.");

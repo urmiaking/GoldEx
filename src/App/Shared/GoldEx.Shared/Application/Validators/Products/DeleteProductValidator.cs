@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 
-namespace GoldEx.Shared.Application.Validators;
+namespace GoldEx.Shared.Application.Validators.Products;
 
 public class DeleteProductValidator<T> : AbstractValidator<T> where T : ProductBase
 {

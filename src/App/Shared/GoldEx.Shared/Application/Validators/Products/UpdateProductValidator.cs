@@ -2,7 +2,7 @@
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
-namespace GoldEx.Shared.Application.Validators;
+namespace GoldEx.Shared.Application.Validators.Products;
 
 public class UpdateProductValidator<T> : AbstractValidator<T> where T : ProductBase
 {
