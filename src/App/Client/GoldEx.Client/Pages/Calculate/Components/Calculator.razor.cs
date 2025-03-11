@@ -48,6 +48,11 @@ public partial class Calculator
 
     private async Task LoadSettingsAsync()
     {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authenticationState.User.Identity is { IsAuthenticated: false })
+            return;
+
         try
         {
             SetBusy();

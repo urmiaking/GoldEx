@@ -19,7 +19,7 @@ public class CalculatorVm
 
     [Display(Name = "سود فروشنده")]
     [Required(ErrorMessage = "لطفا سود را وارد کنید")]
-    public double Profit { get; set; } // based on percent
+    public double Profit { get; set; } = 7; // based on percent
 
     [Display(Name = "نرخ گرم")]
     [Required(ErrorMessage = "لطفا نرخ گرم را وارد کنید")]
@@ -31,7 +31,7 @@ public class CalculatorVm
     [Display(Name = "عیار")]
     public CaratType CaratType { get; set; } = CaratType.Eighteen;
 
-    public double Tax { get; set; } // based on percent
+    public double Tax { get; set; } = 9; // based on percent
 
     public double? AdditionalPrices { get; set; }
 }
