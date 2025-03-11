@@ -32,14 +32,43 @@ public partial class Calculator
 
     private IPriceClientService PriceService => GetRequiredService<IPriceClientService>();
     private IProductClientService ProductService => GetRequiredService<IProductClientService>();
+    private ISettingsClientService SettingsService => GetRequiredService<ISettingsClientService>();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await LoadPricesAsync();
+            await LoadSettingsAsync();
         }
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            var settings = await SettingsService.GetAsync(CancellationTokenSource.Token);
+
+            if (settings is not null)
+            {
+                _model.Profit = settings.Profit;
+                _model.Tax = settings.Tax;
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            AddExceptionToast(e);
+        }
+        finally
+        {
+            SetIdeal();
+        }
     }
 
     private async Task LoadPricesAsync()
