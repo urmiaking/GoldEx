@@ -84,7 +84,7 @@ public static class ServiceProviderExtensions
         if (settings is null)
         {
             await settingsService.CreateAsync(new Settings("جواهری دمو", "ارومیه خیابان مدنی 2، پلاک 17",
-                "04431934291 - 04431934119", 9, 7));
+                "04431934291 - 04431934119", 9, 7, 20));
         }
     }
 }

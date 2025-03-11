@@ -1,12 +1,16 @@
 ﻿using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Services;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
 public partial class ProductsList
 {
+    [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public int Elevation { get; set; } = 0;
+
     private string? _searchString;
     private MudTable<ProductVm> _table = new ();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };

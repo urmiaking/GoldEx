@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,6 +14,7 @@ public partial class Calculator
     private CalculatorVm _model = new();
     private MudForm _from = default!;
     private CalculatorValidator _calculatorValidator = new();
+    private GetSettingsResponse? _settings;
     private MudSelect<WageType?> _wageTypeField = default!;
     private MudTextField<double?> _wageField = default!;
     private MudTextField<double> _profitField = default!;
@@ -51,12 +53,12 @@ public partial class Calculator
             SetBusy();
             CancelToken();
 
-            var settings = await SettingsService.GetAsync(CancellationTokenSource.Token);
+            _settings = await SettingsService.GetAsync(CancellationTokenSource.Token);
 
-            if (settings is not null)
+            if (_settings is not null)
             {
-                _model.Profit = settings.Profit;
-                _model.Tax = settings.Tax;
+                _model.Profit = _settings.GoldProfit;
+                _model.Tax = _settings.Tax;
             }
 
             StateHasChanged();
@@ -183,8 +185,10 @@ public partial class Calculator
         switch (productType)
         {
             case ProductType.Jewelry:
+                _model.Profit = _settings?.JewelryProfit ?? 20;
                 break;
             case ProductType.Gold:
+                _model.Profit = _settings?.GoldProfit ?? 7;
                 break;
             case ProductType.Coin:
                 break;
@@ -265,6 +269,10 @@ public partial class Calculator
                 _model.WageType = response.WageType;
                 _model.ProductType = response.ProductType;
                 _barcodeFieldHelperText = response.Name;
+
+                OnWageTypeChanged(_model.WageType);
+                OnWageChanged(_model.Wage);
+                OnProductTypeChanged(_model.ProductType);
             }
             else
             {
@@ -299,6 +307,6 @@ public partial class Calculator
         _model.Wage = 0;
         _model.WageType = null;
         _model.AdditionalPrices = null;
-        _model.Profit = 7;
+        _model.Profit = _settings?.GoldProfit ?? 7;
     }
 }

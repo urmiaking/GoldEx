@@ -48,7 +48,8 @@ public class SettingsSyncService(
                     incomingUpdate.Address,
                     incomingUpdate.PhoneNumber,
                     incomingUpdate.Tax,
-                    incomingUpdate.Profit);
+                    incomingUpdate.GoldProfit,
+                    incomingUpdate.JewelryProfit);
 
                 await localService.CreateAsync(createRequest, cancellationToken);
             }
@@ -58,7 +59,8 @@ public class SettingsSyncService(
                     incomingUpdate.Address,
                     incomingUpdate.PhoneNumber,
                     incomingUpdate.Tax,
-                    incomingUpdate.Profit);
+                    incomingUpdate.GoldProfit,
+                    incomingUpdate.JewelryProfit);
 
                 await localService.UpdateAsync(incomingUpdate.Id, updateRequest, cancellationToken);
             }
@@ -75,7 +77,8 @@ public class SettingsSyncService(
                 localUpdate.Address,
                 localUpdate.PhoneNumber,
                 localUpdate.Tax,
-                localUpdate.Profit);
+                localUpdate.GoldProfit,
+                localUpdate.JewelryProfit);
 
             await httpService.UpdateAsync(localUpdate.Id, updateRequest, cancellationToken);
         }

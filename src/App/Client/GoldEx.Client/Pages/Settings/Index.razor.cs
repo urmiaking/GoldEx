@@ -1,5 +1,4 @@
 ﻿using GoldEx.Client.Pages.Settings.ViewModels;
-using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components.Forms;
 

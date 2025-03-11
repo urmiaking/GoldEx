@@ -34,7 +34,8 @@ public class SettingsClientService(ISettingsService<Settings> service, IMapper m
         settings.SetAddress(request.Address);
         settings.SetPhoneNumber(request.PhoneNumber);
         settings.SetTax(request.Tax);
-        settings.SetProfit(request.Profit);
+        settings.SetGoldProfit(request.GoldProfit);
+        settings.SetJewelryProfit(request.JewelryProfit);
 
         await service.UpdateAsync(settings, cancellationToken);
     }
