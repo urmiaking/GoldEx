@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
 
-namespace GoldEx.Shared.Application.Validators;
+namespace GoldEx.Shared.Application.Validators.Prices;
 
 public class PriceValidator<TPrice, TPriceHistory> : AbstractValidator<TPrice>
     where TPrice : PriceBase<TPriceHistory>

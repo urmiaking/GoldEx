@@ -97,6 +97,40 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                     b.ToTable("Products", (string)null);
                 });
 
+            modelBuilder.Entity("GoldEx.Client.Offline.Domain.SettingsAggregate.Settings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InstitutionName")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Profit")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Tax")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Settings", (string)null);
+                });
+
             modelBuilder.Entity("GoldEx.Client.Offline.Domain.PriceAggregate.Price", b =>
                 {
                     b.OwnsOne("GoldEx.Client.Offline.Domain.PriceAggregate.PriceHistory", "PriceHistory", b1 =>

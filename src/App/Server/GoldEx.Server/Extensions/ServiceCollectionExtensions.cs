@@ -19,8 +19,6 @@ using GoldEx.Shared.Settings;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using GoldEx.Server.Infrastructure.HealthChecks;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.DependencyInjection;
-using GoldEx.Client.Offline.Infrastructure;
 using GoldEx.Shared.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 

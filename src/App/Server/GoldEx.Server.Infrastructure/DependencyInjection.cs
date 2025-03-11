@@ -6,6 +6,7 @@ using GoldEx.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using GoldEx.Server.Domain.PriceAggregate;
+using GoldEx.Server.Domain.SettingsAggregate;
 using GoldEx.Shared.Infrastructure.Repositories;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
@@ -40,6 +41,7 @@ public static class DependencyInjection
 
         services.AddScoped<IProductRepository<Product>, ProductRepository<Product>>();
         services.AddScoped<IPriceRepository<Price, PriceHistory>, PriceRepository<Price, PriceHistory>>();
+        services.AddScoped<ISettingsRepository<Settings>, SettingsRepository<Settings>>();
 
         ///////////
         return services;

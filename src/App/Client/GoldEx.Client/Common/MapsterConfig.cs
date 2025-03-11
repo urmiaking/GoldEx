@@ -1,9 +1,11 @@
 ﻿using GoldEx.Client.Offline.Domain.CheckpointAggregate;
 using GoldEx.Client.Offline.Domain.PriceAggregate;
 using GoldEx.Client.Offline.Domain.ProductAggregate;
+using GoldEx.Client.Offline.Domain.SettingsAggregate;
 using GoldEx.Client.Shared.DTOs;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.DTOs.Settings;
 using Mapster;
 
 namespace GoldEx.Client.Common;
@@ -41,6 +43,13 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<Checkpoint, GetCheckPointResponse>()
             .Map(dest => dest.SyncDate, src => src.DateTime);
+
+        #endregion
+
+        #region Settings
+
+        config.NewConfig<Settings, GetSettingsResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
 
         #endregion
     }

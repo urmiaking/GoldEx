@@ -1,8 +1,6 @@
-﻿using GoldEx.Client.Components.Services;
-using GoldEx.Server.Extensions;
+﻿using GoldEx.Server.Extensions;
 using GoldEx.Client.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
-using GoldEx.Shared.Abstractions;
 
 namespace GoldEx.Server;
 

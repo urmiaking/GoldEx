@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace GoldEx.Server.Infrastructure;
 
-internal class DbContextFactory : IDesignTimeDbContextFactory<GoldExDbContext>
+internal class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<GoldExDbContext>
 {
     public GoldExDbContext CreateDbContext(string[] args)
     {
