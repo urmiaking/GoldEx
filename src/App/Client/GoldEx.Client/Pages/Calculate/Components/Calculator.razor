@@ -165,7 +165,7 @@
                         @if (_wage.HasValue && _wage.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>اجرت ساخت: @(_model.WageType is WageType.Dollar or WageType.Rial ? "مبلغ ثابت" : $"{_model.Wage}% قیمت طلا")</MudText>
+                                <MudText>اجرت ساخت: @(_model.WageType is WageType.Dollar or WageType.Toman ? "مبلغ ثابت" : $"{_model.Wage}% قیمت طلا")</MudText>
                                 <MudText>@_wage.Value.ToString("N0") تومان</MudText>
                             </div>
                         }

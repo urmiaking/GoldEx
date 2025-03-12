@@ -36,7 +36,7 @@ public class CalculatorHelper
         {
             case WageType.Percent:
                 return rawPrice * (model.Wage.Value / 100);
-            case WageType.Rial:
+            case WageType.Toman:
                 return model.Wage.Value;
             case WageType.Dollar:
                 if (model.UsDollarPrice == null)

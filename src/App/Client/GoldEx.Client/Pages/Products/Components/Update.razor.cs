@@ -99,7 +99,7 @@ public partial class Update
         _wageHelperText = Model.WageType switch
         {
             WageType.Percent => $"{wage} درصد",
-            WageType.Rial => $"{wage:N0} ریال",
+            WageType.Toman => $"{wage:N0} تومان",
             WageType.Dollar => $"{wage:N0} دلار",
             null => null,
             _ => throw new ArgumentOutOfRangeException()
@@ -116,9 +116,9 @@ public partial class Update
                 _wageAdornmentText = "درصد";
                 _wageHelperText = Model.Wage.HasValue ? $"{Model.Wage} درصد" : null;
                 break;
-            case WageType.Rial:
-                _wageAdornmentText = "ریال";
-                _wageHelperText = Model.Wage.HasValue ? $"{Model.Wage:N0} ریال" : null;
+            case WageType.Toman:
+                _wageAdornmentText = "تومان";
+                _wageHelperText = Model.Wage.HasValue ? $"{Model.Wage:N0} تومان" : null;
                 break;
             case WageType.Dollar:
                 _wageAdornmentText = "دلار";

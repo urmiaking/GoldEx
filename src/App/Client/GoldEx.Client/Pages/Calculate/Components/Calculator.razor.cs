@@ -145,7 +145,7 @@ public partial class Calculator
                 _wageFieldAdornmentText = "درصد";
                 _wageFieldHelperText = null;
                 break;
-            case WageType.Rial:
+            case WageType.Toman:
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
                 _wageField.Disabled = false;
                 _wageFieldAdornmentText = "تومان";
@@ -176,7 +176,7 @@ public partial class Calculator
 
         _wageFieldHelperText = _model.WageType switch
         {
-            WageType.Rial => $"{wage:N0} تومان",
+            WageType.Toman => $"{wage:N0} تومان",
             WageType.Dollar => $"{wage:N0} دلار",
             _ => _wageFieldHelperText
         };
