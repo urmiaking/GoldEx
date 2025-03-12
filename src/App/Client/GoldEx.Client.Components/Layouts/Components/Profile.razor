@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Client.Components.Extensions
+@using GoldEx.Sdk.Common
 @using GoldEx.Sdk.Common.Extensions
 @using GoldEx.Shared.Routings
 @inherits GoldEx.Client.Components.Components.GoldExComponentBase
@@ -35,15 +36,17 @@
                     <MudTooltip Text="تنظیمات" Placement="Placement.Bottom" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.Settings" Href="@ClientRoutes.Settings.Index"></MudIconButton>
                     </MudTooltip>
-
-                    <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" Href="@ClientRoutes.Health.Base"></MudIconButton>
-                    </MudTooltip>
                     
-                    <MudTooltip Text="گزارش خطاهای برنامه" Placement="Placement.Bottom" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.ErrorOutline" Href="@ClientRoutes.Logs.Base"></MudIconButton>
-                    </MudTooltip>
-
+                    <AuthorizeView Roles="@BuiltinRoles.Administrators" Context="ctx">
+                        <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" Href="@ClientRoutes.Health.Base"></MudIconButton>
+                        </MudTooltip>
+                    
+                        <MudTooltip Text="گزارش خطاهای برنامه" Placement="Placement.Bottom" Arrow="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.ErrorOutline" Href="@ClientRoutes.Logs.Base"></MudIconButton>
+                        </MudTooltip>
+                    </AuthorizeView>
+                    
                     <MudTooltip Text="خروج" Placement="Placement.Right" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" Href="@ApiUrls.Account.Logout(_currentUrl)"></MudIconButton>
                     </MudTooltip>
