@@ -31,9 +31,17 @@
                     <MudTooltip Text="مدیریت حساب" Placement="Placement.Right" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.ManageAccounts" OnClick="@NavigateToAccountManagement"></MudIconButton>
                     </MudTooltip>
+                    
+                    <MudTooltip Text="تنظیمات" Placement="Placement.Bottom" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Href="@ClientRoutes.Settings.Index"></MudIconButton>
+                    </MudTooltip>
 
                     <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" Href="@ClientRoutes.Health.Base"></MudIconButton>
+                    </MudTooltip>
+                    
+                    <MudTooltip Text="گزارش خطاهای برنامه" Placement="Placement.Bottom" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.ErrorOutline" Href="@ClientRoutes.Logs.Base"></MudIconButton>
                     </MudTooltip>
 
                     <MudTooltip Text="خروج" Placement="Placement.Right" Arrow="true">

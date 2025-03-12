@@ -21,6 +21,9 @@ using GoldEx.Server.Infrastructure.HealthChecks;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using GoldEx.Shared.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Serilog.Ui.Core.Extensions;
+using Serilog.Ui.MsSqlServerProvider.Extensions;
+using Serilog.Ui.Web.Extensions;
 
 namespace GoldEx.Server.Extensions;
 
@@ -242,6 +245,21 @@ internal static class ServiceCollectionExtensions
                 opt.AddHealthCheckEndpoint("GoldEx Service Health Checker", ApiRoutes.Health.Base); //map health check api
             })
             .AddInMemoryStorage();
+
+        return services;
+    }
+
+    internal static IServiceCollection AddSerilogUiService(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddSerilogUi(opts =>
+        {
+            opts.UseSqlServer(options =>
+            {
+                options.WithConnectionString(configuration.GetConnectionString("GoldEx")!)
+                    .WithTable("Logs");
+            });
+        });
 
         return services;
     }
