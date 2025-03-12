@@ -12,6 +12,9 @@ using GoldEx.Shared.Routings;
 using HealthChecks.UI.Client;
 using HealthChecks.UI.Configuration;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+using Serilog.Ui.Web.Extensions;
 
 var logger = GetStartupLogger();
 
@@ -42,6 +45,13 @@ bool SetupServices()
 {
     try
     {
+        // Configure the HostBuilder to use Serilog as the logging provider.
+        builder.Host.UseSerilog((context, services, configs) =>
+        {
+            // Reads Serilog settings from appsettings.json (or other configuration sources)
+            configs.ReadFrom.Configuration(context.Configuration);
+        });
+
         var configuration = builder.Configuration;
 
         builder.Services
@@ -100,6 +110,8 @@ void SetupPipeline()
 
     app.UseAuthentication();
     app.UseAuthorization();
+
+    app.UseSerilogUi();
 
     app.UseAntiforgery();
 

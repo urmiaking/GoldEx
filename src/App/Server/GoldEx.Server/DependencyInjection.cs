@@ -18,7 +18,8 @@ public static class DependencyInjection
             .AddMapster()
             .AddCache()
             .AddSettings(configuration)
-            .AddAppHealthCheck(configuration);
+            .AddAppHealthCheck(configuration)
+            .AddSerilogUiService(configuration);
 
         services.DiscoverServices();
         return services;

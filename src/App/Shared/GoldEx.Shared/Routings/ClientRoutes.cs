@@ -75,4 +75,9 @@ public static class ClientRoutes
         private const string SettingsPrefix = "/settings";
         public const string Index = $"{SettingsPrefix}";    
     }
+
+    public static class Logs
+    {
+        public const string Base = "/serilog-ui";
+    }
 }
