@@ -16,28 +16,21 @@
 		<PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
 		<PackageReference Include="Google.Apis.Auth.AspNetCore3" Version="1.69.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.3" />
 		<PackageReference Include="Net.Codecrete.QrCodeGenerator" Version="2.0.6" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
 		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- 
-			 To add migrations or optimize db context, first install
-			 Microsoft.EntityFrameworkCore.Design & Microsoft.EntityFrameworkCore.Tools nuget packages.			 
-			 Then Set `Bit.Besql.Sample` project as startup project in solution explorer,
-			 and open Nuget Package Manager Console, and select `Bit.Besql.Sample` project as default project
-			 Then run either Add-Migration MigrationName -OutputDir Data\Migrations or
-			 Optimize-DbContext -OutputDir Data/CompiledModel commands. -->
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.2">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.3">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
