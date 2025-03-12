@@ -98,7 +98,7 @@ public partial class Create
         _wageHelperText = _model.WageType switch
         {
             WageType.Percent => $"{wage} درصد",
-            WageType.Rial => $"{wage:N0} ریال",
+            WageType.Toman => $"{wage:N0} تومان",
             WageType.Dollar => $"{wage:N0} دلار",
             null => null,
             _ => throw new ArgumentOutOfRangeException()
@@ -115,9 +115,9 @@ public partial class Create
                 _wageAdornmentText = "درصد";
                 _wageHelperText = _model.Wage.HasValue ? $"{_model.Wage} درصد" : null;
                 break;
-            case WageType.Rial:
-                _wageAdornmentText = "ریال";
-                _wageHelperText = _model.Wage.HasValue ? $"{_model.Wage:N0} ریال" : null;
+            case WageType.Toman:
+                _wageAdornmentText = "تومان";
+                _wageHelperText = _model.Wage.HasValue ? $"{_model.Wage:N0} تومان" : null;
                 break;
             case WageType.Dollar:
                 _wageAdornmentText = "دلار";
