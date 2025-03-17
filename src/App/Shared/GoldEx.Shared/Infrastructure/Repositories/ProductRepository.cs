@@ -20,14 +20,18 @@ public class ProductRepository<TProduct, TCategory>(
     {
         await InitializeDbContextAsync();
 
-        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return await NonDeletedQuery
+            .Include(x => x.ProductCategory)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     public async Task<TProduct?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
 
-        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Barcode == barcode, cancellationToken);
+        return await NonDeletedQuery
+            .Include(x => x.ProductCategory)
+            .FirstOrDefaultAsync(x => x.Barcode == barcode, cancellationToken);
     }
 
     public async Task<PagedList<TProduct>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
@@ -37,7 +41,9 @@ public class ProductRepository<TProduct, TCategory>(
 
         await InitializeDbContextAsync();
 
-        var query = NonDeletedQuery;
+        var query = NonDeletedQuery
+            .Include(x => x.ProductCategory)
+            .AsQueryable();
 
         // Apply search filter
         if (!string.IsNullOrEmpty(filter.Search))

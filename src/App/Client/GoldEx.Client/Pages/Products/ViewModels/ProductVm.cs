@@ -37,6 +37,8 @@ public class ProductVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public Guid? ProductCategoryId { get; set; }
 
+    public string ProductCategoryTitle { get; set; } = string.Empty;
+
     public ProductCategoryVm CategoryVm { get; set; } = default!;
 
     internal static ProductVm CreateDefaultInstance() => new()
@@ -55,6 +57,7 @@ public class ProductVm
             ProductType = item.ProductType,
             CaratType = item.CaratType,
             ProductCategoryId = item.ProductCategoryId,
+            ProductCategoryTitle = item.ProductCategoryTitle,
             CategoryVm = new ProductCategoryVm
             {
                 Id = item.ProductCategoryId,
