@@ -1,4 +1,6 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Pages.Settings.ViewModels
+
+@inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_productValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
@@ -12,16 +14,16 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
-                    <MudSelect T="Guid?"
-                               @bind-Value="Model.ProductCategoryId"
+                    <MudSelect T="ProductCategoryVm?"
+                               Value="Model.CategoryVm"
+                               ValueChanged="OnProductCategoryChanged"
                                Label="دسته بندی"
-                               For="() => Model.ProductCategoryId"
+                               For="() => Model.CategoryVm"
                                Margin="Margin.Dense"
                                Variant="Variant.Outlined">
-                        <MudSelectItem T="Guid?" Value="@((Guid?)null)">انتخاب کنید</MudSelectItem>
                         @foreach (var item in _productCategories)
                         {
-                            <MudSelectItem Value="@((Guid?)item.Id)">@item.Title</MudSelectItem>
+                            <MudSelectItem Value="item">@item.Title</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
