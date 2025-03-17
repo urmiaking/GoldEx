@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -18,8 +19,10 @@ public partial class Update
     private bool _processing;
     private string? _wageHelperText;
     private string? _wageAdornmentText = "درصد";
+    private IEnumerable<ProductCategoryVm> _productCategories = [];
 
     private IProductClientService ProductService => GetRequiredService<IProductClientService>();
+    private IProductCategoryClientService CategoryService => GetRequiredService<IProductCategoryClientService>();
 
     protected override void OnParametersSet()
     {
@@ -27,6 +30,35 @@ public partial class Update
         OnWageTypeChanged(Model.WageType);
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadCategoriesAsync();
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            var response = await CategoryService.GetAllAsync(CancellationTokenSource.Token);
+
+            _productCategories = response.Select(ProductCategoryVm.CreateFrom);
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            AddExceptionToast(e);
+        }
+        finally
+        {
+            SetIdeal();
+        }
     }
 
     public async Task Submit()

@@ -1,5 +1,6 @@
 ﻿using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Client.Pages.Products.ViewModels;
@@ -32,6 +33,12 @@ public class ProductVm
     [Display(Name = "عیار")]
     public CaratType CaratType { get; set; }
 
+    [Display(Name = "دسته بندی")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public Guid? ProductCategoryId { get; set; }
+
+    public ProductCategoryVm CategoryVm { get; set; } = default!;
+
     internal static ProductVm CreateDefaultInstance() => new()
         { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = GoldEx.Shared.Enums.WageType.Percent };
 
@@ -46,7 +53,13 @@ public class ProductVm
             Wage = item.Wage,
             WageType = item.WageType,
             ProductType = item.ProductType,
-            CaratType = item.CaratType
+            CaratType = item.CaratType,
+            ProductCategoryId = item.ProductCategoryId,
+            CategoryVm = new ProductCategoryVm
+            {
+                Id = item.ProductCategoryId,
+                Title = item.ProductCategoryTitle
+            }
         };
     }
 
@@ -61,7 +74,8 @@ public class ProductVm
             item.Wage,
             item.WageType,
             item.ProductType,
-            item.CaratType
+            item.CaratType,
+            item.ProductCategoryId!.Value
         );
     }
 
@@ -75,7 +89,8 @@ public class ProductVm
             item.Wage,
             item.WageType,
             item.ProductType,
-            item.CaratType
+            item.CaratType,
+            item.ProductCategoryId!.Value
         );
     }
 }

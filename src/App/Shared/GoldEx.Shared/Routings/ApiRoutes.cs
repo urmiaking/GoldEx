@@ -52,4 +52,15 @@ public static class ApiRoutes
         public const string Update = "{id}";
         public const string GetUpdate = "get-update/{checkPointDate}";
     }
+
+    public class ProductCategories
+    {
+        public const string Base = "/api/ProductCategories";
+        public const string GetAll = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+        public const string GetPendingItems = "pending-items/{checkPointDate}";
+    }
 }

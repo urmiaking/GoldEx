@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\GoldEx.Server.Infrastructure\GoldEx.Server.Infrastructure.csproj" />
   </ItemGroup>
 

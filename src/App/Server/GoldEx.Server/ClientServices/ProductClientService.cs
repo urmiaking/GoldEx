@@ -6,13 +6,18 @@ using GoldEx.Shared.Services;
 using MapsterMapper;
 using System.Security.Claims;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
+using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 
 namespace GoldEx.Server.ClientServices;
 
 [ScopedService]
-public class ProductClientService(IProductService<Product> service, IHttpContextAccessor httpContextAccessor, IMapper mapper) : IProductClientService
+public class ProductClientService(
+    IProductService<Product, ProductCategory> service,
+    IHttpContextAccessor httpContextAccessor,
+    IMapper mapper) : IProductClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -50,7 +55,8 @@ public class ProductClientService(IProductService<Product> service, IHttpContext
             request.ProductType,
             request.WageType,
             request.CaratType,
-            userId);
+            userId,
+            new ProductCategoryId(request.ProductCategoryId));
 
         product.SetCreatedUserId(userId);
 
@@ -71,6 +77,7 @@ public class ProductClientService(IProductService<Product> service, IHttpContext
         product.SetWageType(request.WageType);
         product.SetProductType(request.ProductType);
         product.SetCaratType(request.CaratType);
+        product.SetProductCategory(new ProductCategoryId(request.ProductCategoryId));
 
         await service.UpdateAsync(product, cancellationToken);
     }

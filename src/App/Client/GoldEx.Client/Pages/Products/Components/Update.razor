@@ -4,12 +4,26 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="12" lg="12">
+                <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.Name"
                                   For="@(() => Model.Name)"
                                   Label="عنوان"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudSelect T="Guid?"
+                               @bind-Value="Model.ProductCategoryId"
+                               Label="دسته بندی"
+                               For="() => Model.ProductCategoryId"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        <MudSelectItem T="Guid?" Value="@((Guid?)null)">انتخاب کنید</MudSelectItem>
+                        @foreach (var item in _productCategories)
+                        {
+                            <MudSelectItem Value="@((Guid?)item.Id)">@item.Title</MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect For="() => Model.ProductType"

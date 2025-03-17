@@ -10,4 +10,6 @@ public record GetProductResponse(
     double? Wage,
     ProductType ProductType,
     WageType? WageType,
-    CaratType CaratType);
+    CaratType CaratType,
+    Guid ProductCategoryId,
+    string ProductCategoryTitle);

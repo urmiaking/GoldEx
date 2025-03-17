@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace GoldEx.Client.Pages.Settings;
 
-public partial class Index
+public partial class BaseInfo
 {
     private SettingsVm _model = new();
 

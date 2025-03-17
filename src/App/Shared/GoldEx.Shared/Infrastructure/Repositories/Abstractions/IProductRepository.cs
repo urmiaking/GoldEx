@@ -1,17 +1,20 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
-using GoldEx.Shared.Domain.Entities;
+using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions.Base;
 
 namespace GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
-public interface IProductRepository<T> : IRepository,
-    ICreateRepository<T>,
-    IUpdateRepository<T>,
-    IDeleteRepository<T> where T : EntityBase
+public interface IProductRepository<TProduct, TCategory> : IRepository,
+    ICreateRepository<TProduct>,
+    IUpdateRepository<TProduct>,
+    IDeleteRepository<TProduct> 
+    where TProduct : ProductBase<TCategory>
+    where TCategory : ProductCategoryBase
 {
-    Task<T?> GetAsync(ProductId id, CancellationToken cancellationToken = default);
-    Task<T?> GetAsync(string barcode, CancellationToken cancellationToken = default);
-    Task<PagedList<T>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default);
-    Task<List<T>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default);
+    Task<TProduct?> GetAsync(ProductId id, CancellationToken cancellationToken = default);
+    Task<TProduct?> GetAsync(string barcode, CancellationToken cancellationToken = default);
+    Task<PagedList<TProduct>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default);
+    Task<List<TProduct>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default);
+    Task<bool> CheckCategoryUsedAsync(ProductCategoryId categoryId, CancellationToken cancellationToken = default);
 }

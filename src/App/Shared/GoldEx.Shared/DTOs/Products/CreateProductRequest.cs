@@ -10,4 +10,5 @@ public record CreateProductRequest(
     double? Wage,
     WageType? WageType,
     ProductType ProductType,
-    CaratType CaratType);
+    CaratType CaratType,
+    Guid ProductCategoryId);

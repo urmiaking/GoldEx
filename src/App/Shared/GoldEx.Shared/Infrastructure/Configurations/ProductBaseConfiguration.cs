@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
+using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -6,8 +7,9 @@ namespace GoldEx.Shared.Infrastructure.Configurations;
 
 public static class ProductBaseConfiguration
 {
-    public static void Configure<T>(EntityTypeBuilder<T> builder)
-        where T : ProductBase
+    public static void Configure<TProduct, TCategory>(EntityTypeBuilder<TProduct> builder)
+        where TProduct : ProductBase<TCategory>
+        where TCategory : ProductCategoryBase
     {
         builder.ToTable("Products");
      
@@ -25,5 +27,14 @@ public static class ProductBaseConfiguration
 
         builder.Property(x => x.Weight)
             .IsRequired();
+
+        builder.Property(x => x.ProductCategoryId)
+            .HasConversion(id => id.Value,
+                value => new ProductCategoryId(value));
+
+        builder.HasOne(x => x.ProductCategory)
+            .WithMany()
+            .HasForeignKey(x => x.ProductCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

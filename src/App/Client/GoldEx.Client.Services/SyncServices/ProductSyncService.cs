@@ -17,102 +17,106 @@ public class ProductSyncService(
     ICheckpointLocalClientService checkpointService
     ) : IProductSyncService
 {
-    private async Task SyncToServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)
-    {
-        var pendingProducts = await productLocalService.GetPendingsAsync(checkPointDate, cancellationToken);
-
-        foreach (var product in pendingProducts)
+        private async Task SyncToServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)
         {
-            switch (product.Status)
+            var pendingProducts = await productLocalService.GetPendingsAsync(checkPointDate, cancellationToken);
+
+            foreach (var product in pendingProducts)
             {
-                case ModifyStatus.Created:
-                    {
-                        var request = new CreateProductRequest(product.Id,
-                            product.Name,
-                            product.Barcode,
-                            product.Weight,
-                            product.Wage,
-                            product.WageType,
-                            product.ProductType,
-                            product.CaratType);
+                switch (product.Status)
+                {
+                    case ModifyStatus.Created:
+                        {
+                            var request = new CreateProductRequest(product.Id,
+                                product.Name,
+                                product.Barcode,
+                                product.Weight,
+                                product.Wage,
+                                product.WageType,
+                                product.ProductType,
+                                product.CaratType,
+                                product.ProductCategoryId);
 
-                        await productHttpService.CreateAsync(request, cancellationToken);
-                        await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
-                        break;
-                    }
-                case ModifyStatus.Updated:
-                    {
-                        var request = new UpdateProductRequest(product.Name,
-                            product.Barcode,
-                            product.Weight,
-                            product.Wage,
-                            product.WageType,
-                            product.ProductType,
-                            product.CaratType);
+                            await productHttpService.CreateAsync(request, cancellationToken);
+                            await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
+                            break;
+                        }
+                    case ModifyStatus.Updated:
+                        {
+                            var request = new UpdateProductRequest(product.Name,
+                                product.Barcode,
+                                product.Weight,
+                                product.Wage,
+                                product.WageType,
+                                product.ProductType,
+                                product.CaratType,
+                                product.ProductCategoryId);
 
-                        await productHttpService.UpdateAsync(product.Id, request, cancellationToken);
-                        await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
+                            await productHttpService.UpdateAsync(product.Id, request, cancellationToken);
+                            await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
+                            break;
+                        }
+                    case ModifyStatus.Deleted:
+                        await productHttpService.DeleteAsync(product.Id, false, cancellationToken);
+                        await productLocalService.DeleteAsync(product.Id, true, cancellationToken);
                         break;
-                    }
-                case ModifyStatus.Deleted:
-                    await productHttpService.DeleteAsync(product.Id, false, cancellationToken);
-                    await productLocalService.DeleteAsync(product.Id, true, cancellationToken);
-                    break;
-                case ModifyStatus.Synced:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                    case ModifyStatus.Synced:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
+
+            await checkpointService.AddCheckPointAsync(nameof(Product), cancellationToken);
         }
 
-        await checkpointService.AddCheckPointAsync(nameof(Product), cancellationToken);
-    }
-
-    private async Task SyncFromServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)
-    {
-        var incomingProducts = await productHttpService.GetPendingsAsync(checkPointDate, cancellationToken);
-
-        foreach (var incomingProduct in incomingProducts)
+        private async Task SyncFromServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)
         {
-            if (incomingProduct.IsDeleted is true)
-            {
-                await productLocalService.DeleteAsync(incomingProduct.Id, true, cancellationToken);
-            }
-            else
-            {
-                var localProduct = await productLocalService.GetAsync(incomingProduct.Id, cancellationToken);
+            var incomingProducts = await productHttpService.GetPendingsAsync(checkPointDate, cancellationToken);
 
-                // Incoming product is not available on client so create it
-                if (localProduct is null)
+            foreach (var incomingProduct in incomingProducts)
+            {
+                if (incomingProduct.IsDeleted is true)
                 {
-                    var createRequest = new CreateProductRequest(incomingProduct.Id,
-                        incomingProduct.Name,
-                        incomingProduct.Barcode,
-                        incomingProduct.Weight,
-                        incomingProduct.Wage,
-                        incomingProduct.WageType,
-                        incomingProduct.ProductType,
-                        incomingProduct.CaratType);
-
-                    await productLocalService.CreateAsSyncedAsync(createRequest, cancellationToken);
+                    await productLocalService.DeleteAsync(incomingProduct.Id, true, cancellationToken);
                 }
-
-                // Incoming product is available on client so update it
                 else
                 {
-                    var updateRequest = new UpdateProductRequest(incomingProduct.Name,
-                        incomingProduct.Barcode,
-                        incomingProduct.Weight,
-                        incomingProduct.Wage,
-                        incomingProduct.WageType,
-                        incomingProduct.ProductType,
-                        incomingProduct.CaratType);
+                    var localProduct = await productLocalService.GetAsync(incomingProduct.Id, cancellationToken);
 
-                    await productLocalService.UpdateAsSyncAsync(incomingProduct.Id, updateRequest, cancellationToken);
+                    // Incoming product is not available on client so create it
+                    if (localProduct is null)
+                    {
+                        var createRequest = new CreateProductRequest(incomingProduct.Id,
+                            incomingProduct.Name,
+                            incomingProduct.Barcode,
+                            incomingProduct.Weight,
+                            incomingProduct.Wage,
+                            incomingProduct.WageType,
+                            incomingProduct.ProductType,
+                            incomingProduct.CaratType,
+                            incomingProduct.ProductCategoryId);
+
+                        await productLocalService.CreateAsSyncedAsync(createRequest, cancellationToken);
+                    }
+
+                    // Incoming product is available on client so update it
+                    else
+                    {
+                        var updateRequest = new UpdateProductRequest(incomingProduct.Name,
+                            incomingProduct.Barcode,
+                            incomingProduct.Weight,
+                            incomingProduct.Wage,
+                            incomingProduct.WageType,
+                            incomingProduct.ProductType,
+                            incomingProduct.CaratType, 
+                            incomingProduct.ProductCategoryId);
+
+                        await productLocalService.UpdateAsSyncAsync(incomingProduct.Id, updateRequest, cancellationToken);
+                    }
                 }
             }
         }
-    }
 
     public async Task SynchronizeAsync(CancellationToken cancellationToken)
     {

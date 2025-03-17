@@ -71,4 +71,24 @@ public class ApiUrls
             DateSeparator = "-"
         }
     };
+
+    public class ProductCategories
+    {
+        public static string GetAll() => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetAll);
+
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Get)
+            .FormatRoute(new { id });
+
+        public static string Create() => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Update).FormatRoute(new { id });
+
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Delete).FormatRoute(new { id });
+
+        public static string GetPendingItems(DateTime checkpointDate) =>
+            BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetPendingItems)
+                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+    }
 }

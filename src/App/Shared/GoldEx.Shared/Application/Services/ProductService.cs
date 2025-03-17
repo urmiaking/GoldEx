@@ -3,44 +3,47 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Application.Validators.Products;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
+using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Services;
 
-public class ProductService<T>(
-    IProductRepository<T> repository,
-    CreateProductValidator<T> createValidator,
-    UpdateProductValidator<T> updateValidator,
-    DeleteProductValidator<T> deleteValidator)
-    : IProductService<T> where T : ProductBase
+public class ProductService<TProduct, TCategory>(
+    IProductRepository<TProduct, TCategory> repository,
+    CreateProductValidator<TProduct, TCategory> createValidator,
+    UpdateProductValidator<TProduct, TCategory> updateValidator,
+    DeleteProductValidator<TProduct, TCategory> deleteValidator)
+    : IProductService<TProduct, TCategory>
+    where TProduct : ProductBase<TCategory>
+    where TCategory : ProductCategoryBase
 { 
-    public async Task CreateAsync(T product, CancellationToken cancellationToken = default)
+    public async Task CreateAsync(TProduct product, CancellationToken cancellationToken = default)
     {
         await createValidator.ValidateAndThrowAsync(product, cancellationToken);
         await repository.CreateAsync(product, cancellationToken);
     }
 
-    public async Task UpdateAsync(T product, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(TProduct product, CancellationToken cancellationToken = default)
     {
         await updateValidator.ValidateAndThrowAsync(product, cancellationToken);
         await repository.UpdateAsync(product, cancellationToken);
     }
 
-    public async Task DeleteAsync(T product, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(TProduct product, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
         await deleteValidator.ValidateAndThrowAsync(product, cancellationToken);
         await repository.DeleteAsync(product, deletePermanently, cancellationToken);
     }
 
-    public Task<T?> GetAsync(ProductId id, CancellationToken cancellationToken = default)
+    public Task<TProduct?> GetAsync(ProductId id, CancellationToken cancellationToken = default)
         => repository.GetAsync(id, cancellationToken);
 
-    public Task<T?> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public Task<TProduct?> GetAsync(string barcode, CancellationToken cancellationToken = default)
         => repository.GetAsync(barcode, cancellationToken);
 
-    public Task<PagedList<T>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
+    public Task<PagedList<TProduct>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
         => repository.GetListAsync(filter, cancellationToken);
 
-    public Task<List<T>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
+    public Task<List<TProduct>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
         => repository.GetPendingItemsAsync(checkpointDate, cancellationToken);
 }

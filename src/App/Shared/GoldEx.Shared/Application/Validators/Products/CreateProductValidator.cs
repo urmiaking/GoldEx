@@ -1,16 +1,21 @@
 ﻿using FluentValidation;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
+using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Validators.Products;
 
-public class CreateProductValidator<T> : AbstractValidator<T> where T : ProductBase
+public class CreateProductValidator<TProduct, TCategory> : AbstractValidator<TProduct>
+    where TProduct : ProductBase<TCategory>
+    where TCategory : ProductCategoryBase
 {
-    private readonly IProductRepository<T> _repository;
-    public CreateProductValidator(IProductRepository<T> repository)
+    private readonly IProductRepository<TProduct, TCategory> _repository;
+    private readonly IProductCategoryRepository<TCategory> _categoryRepository;
+    public CreateProductValidator(IProductRepository<TProduct, TCategory> repository, IProductCategoryRepository<TCategory> categoryRepository)
     {
         _repository = repository;
+        _categoryRepository = categoryRepository;
 
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
@@ -40,9 +45,21 @@ public class CreateProductValidator<T> : AbstractValidator<T> where T : ProductB
         RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
 
         RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
+
+        RuleFor(x => x.ProductCategoryId)
+            .NotEmpty().WithMessage("دسته بندی جنس نمی تواند خالی باشد")
+            .NotEqual(new ProductCategoryId(Guid.Empty)).WithMessage("دسته بندی جنس نمی تواند خالی باشد")
+            .MustAsync(ValidCategoryId).WithMessage("دسته بندی وارد شده معتبر نیست");
     }
 
-    private async Task<bool> BeUniqueBarcode(T product, string barcode, CancellationToken cancellationToken)
+    private async Task<bool> ValidCategoryId(ProductCategoryId categoryId, CancellationToken cancellationToken = default)
+    {
+        var category = await _categoryRepository.GetAsync(categoryId, cancellationToken);
+
+        return category is not null;
+    }
+
+    private async Task<bool> BeUniqueBarcode(TProduct product, string barcode, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(barcode))
         {
