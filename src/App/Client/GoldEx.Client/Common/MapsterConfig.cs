@@ -34,7 +34,8 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<Product, GetProductResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.ProductCategoryId, src => src.ProductCategoryId.Value);
+            .Map(dest => dest.ProductCategoryId, src => src.ProductCategoryId.Value)
+            .Map(dest => dest.ProductCategoryTitle, src => src.ProductCategory.Title);
 
         config.NewConfig<Product, GetPendingProductResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)

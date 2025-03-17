@@ -22,6 +22,7 @@
         <MudTh><MudTableSortLabel SortLabel="Weight" T="ProductVm">وزن</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="Wage" T="ProductVm">اجرت ساخت</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="Carat" T="ProductVm">عیار</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="ProductCategory.Title" T="ProductVm">دسته</MudTableSortLabel></MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -32,6 +33,7 @@
         <MudTd DataLabel="وزن">@(context.Weight + " گرم")</MudTd>
         <MudTd DataLabel="اجرت">@(context.WageType.HasValue ? $"{context.Wage:N0} {context.WageType.GetDisplayName()}" : "ندارد")</MudTd>
         <MudTd DataLabel="عیار">@context.CaratType.GetDisplayName()</MudTd>
+        <MudTd DataLabel="دسته">@context.ProductCategoryTitle</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ بارکد">
