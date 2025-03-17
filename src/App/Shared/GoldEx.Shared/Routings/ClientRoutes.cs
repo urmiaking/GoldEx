@@ -64,6 +64,11 @@ public static class ClientRoutes
         public const string Index = $"{ProductsPrefix}";
     }
 
+    public static class ProductCategories
+    {
+        private const string ProductCategoriesPrefix = "/product-categories";
+        public const string Index = $"{ProductCategoriesPrefix}";
+    }
     public static class Calculator
     {
         private const string CalculatorPrefix = "/calculator";
@@ -72,7 +77,7 @@ public static class ClientRoutes
 
     public static class Settings
     {
-        private const string SettingsPrefix = "/settings";
+        private const string SettingsPrefix = "/base-info";
         public const string Index = $"{SettingsPrefix}";    
     }
 

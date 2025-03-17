@@ -9,4 +9,5 @@ public record UpdateProductRequest(
     double? Wage,
     WageType? WageType,
     ProductType ProductType,
-    CaratType CaratType);
+    CaratType CaratType,
+    Guid ProductCategoryId);

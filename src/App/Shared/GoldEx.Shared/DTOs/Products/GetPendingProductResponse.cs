@@ -11,6 +11,7 @@ public record GetPendingProductResponse(Guid Id,
     ProductType ProductType,
     WageType? WageType,
     CaratType CaratType,
+    Guid ProductCategoryId,
     DateTime LastModifiedDate,
     ModifyStatus? Status,
     bool? IsDeleted);

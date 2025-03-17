@@ -17,7 +17,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -299,6 +299,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid>("ProductCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("ProductType")
                         .HasColumnType("int");
 
@@ -315,7 +318,30 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasIndex("CreatedUserId");
 
+                    b.HasIndex("ProductCategoryId");
+
                     b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.ProductCategoryAggregate.ProductCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductCategories", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.SettingsAggregate.Settings", b =>
@@ -466,7 +492,15 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("GoldEx.Server.Domain.ProductCategoryAggregate.ProductCategory", "ProductCategory")
+                        .WithMany()
+                        .HasForeignKey("ProductCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("CreatedUser");
+
+                    b.Navigation("ProductCategory");
                 });
 
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppRole", b =>

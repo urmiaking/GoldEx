@@ -1,0 +1,43 @@
+﻿@attribute [Route(ClientRoutes.ProductCategories.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<PageTitle>دسته بندی اجناس</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">دسته بندی اجناس</MudText>
+<hr />
+
+<MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateCategory())" 
+           Size="Size.Small" Variant="Variant.Filled" FullWidth="true">افزودن دسته جدید</MudButton>
+
+<MudTable T="ProductCategoryVm" Hover="true" @ref="_table" FixedHeader="true" Dense="true" Items="_productCategories"
+          SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="3" Height="350px">
+    <HeaderContent>
+        <MudTh>ردیف</MudTh>
+        <MudTh>عنوان</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ردیف">@context.Index</MudTd>
+        <MudTd DataLabel="عنوان">@context.Title</MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="ویرایش">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEditCategory(context)"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="حذف">
+                    <MudIconButton OnClick="@(_ => OnRemoveCategory(context))" ClickPropagation="true"
+                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ دسته ای وجود ندارد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+</MudTable>

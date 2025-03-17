@@ -6,26 +6,31 @@ using GoldEx.Shared.Infrastructure.Extensions;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
+using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 
 namespace GoldEx.Shared.Infrastructure.Repositories;
 
-public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryBase<T>(factory), IProductRepository<T> where T : ProductBase
+public class ProductRepository<TProduct, TCategory>(
+    IGoldExDbContextFactory factory) : RepositoryBase<TProduct>(factory),
+    IProductRepository<TProduct, TCategory>
+    where TProduct : ProductBase<TCategory>
+    where TCategory : ProductCategoryBase
 {
-    public async Task<T?> GetAsync(ProductId id, CancellationToken cancellationToken = default)
+    public async Task<TProduct?> GetAsync(ProductId id, CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
 
         return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<T?> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<TProduct?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
 
         return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Barcode == barcode, cancellationToken);
     }
 
-    public async Task<PagedList<T>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedList<TProduct>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
         if (filter.Skip < 0)
             filter.Skip = 0;
@@ -55,16 +60,16 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
 
         var list = await query.ToListAsync(cancellationToken);
 
-        return new PagedList<T> { Data = list, Skip = filter.Skip ?? 0, Take = filter.Take ?? 100, Total = totalRecords };
+        return new PagedList<TProduct> { Data = list, Skip = filter.Skip ?? 0, Take = filter.Take ?? 100, Total = totalRecords };
     }
 
-    public async Task<List<T>> GetPendingItemsAsync(DateTime checkpointDate,
+    public async Task<List<TProduct>> GetPendingItemsAsync(DateTime checkpointDate,
         CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
 
         // ClientSide pending items
-        if (typeof(T).IsAssignableTo(typeof(ITrackableEntity)))
+        if (typeof(TProduct).IsAssignableTo(typeof(ITrackableEntity)))
         {
             return await AllQuery
                 .Where($"{nameof(ITrackableEntity.Status)}<>{(int)ModifyStatus.Synced}")
@@ -74,7 +79,7 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
         }
 
         // Serverside pending items
-        if (typeof(T).IsAssignableTo(typeof(ISoftDeleteEntity)))
+        if (typeof(TProduct).IsAssignableTo(typeof(ISoftDeleteEntity)))
         {
             return await AllQuery
                 .Where(x => x.LastModifiedDate >= checkpointDate)
@@ -83,5 +88,12 @@ public class ProductRepository<T>(IGoldExDbContextFactory factory) : RepositoryB
         }
 
         return [];
+    }
+
+    public async Task<bool> CheckCategoryUsedAsync(ProductCategoryId categoryId, CancellationToken cancellationToken = default)
+    {
+        await InitializeDbContextAsync();
+
+        return await AllQuery.AnyAsync(x => x.ProductCategoryId == categoryId, cancellationToken);
     }
 }

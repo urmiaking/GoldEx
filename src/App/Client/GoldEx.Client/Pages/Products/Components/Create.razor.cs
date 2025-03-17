@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -12,6 +13,7 @@ public partial class Create
 {
     private readonly ProductVm _model = ProductVm.CreateDefaultInstance();
     private readonly ProductValidator _productValidator = new ();
+    private IEnumerable<ProductCategoryVm> _productCategories = [];
     private MudForm _form = default!;
     private bool _processing;
     private string? _wageHelperText;
@@ -21,12 +23,40 @@ public partial class Create
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private IProductClientService ProductService => GetRequiredService<IProductClientService>();
+    private IProductCategoryClientService CategoryService => GetRequiredService<IProductCategoryClientService>();
 
     protected override void OnInitialized()
     {
         GenerateBarcode();
 
         base.OnInitialized();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            var response = await CategoryService.GetAllAsync(CancellationTokenSource.Token);
+
+            _productCategories = response.Select(ProductCategoryVm.CreateFrom);
+        }
+        catch (Exception e)
+        {
+            AddExceptionToast(e);
+        }
+        finally
+        {
+            SetIdeal();
+        }
     }
 
     private async Task Submit()

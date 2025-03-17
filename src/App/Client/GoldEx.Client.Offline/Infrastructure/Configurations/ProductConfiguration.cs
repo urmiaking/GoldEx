@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Offline.Domain.ProductAggregate;
+using GoldEx.Client.Offline.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -9,6 +10,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        ProductBaseConfiguration.Configure(builder);
+        ProductBaseConfiguration.Configure<Product, ProductCategory>(builder);
     }
 }

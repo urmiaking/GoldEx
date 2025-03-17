@@ -1,15 +1,11 @@
 ﻿@inherits GoldExComponentBase
 
-@using GoldEx.Client.Pages.Settings.Shared
-
 @attribute [Route(ClientRoutes.Settings.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
-@layout SettingsLayout
+<PageTitle>اطلاعات پایه</PageTitle>
 
-<PageTitle>تنظیمات</PageTitle>
-
-<MudText Typo="Typo.h6" GutterBottom="true">مشخصات گالری</MudText>
+<MudText Typo="Typo.h6" GutterBottom="true">اطلاعات پایه</MudText>
 <hr />
 
 <EditForm Model="_model" OnValidSubmit="OnGallerySettingsSubmitted">

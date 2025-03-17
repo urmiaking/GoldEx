@@ -1,18 +1,20 @@
 ﻿using GoldEx.Client.Abstractions.LocalServices;
 using GoldEx.Client.Offline.Domain.ProductAggregate;
+using GoldEx.Client.Offline.Domain.ProductCategoryAggregate;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
+using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 using GoldEx.Shared.DTOs.Products;
 using MapsterMapper;
 
 namespace GoldEx.Client.Services.LocalServices;
 
 [ScopedService]
-public class ProductLocalClientService(IMapper mapper, IProductService<Product> service) : IProductLocalClientService
+public class ProductLocalClientService(IMapper mapper, IProductService<Product, ProductCategory> service) : IProductLocalClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -43,7 +45,8 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
             request.Wage,
             request.ProductType,
             request.WageType,
-            request.CaratType);
+            request.CaratType,
+            new ProductCategoryId(request.ProductCategoryId));
 
         await service.CreateAsync(product, cancellationToken);
     }
@@ -62,6 +65,7 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
         item.SetProductType(request.ProductType);
         item.SetWageType(request.WageType);
         item.SetCaratType(request.CaratType);
+        item.SetProductCategory(new ProductCategoryId(request.ProductCategoryId));
 
         // In case the item is synced, status changes to updated otherwise the previous status remains. e,g. Created
         if (item.Status == ModifyStatus.Synced)
@@ -105,7 +109,8 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
 
     public async Task SetSyncedAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await service.GetAsync(new ProductId(id), cancellationToken) ?? throw new NotFoundException("جنس مورد نظر یافت نشد");
+        var item = await service.GetAsync(new ProductId(id), cancellationToken) 
+                   ?? throw new NotFoundException("جنس مورد نظر یافت نشد");
 
         item.SetStatus(ModifyStatus.Synced);
 
@@ -121,7 +126,8 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product> 
             request.Wage,
             request.ProductType,
             request.WageType,
-            request.CaratType);
+            request.CaratType,
+            new ProductCategoryId(request.ProductCategoryId));
 
         product.SetStatus(ModifyStatus.Synced);
 

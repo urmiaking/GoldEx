@@ -21,6 +21,17 @@ var logger = GetStartupLogger();
 var builder = WebApplication.CreateBuilder(args);
 var setupServices = SetupServices();
 
+// Initial Serilog configuration (Console sink)
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+        .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+});
+
 var app = builder.Build();
 
 if (setupServices)
@@ -29,6 +40,17 @@ if (setupServices)
     var serviceProvider = scope.ServiceProvider;
 
     await app.InitializeAsync(serviceProvider);
+
+    // Reconfigure Serilog with MSSqlServer sink
+    var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(configuration)
+        .CreateLogger();
+
+    loggerFactory.AddSerilog(Log.Logger);
+
 
     SetupPipeline();
 }
@@ -45,13 +67,6 @@ bool SetupServices()
 {
     try
     {
-        // Configure the HostBuilder to use Serilog as the logging provider.
-        builder.Host.UseSerilog((context, services, configs) =>
-        {
-            // Reads Serilog settings from appsettings.json (or other configuration sources)
-            configs.ReadFrom.Configuration(context.Configuration);
-        });
-
         var configuration = builder.Configuration;
 
         builder.Services

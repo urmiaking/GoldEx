@@ -15,7 +15,7 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
 
             modelBuilder.Entity("GoldEx.Client.Offline.Domain.CheckpointAggregate.Checkpoint", b =>
                 {
@@ -77,6 +77,9 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("ProductCategoryId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ProductType")
                         .HasColumnType("INTEGER");
 
@@ -94,7 +97,30 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductCategoryId");
+
                     b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Client.Offline.Domain.ProductCategoryAggregate.ProductCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductCategories", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Client.Offline.Domain.SettingsAggregate.Settings", b =>
@@ -172,6 +198,17 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
 
                     b.Navigation("PriceHistory")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("GoldEx.Client.Offline.Domain.ProductAggregate.Product", b =>
+                {
+                    b.HasOne("GoldEx.Client.Offline.Domain.ProductCategoryAggregate.ProductCategory", "ProductCategory")
+                        .WithMany()
+                        .HasForeignKey("ProductCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductCategory");
                 });
 #pragma warning restore 612, 618
         }

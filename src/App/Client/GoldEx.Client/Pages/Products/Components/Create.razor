@@ -4,12 +4,26 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="12" lg="12">
+                <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="_model.Name"
                                   For="@(() => _model.Name)"
                                   Label="عنوان"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudSelect T="Guid?"
+                               @bind-Value="_model.ProductCategoryId"
+                               Label="دسته بندی"
+                               For="() => _model.ProductCategoryId"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        <MudSelectItem T="Guid?" Value="@((Guid?)null)">انتخاب کنید</MudSelectItem>
+                        @foreach (var item in _productCategories)
+                        {
+                            <MudSelectItem Value="@((Guid?)item.Id)">@item.Title</MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect For="() => _model.ProductType"
@@ -21,8 +35,7 @@
                                Variant="Variant.Outlined">
                         @foreach (ProductType productType in Enum.GetValues(typeof(ProductType)))
                         {
-                            <MudSelectItem T="ProductType"
-                                           Value="productType">
+                            <MudSelectItem T="ProductType" Value="productType">
                                 @productType.GetDisplayName()
                             </MudSelectItem>
                         }
@@ -50,9 +63,7 @@
                             <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
                             @foreach (WageType wageType in Enum.GetValues(typeof(WageType)))
                             {
-                                <MudSelectItem Value="@((WageType?)wageType)">
-                                    @wageType.GetDisplayName()
-                                </MudSelectItem>
+                                <MudSelectItem Value="@((WageType?)wageType)">@wageType.GetDisplayName()</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
