@@ -49,6 +49,7 @@ public partial class Update
             var response = await CategoryService.GetAllAsync(CancellationTokenSource.Token);
 
             _productCategories = response.Select(ProductCategoryVm.CreateFrom);
+
             StateHasChanged();
         }
         catch (Exception e)
@@ -164,5 +165,15 @@ public partial class Update
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
         }
+    }
+
+    private void OnProductCategoryChanged(ProductCategoryVm? category)
+    {
+        if (category is null)
+            return;
+        
+        Model.CategoryVm = category;
+        Model.ProductCategoryId = category.Id;
+        Model.ProductCategoryTitle = category.Title;
     }
 }
