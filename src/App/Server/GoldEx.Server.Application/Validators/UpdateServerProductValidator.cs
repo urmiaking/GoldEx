@@ -5,9 +5,9 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Server.Application.Validators;
 
-public class UpdateServerProductValidator : UpdateProductValidator<Product, ProductCategory>
+public class UpdateServerProductValidator : UpdateProductValidator<Product, ProductCategory, GemStone>
 {
-    public UpdateServerProductValidator(IProductRepository<Product, ProductCategory> repository,
+    public UpdateServerProductValidator(IProductRepository<Product, ProductCategory, GemStone> repository,
         IProductCategoryRepository<ProductCategory> categoryRepository) : base(repository,
         categoryRepository)
     {

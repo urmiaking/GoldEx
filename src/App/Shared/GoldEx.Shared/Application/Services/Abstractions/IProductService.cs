@@ -4,9 +4,10 @@ using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 
 namespace GoldEx.Shared.Application.Services.Abstractions;
 
-public interface IProductService<TProduct, TCategory> 
-    where TProduct : ProductBase<TCategory>
+public interface IProductService<TProduct, TCategory, TGemStone> 
+    where TProduct : ProductBase<TCategory, TGemStone>
     where TCategory : ProductCategoryBase
+    where TGemStone : GemStoneBase
 {
     Task CreateAsync(TProduct product, CancellationToken cancellationToken = default);
     Task UpdateAsync(TProduct product, CancellationToken cancellationToken = default);

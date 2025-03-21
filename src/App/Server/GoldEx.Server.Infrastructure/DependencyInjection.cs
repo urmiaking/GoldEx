@@ -40,7 +40,7 @@ public static class DependencyInjection
 
         ///////////////////
 
-        services.AddScoped<IProductRepository<Product, ProductCategory>, ProductRepository<Product, ProductCategory>>();
+        services.AddScoped<IProductRepository<Product, ProductCategory, GemStone>, ProductRepository<Product, ProductCategory, GemStone>>();
         services.AddScoped<IProductCategoryRepository<ProductCategory>, ProductCategoryRepository<ProductCategory>>();
         services.AddScoped<IPriceRepository<Price, PriceHistory>, PriceRepository<Price, PriceHistory>>();
         services.AddScoped<ISettingsRepository<Settings>, SettingsRepository<Settings>>();

@@ -5,13 +5,14 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Validators.Products;
 
-public class UpdateProductValidator<TProduct, TCategory> : AbstractValidator<TProduct>
-    where TProduct : ProductBase<TCategory>
+public class UpdateProductValidator<TProduct, TCategory, TGemStone> : AbstractValidator<TProduct>
+    where TProduct : ProductBase<TCategory, TGemStone>
     where TCategory : ProductCategoryBase
+    where TGemStone : GemStoneBase
 {
-    public UpdateProductValidator(IProductRepository<TProduct, TCategory> repository, IProductCategoryRepository<TCategory> categoryRepository)
+    public UpdateProductValidator(IProductRepository<TProduct, TCategory, TGemStone> repository, IProductCategoryRepository<TCategory> categoryRepository)
     {
-        Include(new CreateProductValidator<TProduct, TCategory>(repository, categoryRepository));
+        Include(new CreateProductValidator<TProduct, TCategory, TGemStone>(repository, categoryRepository));
 
         RuleFor(x => x.Id)
             .NotEqual(new ProductId(Guid.Empty)).WithMessage("شناسه کالا نمی تواند خالی باشد");

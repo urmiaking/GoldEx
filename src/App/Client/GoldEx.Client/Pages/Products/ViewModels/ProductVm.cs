@@ -41,6 +41,8 @@ public class ProductVm
 
     public ProductCategoryVm CategoryVm { get; set; } = default!;
 
+    public List<GemStoneVm>? Stones { get; set; }
+
     internal static ProductVm CreateDefaultInstance() => new()
         { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = GoldEx.Shared.Enums.WageType.Percent };
 
@@ -78,7 +80,14 @@ public class ProductVm
             item.WageType,
             item.ProductType,
             item.CaratType,
-            item.ProductCategoryId!.Value
+            item.ProductCategoryId!.Value,
+            item.Stones?.Select(x => new CreateGemStoneRequest(Guid.NewGuid(),
+                    x.Type,
+                    x.Color,
+                    x.Cut,
+                    x.Carat,
+                    x.Purity))
+                .ToList()
         );
     }
 
@@ -93,7 +102,11 @@ public class ProductVm
             item.WageType,
             item.ProductType,
             item.CaratType,
-            item.ProductCategoryId!.Value
+            item.ProductCategoryId!.Value,
+            item.Stones?
+                .Select(x => 
+                    new UpdateGemStoneRequest(x.Type, x.Color, x.Cut, x.Carat, x.Purity))
+                .ToList()
         );
     }
 }

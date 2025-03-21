@@ -5,7 +5,9 @@ using GoldEx.Shared.Enums;
 namespace GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 
 public readonly record struct ProductId(Guid Value);
-public class ProductBase<TCategory> : EntityBase<ProductId>, ISyncableEntity where TCategory : ProductCategoryBase
+public class ProductBase<TCategory, TGemStone> : EntityBase<ProductId>, ISyncableEntity
+    where TCategory : ProductCategoryBase
+    where TGemStone : GemStoneBase
 {
     public ProductBase(string name,
         string barcode,
@@ -33,7 +35,7 @@ public class ProductBase<TCategory> : EntityBase<ProductId>, ISyncableEntity whe
         double? wage,
         ProductType productType,
         WageType? wageType,
-        CaratType caratType, 
+        CaratType caratType,
         ProductCategoryId categoryId) : base(id)
     {
         Name = name;
@@ -49,7 +51,7 @@ public class ProductBase<TCategory> : EntityBase<ProductId>, ISyncableEntity whe
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     protected ProductBase()
     {
-        
+
     }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
@@ -64,6 +66,9 @@ public class ProductBase<TCategory> : EntityBase<ProductId>, ISyncableEntity whe
     public ProductCategoryId ProductCategoryId { get; private set; }
     public TCategory ProductCategory { get; private set; }
 
+    private readonly List<TGemStone> _stones = [];
+    public IReadOnlyList<TGemStone> GemStones => _stones.ToList();
+
     public void SetName(string name) => Name = name;
     public void SetBarcode(string barcode) => Barcode = barcode;
     public void SetWeight(double weight) => Weight = weight;
@@ -73,4 +78,10 @@ public class ProductBase<TCategory> : EntityBase<ProductId>, ISyncableEntity whe
     public void SetWageType(WageType? wageType) => WageType = wageType;
     public void SetLastModifiedDate() => LastModifiedDate = DateTime.UtcNow;
     public void SetProductCategory(ProductCategoryId categoryId) => ProductCategoryId = categoryId;
+    public void SetGemStones(List<TGemStone> stones)
+    {
+        _stones.Clear();
+        _stones.AddRange(stones);
+    }
+    public void ClearGemStones() => _stones.Clear();
 }

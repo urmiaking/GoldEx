@@ -35,7 +35,14 @@ public class ProductSyncService(
                                 product.WageType,
                                 product.ProductType,
                                 product.CaratType,
-                                product.ProductCategoryId);
+                                product.ProductCategoryId,
+                                product.GemStones?.Select(x => new CreateGemStoneRequest(x.Id,
+                                        x.Type,
+                                        x.Color,
+                                        x.Cut,
+                                        x.Carat,
+                                        x.Purity))
+                                    .ToList());
 
                             await productHttpService.CreateAsync(request, cancellationToken);
                             await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
@@ -50,7 +57,13 @@ public class ProductSyncService(
                                 product.WageType,
                                 product.ProductType,
                                 product.CaratType,
-                                product.ProductCategoryId);
+                                product.ProductCategoryId,
+                                product.GemStones?.Select(x => new UpdateGemStoneRequest(x.Type,
+                                        x.Color,
+                                        x.Cut,
+                                        x.Carat,
+                                        x.Purity))
+                                    .ToList());
 
                             await productHttpService.UpdateAsync(product.Id, request, cancellationToken);
                             await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
@@ -95,7 +108,14 @@ public class ProductSyncService(
                             incomingProduct.WageType,
                             incomingProduct.ProductType,
                             incomingProduct.CaratType,
-                            incomingProduct.ProductCategoryId);
+                            incomingProduct.ProductCategoryId,
+                            incomingProduct.GemStones?.Select(x => new CreateGemStoneRequest(x.Id,
+                                    x.Type,
+                                    x.Color,
+                                    x.Cut,
+                                    x.Carat,
+                                    x.Purity))
+                                .ToList());
 
                         await productLocalService.CreateAsSyncedAsync(createRequest, cancellationToken);
                     }
@@ -110,7 +130,13 @@ public class ProductSyncService(
                             incomingProduct.WageType,
                             incomingProduct.ProductType,
                             incomingProduct.CaratType, 
-                            incomingProduct.ProductCategoryId);
+                            incomingProduct.ProductCategoryId,
+                            incomingProduct.GemStones?.Select(x => new UpdateGemStoneRequest(x.Type,
+                                    x.Color,
+                                    x.Cut,
+                                    x.Carat,
+                                    x.Purity))
+                                .ToList());
 
                         await productLocalService.UpdateAsSyncAsync(incomingProduct.Id, updateRequest, cancellationToken);
                     }

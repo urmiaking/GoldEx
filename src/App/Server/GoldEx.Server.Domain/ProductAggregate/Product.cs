@@ -7,10 +7,9 @@ using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.ProductAggregate;
 
-public class Product : ProductBase<ProductCategory>,
+public class Product : ProductBase<ProductCategory, GemStone>,
     ISoftDeleteEntity
 {
-
     public Product(string name,
         string barcode,
         double weight,

@@ -8,14 +8,15 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Services;
 
-public class ProductService<TProduct, TCategory>(
-    IProductRepository<TProduct, TCategory> repository,
-    CreateProductValidator<TProduct, TCategory> createValidator,
-    UpdateProductValidator<TProduct, TCategory> updateValidator,
-    DeleteProductValidator<TProduct, TCategory> deleteValidator)
-    : IProductService<TProduct, TCategory>
-    where TProduct : ProductBase<TCategory>
+public class ProductService<TProduct, TCategory, TGemStone>(
+    IProductRepository<TProduct, TCategory, TGemStone> repository,
+    CreateProductValidator<TProduct, TCategory, TGemStone> createValidator,
+    UpdateProductValidator<TProduct, TCategory, TGemStone> updateValidator,
+    DeleteProductValidator<TProduct, TCategory, TGemStone> deleteValidator)
+    : IProductService<TProduct, TCategory, TGemStone>
+    where TProduct : ProductBase<TCategory, TGemStone>
     where TCategory : ProductCategoryBase
+    where TGemStone : GemStoneBase
 { 
     public async Task CreateAsync(TProduct product, CancellationToken cancellationToken = default)
     {

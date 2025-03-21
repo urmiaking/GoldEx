@@ -8,13 +8,10 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 namespace GoldEx.Server.Application.Services;
 
 public class ServerProductService(
-    IProductRepository<Product, ProductCategory> repository,
+    IProductRepository<Product, ProductCategory, GemStone> repository,
     CreateServerProductValidator createValidator,
     UpdateServerProductValidator updateValidator,
-    DeleteProductValidator<Product, ProductCategory> deleteValidator) : ProductService<Product, ProductCategory>(repository,
+    DeleteProductValidator<Product, ProductCategory, GemStone> deleteValidator) : ProductService<Product, ProductCategory, GemStone>(repository,
     createValidator,
     updateValidator,
-    deleteValidator)
-{
-    
-}
+    deleteValidator);

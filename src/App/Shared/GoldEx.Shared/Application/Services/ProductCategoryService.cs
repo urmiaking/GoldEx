@@ -6,13 +6,14 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Services;
 
-public class ProductCategoryService<TCategory, TProduct>(
+public class ProductCategoryService<TCategory, TProduct, TGemStone>(
     IProductCategoryRepository<TCategory> repository,
     CreateProductCategoryValidator<TCategory> createValidator,
     UpdateProductCategoryValidator<TCategory> updateValidator,
-    DeleteProductCategoryValidator<TCategory, TProduct> deleteValidator) : IProductCategoryService<TCategory>
+    DeleteProductCategoryValidator<TCategory, TProduct, TGemStone> deleteValidator) : IProductCategoryService<TCategory>
     where TCategory : ProductCategoryBase
-    where TProduct : ProductBase<TCategory>
+    where TProduct : ProductBase<TCategory, TGemStone>
+    where TGemStone : GemStoneBase
 {
     public async Task CreateAsync(TCategory category, CancellationToken cancellationToken = default)
     {

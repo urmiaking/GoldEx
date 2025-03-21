@@ -6,13 +6,14 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Validators.Products;
 
-public class CreateProductValidator<TProduct, TCategory> : AbstractValidator<TProduct>
-    where TProduct : ProductBase<TCategory>
+public class CreateProductValidator<TProduct, TCategory, TGemStone> : AbstractValidator<TProduct>
+    where TProduct : ProductBase<TCategory, TGemStone>
     where TCategory : ProductCategoryBase
+    where TGemStone : GemStoneBase
 {
-    private readonly IProductRepository<TProduct, TCategory> _repository;
+    private readonly IProductRepository<TProduct, TCategory, TGemStone> _repository;
     private readonly IProductCategoryRepository<TCategory> _categoryRepository;
-    public CreateProductValidator(IProductRepository<TProduct, TCategory> repository, IProductCategoryRepository<TCategory> categoryRepository)
+    public CreateProductValidator(IProductRepository<TProduct, TCategory, TGemStone> repository, IProductCategoryRepository<TCategory> categoryRepository)
     {
         _repository = repository;
         _categoryRepository = categoryRepository;
