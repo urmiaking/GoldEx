@@ -27,7 +27,7 @@
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect For="() => _model.ProductType"
-                               Label="نوع جنس" 
+                               Label="نوع جنس"
                                Margin="Margin.Dense"
                                T="ProductType"
                                Value="_model.ProductType"
@@ -101,19 +101,78 @@
                     <MudStack Row AlignItems="AlignItems.Center">
                         <MudItem xs="10">
                             <MudTextField @bind-Value="_model.Barcode"
-                                          For="@(() => _model.Barcode)" 
-                                          Label="بارکد" 
+                                          For="@(() => _model.Barcode)"
+                                          Label="بارکد"
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined" />
                         </MudItem>
                         <MudItem xs="2" Class="pr-2">
-                            <MudIconButton Color="Color.Primary" 
+                            <MudIconButton Color="Color.Primary"
                                            OnClick="@(_ => GenerateBarcode())"
                                            Icon="@Icons.Material.Filled.Refresh"
                                            Variant="Variant.Filled"></MudIconButton>
                         </MudItem>
                     </MudStack>
                 </MudItem>
+                @if (_model.ProductType is ProductType.Jewelry)
+                {
+                    @if (_model.Stones is not null)
+                    {
+                        @for (var i = 0; i < _model.Stones.Count; i++)
+                        {
+                            var index = i;
+
+                            <MudItem Key="@i" xs="12" Class="d-flex justify-center m-0">
+                                <MudText Typo="Typo.body1">
+                                    سنگ شماره @(index + 1)
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                   OnClick="() => OnRemoveGemStone(index)"
+                                                   Size="Size.Small">
+                                    </MudIconButton>
+                                </MudText>
+                            </MudItem>
+                            <MudItem Key="@($"{i} type")" xs="12" md="3" Class="pt-0">
+                                <MudTextField @bind-Value="_model.Stones[index].Type"
+                                              For="() => _model.Stones[index].Type"
+                                              Label="نوع سنگ" Margin="Margin.Dense"
+                                              T="string" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} color")" xs="6" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="_model.Stones[index].Color"
+                                              For="() => _model.Stones[index].Color"
+                                              Label="رنگ" Margin="Margin.Dense"
+                                              T="string" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} cut")" xs="6" md="3" Class="pt-0">
+                                <MudTextField @bind-Value="_model.Stones[index].Cut"
+                                              For="() => _model.Stones[index].Cut"
+                                              Label="برش" Margin="Margin.Dense"
+                                              T="string?" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} carat")" xs="6" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="_model.Stones[index].Carat"
+                                              For="() => _model.Stones[index].Carat"
+                                              Label="قیراط" Margin="Margin.Dense"
+                                              T="double" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} purity")" xs="6" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="_model.Stones[index].Purity"
+                                              For="() => _model.Stones[index].Purity"
+                                              Label="پاکی" Margin="Margin.Dense"
+                                              T="string?" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                        }
+                    }
+
+                    <MudItem xs="12">
+                        <div class="d-flex align-center justify-center">
+                            <MudButton Color="Color.Primary"
+                                       OnClick="OnAddGemStone"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       Variant="Variant.Filled">افزودن سنگ جواهر</MudButton>
+                        </div>
+                    </MudItem>
+                }
             </MudGrid>
         </DialogContent>
         <DialogActions>
@@ -123,7 +182,7 @@
                        Variant="Variant.Filled">
                 بستن
             </MudButton>
-            <MudButton Class="m-3" 
+            <MudButton Class="m-3"
                        Color="Color.Primary"
                        Disabled="@_processing"
                        OnClick="@(async () => await Submit())"
@@ -132,7 +191,7 @@
                 {
                     <MudProgressCircular Class="ms-n1"
                                          Size="Size.Small"
-                                         Indeterminate="true"/>
+                                         Indeterminate="true" />
                     <MudText Class="ms-2">
                         در حال ذخیره
                     </MudText>

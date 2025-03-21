@@ -31,8 +31,8 @@ public static class DependencyInjection
 
         services.AddScoped<IGoldExDbContextFactory, OfflineDbContextFactory>();
 
-        services.AddScoped<IProductRepository<Product, ProductCategory>, ProductRepository<Product, ProductCategory>>();
-        services.AddScoped<IProductService<Product, ProductCategory>, ProductService<Product, ProductCategory>>();
+        services.AddScoped<IProductRepository<Product, ProductCategory, GemStone>, ProductRepository<Product, ProductCategory, GemStone>>();
+        services.AddScoped<IProductService<Product, ProductCategory, GemStone>, ProductService<Product, ProductCategory, GemStone>>();
 
         services.AddScoped<IPriceRepository<Price, PriceHistory>, PriceRepository<Price, PriceHistory>>();
         services.AddScoped<IPriceService<Price, PriceHistory>, PriceService<Price, PriceHistory>>();
@@ -41,16 +41,16 @@ public static class DependencyInjection
         services.AddScoped<ISettingsService<Settings>, SettingsService<Settings>>();
 
         services.AddScoped<IProductCategoryRepository<ProductCategory>, ProductCategoryRepository<ProductCategory>>();
-        services.AddScoped<IProductCategoryService<ProductCategory>, ProductCategoryService<ProductCategory, Product>>();
+        services.AddScoped<IProductCategoryService<ProductCategory>, ProductCategoryService<ProductCategory, Product, GemStone>>();
 
-        services.AddScoped<CreateProductValidator<Product, ProductCategory>>();
-        services.AddScoped<UpdateProductValidator<Product, ProductCategory>>();
-        services.AddScoped<DeleteProductValidator<Product, ProductCategory>>();
+        services.AddScoped<CreateProductValidator<Product, ProductCategory, GemStone>>();
+        services.AddScoped<UpdateProductValidator<Product, ProductCategory, GemStone>>();
+        services.AddScoped<DeleteProductValidator<Product, ProductCategory, GemStone>>();
         services.AddScoped<PriceValidator<Price, PriceHistory>>();
         services.AddScoped<SettingsValidator<Settings>>();
         services.AddScoped<CreateProductCategoryValidator<ProductCategory>>();
         services.AddScoped<UpdateProductCategoryValidator<ProductCategory>>();
-        services.AddScoped<DeleteProductCategoryValidator<ProductCategory, Product>>();
+        services.AddScoped<DeleteProductCategoryValidator<ProductCategory, Product, GemStone>>();
 
         services.DiscoverServices();
         return services;

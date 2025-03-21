@@ -10,7 +10,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        ProductBaseConfiguration.Configure<Product, ProductCategory>(builder);
+        ProductBaseConfiguration.Configure<Product, ProductCategory, GemStone>(builder);
 
         builder.HasOne(x => x.CreatedUser)
             .WithMany()

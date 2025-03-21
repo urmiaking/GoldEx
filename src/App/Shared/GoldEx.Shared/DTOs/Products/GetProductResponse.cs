@@ -12,4 +12,5 @@ public record GetProductResponse(
     WageType? WageType,
     CaratType CaratType,
     Guid ProductCategoryId,
-    string ProductCategoryTitle);
+    string ProductCategoryTitle,
+    List<GetGemStoneResponse>? GemStones);

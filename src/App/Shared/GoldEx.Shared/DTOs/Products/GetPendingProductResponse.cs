@@ -14,4 +14,5 @@ public record GetPendingProductResponse(Guid Id,
     Guid ProductCategoryId,
     DateTime LastModifiedDate,
     ModifyStatus? Status,
-    bool? IsDeleted);
+    bool? IsDeleted,
+    List<GetGemStoneResponse>? GemStones);

@@ -10,4 +10,5 @@ public record UpdateProductRequest(
     WageType? WageType,
     ProductType ProductType,
     CaratType CaratType,
-    Guid ProductCategoryId);
+    Guid ProductCategoryId,
+    List<UpdateGemStoneRequest>? GemStones);

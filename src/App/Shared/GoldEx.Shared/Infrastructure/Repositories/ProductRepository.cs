@@ -10,11 +10,12 @@ using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 
 namespace GoldEx.Shared.Infrastructure.Repositories;
 
-public class ProductRepository<TProduct, TCategory>(
+public class ProductRepository<TProduct, TCategory, TGemStone>(
     IGoldExDbContextFactory factory) : RepositoryBase<TProduct>(factory),
-    IProductRepository<TProduct, TCategory>
-    where TProduct : ProductBase<TCategory>
+    IProductRepository<TProduct, TCategory, TGemStone>
+    where TProduct : ProductBase<TCategory, TGemStone>
     where TCategory : ProductCategoryBase
+    where TGemStone : GemStoneBase
 {
     public async Task<TProduct?> GetAsync(ProductId id, CancellationToken cancellationToken = default)
     {

@@ -5,13 +5,14 @@ using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Validators.Categories;
 
-public class DeleteProductCategoryValidator<TCategory, TProduct> : AbstractValidator<TCategory> 
+public class DeleteProductCategoryValidator<TCategory, TProduct, TGemStone> : AbstractValidator<TCategory> 
     where TCategory : ProductCategoryBase
-    where TProduct : ProductBase<TCategory>
+    where TProduct : ProductBase<TCategory, TGemStone>
+    where TGemStone : GemStoneBase
 {
-    private readonly IProductRepository<TProduct, TCategory> _productRepository;
+    private readonly IProductRepository<TProduct, TCategory, TGemStone> _productRepository;
 
-    public DeleteProductCategoryValidator(IProductRepository<TProduct, TCategory> productRepository)
+    public DeleteProductCategoryValidator(IProductRepository<TProduct, TCategory, TGemStone> productRepository)
     {
         _productRepository = productRepository;
 

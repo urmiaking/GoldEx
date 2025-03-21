@@ -7,7 +7,7 @@ using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Offline.Domain.ProductAggregate;
 
-public class Product : ProductBase<ProductCategory>, ITrackableEntity
+public class Product : ProductBase<ProductCategory, GemStone>, ITrackableEntity
 {
     public Product(ProductId id,
         string name,

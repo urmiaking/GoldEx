@@ -11,4 +11,5 @@ public record CreateProductRequest(
     WageType? WageType,
     ProductType ProductType,
     CaratType CaratType,
-    Guid ProductCategoryId);
+    Guid ProductCategoryId,
+    List<CreateGemStoneRequest>? GemStones);

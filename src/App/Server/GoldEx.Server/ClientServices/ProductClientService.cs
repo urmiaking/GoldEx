@@ -10,12 +10,13 @@ using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.ClientServices;
 
 [ScopedService]
 public class ProductClientService(
-    IProductService<Product, ProductCategory> service,
+    IProductService<Product, ProductCategory, GemStone> service,
     IHttpContextAccessor httpContextAccessor,
     IMapper mapper) : IProductClientService
 {
@@ -60,6 +61,16 @@ public class ProductClientService(
 
         product.SetCreatedUserId(userId);
 
+        if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
+        {
+            product.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+                    x.Color,
+                    x.Cut,
+                    x.Carat,
+                    x.Purity))
+                .ToList());
+        }
+
         await service.CreateAsync(product, cancellationToken);
     }
 
@@ -78,6 +89,17 @@ public class ProductClientService(
         product.SetProductType(request.ProductType);
         product.SetCaratType(request.CaratType);
         product.SetProductCategory(new ProductCategoryId(request.ProductCategoryId));
+        product.ClearGemStones();
+
+        if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
+        {
+            product.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+                    x.Color,
+                    x.Cut,
+                    x.Carat,
+                    x.Purity))
+                .ToList());
+        }
 
         await service.UpdateAsync(product, cancellationToken);
     }

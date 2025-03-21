@@ -27,14 +27,14 @@ public static class DependencyInjection
 
         services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
 
-        services.AddScoped<IProductService<Product, ProductCategory>, ServerProductService>();
-        services.AddScoped<IProductCategoryService<ProductCategory>, ProductCategoryService<ProductCategory, Product>>();
+        services.AddScoped<IProductService<Product, ProductCategory, GemStone>, ServerProductService>();
+        services.AddScoped<IProductCategoryService<ProductCategory>, ProductCategoryService<ProductCategory, Product, GemStone>>();
         services.AddScoped<IPriceService<Price, PriceHistory>, PriceService<Price, PriceHistory>>();
         services.AddScoped<ISettingsService<Settings>, SettingsService<Settings>>();
 
         services.AddScoped<CreateServerProductValidator>();
         services.AddScoped<UpdateServerProductValidator>();
-        services.AddScoped<DeleteProductValidator<Product, ProductCategory>>();
+        services.AddScoped<DeleteProductValidator<Product, ProductCategory, GemStone>>();
 
         services.AddScoped<PriceValidator<Price, PriceHistory>>();
 
@@ -42,7 +42,7 @@ public static class DependencyInjection
 
         services.AddScoped<CreateProductCategoryValidator<ProductCategory>>();
         services.AddScoped<UpdateProductCategoryValidator<ProductCategory>>();
-        services.AddScoped<DeleteProductCategoryValidator<ProductCategory, Product>>();
+        services.AddScoped<DeleteProductCategoryValidator<ProductCategory, Product, GemStone>>();
 
         services.DiscoverServices();
         return services;

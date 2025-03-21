@@ -5,6 +5,7 @@ using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Products.Components;
@@ -12,14 +13,14 @@ namespace GoldEx.Client.Pages.Products.Components;
 public partial class Create
 {
     private readonly ProductVm _model = ProductVm.CreateDefaultInstance();
-    private readonly ProductValidator _productValidator = new ();
+    private readonly ProductValidator _productValidator = new();
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private MudForm _form = default!;
     private bool _processing;
     private string? _wageHelperText;
     private string? _wageAdornmentText = "درصد";
 
-    [CascadingParameter] 
+    [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private IProductClientService ProductService => GetRequiredService<IProductClientService>();
@@ -74,8 +75,10 @@ public partial class Create
             SetBusy();
             CancelToken();
             _processing = true;
-            
-            await ProductService.CreateAsync(ProductVm.ToCreateRequest(_model));
+
+            var request = ProductVm.ToCreateRequest(_model);
+
+            await ProductService.CreateAsync(request);
 
             MudDialog.Close(DialogResult.Ok(true));
         }
@@ -161,5 +164,22 @@ public partial class Create
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
         }
+    }
+
+    private void OnAddGemStone(MouseEventArgs obj)
+    {
+        _model.Stones ??= [];
+
+        _model.Stones.Add(new GemStoneVm());
+
+        //_gemStones.Add($"سنگ شماره {count + 1}");
+        StateHasChanged();
+    }
+
+    private void OnRemoveGemStone(int index)
+    {
+        _model.Stones?.RemoveAt(index);
+        // _gemStones.RemoveAt(index);
+        StateHasChanged();
     }
 }

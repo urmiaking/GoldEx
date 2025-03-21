@@ -9,12 +9,13 @@ using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 using MapsterMapper;
 
 namespace GoldEx.Client.Services.LocalServices;
 
 [ScopedService]
-public class ProductLocalClientService(IMapper mapper, IProductService<Product, ProductCategory> service) : IProductLocalClientService
+public class ProductLocalClientService(IMapper mapper, IProductService<Product, ProductCategory, GemStone> service) : IProductLocalClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -48,6 +49,16 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
             request.CaratType,
             new ProductCategoryId(request.ProductCategoryId));
 
+        if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
+        {
+            product.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+                    x.Color,
+                    x.Cut,
+                    x.Carat,
+                    x.Purity))
+                .ToList());
+        }
+
         await service.CreateAsync(product, cancellationToken);
     }
 
@@ -66,6 +77,18 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
         item.SetWageType(request.WageType);
         item.SetCaratType(request.CaratType);
         item.SetProductCategory(new ProductCategoryId(request.ProductCategoryId));
+
+        item.ClearGemStones();
+
+        if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
+        {
+            item.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+                    x.Color,
+                    x.Cut,
+                    x.Carat,
+                    x.Purity))
+                .ToList());
+        }
 
         // In case the item is synced, status changes to updated otherwise the previous status remains. e,g. Created
         if (item.Status == ModifyStatus.Synced)
@@ -129,6 +152,16 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
             request.CaratType,
             new ProductCategoryId(request.ProductCategoryId));
 
+        if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
+        {
+            product.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+                    x.Color,
+                    x.Cut,
+                    x.Carat,
+                    x.Purity))
+                .ToList());
+        }
+
         product.SetStatus(ModifyStatus.Synced);
 
         await service.CreateAsync(product, cancellationToken);
@@ -148,6 +181,17 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
         item.SetProductType(request.ProductType);
         item.SetWageType(request.WageType);
         item.SetCaratType(request.CaratType);
+        item.ClearGemStones();
+
+        if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
+        {
+            item.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+                    x.Color,
+                    x.Cut,
+                    x.Carat,
+                    x.Purity))
+                .ToList());
+        }
 
         item.SetStatus(ModifyStatus.Synced);
 
