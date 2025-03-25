@@ -131,7 +131,13 @@
                                     </MudIconButton>
                                 </MudText>
                             </MudItem>
-                            <MudItem Key="@($"{i} type")" xs="12" md="3" Class="pt-0">
+                            <MudItem Key="@($"{i} code")" xs="12" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="_model.Stones[index].Code"
+                                              For="() => _model.Stones[index].Code"
+                                              Label="کد" Margin="Margin.Dense"
+                                              T="string" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} type")" xs="12" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="_model.Stones[index].Type"
                                               For="() => _model.Stones[index].Type"
                                               Label="نوع سنگ" Margin="Margin.Dense"
@@ -143,7 +149,7 @@
                                               Label="رنگ" Margin="Margin.Dense"
                                               T="string" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem Key="@($"{i} cut")" xs="6" md="3" Class="pt-0">
+                            <MudItem Key="@($"{i} cut")" xs="6" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="_model.Stones[index].Cut"
                                               For="() => _model.Stones[index].Cut"
                                               Label="برش" Margin="Margin.Dense"

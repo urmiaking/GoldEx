@@ -44,6 +44,7 @@ public class ProductRepository<TProduct, TCategory, TGemStone>(
 
         var query = NonDeletedQuery
             .Include(x => x.ProductCategory)
+            .Include(x => x.GemStones)
             .AsQueryable();
 
         // Apply search filter

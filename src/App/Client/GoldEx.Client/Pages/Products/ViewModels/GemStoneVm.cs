@@ -4,6 +4,10 @@ namespace GoldEx.Client.Pages.Products.ViewModels;
 
 public class GemStoneVm
 {
+    [Display(Name = "کد")]
+    [Required(ErrorMessage = "وارد كردن {0} الزامی است")]
+    public string Code { get; set; } = default!;
+
     [Display(Name = "نوع سنگ")]
     [Required(ErrorMessage = "وارد كردن {0} الزامی است")]
     public string Type { get; set; } = default!;

@@ -167,4 +167,17 @@ public static class StringExtensions
         var randomNumber = IntExtensions.GenerateRandomNumber(10000000, 99999999);
         return randomNumber.ToString();
     }
+
+    public static string GenerateRandomCode(int digits)
+    {
+        if (digits <= 0)
+            throw new ArgumentOutOfRangeException(nameof(digits), "Number of digits must be positive.");
+
+        var minValue = (int)Math.Pow(10, digits - 1);
+        var maxValue = (int)Math.Pow(10, digits) - 1;
+
+        long randomNumber = IntExtensions.GenerateRandomNumber(minValue, maxValue);
+
+        return randomNumber.ToString();
+    }
 }

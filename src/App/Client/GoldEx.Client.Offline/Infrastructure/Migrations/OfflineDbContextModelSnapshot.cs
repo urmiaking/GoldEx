@@ -210,10 +210,10 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
 
                     b.OwnsMany("GoldEx.Client.Offline.Domain.ProductAggregate.GemStone", "GemStones", b1 =>
                         {
-                            b1.Property<Guid>("ProductId")
+                            b1.Property<string>("Code")
                                 .HasColumnType("TEXT");
 
-                            b1.Property<Guid>("Id")
+                            b1.Property<Guid>("ProductId")
                                 .HasColumnType("TEXT");
 
                             b1.Property<double>("Carat")
@@ -235,7 +235,9 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                                 .HasMaxLength(50)
                                 .HasColumnType("TEXT");
 
-                            b1.HasKey("ProductId", "Id");
+                            b1.HasKey("Code", "ProductId");
+
+                            b1.HasIndex("ProductId");
 
                             b1.ToTable("GemStones", (string)null);
 

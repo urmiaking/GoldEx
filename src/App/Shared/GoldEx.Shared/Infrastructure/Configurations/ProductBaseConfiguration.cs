@@ -39,8 +39,6 @@ public static class ProductBaseConfiguration
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.OwnsMany(x => x.GemStones, Configure<TProduct, TCategory, TGemStone>);
-
-
     }
 
     private static void Configure<TProduct, TCategory, TGemStone>(OwnedNavigationBuilder<TProduct, TGemStone> builder) 
@@ -50,9 +48,7 @@ public static class ProductBaseConfiguration
     {
         builder.ToTable("GemStones");
 
-        builder.Property(x => x.Id)
-            .HasConversion(id => id.Value,
-                value => new GemStoneId(value));
+        builder.HasKey(x => new { x.Code, x.ProductId });
 
         builder.Property(x => x.Type)
             .HasMaxLength(50)

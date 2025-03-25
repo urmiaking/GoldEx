@@ -64,7 +64,16 @@ public class ProductVm
             {
                 Id = item.ProductCategoryId,
                 Title = item.ProductCategoryTitle
-            }
+            },
+            Stones = item.GemStones?.Select(x => new GemStoneVm
+            {
+                 Type = x.Type,
+                 Carat = x.Carat,
+                 Code = x.Code,
+                 Color = x.Color,
+                 Cut = x.Cut,
+                 Purity = x.Purity
+            }).ToList()
         };
     }
 
@@ -81,7 +90,8 @@ public class ProductVm
             item.ProductType,
             item.CaratType,
             item.ProductCategoryId!.Value,
-            item.Stones?.Select(x => new CreateGemStoneRequest(Guid.NewGuid(),
+            item.Stones?.Select(x => new CreateGemStoneRequest(
+                    x.Code,
                     x.Type,
                     x.Color,
                     x.Cut,
@@ -105,7 +115,7 @@ public class ProductVm
             item.ProductCategoryId!.Value,
             item.Stones?
                 .Select(x => 
-                    new UpdateGemStoneRequest(x.Type, x.Color, x.Cut, x.Carat, x.Purity))
+                    new UpdateGemStoneRequest(x.Code, x.Type, x.Color, x.Cut, x.Carat, x.Purity))
                 .ToList()
         );
     }

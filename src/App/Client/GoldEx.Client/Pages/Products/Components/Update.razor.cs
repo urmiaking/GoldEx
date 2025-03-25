@@ -5,6 +5,7 @@ using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Products.Components;
@@ -175,5 +176,18 @@ public partial class Update
         Model.CategoryVm = category;
         Model.ProductCategoryId = category.Id;
         Model.ProductCategoryTitle = category.Title;
+    }
+
+    private void OnRemoveGemStone(int index)
+    {
+        Model.Stones?.RemoveAt(index);
+        StateHasChanged();
+    }
+
+    private void OnAddGemStone(MouseEventArgs obj)
+    {
+        Model.Stones ??= [];
+        Model.Stones.Add(new GemStoneVm());
+        StateHasChanged();
     }
 }
