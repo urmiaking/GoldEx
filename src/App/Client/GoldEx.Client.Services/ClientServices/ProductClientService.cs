@@ -10,11 +10,13 @@ namespace GoldEx.Client.Services.ClientServices;
 [ScopedService]
 public class ProductClientService(
     IProductLocalClientService localService,
-    IProductSyncService syncService)
+    IProductSyncService syncService,
+    IProductCategorySyncService categorySyncService)
     : IProductClientService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
+        await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);
 
         return await localService.GetListAsync(filter, cancellationToken);
@@ -22,6 +24,7 @@ public class ProductClientService(
 
     public async Task<GetProductResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);
 
         return await localService.GetAsync(id, cancellationToken);
@@ -29,6 +32,7 @@ public class ProductClientService(
 
     public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
+        await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);
 
         return await localService.GetAsync(barcode, cancellationToken);
@@ -38,6 +42,7 @@ public class ProductClientService(
     {
         await localService.CreateAsync(request, cancellationToken);
 
+        await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);
     }
 
@@ -45,6 +50,7 @@ public class ProductClientService(
     {
         await localService.UpdateAsync(id, request, cancellationToken);
 
+        await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);
     }
 
@@ -52,6 +58,7 @@ public class ProductClientService(
     {
         await localService.DeleteAsync(id, false, cancellationToken);
 
+        await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);
     }
 
