@@ -38,8 +38,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.ProductCategoryTitle, src => src.ProductCategory.Title)
             .Map(dest => dest.GemStones, src => src.GemStones);
 
-        config.NewConfig<GemStone, GetGemStoneResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
+        config.NewConfig<GemStone, GetGemStoneResponse>();
 
         config.NewConfig<Product, GetPendingProductResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)

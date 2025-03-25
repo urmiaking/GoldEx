@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    [Migration("20250321100349_AddGemStones")]
+    [Migration("20250324104025_AddGemStones")]
     partial class AddGemStones
     {
         /// <inheritdoc />
@@ -503,10 +503,10 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.OwnsMany("GoldEx.Server.Domain.ProductAggregate.GemStone", "GemStones", b1 =>
                         {
-                            b1.Property<Guid>("ProductId")
-                                .HasColumnType("uniqueidentifier");
+                            b1.Property<string>("Code")
+                                .HasColumnType("nvarchar(450)");
 
-                            b1.Property<Guid>("Id")
+                            b1.Property<Guid>("ProductId")
                                 .HasColumnType("uniqueidentifier");
 
                             b1.Property<double>("Carat")
@@ -528,7 +528,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasMaxLength(50)
                                 .HasColumnType("nvarchar(50)");
 
-                            b1.HasKey("ProductId", "Id");
+                            b1.HasKey("Code", "ProductId");
+
+                            b1.HasIndex("ProductId");
 
                             b1.ToTable("GemStones", (string)null);
 

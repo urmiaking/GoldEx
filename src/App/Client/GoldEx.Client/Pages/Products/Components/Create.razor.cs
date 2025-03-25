@@ -169,17 +169,16 @@ public partial class Create
     private void OnAddGemStone(MouseEventArgs obj)
     {
         _model.Stones ??= [];
-
-        _model.Stones.Add(new GemStoneVm());
-
-        //_gemStones.Add($"سنگ شماره {count + 1}");
+        _model.Stones.Add(new GemStoneVm
+        {
+            Code = StringExtensions.GenerateRandomCode(5)
+        });
         StateHasChanged();
     }
 
     private void OnRemoveGemStone(int index)
     {
         _model.Stones?.RemoveAt(index);
-        // _gemStones.RemoveAt(index);
         StateHasChanged();
     }
 }

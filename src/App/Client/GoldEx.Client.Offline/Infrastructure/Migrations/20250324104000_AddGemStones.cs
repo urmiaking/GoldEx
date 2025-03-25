@@ -15,7 +15,7 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                 name: "GemStones",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Code = table.Column<string>(type: "TEXT", nullable: false),
                     ProductId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Type = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Color = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
@@ -25,7 +25,7 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GemStones", x => new { x.ProductId, x.Id });
+                    table.PrimaryKey("PK_GemStones", x => new { x.Code, x.ProductId });
                     table.ForeignKey(
                         name: "FK_GemStones_Products_ProductId",
                         column: x => x.ProductId,
@@ -33,6 +33,11 @@ namespace GoldEx.Client.Offline.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GemStones_ProductId",
+                table: "GemStones",
+                column: "ProductId");
         }
 
         /// <inheritdoc />

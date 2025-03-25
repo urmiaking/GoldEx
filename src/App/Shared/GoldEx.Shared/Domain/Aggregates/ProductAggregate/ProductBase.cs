@@ -67,7 +67,7 @@ public class ProductBase<TCategory, TGemStone> : EntityBase<ProductId>, ISyncabl
     public TCategory ProductCategory { get; private set; }
 
     private readonly List<TGemStone> _stones = [];
-    public IReadOnlyList<TGemStone> GemStones => _stones.ToList();
+    public IReadOnlyList<TGemStone> GemStones => _stones;
 
     public void SetName(string name) => Name = name;
     public void SetBarcode(string barcode) => Barcode = barcode;

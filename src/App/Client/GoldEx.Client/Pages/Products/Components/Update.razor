@@ -117,6 +117,71 @@
                         </MudItem>
                     </MudStack>
                 </MudItem>
+                @if (Model.ProductType is ProductType.Jewelry)
+                {
+                    @if (Model.Stones is not null)
+                    {
+                        @for (var i = 0; i < Model.Stones.Count; i++)
+                        {
+                            var index = i;
+
+                            <MudItem Key="@i" xs="12" Class="d-flex justify-center m-0">
+                                <MudText Typo="Typo.body1">
+                                    سنگ شماره @(index + 1)
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                   OnClick="() => OnRemoveGemStone(index)"
+                                                   Size="Size.Small">
+                                    </MudIconButton>
+                                </MudText>
+                            </MudItem>
+                            <MudItem Key="@($"{i} code")" xs="12" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="Model.Stones[index].Code"
+                                              For="() => Model.Stones[index].Code"
+                                              Label="کد" Margin="Margin.Dense"
+                                              T="string" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} type")" xs="12" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="Model.Stones[index].Type"
+                                              For="() => Model.Stones[index].Type"
+                                              Label="نوع سنگ" Margin="Margin.Dense"
+                                              T="string" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} color")" xs="6" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="Model.Stones[index].Color"
+                                              For="() => Model.Stones[index].Color"
+                                              Label="رنگ" Margin="Margin.Dense"
+                                              T="string" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} cut")" xs="6" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="Model.Stones[index].Cut"
+                                              For="() => Model.Stones[index].Cut"
+                                              Label="برش" Margin="Margin.Dense"
+                                              T="string?" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} carat")" xs="6" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="Model.Stones[index].Carat"
+                                              For="() => Model.Stones[index].Carat"
+                                              Label="قیراط" Margin="Margin.Dense"
+                                              T="double" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem Key="@($"{i} purity")" xs="6" md="2" Class="pt-0">
+                                <MudTextField @bind-Value="Model.Stones[index].Purity"
+                                              For="() => Model.Stones[index].Purity"
+                                              Label="پاکی" Margin="Margin.Dense"
+                                              T="string?" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                        }
+                    }
+
+                    <MudItem xs="12">
+                        <div class="d-flex align-center justify-center">
+                            <MudButton Color="Color.Primary"
+                                       OnClick="OnAddGemStone"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       Variant="Variant.Filled">افزودن سنگ جواهر</MudButton>
+                        </div>
+                    </MudItem>
+                }
             </MudGrid>
         </DialogContent>
         <DialogActions>

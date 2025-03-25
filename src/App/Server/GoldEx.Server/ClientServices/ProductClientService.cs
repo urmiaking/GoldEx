@@ -63,7 +63,9 @@ public class ProductClientService(
 
         if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
         {
-            product.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+            product.SetGemStones(request.GemStones.Select(x => new GemStone(
+                    x.Code,
+                    x.Type,
                     x.Color,
                     x.Cut,
                     x.Carat,
@@ -93,7 +95,9 @@ public class ProductClientService(
 
         if (request.ProductType is ProductType.Jewelry && request.GemStones is not null)
         {
-            product.SetGemStones(request.GemStones.Select(x => new GemStone(x.Type,
+            product.SetGemStones(request.GemStones.Select(x => new GemStone(
+                    x.Code,
+                    x.Type,
                     x.Color,
                     x.Cut,
                     x.Carat,

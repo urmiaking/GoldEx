@@ -1,7 +1,4 @@
-﻿using System.Linq.Dynamic.Core;
-using GoldEx.Sdk.Common.Definitions;
-using GoldEx.Shared.Domain.Aggregates.SettingsAggregate;
-using GoldEx.Shared.Domain.Entities;
+﻿using GoldEx.Shared.Domain.Aggregates.SettingsAggregate;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
