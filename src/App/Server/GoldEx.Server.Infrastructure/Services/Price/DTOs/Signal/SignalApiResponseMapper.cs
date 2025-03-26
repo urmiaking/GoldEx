@@ -38,7 +38,7 @@ public static class SignalApiResponseMapper
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
                 let iconUrl = item.IconUrl
-                where item.Name is "usDollar" or "euro"
+                //where item.Name is "usDollar" or "euro"
                 select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
