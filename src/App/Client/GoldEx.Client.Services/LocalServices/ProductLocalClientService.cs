@@ -38,7 +38,7 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
         return item is null ? null : mapper.Map<GetProductResponse>(item);
     }
 
-    public async Task CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
     {
         var product = new Product(request.Name,
             request.Barcode,
@@ -62,14 +62,17 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
         }
 
         await service.CreateAsync(product, cancellationToken);
+
+        return true;
     }
 
-    public async Task UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateProductRequest request,
+        CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(new ProductId(id), cancellationToken);
 
         if (item is null)
-            return;
+            return false;
         
         item.SetName(request.Name);
         item.SetBarcode(request.Barcode);
@@ -99,20 +102,23 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
             item.SetStatus(ModifyStatus.Updated);
         
         await service.UpdateAsync(item, cancellationToken);
+
+        return true;
     }
 
-    public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false,
+        CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(new ProductId(id), cancellationToken);
 
         if (item is null)
-            return;
+            return false;
 
         // In case the item is created locally and is not synced to server, it will be deleted permanently
         if (item.Status == ModifyStatus.Created)
         {
             await service.DeleteAsync(item, true, cancellationToken);
-            return;
+            return true;
         }
 
         if (deletePermanently)
@@ -123,7 +129,9 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
         {
             item.SetStatus(ModifyStatus.Deleted);
             await service.UpdateAsync(item, cancellationToken);
-        }   
+        }
+
+        return true;
     }
 
     public async Task<List<GetPendingProductResponse>> GetPendingsAsync(DateTime checkpointDate,
