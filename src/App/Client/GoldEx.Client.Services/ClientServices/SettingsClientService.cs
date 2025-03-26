@@ -26,11 +26,14 @@ public class SettingsClientService(
         return await localService.GetAsync(id, cancellationToken);
     }
 
-    public async Task UpdateAsync(Guid id, UpdateSettingsRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateSettingsRequest request,
+        CancellationToken cancellationToken = default)
     {
         await localService.UpdateAsync(id, request, cancellationToken);
             
         await syncService.SynchronizeAsync(cancellationToken);
+
+        return true;
     }
 
     public Task<GetSettingsResponse?> GetUpdateAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
