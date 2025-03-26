@@ -21,6 +21,8 @@ public class ProductSyncService(
     {
         var pendingProducts = await productLocalService.GetPendingsAsync(checkPointDate, cancellationToken);
 
+        var shouldAddCheckpoint = true;
+
         foreach (var product in pendingProducts)
         {
             switch (product.Status)
@@ -48,7 +50,9 @@ public class ProductSyncService(
                         var created = await productHttpService.CreateAsync(request, cancellationToken);
                         if (created)
                             await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
-                        
+                        else
+                            shouldAddCheckpoint = false;
+
                         break;
                     }
                 case ModifyStatus.Updated:
@@ -72,14 +76,18 @@ public class ProductSyncService(
                         var updated = await productHttpService.UpdateAsync(product.Id, request, cancellationToken);
                         if (updated)
                             await productLocalService.SetSyncedAsync(product.Id, cancellationToken);
-                        
+                        else
+                            shouldAddCheckpoint = false;
+
                         break;
                     }
                 case ModifyStatus.Deleted:
                     var deleted = await productHttpService.DeleteAsync(product.Id, false, cancellationToken);
                     if (deleted)
                         await productLocalService.DeleteAsync(product.Id, true, cancellationToken);
-                    
+                    else
+                        shouldAddCheckpoint = false;
+
                     break;
                 case ModifyStatus.Synced:
                     break;
@@ -88,7 +96,8 @@ public class ProductSyncService(
             }
         }
 
-        await checkpointService.AddCheckPointAsync(nameof(Product), cancellationToken);
+        if (shouldAddCheckpoint)
+            await checkpointService.AddCheckPointAsync(nameof(Product), cancellationToken);
     }
 
     private async Task SyncFromServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)

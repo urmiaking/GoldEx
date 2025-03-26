@@ -26,14 +26,17 @@ public class ProductCategoryClientService(IMapper mapper, IProductCategoryServic
         return item is null ? null : mapper.Map<GetCategoryResponse>(item);
     }
 
-    public async Task CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
     {
         var category = new ProductCategory(new ProductCategoryId(request.Id), request.Title);
 
         await service.CreateAsync(category, cancellationToken);
+
+        return true;
     }
 
-    public async Task UpdateAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request,
+        CancellationToken cancellationToken = default)
     {
         var category = await service.GetAsync(new ProductCategoryId(id), cancellationToken) ??
                        throw new NotFoundException();
@@ -41,13 +44,18 @@ public class ProductCategoryClientService(IMapper mapper, IProductCategoryServic
         category.SetTitle(request.Title);
 
         await service.UpdateAsync(category, cancellationToken);
+
+        return true;
     }
 
-    public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false,
+        CancellationToken cancellationToken = default)
     {
         var category = await service.GetAsync(new ProductCategoryId(id), cancellationToken) ?? throw new NotFoundException();
 
         await service.DeleteAsync(category, deletePermanently, cancellationToken);
+
+        return true;
     }
 
     public async Task<List<GetPendingCategoryResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
