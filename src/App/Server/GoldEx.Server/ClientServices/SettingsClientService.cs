@@ -26,7 +26,8 @@ public class SettingsClientService(ISettingsService<Settings> service, IMapper m
         return mapper.Map<GetSettingsResponse>(settings);
     }
 
-    public async Task UpdateAsync(Guid id, UpdateSettingsRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateSettingsRequest request,
+        CancellationToken cancellationToken = default)
     {
         var settings = await service.GetAsync(new SettingsId(id), cancellationToken) ?? throw new NotFoundException();
 
@@ -38,6 +39,8 @@ public class SettingsClientService(ISettingsService<Settings> service, IMapper m
         settings.SetJewelryProfit(request.JewelryProfit);
 
         await service.UpdateAsync(settings, cancellationToken);
+
+        return true;
     }
 
     public async Task<GetSettingsResponse?> GetUpdateAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)

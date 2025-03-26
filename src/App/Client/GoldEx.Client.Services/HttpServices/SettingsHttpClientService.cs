@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using GoldEx.Client.Abstractions.HttpServices;
+using GoldEx.Sdk.Client.Extensions;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Routings;
@@ -34,26 +35,49 @@ public class SettingsHttpClientService(HttpClient client, JsonSerializerOptions 
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task UpdateAsync(Guid id, UpdateSettingsRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateSettingsRequest request,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.PutAsJsonAsync(ApiUrls.Settings.Update(id), request, jsonOptions, cancellationToken);
+        try
+        {
+            using var response = await client.PutAsJsonAsync(ApiUrls.Settings.Update(id), request, jsonOptions, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+            if (!response.IsSuccessStatusCode)
+                throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            if (e is HttpRequestException httpRequestException && httpRequestException.IsConnectionRefused())
+                return false; // server is not available
+
+            throw;
+        }
     }
 
     public async Task<GetSettingsResponse?> GetUpdateAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Settings.GetUpdate(checkpointDate), cancellationToken);
+        try
+        {
+            using var response = await client.GetAsync(ApiUrls.Settings.GetUpdate(checkpointDate), cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+            if (!response.IsSuccessStatusCode)
+                throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        if (response.StatusCode == HttpStatusCode.NoContent)
-            return null; // there is no update
+            if (response.StatusCode == HttpStatusCode.NoContent)
+                return null; // there is no update
 
-        var result = await response.Content.ReadFromJsonAsync<GetSettingsResponse>(jsonOptions, cancellationToken);
+            var result = await response.Content.ReadFromJsonAsync<GetSettingsResponse>(jsonOptions, cancellationToken);
 
-        return result ?? throw new UnexpectedHttpResponseException();
+            return result ?? throw new UnexpectedHttpResponseException();
+        }
+        catch (Exception e)
+        {
+            if (e is HttpRequestException httpRequestException && httpRequestException.IsConnectionRefused())
+                return null; // server is not available
+
+            throw;
+        }
     }
 }

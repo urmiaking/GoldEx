@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 using GoldEx.Client.Abstractions.HttpServices;
+using GoldEx.Sdk.Client.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Prices;
@@ -25,14 +26,24 @@ public class PriceHttpClientService(HttpClient client, JsonSerializerOptions jso
 
     public async Task<List<GetPriceResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Price.GetPendings(checkpointDate), cancellationToken);
+        try
+        {
+            using var response = await client.GetAsync(ApiUrls.Price.GetPendings(checkpointDate), cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+            if (!response.IsSuccessStatusCode)
+                throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        var result = await response.Content.ReadFromJsonAsync<List<GetPriceResponse>>(jsonOptions, cancellationToken);
+            var result = await response.Content.ReadFromJsonAsync<List<GetPriceResponse>>(jsonOptions, cancellationToken);
 
-        return result ?? throw new UnexpectedHttpResponseException();
+            return result ?? throw new UnexpectedHttpResponseException();
+        }
+        catch (Exception e)
+        {
+            if (e is HttpRequestException httpRequestException && httpRequestException.IsConnectionRefused())
+                return []; // server is not available
+
+            throw;
+        }
     }
 
     public Task<GetPriceResponse?> GetGram18PriceAsync(CancellationToken cancellationToken = default)

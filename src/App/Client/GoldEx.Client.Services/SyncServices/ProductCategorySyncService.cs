@@ -36,6 +36,8 @@ public class ProductCategorySyncService(
     {
         var pendingCategories = await localService.GetPendingsAsync(checkPointDate, cancellationToken);
 
+        var shouldAddCheckpoint = true;
+
         foreach (var pendingCategory in pendingCategories)
         {
             switch (pendingCategory.Status)
@@ -44,21 +46,34 @@ public class ProductCategorySyncService(
                     {
                         var request = new CreateCategoryRequest(pendingCategory.Id, pendingCategory.Title);
 
-                        await httpService.CreateAsync(request, cancellationToken);
-                        await localService.SetSyncedAsync(pendingCategory.Id, cancellationToken);
+                        var created = await httpService.CreateAsync(request, cancellationToken);
+
+                        if (created)
+                            await localService.SetSyncedAsync(pendingCategory.Id, cancellationToken);
+                        else
+                            shouldAddCheckpoint = false;
+
                         break;
                     }
                 case ModifyStatus.Updated:
                     {
                         var request = new UpdateCategoryRequest(pendingCategory.Title);
 
-                        await httpService.UpdateAsync(pendingCategory.Id, request, cancellationToken);
-                        await localService.SetSyncedAsync(pendingCategory.Id, cancellationToken);
+                        var updated = await httpService.UpdateAsync(pendingCategory.Id, request, cancellationToken);
+                        if (updated)
+                            await localService.SetSyncedAsync(pendingCategory.Id, cancellationToken);
+                        else
+                            shouldAddCheckpoint = false;
+
                         break;
                     }
                 case ModifyStatus.Deleted:
-                    await httpService.DeleteAsync(pendingCategory.Id, false, cancellationToken);
-                    await localService.DeleteAsync(pendingCategory.Id, true, cancellationToken);
+                    var deleted = await httpService.DeleteAsync(pendingCategory.Id, false, cancellationToken);
+                    if (deleted)
+                        await localService.DeleteAsync(pendingCategory.Id, true, cancellationToken);
+                    else
+                        shouldAddCheckpoint = false;
+
                     break;
                 case ModifyStatus.Synced:
                     break;
@@ -67,7 +82,8 @@ public class ProductCategorySyncService(
             }
         }
 
-        await checkpointService.AddCheckPointAsync(nameof(ProductCategory), cancellationToken);
+        if (shouldAddCheckpoint)
+            await checkpointService.AddCheckPointAsync(nameof(ProductCategory), cancellationToken);
     }
 
     private async Task SyncFromServerAsync(DateTime checkPointDate, CancellationToken cancellationToken = default)

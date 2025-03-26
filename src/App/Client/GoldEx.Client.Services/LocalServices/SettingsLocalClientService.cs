@@ -25,12 +25,13 @@ public class SettingsLocalClientService(ISettingsService<Settings> service, IMap
         return settings is null ? null : mapper.Map<GetSettingsResponse>(settings);
     }
 
-    public async Task UpdateAsync(Guid id, UpdateSettingsRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateSettingsRequest request,
+        CancellationToken cancellationToken = default)
     {
         var settings = await service.GetAsync(new SettingsId(id), cancellationToken);
 
         if (settings is null)
-            return;
+            return false;
         
         settings.SetInstitutionName(request.InstitutionName);
         settings.SetAddress(request.Address);
@@ -40,6 +41,8 @@ public class SettingsLocalClientService(ISettingsService<Settings> service, IMap
         settings.SetJewelryProfit(request.JewelryProfit);
 
         await service.UpdateAsync(settings, cancellationToken);
+
+        return true;
     }
 
     public async Task<GetSettingsResponse?> GetUpdateAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)

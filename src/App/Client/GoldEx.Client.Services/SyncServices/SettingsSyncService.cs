@@ -28,8 +28,6 @@ public class SettingsSyncService(
 
             await SyncFromServerAsync(lastCheckDate, cancellationToken);
             await SyncToServerAsync(lastCheckDate, cancellationToken);
-
-            await checkpointService.AddCheckPointAsync(nameof(Settings), cancellationToken);
         }
     }
 
@@ -71,6 +69,8 @@ public class SettingsSyncService(
     {
         var localUpdate = await localService.GetUpdateAsync(lastCheckDate, cancellationToken);
 
+        var shouldAddCheckpoint = false;
+
         if (localUpdate is not null)
         {
             var updateRequest = new UpdateSettingsRequest(localUpdate.InstitutionName,
@@ -80,7 +80,13 @@ public class SettingsSyncService(
                 localUpdate.GoldProfit,
                 localUpdate.JewelryProfit);
 
-            await httpService.UpdateAsync(localUpdate.Id, updateRequest, cancellationToken);
+            var updated = await httpService.UpdateAsync(localUpdate.Id, updateRequest, cancellationToken);
+
+            if (updated)
+                shouldAddCheckpoint = true;
         }
+
+        if (shouldAddCheckpoint)
+            await checkpointService.AddCheckPointAsync(nameof(Settings), cancellationToken);
     }
 }
