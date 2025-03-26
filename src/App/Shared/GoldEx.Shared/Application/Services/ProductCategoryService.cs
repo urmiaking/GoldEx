@@ -1,7 +1,10 @@
-﻿using GoldEx.Shared.Application.Services.Abstractions;
+﻿using FluentValidation;
+using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Application.Validators.Categories;
 using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
 using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
+using GoldEx.Shared.Domain.Entities;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Services;
@@ -17,19 +20,24 @@ public class ProductCategoryService<TCategory, TProduct, TGemStone>(
 {
     public async Task CreateAsync(TCategory category, CancellationToken cancellationToken = default)
     {
-        await createValidator.ValidateAsync(category, cancellationToken);
+        await createValidator.ValidateAndThrowAsync(category, cancellationToken);
         await repository.CreateAsync(category, cancellationToken);
     }
 
     public async Task UpdateAsync(TCategory category, CancellationToken cancellationToken = default)
     {
-        await updateValidator.ValidateAsync(category, cancellationToken);
+        if (category is ITrackableEntity { Status: ModifyStatus.Deleted } or ISoftDeleteEntity { IsDeleted: true })
+        {
+            await deleteValidator.ValidateAndThrowAsync(category, cancellationToken);
+        }
+
+        await updateValidator.ValidateAndThrowAsync(category, cancellationToken);
         await repository.UpdateAsync(category, cancellationToken);
     }
 
     public async Task DeleteAsync(TCategory category, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
-        await deleteValidator.ValidateAsync(category, cancellationToken);
+        await deleteValidator.ValidateAndThrowAsync(category, cancellationToken);
         await repository.DeleteAsync(category, deletePermanently, cancellationToken);
     }
 

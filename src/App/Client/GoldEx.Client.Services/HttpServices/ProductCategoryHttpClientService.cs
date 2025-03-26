@@ -36,28 +36,66 @@ public class ProductCategoryHttpClientService(HttpClient client, JsonSerializerO
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
     {
-        using var response = await client.PostAsJsonAsync(ApiUrls.ProductCategories.Create(), request, jsonOptions, cancellationToken);
+        try
+        {
+            using var response = await client.PostAsJsonAsync(ApiUrls.ProductCategories.Create(), request, jsonOptions, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+            if (!response.IsSuccessStatusCode)
+                throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            if (e is HttpRequestException httpRequestException && httpRequestException.IsConnectionRefused())
+                return false; // server is not available
+
+            throw;
+        }
     }
 
-    public async Task UpdateAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.PutAsJsonAsync(ApiUrls.ProductCategories.Update(id), request, jsonOptions, cancellationToken);
+        try
+        {
+            using var response = await client.PutAsJsonAsync(ApiUrls.ProductCategories.Update(id), request, jsonOptions, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+            if (!response.IsSuccessStatusCode)
+                throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            if (e is HttpRequestException httpRequestException && httpRequestException.IsConnectionRefused())
+                return false; // server is not available
+
+            throw;
+        }
     }
 
-    public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.DeleteAsync(ApiUrls.ProductCategories.Delete(id), cancellationToken);
+        try
+        {
+            using var response = await client.DeleteAsync(ApiUrls.ProductCategories.Delete(id), cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+            if (!response.IsSuccessStatusCode)
+                throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            if (e is HttpRequestException httpRequestException && httpRequestException.IsConnectionRefused())
+                return false; // server is not available
+
+            throw;
+        }
     }
 
     public async Task<List<GetPendingCategoryResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)

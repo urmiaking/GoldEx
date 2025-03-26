@@ -26,25 +26,33 @@ public class ProductCategoryClientService(
         return await localService.GetAsync(id, cancellationToken);
     }
 
-    public async Task CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
     {
         await localService.CreateAsync(request, cancellationToken);
 
         await syncService.SynchronizeAsync(cancellationToken);
+
+        return true;
     }
 
-    public async Task UpdateAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request,
+        CancellationToken cancellationToken = default)
     {
         await localService.UpdateAsync(id, request, cancellationToken);
 
         await syncService.SynchronizeAsync(cancellationToken);
+
+        return true;
     }
 
-    public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false,
+        CancellationToken cancellationToken = default)
     {
         await localService.DeleteAsync(id, false, cancellationToken);
 
         await syncService.SynchronizeAsync(cancellationToken);
+
+        return true;
     }
 
     public Task<List<GetPendingCategoryResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)

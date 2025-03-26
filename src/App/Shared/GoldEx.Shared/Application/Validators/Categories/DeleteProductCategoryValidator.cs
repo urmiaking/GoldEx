@@ -21,5 +21,5 @@ public class DeleteProductCategoryValidator<TCategory, TProduct, TGemStone> : Ab
     }
 
     private async Task<bool> NotUsedByProducts(TCategory category, CancellationToken cancellationToken = default) 
-        => await _productRepository.CheckCategoryUsedAsync(category.Id, cancellationToken);
+        => !await _productRepository.CheckCategoryUsedAsync(category.Id, cancellationToken);
 }
