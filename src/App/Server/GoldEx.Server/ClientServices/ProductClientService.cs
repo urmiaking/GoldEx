@@ -41,7 +41,7 @@ public class ProductClientService(
         return product is null ? null : mapper.Map<GetProductResponse>(product);
     }
 
-    public async Task CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
     {
         var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -74,9 +74,12 @@ public class ProductClientService(
         }
 
         await service.CreateAsync(product, cancellationToken);
+
+        return true;
     }
 
-    public async Task UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(Guid id, UpdateProductRequest request,
+        CancellationToken cancellationToken = default)
     {
         var product = await service.GetAsync(new ProductId(id), cancellationToken);
 
@@ -106,9 +109,12 @@ public class ProductClientService(
         }
 
         await service.UpdateAsync(product, cancellationToken);
+
+        return true;
     }
 
-    public async Task DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false,
+        CancellationToken cancellationToken = default)
     {
         var product = await service.GetAsync(new ProductId(id), cancellationToken);
 
@@ -116,6 +122,8 @@ public class ProductClientService(
             throw new NotFoundException("جنس یافت نشد");
 
         await service.DeleteAsync(product, deletePermanently, cancellationToken);
+
+        return true;
     }
 
     public async Task<List<GetPendingProductResponse>> GetPendingsAsync(DateTime checkpointDate,
