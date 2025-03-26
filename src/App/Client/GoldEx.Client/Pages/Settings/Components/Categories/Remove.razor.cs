@@ -15,14 +15,20 @@ public partial class Remove
     [Parameter]
     public Guid Id { get; set; }
 
+    private bool _processing;
     private IProductCategoryClientService CategoryService => GetRequiredService<IProductCategoryClientService>();
 
     private async Task OnValidSubmit()
     {
         try
         {
+            if (_processing)
+                return;
+
             SetBusy();
             CancelToken();
+
+            _processing = true;
 
             await CategoryService.DeleteAsync(Id);
 
@@ -35,6 +41,7 @@ public partial class Remove
         finally
         {
             SetIdeal();
+            _processing = false;
         }
     }
 
