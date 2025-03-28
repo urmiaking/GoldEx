@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using GoldEx.Client.Offline.Domain.CustomerAggregate;
+using Microsoft.Extensions.DependencyInjection;
 using GoldEx.Client.Offline.Domain.PriceAggregate;
 using GoldEx.Client.Offline.Domain.ProductAggregate;
 using GoldEx.Client.Offline.Domain.ProductCategoryAggregate;
@@ -13,6 +14,7 @@ using GoldEx.Shared.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using GoldEx.Sdk.Common.Interceptors;
 using GoldEx.Shared.Application.Validators.Categories;
+using GoldEx.Shared.Application.Validators.Customers;
 using GoldEx.Shared.Application.Validators.Products;
 using GoldEx.Shared.Application.Validators.Prices;
 using GoldEx.Shared.Application.Validators.Settings;
@@ -43,6 +45,9 @@ public static class DependencyInjection
         services.AddScoped<IProductCategoryRepository<ProductCategory>, ProductCategoryRepository<ProductCategory>>();
         services.AddScoped<IProductCategoryService<ProductCategory>, ProductCategoryService<ProductCategory, Product, GemStone>>();
 
+        services.AddScoped<ICustomerRepository<Customer>, CustomerRepository<Customer>>();
+        services.AddScoped<ICustomerService<Customer>, CustomerService<Customer>>();
+
         services.AddScoped<CreateProductValidator<Product, ProductCategory, GemStone>>();
         services.AddScoped<UpdateProductValidator<Product, ProductCategory, GemStone>>();
         services.AddScoped<DeleteProductValidator<Product, ProductCategory, GemStone>>();
@@ -51,6 +56,9 @@ public static class DependencyInjection
         services.AddScoped<CreateProductCategoryValidator<ProductCategory>>();
         services.AddScoped<UpdateProductCategoryValidator<ProductCategory>>();
         services.AddScoped<DeleteProductCategoryValidator<ProductCategory, Product, GemStone>>();
+        services.AddScoped<CreateCustomerValidator<Customer>>();
+        services.AddScoped<UpdateCustomerValidator<Customer>>();
+        services.AddScoped<DeleteCustomerValidator<Customer>>();
 
         services.DiscoverServices();
         return services;

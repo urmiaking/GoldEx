@@ -63,4 +63,17 @@ public static class ApiRoutes
         public const string Delete = "{id}";
         public const string GetPendingItems = "pending-items/{checkPointDate}";
     }
+
+    public class Customers
+    {
+        public const string Base = "/api/Customers";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string GetByNationalId = "national-id/{nationalId}";
+        public const string GetByPhoneNumber = "phone-number/{phoneNumber}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+        public const string GetPendingItems = "pending-items/{checkPointDate}";
+    }
 }

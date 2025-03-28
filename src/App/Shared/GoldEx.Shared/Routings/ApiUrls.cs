@@ -91,4 +91,26 @@ public class ApiUrls
             BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetPendingItems)
                 .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
+
+    public class Customers
+    {
+        public static string GetList(RequestFilter filter) =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetList).AppendQueryString(filter);
+        public static string Get(Guid id) => 
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Get).FormatRoute(new { id });
+        public static string GetByNationalId(string nationalId) => 
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByNationalId)
+            .AppendQueryString(new { nationalId });
+        public static string GetByPhoneNumber(string phoneNumber) =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByPhoneNumber)
+                .AppendQueryString(new { phoneNumber });
+        public static string Create() => BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Create);
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Update).FormatRoute(new { id });
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Delete).FormatRoute(new { id });
+        public static string GetPendingItems(DateTime checkpointDate) =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetPendingItems)
+                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+    }
 }

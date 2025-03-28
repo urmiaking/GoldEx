@@ -8,8 +8,8 @@
 
 	<ItemGroup>
 		<Folder Include="Application\Validators\Settings\" />
+		<Folder Include="DTOs\Customers\" />
 		<Folder Include="Extensions\" />
-		<Folder Include="Services\" />
 		<Folder Include="Settings\" />
 	</ItemGroup>
 

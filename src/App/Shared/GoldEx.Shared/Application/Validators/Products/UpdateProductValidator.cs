@@ -15,6 +15,6 @@ public class UpdateProductValidator<TProduct, TCategory, TGemStone> : AbstractVa
         Include(new CreateProductValidator<TProduct, TCategory, TGemStone>(repository, categoryRepository));
 
         RuleFor(x => x.Id)
-            .NotEqual(new ProductId(Guid.Empty)).WithMessage("شناسه کالا نمی تواند خالی باشد");
+            .NotEmpty().WithMessage("شناسه کالا نمی تواند خالی باشد");
     }
 }
