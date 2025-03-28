@@ -1,10 +1,11 @@
-﻿using GoldEx.Shared.Domain.Aggregates.CustomerAggregate;
+﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.Domain.Aggregates.CustomerAggregate;
 using GoldEx.Shared.Domain.Entities;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Server.Domain.CustomerAggregate;
+namespace GoldEx.Client.Offline.Domain.CustomerAggregate;
 
-public class Customer : CustomerBase, ISoftDeleteEntity
+public class Customer : CustomerBase, ITrackableEntity
 {
     public Customer(CustomerType customerType,
         string fullName,
@@ -18,7 +19,9 @@ public class Customer : CustomerBase, ISoftDeleteEntity
         phoneNumber,
         address,
         creditLimit,
-        creditLimitUnit) { }
+        creditLimitUnit)
+    {
+    }
 
     public Customer(CustomerId id,
         CustomerType customerType,
@@ -27,8 +30,7 @@ public class Customer : CustomerBase, ISoftDeleteEntity
         string? phoneNumber,
         string? address,
         double? creditLimit,
-        UnitType? creditLimitUnit) : base(
-        customerType,
+        UnitType? creditLimitUnit) : base(customerType,
         fullName,
         nationalId,
         phoneNumber,
@@ -39,8 +41,14 @@ public class Customer : CustomerBase, ISoftDeleteEntity
         Id = id;
     }
 
-    private Customer() { }
+    private Customer()
+    {
 
-    public bool IsDeleted { get; private set; }
-    public void SetDeleted() => IsDeleted = true;
+    }
+
+    public ModifyStatus Status { get; private set; } = ModifyStatus.Created;
+    public void SetStatus(ModifyStatus status)
+    {
+        Status = status;
+    }
 }

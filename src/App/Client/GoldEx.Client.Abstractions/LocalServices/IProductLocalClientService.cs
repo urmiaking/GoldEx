@@ -1,5 +1,4 @@
-﻿using GoldEx.Sdk.Common.Definitions;
-using GoldEx.Shared.DTOs.Products;
+﻿using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Abstractions.LocalServices;

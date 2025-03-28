@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GoldEx.Server.Infrastructure.Configurations;
 
-public class SettingsConfiguration : IEntityTypeConfiguration<Settings>
+internal class SettingsConfiguration : IEntityTypeConfiguration<Settings>
 {
     public void Configure(EntityTypeBuilder<Settings> builder)
     {
