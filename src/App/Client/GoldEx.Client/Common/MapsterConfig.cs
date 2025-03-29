@@ -1,10 +1,12 @@
 ﻿using GoldEx.Client.Offline.Domain.CheckpointAggregate;
+using GoldEx.Client.Offline.Domain.CustomerAggregate;
 using GoldEx.Client.Offline.Domain.PriceAggregate;
 using GoldEx.Client.Offline.Domain.ProductAggregate;
 using GoldEx.Client.Offline.Domain.ProductCategoryAggregate;
 using GoldEx.Client.Offline.Domain.SettingsAggregate;
 using GoldEx.Client.Shared.DTOs;
 using GoldEx.Shared.DTOs.Categories;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
@@ -68,6 +70,16 @@ public class MapsterConfig : IRegister
         #region Settings
 
         config.NewConfig<Settings, GetSettingsResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
+
+        #endregion
+
+        #region Customers
+
+        config.NewConfig<Customer, GetCustomerResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
+
+        config.NewConfig<Customer, GetPendingCustomerResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);
 
         #endregion

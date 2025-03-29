@@ -85,4 +85,10 @@ public static class ClientRoutes
     {
         public const string Base = "/serilog-ui";
     }
+
+    public static class Customers
+    {
+        private const string CustomersPrefix = "/customers";
+        public const string Index = $"{CustomersPrefix}";
+    }
 }

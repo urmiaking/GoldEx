@@ -1,0 +1,18 @@
+﻿@attribute [Route(ClientRoutes.Customers.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+<!-- TODO: Add Policy -->
+
+@inherits GoldExComponentBase
+
+<PageTitle>لیست مشتریان</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <CustomersList />
+
+</MudContainer>

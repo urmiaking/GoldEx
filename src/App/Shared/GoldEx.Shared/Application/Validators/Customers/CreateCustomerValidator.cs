@@ -13,7 +13,7 @@ public class CreateCustomerValidator<TCustomer> : AbstractValidator<TCustomer> w
 
         RuleFor(x => x.NationalId)
             .NotEmpty().WithMessage("وارد کردن شناسه یکتا الزامی است")
-            .MaximumLength(25).WithMessage("حداکثر طول شناسه یکتا 26 کاراکتر می باشد")
+            .MaximumLength(25).WithMessage("حداکثر طول شناسه یکتا 25 کاراکتر می باشد")
             .MustAsync(BeUniqueNationalId).WithMessage("شناسه یکتا نمی تواند تکراری باشد");
 
         RuleFor(x => x.FullName)
