@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.Products.Components;
+namespace GoldEx.Client.Pages.Customers.Components;
 
 public partial class Remove
 {
@@ -10,13 +10,13 @@ public partial class Remove
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter]
-    public string ProductName { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
 
     [Parameter]
     public Guid Id { get; set; }
 
     private bool _processing;
-    private IProductClientService ProductService => GetRequiredService<IProductClientService>();
+    private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
 
     private async Task OnValidSubmit()
     {
@@ -30,7 +30,7 @@ public partial class Remove
 
             _processing = true;
 
-            await ProductService.DeleteAsync(Id, cancellationToken: CancellationTokenSource.Token);
+            await CustomerService.DeleteAsync(Id, cancellationToken: CancellationTokenSource.Token);
 
             MudDialog.Close(DialogResult.Ok(true));
         }

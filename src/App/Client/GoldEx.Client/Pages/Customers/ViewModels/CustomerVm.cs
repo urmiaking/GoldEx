@@ -46,4 +46,15 @@ public class CustomerVm
             model.CreditLimitUnit,
             model.CustomerType);
     }
+
+    public static UpdateCustomerRequest ToUpdateRequest(CustomerVm model)
+    {
+        return new UpdateCustomerRequest(model.FullName,
+            model.NationalId,
+            model.PhoneNumber,
+            model.Address,
+            model.CreditLimit,
+            model.CreditLimitUnit,
+            model.CustomerType);
+    }
 }
