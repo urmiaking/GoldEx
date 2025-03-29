@@ -121,13 +121,25 @@ public class CustomerHttpClientService(HttpClient client, JsonSerializerOptions 
 
     public async Task<List<GetPendingCustomerResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Customers.GetPendingItems(checkpointDate), cancellationToken);
+        try
+        {
+            using var response =
+                await client.GetAsync(ApiUrls.Customers.GetPendingItems(checkpointDate), cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+            if (!response.IsSuccessStatusCode)
+                throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        var result = await response.Content.ReadFromJsonAsync<List<GetPendingCustomerResponse>>(jsonOptions, cancellationToken);
+            var result =
+                await response.Content.ReadFromJsonAsync<List<GetPendingCustomerResponse>>(jsonOptions,
+                    cancellationToken);
 
-        return result ?? throw new UnexpectedHttpResponseException();
+            return result ?? throw new UnexpectedHttpResponseException();
+        }
+        catch (Exception e)
+        {
+            if (e is HttpRequestException httpRequestException && httpRequestException.IsConnectionRefused())
+                return []; // server is not available
+            throw;
+        }
     }
 }
