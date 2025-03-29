@@ -51,7 +51,7 @@ public class PriceRepository<TPrice, TPriceHistory>(IGoldExDbContextFactory fact
     {
         await InitializeDbContextAsync();
 
-        var result = await NonDeletedQuery.FirstOrDefaultAsync(x => x.Title.Contains("دلار"), cancellationToken);
+        var result = await NonDeletedQuery.FirstOrDefaultAsync(x => x.Title.Equals("دلار"), cancellationToken);
 
         return result;
     }
