@@ -8,9 +8,9 @@ using MudBlazor;
 
 namespace GoldEx.Client.Pages.Customers.Components;
 
-public partial class Create
+public partial class Update
 {
-    private readonly CustomerVm _model = CustomerVm.CreateDefaultInstance();
+    [Parameter] public CustomerVm Model { get; set; } = default!;
 
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
@@ -37,9 +37,9 @@ public partial class Create
             CancelToken();
             _processing = true;
 
-            var request = CustomerVm.ToCreateRequest(_model);
+            var request = CustomerVm.ToUpdateRequest(Model);
 
-            await CustomerService.CreateAsync(request, CancellationTokenSource.Token);
+            await CustomerService.UpdateAsync(Model.Id, request, CancellationTokenSource.Token);
 
             MudDialog.Close(DialogResult.Ok(true));
         }
@@ -58,13 +58,13 @@ public partial class Create
 
     private void OnCreditLimitChanged(double? creditLimit)
     {
-        _model.CreditLimit = creditLimit;
-        _creditLimitHelperText = $"{creditLimit:N0} {_model.CreditLimitUnit?.GetDisplayName()}";
+        Model.CreditLimit = creditLimit;
+        _creditLimitHelperText = $"{creditLimit:N0} {Model.CreditLimitUnit?.GetDisplayName()}";
     }
 
     private void OnCreditLimitUnitChanged(UnitType? unitType)
     {
-        _model.CreditLimitUnit = unitType;
-        _creditLimitHelperText = $"{_model.CreditLimit:N0} {unitType?.GetDisplayName()}";
+        Model.CreditLimitUnit = unitType;
+        _creditLimitHelperText = $"{Model.CreditLimit:N0} {unitType?.GetDisplayName()}";
     }
 }

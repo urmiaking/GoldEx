@@ -1,0 +1,101 @@
+﻿@inherits GoldExComponentBase
+
+<MudForm Model="Model" @ref="@_form" Validation="@(_customerValidator.ValidateValue)" ValidationDelay="0">
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12">
+                    <div class="d-flex justify-content-between align-center">
+                        <MudText>نوع مشتری:</MudText>
+                        <MudRadioGroup T="CustomerType" Required="true" For="() => Model.CustomerType" @bind-Value="Model.CustomerType">
+                            <MudRadio Value="@(CustomerType.Individual)">حقیقی</MudRadio>
+                            <MudRadio Value="@(CustomerType.Legal)">حقوقی</MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudTextField @bind-Value="Model.FullName"
+                                  For="@(() => Model.FullName)"
+                                  Label="نام و نام خانوادگی مشتری"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudTextField @bind-Value="Model.NationalId"
+                                  For="@(() => Model.NationalId)"
+                                  Label="کد یکتا"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudTextField @bind-Value="Model.PhoneNumber"
+                                  For="@(() => Model.PhoneNumber)"
+                                  Label="شماره تماس"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3" lg="3">
+                    <MudTextField HelperText="@_creditLimitHelperText"
+                                  Value="Model.CreditLimit"
+                                  ValueChanged="OnCreditLimitChanged"
+                                  T="double?"
+                                  Immediate="true"
+                                  For="@(() => Model.CreditLimit)"
+                                  Label="سقف اعتبار"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3" lg="3">
+                    <MudSelect T="UnitType?"
+                               Value="Model.CreditLimitUnit"
+                               ValueChanged="OnCreditLimitUnitChanged"
+                               Label="واحد"
+                               For="() => Model.CreditLimitUnit"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        <MudSelectItem T="UnitType?" Value="@((UnitType?)null)">-</MudSelectItem>
+                        @foreach (var item in Enum.GetValues<UnitType>())
+                        {
+                            <MudSelectItem Value="@((UnitType?)item)">@item.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Address"
+                                  For="@(() => Model.Address)"
+                                  AutoGrow Lines="3"
+                                  Label="آدرس"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Class="m-3"
+                       Color="Color.Error"
+                       OnClick="Close"
+                       Variant="Variant.Filled">
+                بستن
+            </MudButton>
+            <MudButton Class="m-3"
+                       Color="Color.Primary"
+                       Disabled="@_processing"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>

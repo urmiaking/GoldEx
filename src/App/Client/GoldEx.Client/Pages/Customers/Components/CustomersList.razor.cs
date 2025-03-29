@@ -83,38 +83,38 @@ public partial class CustomersList
 
     private async Task OnRemove(CustomerVm model)
     {
-        //var parameters = new DialogParameters<Remove>
-        //{
-        //    { x => x.Id, model.Id },
-        //    { x => x.ProductName, model.Name }
-        //};
+        var parameters = new DialogParameters<Remove>
+        {
+            { x => x.Id, model.Id },
+            { x => x.CustomerName, model.FullName }
+        };
 
-        //var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Remove>("حذف مشتری", parameters, _dialogOptions);
 
-        //var result = await dialog.Result;
+        var result = await dialog.Result;
 
-        //if (result is { Canceled: false })
-        //{
-        //    AddSuccessToast("جنس با موفقیت حذف شد.");
-        //    await _table.ReloadServerData();
-        //}
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("مشتری با موفقیت حذف شد.");
+            await _table.ReloadServerData();
+        }
     }
 
     private async Task OnEdit(CustomerVm model)
     {
-        //var parameters = new DialogParameters<Update>
-        //{
-        //    { x => x.Model, model }
-        //};
+        var parameters = new DialogParameters<Update>
+        {
+            { x => x.Model, model }
+        };
 
-        //var dialog = await DialogService.ShowAsync<Update>("ویرایش جنس", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Update>("ویرایش اطلاعات مشتری", parameters, _dialogOptions);
 
-        //var result = await dialog.Result;
+        var result = await dialog.Result;
 
-        //if (result is { Canceled: false })
-        //{
-        //    AddSuccessToast("جنس با موفقیت ویرایش شد.");
-        //    await _table.ReloadServerData();
-        //}
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("اطلاعات مشتری با موفقیت ویرایش شد.");
+            await _table.ReloadServerData();
+        }
     }
 }
