@@ -91,4 +91,11 @@ public static class ClientRoutes
         private const string CustomersPrefix = "/customers";
         public const string Index = $"{CustomersPrefix}";
     }
+
+    public static class Transactions
+    {
+        private const string TransactionsPrefix = "/transactions";
+        public const string Index = $"{TransactionsPrefix}";
+        public const string Create = $"{TransactionsPrefix}/create";
+    }
 }

@@ -23,60 +23,82 @@
         {
             PaletteLight = new PaletteLight
             {
-                Black = "#110e2d",
-                AppbarText = "#424242",
-                AppbarBackground = "rgba(255,255,255,0.8)",
-                DrawerBackground = "#ffffff",
-                GrayLight = "#e8e8e8",
-                GrayLighter = "#f9f9f9",
+            // Core colors
+                Black = "#1C2526", // Deep black for contrast
+                AppbarText = "#1C2526", // Deep black for appbar text
+                AppbarBackground = "#FDF5E6", // Soft creamy gold for appbar
+                DrawerBackground = "#FAF0E6", // Linen (off-white gold) for drawer
+                GrayLight = "#D3D3D3", // Light gray for subtle elements
+                GrayLighter = "#F5F5F5", // Very light gray for backgrounds
 
-                // Option 1: Using the predefined Material Color Name
-                Primary = Colors.Blue.Default, // Blue (you can also use Colors.Blue.Normal)
-                Secondary = Colors.Blue.Accent1, // Blue accent (optional)
+            // Primary and Secondary colors
+                Primary = "#DAA520", // Bright gold for primary elements (buttons, links)
+                Secondary = "#DAA520", // Mid gold for accents
 
-                // Option 2: If you want more control, use hex codes directly:
-                // Primary = "#FFC107",  // Amber
-                // Secondary = "#FF9800", // Amber accent (optional)
+            // Background and surface
+                Background = "#FAF0E6", // Linen (off-white gold) as the main background
+                Surface = "#FDF5E6", // Soft creamy gold for surfaces
 
-                // If you want to use amber for specific components (e.g., buttons):
-                // Warning = Colors.Amber.Darken2,  // Example: Amber for warnings
-                // Error = Colors.Red.Accent4, // Example: Red for errors (if needed)
-                // Info = Colors.Blue.Lighten1, // Example: Blue for info (if needed)
-                // Success = Colors.Green.Normal, // Example: Green for success (if needed)
+            // Text colors
+                TextPrimary = "#1C2526", // Deep black for primary text (used for general text, may not affect buttons)
+                TextSecondary = "#B8860B", // Deep gold for secondary text
+                TextDisabled = "#B8860B80", // Deep gold with opacity for disabled text
 
+            // Action colors
+                ActionDefault = "#DAA520", // Mid gold for default actions
+                ActionDisabled = "#DAA52080", // Mid gold with opacity for disabled actions
+                ActionDisabledBackground = "#FDF5E680", // Soft creamy gold with opacity for disabled backgrounds
+
+            // Other semantic colors
+                Info = "#4a86ff", // Keep as is (blue)
+                Success = "#3dcb6c", // Keep as is (green)
+                Warning = "#FFD700", // Bright gold for warnings
+                Error = "#ff3f5f", // Keep as is (red)
+
+            // Lines and dividers
+                //LinesDefault = "#B8860B", // Deep gold for lines
+                //TableLines = "#B8860B", // Deep gold for table lines
+                Divider = "#B8860B", // Deep gold for dividers
             },
             PaletteDark = new PaletteDark
             {
-                Primary = Colors.Blue.Default, // Blue
-                Secondary = Colors.Blue.Accent2, // Blue accent (optional)
-                Surface = "#1e1e2d",
-                Background = "#1a1a27",
-                BackgroundGray = "#151521",
-                AppbarText = "#92929f",
-                AppbarBackground = "rgba(26,26,39,0.8)",
-                DrawerBackground = "#1a1a27",
-                ActionDefault = "#74718e",
-                ActionDisabled = "#9999994d",
-                ActionDisabledBackground = "#605f6d4d",
-                TextPrimary = "#b2b0bf",
-                TextSecondary = "#92929f",
-                TextDisabled = "#ffffff33",
-                DrawerIcon = "#92929f",
-                DrawerText = "#92929f",
-                GrayLight = "#2a2833",
-                GrayLighter = "#1e1e2d",
-                Info = "#4a86ff",
-                Success = "#3dcb6c",
-                Warning = "#ffb545",
-                Error = "#ff3f5f",
-                LinesDefault = "#33323e",
-                TableLines = "#33323e",
-                Divider = "#292838",
-                OverlayLight = "#1e1e2d80",
+            // Core colors
+                Primary = "#DAA520", // Mid gold for primary elements (darker for better contrast with white text)
+                Secondary = "#E6B800", // Metallic gold for accents
+                Surface = "#1E1E1E", // Dark gray for surfaces (replacing dark brown #3F2A1D)
+                Background = "#121212", // Near-black for the main background (replacing #1C2526)
+                BackgroundGray = "#2A2A2A", // Medium dark gray for contrast (replacing #2A2F30)
+                AppbarText = "#FDF5E6", // Soft creamy gold for appbar text
+                AppbarBackground = "#1E1E1E", // Dark gray for appbar (replacing dark brown #3F2A1D)
+                DrawerBackground = "#121212", // Near-black for drawer (replacing #1C2526)
+                ActionDefault = "#DAA520", // Mid gold for default actions
+                ActionDisabled = "#DAA52080", // Mid gold with opacity for disabled actions
+                ActionDisabledBackground = "#B8860B80", // Deep gold with opacity for disabled backgrounds
+
+            // Text colors
+                TextPrimary = "#FDF5E6", // Soft creamy gold for primary text
+                TextSecondary = "#E6B800", // Metallic gold for secondary text
+                TextDisabled = "#E6B80080", // Metallic gold with opacity for disabled text
+
+            // Drawer and icons
+                DrawerIcon = "#FDF5E6", // Soft creamy gold for drawer icons
+                DrawerText = "#FDF5E6", // Soft creamy gold for drawer text
+
+            // Other colors
+                GrayLight = "#4A4F50", // Darker gray for dark mode
+                GrayLighter = "#2A2A2A", // Medium dark gray for consistency
+                Info = "#4a86ff", // Keep as is (blue)
+                Success = "#3dcb6c", // Keep as is (green)
+                Warning = "#E6B800", // Metallic gold for warnings
+                Error = "#ff3f5f", // Keep as is (red)
+                //LinesDefault = "#B8860B", // Deep gold for lines
+                //TableLines = "#B8860B", // Deep gold for table lines
+                Divider = "#B8860B", // Deep gold for dividers
+                OverlayLight = "#12121280", // Near-black with opacity for overlays (replacing #1C252680)
             },
             LayoutProperties = new LayoutProperties
             {
-                //DefaultBorderRadius = "50"
+            //DefaultBorderRadius = "50" // Uncomment if you want rounded corners
             },
             Typography = new Typography
             {
