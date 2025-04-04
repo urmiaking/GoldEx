@@ -1,5 +1,4 @@
 ﻿using GoldEx.Shared.Domain.Aggregates.CustomerAggregate;
-using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
