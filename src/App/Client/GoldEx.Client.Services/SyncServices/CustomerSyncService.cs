@@ -63,7 +63,8 @@ public class CustomerSyncService(
                     }
                 case ModifyStatus.Updated:
                     {
-                        var request = new UpdateCustomerRequest(customer.FullName,
+                        var request = new UpdateCustomerRequest(customer.Id,
+                            customer.FullName,
                             customer.NationalId,
                             customer.PhoneNumber,
                             customer.Address,
@@ -130,7 +131,8 @@ public class CustomerSyncService(
                 // Incoming customer is available on client so update it
                 else
                 {
-                    var updateRequest = new UpdateCustomerRequest(incomingCustomer.FullName,
+                    var updateRequest = new UpdateCustomerRequest(incomingCustomer.Id,
+                        incomingCustomer.FullName,
                         incomingCustomer.NationalId,
                         incomingCustomer.PhoneNumber,
                         incomingCustomer.Address,

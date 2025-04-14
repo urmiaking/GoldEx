@@ -40,7 +40,8 @@ public class CustomerLocalClientService(IMapper mapper, ICustomerService<Custome
 
     public async Task<bool> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
     {
-        var customer = new Customer(request.CustomerType,
+        var customer = new Customer(new CustomerId(request.Id),
+            request.CustomerType,
             request.FullName,
             request.NationalId,
             request.PhoneNumber,
@@ -124,7 +125,7 @@ public class CustomerLocalClientService(IMapper mapper, ICustomerService<Custome
             request.CreditLimit,
             request.CreditLimitUnit);
 
-        customer.SetStatus(ModifyStatus.Created);
+        customer.SetStatus(ModifyStatus.Synced);
 
         await service.CreateAsync(customer, cancellationToken);
     }

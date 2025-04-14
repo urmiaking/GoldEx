@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Transactions.ViewModels;
@@ -99,5 +100,58 @@ public class CreateTransactionVm
         CustomerCreditLimitUnit = customer.CreditLimitUnit;
         CustomerCreditRemaining = customer.CreditLimit; // TODO: need to be calculated based on transactions
         CustomerCreditRemainingUnit = customer.CreditLimitUnit; // TODO: need to be calculated based on transactions
+    }
+
+    public static CreateTransactionRequest ToCreateTransactionRequest(CreateTransactionVm model)
+    {
+        if (model.CustomerId is null)
+            throw new ArgumentNullException(nameof(model.CustomerId));
+
+        return new CreateTransactionRequest(
+            Guid.NewGuid(),
+            model.TransactionNumber,
+            model.Description,
+            DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
+            model.Credit,
+            model.CreditUnit,
+            model.CreditRate,
+            model.Debit,
+            model.DebitUnit,
+            model.DebitRate,
+            model.CustomerId.Value
+        );
+    }
+
+    public static CreateCustomerRequest ToCreateCustomerRequest(CreateTransactionVm model)
+    {
+        model.CustomerId = Guid.NewGuid();
+
+        return new CreateCustomerRequest(
+            model.CustomerId.Value, 
+            model.CustomerFullName,
+            model.CustomerNationalId,
+            model.CustomerPhoneNumber,
+            model.CustomerAddress,
+            model.CustomerCreditLimit,
+            model.CustomerCreditLimitUnit,
+            model.CustomerType
+        );
+    }
+
+    public static UpdateCustomerRequest ToUpdateCustomerRequest(CreateTransactionVm model)
+    {
+        if (model.CustomerId is null)
+            throw new ArgumentNullException(nameof(model.CustomerId));
+
+        return new UpdateCustomerRequest(
+            model.CustomerId.Value,
+            model.CustomerFullName,
+            model.CustomerNationalId,
+            model.CustomerPhoneNumber,
+            model.CustomerAddress,
+            model.CustomerCreditLimit,
+            model.CustomerCreditLimitUnit,
+            model.CustomerType
+        );
     }
 }

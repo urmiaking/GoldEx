@@ -49,7 +49,8 @@ public class CustomerVm
 
     public static UpdateCustomerRequest ToUpdateRequest(CustomerVm model)
     {
-        return new UpdateCustomerRequest(model.FullName,
+        return new UpdateCustomerRequest(model.Id,
+            model.FullName,
             model.NationalId,
             model.PhoneNumber,
             model.Address,

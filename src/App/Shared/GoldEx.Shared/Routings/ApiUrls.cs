@@ -96,9 +96,9 @@ public class ApiUrls
     {
         public static string GetList(RequestFilter filter) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetList).AppendQueryString(filter);
-        public static string Get(Guid id) => 
+        public static string Get(Guid id) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Get).FormatRoute(new { id });
-        public static string GetByNationalId(string nationalId) => 
+        public static string GetByNationalId(string nationalId) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByNationalId)
             .AppendQueryString(new { nationalId });
         public static string GetByPhoneNumber(string phoneNumber) =>
@@ -112,5 +112,34 @@ public class ApiUrls
         public static string GetPendingItems(DateTime checkpointDate) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetPendingItems)
                 .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+    }
+
+    public class Transactions
+    {
+        public static string GetList(RequestFilter filter) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter);
+
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });
+
+        public static string GetByNumber(int number) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetByNumber)
+                .AppendQueryString(new { number });
+
+        public static string Create() =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Update).FormatRoute(new { id });
+
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Delete).FormatRoute(new { id });
+
+        public static string GetPendingItems(DateTime checkpointDate) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetPendingItems)
+                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+
+        public static string GetLatestTransactionNumber() =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLatestTransactionNumber);
     }
 }

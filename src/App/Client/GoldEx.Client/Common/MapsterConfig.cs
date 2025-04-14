@@ -4,12 +4,14 @@ using GoldEx.Client.Offline.Domain.PriceAggregate;
 using GoldEx.Client.Offline.Domain.ProductAggregate;
 using GoldEx.Client.Offline.Domain.ProductCategoryAggregate;
 using GoldEx.Client.Offline.Domain.SettingsAggregate;
+using GoldEx.Client.Offline.Domain.TransactionAggregate;
 using GoldEx.Client.Shared.DTOs;
 using GoldEx.Shared.DTOs.Categories;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Shared.DTOs.Transactions;
 using Mapster;
 
 namespace GoldEx.Client.Common;
@@ -81,6 +83,17 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<Customer, GetPendingCustomerResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);
+
+        #endregion
+
+        #region Transactions
+
+        config.NewConfig<Transaction, GetTransactionResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
+
+        config.NewConfig<Transaction, GetPendingTransactionResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CustomerId, src => src.CustomerId.Value);
 
         #endregion
     }
