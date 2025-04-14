@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Shared.Infrastructure.Repositories;
 
-public class CustomerRepository<TCustomer>(IGoldExDbContextFactory contextFactory) 
+public class CustomerRepository<TCustomer>(IGoldExDbContextFactory contextFactory)  
     : RepositoryBase<TCustomer>(contextFactory), 
         ICustomerRepository<TCustomer> where TCustomer : CustomerBase
 {
@@ -78,20 +78,24 @@ public class CustomerRepository<TCustomer>(IGoldExDbContextFactory contextFactor
         // ClientSide pending items
         if (typeof(TCustomer).IsAssignableTo(typeof(ITrackableEntity)))
         {
-            return await AllQuery
+            var result = await AllQuery.SetTracking(false)
                 .Where($"{nameof(ITrackableEntity.Status)}<>{(int)ModifyStatus.Synced}")
                 .Where(x => x.LastModifiedDate >= checkpointDate)
                 .OrderBy(x => x.LastModifiedDate)
                 .ToListAsync(cancellationToken);
+
+            return result;
         }
 
         // Serverside pending items
         if (typeof(TCustomer).IsAssignableTo(typeof(ISoftDeleteEntity)))
         {
-            return await AllQuery
+            var result = await AllQuery.SetTracking(false)
                 .Where(x => x.LastModifiedDate >= checkpointDate)
                 .OrderBy(x => x.LastModifiedDate)
                 .ToListAsync(cancellationToken);
+
+            return result;
         }
 
         return [];

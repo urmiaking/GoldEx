@@ -4,6 +4,7 @@ using GoldEx.Client.Offline.Domain.PriceAggregate;
 using GoldEx.Client.Offline.Domain.ProductAggregate;
 using GoldEx.Client.Offline.Domain.ProductCategoryAggregate;
 using GoldEx.Client.Offline.Domain.SettingsAggregate;
+using GoldEx.Client.Offline.Domain.TransactionAggregate;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared.Application.Services;
 using GoldEx.Shared.Application.Services.Abstractions;
@@ -18,6 +19,7 @@ using GoldEx.Shared.Application.Validators.Customers;
 using GoldEx.Shared.Application.Validators.Products;
 using GoldEx.Shared.Application.Validators.Prices;
 using GoldEx.Shared.Application.Validators.Settings;
+using GoldEx.Shared.Application.Validators.Transactions;
 
 namespace GoldEx.Client.Offline;
 
@@ -48,6 +50,9 @@ public static class DependencyInjection
         services.AddScoped<ICustomerRepository<Customer>, CustomerRepository<Customer>>();
         services.AddScoped<ICustomerService<Customer>, CustomerService<Customer>>();
 
+        services.AddScoped<ITransactionRepository<Transaction, Customer>, TransactionRepository<Transaction, Customer>>();
+        services.AddScoped<ITransactionService<Transaction, Customer>, TransactionService<Transaction, Customer>>();
+
         services.AddScoped<CreateProductValidator<Product, ProductCategory, GemStone>>();
         services.AddScoped<UpdateProductValidator<Product, ProductCategory, GemStone>>();
         services.AddScoped<DeleteProductValidator<Product, ProductCategory, GemStone>>();
@@ -59,6 +64,9 @@ public static class DependencyInjection
         services.AddScoped<CreateCustomerValidator<Customer>>();
         services.AddScoped<UpdateCustomerValidator<Customer>>();
         services.AddScoped<DeleteCustomerValidator<Customer>>();
+        services.AddScoped<CreateTransactionValidator<Transaction, Customer>>();
+        services.AddScoped<UpdateTransactionValidator<Transaction, Customer>>();
+        services.AddScoped<DeleteTransactionValidator<Transaction, Customer>>();
 
         services.DiscoverServices();
         return services;

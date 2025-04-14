@@ -1,4 +1,4 @@
-﻿    using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.BackgroundServices;
 using GoldEx.Server.Application.Factories;
@@ -9,6 +9,7 @@ using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingsAggregate;
+using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Application.Services;
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Application.Validators.Categories;
@@ -16,6 +17,7 @@ using GoldEx.Shared.Application.Validators.Customers;
 using GoldEx.Shared.Application.Validators.Prices;
 using GoldEx.Shared.Application.Validators.Products;
 using GoldEx.Shared.Application.Validators.Settings;
+using GoldEx.Shared.Application.Validators.Transactions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IPriceService<Price, PriceHistory>, PriceService<Price, PriceHistory>>();
         services.AddScoped<ISettingsService<Settings>, SettingsService<Settings>>();
         services.AddScoped<ICustomerService<Customer>, CustomerService<Customer>>();
+        services.AddScoped<ITransactionService<Transaction, Customer>, TransactionService<Transaction, Customer>>();
 
         services.AddScoped<CreateServerProductValidator>();
         services.AddScoped<UpdateServerProductValidator>();
@@ -50,6 +53,10 @@ public static class DependencyInjection
         services.AddScoped<CreateCustomerValidator<Customer>>();
         services.AddScoped<UpdateCustomerValidator<Customer>>();
         services.AddScoped<DeleteCustomerValidator<Customer>>();
+
+        services.AddScoped<CreateTransactionValidator<Transaction, Customer>>();
+        services.AddScoped<UpdateTransactionValidator<Transaction, Customer>>();
+        services.AddScoped<DeleteTransactionValidator<Transaction, Customer>>();
 
         services.DiscoverServices();
         return services;

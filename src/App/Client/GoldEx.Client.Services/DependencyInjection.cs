@@ -16,7 +16,6 @@ public static class DependencyInjection
 
         services.AddScoped<IPriceClientService, PriceHttpClientService>();
         services.AddScoped<IHealthClientService, HealthClientService>();
-        services.AddScoped<IProductClientService, ProductClientService>();
 
         services.DiscoverServices();
 

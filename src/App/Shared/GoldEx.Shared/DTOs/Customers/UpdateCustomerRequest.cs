@@ -2,7 +2,8 @@
 
 namespace GoldEx.Shared.DTOs.Customers;
 
-public record UpdateCustomerRequest(string FullName,
+public record UpdateCustomerRequest(Guid Id,
+    string FullName,
     string NationalId,
     string PhoneNumber,
     string? Address,
