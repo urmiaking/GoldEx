@@ -13,7 +13,8 @@ public partial class TransactionsList
 
     private string? _searchString;
     private MudTable<TransactionVm> _table = new();
-    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large, BackdropClick = false };
+    private readonly DialogOptions _removeDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small, BackdropClick = false };
 
     private async Task<TableData<TransactionVm>> LoadTransactionsAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -70,7 +71,7 @@ public partial class TransactionsList
 
     public async Task OnCreateTransaction()
     {
-        var dialog = await DialogService.ShowAsync<CreateTransaction>("افزودن تراکنش جدید", _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Create>("افزودن تراکنش جدید", _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -89,7 +90,7 @@ public partial class TransactionsList
             { x => x.TransactionNumber, model.TransactionNumber }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف تراکنش", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Remove>("حذف تراکنش", parameters, _removeDialogOptions);
 
         var result = await dialog.Result;
 
@@ -102,12 +103,12 @@ public partial class TransactionsList
 
     private async Task OnEditTransaction(TransactionVm model)
     {
-        var parameters = new DialogParameters<UpdateTransaction>
+        var parameters = new DialogParameters<Update>
         {
             //{ x => x.Model, model }
         };
 
-        var dialog = await DialogService.ShowAsync<UpdateTransaction>("ویرایش تراکنش", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Update>("ویرایش تراکنش", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
