@@ -3,12 +3,12 @@ using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Transactions.Components;
 
-public partial class CreateTransaction
+public partial class Create
 {
     private CreateTransactionVm _model = new();
     private readonly TransactionValidator _transactionValidator = new();
@@ -19,6 +19,9 @@ public partial class CreateTransaction
     private string? _creditRateHelperText;
     private string? _debitHelperText;
     private string? _debitRateHelperText;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
     private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
     private ITransactionClientService TransactionService => GetRequiredService<ITransactionClientService>();
 
@@ -198,7 +201,7 @@ public partial class CreateTransaction
 
             await TransactionService.CreateAsync(transactionRequest, CancellationTokenSource.Token);
 
-            AddSuccessToast("تراکنش با موفقیت ثبت شد");
+            MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception e)
         {
@@ -210,4 +213,6 @@ public partial class CreateTransaction
             _processing = false;
         }
     }
+
+    private void Close() => MudDialog.Cancel();
 }
