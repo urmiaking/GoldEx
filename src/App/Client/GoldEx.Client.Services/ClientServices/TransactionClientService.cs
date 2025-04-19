@@ -22,6 +22,14 @@ public class TransactionClientService(
         return await localService.GetListAsync(filter, cancellationToken);
     }
 
+    public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, Guid customerId, CancellationToken cancellationToken = default)
+    {
+        await customerSyncService.SynchronizeAsync(cancellationToken);
+        await transactionSyncService.SynchronizeAsync(cancellationToken);
+
+        return await localService.GetListAsync(filter, customerId, cancellationToken);
+    } 
+
     public async Task<GetTransactionResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await customerSyncService.SynchronizeAsync(cancellationToken);

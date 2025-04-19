@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
@@ -14,6 +15,7 @@ public partial class CustomersList
     private string? _searchString;
     private MudTable<CustomerVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+    private readonly DialogOptions _viewTransactionDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
 
     private async Task<TableData<CustomerVm>> LoadCustomersAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -111,6 +113,22 @@ public partial class CustomersList
 
         var result = await dialog.Result;
 
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("اطلاعات مشتری با موفقیت ویرایش شد.");
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task OnViewTransaction(CustomerVm customerVm)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(TransactionsList.CustomerId), customerVm.Id },
+            { nameof(TransactionsList.CustomerName), customerVm.FullName }
+        };
+        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
+        var result = await dialog.Result;
         if (result is { Canceled: false })
         {
             AddSuccessToast("اطلاعات مشتری با موفقیت ویرایش شد.");

@@ -6,6 +6,7 @@ namespace GoldEx.Shared.Services;
 public interface ITransactionClientService
 {
     Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default);
+    Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, Guid customerId, CancellationToken cancellationToken = default);
     Task<GetTransactionResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetTransactionResponse?> GetAsync(int number, CancellationToken cancellationToken = default);
     Task<bool> CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default);

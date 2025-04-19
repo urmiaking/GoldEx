@@ -21,9 +21,41 @@ public partial class Create
     private string? _debitRateHelperText;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Guid? CustomerId { get; set; }
 
     private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
     private ITransactionClientService TransactionService => GetRequiredService<ITransactionClientService>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CustomerId.HasValue)
+            await LoadCustomerAsync(CustomerId.Value);
+        
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadCustomerAsync(Guid customerId)
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            var response = await CustomerService.GetAsync(customerId, CancellationTokenSource.Token);
+
+            if (response is not null)
+                _model.SetCustomer(response);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            AddExceptionToast(e);
+        }
+        finally
+        {
+            SetIdeal();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

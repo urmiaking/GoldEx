@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -11,10 +12,19 @@ public partial class TransactionsList
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
 
+    [Parameter] public string? CustomerName { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
+
     private string? _searchString;
     private MudTable<TransactionVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large, BackdropClick = false };
     private readonly DialogOptions _removeDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small, BackdropClick = false };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await _table.ReloadServerData();
+        await base.OnParametersSetAsync();
+    }
 
     private async Task<TableData<TransactionVm>> LoadTransactionsAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -36,7 +46,16 @@ public partial class TransactionsList
                     _ => throw new ArgumentOutOfRangeException()
                 });
 
-            var response = await service.GetListAsync(filter, cancellationToken);
+            PagedList<GetTransactionResponse> response;
+
+            if (CustomerId.HasValue)
+            {
+                response = await service.GetListAsync(filter, CustomerId.Value, cancellationToken);
+            }
+            else
+            {
+                response = await service.GetListAsync(filter, cancellationToken);
+            }
 
             var items = response.Data.Select(TransactionVm.CreateFrom).ToList();
 
@@ -71,7 +90,12 @@ public partial class TransactionsList
 
     public async Task OnCreateTransaction()
     {
-        var dialog = await DialogService.ShowAsync<Create>("افزودن تراکنش جدید", _dialogOptions);
+        var parameters = new DialogParameters<Create>
+        {
+            { x => x.CustomerId, CustomerId }
+        };
+
+        var dialog = await DialogService.ShowAsync<Create>("افزودن تراکنش جدید", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 

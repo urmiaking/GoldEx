@@ -81,6 +81,7 @@ public static class ApiRoutes
     {
         public const string Base = "/api/Transactions";
         public const string GetList = "";
+        public const string GetListByCustomerId = "customer/{customerId}";
         public const string Get = "{id}";
         public const string GetByNumber = "number/{number}";
         public const string Create = "";

@@ -15,7 +15,19 @@ public class TransactionHttpClientService(HttpClient client, JsonSerializerOptio
 {
     public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Transactions.GetList(filter), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetTransactionResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, Guid customerId, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Transactions.GetList(filter, customerId), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

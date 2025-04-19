@@ -43,6 +43,9 @@ public class TransactionService<TTransaction, TCustomer>(ITransactionRepository<
     public Task<PagedList<TTransaction>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
         => repository.GetListAsync(filter, cancellationToken);
 
+    public Task<PagedList<TTransaction>> GetListAsync(RequestFilter filter, Guid customerId, CancellationToken cancellationToken = default)
+        => repository.GetListAsync(filter, customerId, cancellationToken);
+
     public Task<List<TTransaction>> GetPendingItemsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
         => repository.GetPendingItemsAsync(checkpointDate, cancellationToken);
 
