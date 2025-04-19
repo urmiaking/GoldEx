@@ -37,6 +37,7 @@ public class TransactionRepository<TTransaction, TCustomer>(IGoldExDbContextFact
             filter.Skip = 0;
 
         var query = NonDeletedQuery
+            .Include(x => x.Customer)
             .AsQueryable();
 
         // Apply search filter
@@ -50,7 +51,7 @@ public class TransactionRepository<TTransaction, TCustomer>(IGoldExDbContextFact
             else
             {
                 query = query.Where(x =>
-                    x.Customer.FullName.Contains(filter.Search) ||
+                    x.Customer!.FullName.Contains(filter.Search) ||
                     (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(filter.Search)));
             }
         }
@@ -105,6 +106,8 @@ public class TransactionRepository<TTransaction, TCustomer>(IGoldExDbContextFact
 
     public async Task<int> GetLatestTransactionNumberAsync(CancellationToken cancellationToken = default)
     {
+        await InitializeDbContextAsync();
+
         var latestTransaction = await AllQuery
             .OrderByDescending(x => x.Number)
             .FirstOrDefaultAsync(cancellationToken);

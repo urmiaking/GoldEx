@@ -127,7 +127,7 @@ public class TransactionLocalService(ITransactionService<Transaction, Customer> 
 
     public async Task CreateAsSyncedAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
     {
-        var transaction = new Transaction(request.DateTime, request.Number, request.Description, request.Credit,
+        var transaction = new Transaction(new TransactionId(request.Id), request.DateTime, request.Number, request.Description, request.Credit,
             request.CreditUnit, request.CreditRate, request.Debit, request.DebitUnit, request.DebitRate, new CustomerId(request.CustomerId));
 
         transaction.SetStatus(ModifyStatus.Synced);
