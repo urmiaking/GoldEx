@@ -118,6 +118,8 @@ public class ApiUrls
     {
         public static string GetList(RequestFilter filter) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter);
+        public static string GetList(RequestFilter filter, Guid customerId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetListByCustomerId).FormatRoute(new { customerId }).AppendQueryString(filter);
 
         public static string Get(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });

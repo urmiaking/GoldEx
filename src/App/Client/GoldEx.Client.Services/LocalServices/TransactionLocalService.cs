@@ -14,11 +14,18 @@ using MapsterMapper;
 namespace GoldEx.Client.Services.LocalServices;
 
 [ScopedService]
-public class TransactionLocalService(ITransactionService<Transaction, Customer> transactionService, ICustomerService<Customer> customerService, IMapper mapper) : ITransactionLocalClientService
+public class TransactionLocalService(ITransactionService<Transaction, Customer> transactionService, IMapper mapper) : ITransactionLocalClientService
 {
     public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
         var list = await transactionService.GetListAsync(filter, cancellationToken);
+
+        return mapper.Map<PagedList<GetTransactionResponse>>(list);
+    }
+
+    public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, Guid customerId, CancellationToken cancellationToken = default)
+    {
+        var list = await transactionService.GetListAsync(filter, customerId, cancellationToken);
 
         return mapper.Map<PagedList<GetTransactionResponse>>(list);
     }

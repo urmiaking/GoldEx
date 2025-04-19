@@ -24,6 +24,13 @@ public class TransactionClientService(
         return mapper.Map<PagedList<GetTransactionResponse>>(list);
     }
 
+    public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, Guid customerId, CancellationToken cancellationToken = default)
+    {
+        var list = await transactionService.GetListAsync(filter, customerId, cancellationToken);
+
+        return mapper.Map<PagedList<GetTransactionResponse>>(list);
+    }
+
     public async Task<GetTransactionResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await transactionService.GetAsync(new TransactionId(id), cancellationToken) ??
