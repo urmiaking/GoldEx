@@ -68,7 +68,7 @@ public class TransactionClientService(
         return true;
     }
 
-    public async Task<List<GetPendingTransactionResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
+    public Task<List<GetPendingTransactionResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
