@@ -64,7 +64,7 @@ public class ProductBase<TCategory, TGemStone> : EntityBase<ProductId>, ISyncabl
     public WageType? WageType { get; private set; }
     public DateTime LastModifiedDate { get; private set; } = DateTime.UtcNow;
     public ProductCategoryId ProductCategoryId { get; private set; }
-    public TCategory ProductCategory { get; private set; }
+    public TCategory ProductCategory { get; private set; } = null!;
 
     private readonly List<TGemStone> _stones = [];
     public IReadOnlyList<TGemStone> GemStones => _stones;

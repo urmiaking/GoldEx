@@ -40,7 +40,8 @@ public class PriceSyncService(
                         pendingPrice.Change,
                         pendingPrice.LastUpdate,
                         pendingPrice.IconFileBase64,
-                        pendingPrice.Type);
+                        pendingPrice.Type,
+                        pendingPrice.UnitType);
 
                     await localService.CreateAsync(request, cancellationToken);
                 }

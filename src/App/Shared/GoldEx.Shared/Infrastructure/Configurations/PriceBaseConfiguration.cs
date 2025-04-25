@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.Domain.Aggregates.PriceAggregate;
+using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
