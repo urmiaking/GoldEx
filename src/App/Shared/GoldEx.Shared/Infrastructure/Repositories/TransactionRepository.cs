@@ -1,16 +1,18 @@
 ﻿using System.Linq.Dynamic.Core;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.Domain.Aggregates.CustomerAggregate;
 using GoldEx.Shared.Domain.Aggregates.TransactionAggregate;
 using GoldEx.Shared.Domain.Entities;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Infrastructure.Extensions;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Shared.Infrastructure.Repositories;
 
-public class TransactionRepository<TTransaction, TCustomer>(IGoldExDbContextFactory factory)
+public class TransactionRepository<TTransaction, TCustomer>(IGoldExDbContextFactory factory, ICustomerRepository<TCustomer> customerRepository)
     : RepositoryBase<TTransaction>(factory), ITransactionRepository<TTransaction, TCustomer>
     where TTransaction : TransactionBase<TCustomer>
     where TCustomer : CustomerBase
@@ -161,5 +163,45 @@ public class TransactionRepository<TTransaction, TCustomer>(IGoldExDbContextFact
             .FirstOrDefaultAsync(cancellationToken);
 
         return latestTransaction?.Number ?? 0;
+    }
+
+    public async Task<(double value, UnitType unit)> GetCustomerRemainingCreditAsync(CustomerId customerId, CancellationToken cancellationToken = default)
+    {
+        var customer = await customerRepository.GetAsync(customerId, cancellationToken) ??
+                       throw new NotFoundException();
+
+        if (!customer.CreditLimit.HasValue || !customer.CreditLimitUnit.HasValue)
+            return (0, customer.CreditLimitUnit ?? UnitType.IRR);
+
+        // محاسبه مجموع بدهکاری‌ها و بستانکاری ها به صورت ریالی
+        var transactionSummary = await NonDeletedQuery
+            .AsNoTracking()
+            .Where(t => t.CustomerId == customerId)
+            .GroupBy(t => t.CustomerId)
+            .Select(g => new
+            {
+                TotalCreditRial = g.Sum(t => (t.Credit ?? 0) * (t.CreditRate ?? 1)),
+                TotalDebitRial = g.Sum(t => (t.Debit ?? 0) * (t.DebitRate ?? 1))
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        //// محاسبه خالص تراکنش‌ها به صورت ریالی (اعتبار - بدهی)
+        //var netTransactionAmountRial = (transactionSummary?.TotalCreditRial ?? 0) - (transactionSummary?.TotalDebitRial ?? 0);
+
+        //// تبدیل سقف اعتبار مشتری به ریال
+        //var creditLimitRial = customer.CreditLimit.Value * GetConversionRateToRial(customer.CreditLimitUnit.Value);
+
+        //// محاسبه اعتبار باقی‌مانده به صورت ریالی
+        //var remainingCreditRial = creditLimitRial - netTransactionAmountRial;
+
+        //// اطمینان از اینکه اعتبار باقی‌مانده منفی نشود
+        //remainingCreditRial = Math.Max(remainingCreditRial, 0);
+
+        //// تبدیل اعتبار باقی‌مانده به واحد CreditLimitUnit مشتری
+        //var remainingCreditInCustomerUnit = remainingCreditRial / GetConversionRateToRial(customer.CreditLimitUnit.Value);
+
+        //return (remainingCreditInCustomerUnit, customer.CreditLimitUnit.Value);
+
+        return (customer.CreditLimit.Value, customer.CreditLimitUnit.Value);
     }
 }

@@ -88,4 +88,12 @@ public class TransactionClientService(
 
         return await localService.GetLatestTransactionNumberAsync(cancellationToken);
     }
+
+    public async Task<GetCustomerRemainingCreditResponse?> GetCustomerRemainingCreditAsync(Guid customerId, CancellationToken cancellationToken = default)
+    {
+        await customerSyncService.SynchronizeAsync(cancellationToken);
+        await transactionSyncService.SynchronizeAsync(cancellationToken);
+
+        return await localService.GetCustomerRemainingCreditAsync(customerId, cancellationToken);
+    }
 }

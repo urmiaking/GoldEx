@@ -107,4 +107,11 @@ public class TransactionClientService(
 
         return new GetTransactionNumberResponse(number);
     }
+
+    public async Task<GetCustomerRemainingCreditResponse?> GetCustomerRemainingCreditAsync(Guid customerId, CancellationToken cancellationToken = default)
+    {
+        var (value, unit) = await transactionService.GetCustomerRemainingCreditAsync(new CustomerId(customerId), cancellationToken);
+
+        return new GetCustomerRemainingCreditResponse(value, unit);
+    }
 }

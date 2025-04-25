@@ -98,8 +98,12 @@ public class CreateTransactionVm
         CustomerAddress = customer.Address;
         CustomerCreditLimit = customer.CreditLimit;
         CustomerCreditLimitUnit = customer.CreditLimitUnit;
-        CustomerCreditRemaining = customer.CreditLimit; // TODO: need to be calculated based on transactions
-        CustomerCreditRemainingUnit = customer.CreditLimitUnit; // TODO: need to be calculated based on transactions
+    }
+
+    public void SetCustomerCreditLimitRemaining(GetCustomerRemainingCreditResponse response)
+    {
+        CustomerCreditRemaining = response.Value;
+        CustomerCreditRemainingUnit = response.Unit;
     }
 
     public static CreateTransactionRequest ToCreateTransactionRequest(CreateTransactionVm model)

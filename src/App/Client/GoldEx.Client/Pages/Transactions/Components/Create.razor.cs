@@ -10,7 +10,7 @@ namespace GoldEx.Client.Pages.Transactions.Components;
 
 public partial class Create
 {
-    private CreateTransactionVm _model = new();
+    private readonly CreateTransactionVm _model = new();
     private readonly TransactionValidator _transactionValidator = new();
     private MudForm _form = default!;
     private bool _processing;
@@ -30,7 +30,7 @@ public partial class Create
     {
         if (CustomerId.HasValue)
             await LoadCustomerAsync(CustomerId.Value);
-        
+
         await base.OnParametersSetAsync();
     }
 
@@ -44,7 +44,33 @@ public partial class Create
             var response = await CustomerService.GetAsync(customerId, CancellationTokenSource.Token);
 
             if (response is not null)
+            {
                 _model.SetCustomer(response);
+                await LoadCustomerCreditLimitAsync(customerId);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            AddExceptionToast(e);
+        }
+        finally
+        {
+            SetIdeal();
+        }
+    }
+
+    private async Task LoadCustomerCreditLimitAsync(Guid customerId)
+    {
+        try
+        {
+            SetBusy();
+            CancelToken();
+
+            var response = await TransactionService.GetCustomerRemainingCreditAsync(customerId, CancellationTokenSource.Token);
+
+            if (response is not null) 
+                _model.SetCustomerCreditLimitRemaining(response);
         }
         catch (Exception e)
         {
@@ -99,6 +125,8 @@ public partial class Create
             if (customer is not null)
             {
                 _model.SetCustomer(customer);
+
+                await LoadCustomerCreditLimitAsync(customer.Id);
                 OnCustomerCreditLimitChanged(customer.CreditLimit);
             }
         }

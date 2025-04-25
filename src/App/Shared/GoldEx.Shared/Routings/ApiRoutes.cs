@@ -89,5 +89,6 @@ public static class ApiRoutes
         public const string Delete = "{id}";
         public const string GetPendingItems = "pending-items/{checkPointDate}";
         public const string GetLatestTransactionNumber = "get-latest-transaction-number";
+        public const string GetCustomerRemainingCredit = "customer/{customerId}/remaining-credit";
     }
 }

@@ -8,7 +8,7 @@
                 <MudText Typo="Typo.h6" GutterBottom="true">مشخصات مشتری</MudText>
                 @if (_model is { CustomerCreditRemaining: not null, CustomerCreditRemainingUnit: not null })
                 {
-                    <MudText Typo="Typo.body1" Class="d-none d-sm-flex">اعتبار باقی مانده مشتری: @($"{@_model.CustomerCreditRemaining:N0} {_model.CustomerCreditRemainingUnit.GetDisplayName()}") </MudText>
+                    <MudText Typo="Typo.body1" Class="d-none d-sm-flex">اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining:N0} {_model.CustomerCreditRemainingUnit.GetDisplayName()}") </MudText>
                 }
             </div>
             <MudDivider Class="mb-2" />
