@@ -143,5 +143,8 @@ public class ApiUrls
 
         public static string GetLatestTransactionNumber() =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLatestTransactionNumber);
+
+        public static string GetCustomerRemainingCredit(Guid customerId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetCustomerRemainingCredit).FormatRoute(new { customerId });
     }
 }
