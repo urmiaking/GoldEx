@@ -4,6 +4,7 @@ using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Application.Validators.Transactions;
 using GoldEx.Shared.Domain.Aggregates.CustomerAggregate;
 using GoldEx.Shared.Domain.Aggregates.TransactionAggregate;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Shared.Application.Services;
@@ -51,4 +52,7 @@ public class TransactionService<TTransaction, TCustomer>(ITransactionRepository<
 
     public Task<int> GetLatestTransactionNumberAsync(CancellationToken cancellationToken = default)
         => repository.GetLatestTransactionNumberAsync(cancellationToken);
+
+    public Task<(double value, UnitType unit)> GetCustomerRemainingCreditAsync(CustomerId customerId, CancellationToken cancellationToken = default)
+        => repository.GetCustomerRemainingCreditAsync(customerId, cancellationToken);
 }

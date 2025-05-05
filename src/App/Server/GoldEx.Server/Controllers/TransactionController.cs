@@ -76,4 +76,12 @@ public class TransactionController(ITransactionClientService service) : ApiContr
         var transactionNumber = await service.GetLatestTransactionNumberAsync(cancellationToken);
         return Ok(transactionNumber);
     }
+
+    [HttpGet(ApiRoutes.Transactions.GetCustomerRemainingCredit)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+    public async Task<IActionResult> GetCustomerRemainingCreditAsync(Guid customerId, CancellationToken cancellationToken = default)
+    {
+        var remainingCredit = await service.GetCustomerRemainingCreditAsync(customerId, cancellationToken);
+        return remainingCredit is null ? NotFound() : Ok(remainingCredit);
+    }
 }
