@@ -19,14 +19,18 @@ public class TransactionRepository<TTransaction, TCustomer>(IGoldExDbContextFact
     {
         await InitializeDbContextAsync();
 
-        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return await NonDeletedQuery
+            .Include(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     public async Task<TTransaction?> GetAsync(int number, CancellationToken cancellationToken = default)
     {
         await InitializeDbContextAsync();
 
-        return await NonDeletedQuery.FirstOrDefaultAsync(x => x.Number == number, cancellationToken);
+        return await NonDeletedQuery
+            .Include(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.Number == number, cancellationToken);
     }
 
     public async Task<PagedList<TTransaction>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
