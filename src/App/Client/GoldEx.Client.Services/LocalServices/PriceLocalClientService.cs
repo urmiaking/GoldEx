@@ -28,7 +28,7 @@ public class PriceLocalClientService(IPriceService<Price, PriceHistory> priceSer
 
     public async Task CreateAsync(CreatePriceRequest request, CancellationToken cancellationToken = default)
     {
-        var price = new Price(new PriceId(request.Id), request.Title, request.Type, request.IconFileBase64);
+        var price = new Price(new PriceId(request.Id), request.Title, request.Type, request.UnitType, request.IconFileBase64);
 
         price.SetPriceHistory(new PriceHistory(double.Parse(request.Value), request.LastUpdate, request.Change, request.Unit));
 

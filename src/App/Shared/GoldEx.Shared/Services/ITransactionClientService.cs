@@ -14,4 +14,5 @@ public interface ITransactionClientService
     Task<bool> DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default);
     Task<List<GetPendingTransactionResponse>> GetPendingsAsync(DateTime checkpointDate, CancellationToken cancellationToken = default);
     Task<GetTransactionNumberResponse> GetLatestTransactionNumberAsync(CancellationToken cancellationToken = default);
+    Task<GetCustomerRemainingCreditResponse?> GetCustomerRemainingCreditAsync(Guid customerId, CancellationToken cancellationToken = default);
 }

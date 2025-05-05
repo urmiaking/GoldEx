@@ -2,6 +2,9 @@
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
+using GoldEx.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
@@ -28,7 +31,7 @@ public static class BackgroundServiceHelper
                     }
                 }
 
-                dbPrice = new Price(apiPrice.Title, apiPrice.MarketType, imageFileBase64Content);
+                dbPrice = new Price(apiPrice.Title, apiPrice.MarketType, GetUnitType(apiPrice) ,imageFileBase64Content);
 
                 var priceHistory = new PriceHistory(apiPrice.CurrentValue, apiPrice.LastUpdate, apiPrice.Change, apiPrice.Unit);
                 dbPrice.SetPriceHistory(priceHistory);
@@ -44,5 +47,22 @@ public static class BackgroundServiceHelper
                 }
             }
         }
+    }
+
+    private static UnitType? GetUnitType(PriceResponse apiPrice)
+    {
+        foreach (var unitType in Enum.GetValues<UnitType>())
+        {
+            var displayAttribute = typeof(UnitType)
+                .GetMember(unitType.ToString())[0]
+                .GetCustomAttribute<DisplayAttribute>();
+
+            if (displayAttribute != null && displayAttribute.Name == apiPrice.Title)
+            {
+                return unitType;
+            }
+        }
+
+        return null;
     }
 }
