@@ -4,9 +4,9 @@ using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Transactions.Validators;
 
-public class TransactionValidator : AbstractValidator<CreateTransactionVm>
+public class CreateTransactionValidator : AbstractValidator<CreateTransactionVm>
 {
-    public TransactionValidator()
+    public CreateTransactionValidator()
     {
         RuleFor(x => x.TransactionNumber)
             .NotEmpty().WithMessage("شماره تراكنش نمي تواند خالي باشد");
