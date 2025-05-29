@@ -1,20 +1,20 @@
-﻿using GoldEx.Shared.Domain.Entities;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Shared.Domain.Aggregates.InvoiceAggregate;
+namespace GoldEx.Server.Domain.InvoiceAggregate;
 
-public class InvoiceDebtBase : EntityBase
+public class InvoiceDebt : EntityBase
 {
-    public InvoiceDebtBase(double amount, UnitType unitType, DateTime dueDate)
+    public InvoiceDebt(decimal amount, UnitType unitType, DateTime dueDate)
     {
         Amount = amount;
         UnitType = unitType;
         DueDate = dueDate;
     }
 
-    protected InvoiceDebtBase() { }
+    private InvoiceDebt() { }
 
-    public double Amount { get; private set; }
+    public decimal Amount { get; private set; }
     public UnitType UnitType { get; private set; }
     public DateTime DueDate { get; private set; }
     public bool IsPaid { get; set; }
@@ -32,7 +32,7 @@ public class InvoiceDebtBase : EntityBase
         PaymentDate = null;
     }
 
-    public void SetAmount(double amount, UnitType unitType)
+    public void SetAmount(decimal amount, UnitType unitType)
     {
         Amount = amount;
         UnitType = unitType;

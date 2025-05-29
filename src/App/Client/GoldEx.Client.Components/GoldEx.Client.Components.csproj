@@ -24,7 +24,6 @@
 	  <ProjectReference Include="..\..\..\Sdk\GoldEx.Sdk.Client\GoldEx.Sdk.Client.csproj" />
 	  <ProjectReference Include="..\..\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
 	  <ProjectReference Include="..\GoldEx.Client.Abstractions\GoldEx.Client.Abstractions.csproj" />
-	  <ProjectReference Include="..\GoldEx.Client.Offline\GoldEx.Client.Offline.csproj" />
   </ItemGroup>
 
   <ItemGroup>

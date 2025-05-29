@@ -13,11 +13,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Domain\SettingsAggregate\" />
-		<Folder Include="Domain\ProductAggregate\" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\..\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
 	</ItemGroup>
 

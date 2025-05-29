@@ -1,58 +1,65 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities.Identity;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
-using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
-using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
-using GoldEx.Shared.Domain.Entities;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.ProductAggregate;
 
-public class Product : ProductBase<ProductCategory, GemStone>,
-    ISoftDeleteEntity
+public readonly record struct ProductId(Guid Value);
+public class Product : EntityBase<ProductId>
 {
-    public Product(string name,
-        string barcode,
-        double weight,
-        double? wage,
-        ProductType productType,
-        WageType? wageType,
-        CaratType caratType,
-        Guid createdUserId,
-        ProductCategoryId categoryId) : base(name,
-        barcode,
-        weight,
-        wage,
-        productType,
-        wageType,
-        caratType,
-        categoryId)
-    {
-        CreatedUserId = createdUserId;
-    }
-
-    public Product(ProductId id,
+    public static Product Create(
         string name,
         string barcode,
         double weight,
         double? wage,
         ProductType productType,
-        WageType? wageType,
         CaratType caratType,
-        Guid createdUserId,
-        ProductCategoryId categoryId) : this(name, barcode, weight, wage, productType, wageType, caratType, createdUserId, categoryId)
+        WageType? wageType,
+        ProductCategoryId productCategoryId)
     {
-        Id = id;
+        return new Product
+        {
+            Id = new ProductId(Guid.NewGuid()),
+            Name = name,
+            Barcode = barcode,
+            Weight = weight,
+            Wage = wage,
+            ProductType = productType,
+            CaratType = caratType,
+            WageType = wageType,
+            ProductCategoryId = productCategoryId
+        };
     }
 
-    private Product()
-    {
-        
-    }
+#pragma warning disable CS8618
+    private Product() { }
+#pragma warning restore CS8618
 
-    public Guid CreatedUserId { get; private set; }
-    public AppUser? CreatedUser { get; private set; }
-    public bool IsDeleted { get; private set; }
-    
-    public void SetDeleted() => IsDeleted = true;
-    public void SetCreatedUserId(Guid createdUserId) => CreatedUserId = createdUserId;
+    public string Name { get; private set; }
+    public string Barcode { get; private set; }
+    public double Weight { get; private set; }
+    public double? Wage { get; private set; }
+    public ProductType ProductType { get; private set; }
+    public CaratType CaratType { get; private set; }
+    public WageType? WageType { get; private set; }
+    public ProductCategoryId ProductCategoryId { get; private set; }
+    public ProductCategory ProductCategory { get; private set; } = null!;
+
+    private readonly List<GemStone> _stones = [];
+    public IReadOnlyList<GemStone> GemStones => _stones;
+
+    public void SetName(string name) => Name = name;
+    public void SetBarcode(string barcode) => Barcode = barcode;
+    public void SetWeight(double weight) => Weight = weight;
+    public void SetWage(double? wage) => Wage = wage;
+    public void SetProductType(ProductType productType) => ProductType = productType;
+    public void SetCaratType(CaratType caratType) => CaratType = caratType;
+    public void SetWageType(WageType? wageType) => WageType = wageType;
+    public void SetProductCategory(ProductCategoryId categoryId) => ProductCategoryId = categoryId;
+    public void SetGemStones(List<GemStone> stones)
+    {
+        _stones.Clear();
+        _stones.AddRange(stones);
+    }
+    public void ClearGemStones() => _stones.Clear();
 }
