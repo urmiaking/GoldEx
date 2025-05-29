@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Domain;
 
-namespace GoldEx.Shared.Domain.Entities;
+namespace GoldEx.Sdk.Server.Domain.Entities;
 
 public abstract class EntityBase : IHasDomainEvents
 {

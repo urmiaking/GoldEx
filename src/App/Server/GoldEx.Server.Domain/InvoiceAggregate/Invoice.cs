@@ -1,20 +1,12 @@
-﻿using GoldEx.Shared.Domain.Aggregates.CustomerAggregate;
-using GoldEx.Shared.Domain.Aggregates.ProductAggregate;
-using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
-using GoldEx.Shared.Domain.Entities;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.CustomerAggregate;
 
-namespace GoldEx.Shared.Domain.Aggregates.InvoiceAggregate;
+namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public readonly record struct InvoiceId(Guid Value);
-public class InvoiceBaseAggregate<TCustomer, TInvoiceDebt, TInvoiceItem, TProduct, TCategory, TGemStone> : EntityBase<InvoiceId>, ISyncableEntity
-    where TCustomer : CustomerBase
-    where TInvoiceDebt : InvoiceDebtBase
-    where TInvoiceItem : InvoiceItemBase<TProduct, TCategory, TGemStone>
-    where TProduct : ProductBase<TCategory, TGemStone>
-    where TCategory : ProductCategoryBase
-    where TGemStone : GemStoneBase
+public class Invoice : EntityBase<InvoiceId>
 {
-    public InvoiceBaseAggregate(int invoiceNumber, double? additionalPrices, double? discount, CustomerId customerId) : base(new InvoiceId(Guid.NewGuid()))
+    public Invoice(int invoiceNumber, decimal? additionalPrices, decimal? discount, CustomerId customerId) : base(new InvoiceId(Guid.NewGuid()))
     {
         InvoiceNumber = invoiceNumber;
         AdditionalPrices = additionalPrices;
@@ -22,23 +14,23 @@ public class InvoiceBaseAggregate<TCustomer, TInvoiceDebt, TInvoiceItem, TProduc
         CustomerId = customerId;
     }
 
-    protected InvoiceBaseAggregate() { }
+    private Invoice() { }
 
     public int InvoiceNumber { get; private set; }
-    public double? Discount { get; private set; }
-    public double? AdditionalPrices { get; private set; }
+    public decimal? Discount { get; private set; }
+    public decimal? AdditionalPrices { get; private set; }
     public DateTime InvoiceDate { get; private set; } = DateTime.UtcNow;
     public DateTime LastModifiedDate { get; private set; }
 
     public void SetInvoiceNumber(int invoiceNumber) => InvoiceNumber = invoiceNumber;
-    public void SetDiscount(double? discount) => Discount = discount;
-    public void SetAdditionalPrices(double? additionalPrices) => AdditionalPrices = additionalPrices;
+    public void SetDiscount(decimal? discount) => Discount = discount;
+    public void SetAdditionalPrices(decimal? additionalPrices) => AdditionalPrices = additionalPrices;
     public void SetLastModifiedDate() => LastModifiedDate = DateTime.UtcNow;
 
     #region Customer
 
     public CustomerId CustomerId { get; private set; }
-    public TCustomer? Customer { get; private set; }
+    public Customer? Customer { get; private set; }
 
     public void SetCustomerId(CustomerId customerId) => CustomerId = customerId;
 
@@ -46,16 +38,16 @@ public class InvoiceBaseAggregate<TCustomer, TInvoiceDebt, TInvoiceItem, TProduc
 
     #region InvoiceItems
 
-    private readonly List<TInvoiceItem> _items = [];
-    public IReadOnlyList<TInvoiceItem> Items => _items;
+    private readonly List<InvoiceItem> _items = [];
+    public IReadOnlyList<InvoiceItem> Items => _items;
 
-    public void AddItem(TInvoiceItem item)
+    public void AddItem(InvoiceItem item)
     {
         if (_items.Any(x => x.ProductId != item.ProductId))
             _items.Add(item);
     }
 
-    public void RemoveItem(TInvoiceItem item)
+    public void RemoveItem(InvoiceItem item)
     {
         if (_items.Any(x => x.ProductId == item.ProductId))
             _items.Remove(item);
@@ -67,8 +59,8 @@ public class InvoiceBaseAggregate<TCustomer, TInvoiceDebt, TInvoiceItem, TProduc
 
     #region Debt
 
-    public TInvoiceDebt? InvoiceDebt { get; private set; }
-    public void SetInvoiceDebt(TInvoiceDebt invoiceDebt) => InvoiceDebt = invoiceDebt;
+    public InvoiceDebt? InvoiceDebt { get; private set; }
+    public void SetInvoiceDebt(InvoiceDebt invoiceDebt) => InvoiceDebt = invoiceDebt;
 
     public void SetInvoiceDebtAsPaid(DateTime paymentDateTime)
     {
@@ -86,7 +78,7 @@ public class InvoiceBaseAggregate<TCustomer, TInvoiceDebt, TInvoiceItem, TProduc
         InvoiceDebt.SetUnpaid();
     }
 
-    public void SetInvoiceDebtAsPartiallyPaid(double amount, DateTime paymentDateTime)
+    public void SetInvoiceDebtAsPartiallyPaid(decimal amount, DateTime paymentDateTime)
     {
         if (InvoiceDebt is null)
             throw new InvalidOperationException("Invoice debt is not set.");
@@ -95,5 +87,4 @@ public class InvoiceBaseAggregate<TCustomer, TInvoiceDebt, TInvoiceItem, TProduc
     }
 
     #endregion
-
 }
