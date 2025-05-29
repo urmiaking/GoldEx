@@ -1,7 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Sdk.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Configurations;
-using GoldEx.Shared.Infrastructure.Configurations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

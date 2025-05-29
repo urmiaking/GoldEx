@@ -1,17 +1,9 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
-using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Services.Price;
 using GoldEx.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using GoldEx.Server.Domain.CustomerAggregate;
-using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Server.Domain.ProductCategoryAggregate;
-using GoldEx.Server.Domain.SettingsAggregate;
-using GoldEx.Server.Domain.TransactionAggregate;
-using GoldEx.Shared.Infrastructure.Repositories;
-using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Server.Infrastructure;
 
@@ -40,16 +32,6 @@ public static class DependencyInjection
 
         services.DiscoverServices();
 
-        ///////////////////
-
-        services.AddScoped<IProductRepository<Product, ProductCategory, GemStone>, ProductRepository<Product, ProductCategory, GemStone>>();
-        services.AddScoped<IProductCategoryRepository<ProductCategory>, ProductCategoryRepository<ProductCategory>>();
-        services.AddScoped<IPriceRepository<Price, PriceHistory>, PriceRepository<Price, PriceHistory>>();
-        services.AddScoped<ISettingsRepository<Settings>, SettingsRepository<Settings>>();
-        services.AddScoped<ICustomerRepository<Customer>, CustomerRepository<Customer>>();
-        services.AddScoped<ITransactionRepository<Transaction, Customer>, TransactionRepository<Transaction, Customer>>();
-
-        ///////////
         return services;
     }
 }

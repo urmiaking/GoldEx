@@ -10,8 +10,8 @@ public class Product : EntityBase<ProductId>
     public static Product Create(
         string name,
         string barcode,
-        double weight,
-        double? wage,
+        decimal weight,
+        float? wage,
         ProductType productType,
         CaratType caratType,
         WageType? wageType,
@@ -37,8 +37,8 @@ public class Product : EntityBase<ProductId>
 
     public string Name { get; private set; }
     public string Barcode { get; private set; }
-    public double Weight { get; private set; }
-    public double? Wage { get; private set; }
+    public decimal Weight { get; private set; }
+    public float? Wage { get; private set; }
     public ProductType ProductType { get; private set; }
     public CaratType CaratType { get; private set; }
     public WageType? WageType { get; private set; }
@@ -50,8 +50,8 @@ public class Product : EntityBase<ProductId>
 
     public void SetName(string name) => Name = name;
     public void SetBarcode(string barcode) => Barcode = barcode;
-    public void SetWeight(double weight) => Weight = weight;
-    public void SetWage(double? wage) => Wage = wage;
+    public void SetWeight(decimal weight) => Weight = weight;
+    public void SetWage(float? wage) => Wage = wage;
     public void SetProductType(ProductType productType) => ProductType = productType;
     public void SetCaratType(CaratType caratType) => CaratType = caratType;
     public void SetWageType(WageType? wageType) => WageType = wageType;

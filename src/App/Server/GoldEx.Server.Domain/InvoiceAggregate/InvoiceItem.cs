@@ -5,12 +5,19 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public class InvoiceItem : EntityBase
 {
-    public InvoiceItem(ProductId productId, decimal? tax, decimal? price, decimal? quantity)
+    public static InvoiceItem Create(
+        decimal? tax,
+        decimal? price,
+        decimal? quantity,
+        ProductId productId)
     {
-        Tax = tax;
-        Price = price;
-        Quantity = quantity;
-        ProductId = productId;
+        return new InvoiceItem
+        {
+            Tax = tax,
+            Price = price,
+            Quantity = quantity,
+            ProductId = productId
+        };
     }
 
     private InvoiceItem() { }

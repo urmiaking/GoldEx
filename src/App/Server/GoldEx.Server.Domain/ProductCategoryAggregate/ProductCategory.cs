@@ -1,4 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.ProductAggregate;
+
 namespace GoldEx.Server.Domain.ProductCategoryAggregate;
 
 public readonly record struct ProductCategoryId(Guid Value);
@@ -19,5 +21,7 @@ public class ProductCategory : EntityBase<ProductCategoryId>
 #pragma warning restore CS8618
 
     public string Title { get; private set; }
+    public IReadOnlyList<Product>? Products { get; private set; }
+
     public void SetTitle(string title) => Title = title;
 }

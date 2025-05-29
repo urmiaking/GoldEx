@@ -2,14 +2,12 @@
 
 namespace GoldEx.Server.Domain.ProductAggregate;
 
-public readonly record struct GemStoneId(Guid Value);
-public class GemStone : EntityBase<GemStoneId>
+public class GemStone : EntityBase
 {
-    public static GemStone Create(string code, string type, string color, string? cut, double carat, string? purity, ProductId productId)
+    public static GemStone Create(string code, string type, string color, string? cut, decimal carat, string? purity, ProductId productId)
     {
         return new GemStone
         {
-            Id = new GemStoneId(Guid.NewGuid()),
             Code = code,
             Type = type,
             Color = color,
@@ -28,7 +26,7 @@ public class GemStone : EntityBase<GemStoneId>
     public string Type { get; private set; }
     public string Color { get; private set; }
     public string? Cut { get; private set; }
-    public double Carat { get; private set; }
+    public decimal Carat { get; private set; }
     public string? Purity { get; private set; }
 
     public ProductId ProductId { get; private set; }

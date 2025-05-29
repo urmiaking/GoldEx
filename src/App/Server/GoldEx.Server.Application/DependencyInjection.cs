@@ -34,7 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IProductService<Product, ProductCategory, GemStone>, ServerProductService>();
         services.AddScoped<IProductCategoryService<ProductCategory>, ProductCategoryService<ProductCategory, Product, GemStone>>();
         services.AddScoped<IPriceService<Price, PriceHistory>, PriceService<Price, PriceHistory>>();
-        services.AddScoped<ISettingsService<Settings>, SettingsService<Settings>>();
+        services.AddScoped<ISettingsService<Setting>, SettingsService<Setting>>();
         services.AddScoped<ICustomerService<Customer>, CustomerService<Customer>>();
         services.AddScoped<ITransactionService<Transaction, Customer>, TransactionService<Transaction, Customer>>();
 
@@ -44,7 +44,7 @@ public static class DependencyInjection
 
         services.AddScoped<PriceValidator<Price, PriceHistory>>();
 
-        services.AddScoped<SettingsValidator<Settings>>();
+        services.AddScoped<SettingsValidator<Setting>>();
 
         services.AddScoped<CreateProductCategoryValidator<ProductCategory>>();
         services.AddScoped<UpdateProductCategoryValidator<ProductCategory>>();

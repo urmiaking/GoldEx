@@ -77,13 +77,13 @@ public static class ServiceProviderExtensions
 
     private static async Task PopulateDefaultSettingsAsync(IServiceProvider provider)
     {
-        var settingsService = provider.GetRequiredService<ISettingsService<Settings>>();
+        var settingsService = provider.GetRequiredService<ISettingsService<Setting>>();
 
         var settings = await settingsService.GetAsync();
 
         if (settings is null)
         {
-            await settingsService.CreateAsync(new Settings("جواهری دمو", "ارومیه خیابان مدنی 2، پلاک 17",
+            await settingsService.CreateAsync(new Setting("جواهری دمو", "ارومیه خیابان مدنی 2، پلاک 17",
                 "04431934291 - 04431934119", 9, 7, 20));
         }
     }

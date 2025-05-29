@@ -6,12 +6,16 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceId(Guid Value);
 public class Invoice : EntityBase<InvoiceId>
 {
-    public Invoice(int invoiceNumber, decimal? additionalPrices, decimal? discount, CustomerId customerId) : base(new InvoiceId(Guid.NewGuid()))
+    public static Invoice Create(int invoiceNumber, CustomerId customerId, decimal? discount = null, decimal? additionalPrices = null)
     {
-        InvoiceNumber = invoiceNumber;
-        AdditionalPrices = additionalPrices;
-        Discount = discount;
-        CustomerId = customerId;
+        return new Invoice
+        {
+            Id = new InvoiceId(Guid.NewGuid()),
+            InvoiceNumber = invoiceNumber,
+            CustomerId = customerId,
+            Discount = discount,
+            AdditionalPrices = additionalPrices
+        };
     }
 
     private Invoice() { }
@@ -19,13 +23,10 @@ public class Invoice : EntityBase<InvoiceId>
     public int InvoiceNumber { get; private set; }
     public decimal? Discount { get; private set; }
     public decimal? AdditionalPrices { get; private set; }
-    public DateTime InvoiceDate { get; private set; } = DateTime.UtcNow;
-    public DateTime LastModifiedDate { get; private set; }
 
     public void SetInvoiceNumber(int invoiceNumber) => InvoiceNumber = invoiceNumber;
     public void SetDiscount(decimal? discount) => Discount = discount;
     public void SetAdditionalPrices(decimal? additionalPrices) => AdditionalPrices = additionalPrices;
-    public void SetLastModifiedDate() => LastModifiedDate = DateTime.UtcNow;
 
     #region Customer
 
@@ -83,6 +84,7 @@ public class Invoice : EntityBase<InvoiceId>
         if (InvoiceDebt is null)
             throw new InvalidOperationException("Invoice debt is not set.");
 
+        // TODO: fix this
         //InvoiceDebt.SetPartiallyPaid(amount, paymentDateTime);
     }
 
