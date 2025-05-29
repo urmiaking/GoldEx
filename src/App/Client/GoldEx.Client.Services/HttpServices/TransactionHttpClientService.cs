@@ -66,7 +66,7 @@ public class TransactionHttpClientService(HttpClient client, JsonSerializerOptio
         try
         {
             using var response = await client.PostAsJsonAsync(ApiUrls.Transactions.Create(), request, jsonOptions, cancellationToken);
-
+            
             if (!response.IsSuccessStatusCode)
                 throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
@@ -85,7 +85,7 @@ public class TransactionHttpClientService(HttpClient client, JsonSerializerOptio
     {
         try
         {
-            using var response = await client.PutAsJsonAsync(ApiUrls.Products.Update(id), request, jsonOptions, cancellationToken);
+            using var response = await client.PutAsJsonAsync(ApiUrls.Transactions.Update(id), request, jsonOptions, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
                 throw HttpRequestFailedException.GetException(response.StatusCode, response);

@@ -22,7 +22,6 @@
 
 	<ItemGroup>
 		<Folder Include="Pages\Home\ViewModels\" />
-		<Folder Include="Pages\Transactions\Validators\" />
 		<Folder Include="wwwroot\assets\screenshots\" />
 	</ItemGroup>
 

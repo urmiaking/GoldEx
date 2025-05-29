@@ -129,7 +129,7 @@ public partial class TransactionsList
     {
         var parameters = new DialogParameters<Update>
         {
-            //{ x => x.Model, model }
+            { x => x.TransactionId, model.Id }
         };
 
         var dialog = await DialogService.ShowAsync<Update>("ویرایش تراکنش", parameters, _dialogOptions);
