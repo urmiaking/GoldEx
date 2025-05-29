@@ -5,11 +5,16 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public class InvoiceDebt : EntityBase
 {
-    public InvoiceDebt(decimal amount, UnitType unitType, DateTime dueDate)
+    public static InvoiceDebt Create(decimal amount, UnitType unitType, DateTime dueDate)
     {
-        Amount = amount;
-        UnitType = unitType;
-        DueDate = dueDate;
+        return new InvoiceDebt
+        {
+            Amount = amount,
+            UnitType = unitType,
+            DueDate = dueDate,
+            IsPaid = false,
+            PaymentDate = null
+        };
     }
 
     private InvoiceDebt() { }

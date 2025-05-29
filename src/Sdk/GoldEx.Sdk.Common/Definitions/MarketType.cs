@@ -4,18 +4,18 @@ namespace GoldEx.Sdk.Common.Definitions;
 
 public enum MarketType
 {
-    [Display(Name = "سکه")]
-    Coin,
-
     [Display(Name = "طلا")]
-    Gold,
+    Gold = 0,
 
     [Display(Name = "ارز")]
-    Currency,
+    Currency = 1,
+
+    [Display(Name = "سکه")]
+    Coin = 2,
 
     [Display(Name = "حباب سکه")]
-    BubbleCoin,
+    BubbleCoin = 3,
 
     [Display(Name = "پارسیان")]
-    ParsianCoin
+    ParsianCoin = 4
 }

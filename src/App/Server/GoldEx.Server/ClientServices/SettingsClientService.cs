@@ -2,7 +2,6 @@
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.SettingsAggregate;
 using GoldEx.Shared.Application.Services.Abstractions;
-using GoldEx.Shared.Domain.Aggregates.SettingsAggregate;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using MapsterMapper;
@@ -10,7 +9,7 @@ using MapsterMapper;
 namespace GoldEx.Server.ClientServices;
 
 [ScopedService]
-public class SettingsClientService(ISettingsService<Settings> service, IMapper mapper) : ISettingsClientService
+public class SettingsClientService(ISettingsService<Setting> service, IMapper mapper) : ISettingsClientService
 {
     public async Task<GetSettingsResponse?> GetAsync(CancellationToken cancellationToken = default)
     {

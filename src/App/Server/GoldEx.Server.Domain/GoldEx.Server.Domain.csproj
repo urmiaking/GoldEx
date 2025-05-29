@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="TransactionAggregate\" />
-    <Folder Include="SettingsAggregate\" />
   </ItemGroup>
 
 </Project>

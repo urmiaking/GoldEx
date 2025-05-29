@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.CustomerAggregate;
@@ -27,12 +28,14 @@ public class Customer : EntityBase<CustomerId>
 #pragma warning restore CS8618
 
     public string FullName { get; private set; }
-    public CustomerType CustomerType { get; private set; }
     public string NationalId { get; private set; }
     public string? PhoneNumber { get; private set; }
     public string? Address { get; private set; }
     public decimal? CreditLimit { get; private set; }
+    public CustomerType CustomerType { get; private set; }
     public UnitType? CreditLimitUnit { get; private set; }
+
+    public IReadOnlyList<Transaction>? Transactions { get; private set; }
 
     public void SetCustomerType(CustomerType customerType) => CustomerType = customerType;
     public void SetFullName(string fullName) => FullName = fullName;

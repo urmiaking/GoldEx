@@ -8,7 +8,7 @@ public readonly record struct TransactionId(Guid Value);
 public class Transaction : EntityBase<TransactionId>
 {
     public static Transaction Create(DateTime dateTime,
-        int number,
+        long number,
         string description,
         decimal? credit,
         UnitType? creditUnit,
@@ -40,7 +40,7 @@ public class Transaction : EntityBase<TransactionId>
 #pragma warning restore CS8618
 
     public DateTime DateTime { get; private set; }
-    public int Number { get; private set; }
+    public long Number { get; private set; }
     public string Description { get; private set; }
     public decimal? Credit { get; private set; }
     public UnitType? CreditUnit { get; private set; }
@@ -53,7 +53,7 @@ public class Transaction : EntityBase<TransactionId>
     public CustomerId CustomerId { get; private set; }
 
     public void SetDateTime(DateTime date) => DateTime = date;
-    public void SetNumber(int number) => Number = number;
+    public void SetNumber(long number) => Number = number;
     public void SetDescription(string description) => Description = description;
     public void SetCredit(decimal? credit) => Credit = credit;
     public void SetCreditUnit(UnitType? unitType) => CreditUnit = unitType;

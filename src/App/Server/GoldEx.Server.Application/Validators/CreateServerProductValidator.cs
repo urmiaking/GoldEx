@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Shared.Application.Validators.Products;
-using GoldEx.Shared.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Server.Application.Validators;
 

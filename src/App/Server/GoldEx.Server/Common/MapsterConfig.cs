@@ -63,7 +63,7 @@ public class MapsterConfig : IRegister
 
         #region Settings
 
-        config.NewConfig<Settings, GetSettingsResponse>()
+        config.NewConfig<Setting, GetSettingsResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);
 
         #endregion

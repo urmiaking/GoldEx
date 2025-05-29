@@ -4,6 +4,8 @@ namespace GoldEx.Sdk.Server.Domain.Entities;
 
 public abstract class EntityBase : IHasDomainEvents
 {
+    public DateTime CreatedAt { get; protected set; } = DateTime.Now;
+
     private readonly List<IDomainEvent> _domainEvents = [];
     public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents;
 
