@@ -10,8 +10,8 @@ namespace GoldEx.Client.Pages.Transactions.Components;
 
 public partial class Create
 {
-    private readonly CreateTransactionVm _model = new();
-    private readonly TransactionValidator _transactionValidator = new();
+    private CreateTransactionVm _model = new();
+    private readonly CreateTransactionValidator _createTransactionValidator = new();
     private MudForm _form = default!;
     private bool _processing;
     private string? _customerCreditLimitHelperText;
