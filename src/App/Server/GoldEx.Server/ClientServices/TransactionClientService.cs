@@ -15,7 +15,7 @@ namespace GoldEx.Server.ClientServices;
 [ScopedService]
 public class TransactionClientService(
     ITransactionService<Transaction, Customer> transactionService,
-    IMapper mapper) : ITransactionClientService
+    IMapper mapper) : ITransactionService
 {
     public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -85,12 +85,12 @@ public class TransactionClientService(
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = bad)
     {
         var transaction = await transactionService.GetAsync(new TransactionId(id), cancellationToken) ??
                           throw new NotFoundException("تراکنش يافت نشد");
 
-        await transactionService.DeleteAsync(transaction, deletePermanently, cancellationToken);
+        await transactionService.DeleteAsync(transaction, cancellationToken);
         return true;
     }
 

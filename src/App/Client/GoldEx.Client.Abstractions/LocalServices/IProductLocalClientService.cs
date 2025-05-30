@@ -3,7 +3,7 @@ using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Abstractions.LocalServices;
 
-public interface IProductLocalClientService : IProductClientService
+public interface IProductLocalClientService : IProductService
 {
     Task SetSyncedAsync(Guid id, CancellationToken cancellationToken = default);
     Task CreateAsSyncedAsync(CreateProductRequest request, CancellationToken cancellationToken = default);

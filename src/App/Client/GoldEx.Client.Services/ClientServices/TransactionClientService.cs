@@ -12,7 +12,7 @@ public class TransactionClientService(
     ITransactionLocalClientService localService,
     ITransactionSyncService transactionSyncService,
     ICustomerSyncService customerSyncService
-    ) : ITransactionClientService
+    ) : ITransactionService
 {
     public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -66,9 +66,9 @@ public class TransactionClientService(
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = bad)
     {
-        await localService.DeleteAsync(id, false, cancellationToken);
+        await localService.DeleteAsync(id, cancellationToken);
 
         await customerSyncService.SynchronizeAsync(cancellationToken);
         await transactionSyncService.SynchronizeAsync(cancellationToken);

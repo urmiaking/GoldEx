@@ -2,11 +2,11 @@
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
-using GoldEx.Server.Domain.SettingsAggregate;
+using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
-using GoldEx.Shared.DTOs.Categories;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.DTOs.Transactions;
@@ -52,7 +52,7 @@ public class MapsterConfig : IRegister
 
         #region ProductCategory
 
-        config.NewConfig<ProductCategory, GetCategoryResponse>()
+        config.NewConfig<ProductCategory, GetProductCategoryResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);
 
         config.NewConfig<ProductCategory, GetPendingCategoryResponse>()
@@ -63,7 +63,7 @@ public class MapsterConfig : IRegister
 
         #region Settings
 
-        config.NewConfig<Setting, GetSettingsResponse>()
+        config.NewConfig<Setting, GetSettingResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);
 
         #endregion

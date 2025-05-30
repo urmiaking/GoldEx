@@ -7,7 +7,7 @@ using GoldEx.Shared.Services;
 namespace GoldEx.Client.Services.ClientServices;
 
 [ScopedService]
-public class PriceClientService(IPriceSyncService syncService, IPriceLocalClientService localService) : IPriceClientService
+public class PriceClientService(IPriceSyncService syncService, IPriceLocalClientService localService) : IPriceService
 {
     public async Task<List<GetPriceResponse>> GetLatestPricesAsync(CancellationToken cancellationToken = default)
     {

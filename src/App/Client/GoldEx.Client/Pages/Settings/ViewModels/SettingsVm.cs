@@ -31,12 +31,12 @@ public class SettingsVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public double JewelryProfit { get; set; }
 
-    public UpdateSettingsRequest ToRequest()
+    public UpdateSettingRequest ToRequest()
     {
         return new UpdateSettingsRequest(InstitutionName, Address, PhoneNumber, Tax, GoldProfit, JewelryProfit);
     }
 
-    public static SettingsVm CreateFromRequest(GetSettingsResponse response)
+    public static SettingsVm CreateFromRequest(GetSettingResponse response)
     {
         return new SettingsVm
         {

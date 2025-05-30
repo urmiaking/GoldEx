@@ -7,6 +7,6 @@ public record CreateCustomerRequest(Guid Id,
     string NationalId,
     string PhoneNumber,
     string? Address,
-    double? CreditLimit,
+    decimal? CreditLimit,
     UnitType? CreditLimitUnit,
     CustomerType CustomerType);

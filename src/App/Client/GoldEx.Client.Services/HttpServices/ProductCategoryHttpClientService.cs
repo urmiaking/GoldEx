@@ -4,7 +4,7 @@ using GoldEx.Client.Abstractions.HttpServices;
 using GoldEx.Sdk.Client.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Shared.DTOs.Categories;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Routings;
 
 namespace GoldEx.Client.Services.HttpServices;
@@ -12,31 +12,31 @@ namespace GoldEx.Client.Services.HttpServices;
 [ScopedService]
 public class ProductCategoryHttpClientService(HttpClient client, JsonSerializerOptions jsonOptions) : IProductCategoryHttpClientService
 {
-    public async Task<List<GetCategoryResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetProductCategoryResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.ProductCategories.GetAll(), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        var result = await response.Content.ReadFromJsonAsync<List<GetCategoryResponse>>(jsonOptions, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<List<GetProductCategoryResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetCategoryResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GetProductCategoryResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.ProductCategories.Get(id), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        var result = await response.Content.ReadFromJsonAsync<GetCategoryResponse>(jsonOptions, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<GetProductCategoryResponse>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<bool> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateProductCategoryRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -56,7 +56,7 @@ public class ProductCategoryHttpClientService(HttpClient client, JsonSerializerO
         }
     }
 
-    public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request,
+    public async Task<bool> UpdateAsync(Guid id, UpdateProductCategoryRequest request,
         CancellationToken cancellationToken = default)
     {
         try

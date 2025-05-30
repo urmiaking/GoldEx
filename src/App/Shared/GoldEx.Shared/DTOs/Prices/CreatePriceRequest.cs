@@ -3,8 +3,7 @@ using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Prices;
 
-public record CreatePriceRequest(Guid Id,
-    string Title,
+public record CreatePriceRequest(string Title,
     string Value,
     string Unit,
     string Change,

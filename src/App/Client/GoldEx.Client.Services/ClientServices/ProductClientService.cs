@@ -12,7 +12,7 @@ public class ProductClientService(
     IProductLocalClientService localService,
     IProductSyncService syncService,
     IProductCategorySyncService categorySyncService)
-    : IProductClientService
+    : IProductService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -22,7 +22,7 @@ public class ProductClientService(
         return await localService.GetListAsync(filter, cancellationToken);
     }
 
-    public async Task<GetProductResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);
@@ -30,7 +30,7 @@ public class ProductClientService(
         return await localService.GetAsync(id, cancellationToken);
     }
 
-    public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         await categorySyncService.SynchronizeAsync(cancellationToken);
         await syncService.SynchronizeAsync(cancellationToken);

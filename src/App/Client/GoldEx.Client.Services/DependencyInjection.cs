@@ -12,10 +12,10 @@ public static class DependencyInjection
     public static IServiceCollection AddClientServices(this IServiceCollection services)
     {
         services.AddScoped<IProductHttpClientService, ProductHttpClientService>();
-        services.AddScoped<ISettingsHttpClientService, SettingsHttpClientService>();
+        services.AddScoped<ISettingHttpClientService, SettingHttpClientService>();
 
-        services.AddScoped<IPriceClientService, PriceHttpClientService>();
-        services.AddScoped<IHealthClientService, HealthClientService>();
+        services.AddScoped<IPriceService, PriceHttpClientService>();
+        services.AddScoped<IHealthService, HealthService>();
 
         services.DiscoverServices();
 

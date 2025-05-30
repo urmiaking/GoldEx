@@ -6,7 +6,7 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceId(Guid Value);
 public class Invoice : EntityBase<InvoiceId>
 {
-    public static Invoice Create(int invoiceNumber, CustomerId customerId, decimal? discount = null, decimal? additionalPrices = null)
+    public static Invoice Create(long invoiceNumber, CustomerId customerId, decimal? discount = null, decimal? additionalPrices = null)
     {
         return new Invoice
         {
@@ -20,11 +20,11 @@ public class Invoice : EntityBase<InvoiceId>
 
     private Invoice() { }
 
-    public int InvoiceNumber { get; private set; }
+    public long InvoiceNumber { get; private set; }
     public decimal? Discount { get; private set; }
     public decimal? AdditionalPrices { get; private set; }
 
-    public void SetInvoiceNumber(int invoiceNumber) => InvoiceNumber = invoiceNumber;
+    public void SetInvoiceNumber(long invoiceNumber) => InvoiceNumber = invoiceNumber;
     public void SetDiscount(decimal? discount) => Discount = discount;
     public void SetAdditionalPrices(decimal? additionalPrices) => AdditionalPrices = additionalPrices;
 

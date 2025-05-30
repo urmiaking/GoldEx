@@ -19,7 +19,7 @@ public partial class ProductsList
     {
         var result = new TableData<ProductVm>();
         using var scope = CreateServiceScope();
-        var service = GetRequiredService<IProductClientService>(scope);
+        var service = GetRequiredService<IProductService>(scope);
 
         try
         {

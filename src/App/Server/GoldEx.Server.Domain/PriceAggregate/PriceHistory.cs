@@ -23,13 +23,9 @@ public class PriceHistory : EntityBase
     public string LastUpdate { get; private set; }
     public string Unit { get; private set; }
     public string DailyChangeRate { get; private set; }
-    public DateTime ExpireDate { get; private set; }
 
-    public void UpdateExpireDate(DateTime expireDate)
-    {
-        if (expireDate < DateTime.UtcNow)
-            throw new ArgumentOutOfRangeException(nameof(expireDate), "Expire date cannot be in the past.");
-
-        ExpireDate = expireDate;
-    }
+    public void SetCurrentValue(decimal currentValue) => CurrentValue = currentValue;
+    public void SetLastUpdate(string lastUpdate) => LastUpdate = lastUpdate;
+    public void SetDailyChangeRate(string dailyChangeRate) => DailyChangeRate = dailyChangeRate;
+    public void SetUnit(string unit) => Unit = unit;
 }

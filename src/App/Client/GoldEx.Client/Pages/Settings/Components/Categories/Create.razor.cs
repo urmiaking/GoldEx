@@ -13,7 +13,7 @@ public partial class Create
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private IProductCategoryClientService CategoryService => GetRequiredService<IProductCategoryClientService>();
+    private IProductCategoryService CategoryService => GetRequiredService<IProductCategoryService>();
 
     private void Close() => MudDialog.Cancel();
 

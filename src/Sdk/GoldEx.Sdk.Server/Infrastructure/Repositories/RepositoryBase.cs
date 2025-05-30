@@ -25,9 +25,15 @@ public abstract class RepositoryBase<TEntity>(DbContext context) :
 
     public virtual void Create(TEntity entity) => context.Add(entity);
 
+    public virtual void CreateRange(IEnumerable<TEntity> entities) => context.AddRange(entities);
+
     public virtual void Update(TEntity entity) => context.Update(entity);
 
+    public virtual void UpdateRange(IEnumerable<TEntity> entities) => context.UpdateRange(entities);
+
     public virtual void Delete(TEntity entity) => context.Remove(entity);
+
+    public virtual void DeleteRange(IEnumerable<TEntity> entities) => context.RemoveRange(entities);
 
     public virtual Task<int> SaveAsync(CancellationToken cancellationToken = default)
     {
@@ -116,15 +122,33 @@ public abstract class RepositoryBase<TEntity>(DbContext context) :
         await SaveAsync(cancellationToken);
     }
 
+    public virtual async Task CreateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+    {
+        CreateRange(entities);
+        await SaveAsync(cancellationToken);
+    }
+
     public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         Update(entity);
         await SaveAsync(cancellationToken);
     }
 
+    public virtual async Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+    {
+        UpdateRange(entities);
+        await SaveAsync(cancellationToken);
+    }
+
     public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         Delete(entity);
+        await SaveAsync(cancellationToken);
+    }
+
+    public virtual async Task DeleteRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+    {
+        DeleteRange(entities);
         await SaveAsync(cancellationToken);
     }
 }

@@ -2,13 +2,13 @@
 
 namespace GoldEx.Shared.DTOs.Transactions;
 
-public record UpdateTransactionRequest(int Number,
+public record UpdateTransactionRequest(long Number,
     string Description,
     DateTime DateTime,
-    double? Credit,
+    decimal? Credit,
     UnitType? CreditUnit,
-    double? CreditRate,
-    double? Debit,
+    decimal? CreditRate,
+    decimal? Debit,
     UnitType? DebitUnit,
-    double? DebitRate,
+    decimal? DebitRate,
     Guid CustomerId);

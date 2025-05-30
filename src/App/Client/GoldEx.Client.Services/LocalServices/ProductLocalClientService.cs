@@ -24,14 +24,14 @@ public class ProductLocalClientService(IMapper mapper, IProductService<Product, 
         return mapper.Map<PagedList<GetProductResponse>>(list);
     }
 
-    public async Task<GetProductResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(new ProductId(id), cancellationToken);
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);
     }
 
-    public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(barcode, cancellationToken);
 

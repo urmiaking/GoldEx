@@ -2,7 +2,7 @@
 
 namespace GoldEx.Client.Abstractions.HttpServices;
 
-public interface IProductHttpClientService : IProductClientService
+public interface IProductHttpClientService : IProductService
 {
 
 }
