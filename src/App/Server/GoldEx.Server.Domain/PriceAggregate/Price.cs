@@ -8,16 +8,17 @@ public readonly record struct PriceId(Guid Value);
 public class Price : EntityBase<PriceId>
 {
     public static Price Create(
-        PriceId id,
         string title,
         MarketType marketType,
+        PriceHistory priceHistory,
         UnitType? unitType = null)
     {
         return new Price
         {
-            Id = id,
+            Id = new PriceId(Guid.NewGuid()),
             Title = title,
             MarketType = marketType,
+            PriceHistory = priceHistory,
             UnitType = unitType,
             IsActive = true
         };
@@ -34,7 +35,19 @@ public class Price : EntityBase<PriceId>
 
     public PriceHistory? PriceHistory { get; private set; }
 
-    public void SetPriceHistory(PriceHistory priceHistory) => PriceHistory = priceHistory;
+    public void CreatePriceHistory(PriceHistory priceHistory) => PriceHistory = priceHistory;
+
+    public void SetPriceHistory(decimal currentValue, string lastUpdate, string dailyChangeRate, string unit)
+    {
+        if (PriceHistory is null)
+            throw new InvalidOperationException("Price history is not initialized.");
+
+        PriceHistory.SetCurrentValue(currentValue);
+        PriceHistory.SetLastUpdate(lastUpdate);
+        PriceHistory.SetDailyChangeRate(dailyChangeRate);
+        PriceHistory.SetUnit(unit);
+    }
+
     public void SetTitle(string title) => Title = title;
     public void SetMarketType(MarketType marketType) => MarketType = marketType;
     public void SetUnitType(UnitType? unitType) => UnitType = unitType;

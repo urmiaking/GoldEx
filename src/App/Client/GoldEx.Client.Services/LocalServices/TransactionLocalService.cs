@@ -81,7 +81,7 @@ public class TransactionLocalService(ITransactionService<Transaction, Customer> 
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = bad)
     {
         var item = await transactionService.GetAsync(new TransactionId(id), cancellationToken);
 

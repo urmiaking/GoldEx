@@ -2,7 +2,7 @@
 
 namespace GoldEx.Client.Abstractions.HttpServices;
 
-public interface ITransactionHttpService : ITransactionClientService
+public interface ITransactionHttpService : ITransactionService
 {
     
 }

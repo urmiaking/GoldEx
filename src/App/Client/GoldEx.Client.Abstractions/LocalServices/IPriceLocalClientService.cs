@@ -3,7 +3,7 @@ using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Abstractions.LocalServices;
 
-public interface IPriceLocalClientService : IPriceClientService
+public interface IPriceLocalClientService : IPriceService
 {
     Task<GetPriceResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task CreateAsync(CreatePriceRequest request, CancellationToken cancellationToken = default);

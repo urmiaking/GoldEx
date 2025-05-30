@@ -1,13 +1,15 @@
-﻿using GoldEx.Sdk.Common.Authorization;
-using GoldEx.Sdk.Common;
+﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Infrastructure;
+using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Shared.Services;
+using GoldEx.Shared.Settings;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using System.Security.Claims;
-using GoldEx.Server.Domain.SettingsAggregate;
-using GoldEx.Shared.Application.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 namespace GoldEx.Server.Extensions;
 
@@ -43,8 +45,10 @@ public static class ServiceProviderExtensions
 
         if (admin is null)
         {
-            await accountService.CreateUserAsync(new AppUser("مدیر سامانه", "admin@admin.com", "admin@admin.com", "09905492104"),
-                            "admin", [BuiltinRoles.Administrators]);
+            var adminUser = serviceProvider.GetRequiredService<IOptions<UserSetting>>().Value;
+
+            await accountService.CreateUserAsync(new AppUser("مدیر سامانه", adminUser.UserName, adminUser.Email, adminUser.PhoneNumber),
+                adminUser.Password, [BuiltinRoles.Administrators]);
         }
     }
 
@@ -77,14 +81,24 @@ public static class ServiceProviderExtensions
 
     private static async Task PopulateDefaultSettingsAsync(IServiceProvider provider)
     {
-        var settingsService = provider.GetRequiredService<ISettingsService<Setting>>();
+        var serverSettingService = provider.GetRequiredService<IServerSettingService>();
+        var settingsService = provider.GetRequiredService<ISettingService>();
 
         var settings = await settingsService.GetAsync();
 
         if (settings is null)
         {
-            await settingsService.CreateAsync(new Setting("جواهری دمو", "ارومیه خیابان مدنی 2، پلاک 17",
-                "04431934291 - 04431934119", 9, 7, 20));
+            var defaultSettingOptions = provider.GetRequiredService<IOptions<DefaultSetting>>();
+            var defaultSetting = defaultSettingOptions.Value;
+
+            var setting = new CreateSettingRequest(defaultSetting.InstitutionName,
+                defaultSetting.Address,
+                defaultSetting.PhoneNumber,
+                defaultSetting.TaxPercent,
+                defaultSetting.GoldProfitPercent,
+                defaultSetting.JewelryProfitPercent);
+
+            await serverSettingService.CreateAsync(setting);
         }
     }
 }

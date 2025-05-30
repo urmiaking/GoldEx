@@ -8,7 +8,7 @@ public partial class BaseInfo
 {
     private SettingsVm _model = new();
 
-    private ISettingsClientService SettingsService => GetRequiredService<ISettingsClientService>();
+    private ISettingService SettingService => GetRequiredService<ISettingService>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -23,7 +23,7 @@ public partial class BaseInfo
             SetBusy();
             CancelToken();
 
-            var response = await SettingsService.GetAsync(CancellationTokenSource.Token);
+            var response = await SettingService.GetAsync(CancellationTokenSource.Token);
 
             if (response is not null)
             {
@@ -53,7 +53,7 @@ public partial class BaseInfo
 
             var request = _model.ToRequest();
 
-            await SettingsService.UpdateAsync(_model.Id, request, CancellationTokenSource.Token);
+            await SettingService.UpdateAsync(request, CancellationTokenSource.Token);
 
             AddSuccessToast("تنظیمات با موفقیت ذخیره شد");
         }

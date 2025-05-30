@@ -30,7 +30,7 @@ public partial class TransactionsList
     {
         var result = new TableData<TransactionVm>();
         using var scope = CreateServiceScope();
-        var service = GetRequiredService<ITransactionClientService>(scope);
+        var service = GetRequiredService<ITransactionService>(scope);
 
         try
         {

@@ -24,7 +24,7 @@ public partial class Create
     [Parameter] public Guid? CustomerId { get; set; }
 
     private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
-    private ITransactionClientService TransactionService => GetRequiredService<ITransactionClientService>();
+    private ITransactionService TransactionService => GetRequiredService<ITransactionService>();
 
     protected override async Task OnParametersSetAsync()
     {

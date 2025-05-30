@@ -101,7 +101,7 @@ public class TransactionHttpClientService(HttpClient client, JsonSerializerOptio
         }
     }
 
-    public async Task<bool> DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = bad)
     {
         try
         {

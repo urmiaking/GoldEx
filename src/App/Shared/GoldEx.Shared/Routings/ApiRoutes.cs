@@ -23,8 +23,9 @@ public static class ApiRoutes
     {
         public const string Base = "/api/Price";
 
-        public const string GetLatestPrices = "GetLatestPrices";
-        public const string GetPendings = "GetPendings/{checkpointDate}";
+        public const string Get = "";
+        public const string GetMarket = "Market/{marketType}";
+        public const string GetUnit = "Unit/{unitType}";
     }
 
     public class Health
@@ -41,27 +42,23 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
-        public const string GetPendingItems = "pending-items/{checkPointDate}";
     }
 
     public class Settings
     {
         public const string Base = "/api/Settings";
-        public const string GetAll = "";
-        public const string Get = "{id}";
-        public const string Update = "{id}";
-        public const string GetUpdate = "get-update/{checkPointDate}";
+        public const string Get = "";
+        public const string Update = "";
     }
 
     public class ProductCategories
     {
         public const string Base = "/api/ProductCategories";
-        public const string GetAll = "";
+        public const string GetList = "";
         public const string Get = "{id}";
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
-        public const string GetPendingItems = "pending-items/{checkPointDate}";
     }
 
     public class Customers
@@ -74,21 +71,17 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
-        public const string GetPendingItems = "pending-items/{checkPointDate}";
     }
 
     public class Transactions
     {
         public const string Base = "/api/Transactions";
-        public const string GetList = "";
-        public const string GetListByCustomerId = "customer/{customerId}";
+        public const string GetList = ""; // GET /api/Transactions or /api/Transactions?customerId=123
         public const string Get = "{id}";
         public const string GetByNumber = "number/{number}";
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
-        public const string GetPendingItems = "pending-items/{checkPointDate}";
-        public const string GetLatestTransactionNumber = "get-latest-transaction-number";
-        public const string GetCustomerRemainingCredit = "customer/{customerId}/remaining-credit";
+        public const string GetLastNumber = "last-number";
     }
 }

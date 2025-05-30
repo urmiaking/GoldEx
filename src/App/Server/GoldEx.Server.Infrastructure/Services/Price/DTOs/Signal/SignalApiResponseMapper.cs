@@ -16,7 +16,7 @@ public static class SignalApiResponseMapper
         if (response.Data.Gold is not null)
         {
             priceResponses.AddRange(from item in response.Data.Gold.Data
-                let currentValue = ParseDouble(item.Close)
+                let currentValue = ParseDecimal(item.Close)
                 let change = FormatChange(item.Change,
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
@@ -33,7 +33,7 @@ public static class SignalApiResponseMapper
         if (response.Data.Currency is not null)
         {
             priceResponses.AddRange(from item in response.Data.Currency.Data
-                let currentValue = ParseDouble(item.Close)
+                let currentValue = ParseDecimal(item.Close)
                 let change = FormatChange(item.Change,
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
@@ -52,7 +52,7 @@ public static class SignalApiResponseMapper
         if (response.Data.Coin is not null)
         {
             priceResponses.AddRange(from item in response.Data.Coin.Data
-                let currentValue = ParseDouble(item.Close)
+                let currentValue = ParseDecimal(item.Close)
                 let change = FormatChange(item.Change,
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
@@ -69,7 +69,7 @@ public static class SignalApiResponseMapper
         if (response.Data.ParsianCoin is not null)
         {
             priceResponses.AddRange(from item in response.Data.ParsianCoin.Data
-                let currentValue = ParseDouble(item.Close)
+                let currentValue = ParseDecimal(item.Close)
                 let change = FormatChange(item.Change,
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
@@ -86,7 +86,7 @@ public static class SignalApiResponseMapper
         if (response.Data.BubbleCoin is not null)
         {
             priceResponses.AddRange(from item in response.Data.BubbleCoin?.Data
-                let currentValue = ParseDouble(item.Close)
+                let currentValue = ParseDecimal(item.Close)
                 let change = FormatChange(item.Change,
                     item.PercentChange)
                 let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
@@ -117,7 +117,7 @@ public static class SignalApiResponseMapper
             throw new NotSupportedException("geram18 is not available in response");
 
         var title = item.PersianName?.ToPersianChars() ?? item.Name;
-        var currentValue = ParseDouble(item.Close);
+        var currentValue = ParseDecimal(item.Close);
         var unit = item.Unit;
         var change = FormatChange(item.Change, item.PercentChange);
         var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}";
@@ -140,7 +140,7 @@ public static class SignalApiResponseMapper
             throw new NotSupportedException("usDollar is not available in response");
 
         var title = item.PersianName?.ToPersianChars() ?? item.Name;
-        var currentValue = ParseDouble(item.Close);
+        var currentValue = ParseDecimal(item.Close);
         var unit = item.Unit;
         var change = FormatChange(item.Change, item.PercentChange);
         var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}";
@@ -149,7 +149,7 @@ public static class SignalApiResponseMapper
         return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Currency.Market));
     }
 
-    private static double ParseDouble(long value) => value;
+    private static decimal ParseDecimal(long value) => value;
 
     private static string FormatChange(long change, double percentChange)
     {

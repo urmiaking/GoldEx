@@ -5,7 +5,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.Application.Services.Abstractions;
 using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
-using GoldEx.Shared.DTOs.Categories;
+using GoldEx.Shared.DTOs.ProductCategories;
 using MapsterMapper;
 
 namespace GoldEx.Client.Services.LocalServices;
@@ -14,21 +14,21 @@ namespace GoldEx.Client.Services.LocalServices;
 public class ProductCategoryLocalClientService(IMapper mapper,
     IProductCategoryService<ProductCategory> service) : IProductCategoryLocalClientService
 {
-    public async Task<List<GetCategoryResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetProductCategoryResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var list = await service.GetAllAsync(cancellationToken);
 
-        return mapper.Map<List<GetCategoryResponse>>(list);
+        return mapper.Map<List<GetProductCategoryResponse>>(list);
     }
 
-    public async Task<GetCategoryResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GetProductCategoryResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(new ProductCategoryId(id), cancellationToken);
 
-        return item is null ? null : mapper.Map<GetCategoryResponse>(item);
+        return item is null ? null : mapper.Map<GetProductCategoryResponse>(item);
     }
 
-    public async Task<bool> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateProductCategoryRequest request, CancellationToken cancellationToken = default)
     {
         var category = new ProductCategory(request.Title);
 
@@ -37,7 +37,7 @@ public class ProductCategoryLocalClientService(IMapper mapper,
         return true;
     }
 
-    public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request,
+    public async Task<bool> UpdateAsync(Guid id, UpdateProductCategoryRequest request,
         CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(new ProductCategoryId(id), cancellationToken);
@@ -101,7 +101,7 @@ public class ProductCategoryLocalClientService(IMapper mapper,
         await service.UpdateAsync(item, cancellationToken);
     }
 
-    public async Task CreateAsSyncedAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task CreateAsSyncedAsync(CreateProductCategoryRequest request, CancellationToken cancellationToken = default)
     {
         var category = new ProductCategory(new ProductCategoryId(request.Id), request.Title);
 
@@ -110,7 +110,7 @@ public class ProductCategoryLocalClientService(IMapper mapper,
         await service.CreateAsync(category, cancellationToken);
     }
 
-    public async Task UpdateAsSyncAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task UpdateAsSyncAsync(Guid id, UpdateProductCategoryRequest request, CancellationToken cancellationToken = default)
     {
         var item = await service.GetAsync(new ProductCategoryId(id), cancellationToken);
 

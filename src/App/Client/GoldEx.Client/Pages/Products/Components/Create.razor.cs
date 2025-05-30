@@ -23,8 +23,8 @@ public partial class Create
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private IProductClientService ProductService => GetRequiredService<IProductClientService>();
-    private IProductCategoryClientService CategoryService => GetRequiredService<IProductCategoryClientService>();
+    private IProductService ProductService => GetRequiredService<IProductService>();
+    private IProductCategoryService CategoryService => GetRequiredService<IProductCategoryService>();
 
     protected override void OnInitialized()
     {

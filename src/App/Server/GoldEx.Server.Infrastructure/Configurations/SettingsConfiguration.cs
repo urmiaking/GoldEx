@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.SettingsAggregate;
+﻿using GoldEx.Server.Domain.SettingAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

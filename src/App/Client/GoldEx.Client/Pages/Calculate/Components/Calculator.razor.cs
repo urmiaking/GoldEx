@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -14,7 +15,7 @@ public partial class Calculator
     private CalculatorVm _model = new();
     private MudForm _from = default!;
     private CalculatorValidator _calculatorValidator = new();
-    private GetSettingsResponse? _settings;
+    private GetSettingResponse? _settings;
     private MudSelect<WageType?> _wageTypeField = default!;
     private MudTextField<double?> _wageField = default!;
     private MudTextField<double> _profitField = default!;
@@ -32,9 +33,9 @@ public partial class Calculator
     private string? _barcode;
     private string? _barcodeFieldHelperText;
 
-    private IPriceClientService PriceService => GetRequiredService<IPriceClientService>();
-    private IProductClientService ProductService => GetRequiredService<IProductClientService>();
-    private ISettingsClientService SettingsService => GetRequiredService<ISettingsClientService>();
+    private IPriceService PriceService => GetRequiredService<IPriceService>();
+    private IProductService ProductService => GetRequiredService<IProductService>();
+    private ISettingService SettingService => GetRequiredService<ISettingService>();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -58,7 +59,7 @@ public partial class Calculator
             SetBusy();
             CancelToken();
 
-            _settings = await SettingsService.GetAsync(CancellationTokenSource.Token);
+            _settings = await SettingService.GetAsync(CancellationTokenSource.Token);
 
             if (_settings is not null)
             {

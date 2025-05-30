@@ -5,7 +5,7 @@ using GoldEx.Client.Abstractions.SyncServices;
 using GoldEx.Client.Offline.Domain.ProductCategoryAggregate;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Shared.DTOs.Categories;
+using GoldEx.Shared.DTOs.ProductCategories;
 
 namespace GoldEx.Client.Services.SyncServices;
 

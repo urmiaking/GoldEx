@@ -11,7 +11,7 @@ public partial class PriceBoard
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
 
-    private IPriceClientService PriceService => GetRequiredService<IPriceClientService>();
+    private IPriceService PriceService => GetRequiredService<IPriceService>();
 
     private readonly TableGroupDefinition<GetPriceResponse> _groupDefinition = new()
     {

@@ -25,7 +25,7 @@ public class ProductHttpClientService(
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetProductResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Products.Get(id), cancellationToken);
 
@@ -37,7 +37,7 @@ public class ProductHttpClientService(
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Products.GetByBarcode(barcode), cancellationToken);
 

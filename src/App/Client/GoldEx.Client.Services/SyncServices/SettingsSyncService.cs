@@ -11,8 +11,8 @@ namespace GoldEx.Client.Services.SyncServices;
 [ScopedService]
 public class SettingsSyncService(
     INetworkStatusService networkStatusService,
-    ISettingsHttpClientService httpService,
-    ISettingsLocalService localService,
+    ISettingHttpClientService httpService,
+    ISettingLocalService localService,
     ICheckpointLocalClientService checkpointService
     ) : ISettingsSyncService
 {
@@ -60,7 +60,7 @@ public class SettingsSyncService(
                     incomingUpdate.GoldProfit,
                     incomingUpdate.JewelryProfit);
 
-                await localService.UpdateAsync(incomingUpdate.Id, updateRequest, cancellationToken);
+                await localService.UpdateAsync(updateRequest, cancellationToken);
             }
         }
     }
@@ -80,7 +80,7 @@ public class SettingsSyncService(
                 localUpdate.GoldProfit,
                 localUpdate.JewelryProfit);
 
-            var updated = await httpService.UpdateAsync(localUpdate.Id, updateRequest, cancellationToken);
+            var updated = await httpService.UpdateAsync(updateRequest, cancellationToken);
 
             if (updated)
                 shouldAddCheckpoint = true;

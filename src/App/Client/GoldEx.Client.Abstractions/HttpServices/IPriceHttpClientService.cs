@@ -2,4 +2,4 @@
 
 namespace GoldEx.Client.Abstractions.HttpServices;
 
-public interface IPriceHttpClientService : IPriceClientService;
+public interface IPriceHttpClientService : IPriceService;

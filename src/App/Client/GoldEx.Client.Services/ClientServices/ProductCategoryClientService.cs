@@ -1,7 +1,7 @@
 ﻿using GoldEx.Client.Abstractions.LocalServices;
 using GoldEx.Client.Abstractions.SyncServices;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Shared.DTOs.Categories;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Services;
 
 namespace GoldEx.Client.Services.ClientServices;
@@ -10,23 +10,23 @@ namespace GoldEx.Client.Services.ClientServices;
 public class ProductCategoryClientService(
     IProductCategoryLocalClientService localService,
     IProductCategorySyncService syncService) 
-    : IProductCategoryClientService
+    : IProductCategoryService
 {
-    public async Task<List<GetCategoryResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetProductCategoryResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         await syncService.SynchronizeAsync(cancellationToken);
 
         return await localService.GetAllAsync(cancellationToken);
     }
 
-    public async Task<GetCategoryResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GetProductCategoryResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await syncService.SynchronizeAsync(cancellationToken);
 
         return await localService.GetAsync(id, cancellationToken);
     }
 
-    public async Task<bool> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(CreateProductCategoryRequest request, CancellationToken cancellationToken = default)
     {
         await localService.CreateAsync(request, cancellationToken);
 
@@ -35,7 +35,7 @@ public class ProductCategoryClientService(
         return true;
     }
 
-    public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request,
+    public async Task<bool> UpdateAsync(Guid id, UpdateProductCategoryRequest request,
         CancellationToken cancellationToken = default)
     {
         await localService.UpdateAsync(id, request, cancellationToken);

@@ -1,5 +1,4 @@
 ﻿using GoldEx.Server.Domain.ProductAggregate;
-using GoldEx.Server.Domain.ProductCategoryAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -27,9 +26,9 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasPrecision(18, 2)
             .IsRequired();
 
-        builder.Property(x => x.ProductCategoryId)
-            .HasConversion(id => id.Value,
-                value => new ProductCategoryId(value));
+        builder.Property(x => x.Wage)
+            .HasPrecision(18, 2)
+            .IsRequired();
 
         builder.HasOne(x => x.ProductCategory)
             .WithMany(x => x.Products)

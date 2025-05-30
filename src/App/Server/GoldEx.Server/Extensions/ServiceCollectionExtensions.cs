@@ -1,29 +1,27 @@
-﻿using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Reflection;
+﻿using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using GoldEx.Sdk.Server.Api.Identity;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Infrastructure;
-using Mapster;
-using MapsterMapper;
-using Microsoft.AspNetCore.Identity;
-using GoldEx.Sdk.Common.Authorization;
-using GoldEx.Sdk.Server.Api.Identity;
+using GoldEx.Server.Infrastructure.HealthChecks;
 using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
 using GoldEx.Shared.Routings;
+using GoldEx.Shared.Settings;
 using Google.Apis.Auth.AspNetCore3;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using GoldEx.Shared.Settings;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using GoldEx.Server.Infrastructure.HealthChecks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using GoldEx.Shared.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog.Ui.Core.Extensions;
 using Serilog.Ui.MsSqlServerProvider.Extensions;
 using Serilog.Ui.Web.Extensions;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GoldEx.Server.Extensions;
 
@@ -93,6 +91,8 @@ internal static class ServiceCollectionExtensions
     {
         services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
         services.Configure<SmsSettings>(configuration.GetSection(nameof(SmsSettings)));
+        services.Configure<DefaultSetting>(configuration.GetSection(nameof(DefaultSetting)));
+        services.Configure<UserSetting>(configuration.GetSection(nameof(UserSetting)));
 
         return services;
     }
@@ -114,12 +114,7 @@ internal static class ServiceCollectionExtensions
         if (string.IsNullOrEmpty(connectionString))
             throw new Exception("GoldEx connection string is not available");
 
-        services.AddDbContextFactory<GoldExDbContext>(options =>
-        {
-            options.UseSqlServer(connectionString);
-        });
-
-        services.AddScoped<IGoldExDbContextFactory, GoldExDbContextFactory>();
+        services.AddSqlServer<GoldExDbContext>(connectionString);
 
         return services;
     }

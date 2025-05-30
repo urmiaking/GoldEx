@@ -16,7 +16,7 @@ public partial class Remove
     public Guid Id { get; set; }
 
     private bool _processing;
-    private ITransactionClientService TransactionService => GetRequiredService<ITransactionClientService>();
+    private ITransactionService TransactionService => GetRequiredService<ITransactionService>();
 
     private async Task OnValidSubmit()
     {

@@ -85,9 +85,9 @@ public class TransactionSyncService(INetworkStatusService networkStatusService,
                         break;
                     }
                 case ModifyStatus.Deleted:
-                    var deleted = await httpService.DeleteAsync(transaction.Id, false, cancellationToken);
+                    var deleted = await httpService.DeleteAsync(transaction.Id, cancellationToken);
                     if (deleted)
-                        await localService.DeleteAsync(transaction.Id, true, cancellationToken);
+                        await localService.DeleteAsync(transaction.Id, cancellationToken);
                     else
                         shouldAddCheckpoint = false;
 
@@ -111,7 +111,7 @@ public class TransactionSyncService(INetworkStatusService networkStatusService,
         {
             if (incomingTransaction.IsDeleted is true)
             {
-                await localService.DeleteAsync(incomingTransaction.Id, true, cancellationToken);
+                await localService.DeleteAsync(incomingTransaction.Id, cancellationToken);
             }
             else
             {

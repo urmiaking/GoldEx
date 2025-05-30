@@ -11,7 +11,7 @@ public partial class CategoriesList
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IEnumerable<ProductCategoryVm> _productCategories = new List<ProductCategoryVm>();
 
-    private IProductCategoryClientService CategoryService => GetRequiredService<IProductCategoryClientService>();
+    private IProductCategoryService CategoryService => GetRequiredService<IProductCategoryService>();
 
     protected override async Task OnInitializedAsync()
     {

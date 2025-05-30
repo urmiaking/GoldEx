@@ -24,7 +24,7 @@ public partial class Update
     [Parameter] public Guid? TransactionId { get; set; }
 
     private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
-    private ITransactionClientService TransactionService => GetRequiredService<ITransactionClientService>();
+    private ITransactionService TransactionService => GetRequiredService<ITransactionService>();
 
     protected override async Task OnParametersSetAsync()
     {
