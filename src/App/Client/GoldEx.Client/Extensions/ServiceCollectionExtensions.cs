@@ -1,21 +1,20 @@
-﻿using GoldEx.Sdk.Common.Authorization;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System.Globalization;
-using System.Runtime.InteropServices;
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
+using GoldEx.Client.Components.Services;
+using GoldEx.Client.Services;
+using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
-using MudBlazor.Services;
-using GoldEx.Client.Services;
-using GoldEx.Sdk.Client.Abstractions;
-using MudBlazor;
-using GoldEx.Client.Components.Services;
 using GoldEx.Shared.Abstractions;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor;
+using MudBlazor.Services;
+using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace GoldEx.Client.Extensions;
 
@@ -117,7 +116,6 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddLocalization();
-        services.AddScoped<IBusyIndicator, BusyIndicator>();
         services.AddScoped<IThemeService, ThemeService>();
 
         return services;

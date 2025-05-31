@@ -63,19 +63,12 @@ public static class ServiceProviderExtensions
             var claimRequirements = policy.Requirements.OfType<ClaimsAuthorizationRequirement>();
 
             foreach (var claimRequirement in claimRequirements)
-            {
                 if (claimRequirement.AllowedValues is null)
-                {
-                    await accountService.AddRoleClaimAsync(BuiltinRoles.Administrators, new Claim(claimRequirement.ClaimType, string.Empty));
-                }
+                    await accountService.AddRoleClaimAsync(BuiltinRoles.Administrators,
+                        new Claim(claimRequirement.ClaimType, string.Empty));
                 else
-                {
                     foreach (var requiredValue in claimRequirement.AllowedValues)
-                    {
                         await accountService.AddRoleClaimAsync(BuiltinRoles.Administrators, new Claim(claimRequirement.ClaimType, requiredValue));
-                    }
-                }
-            }
         }
     }
 

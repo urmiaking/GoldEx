@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -20,41 +21,30 @@ public partial class CustomersList
     private async Task<TableData<CustomerVm>> LoadCustomersAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<CustomerVm>();
-        using var scope = CreateServiceScope();
-        var service = GetRequiredService<ICustomerClientService>(scope);
 
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-                state.SortDirection switch
-                {
-                    SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                    SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                    SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
-
-            var response = await service.GetListAsync(filter, cancellationToken);
-
-            var items = response.Data.Select(CustomerVm.CreateFrom).ToList();
-
-            result = new TableData<CustomerVm>
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+            state.SortDirection switch
             {
-                TotalItems = response.Total,
-                Items = items
-            };
-        }
-        catch (Exception ex)
-        {
-            AddExceptionToast(ex);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
+                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
+                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
+                _ => throw new ArgumentOutOfRangeException()
+            });
+
+        await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
+            action: (s, token) => s.GetListAsync(filter, token),
+            afterSend: response =>
+            {
+                var items = response.Data.Select(CustomerVm.CreateFrom).ToList();
+
+                result = new TableData<CustomerVm>
+                {
+                    TotalItems = response.Total,
+                    Items = items
+                };
+            },
+            createScope: true
+        );
 
         return result;
     }

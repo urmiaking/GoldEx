@@ -27,12 +27,12 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
             .IsRequired();
 
         builder.Property(x => x.TaxPercent)
-            .HasColumnType("real");
+            .HasPrecision(9, 6);
 
         builder.Property(x => x.GoldProfitPercent)
-            .HasColumnType("real");
+            .HasPrecision(9, 6);
 
         builder.Property(x => x.JewelryProfitPercent)
-            .HasColumnType("real");
+            .HasPrecision(9, 6);
     }
 }

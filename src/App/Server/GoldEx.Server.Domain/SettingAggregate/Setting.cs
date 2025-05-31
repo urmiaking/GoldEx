@@ -8,9 +8,9 @@ public class Setting : EntityBase<SettingsId>
     public static Setting Create(string institutionName,
         string address,
         string phoneNumber,
-        float taxPercent,
-        float goldProfitPercent,
-        float jewelryProfitPercent,
+        decimal taxPercent,
+        decimal goldProfitPercent,
+        decimal jewelryProfitPercent,
         TimeSpan priceUpdateInterval)
     {
         return new Setting
@@ -33,16 +33,16 @@ public class Setting : EntityBase<SettingsId>
     public string InstitutionName { get; private set; }
     public string Address { get; private set; }
     public string PhoneNumber { get; private set; }
-    public float TaxPercent { get; private set; }
-    public float GoldProfitPercent { get; private set; }
-    public float JewelryProfitPercent { get; private set; }
+    public decimal TaxPercent { get; private set; }
+    public decimal GoldProfitPercent { get; private set; }
+    public decimal JewelryProfitPercent { get; private set; }
     public TimeSpan PriceUpdateInterval { get; private set; }
 
     public void SetInstitutionName(string institutionName) => InstitutionName = institutionName;
     public void SetAddress(string address) => Address = address;
     public void SetPhoneNumber(string phoneNumber) => PhoneNumber = phoneNumber;
-    public void SetTax(float taxPercent) => TaxPercent = taxPercent;
-    public void SetGoldProfit(float profitPercent) => GoldProfitPercent = profitPercent;
-    public void SetJewelryProfit(float profitPercent) => JewelryProfitPercent = profitPercent;
+    public void SetTax(decimal taxPercent) => TaxPercent = taxPercent;
+    public void SetGoldProfit(decimal profitPercent) => GoldProfitPercent = profitPercent;
+    public void SetJewelryProfit(decimal profitPercent) => JewelryProfitPercent = profitPercent;
     public void SetPriceUpdateInterval(TimeSpan interval) => PriceUpdateInterval = interval;
 }

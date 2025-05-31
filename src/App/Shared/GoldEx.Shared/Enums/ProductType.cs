@@ -11,5 +11,8 @@ public enum ProductType
     Gold = 2,
 
     [Display(Name = "طلای آب شده")]
-    MoltenGold = 3
+    MoltenGold = 3,
+
+    [Display(Name = "طلای کهنه")]
+    OldGold = 99 // Not used for database operations but for UI purposes
 }

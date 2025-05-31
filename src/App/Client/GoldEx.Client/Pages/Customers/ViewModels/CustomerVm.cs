@@ -12,7 +12,7 @@ public class CustomerVm
     public string NationalId { get; set; } = default!;
     public string PhoneNumber { get; set; } = default!;
     public string? Address { get; set; }
-    public double? CreditLimit { get; set; }
+    public decimal? CreditLimit { get; set; }
     public UnitType? CreditLimitUnit { get; set; }
 
     internal static CustomerVm CreateFrom(GetCustomerResponse response)

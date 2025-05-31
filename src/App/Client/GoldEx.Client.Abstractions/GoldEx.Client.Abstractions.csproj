@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
-    <ProjectReference Include="..\GoldEx.Client.Shared\GoldEx.Client.Shared.csproj" />
   </ItemGroup>
 
 </Project>

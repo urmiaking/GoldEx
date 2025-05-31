@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Api;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
