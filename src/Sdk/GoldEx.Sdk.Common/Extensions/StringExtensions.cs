@@ -57,8 +57,11 @@ public static class StringExtensions
         return template;
     }
 
-    public static string AppendQueryString(this string template, object parameters)
+    public static string AppendQueryString(this string template, object? parameters)
     {
+        if (parameters is null)
+            return template;
+
         var properties = parameters.GetType().GetProperties();
         var dictionary = new Dictionary<string, object?>();
         foreach (var property in properties)

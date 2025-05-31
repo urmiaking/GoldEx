@@ -10,14 +10,14 @@ public class CalculatorHelper
     /// </summary>
     /// <param name="model">مدل محاسباتی</param>
     /// <returns>قیمت خام طلا</returns>
-    public static double CalculateRawPrice(CalculatorVm model)
+    public static decimal CalculateRawPrice(CalculatorVm model)
     {
-        if (model.ProductType == ProductType.UsedGold)
+        if (model.ProductType == ProductType.OldGold)
         {
             return model.Weight * 735 / 750 * model.GramPrice;
         }
 
-        var gramPrice24 = model.GramPrice / 0.75;
+        var gramPrice24 = model.GramPrice / 0.75m;
         var caratRatio = GetCaratRatio(model.CaratType);
         return model.Weight * gramPrice24 * caratRatio;
     }
@@ -28,7 +28,7 @@ public class CalculatorHelper
     /// <param name="model">مدل محاسباتی</param>
     /// <param name="rawPrice">قیمت خام طلا</param>
     /// <returns>اجرت ساخت</returns>
-    public static double CalculateWage(CalculatorVm model, double rawPrice)
+    public static decimal CalculateWage(CalculatorVm model, decimal rawPrice)
     {
         if (model.Wage == null) return 0;
 
@@ -54,12 +54,12 @@ public class CalculatorHelper
     /// <param name="rawPrice">قیمت خام طلا</param>
     /// <param name="wage">اجرت ساخت</param>
     /// <returns>سود فروشنده</returns>
-    public static double CalculateProfit(CalculatorVm model, double rawPrice, double wage)
+    public static decimal CalculateProfit(CalculatorVm model, decimal rawPrice, decimal wage)
     {
-        if (model.ProductType is ProductType.UsedGold or ProductType.MoltenGold)
+        if (model.ProductType is ProductType.OldGold or ProductType.MoltenGold)
             return 0;
 
-        return (rawPrice + wage) * (model.Profit / 100);
+        return (rawPrice + wage) * (model.ProfitPercent / 100);
     }
 
     /// <summary>
@@ -69,12 +69,12 @@ public class CalculatorHelper
     /// <param name="wage">اجرت ساخت</param>
     /// <param name="profit">سود فروشنده</param>
     /// <returns>مالیات بر ارزش افزوده</returns>
-    public static double CalculateTax(CalculatorVm model, double wage, double profit)
+    public static decimal CalculateTax(CalculatorVm model, decimal wage, decimal profit)
     {
-        if (model.ProductType is ProductType.UsedGold or ProductType.MoltenGold)
+        if (model.ProductType is ProductType.OldGold or ProductType.MoltenGold)
             return 0;
 
-        return (wage + profit) * (model.Tax / 100);
+        return (wage + profit) * (model.TaxPercent / 100);
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public class CalculatorHelper
     /// <param name="profit">سود فروشنده</param>
     /// <param name="tax">مالیات بر ارزش افزوده</param>
     /// <returns>قیمت نهایی</returns>
-    public static double CalculateFinalPrice(CalculatorVm model, double rawPrice, double wage, double profit, double tax)
+    public static decimal CalculateFinalPrice(CalculatorVm model, decimal rawPrice, decimal wage, decimal profit, decimal tax)
     {
         var finalPrice = rawPrice + wage + profit + tax;
         if (model.AdditionalPrices.HasValue)
@@ -94,8 +94,8 @@ public class CalculatorHelper
             finalPrice += model.AdditionalPrices.Value;
         }
 
-        // Adjustments for Used Gold ( طلای دست دوم )
-        if (model.ProductType == ProductType.UsedGold)
+        // Adjustments for Old Gold ( طلای کهنه )
+        if (model.ProductType == ProductType.OldGold)
         {
             // In used gold, اجرت ساخت, سود فروشنده, مالیات are usually removed
             // You may need to define additional logic for كارمزد and خالصی as discussed earlier.
@@ -110,21 +110,19 @@ public class CalculatorHelper
     /// </summary>
     /// <param name="caratType">نوع عیار</param>
     /// <returns>نسبت عیار</returns>
-    private static double GetCaratRatio(CaratType caratType)
+    private static decimal GetCaratRatio(CaratType caratType)
     {
         return caratType switch
         {
-            CaratType.SevenTeen => 0.708 //  17 / 24
+            CaratType.Eighteen => 0.750m // 18 / 24
             ,
-            CaratType.Eighteen => 0.750 // 18 / 24
+            CaratType.TwentyOne => 0.875m // 21 / 24
             ,
-            CaratType.TwentyOne => 0.875 // 21 / 24
+            CaratType.TwentyTwo => 0.9167m // 22 / 24
             ,
-            CaratType.TwentyTwo => 0.9167 // 22 / 24
+            CaratType.TwentyFour => 1.0m // 24 / 24
             ,
-            CaratType.TwentyFour => 1.0 // 24 / 24
-            ,
-            _ => 0.750
+            _ => 0.750m
         };
     }
 }

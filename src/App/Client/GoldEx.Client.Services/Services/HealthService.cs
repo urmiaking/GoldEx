@@ -1,13 +1,15 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Health;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 
-namespace GoldEx.Client.Services.ClientServices;
+namespace GoldEx.Client.Services.Services;
 
-public class HealthService(HttpClient client, JsonSerializerOptions jsonOptions) : IHealthService
+[ScopedService]
+internal class HealthService(HttpClient client, JsonSerializerOptions jsonOptions) : IHealthService
 {
     public async Task<HealthCheckResponse> GetAsync(CancellationToken cancellationToken = default)
     {

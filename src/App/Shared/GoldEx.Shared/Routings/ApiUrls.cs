@@ -1,6 +1,8 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using System.Globalization;
+using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.Routings;
 
@@ -10,6 +12,14 @@ public class ApiUrls
     {
         return string.Join('/', segments);
     }
+
+    private static CultureInfo EnCulture => new("en-US")
+    {
+        DateTimeFormat =
+        {
+            DateSeparator = "-"
+        }
+    };
 
     public static class Account
     {
@@ -24,10 +34,13 @@ public class ApiUrls
 
     public class Price
     {
-        public static string GetLatestPrices() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetLatestPrices);
+        public static string Get() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.Get);
 
-        public static string GetPendings(DateTime checkpointDate) => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetPendings)
-            .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+        public static string Get(MarketType marketType) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetMarket).FormatRoute(new { marketType });
+
+        public static string Get(UnitType unitType) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetUnit).FormatRoute(new { unitType });
     }
 
     public class Health
@@ -39,7 +52,7 @@ public class ApiUrls
     {
         public static string GetList(RequestFilter filter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList).AppendQueryString(filter);
         public static string Get(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Get).FormatRoute(new { id });
-        public static string GetByBarcode(string barcode) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
+        public static string Get(string barcode) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
             .AppendQueryString(new { barcode });
 
         public static string Create() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Create);
@@ -49,32 +62,17 @@ public class ApiUrls
 
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Delete).FormatRoute(new { id });
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     public class Settings
     {
-        public static string Get() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.GetAll);
-        public static string Get(Guid id) => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Get).FormatRoute(new { id });
-        public static string Update(Guid id) => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Update).FormatRoute(new { id });
-        public static string GetUpdate(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.GetUpdate)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+        public static string Get() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Get);
+        public static string Update() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Update);
     }
-
-    private static CultureInfo EnCulture => new("en-US")
-    {
-        DateTimeFormat =
-        {
-            DateSeparator = "-"
-        }
-    };
 
     public class ProductCategories
     {
-        public static string GetAll() => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetAll);
+        public static string GetList() => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetList);
 
         public static string Get(Guid id) => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Get)
             .FormatRoute(new { id });
@@ -86,10 +84,6 @@ public class ApiUrls
 
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Delete).FormatRoute(new { id });
-
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     public class Customers
@@ -109,22 +103,17 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Update).FormatRoute(new { id });
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Delete).FormatRoute(new { id });
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     public class Transactions
     {
-        public static string GetList(RequestFilter filter) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter);
-        public static string GetList(RequestFilter filter, Guid customerId) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetListByCustomerId).FormatRoute(new { customerId }).AppendQueryString(filter);
+        public static string GetList(RequestFilter filter, Guid? customerId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter).AppendQueryString(customerId);
 
         public static string Get(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });
 
-        public static string GetByNumber(int number) =>
+        public static string Get(int number) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetByNumber)
                 .AppendQueryString(new { number });
 
@@ -137,14 +126,7 @@ public class ApiUrls
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Delete).FormatRoute(new { id });
 
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
-
-        public static string GetLatestTransactionNumber() =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLatestTransactionNumber);
-
-        public static string GetCustomerRemainingCredit(Guid customerId) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetCustomerRemainingCredit).FormatRoute(new { customerId });
+        public static string GetLastNumber() =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLastNumber);
     }
 }

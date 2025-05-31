@@ -27,8 +27,8 @@
                        ValueChanged="OnProductTypeChanged">
             <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
             <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
-            <MudRadio Value="ProductType.UsedGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
             <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
+            <MudRadio Value="ProductType.OldGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
         </MudRadioGroup>
     </div>
 
@@ -40,9 +40,9 @@
                               For="() => _model.GramPrice"
                               HelperText="@_gramPriceFieldHelperText"
                               Immediate="true"
-                              Label="نرخ گرم 18 عیار"
-                              T="double"
-                              Value="_model.GramPrice"
+                              Label="@(_model.GetDisplayName(() => _model.GramPrice))"
+                              T="decimal"
+                              Value="@_model.GramPrice"
                               ValueChanged="OnGramPriceChanged"
                               Variant="Variant.Outlined"></MudTextField>
             </MudItem>
@@ -56,7 +56,7 @@
                                   HelperText="@_usDollarPriceFieldHelperText"
                                   Immediate="true"
                                   Label="نرخ دلار"
-                                  T="double?"
+                                  T="decimal?"
                                   Value="_model.UsDollarPrice"
                                   ValueChanged="OnDollarPriceChanged"
                                   Variant="Variant.Outlined"></MudTextField>
@@ -69,7 +69,7 @@
                               For="() => _model.Weight"
                               Immediate="true"
                               Label="وزن"
-                              T="double"
+                              T="decimal"
                               Value="_model.Weight"
                               ValueChanged="OnWeightChanged"
                               Variant="Variant.Outlined"></MudTextField>
@@ -118,7 +118,7 @@
                                   Immediate="true"
                                   Label="اجرت ساخت"
                                   @ref="_wageField"
-                                  T="double?"
+                                  T="decimal?"
                                   Value="_model.Wage"
                                   ValueChanged="OnWageChanged"
                                   Variant="Variant.Outlined"></MudTextField>
@@ -126,12 +126,12 @@
                 <MudItem xs="12" sm="6">
                     <MudTextField Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.Percent"
-                                  For="() => _model.Profit"
+                                  For="() => _model.ProfitPercent"
                                   Immediate="true"
                                   Label="سود فروش"
                                   @ref="_profitField"
-                                  T="double"
-                                  Value="_model.Profit"
+                                  T="decimal"
+                                  Value="_model.ProfitPercent"
                                   ValueChanged="OnProfitChanged"
                                   Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
@@ -144,7 +144,7 @@
                               HelperText="@_additionalPricesFieldHelperText"
                               Immediate="true"
                               Label="هزینه های اضافه"
-                              T="double?"
+                              T="decimal?"
                               Value="_model.AdditionalPrices"
                               ValueChanged="OnAdditionalPricesChanges"
                               Variant="Variant.Outlined"></MudTextField>
@@ -158,7 +158,7 @@
                         @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? "× (750 / 735)" : "")</MudText>
+                                <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.OldGold ? "× (750 / 735)" : "")</MudText>
                                 <MudText>@_rawPrice.Value.ToString("N0") تومان</MudText>
                             </div>
                         }
@@ -172,14 +172,14 @@
                         @if (_profit.HasValue && _profit.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.Profit%</MudText>
+                                <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent%</MudText>
                                 <MudText>@_profit.Value.ToString("N0") تومان</MudText>
                             </div>
                         }
                         @if (_tax.HasValue && _tax.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.Tax%</MudText>
+                                <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent%</MudText>
                                 <MudText>@_tax.Value.ToString("N0") تومان</MudText>
                             </div>
                         }
@@ -199,6 +199,5 @@
                 </MudExpansionPanel>
             </MudExpansionPanels>
         }
-
     </MudContainer>
 </MudForm>

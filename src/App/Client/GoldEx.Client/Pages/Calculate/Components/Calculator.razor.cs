@@ -1,11 +1,11 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
-using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
@@ -17,18 +17,18 @@ public partial class Calculator
     private CalculatorValidator _calculatorValidator = new();
     private GetSettingResponse? _settings;
     private MudSelect<WageType?> _wageTypeField = default!;
-    private MudTextField<double?> _wageField = default!;
-    private MudTextField<double> _profitField = default!;
+    private MudTextField<decimal?> _wageField = default!;
+    private MudTextField<decimal> _profitField = default!;
 
     private string? _wageFieldAdornmentText = "درصد";
     private string? _gramPriceFieldHelperText;
     private string? _usDollarPriceFieldHelperText;
     private string? _wageFieldHelperText;
-    private double? _rawPrice;
-    private double? _wage;
-    private double? _profit;
-    private double? _tax;
-    private double? _finalPrice;
+    private decimal? _rawPrice;
+    private decimal? _wage;
+    private decimal? _profit;
+    private decimal? _tax;
+    private decimal? _finalPrice;
     private string? _additionalPricesFieldHelperText;
     private string? _barcode;
     private string? _barcodeFieldHelperText;
@@ -54,63 +54,30 @@ public partial class Calculator
         if (authenticationState.User.Identity is { IsAuthenticated: false })
             return;
 
-        try
+        await SendRequestAsync<ISettingService, GetSettingResponse?>((s, ct) => s.GetAsync(ct), response =>
         {
-            SetBusy();
-            CancelToken();
+            _settings = response;
 
-            _settings = await SettingService.GetAsync(CancellationTokenSource.Token);
-
-            if (_settings is not null)
-            {
-                _model.Profit = _settings.GoldProfit;
-                _model.Tax = _settings.Tax;
-            }
-
-            StateHasChanged();
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+            _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+            _model.TaxPercent = _settings?.TaxPercent ?? 9;
+        });
     }
 
     private async Task LoadPricesAsync()
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var gram18Price = await PriceService.GetGram18PriceAsync(CancellationTokenSource.Token);
-            var usDollarPrice = await PriceService.GetUsDollarPriceAsync(CancellationTokenSource.Token);
-
-            if (gram18Price is not null)
+        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.Gold18K, ct),
+            response =>
             {
-                _model.GramPrice = double.Parse(gram18Price.Value) / 10;
+                _model.GramPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;
                 _gramPriceFieldHelperText = $"{_model.GramPrice:N0} تومان";
-            }
+            });
 
-            if (usDollarPrice is not null)
+        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.USD, ct),
+            response =>
             {
-                _model.UsDollarPrice = double.Parse(usDollarPrice.Value) / 10;
+                _model.UsDollarPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;
                 _usDollarPriceFieldHelperText = $"{_model.UsDollarPrice:N0} تومان";
-            }
-
-            StateHasChanged();
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+            });
     }
 
     private async Task Calculate()
@@ -171,7 +138,7 @@ public partial class Calculator
         await Calculate();
     }
 
-    private async void OnWageChanged(double? wage)
+    private async void OnWageChanged(decimal? wage)
     {
         _model.Wage = wage;
 
@@ -191,16 +158,14 @@ public partial class Calculator
         switch (productType)
         {
             case ProductType.Jewelry:
-                _model.Profit = _settings?.JewelryProfit ?? 20;
+                _model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
                 break;
             case ProductType.Gold:
-                _model.Profit = _settings?.GoldProfit ?? 7;
-                break;
-            case ProductType.Coin:
+                _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 break;
             case ProductType.MoltenGold:
                 break;
-            case ProductType.UsedGold:
+            case ProductType.OldGold:
                 await _wageField.Clear();
                 await _wageTypeField.ResetAsync();
                 await _profitField.Clear();
@@ -212,7 +177,7 @@ public partial class Calculator
         await Calculate();
     }
 
-    private async void OnDollarPriceChanged(double? dollarPrice)
+    private async void OnDollarPriceChanged(decimal? dollarPrice)
     {
         _model.UsDollarPrice = dollarPrice;
         _usDollarPriceFieldHelperText = $"{dollarPrice:N0} تومان";
@@ -227,7 +192,7 @@ public partial class Calculator
         await Calculate();
     }
 
-    private async void OnGramPriceChanged(double gramPrice)
+    private async void OnGramPriceChanged(decimal gramPrice)
     {
         _model.GramPrice = gramPrice;
 
@@ -236,21 +201,21 @@ public partial class Calculator
         await Calculate();
     }
 
-    private async void OnWeightChanged(double weight)
+    private async void OnWeightChanged(decimal weight)
     {
         _model.Weight = weight;
 
         await Calculate();
     }
 
-    private async void OnProfitChanged(double profit)
+    private async void OnProfitChanged(decimal profit)
     {
-        _model.Profit = profit;
+        _model.ProfitPercent = profit;
 
         await Calculate();
     }
 
-    private async void OnAdditionalPricesChanges(double? additionalPrices)
+    private async void OnAdditionalPricesChanges(decimal? additionalPrices)
     {
         _model.AdditionalPrices = additionalPrices;
         _additionalPricesFieldHelperText = additionalPrices.HasValue ? $"{additionalPrices:N0} تومان" : null;
@@ -260,14 +225,16 @@ public partial class Calculator
 
     private async Task OnBarcodeChanged(string barcode)
     {
-        try
+        _barcode = barcode;
+
+        if (string.IsNullOrWhiteSpace(barcode))
         {
-            SetBusy();
-            CancelToken();
+            OnBarcodeCleared();
+            return;
+        }
 
-            var response = await ProductService.GetAsync(barcode, CancellationTokenSource.Token);
-
-            if (response != null)
+        await SendRequestAsync<IProductService, GetProductResponse>(async (s, ct) => await s.GetAsync(barcode, ct),
+            response =>
             {
                 _model.Weight = response.Weight;
                 _model.CaratType = response.CaratType;
@@ -279,25 +246,12 @@ public partial class Calculator
                 OnWageTypeChanged(_model.WageType);
                 OnWageChanged(_model.Wage);
                 OnProductTypeChanged(_model.ProductType);
-            }
-            else
-            {
-                _barcode = null;
-            }
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            _barcode = barcode;
-            await Calculate();
-            SetIdeal();
-        }
+            });
+
+        await Calculate();
     }
 
-    private async void OnBarcodeCleared(MouseEventArgs args)
+    private async void OnBarcodeCleared()
     {
         _barcode = null;
         _barcodeFieldHelperText = null;
@@ -313,6 +267,6 @@ public partial class Calculator
         _model.Wage = 0;
         _model.WageType = null;
         _model.AdditionalPrices = null;
-        _model.Profit = _settings?.GoldProfit ?? 7;
+        _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
     }
 }

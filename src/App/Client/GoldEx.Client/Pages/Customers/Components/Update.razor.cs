@@ -10,53 +10,36 @@ namespace GoldEx.Client.Pages.Customers.Components;
 
 public partial class Update
 {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public CustomerVm Model { get; set; } = default!;
 
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
     private bool _processing;
     private string? _creditLimitHelperText;
-    private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
-
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private async Task Submit()
     {
+        if (_processing)
+            return;
+
         await _form.Validate();
 
         if (!_form.IsValid)
             return;
 
-        try
-        {
-            if (_processing)
-                return;
+        var request = CustomerVm.ToUpdateRequest(Model);
 
-            SetBusy();
-            CancelToken();
-            _processing = true;
+        _processing = true;
+        await SendRequestAsync<ICustomerService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+        _processing = false;
 
-            var request = CustomerVm.ToUpdateRequest(Model);
-
-            await CustomerService.UpdateAsync(Model.Id, request, CancellationTokenSource.Token);
-
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-            _processing = false;
-        }
+        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private void Close() => MudDialog.Cancel();
 
-    private void OnCreditLimitChanged(double? creditLimit)
+    private void OnCreditLimitChanged(decimal? creditLimit)
     {
         Model.CreditLimit = creditLimit;
         _creditLimitHelperText = $"{creditLimit:N0} {Model.CreditLimitUnit?.GetDisplayName()}";
