@@ -62,7 +62,7 @@ public partial class CustomersList
 
     public async Task OnCreate()
     {
-        var dialog = await DialogService.ShowAsync<Create>("افزودن مشتری جدید", _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن مشتری جدید", _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -94,12 +94,13 @@ public partial class CustomersList
 
     private async Task OnEdit(CustomerVm model)
     {
-        var parameters = new DialogParameters<Update>
+        var parameters = new DialogParameters<Editor>
         {
-            { x => x.Model, model }
+            { x => x.Model, model },
+            { x => x.Id, model.Id }
         };
 
-        var dialog = await DialogService.ShowAsync<Update>("ویرایش اطلاعات مشتری", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("ویرایش اطلاعات مشتری", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 

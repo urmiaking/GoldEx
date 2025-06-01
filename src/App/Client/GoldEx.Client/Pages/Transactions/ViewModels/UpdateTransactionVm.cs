@@ -19,17 +19,17 @@ public class UpdateTransactionVm
 
     [Display(Name = "شماره تراکنش")]
     [Required(ErrorMessage = "{0} الزامی است")]
-    public int TransactionNumber { get; set; }
+    public long TransactionNumber { get; set; }
 
     [Display(Name = "شرح تراکنش")]
     [Required(ErrorMessage = "{0} الزامی است")]
     public string Description { get; set; } = default!;
 
     [Display(Name = "بدهکاری")]
-    public double? Debit { get; set; }
+    public decimal? Debit { get; set; }
 
     [Display(Name = "بستانکاری")]
-    public double? Credit { get; set; }
+    public decimal? Credit { get; set; }
 
     [Display(Name = "واحد بستانکاری")]
     public UnitType? CreditUnit { get; set; }
@@ -38,16 +38,16 @@ public class UpdateTransactionVm
     public UnitType? DebitUnit { get; set; }
 
     [Display(Name = "نرخ تبدیل بستانکاری")]
-    public double? CreditRate { get; set; }
+    public decimal? CreditRate { get; set; }
 
     [Display(Name = "نرخ تبدیل بدهکاری")]
-    public double? DebitRate { get; set; }
+    public decimal? DebitRate { get; set; }
 
     [Display(Name = "معادل ریالی بستانکاری")]
-    public double? CreditEquivalent { get; set; }
+    public decimal? CreditEquivalent { get; set; }
 
     [Display(Name = "معادل ریالی بدهکاری")]
-    public double? DebitEquivalent { get; set; }
+    public decimal? DebitEquivalent { get; set; }
 
     // Customer related properties  
     public Guid? CustomerId { get; set; }
@@ -68,13 +68,13 @@ public class UpdateTransactionVm
     public string CustomerPhoneNumber { get; set; } = default!;
 
     [Display(Name = "سقف اعتبار مشتری")]
-    public double? CustomerCreditLimit { get; set; }
+    public decimal? CustomerCreditLimit { get; set; }
 
     [Display(Name = "واحد سقف اعتبار مشتری")]
     public UnitType? CustomerCreditLimitUnit { get; set; }
 
     [Display(Name = "مقدار اعتبار باقی مانده مشتری")]
-    public double? CustomerCreditRemaining { get; set; }
+    public decimal? CustomerCreditRemaining { get; set; }
 
     [Display(Name = "واحد اعتبار باقی مانده مشتری")]
     public UnitType? CustomerCreditRemainingUnit { get; set; }

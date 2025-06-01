@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -18,41 +19,28 @@ public partial class ProductsList
     private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<ProductVm>();
-        using var scope = CreateServiceScope();
-        var service = GetRequiredService<IProductService>(scope);
 
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-                state.SortDirection switch
-                {
-                    SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                    SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                    SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
-
-            var response = await service.GetListAsync(filter, cancellationToken);
-
-            var items = response.Data.Select(ProductVm.CreateFrom).ToList();
-
-            result = new TableData<ProductVm>
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+            state.SortDirection switch
             {
-                TotalItems = response.Total,
-                Items = items
-            };
-        }
-        catch (Exception ex)
-        {
-            AddExceptionToast(ex);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
+                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
+                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
+                _ => throw new ArgumentOutOfRangeException()
+            });
+
+        await SendRequestAsync<IProductService, PagedList<GetProductResponse>>(
+            action: (service, token) => service.GetListAsync(filter, token),
+            afterSend: response =>
+            {
+                var items = response.Data.Select(ProductVm.CreateFrom).ToList();
+                result = new TableData<ProductVm>
+                {
+                    TotalItems = response.Total,
+                    Items = items
+                };
+            }
+        );
 
         return result;
     }
@@ -70,7 +58,7 @@ public partial class ProductsList
 
     public async Task OnCreateProduct()
     {
-        var dialog = await DialogService.ShowAsync<Create>("افزودن جنس جدید", _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن جنس جدید", _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -102,12 +90,13 @@ public partial class ProductsList
 
     private async Task OnEditProduct(ProductVm model)
     {
-        var parameters = new DialogParameters<Update>
+        var parameters = new DialogParameters<Editor>
         {
-            { x => x.Model, model }
+            { x => x.Model, model },
+            { x => x.Id, model.Id }
         };
 
-        var dialog = await DialogService.ShowAsync<Update>("ویرایش جنس", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("ویرایش جنس", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 

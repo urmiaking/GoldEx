@@ -29,50 +29,29 @@ public partial class TransactionsList
     private async Task<TableData<TransactionVm>> LoadTransactionsAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<TransactionVm>();
-        using var scope = CreateServiceScope();
-        var service = GetRequiredService<ITransactionService>(scope);
 
-        try
-        {
-            SetBusy();
-            CancelToken();
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+            state.SortDirection switch
+            {
+                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
+                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
+                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
+                _ => throw new ArgumentOutOfRangeException()
+            });
 
-            var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-                state.SortDirection switch
+        await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
+            action: (s, ct) => s.GetListAsync(filter, CustomerId, ct),
+            afterSend: response =>
+            {
+                var items = response.Data.Select(TransactionVm.CreateFrom).ToList();
+
+                result = new TableData<TransactionVm>
                 {
-                    SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                    SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                    SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
-
-            PagedList<GetTransactionResponse> response;
-
-            if (CustomerId.HasValue)
-            {
-                response = await service.GetListAsync(filter, CustomerId.Value, cancellationToken);
+                    TotalItems = response.Total,
+                    Items = items
+                };
             }
-            else
-            {
-                response = await service.GetListAsync(filter, cancellationToken);
-            }
-
-            var items = response.Data.Select(TransactionVm.CreateFrom).ToList();
-
-            result = new TableData<TransactionVm>
-            {
-                TotalItems = response.Total,
-                Items = items
-            };
-        }
-        catch (Exception ex)
-        {
-            AddExceptionToast(ex);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+        );
 
         return result;
     }
@@ -129,7 +108,8 @@ public partial class TransactionsList
     {
         var parameters = new DialogParameters<Update>
         {
-            { x => x.TransactionId, model.Id }
+            { x => x.TransactionId, model.Id },
+            { x => x.Model, model. }
         };
 
         var dialog = await DialogService.ShowAsync<Update>("ویرایش تراکنش", parameters, _dialogOptions);

@@ -2,7 +2,6 @@
 using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -10,6 +9,10 @@ namespace GoldEx.Client.Pages.Transactions.Components;
 
 public partial class Update
 {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Guid? TransactionId { get; set; }
+    [Parameter] public TransactionVm Model { get; set; } = new();
+
     private readonly UpdateTransactionVm _model = new();
     private readonly UpdateTransactionValidator _updateTransactionValidator = new();
     private MudForm _form = default!;
@@ -20,15 +23,9 @@ public partial class Update
     private string? _debitHelperText;
     private string? _debitRateHelperText;
 
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Guid? TransactionId { get; set; }
-
-    private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
-    private ITransactionService TransactionService => GetRequiredService<ITransactionService>();
-
     protected override async Task OnParametersSetAsync()
     {
-        if (TransactionId.HasValue)
+        if (TransactionId.HasValue) // Convert model to updatevm oh shit we have vms for each type!
             await LoadTransactionAsync(TransactionId.Value);
 
         await base.OnParametersSetAsync();
@@ -84,7 +81,7 @@ public partial class Update
         }
     }
 
-    private void OnCustomerCreditLimitChanged(double? creditLimit)
+    private void OnCustomerCreditLimitChanged(decimal? creditLimit)
     {
         _model.CustomerCreditLimit = creditLimit;
         _customerCreditLimitHelperText = creditLimit is null
@@ -100,7 +97,7 @@ public partial class Update
             : $"{_model.CustomerCreditLimit:N0} {creditLimitUnit?.GetDisplayName()}";
     }
 
-    private void OnCreditChanged(double? credit)
+    private void OnCreditChanged(decimal? credit)
     {
         _model.Credit = credit;
         _creditHelperText = credit is null && _model.CreditUnit is null
@@ -119,7 +116,7 @@ public partial class Update
             : $"{_model.Credit:N0} {creditUnit?.GetDisplayName()}";
     }
 
-    private void OnCreditRateChanged(double? creditRate)
+    private void OnCreditRateChanged(decimal? creditRate)
     {
         _model.CreditRate = creditRate;
         _creditRateHelperText = creditRate is null
@@ -131,7 +128,7 @@ public partial class Update
             : Math.Round(_model.Credit.Value * creditRate.Value, 2);
     }
 
-    private void OnDebitChanged(double? debit)
+    private void OnDebitChanged(decimal? debit)
     {
         _model.Debit = debit;
         _debitHelperText = debit is null && _model.DebitUnit is null
@@ -150,7 +147,7 @@ public partial class Update
             : $"{_model.Debit:N0} {debitUnit?.GetDisplayName()}";
     }
 
-    private void OnDebitRateChanged(double? debitRate)
+    private void OnDebitRateChanged(decimal? debitRate)
     {
         _model.DebitRate = debitRate;
         _debitRateHelperText = debitRate is null

@@ -21,19 +21,22 @@ public class SettingsVm
 
     [Display(Name = "مالیات")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public double Tax { get; set; }
+    public decimal TaxPercent { get; set; }
 
     [Display(Name = "سود طلا")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public double GoldProfit { get; set; }
+    public decimal GoldProfitPercent { get; set; }
     
     [Display(Name = "سود جواهر")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public double JewelryProfit { get; set; }
+    public decimal JewelryProfitPercent { get; set; }
+
+    [Display(Name = "زمان بروز رسانی قیمت ها")]
+    public TimeSpan PriceUpdateInterval { get; set; }
 
     public UpdateSettingRequest ToRequest()
     {
-        return new UpdateSettingsRequest(InstitutionName, Address, PhoneNumber, Tax, GoldProfit, JewelryProfit);
+        return new UpdateSettingRequest(InstitutionName, Address, PhoneNumber, TaxPercent, GoldProfitPercent, JewelryProfitPercent, PriceUpdateInterval);
     }
 
     public static SettingsVm CreateFromRequest(GetSettingResponse response)
@@ -44,9 +47,9 @@ public class SettingsVm
             InstitutionName = response.InstitutionName,
             Address = response.Address,
             PhoneNumber = response.PhoneNumber,
-            Tax = response.Tax,
-            GoldProfit = response.GoldProfit,
-            JewelryProfit = response.JewelryProfit
+            TaxPercent = response.TaxPercent,
+            GoldProfitPercent = response.GoldProfitPercent,
+            JewelryProfitPercent = response.JewelryProfitPercent
         };
     }
 }

@@ -11,8 +11,6 @@ public partial class PriceBoard
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
 
-    private IPriceService PriceService => GetRequiredService<IPriceService>();
-
     private readonly TableGroupDefinition<GetPriceResponse> _groupDefinition = new()
     {
         GroupName = "گروه",
@@ -26,28 +24,18 @@ public partial class PriceBoard
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadLatestPricesAsync();
+        await LoadPricesAsync();
         await StartTimer();
         await base.OnInitializedAsync();
     }
 
-    private async Task LoadLatestPricesAsync()
+    private async Task LoadPricesAsync()
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            _items = await PriceService.GetLatestPricesAsync(CancellationTokenSource.Token);
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+        await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response => _items = response,
+            createScope: true
+        );
     }
 
     private Task StartTimer()
@@ -59,7 +47,7 @@ public partial class PriceBoard
 
     private async void TimerCallback(object? state)
     {
-        await LoadLatestPricesAsync();
+        await LoadPricesAsync();
         StateHasChanged();
     }
 
