@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -8,8 +9,6 @@ public partial class BaseInfo
 {
     private SettingsVm _model = new();
 
-    private ISettingService SettingService => GetRequiredService<ISettingService>();
-
     protected override async Task OnInitializedAsync()
     {
         await LoadSettingsAsync();
@@ -18,52 +17,26 @@ public partial class BaseInfo
 
     private async Task LoadSettingsAsync()
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var response = await SettingService.GetAsync(CancellationTokenSource.Token);
-
-            if (response is not null)
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response =>
             {
-                _model = SettingsVm.CreateFromRequest(response);
-            }
-            else
-            {
-                AddErrorToast("فراخوانی تنظیمات با مشکل مواجه شد");
-            }
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+                if (response is not null)
+                {
+                    _model = SettingsVm.CreateFromRequest(response);
+                }
+                else
+                {
+                    AddErrorToast("فراخوانی تنظیمات با مشکل مواجه شد");
+                }
+            });
     }
 
     private async Task OnGallerySettingsSubmitted(EditContext context)
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
+        await SendRequestAsync<ISettingService>(
+            action: (s, ct) => s.UpdateAsync(_model.ToRequest(), ct));
 
-            var request = _model.ToRequest();
-
-            await SettingService.UpdateAsync(request, CancellationTokenSource.Token);
-
-            AddSuccessToast("تنظیمات با موفقیت ذخیره شد");
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+        AddSuccessToast("تنظیمات گالری با موفقیت ذخیره شد");
     }
 }

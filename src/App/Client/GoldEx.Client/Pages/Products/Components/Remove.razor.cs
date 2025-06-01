@@ -16,33 +16,18 @@ public partial class Remove
     public Guid Id { get; set; }
 
     private bool _processing;
-    private IProductService ProductService => GetRequiredService<IProductService>();
 
     private async Task OnValidSubmit()
     {
-        try
-        {
-            if (_processing)
-                return;
+        if (_processing)
+            return;
 
-            SetBusy();
-            CancelToken();
+        _processing = true;
+        await SendRequestAsync<IProductService>((s, ct) => s.DeleteAsync(Id, ct));
+        _processing = false;
 
-            _processing = true;
+        MudDialog.Close(DialogResult.Ok(true));
 
-            await ProductService.DeleteAsync(Id, cancellationToken: CancellationTokenSource.Token);
-
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-            _processing = false;
-        }
     }
 
     private void Cancel() => MudDialog.Cancel();

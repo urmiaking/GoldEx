@@ -6,43 +6,24 @@ namespace GoldEx.Client.Pages.Transactions.Components;
 
 public partial class Remove
 {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    [Parameter]
-    public int TransactionNumber { get; set; }
+    [Parameter] public long TransactionNumber { get; set; }
 
-    [Parameter]
-    public Guid Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private bool _processing;
-    private ITransactionService TransactionService => GetRequiredService<ITransactionService>();
 
     private async Task OnValidSubmit()
     {
-        try
-        {
-            if (_processing)
-                return;
+        if (_processing)
+            return;
 
-            SetBusy();
-            CancelToken();
+        _processing = true;
+        await SendRequestAsync<ITransactionService>(action: (s, ct) => s.DeleteAsync(Id, ct));
+        _processing = false;
 
-            _processing = true;
-
-            await TransactionService.DeleteAsync(Id, cancellationToken: CancellationTokenSource.Token);
-
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-            _processing = false;
-        }
+        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private void Cancel() => MudDialog.Cancel();

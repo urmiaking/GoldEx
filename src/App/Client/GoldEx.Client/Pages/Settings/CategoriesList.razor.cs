@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Settings.Components.Categories;
 using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Services;
 using MudBlazor;
 
@@ -11,8 +12,6 @@ public partial class CategoriesList
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IEnumerable<ProductCategoryVm> _productCategories = new List<ProductCategoryVm>();
 
-    private IProductCategoryService CategoryService => GetRequiredService<IProductCategoryService>();
-
     protected override async Task OnInitializedAsync()
     {
         await LoadCategoriesAsync();
@@ -21,33 +20,22 @@ public partial class CategoriesList
 
     private async Task LoadCategoriesAsync()
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var responseList = await CategoryService.GetAllAsync(CancellationTokenSource.Token);
-
-            _productCategories = responseList.Select((item, index) =>
+        await SendRequestAsync<IProductCategoryService, List<GetProductCategoryResponse>>(
+            action: (s, ct) => s.GetListAsync(ct),
+            afterSend: response =>
             {
-                var vm = ProductCategoryVm.CreateFrom(item);
-                vm.Index = index + 1;
-                return vm;
-            }).ToList();
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+                _productCategories = response.Select((item, index) =>
+                {
+                    var vm = ProductCategoryVm.CreateFrom(item);
+                    vm.Index = index + 1;
+                    return vm;
+                });
+            });
     }
 
     private async Task OnCreateCategory()
     {
-        var dialog = await DialogService.ShowAsync<Create>("افزودن دسته جدید", _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن دسته جدید", _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -60,12 +48,13 @@ public partial class CategoriesList
 
     private async Task OnEditCategory(ProductCategoryVm model)
     {
-        var parameters = new DialogParameters<Update>
+        var parameters = new DialogParameters<Editor>
         {
-            { x => x.Model, model }
+            { x => x.Model, model },
+            { x => x.Id, model.Id }
         };
 
-        var dialog = await DialogService.ShowAsync<Update>("ویرایش دسته", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("ویرایش دسته", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 

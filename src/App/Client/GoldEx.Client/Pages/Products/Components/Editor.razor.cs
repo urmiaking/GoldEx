@@ -1,18 +1,20 @@
 ﻿using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
-using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
+using GoldEx.Sdk.Common.Extensions;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
-public partial class Update
+public partial class Editor
 {
-    [Parameter] public ProductVm Model { get; set; } = default!;
+    [Parameter] public Guid? Id { get; set; }
+    [Parameter] public ProductVm Model { get; set; } = ProductVm.CreateDefaultInstance();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly ProductValidator _productValidator = new();
@@ -21,9 +23,6 @@ public partial class Update
     private string? _wageHelperText;
     private string? _wageAdornmentText = "درصد";
     private IEnumerable<ProductCategoryVm> _productCategories = [];
-
-    private IProductService ProductService => GetRequiredService<IProductService>();
-    private IProductCategoryService CategoryService => GetRequiredService<IProductCategoryService>();
 
     protected override void OnParametersSet()
     {
@@ -42,57 +41,40 @@ public partial class Update
 
     private async Task LoadCategoriesAsync()
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var response = await CategoryService.GetAllAsync(CancellationTokenSource.Token);
-
-            _productCategories = response.Select(ProductCategoryVm.CreateFrom);
-
-            StateHasChanged();
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+        await SendRequestAsync<IProductCategoryService, List<GetProductCategoryResponse>>(
+            action: (s, ct) => s.GetListAsync(ct),
+            afterSend: response =>
+            {
+                _productCategories = response.Select(ProductCategoryVm.CreateFrom);
+            });
     }
 
-    public async Task Submit()
+    private async Task Submit()
     {
+        if (_processing)
+            return;
+
         await _form.Validate();
 
         if (!_form.IsValid)
             return;
 
-        try
+        _processing = true;
+
+        if (Id is null)
         {
-            if (_processing)
-                return;
-
-            SetBusy();
-            CancelToken();
-
-            _processing = true;
-
-            await ProductService.UpdateAsync(Model.Id, ProductVm.ToUpdateRequest(Model), CancellationTokenSource.Token);
-
-            MudDialog.Close(DialogResult.Ok(true));
+            var request = ProductVm.ToCreateRequest(Model);
+            await SendRequestAsync<IProductService>((s, ct) => s.CreateAsync(request, ct));
         }
-        catch (Exception e)
+        else
         {
-            AddExceptionToast(e);
+            var request = ProductVm.ToUpdateRequest(Model);
+            await SendRequestAsync<IProductService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
         }
-        finally
-        {
-            SetIdeal();
-            _processing = false;
-        }
+
+        _processing = false;
+
+        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private void GenerateBarcode() => Model.Barcode = StringExtensions.GenerateRandomBarcode();
@@ -109,15 +91,11 @@ public partial class Update
                 break;
             case ProductType.Gold:
                 break;
-            case ProductType.Coin:
-                Model.Wage = null;
-                Model.WageType = null;
-                break;
             case ProductType.MoltenGold:
                 Model.Wage = null;
                 Model.WageType = null;
                 break;
-            case ProductType.UsedGold:
+            case ProductType.OldGold:
                 Model.Wage = null;
                 Model.WageType = null;
                 break;
@@ -126,7 +104,7 @@ public partial class Update
         }
     }
 
-    private void OnWageChanged(double? wage)
+    private void OnWageChanged(decimal? wage)
     {
         Model.Wage = wage;
 
@@ -168,14 +146,14 @@ public partial class Update
         }
     }
 
-    private void OnProductCategoryChanged(ProductCategoryVm? category)
+    private void OnAddGemStone(MouseEventArgs obj)
     {
-        if (category is null)
-            return;
-        
-        Model.CategoryVm = category;
-        Model.ProductCategoryId = category.Id;
-        Model.ProductCategoryTitle = category.Title;
+        Model.Stones ??= [];
+        Model.Stones.Add(new GemStoneVm
+        {
+            Code = StringExtensions.GenerateRandomCode(5)
+        });
+        StateHasChanged();
     }
 
     private void OnRemoveGemStone(int index)
@@ -184,10 +162,13 @@ public partial class Update
         StateHasChanged();
     }
 
-    private void OnAddGemStone(MouseEventArgs obj)
+    private void OnProductCategoryChanged(ProductCategoryVm? category)
     {
-        Model.Stones ??= [];
-        Model.Stones.Add(new GemStoneVm());
-        StateHasChanged();
+        if (category is null)
+            return;
+
+        Model.CategoryVm = category;
+        Model.ProductCategoryId = category.Id;
+        Model.ProductCategoryTitle = category.Title;
     }
 }

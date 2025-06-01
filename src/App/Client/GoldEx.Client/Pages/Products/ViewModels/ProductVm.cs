@@ -19,10 +19,10 @@ public class ProductVm
 
     [Display(Name = "وزن")]
     [Required(ErrorMessage = "وزن الزامی است")]
-    public double? Weight { get; set; }
+    public decimal? Weight { get; set; }
 
     [Display(Name = "اجرت")]
-    public double? Wage { get; set; }
+    public decimal? Wage { get; set; }
 
     [Display(Name = "نوع اجرت")]
     public WageType? WageType { get; set; }
@@ -37,9 +37,9 @@ public class ProductVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public Guid? ProductCategoryId { get; set; }
 
-    public string ProductCategoryTitle { get; set; } = string.Empty;
+    public string? ProductCategoryTitle { get; set; } = string.Empty;
 
-    public ProductCategoryVm CategoryVm { get; set; } = default!;
+    public ProductCategoryVm? CategoryVm { get; set; }
 
     public List<GemStoneVm>? Stones { get; set; }
 
@@ -60,11 +60,11 @@ public class ProductVm
             CaratType = item.CaratType,
             ProductCategoryId = item.ProductCategoryId,
             ProductCategoryTitle = item.ProductCategoryTitle,
-            CategoryVm = new ProductCategoryVm
+            CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm
             {
-                Id = item.ProductCategoryId,
+                Id = item.ProductCategoryId.Value,
                 Title = item.ProductCategoryTitle
-            },
+            } : null,
             Stones = item.GemStones?.Select(x => new GemStoneVm
             {
                  Type = x.Type,
@@ -85,8 +85,8 @@ public class ProductVm
             item.Name,
             item.Barcode,
             item.Weight ?? 0,
-            item.Wage,
-            item.WageType,
+            item.Wage ?? 0,
+            item.WageType!.Value,
             item.ProductType,
             item.CaratType,
             item.ProductCategoryId!.Value,
@@ -108,8 +108,8 @@ public class ProductVm
             item.Name,
             item.Barcode,
             item.Weight ?? 0,
-            item.Wage,
-            item.WageType,
+            item.Wage ?? 0,
+            item.WageType ?? 0,
             item.ProductType,
             item.CaratType,
             item.ProductCategoryId!.Value,
