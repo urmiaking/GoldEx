@@ -67,7 +67,21 @@
                           For="() => _model.JewelryProfitPercent"></MudTextField>
         </MudItem>
     </MudGrid>
+
+    <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">قیمت</MudText>
+    <hr />
     
+    <MudGrid Spacing="8">
+        <MudItem xs="12" sm="4">
+            <MudTextField Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.PriceChange"
+                          @bind-Value="_model.PriceUpdateInterval"
+                          Variant="Variant.Outlined"
+                          Label="@(_model.GetDisplayName(() => _model.PriceUpdateInterval))"
+                          For="() => _model.PriceUpdateInterval"></MudTextField>
+        </MudItem>
+    </MudGrid>
+
     <MudButton Class="mt-4" ButtonType="ButtonType.Submit"
                Variant="Variant.Filled"
                StartIcon="@Icons.Material.Filled.Save"
