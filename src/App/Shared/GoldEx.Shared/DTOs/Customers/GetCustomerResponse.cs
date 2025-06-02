@@ -2,8 +2,7 @@
 
 namespace GoldEx.Shared.DTOs.Customers;
 
-public record GetCustomerResponse(
-    Guid Id,
+public record GetCustomerResponse(Guid Id,
     string FullName,
     string NationalId,
     string PhoneNumber,

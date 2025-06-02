@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Transactions;
 
@@ -11,4 +12,4 @@ public record UpdateTransactionRequest(long Number,
     decimal? Debit,
     UnitType? DebitUnit,
     decimal? DebitRate,
-    Guid CustomerId);
+    CustomerRequestDto Customer);

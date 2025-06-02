@@ -60,15 +60,19 @@ internal class CustomerService(HttpClient client, JsonSerializerOptions jsonOpti
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateAsync(CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
         using var response = await client.PostAsJsonAsync(ApiUrls.Customers.Create(), request, jsonOptions, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<Guid>(jsonOptions, cancellationToken);
+
+        return result;
     }
 
-    public async Task UpdateAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Guid id, CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
         using var response = await client.PutAsJsonAsync(ApiUrls.Customers.Update(id), request, jsonOptions, cancellationToken);
 

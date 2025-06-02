@@ -17,6 +17,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class TransactionService(
     ITransactionRepository repository,
+    ICustomerService customerService,
     IMapper mapper,
     CreateTransactionRequestValidator createValidator,
     UpdateTransactionRequestValidator updateValidator,
@@ -52,6 +53,18 @@ internal class TransactionService(
     {
         await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
+        Guid customerId;
+
+        if (request.Customer.Id.HasValue)
+        {
+            await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
+            customerId = request.Customer.Id.Value;
+        }
+        else
+        {
+            customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
+        }
+
         var transaction = Transaction.Create(request.DateTime,
             request.Number,
             request.Description,
@@ -61,7 +74,7 @@ internal class TransactionService(
             request.Debit,
             request.DebitUnit,
             request.DebitRate,
-            new CustomerId(request.CustomerId));
+            new CustomerId(customerId));
 
         await repository.CreateAsync(transaction, cancellationToken);
     }
@@ -70,7 +83,20 @@ internal class TransactionService(
     {
         await updateValidator.ValidateAndThrowAsync((id, request), cancellationToken);
 
-        var transaction = await repository.Get(new TransactionsByIdSpecification(new TransactionId(id)))
+        Guid customerId;
+
+        if (request.Customer.Id.HasValue)
+        {
+            await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
+            customerId = request.Customer.Id.Value;
+        }
+        else
+        {
+            customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
+        }
+
+        var transaction = await repository
+            .Get(new TransactionsByIdSpecification(new TransactionId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         transaction.SetCredit(request.Credit);
@@ -82,7 +108,7 @@ internal class TransactionService(
         transaction.SetDateTime(request.DateTime);
         transaction.SetNumber(request.Number);
         transaction.SetDescription(request.Description);
-        transaction.SetCustomer(new CustomerId(request.CustomerId));
+        transaction.SetCustomer(new CustomerId(customerId));
 
         await repository.UpdateAsync(transaction, cancellationToken);
     }

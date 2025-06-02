@@ -45,7 +45,7 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper) :
         return mapper.Map<GetCustomerResponse>(item);
     }
 
-    public async Task CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateAsync(CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
         var item = Customer.Create(request.CustomerType,
             request.FullName,
@@ -56,9 +56,11 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper) :
             request.CreditLimitUnit);
 
         await repository.CreateAsync(item, cancellationToken);
+
+        return item.Id.Value;
     }
 
-    public async Task UpdateAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Guid id, CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
         var item = await repository.Get(new CustomersByIdSpecification(new CustomerId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();

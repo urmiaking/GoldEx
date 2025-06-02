@@ -42,14 +42,14 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
     }
 
     [HttpPost(ApiRoutes.Customers.Create)]
-    public async Task<IActionResult> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateAsync(CustomerRequestDto request, CancellationToken cancellationToken)
     {
-        await service.CreateAsync(request, cancellationToken);
-        return Created();
+        var id = await service.CreateAsync(request, cancellationToken);
+        return Ok(id);
     }
 
     [HttpPut(ApiRoutes.Customers.Update)]
-    public async Task<IActionResult> UpdateAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateAsync(Guid id, CustomerRequestDto request, CancellationToken cancellationToken)
     {
         await service.UpdateAsync(id, request, cancellationToken);
         return Ok();
