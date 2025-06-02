@@ -53,8 +53,6 @@ internal class UpdateProductRequestValidator : AbstractValidator<(Guid id, Updat
         RuleFor(x => x.request.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
 
         RuleFor(x => x.request.ProductCategoryId)
-            .NotEmpty().WithMessage("دسته بندی جنس نمی تواند خالی باشد")
-            .NotEqual(Guid.Empty).WithMessage("دسته بندی جنس نمی تواند خالی باشد")
             .MustAsync(BeValidCategoryId).WithMessage("دسته بندی وارد شده معتبر نیست");
 
         RuleFor(x => x.id)
@@ -74,9 +72,12 @@ internal class UpdateProductRequestValidator : AbstractValidator<(Guid id, Updat
         return item.Id.Value == request.id;
     }
 
-    private async Task<bool> BeValidCategoryId(Guid categoryId, CancellationToken cancellationToken = default)
+    private async Task<bool> BeValidCategoryId(Guid? categoryId, CancellationToken cancellationToken = default)
     {
-        return await _categoryRepository.ExistsAsync(new ProductCategoriesByIdSpecification(new ProductCategoryId(categoryId)), cancellationToken);
+        if (categoryId is null)
+            return true;
+
+        return await _categoryRepository.ExistsAsync(new ProductCategoriesByIdSpecification(new ProductCategoryId(categoryId.Value)), cancellationToken);
     }
 
     private async Task<bool> BeValidId(Guid id, CancellationToken cancellationToken = default)

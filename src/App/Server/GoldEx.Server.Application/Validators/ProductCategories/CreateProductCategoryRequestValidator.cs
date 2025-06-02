@@ -1,11 +1,13 @@
 ﻿using FluentValidation;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Shared.DTOs.ProductCategories;
 
 namespace GoldEx.Server.Application.Validators.ProductCategories;
 
-public class CreateProductCategoryRequestValidator : AbstractValidator<CreateProductCategoryRequest>
+[ScopedService]
+internal class CreateProductCategoryRequestValidator : AbstractValidator<CreateProductCategoryRequest>
 {
     private readonly IProductCategoryRepository _repository;
 

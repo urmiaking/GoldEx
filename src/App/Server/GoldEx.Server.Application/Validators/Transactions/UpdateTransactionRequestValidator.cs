@@ -37,10 +37,6 @@ internal class UpdateTransactionRequestValidator: AbstractValidator<(Guid id, Up
             .Must(HaveAtLeastCreditOrDebitInfo)
             .WithMessage("وارد کردن حداقل یکی از مقادیر بدهکاری یا بستانکاری الزامی است");
 
-        RuleFor(x => x.request.CustomerId)
-            .NotEmpty().WithMessage("مشتری مشخص نشده است")
-            .MustAsync(BeValidCustomer).WithMessage("مشتری نامعتبر است");
-
         When(transaction => transaction.request.Credit.HasValue, () => {
             RuleFor(transaction => transaction.request.CreditUnit)
                 .NotNull().WithMessage("وارد کردن واحد تبدیل بستانکاری الزامی است");

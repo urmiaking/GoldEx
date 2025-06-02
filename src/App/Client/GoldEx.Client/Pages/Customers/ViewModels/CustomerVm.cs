@@ -35,9 +35,9 @@ public class CustomerVm
         return new CustomerVm();
     }
 
-    public static CreateCustomerRequest ToCreateRequest(CustomerVm model)
+    public static CustomerRequestDto ToCreateRequest(CustomerVm model)
     {
-        return new CreateCustomerRequest(Guid.NewGuid(),
+        return new CustomerRequestDto(null,
             model.FullName,
             model.NationalId,
             model.PhoneNumber,
@@ -47,9 +47,9 @@ public class CustomerVm
             model.CustomerType);
     }
 
-    public static UpdateCustomerRequest ToUpdateRequest(CustomerVm model)
+    public static CustomerRequestDto ToUpdateRequest(CustomerVm model)
     {
-        return new UpdateCustomerRequest(model.Id,
+        return new CustomerRequestDto(model.Id,
             model.FullName,
             model.NationalId,
             model.PhoneNumber,

@@ -120,15 +120,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
-    internal static IServiceCollection AddMapsterConfig(this IServiceCollection services)
-    {
-        var globalSettings = TypeAdapterConfig.GlobalSettings;
-
-        globalSettings.Scan(Assembly.GetExecutingAssembly());
-        services.AddSingleton(globalSettings);
-        services.AddScoped<IMapper, ServiceMapper>();
-
-        return services;
-    }
 }

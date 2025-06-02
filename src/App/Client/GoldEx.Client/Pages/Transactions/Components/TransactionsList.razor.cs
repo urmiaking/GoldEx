@@ -69,12 +69,12 @@ public partial class TransactionsList
 
     public async Task OnCreateTransaction()
     {
-        var parameters = new DialogParameters<Create>
+        var parameters = new DialogParameters<Editor>
         {
             { x => x.CustomerId, CustomerId }
         };
 
-        var dialog = await DialogService.ShowAsync<Create>("افزودن تراکنش جدید", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن تراکنش جدید", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -106,12 +106,12 @@ public partial class TransactionsList
 
     private async Task OnEditTransaction(TransactionVm model)
     {
-        var parameters = new DialogParameters<Update>
+        var parameters = new DialogParameters<Editor>
         {
-            { x => x.TransactionId, model.Id }
+            { x => x.Id, model.Id }
         };
 
-        var dialog = await DialogService.ShowAsync<Update>("ویرایش تراکنش", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("ویرایش تراکنش", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 

@@ -19,6 +19,12 @@ public static class ApiRoutes
         }
     }
 
+    public class Icons
+    {
+        public const string Base = "/api/icons";
+        public const string GetIcon = "{iconType}/{id}";
+    }
+
     public class Price
     {
         public const string Base = "/api/Price";

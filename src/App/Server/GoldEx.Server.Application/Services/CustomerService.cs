@@ -1,6 +1,8 @@
-﻿using GoldEx.Sdk.Common.Data;
+﻿using FluentValidation;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Validators.Customers;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
@@ -12,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class CustomerService(ICustomerRepository repository, IMapper mapper) : ICustomerService
+internal class CustomerService(ICustomerRepository repository, IMapper mapper, CustomerRequestDtoValidator validator) : ICustomerService
 {
     public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -47,6 +49,8 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper) :
 
     public async Task<Guid> CreateAsync(CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(request, cancellationToken);
+
         var item = Customer.Create(request.CustomerType,
             request.FullName,
             request.NationalId,
@@ -62,6 +66,8 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper) :
 
     public async Task UpdateAsync(Guid id, CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(request, cancellationToken);
+
         var item = await repository.Get(new CustomersByIdSpecification(new CustomerId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 

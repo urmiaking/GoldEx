@@ -6,4 +6,5 @@ public record CreateSettingRequest(
     string PhoneNumber,
     decimal TaxPercent,
     decimal GoldProfitPercent,
-    decimal JewelryProfitPercent);
+    decimal JewelryProfitPercent,
+    TimeSpan PriceUpdateInterval);

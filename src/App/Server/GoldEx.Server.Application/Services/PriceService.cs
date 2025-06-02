@@ -36,7 +36,7 @@ internal class PriceService(
 
         var pricesToCreate = new List<Price>();
         var pricesToUpdate = new List<Price>();
-        var downloadTasks = new List<Task<(Price price, byte[]? imageData, string? contentType)>>();
+        var downloadTasks = new List<Task<(Price price, byte[]? imageData, string? imageFormat)>>();
 
         foreach (var incomingPrice in incomingPriceList)
         {
@@ -73,7 +73,7 @@ internal class PriceService(
                 {
                     downloadTasks.Add(Task.Run(async () => {
                         var result = await ImageConverter.ToByteArrayAsync(incomingPrice.IconUrl);
-                        return (price, result.ByteArray, result.ContentType);
+                        return (price, result.ByteArray, result.ImageFormat);
                     }, cancellationToken));
                 }
             }
@@ -91,7 +91,7 @@ internal class PriceService(
             {
                 await fileService.SaveLocalFileAsync(webHostEnvironment.GetPriceHistoryIconPath(
                         downloaded.price.Id.Value,
-                        downloaded.contentType),
+                        downloaded.imageFormat),
                     downloaded.imageData,
                     cancellationToken);
             }

@@ -6,43 +6,25 @@ namespace GoldEx.Client.Pages.Settings.Components.Categories;
 
 public partial class Remove
 {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; } = default!;
-
-    [Parameter]
-    public string CategoryName { get; set; } = string.Empty;
-
-    [Parameter]
-    public Guid Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string CategoryName { get; set; } = string.Empty;
+    [Parameter] public Guid Id { get; set; }
 
     private bool _processing;
-    private IProductCategoryService CategoryService => GetRequiredService<IProductCategoryService>();
 
     private async Task OnValidSubmit()
     {
-        try
-        {
-            if (_processing)
-                return;
+        if (_processing)
+            return;
 
-            SetBusy();
-            CancelToken();
+        _processing = true;
 
-            _processing = true;
+        await SendRequestAsync<IProductCategoryService>(
+            action: (s, ct) => s.DeleteAsync(Id, ct)
+        );
 
-            await CategoryService.DeleteAsync(Id);
-
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-            _processing = false;
-        }
+        MudDialog.Close(DialogResult.Ok(true));
+        _processing = false;
     }
 
     private void Cancel() => MudDialog.Cancel();

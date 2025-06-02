@@ -1,11 +1,13 @@
 ﻿using FluentValidation;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 
 namespace GoldEx.Server.Application.Validators.Products;
 
-public class DeleteProductValidator: AbstractValidator<Product>
+[ScopedService]
+internal class DeleteProductValidator: AbstractValidator<Product>
 {
     private readonly IInvoiceRepository _invoiceRepository;
 

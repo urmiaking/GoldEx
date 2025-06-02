@@ -14,6 +14,7 @@ public partial class Editor
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Guid? Id { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
 
     private readonly TransactionEditorVm _model = new();
     private readonly TransactionValidator _transactionValidator = new();
@@ -30,7 +31,21 @@ public partial class Editor
         if (Id is not null)
             await LoadTransactionAsync(Id.Value);
 
+        if (CustomerId is not null)
+            await LoadCustomerAsync(CustomerId.Value);
+
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadCustomerAsync(Guid customerId)
+    {
+        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+            action: (s, ct) => s.GetAsync(customerId, ct),
+            afterSend: response =>
+            {
+                _model.SetCustomer(response);
+                OnCustomerCreditLimitChanged(response.CreditLimit);
+            });
     }
 
     private async Task LoadTransactionAsync(Guid id)
