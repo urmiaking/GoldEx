@@ -17,34 +17,24 @@ public partial class Calculator
     private CalculatorValidator _calculatorValidator = new();
     private GetSettingResponse? _settings;
     private MudSelect<WageType?> _wageTypeField = default!;
-    private MudTextField<decimal?> _wageField = default!;
-    private MudTextField<decimal> _profitField = default!;
+    private MudNumericField<decimal?> _wageField = default!;
+    private MudNumericField<decimal> _profitField = default!;
 
     private string? _wageFieldAdornmentText = "درصد";
-    private string? _gramPriceFieldHelperText;
-    private string? _usDollarPriceFieldHelperText;
-    private string? _wageFieldHelperText;
     private decimal? _rawPrice;
     private decimal? _wage;
     private decimal? _profit;
     private decimal? _tax;
     private decimal? _finalPrice;
-    private string? _additionalPricesFieldHelperText;
     private string? _barcode;
     private string? _barcodeFieldHelperText;
 
-    private IPriceService PriceService => GetRequiredService<IPriceService>();
-    private IProductService ProductService => GetRequiredService<IProductService>();
-    private ISettingService SettingService => GetRequiredService<ISettingService>();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnParametersSetAsync()
     {
-        if (firstRender)
-        {
-            await LoadPricesAsync();
-            await LoadSettingsAsync();
-        }
-        await base.OnAfterRenderAsync(firstRender);
+        await LoadPricesAsync();
+        await LoadSettingsAsync();
+
+        await base.OnParametersSetAsync();
     }
 
     private async Task LoadSettingsAsync()
@@ -69,15 +59,15 @@ public partial class Calculator
             response =>
             {
                 _model.GramPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;
-                _gramPriceFieldHelperText = $"{_model.GramPrice:N0} تومان";
             });
 
         await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.USD, ct),
             response =>
             {
                 _model.UsDollarPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;
-                _usDollarPriceFieldHelperText = $"{_model.UsDollarPrice:N0} تومان";
             });
+
+        StateHasChanged();
     }
 
     private async Task Calculate()
@@ -111,25 +101,21 @@ public partial class Calculator
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Percent;
                 _wageField.Disabled = false;
                 _wageFieldAdornmentText = "درصد";
-                _wageFieldHelperText = null;
                 break;
             case WageType.Toman:
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
                 _wageField.Disabled = false;
                 _wageFieldAdornmentText = "تومان";
-                _wageFieldHelperText = _model.Wage.HasValue ? $"{_model.Wage:N0} تومان" : null;
                 break;
             case WageType.Dollar:
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.AttachMoney;
                 _wageField.Disabled = false;
                 _wageFieldAdornmentText = "دلار";
-                _wageFieldHelperText = _model.Wage.HasValue ? $"{_model.Wage:N0} دلار" : null;
                 break;
             case null:
-                await _wageField.Clear();
+                await _wageField.ResetAsync();
                 _wageFieldAdornmentText = null;
                 _wageField.Disabled = true;
-                _wageFieldHelperText = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
@@ -141,13 +127,6 @@ public partial class Calculator
     private async void OnWageChanged(decimal? wage)
     {
         _model.Wage = wage;
-
-        _wageFieldHelperText = _model.WageType switch
-        {
-            WageType.Toman => $"{wage:N0} تومان",
-            WageType.Dollar => $"{wage:N0} دلار",
-            _ => _wageFieldHelperText
-        };
 
         await Calculate();
     }
@@ -166,9 +145,9 @@ public partial class Calculator
             case ProductType.MoltenGold:
                 break;
             case ProductType.OldGold:
-                await _wageField.Clear();
+                await _wageField.ResetAsync();
                 await _wageTypeField.ResetAsync();
-                await _profitField.Clear();
+                await _profitField.ResetAsync();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
@@ -180,7 +159,6 @@ public partial class Calculator
     private async void OnDollarPriceChanged(decimal? dollarPrice)
     {
         _model.UsDollarPrice = dollarPrice;
-        _usDollarPriceFieldHelperText = $"{dollarPrice:N0} تومان";
 
         await Calculate();
     }
@@ -195,8 +173,6 @@ public partial class Calculator
     private async void OnGramPriceChanged(decimal gramPrice)
     {
         _model.GramPrice = gramPrice;
-
-        _gramPriceFieldHelperText = $"{gramPrice:N0} تومان";
 
         await Calculate();
     }
@@ -218,7 +194,6 @@ public partial class Calculator
     private async void OnAdditionalPricesChanges(decimal? additionalPrices)
     {
         _model.AdditionalPrices = additionalPrices;
-        _additionalPricesFieldHelperText = additionalPrices.HasValue ? $"{additionalPrices:N0} تومان" : null;
 
         await Calculate();
     }
@@ -241,7 +216,6 @@ public partial class Calculator
                 _model.Wage = response.Wage;
                 _model.WageType = response.WageType;
                 _model.ProductType = response.ProductType;
-                _barcodeFieldHelperText = response.Name;
 
                 OnWageTypeChanged(_model.WageType);
                 OnWageChanged(_model.Wage);
@@ -254,7 +228,6 @@ public partial class Calculator
     private async void OnBarcodeCleared()
     {
         _barcode = null;
-        _barcodeFieldHelperText = null;
 
         ResetModel();
         await Calculate();

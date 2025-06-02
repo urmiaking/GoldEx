@@ -35,44 +35,47 @@
     <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
         <MudGrid Justify="Justify.Center" Spacing="4">
             <MudItem xs="12" sm="6">
-                <MudTextField Adornment="Adornment.End"
-                              AdornmentText="تومان"
-                              For="() => _model.GramPrice"
-                              HelperText="@_gramPriceFieldHelperText"
-                              Immediate="true"
-                              Label="@(_model.GetDisplayName(() => _model.GramPrice))"
-                              T="decimal"
-                              Value="@_model.GramPrice"
-                              ValueChanged="OnGramPriceChanged"
-                              Variant="Variant.Outlined"></MudTextField>
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="تومان"
+                                 For="() => _model.GramPrice"
+                                 Format="N0"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Label="@(_model.GetDisplayName(() => _model.GramPrice))"
+                                 T="decimal"
+                                 Value="@_model.GramPrice"
+                                 ValueChanged="OnGramPriceChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
             </MudItem>
 
             @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
             {
                 <MudItem xs="12" sm="6">
-                    <MudTextField Adornment="Adornment.End"
-                                  AdornmentText="تومان"
-                                  For="() => _model.UsDollarPrice"
-                                  HelperText="@_usDollarPriceFieldHelperText"
-                                  Immediate="true"
-                                  Label="نرخ دلار"
-                                  T="decimal?"
-                                  Value="_model.UsDollarPrice"
-                                  ValueChanged="OnDollarPriceChanged"
-                                  Variant="Variant.Outlined"></MudTextField>
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentText="تومان"
+                                     For="() => _model.UsDollarPrice"
+                                     Format="N0"
+                                     HideSpinButtons="true"
+                                     Immediate="true"
+                                     Label="نرخ دلار"
+                                     T="decimal?"
+                                     Value="_model.UsDollarPrice"
+                                     ValueChanged="OnDollarPriceChanged"
+                                     Variant="Variant.Outlined"></MudNumericField>
                 </MudItem>
             }
 
             <MudItem xs="12" sm="6">
-                <MudTextField Adornment="Adornment.End"
-                              AdornmentText="گرم"
-                              For="() => _model.Weight"
-                              Immediate="true"
-                              Label="وزن"
-                              T="decimal"
-                              Value="_model.Weight"
-                              ValueChanged="OnWeightChanged"
-                              Variant="Variant.Outlined"></MudTextField>
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="گرم"
+                                 For="() => _model.Weight"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Label="وزن"
+                                 T="decimal"
+                                 Value="_model.Weight"
+                                 ValueChanged="OnWeightChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
             </MudItem>
 
             @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
@@ -111,43 +114,47 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField Adornment="Adornment.End"
-                                  AdornmentText="@_wageFieldAdornmentText"
-                                  For="() => _model.Wage"
-                                  HelperText="@_wageFieldHelperText"
-                                  Immediate="true"
-                                  Label="اجرت ساخت"
-                                  @ref="_wageField"
-                                  T="decimal?"
-                                  Value="_model.Wage"
-                                  ValueChanged="OnWageChanged"
-                                  Variant="Variant.Outlined"></MudTextField>
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentText="@_wageFieldAdornmentText"
+                                     For="() => _model.Wage"
+                                     Format="G29"
+                                     HideSpinButtons="true"
+                                     Immediate="true"
+                                     Label="اجرت ساخت"
+                                     @ref="_wageField"
+                                     T="decimal?"
+                                     Value="_model.Wage"
+                                     ValueChanged="OnWageChanged"
+                                     Variant="Variant.Outlined"></MudNumericField>
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.Percent"
-                                  For="() => _model.ProfitPercent"
-                                  Immediate="true"
-                                  Label="سود فروش"
-                                  @ref="_profitField"
-                                  T="decimal"
-                                  Value="_model.ProfitPercent"
-                                  ValueChanged="OnProfitChanged"
-                                  Variant="Variant.Outlined"></MudTextField>
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentIcon="@Icons.Material.Filled.Percent"
+                                     For="() => _model.ProfitPercent"
+                                     Format="G29"
+                                     HideSpinButtons="true"
+                                     Immediate="true"
+                                     Label="سود فروش"
+                                     @ref="_profitField"
+                                     T="decimal"
+                                     Value="_model.ProfitPercent"
+                                     ValueChanged="OnProfitChanged"
+                                     Variant="Variant.Outlined"></MudNumericField>
                 </MudItem>
             }
 
             <MudItem xs="12" sm="6">
-                <MudTextField Adornment="Adornment.End"
-                              AdornmentText="تومان"
-                              For="() => _model.AdditionalPrices"
-                              HelperText="@_additionalPricesFieldHelperText"
-                              Immediate="true"
-                              Label="هزینه های اضافه"
-                              T="decimal?"
-                              Value="_model.AdditionalPrices"
-                              ValueChanged="OnAdditionalPricesChanges"
-                              Variant="Variant.Outlined"></MudTextField>
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="تومان"
+                                 For="() => _model.AdditionalPrices"
+                                 Format="N0"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Label="هزینه های اضافه"
+                                 T="decimal?"
+                                 Value="_model.AdditionalPrices"
+                                 ValueChanged="OnAdditionalPricesChanges"
+                                 Variant="Variant.Outlined"></MudNumericField>
             </MudItem>
         </MudGrid>
         @if (_finalPrice.HasValue && _finalPrice.Value is not 0)
@@ -165,21 +172,21 @@
                         @if (_wage.HasValue && _wage.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>اجرت ساخت: @(_model.WageType is WageType.Dollar or WageType.Toman ? "مبلغ ثابت" : $"{_model.Wage}% قیمت طلا")</MudText>
+                                <MudText>اجرت ساخت: @(_model.WageType is WageType.Dollar or WageType.Toman ? "مبلغ ثابت" : $"{_model.Wage:G29}% قیمت طلا")</MudText>
                                 <MudText>@_wage.Value.ToString("N0") تومان</MudText>
                             </div>
                         }
                         @if (_profit.HasValue && _profit.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent%</MudText>
+                                <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent.ToString("G29")%</MudText>
                                 <MudText>@_profit.Value.ToString("N0") تومان</MudText>
                             </div>
                         }
                         @if (_tax.HasValue && _tax.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent%</MudText>
+                                <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent.ToString("G29")%</MudText>
                                 <MudText>@_tax.Value.ToString("N0") تومان</MudText>
                             </div>
                         }
