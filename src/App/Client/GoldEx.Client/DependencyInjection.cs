@@ -14,7 +14,6 @@ internal static class DependencyInjection
             .AddAuthServices()
             .AddServices()
             .AddJsonOptions()
-            .AddMapsterConfig()
             .AddHttpClientService(environment);
 
         return services;

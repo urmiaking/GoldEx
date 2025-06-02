@@ -89,7 +89,8 @@ public static class ServiceProviderExtensions
                 defaultSetting.PhoneNumber,
                 defaultSetting.TaxPercent,
                 defaultSetting.GoldProfitPercent,
-                defaultSetting.JewelryProfitPercent);
+                defaultSetting.JewelryProfitPercent,
+                defaultSetting.PriceUpdateInterval);
 
             await serverSettingService.CreateAsync(setting);
         }

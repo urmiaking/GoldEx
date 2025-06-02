@@ -10,6 +10,6 @@ public record GetPriceResponse(
     string Unit,
     string Change,
     string LastUpdate,
-    string? IconFileBase64,
+    bool HasIcon,
     MarketType Type,
     UnitType? UnitType);

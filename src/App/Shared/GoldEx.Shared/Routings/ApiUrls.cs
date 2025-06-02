@@ -21,6 +21,12 @@ public class ApiUrls
         }
     };
 
+    public class Icons
+    {
+        public static string Get(IconType iconType, Guid id) =>
+            BuildUrl(ApiRoutes.Icons.Base, ApiRoutes.Icons.GetIcon).FormatRoute(new { iconType, id });
+    }
+
     public static class Account
     {
         public static string LinkExternalLogin() => BuildUrl(ApiRoutes.Account.Base, ApiRoutes.Account.Manage.Base, ApiRoutes.Account.Manage.LinkExternalLogin);
