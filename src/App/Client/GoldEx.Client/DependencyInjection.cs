@@ -1,6 +1,5 @@
 ﻿using GoldEx.Client.Components;
 using GoldEx.Client.Extensions;
-using GoldEx.Client.Offline;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace GoldEx.Client;
@@ -16,8 +15,7 @@ internal static class DependencyInjection
             .AddServices()
             .AddJsonOptions()
             .AddMapsterConfig()
-            .AddHttpClientService(environment)
-            .AddOfflineClient();
+            .AddHttpClientService(environment);
 
         return services;
     }

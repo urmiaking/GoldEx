@@ -4,9 +4,9 @@ using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Transactions.Validators;
 
-public class CreateTransactionValidator : AbstractValidator<CreateTransactionVm>
+public class TransactionValidator : AbstractValidator<TransactionEditorVm>
 {
-    public CreateTransactionValidator()
+    public TransactionValidator()
     {
         RuleFor(x => x.TransactionNumber)
             .NotEmpty().WithMessage("شماره تراكنش نمي تواند خالي باشد");
@@ -53,14 +53,14 @@ public class CreateTransactionValidator : AbstractValidator<CreateTransactionVm>
         });
     }
 
-    private static bool HaveAtLeastCreditOrDebitInfo(CreateTransactionVm transaction)
+    private static bool HaveAtLeastCreditOrDebitInfo(TransactionEditorVm transaction)
     {
         return transaction.Credit.HasValue || transaction.Debit.HasValue;
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
     {
-        var result = await ValidateAsync(ValidationContext<CreateTransactionVm>.CreateWithOptions((CreateTransactionVm)model,
+        var result = await ValidateAsync(ValidationContext<TransactionEditorVm>.CreateWithOptions((TransactionEditorVm)model,
             x => x.IncludeProperties(propertyName)));
         return result.IsValid ? Array.Empty<string>() : result.Errors.Select(e => e.ErrorMessage);
     };

@@ -1,20 +1,22 @@
 ﻿using GoldEx.Client.Pages.Transactions.Validators;
 using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Transactions.Components;
 
-public partial class Update
+public partial class Editor
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Guid? TransactionId { get; set; }
-    [Parameter] public TransactionVm Model { get; set; } = new();
+    [Parameter] public Guid? Id { get; set; }
 
-    private readonly UpdateTransactionVm _model = new();
-    private readonly UpdateTransactionValidator _updateTransactionValidator = new();
+    private readonly TransactionEditorVm _model = new();
+    private readonly TransactionValidator _transactionValidator = new();
     private MudForm _form = default!;
     private bool _processing;
     private string? _customerCreditLimitHelperText;
@@ -25,60 +27,57 @@ public partial class Update
 
     protected override async Task OnParametersSetAsync()
     {
-        if (TransactionId.HasValue) // Convert model to updatevm oh shit we have vms for each type!
-            await LoadTransactionAsync(TransactionId.Value);
+        if (Id is not null)
+            await LoadTransactionAsync(Id.Value);
 
         await base.OnParametersSetAsync();
     }
 
-    private async Task LoadTransactionAsync(Guid transactionId)
+    private async Task LoadTransactionAsync(Guid id)
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
+        await SendRequestAsync<ITransactionService, GetTransactionResponse>(
+            action: (s, ct) => s.GetAsync(id, ct),
+            afterSend: _model.SetTransaction);
+    }
 
-            var response = await TransactionService.GetAsync(transactionId, CancellationTokenSource.Token);
+    private async Task OnSubmit()
+    {
+        if (_processing)
+            return;
 
-            if (response is not null)
-                _model.SetTransaction(response);
-        }
-        catch (Exception e)
+        await _form.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        _processing = true;
+
+        if (Id.HasValue)
         {
-            Console.WriteLine(e.Message);
-            AddExceptionToast(e);
+            var request = TransactionEditorVm.ToUpdateTransactionRequest(_model);
+            await SendRequestAsync<ITransactionService>((s, ct) => s.UpdateAsync(Id.Value, request, ct));
         }
-        finally
+        else
         {
-            SetIdeal();
+            var request = TransactionEditorVm.ToCreateTransactionRequest(_model);
+            await SendRequestAsync<ITransactionService>((s, ct) => s.CreateAsync(request, ct));
         }
+
+        _processing = false;
+        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task OnCustomerNationalIdChanged(string nationalId)
     {
         _model.CustomerNationalId = nationalId;
 
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var customer = await CustomerService.GetAsync(nationalId, CancellationTokenSource.Token);
-
-            if (customer is not null)
+        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+            action: (s, ct) => s.GetAsync(nationalId, ct),
+            afterSend: response =>
             {
-                _model.SetCustomer(customer);
-                OnCustomerCreditLimitChanged(customer.CreditLimit);
-            }
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+                _model.SetCustomer(response);
+                OnCustomerCreditLimitChanged(response.CreditLimit);
+            });
     }
 
     private void OnCustomerCreditLimitChanged(decimal? creditLimit)
@@ -169,50 +168,6 @@ public partial class Update
         _model.CustomerCreditLimitUnit = null;
         _model.CustomerCreditRemaining = null;
         _model.CustomerCreditRemainingUnit = null;
-    }
-
-    private async Task OnSubmit()
-    {
-        await _form.Validate();
-
-        if (!_form.IsValid)
-            return;
-
-        try
-        {
-            if (_processing)
-                return;
-
-            SetBusy();
-            CancelToken();
-            _processing = true;
-
-            if (_model.CustomerId is null)
-            {
-                var customerRequest = UpdateTransactionVm.ToUpdateCustomerRequest(_model);
-                await CustomerService.UpdateAsync(customerRequest.Id, customerRequest, CancellationTokenSource.Token);
-            }
-            else
-            {
-                var customerRequest = UpdateTransactionVm.ToUpdateCustomerRequest(_model);
-                await CustomerService.UpdateAsync(_model.CustomerId.Value, customerRequest, CancellationTokenSource.Token);
-            }
-
-            var transactionRequest = UpdateTransactionVm.ToUpdateTransactionRequest(_model);
-
-            await TransactionService.UpdateAsync(_model.Id, transactionRequest, CancellationTokenSource.Token);
-
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-            _processing = false;
-        }
     }
 
     private void Close() => MudDialog.Cancel();

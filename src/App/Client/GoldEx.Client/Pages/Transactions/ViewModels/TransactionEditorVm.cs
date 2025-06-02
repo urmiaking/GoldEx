@@ -1,14 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.Customers;
+﻿using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Transactions.ViewModels;
 
-public class CreateTransactionVm
+public class TransactionEditorVm
 {
-    // Transaction related properties
-
     [Display(Name = "تاریخ تراکنش")]
     [Required(ErrorMessage = "{0} الزامی است")]
     public DateTime? TransactionDate { get; set; } = DateTime.Now;
@@ -17,22 +15,19 @@ public class CreateTransactionVm
     [Required(ErrorMessage = "{0} الزامی است")]
     public TimeSpan? TransactionTime { get; set; } = DateTime.Now.TimeOfDay;
 
-    /// <summary>
-    /// Should be unique for each transaction. Value of this property is set by the server. (Last transaction number + 1)
-    /// </summary>
     [Display(Name = "شماره تراکنش")]
     [Required(ErrorMessage = "{0} الزامی است")]
-    public int TransactionNumber { get; set; }
+    public long TransactionNumber { get; set; }
 
     [Display(Name = "شرح تراکنش")]
     [Required(ErrorMessage = "{0} الزامی است")]
     public string Description { get; set; } = default!;
 
     [Display(Name = "بدهکاری")]
-    public double? Debit { get; set; }
+    public decimal? Debit { get; set; }
 
     [Display(Name = "بستانکاری")]
-    public double? Credit { get; set; }
+    public decimal? Credit { get; set; }
 
     [Display(Name = "واحد بستانکاری")]
     public UnitType? CreditUnit { get; set; }
@@ -41,16 +36,16 @@ public class CreateTransactionVm
     public UnitType? DebitUnit { get; set; }
 
     [Display(Name = "نرخ تبدیل بستانکاری")]
-    public double? CreditRate { get; set; }
+    public decimal? CreditRate { get; set; }
 
     [Display(Name = "نرخ تبدیل بدهکاری")]
-    public double? DebitRate { get; set; }
+    public decimal? DebitRate { get; set; }
 
     [Display(Name = "معادل ریالی بستانکاری")]
-    public double? CreditEquivalent { get; set; }
+    public decimal? CreditEquivalent { get; set; }
 
     [Display(Name = "معادل ریالی بدهکاری")]
-    public double? DebitEquivalent { get; set; }
+    public decimal? DebitEquivalent { get; set; }
 
     // Customer related properties  
     public Guid? CustomerId { get; set; }
@@ -71,13 +66,13 @@ public class CreateTransactionVm
     public string CustomerPhoneNumber { get; set; } = default!;
 
     [Display(Name = "سقف اعتبار مشتری")]
-    public double? CustomerCreditLimit { get; set; }
+    public decimal? CustomerCreditLimit { get; set; }
 
     [Display(Name = "واحد سقف اعتبار مشتری")]
     public UnitType? CustomerCreditLimitUnit { get; set; }
 
     [Display(Name = "مقدار اعتبار باقی مانده مشتری")]
-    public double? CustomerCreditRemaining { get; set; }
+    public decimal? CustomerCreditRemaining { get; set; }
 
     [Display(Name = "واحد اعتبار باقی مانده مشتری")]
     public UnitType? CustomerCreditRemainingUnit { get; set; }
@@ -87,6 +82,22 @@ public class CreateTransactionVm
 
     [Display(Name = "نوع مشتری")]
     public CustomerType CustomerType { get; set; } = CustomerType.Individual;
+
+    public void SetTransaction(GetTransactionResponse transaction)
+    {
+        TransactionNumber = transaction.Number;
+        Description = transaction.Description;
+        TransactionDate = transaction.DateTime;
+        TransactionTime = transaction.DateTime.TimeOfDay;
+        Debit = transaction.Debit;
+        DebitUnit = transaction.DebitUnit;
+        DebitRate = transaction.DebitRate;
+        Credit = transaction.Credit;
+        CreditUnit = transaction.CreditUnit;
+        CreditRate = transaction.CreditRate;
+
+        SetCustomer(transaction.Customer);
+    }
 
     public void SetCustomer(GetCustomerResponse customer)
     {
@@ -98,21 +109,16 @@ public class CreateTransactionVm
         CustomerAddress = customer.Address;
         CustomerCreditLimit = customer.CreditLimit;
         CustomerCreditLimitUnit = customer.CreditLimitUnit;
+        CustomerCreditRemaining = customer.CreditLimit; // TODO: need to be calculated based on transactions
+        CustomerCreditRemainingUnit = customer.CreditLimitUnit; // TODO: need to be calculated based on transactions
     }
 
-    public void SetCustomerCreditLimitRemaining(GetCustomerRemainingCreditResponse response)
-    {
-        CustomerCreditRemaining = response.Value;
-        CustomerCreditRemainingUnit = response.Unit;
-    }
-
-    public static CreateTransactionRequest ToCreateTransactionRequest(CreateTransactionVm model)
+    public static UpdateTransactionRequest ToUpdateTransactionRequest(TransactionEditorVm model)
     {
         if (model.CustomerId is null)
             throw new ArgumentNullException(nameof(model.CustomerId));
 
-        return new CreateTransactionRequest(
-            Guid.NewGuid(),
+        return new UpdateTransactionRequest(
             model.TransactionNumber,
             model.Description,
             DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
@@ -122,40 +128,35 @@ public class CreateTransactionVm
             model.Debit,
             model.DebitUnit,
             model.DebitRate,
-            model.CustomerId.Value
+            model.GetCustomerDto()
         );
     }
 
-    public static CreateCustomerRequest ToCreateCustomerRequest(CreateTransactionVm model)
+    public static CreateTransactionRequest ToCreateTransactionRequest(TransactionEditorVm model)
     {
-        model.CustomerId = Guid.NewGuid();
-
-        return new CreateCustomerRequest(
-            model.CustomerId.Value, 
-            model.CustomerFullName,
-            model.CustomerNationalId,
-            model.CustomerPhoneNumber,
-            model.CustomerAddress,
-            model.CustomerCreditLimit,
-            model.CustomerCreditLimitUnit,
-            model.CustomerType
+        return new CreateTransactionRequest(
+            model.TransactionNumber,
+            model.Description,
+            DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
+            model.Credit,
+            model.CreditUnit,
+            model.CreditRate,
+            model.Debit,
+            model.DebitUnit,
+            model.DebitRate,
+            model.GetCustomerDto()
         );
     }
 
-    public static UpdateCustomerRequest ToUpdateCustomerRequest(CreateTransactionVm model)
+    private CustomerRequestDto GetCustomerDto()
     {
-        if (model.CustomerId is null)
-            throw new ArgumentNullException(nameof(model.CustomerId));
-
-        return new UpdateCustomerRequest(
-            model.CustomerId.Value,
-            model.CustomerFullName,
-            model.CustomerNationalId,
-            model.CustomerPhoneNumber,
-            model.CustomerAddress,
-            model.CustomerCreditLimit,
-            model.CustomerCreditLimitUnit,
-            model.CustomerType
-        );
+        return new CustomerRequestDto(CustomerId,
+            CustomerFullName,
+            CustomerNationalId,
+            CustomerPhoneNumber,
+            CustomerAddress,
+            CustomerCreditLimit,
+            CustomerCreditLimitUnit,
+            CustomerType);
     }
 }

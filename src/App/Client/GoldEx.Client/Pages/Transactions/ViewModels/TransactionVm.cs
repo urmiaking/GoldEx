@@ -7,15 +7,15 @@ public class TransactionVm
 {
     public Guid Id { get; set; }
 
-    public int TransactionNumber { get; set; }
+    public long TransactionNumber { get; set; }
     public string Description { get; set; } = default!;
     public string CustomerFullName { get; set; } = default!;
     public string CustomerNationalId { get; set; } = default!;
-    public double? Credit { get; set; }
+    public decimal? Credit { get; set; }
     public string? CreditUnit { get; set; }
-    public double? Debit { get; set; }
+    public decimal? Debit { get; set; }
     public string? DebitUnit { get; set; }
-    public double Remaining { get; set; }
+    public decimal Remaining { get; set; }
     public string RemainingUnit { get; set; } = default!;
     public DateTime DateTime { get; set; } = default!;
 
