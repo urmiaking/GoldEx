@@ -8,7 +8,6 @@ using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Settings;
-using Google.Apis.Auth.AspNetCore3;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -22,6 +21,7 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.Google;
 
 namespace GoldEx.Server.Extensions;
 
@@ -131,24 +131,20 @@ internal static class ServiceCollectionExtensions
 
         if (isGoogleAuthConfigured)
         {
-            services.AddAuthentication(o =>
+            services.AddAuthentication(options =>
                 {
-                    // This forces challenge results to be handled by Google OpenID Handler
-                    o.DefaultChallengeScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
-                    // This forces forbid results to be handled by Google OpenID Handler
-                    o.DefaultForbidScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
-                    // Default scheme that will handle everything else. Use the Identity Cookie Scheme as the default.
-                    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                 })
                 .AddCookie(GoldExSignInManager<AppUser>.GoldExScheme,
                     config =>
                     {
                         config.ExpireTimeSpan = TimeSpan.FromHours(1);
                     })
-                .AddGoogleOpenIdConnect(options =>
+                .AddGoogle(options =>
                 {
-                    options.ClientId = googleClientId;
-                    options.ClientSecret = googleClientSecret;
+                    options.ClientId = googleClientId!;
+                    options.ClientSecret = googleClientSecret!;
                 });
         }
         else
