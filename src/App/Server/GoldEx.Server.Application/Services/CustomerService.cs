@@ -44,12 +44,13 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
         return mapper.Map<GetCustomerResponse>(item);
     }
 
-    public async Task<GetCustomerResponse> GetAsync(string nationalId, CancellationToken cancellationToken = default)
+    public async Task<GetCustomerResponse?> GetAsync(string nationalId, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new CustomersByNationalIdSpecification(nationalId))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+        var item = await repository
+            .Get(new CustomersByNationalIdSpecification(nationalId))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        return mapper.Map<GetCustomerResponse>(item);
+        return item is not null ? mapper.Map<GetCustomerResponse>(item) : null;
     }
 
     public async Task<GetCustomerResponse> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)

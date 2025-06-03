@@ -9,6 +9,7 @@
         <MudButton Class="m-3"
                    Color="Color.Error"
                    Disabled="@_processing"
+                   StartIcon="@Icons.Material.Filled.Delete"
                    OnClick="@(async () => await OnValidSubmit())"
                    Variant="Variant.Filled">
             @if (_processing)
