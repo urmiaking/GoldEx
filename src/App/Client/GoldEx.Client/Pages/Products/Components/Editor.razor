@@ -49,6 +49,8 @@
                                      AdornmentText="گرم"
                                      @bind-Value="Model.Weight"
                                      For="@(() => Model.Weight)"
+                                     Format="G29"
+                                     HideSpinButtons="true"
                                      Label="وزن"
                                      Margin="Margin.Dense"
                                      Variant="Variant.Outlined" />
@@ -74,13 +76,13 @@
                     <MudNumericField Adornment="Adornment.End"
                                      AdornmentText="@_wageAdornmentText"
                                      For="@(() => Model.Wage)"
-                                     HelperText="@_wageHelperText"
+                                     Format="G29"
+                                     HideSpinButtons="true"
                                      Immediate="true"
                                      Label="اجرت"
                                      Margin="Margin.Dense"
                                      T="decimal?"
-                                     Value="Model.Wage"
-                                     ValueChanged="OnWageChanged"
+                                     @bind-Value="Model.Wage"
                                      Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">

@@ -17,7 +17,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("ProductVersion", "9.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -236,8 +236,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal?>("CreditLimit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.Property<int?>("CreditLimitUnit")
                         .HasColumnType("int");
@@ -262,6 +262,35 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.InvoiceAggregate.Invoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("AdditionalPrices")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("Discount")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<long>("InvoiceNumber")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.PriceAggregate.Price", b =>
@@ -319,15 +348,15 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Wage")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.Property<int>("WageType")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Weight")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.HasKey("Id");
 
@@ -406,12 +435,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal?>("Credit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.Property<decimal?>("CreditRate")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.Property<int?>("CreditUnit")
                         .HasColumnType("int");
@@ -423,12 +452,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal?>("Debit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.Property<decimal?>("DebitRate")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.Property<int?>("DebitUnit")
                         .HasColumnType("int");
@@ -511,6 +540,99 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("GoldEx.Server.Domain.InvoiceAggregate.Invoice", b =>
+                {
+                    b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("GoldEx.Server.Domain.InvoiceAggregate.InvoiceDebt", "InvoiceDebt", b1 =>
+                        {
+                            b1.Property<Guid>("InvoiceId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(36, 10)
+                                .HasColumnType("decimal(36,10)");
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime>("DueDate")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<bool>("IsPaid")
+                                .HasColumnType("bit");
+
+                            b1.Property<DateTime?>("PaymentDate")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<int>("UnitType")
+                                .HasColumnType("int");
+
+                            b1.HasKey("InvoiceId");
+
+                            b1.ToTable("InvoiceDebts", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("InvoiceId");
+                        });
+
+                    b.OwnsMany("GoldEx.Server.Domain.InvoiceAggregate.InvoiceItem", "Items", b1 =>
+                        {
+                            b1.Property<Guid>("InvoiceId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<decimal>("Price")
+                                .HasPrecision(36, 10)
+                                .HasColumnType("decimal(36,10)");
+
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int");
+
+                            b1.Property<decimal>("Tax")
+                                .HasPrecision(36, 10)
+                                .HasColumnType("decimal(36,10)");
+
+                            b1.HasKey("InvoiceId", "Id");
+
+                            b1.HasIndex("ProductId");
+
+                            b1.ToTable("InvoiceItems", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("InvoiceId");
+
+                            b1.HasOne("GoldEx.Server.Domain.ProductAggregate.Product", "Product")
+                                .WithMany()
+                                .HasForeignKey("ProductId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.Navigation("Product");
+                        });
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("InvoiceDebt");
+
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("GoldEx.Server.Domain.PriceAggregate.Price", b =>
                 {
                     b.OwnsOne("GoldEx.Server.Domain.PriceAggregate.PriceHistory", "PriceHistory", b1 =>
@@ -522,8 +644,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasColumnType("datetime2");
 
                             b1.Property<decimal>("CurrentValue")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)");
+                                .HasPrecision(36, 10)
+                                .HasColumnType("decimal(36,10)");
 
                             b1.Property<string>("DailyChangeRate")
                                 .IsRequired()
@@ -567,8 +689,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasColumnType("uniqueidentifier");
 
                             b1.Property<decimal>("Carat")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)");
+                                .HasPrecision(36, 10)
+                                .HasColumnType("decimal(36,10)");
 
                             b1.Property<string>("Color")
                                 .IsRequired()

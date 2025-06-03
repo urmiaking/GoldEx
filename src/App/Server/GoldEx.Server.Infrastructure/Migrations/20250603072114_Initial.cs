@@ -20,7 +20,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     NationalId = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    CreditLimit = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
                     CustomerType = table.Column<int>(type: "int", nullable: false),
                     CreditLimitUnit = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -119,6 +119,28 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Invoices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvoiceNumber = table.Column<long>(type: "bigint", nullable: false),
+                    Discount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    AdditionalPrices = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Transactions",
                 columns: table => new
                 {
@@ -126,12 +148,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Number = table.Column<long>(type: "bigint", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Credit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Credit = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
                     CreditUnit = table.Column<int>(type: "int", nullable: true),
-                    CreditRate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Debit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    CreditRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    Debit = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
                     DebitUnit = table.Column<int>(type: "int", nullable: true),
-                    DebitRate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    DebitRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
                     CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -151,7 +173,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 columns: table => new
                 {
                     PriceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CurrentValue = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CurrentValue = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     LastUpdate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DailyChangeRate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -175,8 +197,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Barcode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Weight = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Wage = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Weight = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    Wage = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     ProductType = table.Column<int>(type: "int", nullable: false),
                     CaratType = table.Column<int>(type: "int", nullable: false),
                     WageType = table.Column<int>(type: "int", nullable: false),
@@ -301,6 +323,29 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InvoiceDebts",
+                columns: table => new
+                {
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    UnitType = table.Column<int>(type: "int", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsPaid = table.Column<bool>(type: "bit", nullable: false),
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceDebts", x => x.InvoiceId);
+                    table.ForeignKey(
+                        name: "FK_InvoiceDebts_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GemStones",
                 columns: table => new
                 {
@@ -309,7 +354,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Color = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Cut = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Carat = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Carat = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     Purity = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -324,10 +369,50 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "InvoiceItems",
+                columns: table => new
+                {
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Tax = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceItems", x => new { x.InvoiceId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_InvoiceItems_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InvoiceItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_GemStones_ProductId",
                 table: "GemStones",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItems_ProductId",
+                table: "InvoiceItems",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_CustomerId",
+                table: "Invoices",
+                column: "CustomerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_ProductCategoryId",
@@ -386,6 +471,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "GemStones");
 
             migrationBuilder.DropTable(
+                name: "InvoiceDebts");
+
+            migrationBuilder.DropTable(
+                name: "InvoiceItems");
+
+            migrationBuilder.DropTable(
                 name: "PriceHistories");
 
             migrationBuilder.DropTable(
@@ -410,19 +501,22 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "UserTokens");
 
             migrationBuilder.DropTable(
+                name: "Invoices");
+
+            migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
                 name: "Prices");
 
             migrationBuilder.DropTable(
-                name: "Customers");
-
-            migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Customers");
 
             migrationBuilder.DropTable(
                 name: "ProductCategories");

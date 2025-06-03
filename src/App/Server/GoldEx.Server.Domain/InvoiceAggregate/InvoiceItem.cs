@@ -6,9 +6,9 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public class InvoiceItem : EntityBase
 {
     public static InvoiceItem Create(
-        decimal? tax,
-        decimal? price,
-        decimal? quantity,
+        decimal tax,
+        decimal price,
+        int quantity,
         ProductId productId)
     {
         return new InvoiceItem
@@ -22,9 +22,9 @@ public class InvoiceItem : EntityBase
 
     private InvoiceItem() { }
 
-    public decimal? Tax { get; private set; }
-    public decimal? Price { get; private set; }
-    public decimal? Quantity { get; private set; }
+    public decimal Tax { get; private set; }
+    public decimal Price { get; private set; }
+    public int Quantity { get; private set; }
 
     public ProductId ProductId { get; private set; }
     public Product? Product { get; private set; }

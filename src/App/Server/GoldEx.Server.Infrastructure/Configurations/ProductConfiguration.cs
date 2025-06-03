@@ -23,11 +23,11 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired();
 
         builder.Property(x => x.Weight)
-            .HasPrecision(18, 2)
+            .HasPrecision(36, 10)
             .IsRequired();
 
         builder.Property(x => x.Wage)
-            .HasPrecision(18, 2)
+            .HasPrecision(36, 10)
             .IsRequired();
 
         builder.HasOne(x => x.ProductCategory)
@@ -53,7 +53,7 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired();
 
         builder.Property(x => x.Carat)
-            .HasPrecision(18, 2)
+            .HasPrecision(36, 10)
             .IsRequired();
     }
 }

@@ -8,7 +8,7 @@ namespace GoldEx.Client.Pages.Settings.Components.Categories;
 public partial class Editor
 {
     [Parameter] public Guid? Id { get; set; }
-    [Parameter] public ProductCategoryVm Model { get; set; } = default!;
+    [Parameter] public ProductCategoryVm Model { get; set; } = new();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     
     private bool _processing;

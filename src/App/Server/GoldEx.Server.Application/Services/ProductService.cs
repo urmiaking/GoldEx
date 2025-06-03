@@ -28,7 +28,10 @@ internal class ProductService(
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
-        var data = await repository.Get(new ProductsByFilterSpecification(filter)).ToListAsync(cancellationToken);
+        var data = await repository
+            .Get(new ProductsByFilterSpecification(filter))
+            .Include(x => x.ProductCategory)
+            .ToListAsync(cancellationToken);
         var totalCount = await repository.CountAsync(new ProductsByFilterSpecification(filter), cancellationToken);
 
         return new PagedList<GetProductResponse>

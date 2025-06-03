@@ -22,8 +22,8 @@ public class InvoiceDebt : EntityBase
     public decimal Amount { get; private set; }
     public UnitType UnitType { get; private set; }
     public DateTime DueDate { get; private set; }
-    public bool IsPaid { get; set; }
-    public DateTime? PaymentDate { get; set; }
+    public bool IsPaid { get; private set; }
+    public DateTime? PaymentDate { get; private set; }
 
     public void SetPaid(DateTime paymentDate)
     {

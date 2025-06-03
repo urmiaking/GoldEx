@@ -29,6 +29,6 @@ internal class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasMaxLength(200);
 
         builder.Property(x => x.CreditLimit)
-            .HasPrecision(18, 2);
+            .HasPrecision(36, 10);
     }
 }
