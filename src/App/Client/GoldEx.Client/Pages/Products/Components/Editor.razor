@@ -102,22 +102,15 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
-                    <MudStack Row AlignItems="AlignItems.Center">
-                        <MudItem xs="10">
-                            <MudTextField @bind-Value="Model.Barcode"
-                                          For="@(() => Model.Barcode)"
-                                          Label="بارکد"
-                                          Margin="Margin.Dense"
-                                          Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="2">
-                            <MudIconButton Color="Color.Primary"
-                                           Icon="@Icons.Material.Filled.Refresh"
-                                           OnClick="@(_ => GenerateBarcode())"
-                                           Variant="Variant.Filled">
-                            </MudIconButton>
-                        </MudItem>
-                    </MudStack>
+                    <MudTextField @bind-Value="Model.Barcode"
+                                  For="@(() => Model.Barcode)"
+                                  Label="بارکد"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Refresh"
+                                  OnAdornmentClick="@(_ => GenerateBarcode())"
+                                  AdornmentColor="Color.Primary" />
                 </MudItem>
                 @if (Model.ProductType is ProductType.Jewelry)
                 {
