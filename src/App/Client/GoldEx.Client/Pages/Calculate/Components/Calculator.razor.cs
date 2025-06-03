@@ -28,12 +28,14 @@ public partial class Calculator
     private decimal? _finalPrice;
     private string? _barcode;
     private string? _barcodeFieldHelperText;
+    private Timer? _timer;
+    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
 
     protected override async Task OnParametersSetAsync()
     {
         await LoadPricesAsync();
         await LoadSettingsAsync();
-
+        await StartTimer();
         await base.OnParametersSetAsync();
     }
 
@@ -44,13 +46,20 @@ public partial class Calculator
         if (authenticationState.User.Identity is { IsAuthenticated: false })
             return;
 
-        await SendRequestAsync<ISettingService, GetSettingResponse?>((s, ct) => s.GetAsync(ct), response =>
-        {
-            _settings = response;
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response =>
+            {
+                _settings = response;
 
-            _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
-            _model.TaxPercent = _settings?.TaxPercent ?? 9;
-        });
+                if (_settings?.PriceUpdateInterval > TimeSpan.Zero)
+                {
+                    _updateInterval = _settings.PriceUpdateInterval;
+                }
+
+                _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+                _model.TaxPercent = _settings?.TaxPercent ?? 9;
+            });
     }
 
     private async Task LoadPricesAsync()
@@ -241,5 +250,29 @@ public partial class Calculator
         _model.WageType = null;
         _model.AdditionalPrices = null;
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+    }
+
+    private Task StartTimer()
+    {
+        _timer = new Timer(
+            TimerCallback,
+            null,
+            _updateInterval,
+            _updateInterval
+        );
+
+        return Task.CompletedTask;
+    }
+
+    private async void TimerCallback(object? state)
+    {
+        await LoadPricesAsync();
+        StateHasChanged();
+    }
+
+    public override void Dispose()
+    {
+        _timer?.Dispose();
+        base.Dispose();
     }
 }
