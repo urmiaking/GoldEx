@@ -6,7 +6,9 @@ using GoldEx.Server.Application.Validators.Transactions;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Services;
 using MapsterMapper;
@@ -25,12 +27,29 @@ internal class TransactionService(
 {
     public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, Guid? customerId, CancellationToken cancellationToken = default)
     {
-        var list = await repository
+        var skip = filter.Skip ?? 0;
+        var take = filter.Take ?? 100;
+
+        var data = await repository
             .Get(new TransactionsByFilterSpecification(filter,
-                customerId.HasValue ? new CustomerId(customerId.Value) : null))
+                customerId.HasValue
+                    ? new CustomerId(customerId.Value)
+                    : null))
             .ToListAsync(cancellationToken);
 
-        return mapper.Map<PagedList<GetTransactionResponse>>(list);
+        var totalCount = await repository.CountAsync(new TransactionsByFilterSpecification(filter,
+                customerId.HasValue
+                    ? new CustomerId(customerId.Value)
+                    : null),
+            cancellationToken);
+
+        return new PagedList<GetTransactionResponse>
+        {
+            Data = mapper.Map<List<GetTransactionResponse>>(data),
+            Skip = skip,
+            Take = take,
+            Total = totalCount
+        };
     }
 
     public async Task<GetTransactionResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
