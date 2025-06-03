@@ -49,7 +49,8 @@ public class SettingsVm
             PhoneNumber = response.PhoneNumber,
             TaxPercent = response.TaxPercent,
             GoldProfitPercent = response.GoldProfitPercent,
-            JewelryProfitPercent = response.JewelryProfitPercent
+            JewelryProfitPercent = response.JewelryProfitPercent,
+            PriceUpdateInterval = response.PriceUpdateInterval
         };
     }
 }

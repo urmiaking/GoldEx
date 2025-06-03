@@ -25,16 +25,16 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .IsRequired();
 
         builder.Property(x => x.Credit)
-            .HasPrecision(18, 2);
+            .HasPrecision(36, 10);
 
         builder.Property(x => x.CreditRate)
-            .HasPrecision(18, 2);
+            .HasPrecision(36, 10);
 
         builder.Property(x => x.Debit)
-            .HasPrecision(18, 2);
+            .HasPrecision(36, 10);
 
         builder.Property(x => x.DebitRate)
-            .HasPrecision(18, 2);
+            .HasPrecision(36, 10);
 
         builder.HasOne(x => x.Customer)
             .WithMany(x => x.Transactions)

@@ -20,13 +20,14 @@ public partial class Editor
     private readonly ProductValidator _productValidator = new();
     private MudForm _form = default!;
     private bool _processing;
-    private string? _wageHelperText;
     private string? _wageAdornmentText = "درصد";
     private IEnumerable<ProductCategoryVm> _productCategories = [];
 
     protected override void OnParametersSet()
     {
-        OnWageChanged(Model.Wage);
+        if (Id is null) 
+            GenerateBarcode();
+
         OnWageTypeChanged(Model.WageType);
 
         base.OnParametersSet();
@@ -104,20 +105,6 @@ public partial class Editor
         }
     }
 
-    private void OnWageChanged(decimal? wage)
-    {
-        Model.Wage = wage;
-
-        _wageHelperText = Model.WageType switch
-        {
-            WageType.Percent => $"{wage} درصد",
-            WageType.Toman => $"{wage:N0} تومان",
-            WageType.Dollar => $"{wage:N0} دلار",
-            null => null,
-            _ => throw new ArgumentOutOfRangeException()
-        };
-    }
-
     private void OnWageTypeChanged(WageType? wageType)
     {
         Model.WageType = wageType;
@@ -126,19 +113,15 @@ public partial class Editor
         {
             case WageType.Percent:
                 _wageAdornmentText = "درصد";
-                _wageHelperText = Model.Wage.HasValue ? $"{Model.Wage} درصد" : null;
                 break;
             case WageType.Toman:
                 _wageAdornmentText = "تومان";
-                _wageHelperText = Model.Wage.HasValue ? $"{Model.Wage:N0} تومان" : null;
                 break;
             case WageType.Dollar:
                 _wageAdornmentText = "دلار";
-                _wageHelperText = Model.Wage.HasValue ? $"{Model.Wage:N0} دلار" : null;
                 break;
             case null:
                 _wageAdornmentText = null;
-                _wageHelperText = null;
                 Model.Wage = null;
                 break;
             default:

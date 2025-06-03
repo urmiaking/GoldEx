@@ -41,6 +41,6 @@ internal class PriceConfiguration : IEntityTypeConfiguration<Price>
             .IsRequired();
 
         builder.Property(x => x.CurrentValue)
-            .HasPrecision(18, 2);
+            .HasPrecision(36, 10);
     }
 }

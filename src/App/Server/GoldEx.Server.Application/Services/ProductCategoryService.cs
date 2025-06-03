@@ -23,7 +23,7 @@ internal class ProductCategoryService(
     public async Task<List<GetProductCategoryResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
         var items = await repository.Get(new ProductCategoriesDefaultSpecification())
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+            .ToListAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<List<GetProductCategoryResponse>>(items);
     }
