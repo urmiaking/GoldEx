@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Transactions.Validators;
+﻿using GoldEx.Client.Helpers;
+using GoldEx.Client.Pages.Transactions.Validators;
 using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
@@ -68,7 +69,18 @@ public partial class Editor
     {
         await SendRequestAsync<ITransactionService, GetTransactionResponse>(
             action: (s, ct) => s.GetAsync(id, ct),
-            afterSend: _model.SetTransaction);
+            afterSend: response =>
+            {
+                _model.SetTransaction(response);
+                LoadHelperTexts(response);
+            });
+    }
+
+    private void LoadHelperTexts(GetTransactionResponse response)
+    {
+        OnCustomerCreditLimitChanged(response.Customer.CreditLimit);
+        OnCreditChanged(response.Credit);
+        OnDebitChanged(response.Debit);
     }
 
     private async Task OnSubmit()
@@ -114,81 +126,84 @@ public partial class Editor
             });
     }
 
-    private void OnCustomerCreditLimitChanged(decimal? creditLimit)
-    {
-        _model.CustomerCreditLimit = creditLimit;
-        _customerCreditLimitHelperText = creditLimit is null
-            ? "سقف اعتبار مشتری"
-            : $"{creditLimit:N0} {_model.CustomerCreditLimitUnit?.GetDisplayName()}";
-    }
-
-    private void OnCustomerCreditLimitUnitChanged(UnitType? creditLimitUnit)
-    {
-        _model.CustomerCreditLimitUnit = creditLimitUnit;
-        _customerCreditLimitHelperText = creditLimitUnit is null && _model.CustomerCreditLimit is null
-            ? "سقف اعتبار مشتری"
-            : $"{_model.CustomerCreditLimit:N0} {creditLimitUnit?.GetDisplayName()}";
-    }
-
-    private void OnCreditChanged(decimal? credit)
-    {
-        _model.Credit = credit;
-        _creditHelperText = credit is null && _model.CreditUnit is null
-            ? string.Empty
-            : $"{credit:N0} {_model.CreditUnit?.GetDisplayName()}";
-        _model.CreditEquivalent = credit is null || _model.CreditRate is null
-            ? null
-            : Math.Round(credit.Value * _model.CreditRate.Value, 2);
-    }
-
-    private void OnCreditUnitChanged(UnitType? creditUnit)
-    {
-        _model.CreditUnit = creditUnit;
-        _creditHelperText = creditUnit is null && _model.Credit is null
-            ? string.Empty
-            : $"{_model.Credit:N0} {creditUnit?.GetDisplayName()}";
-    }
-
-    private void OnCreditRateChanged(decimal? creditRate)
-    {
-        _model.CreditRate = creditRate;
-        _creditRateHelperText = creditRate is null
-            ? string.Empty
-            : $"{creditRate:N0} ریال";
-
-        _model.CreditEquivalent = creditRate is null || _model.Credit is null
-            ? null
-            : Math.Round(_model.Credit.Value * creditRate.Value, 2);
-    }
-
     private void OnDebitChanged(decimal? debit)
     {
         _model.Debit = debit;
-        _debitHelperText = debit is null && _model.DebitUnit is null
-            ? string.Empty
-            : $"{debit:N0} {_model.DebitUnit?.GetDisplayName()}";
+        _debitHelperText = debit.HasValue || _model.DebitUnit is not null
+            ? $"{debit.FormatNumber()} {_model.DebitUnit?.GetDisplayName()}".Trim()
+            : string.Empty;
+
         _model.DebitEquivalent = debit is null || _model.DebitRate is null
             ? null
-            : Math.Round(debit.Value * _model.DebitRate.Value, 2);
+            : debit.Value * _model.DebitRate.Value;
     }
 
     private void OnDebitUnitChanged(UnitType? debitUnit)
     {
         _model.DebitUnit = debitUnit;
-        _debitHelperText = debitUnit is null && _model.Debit is null
-            ? string.Empty
-            : $"{_model.Debit:N0} {debitUnit?.GetDisplayName()}";
+        _debitHelperText = _model.Debit.HasValue || debitUnit is not null
+            ? $"{_model.Debit.FormatNumber()} {debitUnit?.GetDisplayName()}".Trim()
+            : string.Empty;
     }
 
     private void OnDebitRateChanged(decimal? debitRate)
     {
         _model.DebitRate = debitRate;
-        _debitRateHelperText = debitRate is null
-            ? string.Empty
-            : $"{debitRate:N0} ریال";
+        _debitRateHelperText = debitRate.HasValue
+            ? $"{debitRate.FormatNumber()} ریال"
+            : string.Empty;
+
         _model.DebitEquivalent = debitRate is null || _model.Debit is null
             ? null
-            : Math.Round(_model.Debit.Value * debitRate.Value, 2);
+            : _model.Debit.Value * debitRate.Value;
+    }
+
+    private void OnCreditChanged(decimal? credit)
+    {
+        _model.Credit = credit;
+        _creditHelperText = credit.HasValue || _model.CreditUnit is not null
+            ? $"{credit.FormatNumber()} {_model.CreditUnit?.GetDisplayName()}".Trim()
+            : string.Empty;
+
+        _model.CreditEquivalent = credit is null || _model.CreditRate is null
+            ? null
+            : credit.Value * _model.CreditRate.Value;
+    }
+
+    private void OnCreditUnitChanged(UnitType? creditUnit)
+    {
+        _model.CreditUnit = creditUnit;
+        _creditHelperText = _model.Credit.HasValue || creditUnit is not null
+            ? $"{_model.Credit.FormatNumber()} {creditUnit?.GetDisplayName()}".Trim()
+            : string.Empty;
+    }
+
+    private void OnCreditRateChanged(decimal? creditRate)
+    {
+        _model.CreditRate = creditRate;
+        _creditRateHelperText = creditRate.HasValue
+            ? $"{creditRate.FormatNumber()} ریال"
+            : string.Empty;
+
+        _model.CreditEquivalent = creditRate is null || _model.Credit is null
+            ? null
+            : _model.Credit.Value * creditRate.Value;
+    }
+
+    private void OnCustomerCreditLimitChanged(decimal? creditLimit)
+    {
+        _model.CustomerCreditLimit = creditLimit;
+        _customerCreditLimitHelperText = creditLimit.HasValue
+            ? $"{creditLimit.FormatNumber()} {_model.CustomerCreditLimitUnit?.GetDisplayName()}".Trim()
+            : "سقف اعتبار مشتری";
+    }
+
+    private void OnCustomerCreditLimitUnitChanged(UnitType? creditLimitUnit)
+    {
+        _model.CustomerCreditLimitUnit = creditLimitUnit;
+        _customerCreditLimitHelperText = _model.CustomerCreditLimit.HasValue || creditLimitUnit is not null
+            ? $"{_model.CustomerCreditLimit.FormatNumber()} {creditLimitUnit?.GetDisplayName()}".Trim()
+            : "سقف اعتبار مشتری";
     }
 
     private void OnCustomerNationalIdCleared()

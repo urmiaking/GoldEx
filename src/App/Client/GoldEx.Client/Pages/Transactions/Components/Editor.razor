@@ -1,4 +1,5 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Helpers
+@inherits GoldExComponentBase
 
 <MudForm Model="_model" @ref="@_form" Validation="@(_transactionValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
@@ -8,7 +9,7 @@
                 <MudText Typo="Typo.h6" GutterBottom="true">مشخصات مشتری</MudText>
                 @if (_model is { CustomerCreditRemaining: not null, CustomerCreditRemainingUnit: not null })
                 {
-                    <MudText Typo="Typo.body1" Class="d-none d-sm-flex">اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining:N0} {_model.CustomerCreditRemainingUnit.GetDisplayName()}") </MudText>
+                    <MudText Typo="Typo.body1" Class="d-none d-sm-flex">اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining.FormatNumber()} {_model.CustomerCreditRemainingUnit.GetDisplayName()}")</MudText>
                 }
             </div>
             <MudDivider Class="mb-2" />
@@ -33,7 +34,6 @@
                                   Immediate="true"
                                   T="string"
                                   DebounceInterval="500"
-                                  AutoFocus="true"
                                   For="@(() => _model.CustomerNationalId)"
                                   Label="شناسه یکتا"
                                   Clearable="true"
@@ -65,7 +65,6 @@
                                              For="@(() => _model.CustomerCreditLimit)"
                                              Format="G29"
                                              HideSpinButtons="true"
-                                             HelperTextOnFocus="true"
                                              HelperText="@_customerCreditLimitHelperText"
                                              Label="سقف اعتبار"
                                              Margin="Margin.Dense"
@@ -160,30 +159,17 @@
                         </MudText>
                         <MudGrid>
                             <MudItem xs="12" md="6" lg="6">
-                                <MudNumericField Value="_model.Credit"
-                                                 ValueChanged="OnCreditChanged"
-                                                 HelperText="@_creditHelperText"
-                                                 T="decimal?"
-                                                 Immediate="true"
-                                                 For="@(() => _model.Credit)"
-                                                 Format="G29"
-                                                 HideSpinButtons="true"
-                                                 Label="بستانکار"
-                                                 Margin="Margin.Dense"
-                                                 Variant="Variant.Outlined" />
-                            </MudItem>
-                            <MudItem xs="12" md="6" lg="6">
                                 <MudMenu @bind-Open="_isCreditMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                                     <ActivatorContent>
-                                        <MudNumericField Value="_model.CreditRate"
-                                                         ValueChanged="OnCreditRateChanged"
-                                                         HelperText="@_creditRateHelperText"
+                                        <MudNumericField Value="_model.Credit"
+                                                         ValueChanged="OnCreditChanged"
+                                                         HelperText="@_creditHelperText"
                                                          T="decimal?"
                                                          Immediate="true"
-                                                         For="@(() => _model.CreditRate)"
+                                                         For="@(() => _model.Credit)"
                                                          Format="G29"
                                                          HideSpinButtons="true"
-                                                         Label="نرخ تبدیل"
+                                                         Label="بستانکار"
                                                          Margin="Margin.Dense"
                                                          Variant="Variant.Outlined"
                                                          Adornment="Adornment.End"
@@ -198,6 +184,19 @@
                                     </ChildContent>
                                 </MudMenu>
                             </MudItem>
+                            <MudItem xs="12" md="6" lg="6">
+                                <MudNumericField Value="_model.CreditRate"
+                                                 ValueChanged="OnCreditRateChanged"
+                                                 HelperText="@_creditRateHelperText"
+                                                 T="decimal?"
+                                                 Immediate="true"
+                                                 For="@(() => _model.CreditRate)"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 Label="نرخ تبدیل"
+                                                 Margin="Margin.Dense"
+                                                 Variant="Variant.Outlined" />
+                            </MudItem>
                         </MudGrid>
                     </MudPaper>
                 </MudItem>
@@ -209,31 +208,17 @@
                         </MudText>
                         <MudGrid>
                             <MudItem xs="12" md="6" lg="6">
-                                <MudNumericField Value="_model.Debit"
-                                                 ValueChanged="OnDebitChanged"
-                                                 HelperText="@_debitHelperText"
-                                                 T="decimal?"
-                                                 Immediate="true"
-                                                 For="@(() => _model.Debit)"
-                                                 Format="G29"
-                                                 HideSpinButtons="true"
-                                                 Label="بدهکار"
-                                                 Margin="Margin.Dense"
-                                                 Variant="Variant.Outlined" />
-                            </MudItem>
-
-                            <MudItem xs="12" md="6" lg="6">
                                 <MudMenu @bind-Open="_isDebitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                                     <ActivatorContent>
-                                        <MudNumericField Value="_model.DebitRate"
-                                                         ValueChanged="OnDebitRateChanged"
-                                                         HelperText="@_debitRateHelperText"
+                                        <MudNumericField Value="_model.Debit"
+                                                         ValueChanged="OnDebitChanged"
+                                                         HelperText="@_debitHelperText"
                                                          T="decimal?"
                                                          Immediate="true"
-                                                         For="@(() => _model.DebitRate)"
+                                                         For="@(() => _model.Debit)"
                                                          Format="G29"
                                                          HideSpinButtons="true"
-                                                         Label="نرخ تبدیل"
+                                                         Label="بدهکار"
                                                          Margin="Margin.Dense"
                                                          Variant="Variant.Outlined"
                                                          Adornment="Adornment.End"
@@ -247,6 +232,20 @@
                                         }
                                     </ChildContent>
                                 </MudMenu>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6" lg="6">
+                                <MudNumericField Value="_model.DebitRate"
+                                                 ValueChanged="OnDebitRateChanged"
+                                                 HelperText="@_debitRateHelperText"
+                                                 T="decimal?"
+                                                 Immediate="true"
+                                                 For="@(() => _model.DebitRate)"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 Label="نرخ تبدیل"
+                                                 Margin="Margin.Dense"
+                                                 Variant="Variant.Outlined" />
                             </MudItem>
                         </MudGrid>
                     </MudPaper>
