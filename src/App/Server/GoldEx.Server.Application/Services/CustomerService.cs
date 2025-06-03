@@ -18,9 +18,22 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
 {
     public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
-        var list = await repository.Get(new CustomersByFilterSpecification(filter)).ToListAsync(cancellationToken);
+        var skip = filter.Skip ?? 0;
+        var take = filter.Take ?? 100;
 
-        return mapper.Map<PagedList<GetCustomerResponse>>(list);
+        var data = await repository
+            .Get(new CustomersByFilterSpecification(filter))
+            .ToListAsync(cancellationToken);
+
+        var totalCount = await repository.CountAsync(new CustomersByFilterSpecification(filter), cancellationToken);
+
+        return new PagedList<GetCustomerResponse>
+        {
+            Data = mapper.Map<List<GetCustomerResponse>>(data),
+            Skip = skip,
+            Take = take,
+            Total = totalCount
+        };
     }
 
     public async Task<GetCustomerResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
