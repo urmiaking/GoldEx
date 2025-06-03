@@ -9,7 +9,9 @@
                 <MudText Typo="Typo.h6" GutterBottom="true">مشخصات مشتری</MudText>
                 @if (_model is { CustomerCreditRemaining: not null, CustomerCreditRemainingUnit: not null })
                 {
-                    <MudText Typo="Typo.body1" Class="d-none d-sm-flex">اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining.FormatNumber()} {_model.CustomerCreditRemainingUnit.GetDisplayName()}")</MudText>
+                    <MudText Typo="Typo.body1" Class="d-none d-sm-flex">
+                        اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining.FormatNumber()} {_model.CustomerCreditRemainingUnit.GetDisplayName()}")
+                    </MudText>
                 }
             </div>
             <MudDivider Class="mb-2" />
@@ -51,9 +53,6 @@
                                   HelperTextOnFocus="true"
                                   Margin="Margin.Dense"></MudTextField>
                 </MudItem>
-
-                <!-- Gap for lg mode -->
-                @* <MudItem xs="0" md="0" lg="2" Class="d-none d-lg-block"></MudItem> *@
 
                 <MudItem xs="12" md="12" lg="4" Class="pt-md-0 pt-lg-6">
                     <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
