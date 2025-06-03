@@ -31,7 +31,7 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
     public async Task<IActionResult> GetAsync(string nationalId, CancellationToken cancellationToken)
     {
         var item = await service.GetAsync(nationalId, cancellationToken);
-        return Ok(item);
+        return item is null ? NotFound() : Ok(item);
     }
 
     [HttpGet(ApiRoutes.Customers.GetByPhoneNumber)]

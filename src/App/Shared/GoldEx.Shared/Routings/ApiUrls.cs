@@ -100,10 +100,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Get).FormatRoute(new { id });
         public static string GetByNationalId(string nationalId) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByNationalId)
-            .AppendQueryString(new { nationalId });
+            .FormatRoute(new { nationalId });
         public static string GetByPhoneNumber(string phoneNumber) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByPhoneNumber)
-                .AppendQueryString(new { phoneNumber });
+                .FormatRoute(new { phoneNumber });
         public static string Create() => BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Create);
         public static string Update(Guid id) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Update).FormatRoute(new { id });

@@ -180,13 +180,15 @@
             </MudGrid>
         </DialogContent>
         <DialogActions>
-            <MudButton Class="m-3"
-                       Color="Color.Error"
+            <MudButton Color="Color.Error"
                        OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
                        Variant="Variant.Filled">بستن</MudButton>
-            <MudButton Class="m-3"
+
+            <MudButton Class="m-2"
                        Color="Color.Primary"
                        Disabled="@_processing"
+                       StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
                        Variant="Variant.Filled">
                 @if (_processing)

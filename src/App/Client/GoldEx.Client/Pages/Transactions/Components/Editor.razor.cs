@@ -86,10 +86,13 @@ public partial class Editor
     {
         _model.CustomerNationalId = nationalId;
 
-        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+        await SendRequestAsync<ICustomerService, GetCustomerResponse?>(
             action: (s, ct) => s.GetAsync(nationalId, ct),
             afterSend: response =>
             {
+                if (response is null)
+                    return;
+
                 _model.SetCustomer(response);
                 OnCustomerCreditLimitChanged(response.CreditLimit);
             });

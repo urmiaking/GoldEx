@@ -35,15 +35,17 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="6" md="3" lg="3">
-                    <MudTextField HelperText="@_creditLimitHelperText"
-                                  Value="Model.CreditLimit"
-                                  ValueChanged="OnCreditLimitChanged"
-                                  T="decimal?"
-                                  Immediate="true"
-                                  For="@(() => Model.CreditLimit)"
-                                  Label="سقف اعتبار"
-                                  Margin="Margin.Dense"
-                                  Variant="Variant.Outlined" />
+                    <MudNumericField HelperText="@_creditLimitHelperText"
+                                     Value="Model.CreditLimit"
+                                     ValueChanged="OnCreditLimitChanged"
+                                     T="decimal?"
+                                     HideSpinButtons="true"
+                                     Format="G29"
+                                     Immediate="true"
+                                     For="@(() => Model.CreditLimit)"
+                                     Label="سقف اعتبار"
+                                     Margin="Margin.Dense"
+                                     Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="6" md="3" lg="3">
                     <MudSelect T="UnitType?"
@@ -71,15 +73,15 @@
             </MudGrid>
         </DialogContent>
         <DialogActions>
-            <MudButton Class="m-3"
-                       Color="Color.Error"
+            <MudButton Color="Color.Error"
                        OnClick="Close"
-                       Variant="Variant.Filled">
-                بستن
-            </MudButton>
-            <MudButton Class="m-3"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
                        Color="Color.Primary"
                        Disabled="@_processing"
+                       StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
                        Variant="Variant.Filled">
                 @if (_processing)

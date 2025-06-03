@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.Data;
+﻿using System.Net;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Customers;
@@ -36,16 +37,19 @@ internal class CustomerService(HttpClient client, JsonSerializerOptions jsonOpti
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetCustomerResponse> GetAsync(string nationalId, CancellationToken cancellationToken = default)
+    public async Task<GetCustomerResponse?> GetAsync(string nationalId, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Customers.GetByNationalId(nationalId), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<GetCustomerResponse>(jsonOptions, cancellationToken);
 
-        return result ?? throw new UnexpectedHttpResponseException();
+        return result;
     }
 
     public async Task<GetCustomerResponse> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
