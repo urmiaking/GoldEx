@@ -54,7 +54,9 @@ internal class TransactionService(
 
     public async Task<GetTransactionResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var transaction = await repository.Get(new TransactionsByIdSpecification(new TransactionId(id)))
+        var transaction = await repository
+            .Get(new TransactionsByIdSpecification(new TransactionId(id)))
+            .Include(x => x.Customer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
         
         return mapper.Map<GetTransactionResponse>(transaction);

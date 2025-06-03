@@ -55,32 +55,32 @@
                 <!-- Gap for lg mode -->
                 @* <MudItem xs="0" md="0" lg="2" Class="d-none d-lg-block"></MudItem> *@
 
-                <MudItem xs="12" md="6" lg="2" Class="pt-md-0 pt-lg-6">
-                    <MudTextField Value="_model.CustomerCreditLimit"
-                                  ValueChanged="OnCustomerCreditLimitChanged"
-                                  T="decimal?"
-                                  Immediate="true"
-                                  For="@(() => _model.CustomerCreditLimit)"
-                                  HelperTextOnFocus="true"
-                                  HelperText="@_customerCreditLimitHelperText"
-                                  Label="سقف اعتبار"
-                                  Margin="Margin.Dense"
-                                  Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="6" lg="2" Class="pt-md-0 pt-lg-6">
-                    <MudSelect T="UnitType?"
-                               Value="_model.CustomerCreditLimitUnit"
-                               ValueChanged="OnCustomerCreditLimitUnitChanged"
-                               Label="واحد"
-                               For="() => _model.CustomerCreditLimitUnit"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined">
-                        <MudSelectItem T="UnitType?" Value="@((UnitType?)null)">-</MudSelectItem>
-                        @foreach (var item in Enum.GetValues<UnitType>())
-                        {
-                            <MudSelectItem Value="@((UnitType?)item)">@item.GetDisplayName()</MudSelectItem>
-                        }
-                    </MudSelect>
+                <MudItem xs="12" md="12" lg="4" Class="pt-md-0 pt-lg-6">
+                    <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Value="_model.CustomerCreditLimit"
+                                             ValueChanged="OnCustomerCreditLimitChanged"
+                                             T="decimal?"
+                                             Immediate="true"
+                                             For="@(() => _model.CustomerCreditLimit)"
+                                             Format="G29"
+                                             HideSpinButtons="true"
+                                             HelperTextOnFocus="true"
+                                             HelperText="@_customerCreditLimitHelperText"
+                                             Label="سقف اعتبار"
+                                             Margin="Margin.Dense"
+                                             Variant="Variant.Outlined"
+                                             Adornment="Adornment.End"
+                                             AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                             OnAdornmentClick="() => _isCreditLimitMenuOpen = true" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in Enum.GetValues<UnitType>())
+                            {
+                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">@item.GetDisplayName()</MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
                 </MudItem>
 
                 <MudItem xs="12" md="4" lg="4" Class="pt-lg-0 pt-md-0 pt-sm-6">
@@ -159,42 +159,44 @@
                             بستانکار @(_model.CreditEquivalent.HasValue ? $" - معادل ریالی : {_model.CreditEquivalent:N0} ریال" : "")
                         </MudText>
                         <MudGrid>
-                            <MudItem xs="12" md="4" lg="4">
-                                <MudTextField Value="_model.Credit"
-                                              ValueChanged="OnCreditChanged"
-                                              HelperText="@_creditHelperText"
-                                              T="decimal?"
-                                              Immediate="true"
-                                              For="@(() => _model.Credit)"
-                                              Label="بستانکار"
-                                              Margin="Margin.Dense"
-                                              Variant="Variant.Outlined" />
+                            <MudItem xs="12" md="6" lg="6">
+                                <MudNumericField Value="_model.Credit"
+                                                 ValueChanged="OnCreditChanged"
+                                                 HelperText="@_creditHelperText"
+                                                 T="decimal?"
+                                                 Immediate="true"
+                                                 For="@(() => _model.Credit)"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 Label="بستانکار"
+                                                 Margin="Margin.Dense"
+                                                 Variant="Variant.Outlined" />
                             </MudItem>
-                            <MudItem xs="12" md="4" lg="4">
-                                <MudSelect T="UnitType?"
-                                           Value="_model.CreditUnit"
-                                           ValueChanged="OnCreditUnitChanged"
-                                           Label="واحد"
-                                           For="() => _model.CreditUnit"
-                                           Margin="Margin.Dense"
-                                           Variant="Variant.Outlined">
-                                    <MudSelectItem T="UnitType?" Value="@((UnitType?)null)">-</MudSelectItem>
-                                    @foreach (var item in Enum.GetValues<UnitType>())
-                                    {
-                                        <MudSelectItem Value="@((UnitType?)item)">@item.GetDisplayName()</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </MudItem>
-                            <MudItem xs="12" md="4" lg="4">
-                                <MudTextField Value="_model.CreditRate"
-                                              ValueChanged="OnCreditRateChanged"
-                                              T="decimal?"
-                                              Immediate="true"
-                                              HelperText="@_creditRateHelperText"
-                                              For="@(() => _model.CreditRate)"
-                                              Label="نرخ تبدیل"
-                                              Margin="Margin.Dense"
-                                              Variant="Variant.Outlined" />
+                            <MudItem xs="12" md="6" lg="6">
+                                <MudMenu @bind-Open="_isCreditMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                                    <ActivatorContent>
+                                        <MudNumericField Value="_model.CreditRate"
+                                                         ValueChanged="OnCreditRateChanged"
+                                                         HelperText="@_creditRateHelperText"
+                                                         T="decimal?"
+                                                         Immediate="true"
+                                                         For="@(() => _model.CreditRate)"
+                                                         Format="G29"
+                                                         HideSpinButtons="true"
+                                                         Label="نرخ تبدیل"
+                                                         Margin="Margin.Dense"
+                                                         Variant="Variant.Outlined"
+                                                         Adornment="Adornment.End"
+                                                         AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                                         OnAdornmentClick="() => _isCreditMenuOpen = true" />
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (var item in Enum.GetValues<UnitType>())
+                                        {
+                                            <MudMenuItem OnClick="() => SelectCreditUnit(item)">@item.GetDisplayName()</MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
                             </MudItem>
                         </MudGrid>
                     </MudPaper>
@@ -206,42 +208,45 @@
                             بدهکار @(_model.DebitEquivalent.HasValue ? $" - معادل ریالی : {_model.DebitEquivalent:N0} ریال" : "")
                         </MudText>
                         <MudGrid>
-                            <MudItem xs="12" md="4" lg="4">
-                                <MudTextField Value="_model.Debit"
-                                              ValueChanged="OnDebitChanged"
-                                              HelperText="@_debitHelperText"
-                                              T="decimal?"
-                                              Immediate="true"
-                                              For="@(() => _model.Debit)"
-                                              Label="بدهکار"
-                                              Margin="Margin.Dense"
-                                              Variant="Variant.Outlined" />
+                            <MudItem xs="12" md="6" lg="6">
+                                <MudNumericField Value="_model.Debit"
+                                                 ValueChanged="OnDebitChanged"
+                                                 HelperText="@_debitHelperText"
+                                                 T="decimal?"
+                                                 Immediate="true"
+                                                 For="@(() => _model.Debit)"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 Label="بدهکار"
+                                                 Margin="Margin.Dense"
+                                                 Variant="Variant.Outlined" />
                             </MudItem>
-                            <MudItem xs="12" md="4" lg="4">
-                                <MudSelect T="UnitType?"
-                                           Value="_model.DebitUnit"
-                                           ValueChanged="OnDebitUnitChanged"
-                                           Label="واحد"
-                                           For="() => _model.DebitUnit"
-                                           Margin="Margin.Dense"
-                                           Variant="Variant.Outlined">
-                                    <MudSelectItem T="UnitType?" Value="@((UnitType?)null)">-</MudSelectItem>
-                                    @foreach (var item in Enum.GetValues<UnitType>())
-                                    {
-                                        <MudSelectItem Value="@((UnitType?)item)">@item.GetDisplayName()</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </MudItem>
-                            <MudItem xs="12" md="4" lg="4">
-                                <MudTextField Value="_model.DebitRate"
-                                              ValueChanged="OnDebitRateChanged"
-                                              HelperText="@_debitRateHelperText"
-                                              T="decimal?"
-                                              Immediate="true"
-                                              For="@(() => _model.DebitRate)"
-                                              Label="نرخ تبدیل"
-                                              Margin="Margin.Dense"
-                                              Variant="Variant.Outlined" />
+
+                            <MudItem xs="12" md="6" lg="6">
+                                <MudMenu @bind-Open="_isDebitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                                    <ActivatorContent>
+                                        <MudNumericField Value="_model.DebitRate"
+                                                         ValueChanged="OnDebitRateChanged"
+                                                         HelperText="@_debitRateHelperText"
+                                                         T="decimal?"
+                                                         Immediate="true"
+                                                         For="@(() => _model.DebitRate)"
+                                                         Format="G29"
+                                                         HideSpinButtons="true"
+                                                         Label="نرخ تبدیل"
+                                                         Margin="Margin.Dense"
+                                                         Variant="Variant.Outlined"
+                                                         Adornment="Adornment.End"
+                                                         AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                                         OnAdornmentClick="() => _isDebitMenuOpen = true" />
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (var item in Enum.GetValues<UnitType>())
+                                        {
+                                            <MudMenuItem OnClick="() => SelectDebitUnit(item)">@item.GetDisplayName()</MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
                             </MudItem>
                         </MudGrid>
                     </MudPaper>
