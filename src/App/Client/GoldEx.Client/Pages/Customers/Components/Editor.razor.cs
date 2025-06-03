@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Customers.Validators;
+﻿using GoldEx.Client.Helpers;
+using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
@@ -18,6 +19,14 @@ public partial class Editor
     private MudForm _form = default!;
     private bool _processing;
     private string? _creditLimitHelperText;
+    private bool _isCreditLimitMenuOpen;
+
+    protected override void OnParametersSet()
+    {
+        if (Id is not null) 
+            OnCreditLimitChanged(Model.CreditLimit);
+        base.OnParametersSet();
+    }
 
     private async Task Submit()
     {
@@ -52,12 +61,19 @@ public partial class Editor
     private void OnCreditLimitChanged(decimal? creditLimit)
     {
         Model.CreditLimit = creditLimit;
-        _creditLimitHelperText = $"{creditLimit:N0} {Model.CreditLimitUnit?.GetDisplayName()}";
+        _creditLimitHelperText = $"{creditLimit.FormatNumber()} {Model.CreditLimitUnit?.GetDisplayName()}".Trim();
     }
 
     private void OnCreditLimitUnitChanged(UnitType? unitType)
     {
         Model.CreditLimitUnit = unitType;
-        _creditLimitHelperText = $"{Model.CreditLimit:N0} {unitType?.GetDisplayName()}";
+        _creditLimitHelperText = $"{Model.CreditLimit.FormatNumber()} {unitType?.GetDisplayName()}".Trim();
+    }
+
+    private void SelectCreditLimitUnit(UnitType selectedUnit)
+    {
+        Model.CreditLimitUnit = selectedUnit;
+        OnCreditLimitUnitChanged(selectedUnit);
+        _isCreditLimitMenuOpen = false;
     }
 }
