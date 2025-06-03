@@ -36,6 +36,9 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(x => x.DebitRate)
             .HasPrecision(36, 10);
 
+        builder.HasIndex(x => x.Number)
+            .IsUnique();
+
         builder.HasOne(x => x.Customer)
             .WithMany(x => x.Transactions)
             .HasForeignKey(x => x.CustomerId)
