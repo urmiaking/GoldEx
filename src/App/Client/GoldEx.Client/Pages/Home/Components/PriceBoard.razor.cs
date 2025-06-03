@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -21,12 +22,29 @@ public partial class PriceBoard
 
     private IEnumerable<GetPriceResponse>? _items;
     private Timer? _timer;
+    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadSettingsAsync();
         await LoadPricesAsync();
         await StartTimer();
         await base.OnInitializedAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response =>
+            {
+                if (response?.PriceUpdateInterval > TimeSpan.Zero)
+                {
+                    _updateInterval = response.PriceUpdateInterval;
+                }
+            },
+            createScope: true
+        );
     }
 
     private async Task LoadPricesAsync()
@@ -40,7 +58,12 @@ public partial class PriceBoard
 
     private Task StartTimer()
     {
-        _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        _timer = new Timer(
+            TimerCallback,
+            null,
+            _updateInterval,
+            _updateInterval
+        );
 
         return Task.CompletedTask;
     }
