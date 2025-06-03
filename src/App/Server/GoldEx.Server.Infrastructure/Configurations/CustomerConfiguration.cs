@@ -30,5 +30,10 @@ internal class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.Property(x => x.CreditLimit)
             .HasPrecision(36, 10);
+
+        builder.HasIndex(x => new { x.NationalId, x.CustomerType })
+            .IsUnique();
+
+        builder.HasIndex(x => x.FullName);
     }
 }
