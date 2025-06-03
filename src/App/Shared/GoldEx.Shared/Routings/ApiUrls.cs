@@ -114,7 +114,7 @@ public class ApiUrls
     public class Transactions
     {
         public static string GetList(RequestFilter filter, Guid? customerId) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter).AppendQueryString(customerId);
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(new { filter, customerId });
 
         public static string Get(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });

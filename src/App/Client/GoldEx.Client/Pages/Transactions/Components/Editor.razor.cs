@@ -25,16 +25,32 @@ public partial class Editor
     private string? _creditRateHelperText;
     private string? _debitHelperText;
     private string? _debitRateHelperText;
+    private bool _isDebitMenuOpen;
+    private bool _isCreditMenuOpen;
+    private bool _isCreditLimitMenuOpen;
 
     protected override async Task OnParametersSetAsync()
     {
         if (Id is not null)
             await LoadTransactionAsync(Id.Value);
+        else
+            await GetLastNumberAsync();
 
         if (CustomerId is not null)
             await LoadCustomerAsync(CustomerId.Value);
 
         await base.OnParametersSetAsync();
+    }
+
+    private async Task GetLastNumberAsync()
+    {
+        await SendRequestAsync<ITransactionService, GetTransactionNumberResponse>(
+            action: (s, ct) => s.GetLastNumberAsync(ct),
+            afterSend: response =>
+            {
+                _model.TransactionNumber = response.Number + 1;
+            },
+            createScope: true);
     }
 
     private async Task LoadCustomerAsync(Guid customerId)
@@ -186,6 +202,27 @@ public partial class Editor
         _model.CustomerCreditLimitUnit = null;
         _model.CustomerCreditRemaining = null;
         _model.CustomerCreditRemainingUnit = null;
+    }
+
+    private void SelectDebitUnit(UnitType selectedUnit)
+    {
+        _model.DebitUnit = selectedUnit;
+        OnDebitUnitChanged(selectedUnit);
+        _isDebitMenuOpen = false;
+    }
+
+    private void SelectCreditUnit(UnitType selectedUnit)
+    {
+        _model.CreditUnit = selectedUnit;
+        OnCreditUnitChanged(selectedUnit);
+        _isDebitMenuOpen = false;
+    }
+
+    private void SelectCreditLimitUnit(UnitType selectedUnit)
+    {
+        _model.CustomerCreditLimitUnit = selectedUnit;
+        OnCustomerCreditLimitUnitChanged(selectedUnit);
+        _isCreditLimitMenuOpen = false;
     }
 
     private void Close() => MudDialog.Cancel();
