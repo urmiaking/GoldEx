@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Transactions.Validators;
 using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -138,12 +139,23 @@ public partial class Editor
             : debit.Value * _model.DebitRate.Value;
     }
 
-    private void OnDebitUnitChanged(UnitType? debitUnit)
+    private async Task OnDebitUnitChanged(UnitType? debitUnit)
     {
         _model.DebitUnit = debitUnit;
         _debitHelperText = _model.Debit.HasValue || debitUnit is not null
             ? $"{_model.Debit.FormatNumber()} {debitUnit?.GetDisplayName()}".Trim()
             : string.Empty;
+
+        if (debitUnit.HasValue)
+            await SendRequestAsync<IPriceService, GetPriceResponse?>(
+                action: (s, ct) => s.GetAsync(debitUnit.Value, ct),
+                afterSend: response =>
+                {
+                    if (response is not null)
+                        OnDebitRateChanged(decimal.Parse(response.Value));
+                    else
+                        OnDebitRateChanged(null);
+                });
     }
 
     private void OnDebitRateChanged(decimal? debitRate)
@@ -170,12 +182,23 @@ public partial class Editor
             : credit.Value * _model.CreditRate.Value;
     }
 
-    private void OnCreditUnitChanged(UnitType? creditUnit)
+    private async Task OnCreditUnitChanged(UnitType? creditUnit)
     {
         _model.CreditUnit = creditUnit;
         _creditHelperText = _model.Credit.HasValue || creditUnit is not null
             ? $"{_model.Credit.FormatNumber()} {creditUnit?.GetDisplayName()}".Trim()
             : string.Empty;
+
+        if (creditUnit.HasValue)
+            await SendRequestAsync<IPriceService, GetPriceResponse?>(
+                action: (s, ct) => s.GetAsync(creditUnit.Value, ct),
+                afterSend: response =>
+                {
+                    if (response is not null)
+                        OnCreditRateChanged(decimal.Parse(response.Value));
+                    else
+                        OnCreditRateChanged(null);
+                });
     }
 
     private void OnCreditRateChanged(decimal? creditRate)
@@ -219,18 +242,18 @@ public partial class Editor
         _model.CustomerCreditRemainingUnit = null;
     }
 
-    private void SelectDebitUnit(UnitType selectedUnit)
+    private async Task SelectDebitUnit(UnitType selectedUnit)
     {
         _model.DebitUnit = selectedUnit;
-        OnDebitUnitChanged(selectedUnit);
         _isDebitMenuOpen = false;
+        await OnDebitUnitChanged(selectedUnit);
     }
 
-    private void SelectCreditUnit(UnitType selectedUnit)
+    private async Task SelectCreditUnit(UnitType selectedUnit)
     {
         _model.CreditUnit = selectedUnit;
-        OnCreditUnitChanged(selectedUnit);
         _isDebitMenuOpen = false;
+        await OnCreditUnitChanged(selectedUnit);
     }
 
     private void SelectCreditLimitUnit(UnitType selectedUnit)

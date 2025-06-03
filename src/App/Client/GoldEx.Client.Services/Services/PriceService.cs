@@ -5,6 +5,7 @@ using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -40,6 +41,9 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
     public async Task<GetPriceResponse?> GetAsync(UnitType unitType, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Price.Get(unitType), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
