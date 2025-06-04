@@ -34,6 +34,7 @@ public static class ApiRoutes
         public const string GetUnit = "Unit/{unitType}";
         public const string GetSettings = "settings";
         public const string UpdateStatus = "status/{id}";
+        public const string GetTitles = "titles";
     }
 
     public class Health
@@ -91,5 +92,16 @@ public static class ApiRoutes
         public const string Update = "{id}";
         public const string Delete = "{id}";
         public const string GetLastNumber = "last-number";
+    }
+
+    public class PriceUnits
+    {
+        public const string Base = "/api/PriceUnits";
+        public const string GetList = "";
+        public const string GetAll = "all";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string UpdateStatus = "status/{id}";
     }
 }

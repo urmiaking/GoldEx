@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace GoldEx.Sdk.Common.Extensions;
@@ -62,13 +63,24 @@ public static class StringExtensions
         if (parameters is null)
             return template;
 
-        var properties = parameters.GetType().GetProperties();
         var dictionary = new Dictionary<string, object?>();
-        foreach (var property in properties)
+
+        var props = parameters.GetType().GetProperties();
+        foreach (var prop in props)
         {
-            var value = property.GetValue(parameters);
-            if (value != null)
-                dictionary.Add(property.Name, value);
+            var value = prop.GetValue(parameters);
+            if (value == null) continue;
+
+            if (value is IEnumerable enumerable and not string)
+            {
+                var list = enumerable.Cast<object?>().ToList();
+
+                dictionary[prop.Name] = list;
+            }
+            else
+            {
+                dictionary[prop.Name] = value;
+            }
         }
 
         return template.AppendQueryString(dictionary);
@@ -82,7 +94,6 @@ public static class StringExtensions
         if (template.Contains('?'))
         {
             var splits = template.Split('?');
-
             url = splits[0];
             query = splits[1];
         }
@@ -91,30 +102,43 @@ public static class StringExtensions
             url = template;
         }
 
-        var queryParams = new Dictionary<string, string?>();
-        foreach (var arg in query.Split('&'))
-        {
-            var argSplit = arg.Split('=');
-            var argName = argSplit.Any() ? argSplit[0] : null;
-            var argValue = argSplit.Length > 1 ? argSplit[1] : null;
+        var queryParams = new List<string>();
 
-            if (!string.IsNullOrEmpty(argName))
-                queryParams.Add(argName, argValue);
+        if (!string.IsNullOrEmpty(query))
+        {
+            queryParams.AddRange(query.Split('&'));
         }
 
-        foreach (var p in parameters)
+        foreach (var kvp in parameters)
         {
-            queryParams[p.Key] = p.Value switch
+            if (kvp.Value is IEnumerable enumerable && kvp.Value is not string)
             {
-                DateTime dateTime => dateTime.ToString(new CultureInfo("en-US")),
-                DateOnly date => date.ToString(new CultureInfo("en-US")),
-                _ => p.Value?.ToString()
-            };
+                foreach (var item in enumerable)
+                {
+                    var val = item switch
+                    {
+                        DateTime dateTime => dateTime.ToString(new CultureInfo("en-US")),
+                        DateOnly date => date.ToString(new CultureInfo("en-US")),
+                        _ => item?.ToString()
+                    };
+                    if (val != null)
+                        queryParams.Add($"{kvp.Key}={Uri.EscapeDataString(val)}");
+                }
+            }
+            else
+            {
+                var val = kvp.Value switch
+                {
+                    DateTime dateTime => dateTime.ToString(new CultureInfo("en-US")),
+                    DateOnly date => date.ToString(new CultureInfo("en-US")),
+                    _ => kvp.Value?.ToString()
+                };
+                if (val != null)
+                    queryParams.Add($"{kvp.Key}={Uri.EscapeDataString(val)}");
+            }
         }
 
-        query = string.Join('&', queryParams.Where(x => x.Value != null).Select(kv => $"{kv.Key}={kv.Value}"));
-
-        return $"{url}?{query}";
+        return $"{url}?{string.Join("&", queryParams)}";
     }
 
     public static string ToPersianChars(this string input)

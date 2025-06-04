@@ -8,7 +8,6 @@ namespace GoldEx.Client.Pages.Settings;
 
 public partial class CategoriesList
 {
-    private MudTable<ProductCategoryVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IEnumerable<ProductCategoryVm> _productCategories = new List<ProductCategoryVm>();
 
@@ -61,7 +60,7 @@ public partial class CategoriesList
         if (result is { Canceled: false })
         {
             AddSuccessToast("دسته مورد نظر با موفقیت ویرایش شد.");
-            await _table.ReloadServerData();
+            await LoadCategoriesAsync();
         }
     }
 

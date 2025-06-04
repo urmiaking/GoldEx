@@ -51,14 +51,5 @@ public class Price : EntityBase<PriceId>
     public void SetTitle(string title) => Title = title;
     public void SetMarketType(MarketType marketType) => MarketType = marketType;
     public void SetUnitType(UnitType? unitType) => UnitType = unitType;
-
-    public void SetActive()
-    {
-        IsActive = true;
-    }
-
-    public void SetInactive()
-    {
-        IsActive = false;
-    }
+    public void SetStatus(bool isActive) => IsActive = isActive;
 }

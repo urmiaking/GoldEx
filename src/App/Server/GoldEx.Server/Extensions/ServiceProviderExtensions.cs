@@ -10,6 +10,12 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Extensions;
 
@@ -32,6 +38,7 @@ public static class ServiceProviderExtensions
     private static async Task EnsureDatabasePopulated(IServiceProvider serviceProvider)
     {
         await PopulateDefaultSettingsAsync(serviceProvider);
+        await PopulateDefaultPriceUnitsAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();
@@ -50,6 +57,21 @@ public static class ServiceProviderExtensions
             await accountService.CreateUserAsync(new AppUser("مدیر سامانه", adminUser.UserName, adminUser.Email, adminUser.PhoneNumber),
                 adminUser.Password, [BuiltinRoles.Administrators]);
         }
+    }
+
+    private static async Task PopulateDefaultPriceUnitsAsync(IServiceProvider serviceProvider)
+    {
+        var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
+
+        var priceUnits = await priceUnitRepository.Get(new PriceUnitsWithoutSpecification()).ToListAsync();
+
+        if (priceUnits.Any())
+            return;
+
+        var unitTypes = Enum.GetValues<UnitType>()
+            .Select(x => PriceUnit.Create(x.GetDisplayName())).ToList();
+
+        await priceUnitRepository.CreateRangeAsync(unitTypes);
     }
 
     private static async Task PopulateAdministratorClaimsAsync(IEnumerable<IApplicationPolicyProvider> policyProviders, IAccountService accountService)

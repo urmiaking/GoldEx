@@ -89,7 +89,7 @@ public class ProductVm
             item.WageType!.Value,
             item.ProductType,
             item.CaratType,
-            item.ProductCategoryId!.Value,
+            item.ProductCategoryId!.Value, // TODO: fix this in order to handle nullability
             item.Stones?.Select(x => new CreateGemStoneRequest(
                     x.Code,
                     x.Type,
@@ -112,7 +112,7 @@ public class ProductVm
             item.WageType ?? 0,
             item.ProductType,
             item.CaratType,
-            item.ProductCategoryId!.Value,
+            item.ProductCategoryId!.Value, // TODO: fix this in order to handle nullability
             item.Stones?
                 .Select(x => 
                     new UpdateGemStoneRequest(x.Code, x.Type, x.Color, x.Cut, x.Carat, x.Purity))

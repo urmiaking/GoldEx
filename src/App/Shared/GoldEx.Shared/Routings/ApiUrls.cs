@@ -50,8 +50,13 @@ public class ApiUrls
 
         public static string GetSettings() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetSettings);
 
+        public static string GetTitles(MarketType[] marketTypes) => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetTitles)
+            .AppendQueryString(new { marketTypes });
+
         public static string UpdateStatus(Guid id) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.UpdateStatus).FormatRoute(new { id });
+
+        
     }
 
     public class Health
@@ -140,5 +145,24 @@ public class ApiUrls
 
         public static string GetLastNumber() =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLastNumber);
+    }
+
+    public class PriceUnits
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetList);
+
+        public static string GetAll() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetAll);
+
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Get)
+            .FormatRoute(new { id });
+
+        public static string Create() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Update).FormatRoute(new { id });
+
+        public static string SetStatus(Guid id) =>
+            BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.UpdateStatus).FormatRoute(new { id });
+
     }
 }
