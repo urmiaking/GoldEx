@@ -6,9 +6,11 @@ using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.PriceAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -21,6 +23,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class PriceService(
     IPriceRepository repository,
+    IPriceUnitRepository priceUnitRepository,
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment) : IServerPriceService,
@@ -80,7 +83,33 @@ internal class PriceService(
             }
         }
 
-        if (pricesToCreate.Any()) await repository.CreateRangeAsync(pricesToCreate, cancellationToken);
+        if (pricesToCreate.Any())
+        {
+            await repository.CreateRangeAsync(pricesToCreate, cancellationToken);
+
+            var emptyPriceUnits = await priceUnitRepository.Get(new PriceUnitsWithoutPriceIdSpecification())
+                .ToListAsync(cancellationToken);
+
+            var priceTitleToIdMap = pricesToCreate
+                .GroupBy(p => p.Title)
+                .ToDictionary(g => g.Key, g => g.First().Id);
+
+            var updatedPriceUnits = new List<PriceUnit>();
+
+            foreach (var priceUnit in emptyPriceUnits)
+            {
+                if (priceTitleToIdMap.TryGetValue(priceUnit.Title, out var matchingPriceId) &&
+                    priceUnit.PriceId != matchingPriceId)
+                {
+                    priceUnit.SetPriceId(matchingPriceId);
+                    updatedPriceUnits.Add(priceUnit);
+                }
+            }
+
+            if (updatedPriceUnits.Any())
+                await priceUnitRepository.UpdateRangeAsync(updatedPriceUnits, cancellationToken);
+        }
+
         if (pricesToUpdate.Any()) await repository.UpdateRangeAsync(pricesToUpdate, cancellationToken);
 
         await Task.WhenAll(downloadTasks);
@@ -107,6 +136,14 @@ internal class PriceService(
     {
         var item = await repository.Get(new PricesDefaultSpecification()).ToListAsync(cancellationToken);
         return mapper.Map<List<GetPriceResponse>>(item);
+    }
+
+    public async Task<List<GetPriceTitleResponse>> GetTitlesAsync(MarketType[] marketTypes,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await repository.Get(new PricesByMarketTypesSpecification(marketTypes))
+            .ToListAsync(cancellationToken);
+        return mapper.Map<List<GetPriceTitleResponse>>(items);
     }
 
     public async Task<List<GetPriceResponse>> GetAsync(MarketType marketType, CancellationToken cancellationToken = default)
@@ -146,11 +183,8 @@ internal class PriceService(
         var item = await repository.Get(new PricesByIdSpecification(new PriceId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        if (request.IsActive) 
-            item.SetActive();
-        else 
-            item.SetInactive();
-
+        item.SetStatus(request.IsActive);
+        
         await repository.UpdateAsync(item, cancellationToken);
     }
 

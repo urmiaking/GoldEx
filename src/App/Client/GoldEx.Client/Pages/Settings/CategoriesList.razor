@@ -11,7 +11,7 @@
 <MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateCategory())" 
            Size="Size.Small" Variant="Variant.Filled" FullWidth="true">افزودن دسته جدید</MudButton>
 
-<MudTable T="ProductCategoryVm" Hover="true" @ref="_table" FixedHeader="true" Dense="true" Items="_productCategories"
+<MudTable T="ProductCategoryVm" Hover="true" FixedHeader="true" Dense="true" Items="_productCategories"
           SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="3" Height="350px">
     <HeaderContent>
         <MudTh>ردیف</MudTh>

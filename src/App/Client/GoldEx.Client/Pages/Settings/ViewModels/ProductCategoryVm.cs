@@ -25,7 +25,7 @@ public class ProductCategoryVm : IEquatable<ProductCategoryVm>
 
     public static CreateProductCategoryRequest ToCreateRequest(ProductCategoryVm item)
     {
-        return new CreateProductCategoryRequest(item.Id, item.Title);
+        return new CreateProductCategoryRequest(item.Title);
     }
 
     public static UpdateProductCategoryRequest ToUpdateRequest(ProductCategoryVm item)

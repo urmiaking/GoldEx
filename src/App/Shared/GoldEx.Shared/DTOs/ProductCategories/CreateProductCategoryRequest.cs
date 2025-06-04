@@ -1,3 +1,3 @@
 ﻿namespace GoldEx.Shared.DTOs.ProductCategories;
 
-public record CreateProductCategoryRequest(Guid Id, string Title);
+public record CreateProductCategoryRequest(string Title);

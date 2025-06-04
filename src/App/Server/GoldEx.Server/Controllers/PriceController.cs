@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.Definitions;
+﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
@@ -17,6 +18,14 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     public async Task<IActionResult> GetAsync(CancellationToken cancellationToken = default)
     {
         var list = await priceService.GetAsync(cancellationToken);
+
+        return Ok(list);
+    }
+
+    [HttpGet(ApiRoutes.Price.GetTitles)]
+    public async Task<IActionResult> GetTitlesAsync([FromQuery] MarketType[] marketTypes, CancellationToken cancellationToken = default)
+    {
+        var list = await priceService.GetTitlesAsync(marketTypes, cancellationToken);
 
         return Ok(list);
     }
@@ -44,6 +53,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     }
 
     [HttpPut(ApiRoutes.Price.UpdateStatus)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default)
     {
         await priceService.SetStatusAsync(id, request, cancellationToken);

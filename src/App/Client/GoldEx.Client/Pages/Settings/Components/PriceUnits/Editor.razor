@@ -1,0 +1,81 @@
+﻿@inherits GoldExComponentBase
+
+<EditForm Model="Model" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12" md="8" lg="8">
+                    <MudTextField @bind-Value="Model.Title"
+                                  For="@(() => Model.Title)"
+                                  Label="عنوان"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4" lg="4" Class="mt-2">
+                    <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="Model.IconFile" For="() => Model.IconFile!">
+                        <ActivatorContent>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       FullWidth="true"
+                                       StartIcon="@Icons.Material.Filled.AttachFile">
+                                انتخاب لوگو
+                            </MudButton>
+                        </ActivatorContent>
+                        <SelectedTemplate Context="ctx">
+                            @if (ctx != null)
+                            {
+                                <MudText>@ctx.Name</MudText>
+                            }
+                        </SelectedTemplate>
+                    </MudFileUpload>
+                </MudItem>
+                <MudItem xs="12" md="12" lg="12">
+                    <MudSelect T="PriceVm?"
+                               Value="Model.PriceVm"
+                               ValueChanged="OnPriceVmChanged"
+                               For="@(() => Model.PriceVm)"
+                               Label="قیمت وابسته"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var price in _prices)
+                        {
+                            <MudSelectItem Value="@price">@price.Title</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="12" lg="12">
+                    <MudAlert Severity="Severity.Info">هنگام انتخاب این واحد ارزی، قیمت وابسته ای که برای آن انتخاب شود در نرخ تبدیل ارزها لحاظ خواهد شد</MudAlert>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@_processing"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>

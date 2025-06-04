@@ -1,12 +1,14 @@
 ﻿using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
@@ -32,6 +34,22 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.Type, src => src.MarketType)
             .Map(dest => dest.HasIcon,
                 src => MapContext.Current.GetService<IWebHostEnvironment>().PriceHistoryIconExists(src.Id.Value));
+
+        config.NewConfig<Price, GetPriceTitleResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Title, src => src.Title);
+
+        #endregion
+
+        #region PriceUnits
+
+        config.NewConfig<PriceUnit, GetPriceUnitResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.PriceId, src => src.PriceId.HasValue ? src.PriceId.Value.Value : (Guid?)null)
+            .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.PriceTitle, src => src.Price != null ? src.Price.Title : null)
+            .Map(dest => dest.HasIcon,
+                src => MapContext.Current.GetService<IWebHostEnvironment>().PriceUnitIconExists(src.Id.Value));
 
         #endregion
 
