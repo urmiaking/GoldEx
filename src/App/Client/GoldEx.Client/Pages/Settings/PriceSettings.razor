@@ -1,0 +1,27 @@
+﻿@inherits GoldExComponentBase
+
+@attribute [Route(ClientRoutes.Settings.PriceSettings)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+<PageTitle>مدیریت نمادها</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">مدیریت نمادها</MudText>
+<hr />
+
+<MudPaper Elevation="3">
+    <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">  
+        @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))  
+        {  
+            <MudTreeViewItem T="object" Value="response.Key" Text="@response.Key.GetDisplayName()">  
+                @foreach (var price in response.SelectMany(r => r.Prices ?? []))  
+                {  
+                    <MudTreeViewItem T="object"   
+                                     Value="price"   
+                                     Text="@price.Title"   
+                                     Selected="price.IsActive"
+                                     SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)" />
+                }  
+            </MudTreeViewItem>
+        }
+    </MudTreeView>
+</MudPaper>

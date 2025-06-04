@@ -54,15 +54,11 @@ public class Price : EntityBase<PriceId>
 
     public void SetActive()
     {
-        if (IsActive)
-            throw new InvalidOperationException("Price is already active.");
         IsActive = true;
     }
 
     public void SetInactive()
     {
-        if (!IsActive)
-            throw new InvalidOperationException("Price is already inactive.");
         IsActive = false;
     }
 }

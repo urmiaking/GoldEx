@@ -32,6 +32,8 @@ public static class ApiRoutes
         public const string Get = "";
         public const string GetMarket = "Market/{marketType}";
         public const string GetUnit = "Unit/{unitType}";
+        public const string GetSettings = "settings";
+        public const string UpdateStatus = "status/{id}";
     }
 
     public class Health

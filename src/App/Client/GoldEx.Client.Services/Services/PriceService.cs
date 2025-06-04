@@ -52,4 +52,24 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Price.GetSettings(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetPriceSettingResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task SetStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PutAsJsonAsync(ApiUrls.Price.UpdateStatus(id), request, jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
 }

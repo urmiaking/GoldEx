@@ -35,4 +35,18 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         var price = await priceService.GetAsync(unitType, cancellationToken);
         return price is not null ? Ok(price) : NotFound();
     }
+
+    [HttpGet(ApiRoutes.Price.GetSettings)]
+    public async Task<IActionResult> GetSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        var settings = await priceService.GetSettingsAsync(cancellationToken);
+        return Ok(settings);
+    }
+
+    [HttpPut(ApiRoutes.Price.UpdateStatus)]
+    public async Task<IActionResult> UpdateStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default)
+    {
+        await priceService.SetStatusAsync(id, request, cancellationToken);
+        return NoContent();
+    }
 }
