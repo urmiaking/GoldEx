@@ -65,7 +65,7 @@ public class ApiUrls
             .AppendQueryString(filter);
         public static string Get(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Get).FormatRoute(new { id });
         public static string Get(string barcode) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
-            .AppendQueryString(new { barcode });
+            .FormatRoute(new { barcode });
 
         public static string Create() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Create);
 
