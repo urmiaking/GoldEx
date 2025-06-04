@@ -9,5 +9,6 @@ public class PricesDefaultSpecification : SpecificationBase<Price>
     {
         AddCriteria(x => x.IsActive);
         ApplyOrderBy(x => x.MarketType);
+        ApplyOrderBy(x => x.Title);
     }
 }
