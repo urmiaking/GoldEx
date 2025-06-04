@@ -124,6 +124,20 @@ internal class PriceService(
                         downloaded.imageFormat),
                     downloaded.imageData,
                     cancellationToken);
+
+                var relatedPriceUnits = await priceUnitRepository.Get(
+                        new PriceUnitsByPriceIdSpecification(downloaded.price.Id))
+                    .ToListAsync(cancellationToken);
+
+                foreach (var priceUnit in relatedPriceUnits)
+                {
+                    await fileService.SaveLocalFileAsync(
+                        webHostEnvironment.GetPriceUnitIconPath(
+                            priceUnit.Id.Value,
+                            downloaded.imageFormat),
+                        downloaded.imageData,
+                        cancellationToken);
+                }
             }
         }
     }
