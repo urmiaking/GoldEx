@@ -78,7 +78,8 @@ public static class ClientRoutes
     public static class Settings
     {
         private const string SettingsPrefix = "/base-info";
-        public const string Index = $"{SettingsPrefix}";    
+        public const string Index = $"{SettingsPrefix}";
+        public const string PriceSettings = $"{SettingsPrefix}/price-settings";
     }
 
     public static class Logs

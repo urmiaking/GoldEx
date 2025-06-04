@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Server.Application.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Application.Services.Abstractions;
@@ -32,7 +33,7 @@ internal class PriceService(
         if (!incomingPriceList.Any())
             return;
 
-        var localPrices = await repository.Get(new PricesDefaultSpecification()).ToListAsync(cancellationToken);
+        var localPrices = await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken);
 
         var pricesToCreate = new List<Price>();
         var pricesToUpdate = new List<Price>();
@@ -118,6 +119,39 @@ internal class PriceService(
     {
         var item = await repository.Get(new PricesByUnitTypeSpecification(unitType)).FirstOrDefaultAsync(cancellationToken);
         return item is null ? null : mapper.Map<GetPriceResponse?>(item);
+    }
+
+    public async Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        var items = await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken);
+
+        var priceSettings = items
+            .GroupBy(p => p.MarketType)
+            .Select(group => new GetPriceSettingResponse(
+                group.Key,
+                group.Select(price => new PriceSettingDto(
+                    price.Id.Value,
+                    price.Title,
+                    price.IsActive
+                )).ToList()
+            ))
+            .ToList();
+
+        return priceSettings;
+    }
+
+    public async Task SetStatusAsync(Guid id, UpdatePriceStatusRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await repository.Get(new PricesByIdSpecification(new PriceId(id)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        if (request.IsActive) 
+            item.SetActive();
+        else 
+            item.SetInactive();
+
+        await repository.UpdateAsync(item, cancellationToken);
     }
 
     #endregion
