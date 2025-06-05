@@ -4,6 +4,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -36,9 +37,12 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetProductResponse> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Products.Get(barcode), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

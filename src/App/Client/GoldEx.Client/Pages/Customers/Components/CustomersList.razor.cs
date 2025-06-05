@@ -66,7 +66,7 @@ public partial class CustomersList
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false })
+        if (result is {Canceled: false})
         {
             AddSuccessToast("مشتری جدید با موفقیت افزوده شد.");
             await _table.ReloadServerData();

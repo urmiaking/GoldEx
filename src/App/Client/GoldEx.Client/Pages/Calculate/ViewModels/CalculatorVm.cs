@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.Products;
-using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Calculate.ViewModels;
 

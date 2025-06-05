@@ -15,7 +15,11 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class CustomerService(ICustomerRepository repository, IMapper mapper, CustomerRequestDtoValidator validator) : ICustomerService
+internal class CustomerService(
+    ICustomerRepository repository,
+    IMapper mapper,
+    CustomerRequestDtoValidator validator,
+    DeleteCustomerValidator deleteValidator) : ICustomerService
 {
     public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
     {
@@ -106,6 +110,8 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
     {
         var item = await repository.Get(new CustomersByIdSpecification(new CustomerId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
 
         await repository.DeleteAsync(item, cancellationToken);
     }

@@ -19,7 +19,6 @@ public partial class Editor
 
     private readonly ProductValidator _productValidator = new();
     private MudForm _form = default!;
-    private bool _processing;
     private string? _wageAdornmentText = "درصد";
     private IEnumerable<ProductCategoryVm> _productCategories = [];
 
@@ -52,28 +51,26 @@ public partial class Editor
 
     private async Task Submit()
     {
-        if (_processing)
-            return;
-
         await _form.Validate();
 
         if (!_form.IsValid)
             return;
 
-        _processing = true;
+        bool result;
 
         if (Id is null)
         {
             var request = ProductVm.ToCreateRequest(Model);
-            await SendRequestAsync<IProductService>((s, ct) => s.CreateAsync(request, ct));
+            result = await SendRequestAsync<IProductService>((s, ct) => s.CreateAsync(request, ct));
         }
         else
         {
             var request = ProductVm.ToUpdateRequest(Model);
-            await SendRequestAsync<IProductService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            result = await SendRequestAsync<IProductService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
         }
 
-        _processing = false;
+        if (result == false)
+            return;
 
         MudDialog.Close(DialogResult.Ok(true));
     }

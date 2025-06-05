@@ -23,11 +23,11 @@
 
             <MudButton Class="m-2"
                        Color="Color.Primary"
-                       Disabled="@_processing"
+                       Disabled="@IsBusy"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
                        Variant="Variant.Filled">
-                @if (_processing)
+                @if (IsBusy)
                 {
                     <MudProgressCircular Class="ms-n1"
                                          Size="Size.Small"

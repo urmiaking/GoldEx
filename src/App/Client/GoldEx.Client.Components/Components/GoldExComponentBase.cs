@@ -341,7 +341,7 @@ public class GoldExComponentBase : ComponentBase, IDisposable
         }
     }
 
-    protected async Task SendRequestAsync<TService>(Func<TService, CancellationToken, Task> action,
+    protected async Task<bool> SendRequestAsync<TService>(Func<TService, CancellationToken, Task> action,
                                                     Func<Task>? afterSend = null,
                                                     Func<Task>? onFailure = null)
         where TService : notnull
@@ -357,6 +357,8 @@ public class GoldExComponentBase : ComponentBase, IDisposable
             {
                 await afterSend.Invoke();
             }
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -366,6 +368,8 @@ public class GoldExComponentBase : ComponentBase, IDisposable
             }
 
             HandleRequestException(ex);
+
+            return false;
         }
         finally
         {
@@ -415,9 +419,9 @@ public class GoldExComponentBase : ComponentBase, IDisposable
                 break;
         }
 
-#if DEBUG
-        throw ex;
-#endif
+//#if DEBUG
+//        throw ex;
+//#endif
     }
 
     #endregion

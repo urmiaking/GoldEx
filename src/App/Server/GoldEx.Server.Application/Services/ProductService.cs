@@ -51,12 +51,12 @@ internal class ProductService(
         return mapper.Map<GetProductResponse>(item);
     }
 
-    public async Task<GetProductResponse> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         var item = await repository.Get(new ProductsByBarcodeSpecification(barcode))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+            .FirstOrDefaultAsync(cancellationToken);
 
-        return mapper.Map<GetProductResponse>(item);
+        return item is null ? null : mapper.Map<GetProductResponse>(item);
     }
 
     public async Task CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)

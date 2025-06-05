@@ -13,7 +13,6 @@ public partial class Editor
     [Parameter] public PriceUnitVm Model { get; set; } = new();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private bool _processing;
     private IEnumerable<PriceVm> _prices = [];
 
     protected override async Task OnParametersSetAsync()
@@ -31,12 +30,11 @@ public partial class Editor
 
     private async Task Submit()
     {
-        if (_processing)
+        if (IsBusy)
             return;
 
-        _processing = true;
-
         byte[]? uploadedFile = null;
+        bool result;
 
         if (Model.IconFile is not null)
         {
@@ -49,15 +47,16 @@ public partial class Editor
         if (Id is null)
         {
             var request = PriceUnitVm.ToCreateRequest(Model, uploadedFile);
-            await SendRequestAsync<IPriceUnitService>((s, ct) => s.CreateAsync(request, ct));
+            result = await SendRequestAsync<IPriceUnitService>((s, ct) => s.CreateAsync(request, ct));
         }
         else
         {
             var request = PriceUnitVm.ToUpdateRequest(Model, uploadedFile);
-            await SendRequestAsync<IPriceUnitService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            result = await SendRequestAsync<IPriceUnitService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
         }
 
-        _processing = false;
+        if (result == false)
+            return;
 
         MudDialog.Close(DialogResult.Ok(true));
     }

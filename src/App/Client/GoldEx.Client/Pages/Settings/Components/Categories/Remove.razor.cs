@@ -10,21 +10,19 @@ public partial class Remove
     [Parameter] public string CategoryName { get; set; } = string.Empty;
     [Parameter] public Guid Id { get; set; }
 
-    private bool _processing;
-
     private async Task OnValidSubmit()
     {
-        if (_processing)
+        if (IsBusy)
             return;
 
-        _processing = true;
-
-        await SendRequestAsync<IProductCategoryService>(
+        var result = await SendRequestAsync<IProductCategoryService>(
             action: (s, ct) => s.DeleteAsync(Id, ct)
         );
 
+        if (result == false)
+            return;
+
         MudDialog.Close(DialogResult.Ok(true));
-        _processing = false;
     }
 
     private void Cancel() => MudDialog.Cancel();

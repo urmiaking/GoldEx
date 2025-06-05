@@ -1,12 +1,10 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Transactions.Validators;
 using GoldEx.Client.Pages.Transactions.ViewModels;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
-using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -22,7 +20,6 @@ public partial class Editor
     private readonly TransactionEditorVm _model = new();
     private readonly TransactionValidator _transactionValidator = new();
     private MudForm _form = default!;
-    private bool _processing;
     private string? _customerCreditLimitHelperText;
     private string? _creditHelperText;
     private string? _creditRateHelperText;
@@ -81,23 +78,26 @@ public partial class Editor
     {
         await SendRequestAsync<ITransactionService, GetTransactionResponse>(
             action: (s, ct) => s.GetAsync(id, ct),
-            afterSend: response =>
+            afterSend: async response =>
             {
                 _model.SetTransaction(response);
-                LoadHelperTexts(response);
+                await LoadHelperTexts(response);
             });
     }
 
-    private void LoadHelperTexts(GetTransactionResponse response)
+    private async Task LoadHelperTexts(GetTransactionResponse response)
     {
         OnCustomerCreditLimitChanged(response.Customer.CreditLimit);
+        OnCustomerCreditLimitUnitChanged(response.CreditPriceUnit);
         OnCreditChanged(response.Credit);
+        await OnCreditUnitChanged(response.CreditPriceUnit);
         OnDebitChanged(response.Debit);
+        await OnDebitUnitChanged(response.DebitPriceUnit);
     }
 
     private async Task OnSubmit()
     {
-        if (_processing)
+        if (IsBusy)
             return;
 
         await _form.Validate();
@@ -105,20 +105,22 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        _processing = true;
+        bool result;
 
         if (Id.HasValue)
         {
             var request = TransactionEditorVm.ToUpdateTransactionRequest(_model);
-            await SendRequestAsync<ITransactionService>((s, ct) => s.UpdateAsync(Id.Value, request, ct));
+            result = await SendRequestAsync<ITransactionService>((s, ct) => s.UpdateAsync(Id.Value, request, ct));
         }
         else
         {
             var request = TransactionEditorVm.ToCreateTransactionRequest(_model);
-            await SendRequestAsync<ITransactionService>((s, ct) => s.CreateAsync(request, ct));
+            result = await SendRequestAsync<ITransactionService>((s, ct) => s.CreateAsync(request, ct));
         }
 
-        _processing = false;
+        if (result == false)
+            return;
+
         MudDialog.Close(DialogResult.Ok(true));
     }
 
