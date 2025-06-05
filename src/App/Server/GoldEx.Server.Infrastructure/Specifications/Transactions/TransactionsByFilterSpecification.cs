@@ -17,6 +17,8 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         var take = filter.Take ?? 100;
 
         AddInclude(x => x.Customer!);
+        AddInclude(x => x.CreditUnit!);
+        AddInclude(x => x.DebitUnit!);
 
         // Apply customer filter if provided
         if (customerId.HasValue)

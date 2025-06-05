@@ -14,7 +14,7 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions) : IPriceService
 {
-    public async Task<List<GetPriceResponse>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetPriceResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Price.Get(), cancellationToken);
 
@@ -39,7 +39,7 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<List<GetPriceResponse>> GetAsync(MarketType marketType, CancellationToken cancellationToken = default)
+    public async Task<List<GetPriceResponse>> GetListAsync(MarketType marketType, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Price.Get(marketType), cancellationToken);
 
@@ -54,6 +54,21 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
     public async Task<GetPriceResponse?> GetAsync(UnitType unitType, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Price.Get(unitType), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetPriceResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Price.GetByPriceUnit(priceUnitId), cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;

@@ -97,7 +97,9 @@ public class MapsterConfig : IRegister
         #region Transactions
 
         config.NewConfig<Transaction, GetTransactionResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CreditPriceUnit, src => src.CreditUnit)
+            .Map(dest => dest.DebitPriceUnit, src => src.DebitUnit);
 
         #endregion
     }

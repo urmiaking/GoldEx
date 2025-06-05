@@ -15,9 +15,9 @@ public class TransactionVm
     public string? CreditUnit { get; set; }
     public decimal? Debit { get; set; }
     public string? DebitUnit { get; set; }
-    public decimal Remaining { get; set; }
-    public string RemainingUnit { get; set; } = default!;
-    public DateTime DateTime { get; set; } = default!;
+    //public decimal Remaining { get; set; }
+    //public string RemainingUnit { get; set; } = default!;
+    public DateTime DateTime { get; set; }
 
     public static TransactionVm CreateFrom(GetTransactionResponse response)
     {
@@ -28,15 +28,15 @@ public class TransactionVm
             CustomerFullName = response.Customer.FullName,
             CustomerNationalId = response.Customer.NationalId,
             Credit = response.Credit,
-            CreditUnit = response.CreditUnit?.GetDisplayName(),
+            CreditUnit = response.CreditPriceUnit?.Title,
             Debit = response.Debit,
-            DebitUnit = response.DebitUnit?.GetDisplayName(),
-            Remaining = response.Credit ?? 0 - response.Debit ?? 0,
-            RemainingUnit = response.CreditUnit.HasValue
-                ? response.CreditUnit.Value.GetDisplayName()
-                : response.DebitUnit.HasValue
-                    ? response.DebitUnit.Value.GetDisplayName()
-                    : string.Empty,
+            DebitUnit = response.DebitPriceUnit?.Title,
+            //Remaining = response.Credit ?? 0 - response.Debit ?? 0,
+            //RemainingUnit = response.CreditUnit.HasValue
+            //    ? response.CreditUnit.Value.GetDisplayName()
+            //    : response.DebitUnit.HasValue
+            //        ? response.DebitUnit.Value.GetDisplayName()
+            //        : string.Empty,
             DateTime = response.DateTime,
             Description = response.Description
         };

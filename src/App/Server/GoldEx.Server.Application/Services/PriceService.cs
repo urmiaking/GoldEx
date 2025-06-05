@@ -146,7 +146,7 @@ internal class PriceService(
 
     #region PriceService
 
-    public async Task<List<GetPriceResponse>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetPriceResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
         var item = await repository.Get(new PricesDefaultSpecification()).ToListAsync(cancellationToken);
         return mapper.Map<List<GetPriceResponse>>(item);
@@ -160,7 +160,7 @@ internal class PriceService(
         return mapper.Map<List<GetPriceTitleResponse>>(items);
     }
 
-    public async Task<List<GetPriceResponse>> GetAsync(MarketType marketType, CancellationToken cancellationToken = default)
+    public async Task<List<GetPriceResponse>> GetListAsync(MarketType marketType, CancellationToken cancellationToken = default)
     {
         var item = await repository.Get(new PricesByMarketTypeSpecification(marketType)).ToListAsync(cancellationToken);
         return mapper.Map<List<GetPriceResponse>>(item);
@@ -170,6 +170,16 @@ internal class PriceService(
     {
         var item = await repository.Get(new PricesByUnitTypeSpecification(unitType)).FirstOrDefaultAsync(cancellationToken);
         return item is null ? null : mapper.Map<GetPriceResponse?>(item);
+    }
+
+    public async Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
+    {
+        var item = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId)))
+            .Include(pu => pu.Price)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return item?.Price is null ? null : mapper.Map<GetPriceResponse>(item.Price);
     }
 
     public async Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default)
