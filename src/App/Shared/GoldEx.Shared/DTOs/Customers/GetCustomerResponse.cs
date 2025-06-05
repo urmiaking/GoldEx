@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Customers;
 
@@ -8,5 +9,5 @@ public record GetCustomerResponse(Guid Id,
     string PhoneNumber,
     string? Address,
     decimal? CreditLimit,
-    UnitType? CreditLimitUnit,
+    GetPriceUnitTitleResponse? CreditLimitPriceUnit,
     CustomerType CustomerType);

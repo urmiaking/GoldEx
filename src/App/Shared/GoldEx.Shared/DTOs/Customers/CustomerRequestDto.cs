@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Customers;
 
@@ -11,7 +12,7 @@ namespace GoldEx.Shared.DTOs.Customers;
 /// <param name="PhoneNumber"></param>
 /// <param name="Address"></param>
 /// <param name="CreditLimit"></param>
-/// <param name="CreditLimitUnit"></param>
+/// <param name="CreditLimitPriceUnitId"></param>
 /// <param name="CustomerType"></param>
 public record CustomerRequestDto(Guid? Id,
     string FullName,
@@ -19,5 +20,5 @@ public record CustomerRequestDto(Guid? Id,
     string PhoneNumber,
     string? Address,
     decimal? CreditLimit,
-    UnitType? CreditLimitUnit,
+    Guid? CreditLimitPriceUnitId,
     CustomerType CustomerType);

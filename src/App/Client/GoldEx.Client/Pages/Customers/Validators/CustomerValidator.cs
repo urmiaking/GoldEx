@@ -23,9 +23,9 @@ public class CustomerValidator : AbstractValidator<CustomerVm>
         RuleFor(x => x.Address)
             .MaximumLength(200).WithMessage("حداکثر طول آدرس 200 کاراکتر می باشد");
 
-        When(x => x.CreditLimitUnit.HasValue || x.CreditLimit.HasValue, () =>
+        When(x => x.CreditLimitPriceUnit != null || x.CreditLimit.HasValue, () =>
         {
-            RuleFor(x => x.CreditLimitUnit).NotEmpty().WithMessage("لطفا واحد را وارد کنید");
+            RuleFor(x => x.CreditLimitPriceUnit).NotEmpty().WithMessage("لطفا واحد را وارد کنید");
             RuleFor(x => x.CreditLimit).NotEmpty().WithMessage("لطفا سقف اعتبار را وارد کنید");
         });
     }

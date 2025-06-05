@@ -26,6 +26,13 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
         return Ok(list);
     }
 
+    [HttpGet(ApiRoutes.PriceUnits.GetTitles)]
+    public async Task<IActionResult> GetTitlesAsync(CancellationToken cancellationToken = default)
+    {
+        var list = await service.GetTitlesAsync(cancellationToken);
+        return Ok(list);
+    }
+
     [HttpGet(ApiRoutes.PriceUnits.Get)]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {

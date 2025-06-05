@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Customers.ViewModels;
@@ -13,7 +14,8 @@ public class CustomerVm
     public string PhoneNumber { get; set; } = default!;
     public string? Address { get; set; }
     public decimal? CreditLimit { get; set; }
-    public UnitType? CreditLimitUnit { get; set; }
+    public GetPriceUnitTitleResponse? CreditLimitPriceUnit { get; set; }
+    public bool PriceUnitHasIcon { get; set; }
 
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {
@@ -26,7 +28,8 @@ public class CustomerVm
             PhoneNumber = response.PhoneNumber,
             Address = response.Address,
             CreditLimit = response.CreditLimit,
-            CreditLimitUnit = response.CreditLimitUnit
+            CreditLimitPriceUnit = response.CreditLimitPriceUnit,
+            PriceUnitHasIcon = response.CreditLimitPriceUnit?.HasIcon ?? false
         };
     }
 
@@ -43,7 +46,7 @@ public class CustomerVm
             model.PhoneNumber,
             model.Address,
             model.CreditLimit,
-            model.CreditLimitUnit,
+            model.CreditLimitPriceUnit?.Id,
             model.CustomerType);
     }
 
@@ -55,7 +58,7 @@ public class CustomerVm
             model.PhoneNumber,
             model.Address,
             model.CreditLimit,
-            model.CreditLimitUnit,
+            model.CreditLimitPriceUnit?.Id,
             model.CustomerType);
     }
 }

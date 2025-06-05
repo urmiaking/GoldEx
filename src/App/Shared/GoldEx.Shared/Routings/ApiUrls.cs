@@ -154,6 +154,8 @@ public class ApiUrls
 
         public static string GetAll() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetAll);
 
+        public static string GetTitles() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetTitles);
+
         public static string Get(Guid id) => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Get)
             .FormatRoute(new { id });
 

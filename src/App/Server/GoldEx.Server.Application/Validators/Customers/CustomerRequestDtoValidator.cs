@@ -1,8 +1,10 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Customers;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +14,11 @@ namespace GoldEx.Server.Application.Validators.Customers;
 internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDto>
 {
     private readonly ICustomerRepository _repository;
-    public CustomerRequestDtoValidator(ICustomerRepository repository)
+    private readonly IPriceUnitRepository _priceUnitRepository;
+    public CustomerRequestDtoValidator(ICustomerRepository repository, IPriceUnitRepository priceUnitRepository)
     {
         _repository = repository;
+        _priceUnitRepository = priceUnitRepository;
 
         RuleFor(x => x.Id)
             .MustAsync(BeValidId).WithMessage("شناسه مشتری نامعتبر است")
@@ -38,8 +42,27 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
         RuleFor(x => x.CreditLimit)
             .GreaterThanOrEqualTo(0).WithMessage("محدودیت اعتباری نمی تواند منفی باشد");
 
-        RuleFor(x => x.CreditLimitUnit)
-            .IsInEnum().WithMessage("واحد محدودیت اعتباری باید یکی از مقادیر معتبر باشد");
+        RuleFor(x => x.CreditLimitPriceUnitId)
+            .MustAsync(BeValidPriceUnitId)
+            .WithMessage("واحد محدودیت اعتباری نامعتبر است");
+
+        RuleFor(x => x)
+            .Custom((dto, context) =>
+            {
+                var creditLimitHasValue = dto.CreditLimit.HasValue && dto.CreditLimit.Value > 0;
+                var priceUnitHasValue = dto.CreditLimitPriceUnitId.HasValue;
+
+                if (creditLimitHasValue != priceUnitHasValue) 
+                    context.AddFailure("در صورت وارد کردن محدودیت اعتباری، وارد کردن واحد آن نیز الزامی است (و بالعکس)");
+            });
+    }
+
+    private async Task<bool> BeValidPriceUnitId(CustomerRequestDto request, Guid? priceUnitId, CancellationToken cancellationToken = default)
+    {
+        if (!priceUnitId.HasValue)
+            return true;
+
+        return await _priceUnitRepository.ExistsAsync(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)), cancellationToken);
     }
 
     private async Task<bool> BeValidId(Guid? id, CancellationToken cancellationToken = default)
