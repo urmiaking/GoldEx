@@ -12,16 +12,15 @@ public partial class Remove
 
     [Parameter] public Guid Id { get; set; }
 
-    private bool _processing;
-
     private async Task OnValidSubmit()
     {
-        if (_processing)
+        if (IsBusy)
             return;
 
-        _processing = true;
-        await SendRequestAsync<ITransactionService>(action: (s, ct) => s.DeleteAsync(Id, ct));
-        _processing = false;
+        var result = await SendRequestAsync<ITransactionService>(action: (s, ct) => s.DeleteAsync(Id, ct));
+
+        if (result == false)
+            return;
 
         MudDialog.Close(DialogResult.Ok(true));
     }

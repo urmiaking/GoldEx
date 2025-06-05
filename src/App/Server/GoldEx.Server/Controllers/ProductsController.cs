@@ -31,7 +31,7 @@ public class ProductsController(IProductService service) : ApiControllerBase
     public async Task<IActionResult> GetAsync(string barcode, CancellationToken cancellationToken)
     {
         var product = await service.GetAsync(barcode, cancellationToken);
-        return Ok(product);
+        return product is null ? NotFound() : Ok(product);
     }
 
     [HttpPost(ApiRoutes.Products.Create)]

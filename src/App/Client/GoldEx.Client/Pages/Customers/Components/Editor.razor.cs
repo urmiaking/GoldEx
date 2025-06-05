@@ -16,7 +16,6 @@ public partial class Editor
 
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
-    private bool _processing;
     private string? _creditLimitHelperText;
     private bool _isCreditLimitMenuOpen;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
@@ -47,7 +46,7 @@ public partial class Editor
 
     private async Task Submit()
     {
-        if (_processing)
+        if (IsBusy)
             return;
 
         await _form.Validate();
@@ -55,22 +54,23 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        _processing = true;
+        bool result;
 
         if (Id is null)
         {
             var request = CustomerVm.ToCreateRequest(Model);
-            await SendRequestAsync<ICustomerService>((s, ct) => s.CreateAsync(request, ct));
+            result = await SendRequestAsync<ICustomerService>((s, ct) => s.CreateAsync(request, ct));
         }
         else
         {
             var request = CustomerVm.ToUpdateRequest(Model);
-            await SendRequestAsync<ICustomerService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            result = await SendRequestAsync<ICustomerService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
         }
 
-        _processing = false;
+        if (result == false)
+            return;
 
-        MudDialog.Close(DialogResult.Ok(true));
+        MudDialog.Close(DialogResult.Ok(result));
     }
 
     private void Close() => MudDialog.Cancel();

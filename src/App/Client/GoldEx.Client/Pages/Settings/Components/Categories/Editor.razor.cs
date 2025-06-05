@@ -10,30 +10,30 @@ public partial class Editor
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public ProductCategoryVm Model { get; set; } = new();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
-    
-    private bool _processing;
 
     private async Task Submit()
     {
-        if (_processing)
+        if (IsBusy)
             return;
 
-        _processing = true;
+        bool result;
 
         if (Id is null)
         {
             var request = ProductCategoryVm.ToCreateRequest(Model);
-            await SendRequestAsync<IProductCategoryService>((s, ct) => s.CreateAsync(request, ct));
+            result = await SendRequestAsync<IProductCategoryService>((s, ct) => s.CreateAsync(request, ct));
         }
         else
         {
             var request = ProductCategoryVm.ToUpdateRequest(Model);
-            await SendRequestAsync<IProductCategoryService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            result = await SendRequestAsync<IProductCategoryService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
         }
 
-        _processing = false;
+        if (result == false)
+            return;
 
         MudDialog.Close(DialogResult.Ok(true));
     }
+
     private void Close() => MudDialog.Cancel();
 }

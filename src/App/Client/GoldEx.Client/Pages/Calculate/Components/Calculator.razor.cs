@@ -217,9 +217,12 @@ public partial class Calculator
             return;
         }
 
-        await SendRequestAsync<IProductService, GetProductResponse>(async (s, ct) => await s.GetAsync(barcode, ct),
+        await SendRequestAsync<IProductService, GetProductResponse?>(async (s, ct) => await s.GetAsync(barcode, ct),
             response =>
             {
+                if (response is null)
+                    return;
+
                 _model.Weight = response.Weight;
                 _model.CaratType = response.CaratType;
                 _model.Wage = response.Wage;

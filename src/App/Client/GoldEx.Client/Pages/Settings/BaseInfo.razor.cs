@@ -2,7 +2,6 @@
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Net.Http.Json;
 
 namespace GoldEx.Client.Pages.Settings;
 

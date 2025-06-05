@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using Humanizer
 @inherits GoldExComponentBase
 
 <MudTable T="TransactionVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
@@ -36,7 +37,7 @@
         <MudTd DataLabel="بستانکاری">@(context.Credit.HasValue ? $"{context.Credit:N0} {context.CreditUnit}" : "-")</MudTd>
         <MudTd DataLabel="بدهکاری">@(context.Debit.HasValue ? $"{context.Debit:N0} {context.DebitUnit}" : "-")</MudTd>
         @* <MudTd DataLabel="مانده">@($"{context.Remaining:N0} {context.RemainingUnit}")</MudTd> *@
-        <MudTd DataLabel="تاریخ">@context.DateTime.ToString(CultureInfo.CurrentCulture)</MudTd>
+        <MudTd DataLabel="تاریخ">@context.DateTime.ToShortDateString()</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ تراکنش">
