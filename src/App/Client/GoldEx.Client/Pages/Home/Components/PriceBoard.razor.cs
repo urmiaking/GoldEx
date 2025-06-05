@@ -50,7 +50,7 @@ public partial class PriceBoard
     private async Task LoadPricesAsync()
     {
         await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
-            action: (s, ct) => s.GetAsync(ct),
+            action: (s, ct) => s.GetListAsync(ct),
             afterSend: response => _items = response,
             createScope: true
         );

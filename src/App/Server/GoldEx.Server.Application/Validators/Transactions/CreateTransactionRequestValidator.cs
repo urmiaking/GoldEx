@@ -3,7 +3,6 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.DTOs.Transactions;
-using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Application.Validators.Transactions;
 
@@ -28,30 +27,24 @@ internal class CreateTransactionRequestValidator : AbstractValidator<CreateTrans
             .WithMessage("وارد کردن حداقل یکی از مقادیر بدهکاری یا بستانکاری الزامی است");
 
         When(transaction => transaction.Credit.HasValue, () => {
-            RuleFor(transaction => transaction.CreditUnit)
+            RuleFor(transaction => transaction.CreditPriceUnitId)
                 .NotNull().WithMessage("وارد کردن واحد تبدیل بستانکاری الزامی است");
 
-            When(transaction => transaction.CreditUnit is not UnitType.IRR, () =>
-            {
-                RuleFor(transaction => transaction.CreditRate)
-                    .NotNull().WithMessage("وارد کردن نرخ تبدیل بستانکاری الزامی است")
-                    .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بستانکاری نباید منفی باشد");
-            });
+            RuleFor(transaction => transaction.CreditRate)
+                .NotNull().WithMessage("وارد کردن نرخ تبدیل بستانکاری الزامی است")
+                .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بستانکاری نباید منفی باشد");
 
             RuleFor(transaction => transaction.Credit)
                  .GreaterThan(0).WithMessage("مقدار بستانکاری نباید منفی باشد");
         });
 
         When(transaction => transaction.Debit.HasValue, () => {
-            RuleFor(transaction => transaction.DebitUnit)
+            RuleFor(transaction => transaction.CreditPriceUnitId)
                 .NotNull().WithMessage("وارد کردن واحد تبدیل بدهکاری الزامی است");
 
-            When(transaction => transaction.DebitUnit is not UnitType.IRR, () =>
-            {
-                RuleFor(transaction => transaction.DebitRate)
-                    .NotNull().WithMessage("وارد کردن نرخ تبدیل بدهکاری الزامی است")
-                    .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بدهکاری نباید منفی باشد");
-            });
+            RuleFor(transaction => transaction.DebitRate)
+                .NotNull().WithMessage("وارد کردن نرخ تبدیل بدهکاری الزامی است")
+                .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بدهکاری نباید منفی باشد");
 
             RuleFor(transaction => transaction.Debit)
                 .GreaterThan(0).WithMessage("مقدار بدهکاری نباید منفی باشد");

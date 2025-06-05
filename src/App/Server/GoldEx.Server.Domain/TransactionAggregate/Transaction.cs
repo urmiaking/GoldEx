@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
-using GoldEx.Shared.Enums;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 
 namespace GoldEx.Server.Domain.TransactionAggregate;
 
@@ -11,10 +11,10 @@ public class Transaction : EntityBase<TransactionId>
         long number,
         string description,
         decimal? credit,
-        UnitType? creditUnit,
+        PriceUnitId? creditUnitId,
         decimal? creditRate,
         decimal? debit,
-        UnitType? debitUnit,
+        PriceUnitId? debitUnitId,
         decimal? debitRate,
         CustomerId customerId)
     {
@@ -25,10 +25,10 @@ public class Transaction : EntityBase<TransactionId>
             Number = number,
             Description = description,
             Credit = credit,
-            CreditUnit = creditUnit,
+            CreditUnitId = creditUnitId,
             CreditRate = creditRate,
             Debit = debit,
-            DebitUnit = debitUnit,
+            DebitUnitId = debitUnitId,
             DebitRate = debitRate,
             CustomerId = customerId
         };
@@ -43,11 +43,15 @@ public class Transaction : EntityBase<TransactionId>
     public long Number { get; private set; }
     public string Description { get; private set; }
     public decimal? Credit { get; private set; }
-    public UnitType? CreditUnit { get; private set; }
     public decimal? CreditRate { get; private set; }
     public decimal? Debit { get; private set; }
-    public UnitType? DebitUnit { get; private set; }
     public decimal? DebitRate { get; private set; }
+
+    public PriceUnitId? CreditUnitId { get; private set; }
+    public PriceUnit? CreditUnit { get; private set; }
+
+    public PriceUnitId? DebitUnitId { get; private set; }
+    public PriceUnit? DebitUnit { get; private set; }
 
     public Customer? Customer { get; private set; }
     public CustomerId CustomerId { get; private set; }
@@ -56,10 +60,10 @@ public class Transaction : EntityBase<TransactionId>
     public void SetNumber(long number) => Number = number;
     public void SetDescription(string description) => Description = description;
     public void SetCredit(decimal? credit) => Credit = credit;
-    public void SetCreditUnit(UnitType? unitType) => CreditUnit = unitType;
+    public void SetCreditUnit(PriceUnitId? unitTypeId) => CreditUnitId = unitTypeId;
     public void SetCreditRate(decimal? creditRate) => CreditRate = creditRate;
     public void SetDebit(decimal? debit) => Debit = debit;
-    public void SetDebitUnit(UnitType? unitType) => DebitUnit = unitType;
+    public void SetDebitUnit(PriceUnitId? unitTypeId) => DebitUnitId = unitTypeId;
     public void SetDebitRate(decimal? debitRate) => DebitRate = debitRate;
     public void SetCustomer(CustomerId customerId) => CustomerId = customerId;
 }

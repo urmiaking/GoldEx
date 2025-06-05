@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
@@ -30,10 +31,10 @@ public class TransactionEditorVm
     public decimal? Credit { get; set; }
 
     [Display(Name = "واحد بستانکاری")]
-    public UnitType? CreditUnit { get; set; }
+    public GetPriceUnitTitleResponse? CreditUnit { get; set; }
 
     [Display(Name = "واحد بدهکاری")]
-    public UnitType? DebitUnit { get; set; }
+    public GetPriceUnitTitleResponse? DebitUnit { get; set; }
 
     [Display(Name = "نرخ تبدیل بستانکاری")]
     public decimal? CreditRate { get; set; }
@@ -69,13 +70,13 @@ public class TransactionEditorVm
     public decimal? CustomerCreditLimit { get; set; }
 
     [Display(Name = "واحد سقف اعتبار مشتری")]
-    public UnitType? CustomerCreditLimitUnit { get; set; }
+    public GetPriceUnitTitleResponse? CustomerCreditLimitUnit { get; set; }
 
     [Display(Name = "مقدار اعتبار باقی مانده مشتری")]
     public decimal? CustomerCreditRemaining { get; set; }
 
     [Display(Name = "واحد اعتبار باقی مانده مشتری")]
-    public UnitType? CustomerCreditRemainingUnit { get; set; }
+    public GetPriceUnitTitleResponse? CustomerCreditRemainingUnit { get; set; }
 
     [Display(Name = "آدرس")]
     public string? CustomerAddress { get; set; }
@@ -90,10 +91,10 @@ public class TransactionEditorVm
         TransactionDate = transaction.DateTime;
         TransactionTime = transaction.DateTime.TimeOfDay;
         Debit = transaction.Debit;
-        DebitUnit = transaction.DebitUnit;
+        DebitUnit = transaction.DebitPriceUnit;
         DebitRate = transaction.DebitRate;
         Credit = transaction.Credit;
-        CreditUnit = transaction.CreditUnit;
+        CreditUnit = transaction.CreditPriceUnit;
         CreditRate = transaction.CreditRate;
 
         SetCustomer(transaction.Customer);
@@ -108,7 +109,7 @@ public class TransactionEditorVm
         CustomerPhoneNumber = customer.PhoneNumber;
         CustomerAddress = customer.Address;
         CustomerCreditLimit = customer.CreditLimit;
-        CustomerCreditLimitUnit = null;
+        CustomerCreditLimitUnit = customer.CreditLimitPriceUnit;
         CustomerCreditRemaining = customer.CreditLimit; // TODO: need to be calculated based on transactions
         CustomerCreditRemainingUnit = null; // TODO: need to be calculated based on transactions
     }
@@ -123,10 +124,10 @@ public class TransactionEditorVm
             model.Description,
             DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
             model.Credit,
-            model.CreditUnit,
+            model.CreditUnit?.Id,
             model.CreditRate,
             model.Debit,
-            model.DebitUnit,
+            model.DebitUnit?.Id,
             model.DebitRate,
             model.GetCustomerDto()
         );
@@ -139,10 +140,10 @@ public class TransactionEditorVm
             model.Description,
             DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
             model.Credit,
-            model.CreditUnit,
+            model.CreditUnit?.Id,
             model.CreditRate,
             model.Debit,
-            model.DebitUnit,
+            model.DebitUnit?.Id,
             model.DebitRate,
             model.GetCustomerDto()
         );
@@ -156,7 +157,7 @@ public class TransactionEditorVm
             CustomerPhoneNumber,
             CustomerAddress,
             CustomerCreditLimit,
-            null,
+            CustomerCreditLimitUnit?.Id,
             CustomerType);
     }
 }

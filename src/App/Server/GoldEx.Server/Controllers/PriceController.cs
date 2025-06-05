@@ -17,7 +17,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     [HttpGet(ApiRoutes.Price.Get)]
     public async Task<IActionResult> GetAsync(CancellationToken cancellationToken = default)
     {
-        var list = await priceService.GetAsync(cancellationToken);
+        var list = await priceService.GetListAsync(cancellationToken);
 
         return Ok(list);
     }
@@ -33,7 +33,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     [HttpGet(ApiRoutes.Price.GetMarket)]
     public async Task<IActionResult> GetAsync(MarketType marketType, CancellationToken cancellationToken = default)
     {
-        var list = await priceService.GetAsync(marketType, cancellationToken);
+        var list = await priceService.GetListAsync(marketType, cancellationToken);
 
         return Ok(list);
     }
@@ -42,6 +42,13 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     public async Task<IActionResult> GetAsync(UnitType unitType, CancellationToken cancellationToken = default)
     {
         var price = await priceService.GetAsync(unitType, cancellationToken);
+        return price is not null ? Ok(price) : NotFound();
+    }
+
+    [HttpGet(ApiRoutes.Price.GetByPriceUnit)]
+    public async Task<IActionResult> GetByPriceUnitAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
+    {
+        var price = await priceService.GetAsync(priceUnitId, cancellationToken);
         return price is not null ? Ok(price) : NotFound();
     }
 

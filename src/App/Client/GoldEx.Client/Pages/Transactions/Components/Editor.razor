@@ -10,7 +10,7 @@
                 @if (_model is { CustomerCreditRemaining: not null, CustomerCreditRemainingUnit: not null })
                 {
                     <MudText Typo="Typo.body1" Class="d-none d-sm-flex">
-                        اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining.FormatNumber()} {_model.CustomerCreditRemainingUnit.GetDisplayName()}")
+                        اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining.FormatNumber()} {_model.CustomerCreditRemainingUnit.Title}")
                     </MudText>
                 }
             </div>
@@ -73,9 +73,19 @@
                                              OnAdornmentClick="() => _isCreditLimitMenuOpen = true" />
                         </ActivatorContent>
                         <ChildContent>
-                            @foreach (var item in Enum.GetValues<UnitType>())
+                            @foreach (var item in _priceUnits)
                             {
-                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">@item.GetDisplayName()</MudMenuItem>
+                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
                             }
                         </ChildContent>
                     </MudMenu>
@@ -176,9 +186,19 @@
                                                          OnAdornmentClick="() => _isCreditMenuOpen = true" />
                                     </ActivatorContent>
                                     <ChildContent>
-                                        @foreach (var item in Enum.GetValues<UnitType>())
+                                        @foreach (var item in _priceUnits)
                                         {
-                                            <MudMenuItem OnClick="() => SelectCreditUnit(item)">@item.GetDisplayName()</MudMenuItem>
+                                            <MudMenuItem OnClick="() => SelectCreditUnit(item)">  
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    @if (item.HasIcon)
+                                                    {
+                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                        </MudAvatar>  
+                                                    }
+                                                    @item.Title
+                                                </div>  
+                                            </MudMenuItem>  
                                         }
                                     </ChildContent>
                                 </MudMenu>
@@ -225,9 +245,19 @@
                                                          OnAdornmentClick="() => _isDebitMenuOpen = true" />
                                     </ActivatorContent>
                                     <ChildContent>
-                                        @foreach (var item in Enum.GetValues<UnitType>())
+                                        @foreach (var item in _priceUnits)
                                         {
-                                            <MudMenuItem OnClick="() => SelectDebitUnit(item)">@item.GetDisplayName()</MudMenuItem>
+                                            <MudMenuItem OnClick="() => SelectDebitUnit(item)">  
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    @if (item.HasIcon)
+                                                    {
+                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                        </MudAvatar>  
+                                                    }
+                                                    @item.Title
+                                                </div>  
+                                            </MudMenuItem>  
                                         }
                                     </ChildContent>
                                 </MudMenu>

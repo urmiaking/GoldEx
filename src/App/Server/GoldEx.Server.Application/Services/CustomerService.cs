@@ -97,9 +97,7 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
         item.SetPhoneNumber(request.PhoneNumber);
         item.SetAddress(request.Address);
         item.SetCustomerType(request.CustomerType);
-
-        if (request.CreditLimitPriceUnitId.HasValue) 
-            item.SetCreditLimit(request.CreditLimit, new PriceUnitId(request.CreditLimitPriceUnitId.Value));
+        item.SetCreditLimit(request.CreditLimit, request.CreditLimitPriceUnitId.HasValue ? new PriceUnitId(request.CreditLimitPriceUnitId.Value) : null);
 
         await repository.UpdateAsync(item, cancellationToken);
     }

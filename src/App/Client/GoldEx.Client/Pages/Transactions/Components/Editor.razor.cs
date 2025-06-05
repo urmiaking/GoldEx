@@ -4,6 +4,7 @@ using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -30,6 +31,7 @@ public partial class Editor
     private bool _isDebitMenuOpen;
     private bool _isCreditMenuOpen;
     private bool _isCreditLimitMenuOpen;
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -41,7 +43,16 @@ public partial class Editor
         if (CustomerId is not null)
             await LoadCustomerAsync(CustomerId.Value);
 
+        await LoadPriceUnitsAsync();
+
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadPriceUnitsAsync()
+    {
+        await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(ct),
+            afterSend: response => _priceUnits = response);
     }
 
     private async Task GetLastNumberAsync()
@@ -131,7 +142,7 @@ public partial class Editor
     {
         _model.Debit = debit;
         _debitHelperText = debit.HasValue || _model.DebitUnit is not null
-            ? $"{debit.FormatNumber()} {_model.DebitUnit?.GetDisplayName()}".Trim()
+            ? $"{debit.FormatNumber()} {_model.DebitUnit?.Title}".Trim()
             : string.Empty;
 
         _model.DebitEquivalent = debit is null || _model.DebitRate is null
@@ -139,16 +150,16 @@ public partial class Editor
             : debit.Value * _model.DebitRate.Value;
     }
 
-    private async Task OnDebitUnitChanged(UnitType? debitUnit)
+    private async Task OnDebitUnitChanged(GetPriceUnitTitleResponse? debitUnit)
     {
         _model.DebitUnit = debitUnit;
         _debitHelperText = _model.Debit.HasValue || debitUnit is not null
-            ? $"{_model.Debit.FormatNumber()} {debitUnit?.GetDisplayName()}".Trim()
+            ? $"{_model.Debit.FormatNumber()} {debitUnit?.Title}".Trim()
             : string.Empty;
 
-        if (debitUnit.HasValue)
+        if (debitUnit != null)
             await SendRequestAsync<IPriceService, GetPriceResponse?>(
-                action: (s, ct) => s.GetAsync(debitUnit.Value, ct),
+                action: (s, ct) => s.GetAsync(debitUnit.Id, ct),
                 afterSend: response =>
                 {
                     if (response is not null)
@@ -174,7 +185,7 @@ public partial class Editor
     {
         _model.Credit = credit;
         _creditHelperText = credit.HasValue || _model.CreditUnit is not null
-            ? $"{credit.FormatNumber()} {_model.CreditUnit?.GetDisplayName()}".Trim()
+            ? $"{credit.FormatNumber()} {_model.CreditUnit?.Title}".Trim()
             : string.Empty;
 
         _model.CreditEquivalent = credit is null || _model.CreditRate is null
@@ -182,16 +193,16 @@ public partial class Editor
             : credit.Value * _model.CreditRate.Value;
     }
 
-    private async Task OnCreditUnitChanged(UnitType? creditUnit)
+    private async Task OnCreditUnitChanged(GetPriceUnitTitleResponse? creditUnit)
     {
         _model.CreditUnit = creditUnit;
         _creditHelperText = _model.Credit.HasValue || creditUnit is not null
-            ? $"{_model.Credit.FormatNumber()} {creditUnit?.GetDisplayName()}".Trim()
+            ? $"{_model.Credit.FormatNumber()} {creditUnit?.Title}".Trim()
             : string.Empty;
 
-        if (creditUnit.HasValue)
+        if (creditUnit != null)
             await SendRequestAsync<IPriceService, GetPriceResponse?>(
-                action: (s, ct) => s.GetAsync(creditUnit.Value, ct),
+                action: (s, ct) => s.GetAsync(creditUnit.Id, ct),
                 afterSend: response =>
                 {
                     if (response is not null)
@@ -217,15 +228,15 @@ public partial class Editor
     {
         _model.CustomerCreditLimit = creditLimit;
         _customerCreditLimitHelperText = creditLimit.HasValue
-            ? $"{creditLimit.FormatNumber()} {_model.CustomerCreditLimitUnit?.GetDisplayName()}".Trim()
+            ? $"{creditLimit.FormatNumber()} {_model.CustomerCreditLimitUnit?.Title}".Trim()
             : "سقف اعتبار مشتری";
     }
 
-    private void OnCustomerCreditLimitUnitChanged(UnitType? creditLimitUnit)
+    private void OnCustomerCreditLimitUnitChanged(GetPriceUnitTitleResponse? creditLimitUnit)
     {
         _model.CustomerCreditLimitUnit = creditLimitUnit;
         _customerCreditLimitHelperText = _model.CustomerCreditLimit.HasValue || creditLimitUnit is not null
-            ? $"{_model.CustomerCreditLimit.FormatNumber()} {creditLimitUnit?.GetDisplayName()}".Trim()
+            ? $"{_model.CustomerCreditLimit.FormatNumber()} {creditLimitUnit?.Title}".Trim()
             : "سقف اعتبار مشتری";
     }
 
@@ -242,23 +253,20 @@ public partial class Editor
         _model.CustomerCreditRemainingUnit = null;
     }
 
-    private async Task SelectDebitUnit(UnitType selectedUnit)
+    private async Task SelectDebitUnit(GetPriceUnitTitleResponse selectedUnit)
     {
-        _model.DebitUnit = selectedUnit;
         _isDebitMenuOpen = false;
         await OnDebitUnitChanged(selectedUnit);
     }
 
-    private async Task SelectCreditUnit(UnitType selectedUnit)
+    private async Task SelectCreditUnit(GetPriceUnitTitleResponse selectedUnit)
     {
-        _model.CreditUnit = selectedUnit;
         _isDebitMenuOpen = false;
         await OnCreditUnitChanged(selectedUnit);
     }
 
-    private void SelectCreditLimitUnit(UnitType selectedUnit)
+    private void SelectCreditLimitUnit(GetPriceUnitTitleResponse selectedUnit)
     {
-        _model.CustomerCreditLimitUnit = selectedUnit;
         OnCustomerCreditLimitUnitChanged(selectedUnit);
         _isCreditLimitMenuOpen = false;
     }

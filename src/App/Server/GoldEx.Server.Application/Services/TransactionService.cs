@@ -4,11 +4,10 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Validators.Transactions;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
-using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Services;
 using MapsterMapper;
@@ -58,13 +57,14 @@ internal class TransactionService(
             .Get(new TransactionsByIdSpecification(new TransactionId(id)))
             .Include(x => x.Customer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-        
+
         return mapper.Map<GetTransactionResponse>(transaction);
     }
 
     public async Task<GetTransactionResponse> GetAsync(int number, CancellationToken cancellationToken = default)
     {
-        var transaction = await repository.Get(new TransactionsByNumberSpecification(number))
+        var transaction = await repository
+            .Get(new TransactionsByNumberSpecification(number))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetTransactionResponse>(transaction);
@@ -90,10 +90,10 @@ internal class TransactionService(
             request.Number,
             request.Description,
             request.Credit,
-            request.CreditUnit,
+            request.CreditPriceUnitId.HasValue ? new PriceUnitId(request.CreditPriceUnitId.Value) : null,
             request.CreditRate,
             request.Debit,
-            request.DebitUnit,
+            request.DebitPriceUnitId.HasValue ? new PriceUnitId(request.DebitPriceUnitId.Value) : null,
             request.DebitRate,
             new CustomerId(customerId));
 
@@ -121,10 +121,10 @@ internal class TransactionService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         transaction.SetCredit(request.Credit);
-        transaction.SetCreditUnit(request.CreditUnit);
+        transaction.SetCreditUnit(request.CreditPriceUnitId.HasValue ? new PriceUnitId(request.CreditPriceUnitId.Value) : null);
         transaction.SetCreditRate(request.CreditRate);
         transaction.SetDebit(request.Debit);
-        transaction.SetDebitUnit(request.DebitUnit);
+        transaction.SetDebitUnit(request.DebitPriceUnitId.HasValue ? new PriceUnitId(request.DebitPriceUnitId.Value) : null);
         transaction.SetDebitRate(request.DebitRate);
         transaction.SetDateTime(request.DateTime);
         transaction.SetNumber(request.Number);

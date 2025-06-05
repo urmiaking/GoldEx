@@ -23,12 +23,9 @@ public class TransactionValidator : AbstractValidator<TransactionEditorVm>
                 .NotNull()
                 .WithMessage("وارد کردن واحد تبدیل بستانکاری الزامی است");
 
-            When(transaction => transaction.CreditUnit is not UnitType.IRR, () =>
-            {
-                RuleFor(transaction => transaction.CreditRate)
-                    .NotNull()
-                    .WithMessage("وارد کردن نرخ تبدیل بستانکاری الزامی است");
-            });
+            RuleFor(transaction => transaction.CreditRate)
+                .NotNull()
+                .WithMessage("وارد کردن نرخ تبدیل بستانکاری الزامی است");
 
             RuleFor(transaction => transaction.Credit)
                 .GreaterThan(0)
@@ -40,12 +37,9 @@ public class TransactionValidator : AbstractValidator<TransactionEditorVm>
                 .NotNull()
                 .WithMessage("وارد کردن واحد تبدیل بدهکاری الزامی است");
 
-            When(transaction => transaction.DebitUnit is not UnitType.IRR, () =>
-            {
-                RuleFor(transaction => transaction.DebitRate)
-                    .NotNull()
-                    .WithMessage("وارد کردن نرخ تبدیل بدهکاری الزامی است");
-            });
+            RuleFor(transaction => transaction.DebitRate)
+                .NotNull()
+                .WithMessage("وارد کردن نرخ تبدیل بدهکاری الزامی است");
 
             RuleFor(transaction => transaction.Debit)
                 .GreaterThan(0)
