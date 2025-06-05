@@ -2,6 +2,7 @@
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components.Forms;
+using System.Net.Http.Json;
 
 namespace GoldEx.Client.Pages.Settings;
 
@@ -34,9 +35,32 @@ public partial class BaseInfo
 
     private async Task OnGallerySettingsSubmitted(EditContext context)
     {
+        if (_model.IconFile is not null)
+        {
+            await using var stream = _model.IconFile.OpenReadStream();
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            _model.IconContent = memoryStream.ToArray();
+        }
+
         await SendRequestAsync<ISettingService>(
             action: (s, ct) => s.UpdateAsync(_model.ToRequest(), ct));
 
         AddSuccessToast("تنظیمات گالری با موفقیت ذخیره شد");
+
+        await LoadSettingsAsync();
+        StateHasChanged();
     }
+
+    //private void OnFileChanged(IBrowserFile file)
+    //{
+    //    var buffer = new byte[file.Size];
+    //    file.OpenReadStream().Read(buffer);
+
+    //    _model.IconContent = buffer;
+
+    //    _model.HasIcon = true;
+
+    //    StateHasChanged();
+    //}
 }

@@ -24,7 +24,8 @@ public class ApiUrls
     public class Icons
     {
         public static string Get(IconType iconType, Guid id) =>
-            BuildUrl(ApiRoutes.Icons.Base, ApiRoutes.Icons.GetIcon).FormatRoute(new { iconType, id });
+            BuildUrl(ApiRoutes.Icons.Base, ApiRoutes.Icons.GetIcon).FormatRoute(new { iconType, id })
+                .AppendQueryString(iconType is IconType.App ? new { DateTime.Now } : null);
     }
 
     public static class Account

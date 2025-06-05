@@ -2,19 +2,27 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.Settings;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using MapsterMapper;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class SettingService(ISettingsRepository repository, IMapper mapper, CreateSettingRequestValidator createValidator) : ISettingService, IServerSettingService
+internal class SettingService(ISettingsRepository repository,
+    IFileService fileService,
+    IWebHostEnvironment webHostEnvironment,
+    IMapper mapper,
+    CreateSettingRequestValidator createValidator) : ISettingService,
+    IServerSettingService
 {
     #region ServerSettingService
 
@@ -63,6 +71,9 @@ internal class SettingService(ISettingsRepository repository, IMapper mapper, Cr
         item.SetPriceUpdateInterval(request.PriceUpdateInterval);
 
         await repository.UpdateAsync(item, cancellationToken);
+
+        if (request.IconContent is not null)
+            await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetAppIconPath(), request.IconContent, cancellationToken);
     }
 
     #endregion

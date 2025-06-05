@@ -10,6 +10,23 @@
 
 <EditForm Model="_model" OnValidSubmit="OnGallerySettingsSubmitted">
     <DataAnnotationsValidator />
+    
+    <div class="d-flex justify-content-center mb-2">
+        <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!">
+            <ActivatorContent>
+                <MudAvatar Size="Size.Large" Style="cursor: pointer;">
+                    @if (_model.HasIcon)
+                    {
+                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.App, _model.Id))" Alt="img" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                    }
+                </MudAvatar>
+            </ActivatorContent>
+        </MudFileUpload>
+    </div>
 
     <MudGrid Spacing="8">
         <MudItem xs="12" sm="4">
@@ -37,6 +54,7 @@
                           Variant="Variant.Outlined"
                           For="() => _model.PhoneNumber"></MudTextField>
         </MudItem>
+
     </MudGrid>
 
     <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">پیش فرض های برنامه</MudText>
