@@ -1,8 +1,7 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
-using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.Enums;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -20,12 +19,30 @@ public partial class Editor
     private bool _processing;
     private string? _creditLimitHelperText;
     private bool _isCreditLimitMenuOpen;
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     protected override void OnParametersSet()
     {
-        if (Id is not null) 
+        if (Id is not null)
             OnCreditLimitChanged(Model.CreditLimit);
+
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadPriceUnitsAsync();
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadPriceUnitsAsync()
+    {
+        await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(ct),
+            afterSend: response =>
+            {
+                _priceUnits = response;
+            });
     }
 
     private async Task Submit()
@@ -61,18 +78,17 @@ public partial class Editor
     private void OnCreditLimitChanged(decimal? creditLimit)
     {
         Model.CreditLimit = creditLimit;
-        _creditLimitHelperText = $"{creditLimit.FormatNumber()} {Model.CreditLimitUnit?.GetDisplayName()}".Trim();
+        _creditLimitHelperText = $"{creditLimit.FormatNumber()} {Model.CreditLimitPriceUnit?.Title}".Trim();
     }
 
-    private void OnCreditLimitUnitChanged(UnitType? unitType)
+    private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? unitType)
     {
-        Model.CreditLimitUnit = unitType;
-        _creditLimitHelperText = $"{Model.CreditLimit.FormatNumber()} {unitType?.GetDisplayName()}".Trim();
+        Model.CreditLimitPriceUnit = unitType;
+        _creditLimitHelperText = $"{Model.CreditLimit.FormatNumber()} {unitType?.Title}".Trim();
     }
 
-    private void SelectCreditLimitUnit(UnitType selectedUnit)
+    private void SelectCreditLimitUnit(GetPriceUnitTitleResponse selectedUnit)
     {
-        Model.CreditLimitUnit = selectedUnit;
         OnCreditLimitUnitChanged(selectedUnit);
         _isCreditLimitMenuOpen = false;
     }

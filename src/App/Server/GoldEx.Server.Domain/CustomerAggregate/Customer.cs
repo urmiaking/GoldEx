@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
@@ -8,7 +9,7 @@ public readonly record struct CustomerId(Guid Value);
 public class Customer : EntityBase<CustomerId>
 {
     public static Customer Create(CustomerType customerType, string fullName, string nationalId,
-        string? phoneNumber, string? address, decimal? creditLimit, UnitType? creditLimitUnit)
+        string? phoneNumber, string? address, decimal? creditLimit, PriceUnitId? creditLimitUnit)
     {
         return new Customer
         {
@@ -19,7 +20,7 @@ public class Customer : EntityBase<CustomerId>
             PhoneNumber = phoneNumber,
             Address = address,
             CreditLimit = creditLimit,
-            CreditLimitUnit = creditLimitUnit
+            CreditLimitPriceUnitId = creditLimitUnit
         };
     }
 
@@ -33,7 +34,9 @@ public class Customer : EntityBase<CustomerId>
     public string? Address { get; private set; }
     public decimal? CreditLimit { get; private set; }
     public CustomerType CustomerType { get; private set; }
-    public UnitType? CreditLimitUnit { get; private set; }
+
+    public PriceUnitId? CreditLimitPriceUnitId { get; private set; }
+    public PriceUnit? CreditLimitPriceUnit { get; private set; }
 
     public IReadOnlyList<Transaction>? Transactions { get; private set; }
 
@@ -42,9 +45,9 @@ public class Customer : EntityBase<CustomerId>
     public void SetNationalId(string nationalId) => NationalId = nationalId;
     public void SetPhoneNumber(string phoneNumber) => PhoneNumber = phoneNumber;
     public void SetAddress(string? address) => Address = address;
-    public void SetCreditLimit(decimal? creditLimit, UnitType? creditLimitUnit)
+    public void SetCreditLimit(decimal? creditLimit, PriceUnitId? creditLimitUnit)
     {
         CreditLimit = creditLimit;
-        CreditLimitUnit = creditLimitUnit;
+        CreditLimitPriceUnitId = creditLimitUnit;
     }
 }

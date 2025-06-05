@@ -108,9 +108,9 @@ public class TransactionEditorVm
         CustomerPhoneNumber = customer.PhoneNumber;
         CustomerAddress = customer.Address;
         CustomerCreditLimit = customer.CreditLimit;
-        CustomerCreditLimitUnit = customer.CreditLimitUnit;
+        CustomerCreditLimitUnit = null;
         CustomerCreditRemaining = customer.CreditLimit; // TODO: need to be calculated based on transactions
-        CustomerCreditRemainingUnit = customer.CreditLimitUnit; // TODO: need to be calculated based on transactions
+        CustomerCreditRemainingUnit = null; // TODO: need to be calculated based on transactions
     }
 
     public static UpdateTransactionRequest ToUpdateTransactionRequest(TransactionEditorVm model)
@@ -156,7 +156,7 @@ public class TransactionEditorVm
             CustomerPhoneNumber,
             CustomerAddress,
             CustomerCreditLimit,
-            CustomerCreditLimitUnit,
+            null,
             CustomerType);
     }
 }

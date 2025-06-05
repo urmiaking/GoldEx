@@ -47,6 +47,18 @@ internal class PriceUnitService(HttpClient client, JsonSerializerOptions jsonOpt
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
+    public async Task<List<GetPriceUnitTitleResponse>> GetTitlesAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.PriceUnits.GetTitles(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetPriceUnitTitleResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task CreateAsync(CreatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {
         using var response = await client.PostAsJsonAsync(ApiUrls.PriceUnits.Create(), request, jsonOptions, cancellationToken);

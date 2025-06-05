@@ -4,6 +4,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Validators.Customers;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Shared.DTOs.Customers;
@@ -23,6 +24,7 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
 
         var data = await repository
             .Get(new CustomersByFilterSpecification(filter))
+            .Include(x => x.CreditLimitPriceUnit)
             .ToListAsync(cancellationToken);
 
         var totalCount = await repository.CountAsync(new CustomersByFilterSpecification(filter), cancellationToken);
@@ -38,7 +40,9 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
 
     public async Task<GetCustomerResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new CustomersByIdSpecification(new CustomerId(id)))
+        var item = await repository
+            .Get(new CustomersByIdSpecification(new CustomerId(id)))
+            .Include(x => x.CreditLimitPriceUnit)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetCustomerResponse>(item);
@@ -48,6 +52,7 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
     {
         var item = await repository
             .Get(new CustomersByNationalIdSpecification(nationalId))
+            .Include(x => x.CreditLimitPriceUnit)
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is not null ? mapper.Map<GetCustomerResponse>(item) : null;
@@ -55,7 +60,9 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
 
     public async Task<GetCustomerResponse> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new CustomersByPhoneNumberSpecification(phoneNumber))
+        var item = await repository
+            .Get(new CustomersByPhoneNumberSpecification(phoneNumber))
+            .Include(x => x.CreditLimitPriceUnit)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetCustomerResponse>(item);
@@ -71,7 +78,7 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
             request.PhoneNumber,
             request.Address,
             request.CreditLimit,
-            request.CreditLimitUnit);
+            request.CreditLimitPriceUnitId.HasValue ? new PriceUnitId(request.CreditLimitPriceUnitId.Value) : null);
 
         await repository.CreateAsync(item, cancellationToken);
 
@@ -89,8 +96,10 @@ internal class CustomerService(ICustomerRepository repository, IMapper mapper, C
         item.SetNationalId(request.NationalId);
         item.SetPhoneNumber(request.PhoneNumber);
         item.SetAddress(request.Address);
-        item.SetCreditLimit(request.CreditLimit, request.CreditLimitUnit);
         item.SetCustomerType(request.CustomerType);
+
+        if (request.CreditLimitPriceUnitId.HasValue) 
+            item.SetCreditLimit(request.CreditLimit, new PriceUnitId(request.CreditLimitPriceUnitId.Value));
 
         await repository.UpdateAsync(item, cancellationToken);
     }

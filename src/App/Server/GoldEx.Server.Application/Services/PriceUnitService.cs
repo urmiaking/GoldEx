@@ -55,6 +55,15 @@ internal class PriceUnitService(
         return mapper.Map<List<GetPriceUnitResponse>>(items);
     }
 
+    public async Task<List<GetPriceUnitTitleResponse>> GetTitlesAsync(CancellationToken cancellationToken = default)
+    {
+        var items = await repository
+            .Get(new PriceUnitsDefaultSpecification())
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetPriceUnitTitleResponse>>(items);
+    }
+
     public async Task CreateAsync(CreatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {
         await createValidator.ValidateAndThrowAsync(request, cancellationToken);

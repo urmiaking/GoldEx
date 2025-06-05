@@ -51,6 +51,12 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.HasIcon,
                 src => MapContext.Current.GetService<IWebHostEnvironment>().PriceUnitIconExists(src.Id.Value));
 
+        config.NewConfig<PriceUnit, GetPriceUnitTitleResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.HasIcon,
+                src => MapContext.Current.GetService<IWebHostEnvironment>().PriceUnitIconExists(src.Id.Value));
+
         #endregion
 
         #region Product
@@ -83,7 +89,8 @@ public class MapsterConfig : IRegister
         #region Customers
 
         config.NewConfig<Customer, GetCustomerResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CreditLimitPriceUnit, src => src.CreditLimitPriceUnit);
 
         #endregion
 

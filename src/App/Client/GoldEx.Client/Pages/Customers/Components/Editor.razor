@@ -36,28 +36,38 @@
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                    <ActivatorContent>
-                    <MudNumericField HelperText="@_creditLimitHelperText"
-                                     Value="Model.CreditLimit"
-                                     ValueChanged="OnCreditLimitChanged"
-                                     T="decimal?"
-                                     HideSpinButtons="true"
-                                     Format="G29"
-                                     Immediate="true"
-                                     For="@(() => Model.CreditLimit)"
-                                     Label="سقف اعتبار"
-                                     Margin="Margin.Dense"
-                                     Variant="Variant.Outlined" 
-                                     Adornment="Adornment.End"
-                                     AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
-                                     OnAdornmentClick="() => _isCreditLimitMenuOpen = true"/>
-                    </ActivatorContent>
-                    <ChildContent>
-                        @foreach (var item in Enum.GetValues<UnitType>())
-                        {
-                            <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">@item.GetDisplayName()</MudMenuItem>
-                        }
-                    </ChildContent>
+                        <ActivatorContent>
+                            <MudNumericField HelperText="@_creditLimitHelperText"
+                                             Value="Model.CreditLimit"
+                                             ValueChanged="OnCreditLimitChanged"
+                                             T="decimal?"
+                                             HideSpinButtons="true"
+                                             Format="G29"
+                                             Immediate="true"
+                                             For="@(() => Model.CreditLimit)"
+                                             Label="سقف اعتبار"
+                                             Margin="Margin.Dense"
+                                             Variant="Variant.Outlined"
+                                             Adornment="Adornment.End"
+                                             AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                             OnAdornmentClick="() => _isCreditLimitMenuOpen = true" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">  
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>  
+                                        }
+                                        @item.Title
+                                    </div>  
+                                </MudMenuItem>  
+                            }
+                        </ChildContent>
                     </MudMenu>
                 </MudItem>
                 <MudItem xs="12">

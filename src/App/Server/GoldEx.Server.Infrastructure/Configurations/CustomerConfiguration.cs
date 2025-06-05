@@ -35,5 +35,10 @@ internal class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .IsUnique();
 
         builder.HasIndex(x => x.FullName);
+
+        builder.HasOne(x => x.CreditLimitPriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.CreditLimitPriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
