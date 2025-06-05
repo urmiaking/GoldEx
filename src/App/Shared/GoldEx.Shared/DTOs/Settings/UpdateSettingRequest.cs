@@ -7,4 +7,5 @@ public record UpdateSettingRequest(
     decimal TaxPercent,
     decimal GoldProfitPercent,
     decimal JewelryProfitPercent,
-    TimeSpan PriceUpdateInterval);
+    TimeSpan PriceUpdateInterval,
+    byte[]? IconContent);

@@ -30,6 +30,14 @@ internal class IconService(IWebHostEnvironment environment) : IIconService
                         return await File.ReadAllBytesAsync(path, cancellationToken);
                 }
                 break;
+            case IconType.App:
+                if (environment.AppIconExists())
+                {
+                    var path = environment.GetAppIconPath();
+                    if (File.Exists(path))
+                        return await File.ReadAllBytesAsync(path, cancellationToken);
+                }
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(iconType), iconType, null);
         }

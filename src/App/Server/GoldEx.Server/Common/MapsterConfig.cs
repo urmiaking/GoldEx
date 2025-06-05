@@ -75,7 +75,8 @@ public class MapsterConfig : IRegister
         #region Settings
 
         config.NewConfig<Setting, GetSettingResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.HasIcon, src => MapContext.Current.GetService<IWebHostEnvironment>().AppIconExists());
 
         #endregion
 
