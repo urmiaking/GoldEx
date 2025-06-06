@@ -1,0 +1,111 @@
+﻿@* @inherits GoldExComponentBase
+
+<MudForm Model="Model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12">
+                    <div class="d-flex justify-content-between align-center">
+                        <MudText>نوع مشتری:</MudText>
+                        <MudRadioGroup T="CustomerType" Required="true" For="() => Model.CustomerType" @bind-Value="Model.CustomerType">
+                            <MudRadio Value="@(CustomerType.Individual)">حقیقی</MudRadio>
+                            <MudRadio Value="@(CustomerType.Legal)">حقوقی</MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudTextField @bind-Value="Model.FullName"
+                                  For="@(() => Model.FullName)"
+                                  Label="نام و نام خانوادگی مشتری"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudTextField @bind-Value="Model.NationalId"
+                                  For="@(() => Model.NationalId)"
+                                  Label="کد یکتا"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudTextField @bind-Value="Model.PhoneNumber"
+                                  For="@(() => Model.PhoneNumber)"
+                                  Label="شماره تماس"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField HelperText="@_creditLimitHelperText"
+                                             Value="Model.CreditLimit"
+                                             ValueChanged="OnCreditLimitChanged"
+                                             T="decimal?"
+                                             HideSpinButtons="true"
+                                             Format="G29"
+                                             Immediate="true"
+                                             For="@(() => Model.CreditLimit)"
+                                             Label="سقف اعتبار"
+                                             Margin="Margin.Dense"
+                                             Variant="Variant.Outlined"
+                                             Adornment="Adornment.End"
+                                             AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                             OnAdornmentClick="() => _isCreditLimitMenuOpen = true" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Address"
+                                  For="@(() => Model.Address)"
+                                  AutoGrow Lines="3"
+                                  Label="آدرس"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@IsBusy"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (IsBusy)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm> *@

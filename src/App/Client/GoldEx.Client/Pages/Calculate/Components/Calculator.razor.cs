@@ -1,10 +1,10 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Calculate.Validators;
+﻿using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services;
 using MudBlazor;
 
@@ -85,11 +85,11 @@ public partial class Calculator
 
         if (_from.IsValid)
         {
-            _rawPrice = CalculatorHelper.CalculateRawPrice(_model);
-            _wage = CalculatorHelper.CalculateWage(_model, _rawPrice.Value);
-            _profit = CalculatorHelper.CalculateProfit(_model, _rawPrice.Value, _wage.Value);
-            _tax = CalculatorHelper.CalculateTax(_model, _wage.Value, _profit.Value);
-            _finalPrice = CalculatorHelper.CalculateFinalPrice(_model, _rawPrice.Value, _wage.Value, _profit.Value, _tax.Value);
+            _rawPrice = CalculatorHelper.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.CaratType, _model.ProductType);
+            _wage = CalculatorHelper.CalculateWage(_rawPrice.Value, _model.Wage, _model.WageType, _model.UsDollarPrice);
+            _profit = CalculatorHelper.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
+            _tax = CalculatorHelper.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType);
+            _finalPrice = CalculatorHelper.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.AdditionalPrices, _model.ProductType);
         }
         else
         {

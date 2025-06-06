@@ -44,7 +44,7 @@ public class ProductVm
     public List<GemStoneVm>? Stones { get; set; }
 
     internal static ProductVm CreateDefaultInstance() => new()
-        { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = GoldEx.Shared.Enums.WageType.Percent };
+        { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
 
     internal static ProductVm CreateFrom(GetProductResponse item)
     {

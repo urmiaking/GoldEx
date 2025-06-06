@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="PaymentMethodAggregate\" />
     <Folder Include="TransactionAggregate\" />
   </ItemGroup>
 

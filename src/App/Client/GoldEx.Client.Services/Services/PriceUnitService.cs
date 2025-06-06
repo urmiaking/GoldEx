@@ -75,7 +75,7 @@ internal class PriceUnitService(HttpClient client, JsonSerializerOptions jsonOpt
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
-    public async Task SetStatus(Guid id, UpdatePriceUnitStatusRequest request, CancellationToken cancellationToken = default)
+    public async Task UpdateStatusAsync(Guid id, UpdatePriceUnitStatusRequest request, CancellationToken cancellationToken = default)
     {
         using var response = await client.PutAsJsonAsync(ApiUrls.PriceUnits.SetStatus(id), request, jsonOptions, cancellationToken);
 

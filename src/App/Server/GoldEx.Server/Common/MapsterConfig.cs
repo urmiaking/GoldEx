@@ -1,5 +1,6 @@
 ﻿using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -7,6 +8,7 @@ using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
@@ -21,6 +23,13 @@ public class MapsterConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
+        #region PaymentMethods
+
+        config.NewConfig<PaymentMethod, GetPaymentMethodResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
+
+        #endregion
+
         #region Price
 
         config.NewConfig<Price, GetPriceResponse>()

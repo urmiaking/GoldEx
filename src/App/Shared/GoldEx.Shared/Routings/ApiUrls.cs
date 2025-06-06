@@ -169,4 +169,17 @@ public class ApiUrls
             BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.UpdateStatus).FormatRoute(new { id });
 
     }
+
+    public class PaymentMethods
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetList);
+        public static string GetAll() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetAll);
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.Get)
+            .FormatRoute(new { id });
+        public static string Create() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.Create);
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.Update).FormatRoute(new { id });
+        public static string UpdateStatus(Guid id) =>
+            BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.UpdateStatus).FormatRoute(new { id });
+    }
 }

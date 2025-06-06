@@ -68,7 +68,7 @@ public partial class PriceUnits
     {
         var request = new UpdatePriceUnitStatusRequest(!model.IsActive);
 
-        await SendRequestAsync<IPriceUnitService>((s, ct) => s.SetStatus(model.Id, request, ct));
+        await SendRequestAsync<IPriceUnitService>((s, ct) => s.UpdateStatusAsync(model.Id, request, ct));
 
         AddSuccessToast("وضعیت واحد ارزی با موفقیت تغییر کرد.");
         await LoadPriceUnitsAsync();

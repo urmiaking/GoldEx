@@ -14,4 +14,8 @@
     <ProjectReference Include="..\GoldEx.Server.Infrastructure\GoldEx.Server.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Validators\Invoices\" />
+  </ItemGroup>
+
 </Project>
