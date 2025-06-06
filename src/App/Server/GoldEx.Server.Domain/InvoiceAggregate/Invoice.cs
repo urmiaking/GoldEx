@@ -1,92 +1,130 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.InvoiceItemAggregate;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public readonly record struct InvoiceId(Guid Value);
 public class Invoice : EntityBase<InvoiceId>
 {
-    public static Invoice Create(long invoiceNumber, CustomerId customerId, decimal? discount = null, decimal? additionalPrices = null)
+    public static Invoice Create(long invoiceNumber, CustomerId customerId, DateOnly? dueDate)
     {
         return new Invoice
         {
             Id = new InvoiceId(Guid.NewGuid()),
             InvoiceNumber = invoiceNumber,
             CustomerId = customerId,
-            Discount = discount,
-            AdditionalPrices = additionalPrices
+            DueDate = dueDate
         };
     }
 
     private Invoice() { }
 
     public long InvoiceNumber { get; private set; }
-    public decimal? Discount { get; private set; }
-    public decimal? AdditionalPrices { get; private set; }
+    public DateOnly? DueDate { get; private set; }
+    public DateOnly InvoiceDate { get; private set; }
 
     public void SetInvoiceNumber(long invoiceNumber) => InvoiceNumber = invoiceNumber;
-    public void SetDiscount(decimal? discount) => Discount = discount;
-    public void SetAdditionalPrices(decimal? additionalPrices) => AdditionalPrices = additionalPrices;
+    public void SetDueDate(DateOnly dueDate) => DueDate = dueDate;
+    public void SetInvoiceDate(DateOnly invoiceDate) => InvoiceDate = invoiceDate;
 
     #region Customer
 
     public CustomerId CustomerId { get; private set; }
     public Customer? Customer { get; private set; }
 
-    public void SetCustomerId(CustomerId customerId) => CustomerId = customerId;
+    public Invoice SetCustomerId(CustomerId customerId)
+    {
+        CustomerId = customerId;
+        return this;
+    }
 
     #endregion
 
     #region InvoiceItems
 
-    private readonly List<InvoiceItem> _items = [];
-    public IReadOnlyList<InvoiceItem> Items => _items;
-
-    public void AddItem(InvoiceItem item)
-    {
-        if (_items.Any(x => x.ProductId != item.ProductId))
-            _items.Add(item);
-    }
-
-    public void RemoveItem(InvoiceItem item)
-    {
-        if (_items.Any(x => x.ProductId == item.ProductId))
-            _items.Remove(item);
-    }   
-
-    public void ClearItems() => _items.Clear();
+    public IReadOnlyList<InvoiceItem>? Items { get; private set; }
 
     #endregion
 
-    #region Debt
+    #region Payments
 
-    public InvoiceDebt? InvoiceDebt { get; private set; }
-    public void SetInvoiceDebt(InvoiceDebt invoiceDebt) => InvoiceDebt = invoiceDebt;
+    private readonly List<InvoicePayment> _invoicePayments = [];
+    public IReadOnlyList<InvoicePayment> InvoicePayment => _invoicePayments;
 
-    public void SetInvoiceDebtAsPaid(DateTime paymentDateTime)
+    public Invoice SetInvoicePayments(IEnumerable<InvoicePayment>? invoicePayments)
     {
-        if (InvoiceDebt is null)
-            throw new InvalidOperationException("Invoice debt is not set.");
+        ClearInvoicePayments();
 
-        InvoiceDebt.SetPaid(paymentDateTime);
+        if (invoicePayments is not null)
+            _invoicePayments.AddRange(invoicePayments);
+
+        return this;
     }
 
-    public void SetInvoiceDebtAsUnpaid()
-    {
-        if (InvoiceDebt is null)
-            throw new InvalidOperationException("Invoice debt is not set.");
+    public void ClearInvoicePayments() => _invoicePayments.Clear();
 
-        InvoiceDebt.SetUnpaid();
+    #endregion
+
+    #region ExtraCosts
+
+    private readonly List<InvoiceExtraCost> _extraCosts = [];
+    public IReadOnlyList<InvoiceExtraCost> ExtraCosts => _extraCosts;
+
+    public Invoice SetExtraCosts(IEnumerable<InvoiceExtraCost>? extraCosts)
+    {
+        ClearExtraCosts();
+
+        if (extraCosts is not null)
+            _extraCosts.AddRange(extraCosts);
+
+        return this;
     }
 
-    public void SetInvoiceDebtAsPartiallyPaid(decimal amount, DateTime paymentDateTime)
-    {
-        if (InvoiceDebt is null)
-            throw new InvalidOperationException("Invoice debt is not set.");
+    public void ClearExtraCosts() => _extraCosts.Clear();
 
-        // TODO: fix this
-        //InvoiceDebt.SetPartiallyPaid(amount, paymentDateTime);
+    #endregion
+
+    #region Discounts
+
+    private readonly List<InvoiceDiscount> _discounts = [];
+    public IReadOnlyList<InvoiceDiscount> Discounts => _discounts;
+
+    public Invoice SetDiscounts(IEnumerable<InvoiceDiscount>? discounts)
+    {
+        ClearDiscounts();
+
+        if (discounts is not null)
+            _discounts.AddRange(discounts);
+
+        return this;
     }
+
+    public void ClearDiscounts() => _discounts.Clear();
+
+    #endregion
+
+    #region Calculations
+
+    public decimal TotalTaxAmount => Items.Sum(item => item.ItemTaxAmount);
+
+    public decimal TotalAmount => Items.Sum(item => item.TotalAmount);
+
+    public decimal TotalWageAmount => Items.Sum(item => item.ItemWageAmount);
+
+    public decimal TotalProfitAmount => Items.Sum(item => item.ItemProfitAmount);
+
+    public decimal TotalRawAmount => Items.Sum(item => item.ItemRawAmount);
+
+    public decimal TotalPaidAmount => InvoicePayment.Sum(payment => payment.Amount);
+
+    public decimal TotalDiscountAmount => Discounts.Sum(discount => discount.Amount);
+
+    public decimal TotalExtraCostAmount => ExtraCosts.Sum(extraCost => extraCost.Amount);
+
+    public decimal TotalAmountWithDiscountsAndExtraCosts => TotalAmount - TotalDiscountAmount + TotalExtraCostAmount;
+
+    public decimal TotalUnpaidAmount => TotalAmountWithDiscountsAndExtraCosts - TotalPaidAmount;
 
     #endregion
 }

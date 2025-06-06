@@ -94,7 +94,7 @@ internal class PriceUnitService(
                 item.Id.Value, null), request.IconContent, cancellationToken);
     }
 
-    public async Task SetStatus(Guid id, UpdatePriceUnitStatusRequest request,
+    public async Task UpdateStatusAsync(Guid id, UpdatePriceUnitStatusRequest request,
         CancellationToken cancellationToken = default)
     {
         var item = await repository

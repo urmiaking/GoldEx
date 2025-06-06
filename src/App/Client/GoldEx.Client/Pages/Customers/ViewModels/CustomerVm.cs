@@ -1,6 +1,7 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Customers.ViewModels;
 
@@ -8,14 +9,30 @@ public class CustomerVm
 {
     public Guid Id { get; set; }
 
+    [Display(Name = "نام و نام خانوادگی")]
+    [Required(ErrorMessage = "{0} الزامی است")]
+    [StringLength(100, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string FullName { get; set; } = default!;
+
+    [Display(Name = "نوع مشتری")]
     public CustomerType CustomerType { get; set; } = CustomerType.Individual;
+
+    [Display(Name = "شناسه یکتا")]
+    [Required(ErrorMessage = "{0} الزامی است")]
+    [StringLength(25, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string NationalId { get; set; } = default!;
+
+    [Display(Name = "شماره تماس")]
+    [Required(ErrorMessage = "{0} الزامی است")]
+    [StringLength(25, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string PhoneNumber { get; set; } = default!;
     public string? Address { get; set; }
+
+    [Display(Name = "سقف اعتبار مشتری")]
     public decimal? CreditLimit { get; set; }
+
+    [Display(Name = "واحد سقف اعتبار مشتری")]
     public GetPriceUnitTitleResponse? CreditLimitPriceUnit { get; set; }
-    public bool PriceUnitHasIcon { get; set; }
 
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {
@@ -28,8 +45,7 @@ public class CustomerVm
             PhoneNumber = response.PhoneNumber,
             Address = response.Address,
             CreditLimit = response.CreditLimit,
-            CreditLimitPriceUnit = response.CreditLimitPriceUnit,
-            PriceUnitHasIcon = response.CreditLimitPriceUnit?.HasIcon ?? false
+            CreditLimitPriceUnit = response.CreditLimitPriceUnit
         };
     }
 

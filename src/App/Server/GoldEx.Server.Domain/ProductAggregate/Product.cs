@@ -21,7 +21,7 @@ public class Product : EntityBase<ProductId>
 
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
 
-        if (wageType is Shared.Enums.WageType.Percent && wage is > 100)
+        if (wageType is WageType.Percent && wage > 100)
             throw new ArgumentOutOfRangeException(nameof(wage), "درصد اجرت باید بین 0 الی 100 باشد");
 
         return new Product
@@ -34,7 +34,8 @@ public class Product : EntityBase<ProductId>
             ProductType = productType,
             CaratType = caratType,
             WageType = wageType,
-            ProductCategoryId = productCategoryId
+            ProductCategoryId = productCategoryId,
+            ProductStatus = ProductStatus.Available
         };
     }
 
@@ -48,7 +49,8 @@ public class Product : EntityBase<ProductId>
     public decimal Wage { get; private set; }
     public ProductType ProductType { get; private set; }
     public CaratType CaratType { get; private set; }
-    public WageType WageType { get; private set; }
+    public WageType WageType { get; private set; } // TODO: bro! we have to change this to WagePriceUnitId or maybe not! Or we can add a nullable field! omg so much work to do! :D
+    public ProductStatus ProductStatus { get; private set; }
     public ProductCategoryId? ProductCategoryId { get; private set; }
     public ProductCategory? ProductCategory { get; private set; }
 
@@ -105,11 +107,24 @@ public class Product : EntityBase<ProductId>
 
     public Product SetGemStones(IEnumerable<GemStone>? stones)
     {
-        _stones.Clear();
+        ClearGemStones();
+
         if (stones is not null)
             _stones.AddRange(stones);
 
         return this;
     }
     public void ClearGemStones() => _stones.Clear();
+
+    public Product MarkAsSold()
+    {
+        ProductStatus = ProductStatus.Sold;
+        return this;
+    }
+
+    public Product MarkAsAvailable()
+    {
+        ProductStatus = ProductStatus.Available;
+        return this;
+    }
 }

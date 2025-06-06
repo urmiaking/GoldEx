@@ -1,21 +1,22 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Authorization;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using GoldEx.Shared.Settings;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
-using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Server.Domain.PriceUnitAggregate;
-using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
-using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Enums;
+using GoldEx.Server.Domain.PaymentMethodAggregate;
+using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
 
 namespace GoldEx.Server.Extensions;
 
@@ -39,6 +40,8 @@ public static class ServiceProviderExtensions
     {
         await PopulateDefaultSettingsAsync(serviceProvider);
         await PopulateDefaultPriceUnitsAsync(serviceProvider);
+        await PopulateDefaultProductCategoriesAsync(serviceProvider);
+        await PopulateDefaultPaymentMethodsAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();
@@ -57,6 +60,30 @@ public static class ServiceProviderExtensions
             await accountService.CreateUserAsync(new AppUser("مدیر سامانه", adminUser.UserName, adminUser.Email, adminUser.PhoneNumber),
                 adminUser.Password, [BuiltinRoles.Administrators]);
         }
+    }
+
+    private static async Task PopulateDefaultPaymentMethodsAsync(IServiceProvider serviceProvider)
+    {
+        var repository = serviceProvider.GetRequiredService<IPaymentMethodRepository>();
+
+        var paymentMethods = await repository.Get(new PaymentMethodsWithoutSpecification()).ToListAsync();
+
+        if (paymentMethods.Any())
+            return;
+
+        var defaultPaymentMethods = new List<PaymentMethod>
+        {
+            PaymentMethod.Create("نقدی"),
+            PaymentMethod.Create("کارت به کارت"),
+            PaymentMethod.Create("واریز به حساب")
+        };
+
+        await repository.CreateRangeAsync(defaultPaymentMethods);
+    }
+
+    private static Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)
+    {
+        return Task.CompletedTask; // TODO: populate default product categories
     }
 
     private static async Task PopulateDefaultPriceUnitsAsync(IServiceProvider serviceProvider)

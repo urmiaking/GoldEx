@@ -57,7 +57,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
     [HttpPut(ApiRoutes.PriceUnits.UpdateStatus)]
     public async Task<IActionResult> UpdateStatusAsync(Guid id, UpdatePriceUnitStatusRequest request, CancellationToken cancellationToken = default)
     {
-        await service.SetStatus(id, request, cancellationToken);
+        await service.UpdateStatusAsync(id, request, cancellationToken);
         return NoContent();
     }
 }

@@ -106,4 +106,15 @@ public static class ApiRoutes
         public const string UpdateStatus = "status/{id}";
         public const string GetTitles = "titles";
     }
+
+    public class PaymentMethods
+    {
+        public const string Base = "/api/PaymentMethods";
+        public const string GetList = "";
+        public const string GetAll = "all";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string UpdateStatus = "status/{id}";
+    }
 }

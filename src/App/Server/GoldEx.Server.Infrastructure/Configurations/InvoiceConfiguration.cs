@@ -14,48 +14,73 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasConversion(id => id.Value,
                 value => new InvoiceId(value));
 
-        builder.Property(x => x.AdditionalPrices)
-            .HasPrecision(36, 10);
-
-        builder.Property(x => x.Discount)
-            .HasPrecision(36, 10);
-
         builder.HasOne(x => x.Customer)
             .WithMany()
             .HasForeignKey(x => x.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.OwnsMany(x => x.Items, Configure);
-        builder.OwnsOne(x => x.InvoiceDebt, Configure);
+        builder.OwnsMany(x => x.InvoicePayment, Configure);
+        builder.OwnsMany(x => x.Discounts, Configure);
+        builder.OwnsMany(x => x.ExtraCosts, Configure);
+
     }
 
-    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceItem> builder)
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceExtraCost> builder)
     {
-        builder.ToTable("InvoiceItems");
-
-        builder.Property(x => x.Quantity)
-            .IsRequired();
-
-        builder.Property(x => x.Price)
-            .HasPrecision(36, 10)
-            .IsRequired();
-
-        builder.Property(x => x.Tax)
-            .HasPrecision(36, 10)
-            .IsRequired();
-
-        builder.HasOne(x => x.Product)
-            .WithMany()
-            .HasForeignKey(x => x.ProductId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceDebt> builder)
-    {
-        builder.ToTable("InvoiceDebts");
+        builder.ToTable("InvoiceExtraCosts");
 
         builder.Property(x => x.Amount)
             .HasPrecision(36, 10)
             .IsRequired();
+
+        builder.Property(x => x.Description)
+            .HasMaxLength(500);
+
+        builder.HasOne(x => x.PriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.PriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceDiscount> builder)
+    {
+        builder.ToTable("InvoiceDiscounts");
+
+        builder.Property(x => x.Amount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.Description)
+            .HasMaxLength(500);
+
+        builder.HasOne(x => x.DiscountUnit)
+            .WithMany()
+            .HasForeignKey(x => x.DiscountUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoicePayment> builder)
+    {
+        builder.ToTable("InvoicePayments");
+
+        builder.Property(x => x.Amount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ReferenceNumber)
+            .HasMaxLength(100);
+
+        builder.Property(x => x.Note)
+            .HasMaxLength(500);
+
+        builder.HasOne(x => x.AmountUnit)
+            .WithMany()
+            .HasForeignKey(x => x.AmountUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.PaymentMethod)
+            .WithMany()
+            .HasForeignKey(x => x.PaymentMethodId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

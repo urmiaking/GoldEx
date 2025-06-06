@@ -3,12 +3,13 @@ using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Specifications.Products;
 
 public class ProductsByFilterSpecification : SpecificationBase<Product>
 {
-    public ProductsByFilterSpecification(RequestFilter filter)
+    public ProductsByFilterSpecification(RequestFilter filter, ProductStatus status = ProductStatus.Available)
     {
         if (filter.Skip < 0)
             filter.Skip = 0;
@@ -31,6 +32,8 @@ public class ProductsByFilterSpecification : SpecificationBase<Product>
         {
             ApplySorting(nameof(Customer.CreatedAt), SortDirection.Descending);
         }
+
+        AddCriteria(x => x.ProductStatus == status);
 
         // Apply paging
         ApplyPaging(skip, take);
