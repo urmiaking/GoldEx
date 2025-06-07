@@ -26,6 +26,9 @@ public class CustomerVm
     [Required(ErrorMessage = "{0} الزامی است")]
     [StringLength(25, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string PhoneNumber { get; set; } = default!;
+
+    [Display(Name = "آدرس")]
+    [StringLength(200, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string? Address { get; set; }
 
     [Display(Name = "سقف اعتبار مشتری")]
@@ -33,6 +36,9 @@ public class CustomerVm
 
     [Display(Name = "واحد سقف اعتبار مشتری")]
     public GetPriceUnitTitleResponse? CreditLimitPriceUnit { get; set; }
+
+    public string? CreditLimitHelperText { get; set; }
+    public bool CreditLimitMenuOpen { get; set; }
 
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {
