@@ -10,19 +10,19 @@ public class InvoiceItemVm
     public Guid? Id { get; set; }
 
     [Display(Name = "سود")]
-    public decimal ProfitPercent { get; private set; }
+    public decimal ProfitPercent { get; set; }
 
     [Display(Name = "مالیات")]
-    public decimal TaxPercent { get; private set; }
+    public decimal TaxPercent { get; set; }
 
     [Display(Name = "نرخ گرم 18 عیار")]
-    public decimal GramPrice { get; private set; }
+    public decimal GramPrice { get; set; }
 
     [Display(Name = "نرخ تبدیل ارز")]
-    public decimal? ExchangeRate { get; private set; }
+    public decimal? ExchangeRate { get; set; }
 
     [Display(Name = "تعداد")]
-    public int Quantity { get; private set; }
+    public int Quantity { get; set; }
 
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     public ProductVm Product { get; set; } = ProductVm.CreateDefaultInstance();

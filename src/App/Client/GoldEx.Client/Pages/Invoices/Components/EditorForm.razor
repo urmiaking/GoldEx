@@ -88,6 +88,49 @@
     </MudGrid>
     <MudText Class="mt-4" Typo="Typo.h6" GutterBottom="true">اقلام فاکتور</MudText>
     <MudDivider Class="mb-2" />
+
+    <MudGrid>
+        <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
+            <MudTextField Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.QrCode"
+                          Clearable="true"
+                          HelperText="@_barcodeFieldHelperText"
+                          Label="بارکد جنس"
+                          Immediate="true"
+                          OnClearButtonClick="OnBarcodeCleared"
+                          T="string"
+                          Value="_barcode"
+                          ValueChanged="OnBarcodeChanged"
+                          Variant="Variant.Outlined"></MudTextField>
+        </div>
+
+        <div class="container">
+            <MudSimpleTable Style="overflow-x: auto;">
+                <thead>
+                    <tr>
+                        <th>عنوان جنس</th>
+                        <th>تعداد</th>
+                        <th>سود</th>
+                        <th>مالیات</th>
+                        <th>اجرت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.InvoiceItems)
+                    {
+                        <tr>
+                            <td>@item.Product.Name</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.ProfitPercent</td>
+                            <td>@item.TaxPercent</td>
+                            <td>@item.Product.Wage</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </div>
+    </MudGrid>
+
     <div class="d-flex justify-content-end">
         <MudButton Color="Color.Primary"
                    Disabled="@IsBusy"
