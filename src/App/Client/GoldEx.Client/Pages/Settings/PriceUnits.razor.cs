@@ -73,4 +73,13 @@ public partial class PriceUnits
         AddSuccessToast("وضعیت واحد ارزی با موفقیت تغییر کرد.");
         await LoadPriceUnitsAsync();
     }
+
+    private async Task OnSetAsDefault(Guid id)
+    {
+        await SendRequestAsync<IPriceUnitService>((s, ct) => s.SetAsDefaultAsync(id, ct), afterSend: async () =>
+        {
+            AddSuccessToast("واحد ارزی پیش‌فرض با موفقیت تغییر کرد.");
+            await LoadPriceUnitsAsync();
+        });
+    }
 }

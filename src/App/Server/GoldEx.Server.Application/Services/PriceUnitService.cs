@@ -68,7 +68,7 @@ internal class PriceUnitService(
     {
         await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var item = PriceUnit.Create(request.Title, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+        var item = PriceUnit.Create(request.Title, false, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
 
         await repository.CreateAsync(item, cancellationToken);
 
@@ -104,5 +104,25 @@ internal class PriceUnitService(
         item.SetStatus(request.IsActive);
 
         await repository.UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task SetAsDefaultAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var item = await repository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(id)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        var defaultItems = await repository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .ToListAsync(cancellationToken);
+
+        foreach (var defaultItem in defaultItems)
+            defaultItem.SetDefault(false);
+
+        item.SetDefault(true);
+
+        defaultItems.Add(item);
+
+        await repository.UpdateRangeAsync(defaultItems, cancellationToken);
     }
 }

@@ -60,4 +60,11 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
         await service.UpdateStatusAsync(id, request, cancellationToken);
         return NoContent();
     }
+
+    [HttpPut(ApiRoutes.PriceUnits.SetAsDefault)]
+    public async Task<IActionResult> SetAsDefaultAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.SetAsDefaultAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

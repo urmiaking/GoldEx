@@ -17,6 +17,9 @@ public class PriceUnitVm
     [Display(Name = "وضعیت")]
     public bool IsActive { get; set; }
 
+    [Display(Name = "پیش فرض")]
+    public bool IsDefault { get; set; }
+
     public bool HasIcon { get; set; }
 
     [Display(Name = "قیمت وابسته")]
@@ -36,6 +39,7 @@ public class PriceUnitVm
             Title = response.Title,
             IsActive = response.IsActive,
             HasIcon = response.HasIcon,
+            IsDefault = response.IsDefault,
             PriceId = response.PriceId,
             PriceVm = response.PriceId.HasValue && !string.IsNullOrEmpty(response.PriceTitle) ?
                 new PriceVm

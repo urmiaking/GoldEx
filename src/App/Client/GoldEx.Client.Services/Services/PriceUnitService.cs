@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
+using MediatR;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -78,6 +79,14 @@ internal class PriceUnitService(HttpClient client, JsonSerializerOptions jsonOpt
     public async Task UpdateStatusAsync(Guid id, UpdatePriceUnitStatusRequest request, CancellationToken cancellationToken = default)
     {
         using var response = await client.PutAsJsonAsync(ApiUrls.PriceUnits.SetStatus(id), request, jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task SetAsDefaultAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PutAsJsonAsync(ApiUrls.PriceUnits.SetAsDefault(id), jsonOptions, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

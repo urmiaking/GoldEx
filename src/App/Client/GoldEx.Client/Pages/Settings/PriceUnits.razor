@@ -22,7 +22,11 @@
     <RowTemplate>
         <MudTd DataLabel="ردیف">@context.Index</MudTd>
         <MudTd DataLabel="عنوان">
-            @context.Title
+            @context.Title 
+            @if (context.IsDefault)
+            {
+                <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="ml-2">پیش فرض</MudChip>
+            }
         </MudTd>
         <MudTd>
             @if (context.HasIcon)
@@ -54,7 +58,14 @@
                                        Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Success"></MudIconButton>
                     </MudTooltip>
                 }
-                
+                @if (context is { IsDefault: false, IsActive: true })
+                {
+                    <MudTooltip Text="تنظیم به عنوان ارز پیش فرض">
+                        <MudIconButton OnClick="@(_ => OnSetAsDefault(context.Id))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Check" Color="@Color.Success"></MudIconButton>
+                    </MudTooltip>
+                }
+
             </div>
         </MudTd>
     </RowTemplate>
