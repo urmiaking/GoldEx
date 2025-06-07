@@ -16,8 +16,6 @@ public partial class Editor
 
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
-    private string? _creditLimitHelperText;
-    private bool _isCreditLimitMenuOpen;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     protected override void OnParametersSet()
@@ -78,18 +76,18 @@ public partial class Editor
     private void OnCreditLimitChanged(decimal? creditLimit)
     {
         Model.CreditLimit = creditLimit;
-        _creditLimitHelperText = $"{creditLimit.FormatNumber()} {Model.CreditLimitPriceUnit?.Title}".Trim();
+        Model.CreditLimitHelperText = $"{creditLimit.FormatNumber()} {Model.CreditLimitPriceUnit?.Title}".Trim();
     }
 
     private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? unitType)
     {
         Model.CreditLimitPriceUnit = unitType;
-        _creditLimitHelperText = $"{Model.CreditLimit.FormatNumber()} {unitType?.Title}".Trim();
+        Model.CreditLimitHelperText = $"{Model.CreditLimit.FormatNumber()} {unitType?.Title}".Trim();
     }
 
     private void SelectCreditLimitUnit(GetPriceUnitTitleResponse selectedUnit)
     {
         OnCreditLimitUnitChanged(selectedUnit);
-        _isCreditLimitMenuOpen = false;
+        Model.CreditLimitMenuOpen = false;
     }
 }

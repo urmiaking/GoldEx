@@ -1,7 +1,9 @@
-﻿@attribute [Route(ClientRoutes.Invoices.Create)]
+﻿@inherits GoldExComponentBase
+@using GoldEx.Client.Pages.Invoices.Components
+
+@attribute [Route(ClientRoutes.Invoices.Create)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 <!-- TODO: Add Policy -->
-@inherits GoldExComponentBase
 
 <PageTitle>فاکتور جدید</PageTitle>
 

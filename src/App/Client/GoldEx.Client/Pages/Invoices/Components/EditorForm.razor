@@ -1,61 +1,69 @@
-﻿@* @inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
-    <MudDialog>
-        <DialogContent>
+    <MudExpansionPanels>
+        <MudExpansionPanel Text="اطلاعات مشتری" Expanded="true">
             <MudGrid>
-                <MudItem xs="12">
-                    <div class="d-flex justify-content-between align-center">
-                        <MudText>نوع مشتری:</MudText>
-                        <MudRadioGroup T="CustomerType" Required="true" For="() => Model.CustomerType" @bind-Value="Model.CustomerType">
-                            <MudRadio Value="@(CustomerType.Individual)">حقیقی</MudRadio>
-                            <MudRadio Value="@(CustomerType.Legal)">حقوقی</MudRadio>
-                        </MudRadioGroup>
-                    </div>
+                <MudItem xs="6" md="2">
+                    <MudSelect T="CustomerType"
+                               Value="Model.Customer.CustomerType"
+                               Label="نوع مشتری"
+                               For="() => Model.Customer.CustomerType"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var item in Enum.GetValues<CustomerType>())
+                        {
+                            <MudSelectItem Value="@item">@item.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="6">
-                    <MudTextField @bind-Value="Model.FullName"
-                                  For="@(() => Model.FullName)"
-                                  Label="نام و نام خانوادگی مشتری"
+                <MudItem xs="6" md="2">
+                    <MudTextField Value="Model.Customer.NationalId"
+                                  T="string"
+                                  ValueChanged="OnCustomerNationalIdChanged"
+                                  Immediate="true"
+                                  DebounceInterval="200"
+                                  For="@(() => Model.Customer.NationalId)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.NationalId))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="6" lg="6">
-                    <MudTextField @bind-Value="Model.NationalId"
-                                  For="@(() => Model.NationalId)"
-                                  Label="کد یکتا"
+                <MudItem xs="6" md="4">
+                    <MudTextField @bind-Value="Model.Customer.FullName"
+                                  For="@(() => Model.Customer.FullName)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.FullName))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="6" lg="6">
-                    <MudTextField @bind-Value="Model.PhoneNumber"
-                                  For="@(() => Model.PhoneNumber)"
-                                  Label="شماره تماس"
+                <MudItem xs="6" md="4">
+                    <MudTextField @bind-Value="Model.Customer.PhoneNumber"
+                                  For="@(() => Model.Customer.PhoneNumber)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.PhoneNumber))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="6" lg="6">
-                    <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                <MudItem xs="6" md="4">
+                    <MudMenu @bind-Open="_isCustomerCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                         <ActivatorContent>
-                            <MudNumericField HelperText="@_creditLimitHelperText"
-                                             Value="Model.CreditLimit"
-                                             ValueChanged="OnCreditLimitChanged"
+                            <MudNumericField HelperText="@Model.Customer.CreditLimitHelperText"
+                                             Value="Model.Customer.CreditLimit"
+                                             ValueChanged="OnCustomerCreditLimitChanged"
                                              T="decimal?"
                                              HideSpinButtons="true"
                                              Format="G29"
                                              Immediate="true"
-                                             For="@(() => Model.CreditLimit)"
-                                             Label="سقف اعتبار"
+                                             For="@(() => Model.Customer.CreditLimit)"
+                                             Label="@(Model.GetDisplayName(() => Model.Customer.CreditLimit))"
                                              Margin="Margin.Dense"
                                              Variant="Variant.Outlined"
                                              Adornment="Adornment.End"
                                              AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
-                                             OnAdornmentClick="() => _isCreditLimitMenuOpen = true" />
+                                             OnAdornmentClick="() => _isCustomerCreditLimitMenuOpen = true" />
                         </ActivatorContent>
                         <ChildContent>
                             @foreach (var item in _priceUnits)
                             {
-                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">
+                                <MudMenuItem OnClick="() => SelectCustomerCreditLimitUnit(item)">
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         @if (item.HasIcon)
                                         {
@@ -70,24 +78,18 @@
                         </ChildContent>
                     </MudMenu>
                 </MudItem>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="Model.Address"
-                                  For="@(() => Model.Address)"
-                                  AutoGrow Lines="3"
-                                  Label="آدرس"
+                <MudItem xs="6" md="8">
+                    <MudTextField @bind-Value="Model.Customer.Address"
+                                  For="@(() => Model.Customer.Address)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.Address))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
             </MudGrid>
-        </DialogContent>
-        <DialogActions>
-            <MudButton Color="Color.Error"
-                       OnClick="Close"
-                       StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">بستن</MudButton>
+        </MudExpansionPanel>
 
-            <MudButton Class="m-2"
-                       Color="Color.Primary"
+        <div class="d-flex justify-content-end">
+            <MudButton Color="Color.Primary"
                        Disabled="@IsBusy"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
@@ -106,6 +108,6 @@
                     <MudText>ذخیره</MudText>
                 }
             </MudButton>
-        </DialogActions>
-    </MudDialog>
-</MudForm> *@
+        </div>
+    </MudExpansionPanels>
+</MudForm>

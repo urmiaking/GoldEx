@@ -16,28 +16,28 @@
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.FullName"
                                   For="@(() => Model.FullName)"
-                                  Label="نام و نام خانوادگی مشتری"
+                                  Label="@(Model.GetDisplayName(() => Model.FullName))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.NationalId"
                                   For="@(() => Model.NationalId)"
-                                  Label="کد یکتا"
+                                  Label="@(Model.GetDisplayName(() => Model.NationalId))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.PhoneNumber"
                                   For="@(() => Model.PhoneNumber)"
-                                  Label="شماره تماس"
+                                  Label="@(Model.GetDisplayName(() => Model.PhoneNumber))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
-                    <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                    <MudMenu @bind-Open="Model.CreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                         <ActivatorContent>
-                            <MudNumericField HelperText="@_creditLimitHelperText"
+                            <MudNumericField HelperText="@Model.CreditLimitHelperText"
                                              Value="Model.CreditLimit"
                                              ValueChanged="OnCreditLimitChanged"
                                              T="decimal?"
@@ -45,12 +45,12 @@
                                              Format="G29"
                                              Immediate="true"
                                              For="@(() => Model.CreditLimit)"
-                                             Label="سقف اعتبار"
+                                             Label="@(Model.GetDisplayName(() => Model.CreditLimit))"
                                              Margin="Margin.Dense"
                                              Variant="Variant.Outlined"
                                              Adornment="Adornment.End"
                                              AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
-                                             OnAdornmentClick="() => _isCreditLimitMenuOpen = true" />
+                                             OnAdornmentClick="() => Model.CreditLimitMenuOpen = true" />
                         </ActivatorContent>
                         <ChildContent>
                             @foreach (var item in _priceUnits)
@@ -74,7 +74,7 @@
                     <MudTextField @bind-Value="Model.Address"
                                   For="@(() => Model.Address)"
                                   AutoGrow Lines="3"
-                                  Label="آدرس"
+                                  Label="@(Model.GetDisplayName(() => Model.Address))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
