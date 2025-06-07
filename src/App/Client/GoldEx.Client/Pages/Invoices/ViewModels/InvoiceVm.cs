@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -34,5 +36,19 @@ public class InvoiceVm
             InvoiceExtraCosts = [],
             InvoicePayments = []
         };
+    }
+
+    public void AddInvoiceItem(GetProductResponse response, decimal? gramPrice, decimal? exchangeRate, decimal? taxPercent, decimal? profitPercent)
+    {
+        var item = new InvoiceItemVm
+        {
+            Product = ProductVm.CreateFrom(response),
+            Quantity = 1,
+            GramPrice = gramPrice ?? 0,
+            ExchangeRate = exchangeRate,
+            ProfitPercent = profitPercent ?? 0,
+            TaxPercent = taxPercent ?? 0
+        };
+        InvoiceItems.Add(item);
     }
 }
