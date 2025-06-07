@@ -105,6 +105,7 @@ public static class ApiRoutes
         public const string Update = "{id}";
         public const string UpdateStatus = "status/{id}";
         public const string GetTitles = "titles";
+        public const string SetAsDefault = "default/{id}";
     }
 
     public class PaymentMethods

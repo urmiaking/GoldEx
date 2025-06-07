@@ -96,7 +96,7 @@ public static class ServiceProviderExtensions
             return;
 
         var unitTypes = Enum.GetValues<UnitType>()
-            .Select(x => PriceUnit.Create(x.GetDisplayName())).ToList();
+            .Select(x => PriceUnit.Create(x.GetDisplayName(), x == UnitType.IRR)).ToList();
 
         await priceUnitRepository.CreateRangeAsync(unitTypes);
     }

@@ -168,9 +168,12 @@ public class ApiUrls
         public static string SetStatus(Guid id) =>
             BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.UpdateStatus).FormatRoute(new { id });
 
+        public static string SetAsDefault(Guid id) =>
+            BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.SetAsDefault).FormatRoute(new { id });
+
     }
 
-    public class PaymentMethods
+public class PaymentMethods
     {
         public static string GetList() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetList);
         public static string GetAll() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetAll);

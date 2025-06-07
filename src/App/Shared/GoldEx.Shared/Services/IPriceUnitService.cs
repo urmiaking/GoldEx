@@ -11,4 +11,5 @@ public interface IPriceUnitService
     Task CreateAsync(CreatePriceUnitRequest request, CancellationToken cancellationToken = default);
     Task UpdateAsync(Guid id, UpdatePriceUnitRequest request, CancellationToken cancellationToken = default);
     Task UpdateStatusAsync(Guid id, UpdatePriceUnitStatusRequest request, CancellationToken cancellationToken = default);
+    Task SetAsDefaultAsync(Guid id, CancellationToken cancellationToken = default);
 }
