@@ -39,7 +39,7 @@ internal class CreateTransactionRequestValidator : AbstractValidator<CreateTrans
         });
 
         When(transaction => transaction.Debit.HasValue, () => {
-            RuleFor(transaction => transaction.CreditPriceUnitId)
+            RuleFor(transaction => transaction.DebitPriceUnitId)
                 .NotNull().WithMessage("وارد کردن واحد تبدیل بدهکاری الزامی است");
 
             RuleFor(transaction => transaction.DebitRate)
