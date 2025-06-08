@@ -16,23 +16,28 @@ public partial class Editor
         if (IsBusy)
             return;
         
-        bool result;
-
         if (Id is null)
         {
             var request = PaymentMethodVm.ToCreateRequest(Model);
-            result = await SendRequestAsync<IPaymentMethodService>((s, ct) => s.CreateAsync(request, ct));
+            await SendRequestAsync<IPaymentMethodService>(
+                action: (s, ct) => s.CreateAsync(request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
         else
         {
             var request = PaymentMethodVm.ToUpdateRequest(Model);
-            result = await SendRequestAsync<IPaymentMethodService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            await SendRequestAsync<IPaymentMethodService>(
+                action: (s, ct) => s.UpdateAsync(Model.Id, request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
-
-        if (result == false)
-            return;
-
-        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private void Close() => MudDialog.Cancel();
