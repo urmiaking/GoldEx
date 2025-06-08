@@ -34,7 +34,6 @@ public partial class Editor
             return;
 
         byte[]? uploadedFile = null;
-        bool result;
 
         if (Model.IconFile is not null)
         {
@@ -47,18 +46,25 @@ public partial class Editor
         if (Id is null)
         {
             var request = PriceUnitVm.ToCreateRequest(Model, uploadedFile);
-            result = await SendRequestAsync<IPriceUnitService>((s, ct) => s.CreateAsync(request, ct));
+            await SendRequestAsync<IPriceUnitService>(
+                action: (s, ct) => s.CreateAsync(request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
         else
         {
             var request = PriceUnitVm.ToUpdateRequest(Model, uploadedFile);
-            result = await SendRequestAsync<IPriceUnitService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            await SendRequestAsync<IPriceUnitService>(
+                action: (s, ct) => s.UpdateAsync(Model.Id, request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
-
-        if (result == false)
-            return;
-
-        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private void Close() => MudDialog.Cancel();

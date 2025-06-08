@@ -52,23 +52,28 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        bool result;
-
         if (Id is null)
         {
             var request = CustomerVm.ToCreateRequest(Model);
-            result = await SendRequestAsync<ICustomerService>((s, ct) => s.CreateAsync(request, ct));
+            await SendRequestAsync<ICustomerService>(
+                action:(s, ct) => s.CreateAsync(request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
         else
         {
             var request = CustomerVm.ToUpdateRequest(Model);
-            result = await SendRequestAsync<ICustomerService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            await SendRequestAsync<ICustomerService>(
+                action:(s, ct) => s.UpdateAsync(Model.Id, request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
-
-        if (result == false)
-            return;
-
-        MudDialog.Close(DialogResult.Ok(result));
     }
 
     private void Close() => MudDialog.Cancel();

@@ -58,23 +58,28 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        bool result;
-
         if (Id is null)
         {
             var request = ProductVm.ToCreateRequest(Model);
-            result = await SendRequestAsync<IProductService>((s, ct) => s.CreateAsync(request, ct));
+            await SendRequestAsync<IProductService>(
+                action: (s, ct) => s.CreateAsync(request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
         else
         {
             var request = ProductVm.ToUpdateRequest(Model);
-            result = await SendRequestAsync<IProductService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            await SendRequestAsync<IProductService>(
+                action: (s, ct) => s.UpdateAsync(Model.Id, request, ct), 
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
-
-        if (result == false)
-            return;
-
-        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private void GenerateBarcode() => Model.Barcode = StringExtensions.GenerateRandomBarcode();

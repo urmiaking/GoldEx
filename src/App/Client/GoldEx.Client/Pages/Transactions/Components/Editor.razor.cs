@@ -105,23 +105,28 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        bool result;
-
         if (Id.HasValue)
         {
             var request = TransactionEditorVm.ToUpdateTransactionRequest(_model);
-            result = await SendRequestAsync<ITransactionService>((s, ct) => s.UpdateAsync(Id.Value, request, ct));
+            await SendRequestAsync<ITransactionService>(
+                action: (s, ct) => s.UpdateAsync(Id.Value, request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
         else
         {
             var request = TransactionEditorVm.ToCreateTransactionRequest(_model);
-            result = await SendRequestAsync<ITransactionService>((s, ct) => s.CreateAsync(request, ct));
+            await SendRequestAsync<ITransactionService>(
+                action: (s, ct) => s.CreateAsync(request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
-
-        if (result == false)
-            return;
-
-        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task OnCustomerNationalIdChanged(string nationalId)

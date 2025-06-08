@@ -17,12 +17,13 @@ public partial class Remove
         if (IsBusy)
             return;
 
-        var result = await SendRequestAsync<ITransactionService>(action: (s, ct) => s.DeleteAsync(Id, ct));
-
-        if (result == false)
-            return;
-
-        MudDialog.Close(DialogResult.Ok(true));
+        await SendRequestAsync<ITransactionService>(
+            action: (s, ct) => s.DeleteAsync(Id, ct), 
+            afterSend: () =>
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+                return Task.CompletedTask;
+            });
     }
 
     private void Cancel() => MudDialog.Cancel();

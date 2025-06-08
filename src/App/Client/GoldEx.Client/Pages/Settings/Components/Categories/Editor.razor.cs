@@ -16,23 +16,28 @@ public partial class Editor
         if (IsBusy)
             return;
 
-        bool result;
-
         if (Id is null)
         {
             var request = ProductCategoryVm.ToCreateRequest(Model);
-            result = await SendRequestAsync<IProductCategoryService>((s, ct) => s.CreateAsync(request, ct));
+            await SendRequestAsync<IProductCategoryService>(
+                action: (s, ct) => s.CreateAsync(request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
         else
         {
             var request = ProductCategoryVm.ToUpdateRequest(Model);
-            result = await SendRequestAsync<IProductCategoryService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
+            await SendRequestAsync<IProductCategoryService>(
+                action: (s, ct) => s.UpdateAsync(Model.Id, request, ct),
+                afterSend: () =>
+                {
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return Task.CompletedTask;
+                });
         }
-
-        if (result == false)
-            return;
-
-        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private void Close() => MudDialog.Cancel();
