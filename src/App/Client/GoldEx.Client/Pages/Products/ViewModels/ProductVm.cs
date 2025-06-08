@@ -27,7 +27,7 @@ public class ProductVm
     [Display(Name = "نوع اجرت")]
     public WageType? WageType { get; set; }
 
-    [Display(Name = "نوع کالا")]
+    [Display(Name = "نوع جنس")]
     public ProductType ProductType { get; set; }
 
     [Display(Name = "عیار")]

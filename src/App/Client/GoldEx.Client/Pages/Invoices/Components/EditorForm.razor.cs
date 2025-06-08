@@ -12,6 +12,7 @@ using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -19,6 +20,7 @@ public partial class EditorForm
 {
     [Parameter] public InvoiceVm Model { get; set; } = InvoiceVm.CreateDefaultInstance();
 
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
     private GetSettingResponse? _setting;
     private GetPriceResponse? _gramPrice;
@@ -27,6 +29,8 @@ public partial class EditorForm
     private bool _isCustomerCreditLimitMenuOpen;
     private string? _barcode;
     private string? _barcodeFieldHelperText;
+    private InvoiceItemVm? _selectedInvoiceItem;
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -121,11 +125,56 @@ public partial class EditorForm
                     response.ProductType == ProductType.Gold
                         ? _setting?.GoldProfitPercent
                         : _setting?.JewelryProfitPercent);
+
+                OnBarcodeCleared();
             });
     }
 
     private void OnBarcodeCleared()
     {
         _barcode = null;
+    }
+
+    private Task OnEditInvoiceItem(InvoiceItemVm invoiceItem)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task OnRemoveInvoiceItem(InvoiceItemVm invoiceItem)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            markupMessage: new MarkupString($"آیا برای حذف {invoiceItem.Product.Name} اطمینان دارید؟ <br> <br> "),
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is null)
+            return;
+
+        Model.RemoveInvoiceItem(invoiceItem);
+    }
+
+    private async Task OnAddInvoiceItem()
+    {
+        var model = InvoiceItemVm.CreateDefaultInstance();
+        decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+
+        model.GramPrice = gramPrice;
+        model.TaxPercent = _setting?.TaxPercent ?? 9;
+        model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
+
+        var parameters = new DialogParameters<InvoiceItemEditor>
+        {
+            { x => x.Model, model }
+        };
+
+        var dialog = await DialogService.ShowAsync<InvoiceItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
+            // TODO: add to invoice items
+        }
     }
 }
