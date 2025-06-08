@@ -48,24 +48,9 @@ public class InvoiceVm
         };
     }
 
-    /// <summary>
-    /// Adds a new product as an item to the invoice and sets its index.
-    /// </summary>
-    public void AddInvoiceItem(GetProductResponse response, decimal? gramPrice, decimal? exchangeRate, decimal? taxPercent, decimal? profitPercent)
+    public int GetLastIndexNumber()
     {
-        var lastIndex = InvoiceItems.Count > 0 ? InvoiceItems.Max(i => i.Index) : 0;
-
-        var item = new InvoiceItemVm
-        {
-            Index = lastIndex + 1,
-            Product = ProductVm.CreateFrom(response),
-            Quantity = 1,
-            GramPrice = gramPrice ?? 0,
-            ExchangeRate = exchangeRate,
-            ProfitPercent = profitPercent ?? 0,
-            TaxPercent = taxPercent ?? 0
-        };
-        InvoiceItems.Add(item);
+        return InvoiceItems.Count > 0 ? InvoiceItems.Max(i => i.Index) : 0;
     }
 
     /// <summary>
