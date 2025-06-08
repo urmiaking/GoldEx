@@ -237,15 +237,29 @@
                     <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalItemsAmount.ToString("C0")</MudText>
                 </MudItem>
 
-                <MudItem xs="6" md="3" lg="2">
+                <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
                     <MudText Typo="Typo.body2">تخفیف</MudText>
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Discount" Color="Color.Success" OnClick="OnDiscountMenuToggled"></MudIconButton>
+                    <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                        <div class="d-flex flex-column">
+                            <MudText>Content of the popover can be anything.</MudText>
+                            <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                        </div>
+                    </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
                     <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalDiscountsAmount.ToString("C0")</MudText>
                 </MudItem>
 
-                <MudItem xs="6" md="3" lg="2">
+                <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
                     <MudText Typo="Typo.body2">مخارج اضافی</MudText>
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
+                    <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                        <div class="d-flex flex-column">
+                            <MudText>Content of the popover can be anything.</MudText>
+                            <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                        </div>
+                    </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
                     <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalExtraCostsAmount.ToString("C0")</MudText>
@@ -258,8 +272,15 @@
                     <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalInvoiceAmount.ToString("C0")</MudText>
                 </MudItem>
 
-                <MudItem xs="6" md="3" lg="2">
+                <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
                     <MudText Typo="Typo.body2">جمع پرداختی</MudText>
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Payments" Color="Color.Success" OnClick="OnPaymentsMenuToggled"></MudIconButton>
+                    <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                        <div class="d-flex flex-column">
+                            <MudText>Content of the popover can be anything.</MudText>
+                            <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                        </div>
+                    </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
                     <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalPaymentsAmount.ToString("C0")</MudText>

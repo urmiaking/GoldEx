@@ -12,6 +12,7 @@ using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System;
+using GoldEx.Client.Pages.Products.ViewModels;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
@@ -30,6 +31,9 @@ public partial class EditorForm
     private string? _barcode;
     private string? _barcodeFieldHelperText;
     private InvoiceItemVm? _selectedInvoiceItem;
+    private bool _discountMenuOpen;
+    private bool _extraCostsMenuOpen;
+    private bool _paymentsMenuOpen;
 
 
     protected override async Task OnParametersSetAsync()
@@ -81,7 +85,13 @@ public partial class EditorForm
 
     private async Task Submit()
     {
-        return;
+        if (IsBusy)
+            return;
+
+        await _form.Validate();
+
+        if (!_form.IsValid)
+            return;
     }
 
     private async Task OnCustomerNationalIdChanged(string nationalId)
@@ -118,13 +128,17 @@ public partial class EditorForm
 
                 decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
-                Model.AddInvoiceItem(response,
-                    gramPrice,
-                    null,
-                    _setting?.TaxPercent,
-                    response.ProductType == ProductType.Gold
-                        ? _setting?.GoldProfitPercent
-                        : _setting?.JewelryProfitPercent);
+                Model.InvoiceItems.Add(new InvoiceItemVm
+                {
+                    Product = ProductVm.CreateFrom(response),
+                    GramPrice = gramPrice,
+                    TaxPercent = _setting?.TaxPercent ?? 9,
+                    ProfitPercent = response.ProductType == ProductType.Gold
+                        ? _setting?.GoldProfitPercent ?? 7
+                        : _setting?.JewelryProfitPercent ?? 20,
+                    Quantity = 1,
+                    Index = Model.GetLastIndexNumber() + 1
+                });
 
                 OnBarcodeCleared();
             });
@@ -171,10 +185,28 @@ public partial class EditorForm
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false })
+        if (result?.Data is InvoiceItemVm invoiceItem)
         {
+            Model.InvoiceItems.Add(invoiceItem);
             AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
-            // TODO: add to invoice items
         }
+    }
+
+    private Task OnDiscountMenuToggled()
+    {
+        _discountMenuOpen = !_discountMenuOpen;
+        return Task.CompletedTask;
+    }
+
+    private Task OnExtraCostsMenuToggled()
+    {
+        _extraCostsMenuOpen = !_extraCostsMenuOpen;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPaymentsMenuToggled()
+    {
+        _paymentsMenuOpen = !_paymentsMenuOpen;
+        return Task.CompletedTask;
     }
 }

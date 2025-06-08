@@ -59,9 +59,7 @@ public partial class InvoiceItemEditor
         if (!_form.IsValid)
             return;
 
-        // TODO: return the model to the parent component
-
-        MudDialog.Close(DialogResult.Ok(true));
+        MudDialog.Close(DialogResult.Ok(Model));
     }
 
     private void GenerateBarcode() => Model.Product.Barcode = StringExtensions.GenerateRandomBarcode();
