@@ -1,35 +1,36 @@
 ﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Products.Validators;
+using GoldEx.Client.Pages.Invoices.Validators;
+using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
-using GoldEx.Sdk.Common.Extensions;
 
-namespace GoldEx.Client.Pages.Products.Components;
+namespace GoldEx.Client.Pages.Invoices.Components;
 
-public partial class Editor
+public partial class InvoiceItemEditor
 {
     [Parameter] public Guid? Id { get; set; }
-    [Parameter] public ProductVm Model { get; set; } = ProductVm.CreateDefaultInstance();
+    [Parameter] public InvoiceItemVm Model { get; set; } = InvoiceItemVm.CreateDefaultInstance();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private readonly ProductValidator _productValidator = new();
+    private readonly InvoiceItemValidator _invoiceItemValidator = new();
     private MudForm _form = default!;
     private string? _wageAdornmentText = "درصد";
-    private IEnumerable<ProductCategoryVm> _productCategories = [];
     private string? _wageFieldHelperText;
+    private IEnumerable<ProductCategoryVm> _productCategories = [];
 
     protected override void OnParametersSet()
     {
-        if (Id is null) 
+        if (Id is null)
             GenerateBarcode();
 
-        OnWageTypeChanged(Model.WageType);
+        OnWageTypeChanged(Model.Product.WageType);
 
         base.OnParametersSet();
     }
@@ -58,32 +59,18 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        bool result;
-
-        if (Id is null)
-        {
-            var request = ProductVm.ToCreateRequest(Model);
-            result = await SendRequestAsync<IProductService>((s, ct) => s.CreateAsync(request, ct));
-        }
-        else
-        {
-            var request = ProductVm.ToUpdateRequest(Model);
-            result = await SendRequestAsync<IProductService>((s, ct) => s.UpdateAsync(Model.Id, request, ct));
-        }
-
-        if (result == false)
-            return;
+        // TODO: return the model to the parent component
 
         MudDialog.Close(DialogResult.Ok(true));
     }
 
-    private void GenerateBarcode() => Model.Barcode = StringExtensions.GenerateRandomBarcode();
+    private void GenerateBarcode() => Model.Product.Barcode = StringExtensions.GenerateRandomBarcode();
 
     private void Close() => MudDialog.Cancel();
 
     private void OnProductTypeChanged(ProductType productType)
     {
-        Model.ProductType = productType;
+        Model.Product.ProductType = productType;
 
         switch (productType)
         {
@@ -92,12 +79,12 @@ public partial class Editor
             case ProductType.Gold:
                 break;
             case ProductType.MoltenGold:
-                Model.Wage = null;
-                Model.WageType = null;
+                Model.Product.Wage = null;
+                Model.Product.WageType = null;
                 break;
             case ProductType.OldGold:
-                Model.Wage = null;
-                Model.WageType = null;
+                Model.Product.Wage = null;
+                Model.Product.WageType = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
@@ -106,7 +93,7 @@ public partial class Editor
 
     private void OnWageTypeChanged(WageType? wageType)
     {
-        Model.WageType = wageType;
+        Model.Product.WageType = wageType;
 
         switch (wageType)
         {
@@ -121,19 +108,19 @@ public partial class Editor
                 break;
             case null:
                 _wageAdornmentText = null;
-                Model.Wage = null;
+                Model.Product.Wage = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
         }
 
-        OnWageChanged(Model.Wage);
+        OnWageChanged(Model.Product.Wage);
     }
 
     private void OnAddGemStone(MouseEventArgs obj)
     {
-        Model.Stones ??= [];
-        Model.Stones.Add(new GemStoneVm
+        Model.Product.Stones ??= [];
+        Model.Product.Stones.Add(new GemStoneVm
         {
             Code = StringExtensions.GenerateRandomCode(5)
         });
@@ -142,7 +129,7 @@ public partial class Editor
 
     private void OnRemoveGemStone(int index)
     {
-        Model.Stones?.RemoveAt(index);
+        Model.Product.Stones?.RemoveAt(index);
         StateHasChanged();
     }
 
@@ -151,16 +138,16 @@ public partial class Editor
         if (category is null)
             return;
 
-        Model.CategoryVm = category;
-        Model.ProductCategoryId = category.Id;
-        Model.ProductCategoryTitle = category.Title;
+        Model.Product.CategoryVm = category;
+        Model.Product.ProductCategoryId = category.Id;
+        Model.Product.ProductCategoryTitle = category.Title;
     }
 
     private void OnWageChanged(decimal? wage)
     {
-        Model.Wage = wage;
-        _wageFieldHelperText = Model.Wage.HasValue || wage is not null
-            ? $"{Model.Wage.FormatNumber()} {_wageAdornmentText}".Trim()
+        Model.Product.Wage = wage;
+        _wageFieldHelperText = Model.Product.Wage.HasValue || wage is not null
+            ? $"{Model.Product.Wage.FormatNumber()} {_wageAdornmentText}".Trim()
             : string.Empty;
     }
 }

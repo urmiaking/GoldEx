@@ -15,7 +15,7 @@ public class InvoiceItemVm
     [Display(Name = "مالیات")]
     public decimal TaxPercent { get; set; }
 
-    [Display(Name = "نرخ گرم 18 عیار")]
+    [Display(Name = "نرخ هر گرم طلا")]
     public decimal GramPrice { get; set; }
 
     [Display(Name = "نرخ تبدیل ارز")]
@@ -27,6 +27,10 @@ public class InvoiceItemVm
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     public ProductVm Product { get; set; } = ProductVm.CreateDefaultInstance();
 
+    // --- Display properties ---
+    public bool ShowDetails { get; set; }
+    public int Index { get; set; } = 1;
+
     // --- Calculated Properties ---
     public decimal RawAmount => CalculatorHelper.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.CaratType, Product.ProductType);
     public decimal WageAmount => CalculatorHelper.CalculateWage(RawAmount, Product.Wage, Product.WageType, ExchangeRate);
@@ -34,4 +38,17 @@ public class InvoiceItemVm
     public decimal TaxAmount => CalculatorHelper.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
     public decimal FinalAmount => RawAmount + WageAmount + ProfitAmount + TaxAmount;
     public decimal TotalAmount => FinalAmount * Quantity;
+
+    public static InvoiceItemVm CreateDefaultInstance()
+    {
+        return new InvoiceItemVm
+        {
+            Product = ProductVm.CreateDefaultInstance(),
+            GramPrice = 0,
+            ExchangeRate = null,
+            ProfitPercent = 0,
+            TaxPercent = 0,
+            Quantity = 1
+        };
+    }
 }

@@ -24,4 +24,11 @@ public class InvoiceItemValidator : AbstractValidator<InvoiceItemVm>
             .NotNull().WithMessage("اطلاعات محصول برای آیتم فاکتور الزامی است")
             .SetValidator(new ProductValidator());
     }
+
+    public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
+    {
+        var result = await ValidateAsync(ValidationContext<InvoiceItemVm>.CreateWithOptions((InvoiceItemVm)model,
+            x => x.IncludeProperties(propertyName)));
+        return result.IsValid ? Array.Empty<string>() : result.Errors.Select(e => e.ErrorMessage);
+    };
 }

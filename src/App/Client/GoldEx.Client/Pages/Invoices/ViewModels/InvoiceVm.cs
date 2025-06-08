@@ -10,13 +10,13 @@ public class InvoiceVm
     public Guid? InvoiceId { get; set; }
 
     [Display(Name = "شماره فاکتور")]
-    public long InvoiceNumber { get; private set; }
+    public long InvoiceNumber { get; set; }
 
     [Display(Name = "تاریخ سررسید")]
-    public DateOnly? DueDate { get; private set; }
+    public DateTime? DueDate { get; set; }
 
     [Display(Name = "تاریخ فاکتور")]
-    public DateOnly InvoiceDate { get; private set; }
+    public DateTime? InvoiceDate { get; set; }
 
     public CustomerVm Customer { get; set; } = new();
 
@@ -25,11 +25,21 @@ public class InvoiceVm
     public List<InvoiceExtraCostVm> InvoiceExtraCosts { get; set; } = [];
     public List<InvoicePaymentVm> InvoicePayments { get; set; } = [];
 
+    // --- Calculated properties ---
+    public decimal TotalItemsAmount => InvoiceItems.Sum(i => i.TotalAmount);
+    public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(d => d.Amount);
+    public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(e => e.Amount);
+    public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount);
+    public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
+    public decimal RemainingAmount => TotalInvoiceAmount - TotalPaymentsAmount;
+    public bool IsPaid => RemainingAmount <= 0; // Used with MudChip to indicate payment status
+    public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.Now && !IsPaid;
+
     public static InvoiceVm CreateDefaultInstance()
     {
         return new InvoiceVm
         {
-            InvoiceDate = DateOnly.FromDateTime(DateTime.Now),
+            InvoiceDate = DateTime.Now,
             Customer = CustomerVm.CreateDefaultInstance(),
             InvoiceItems = [],
             InvoiceDiscounts = [],
@@ -38,10 +48,16 @@ public class InvoiceVm
         };
     }
 
+    /// <summary>
+    /// Adds a new product as an item to the invoice and sets its index.
+    /// </summary>
     public void AddInvoiceItem(GetProductResponse response, decimal? gramPrice, decimal? exchangeRate, decimal? taxPercent, decimal? profitPercent)
     {
+        var lastIndex = InvoiceItems.Count > 0 ? InvoiceItems.Max(i => i.Index) : 0;
+
         var item = new InvoiceItemVm
         {
+            Index = lastIndex + 1,
             Product = ProductVm.CreateFrom(response),
             Quantity = 1,
             GramPrice = gramPrice ?? 0,
@@ -50,5 +66,29 @@ public class InvoiceVm
             TaxPercent = taxPercent ?? 0
         };
         InvoiceItems.Add(item);
+    }
+
+    /// <summary>
+    /// Removes a specific item from the invoice and re-calculates the indexes of remaining items.
+    /// </summary>
+    /// <param name="itemToRemove">The InvoiceItemVm instance to remove.</param>
+    public void RemoveInvoiceItem(InvoiceItemVm itemToRemove)
+    {
+        if (InvoiceItems.Contains(itemToRemove))
+        {
+            InvoiceItems.Remove(itemToRemove);
+            ReorderItemIndexes();
+        }
+    }
+
+    /// <summary>
+    /// Helper method to ensure all item indexes are sequential (1, 2, 3, ...).
+    /// </summary>
+    private void ReorderItemIndexes()
+    {
+        for (var i = 0; i < InvoiceItems.Count; i++)
+        {
+            InvoiceItems[i].Index = i + 1;
+        }
     }
 }

@@ -1,155 +1,302 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Pages.Invoices.ViewModels
+@inherits GoldExComponentBase
 
-<MudForm Model="Model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
-    <MudText Typo="Typo.h6" GutterBottom="true">اطلاعات مشتری</MudText>
-    <MudDivider Class="mb-2" />
-    <MudGrid>
-        <MudItem xs="6" md="2">
-            <MudSelect T="CustomerType"
-                       Value="Model.Customer.CustomerType"
-                       Label="نوع مشتری"
-                       For="() => Model.Customer.CustomerType"
-                       Margin="Margin.Dense"
-                       Variant="Variant.Outlined">
-                @foreach (var item in Enum.GetValues<CustomerType>())
+<MudCard Class="p-4" Elevation="4">
+    <MudForm Model="Model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
+        <MudText Typo="Typo.h6" GutterBottom="true">اطلاعات فاکتور</MudText>
+        <MudDivider Class="mb-2" />
+        <MudGrid>
+            <MudItem xs="12" md="2">
+                <MudNumericField @bind-Value="Model.InvoiceNumber"
+                                 For="@(() => Model.InvoiceNumber)"
+                                 HelperText="شماره یکتای فاکتور"
+                                 HelperTextOnFocus="true"
+                                 HideSpinButtons="true"
+                                 Label="@(Model.GetDisplayName(() => Model.InvoiceNumber))"
+                                 Margin="Margin.Dense"
+                                 Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Numbers"
+                                 Variant="Variant.Outlined" />
+            </MudItem>
+            <MudSpacer />
+            <MudItem xs="12" md="2">
+                <MudDatePicker @bind-Date="Model.InvoiceDate"
+                               Color="Color.Secondary"
+                               Editable="true"
+                               AnchorOrigin="Origin.TopCenter"
+                               TransformOrigin="Origin.BottomCenter"
+                               For="@(() => Model.InvoiceDate)"
+                               HelperText="تاریخ ثبت فاکتور"
+                               HelperTextOnFocus="true"
+                               Label="@(Model.GetDisplayName(() => Model.InvoiceDate))"
+                               ImmediateText="true"
+                               Margin="Margin.Dense"
+                               Rounded="true"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="2">
+                <MudDatePicker @bind-Date="Model.DueDate"
+                               Color="Color.Secondary"
+                               Editable="true"
+                               AnchorOrigin="Origin.TopCenter"
+                               TransformOrigin="Origin.BottomCenter"
+                               For="@(() => Model.DueDate)"
+                               HelperText="@(Model.GetDisplayName(() => Model.DueDate))"
+                               HelperTextOnFocus="true"
+                               Label="@(Model.GetDisplayName(() => Model.DueDate))"
+                               ImmediateText="true"
+                               Margin="Margin.Dense"
+                               Rounded="true"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+
+        <MudText Typo="Typo.h6" GutterBottom="true">اطلاعات مشتری</MudText>
+        <MudDivider Class="mb-2" />
+        <MudGrid>
+            <MudItem xs="12" md="2">
+                <MudSelect T="CustomerType"
+                           Value="Model.Customer.CustomerType"
+                           Label="نوع مشتری"
+                           For="() => Model.Customer.CustomerType"
+                           Margin="Margin.Dense"
+                           Variant="Variant.Outlined">
+                    @foreach (var item in Enum.GetValues<CustomerType>())
+                    {
+                        <MudSelectItem Value="@item">@item.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="2">
+                <MudTextField Value="Model.Customer.NationalId"
+                              T="string"
+                              ValueChanged="OnCustomerNationalIdChanged"
+                              Immediate="true"
+                              DebounceInterval="200"
+                              For="@(() => Model.Customer.NationalId)"
+                              Label="@(Model.GetDisplayName(() => Model.Customer.NationalId))"
+                              Margin="Margin.Dense"
+                              AdornmentIcon="@Icons.Material.Filled.Person"
+                              Adornment="Adornment.End"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="Model.Customer.FullName"
+                              For="@(() => Model.Customer.FullName)"
+                              Label="@(Model.GetDisplayName(() => Model.Customer.FullName))"
+                              Margin="Margin.Dense"
+                              AdornmentIcon="@Icons.Material.Filled.Person"
+                              Adornment="Adornment.End"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="Model.Customer.PhoneNumber"
+                              For="@(() => Model.Customer.PhoneNumber)"
+                              Label="@(Model.GetDisplayName(() => Model.Customer.PhoneNumber))"
+                              Margin="Margin.Dense"
+                              AdornmentIcon="@Icons.Material.Filled.Phone"
+                              Adornment="Adornment.End"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudMenu @bind-Open="_isCustomerCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                    <ActivatorContent>
+                        <MudNumericField HelperText="@Model.Customer.CreditLimitHelperText"
+                                         Value="Model.Customer.CreditLimit"
+                                         ValueChanged="OnCustomerCreditLimitChanged"
+                                         T="decimal?"
+                                         HideSpinButtons="true"
+                                         Format="G29"
+                                         Immediate="true"
+                                         For="@(() => Model.Customer.CreditLimit)"
+                                         Label="@(Model.GetDisplayName(() => Model.Customer.CreditLimit))"
+                                         Margin="Margin.Dense"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.End"
+                                         AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                         OnAdornmentClick="() => _isCustomerCreditLimitMenuOpen = true" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        @foreach (var item in _priceUnits)
+                        {
+                            <MudMenuItem OnClick="() => SelectCustomerCreditLimitUnit(item)">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    @if (item.HasIcon)
+                                    {
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                        </MudAvatar>
+                                    }
+                                    @item.Title
+                                </div>
+                            </MudMenuItem>
+                        }
+                    </ChildContent>
+                </MudMenu>
+            </MudItem>
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="Model.Customer.Address"
+                              For="@(() => Model.Customer.Address)"
+                              Label="@(Model.GetDisplayName(() => Model.Customer.Address))"
+                              Margin="Margin.Dense"
+                              AdornmentIcon="@Icons.Material.Filled.Home"
+                              Adornment="Adornment.End"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+
+        <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
+            <MudText Typo="Typo.body2">اقلام فاکتور</MudText>
+            <MudSpacer />
+            <MudPaper Elevation="0">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.QrCode"
+                              Clearable="true"
+                              HelperText="@_barcodeFieldHelperText"
+                              Label="بارکد جنس"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              OnClearButtonClick="OnBarcodeCleared"
+                              T="string"
+                              Value="_barcode"
+                              ValueChanged="OnBarcodeChanged"
+                              Variant="Variant.Outlined"></MudTextField>
+            </MudPaper>
+            <MudPaper Elevation="0">
+                <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
+                               Variant="Variant.Filled" Color="Color.Info" OnClick="OnAddInvoiceItem"></MudIconButton>
+            </MudPaper>
+        </MudStack>
+
+        <MudDivider Class="mb-2" />
+
+        <div class="my-2">
+            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@Model.InvoiceItems" T="InvoiceItemVm" Elevation="1">
+                <ColGroup>
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh>ردیف</MudTh>
+                    <MudTh>نوع جنس</MudTh>
+                    <MudTh>عنوان</MudTh>
+                    <MudTh>عیار</MudTh>
+                    <MudTh>وزن</MudTh>
+                    <MudTh>تعداد</MudTh>
+                    <MudTh>ارزش کل</MudTh>
+                    <MudTh>عملیات</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="ردیف">@context.Index</MudTd>
+                    <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
+                    <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
+                    <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
+                    <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") گرم</MudTd>
+                    <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
+                    <MudTd DataLabel="ارزش کل">@context.FinalAmount.ToString("C0")</MudTd>
+                    <MudTd DataLabel="عملیات">
+                        <div class="d-flex gap-2">
+                            <MudTooltip Text="چاپ بارکد">
+                                <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                               Color="@Color.Success"></MudIconButton>
+                            </MudTooltip>
+                            <MudTooltip Text="ویرایش جنس">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                               Color="Color.Primary" OnClick="_ => OnEditInvoiceItem(context)"></MudIconButton>
+                            </MudTooltip>
+                            <MudTooltip Text="حذف جنس">
+                                <MudIconButton OnClick="@(_ => OnRemoveInvoiceItem(context))" ClickPropagation="true"
+                                               Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                            </MudTooltip>
+                        </div>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body2">هیچ جنسی ثبت نشده است</MudText>
+                </NoRecordsContent>
+                <LoadingContent>
+                    <MudText Typo="Typo.body2">در حال بارگذاری</MudText>
+                </LoadingContent>
+            </MudTable>
+        </div>
+        
+        @if (Model.InvoiceItems.Any())
+        {
+            <MudText Class="mt-2" Typo="Typo.h6" GutterBottom="true">هزینه ها</MudText>
+            <MudDivider Class="my-2" />
+
+            <MudGrid Spacing="2">
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2">ارزش تمام شده اقلام</MudText>
+                </MudItem>
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalItemsAmount.ToString("C0")</MudText>
+                </MudItem>
+
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2">تخفیف</MudText>
+                </MudItem>
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalDiscountsAmount.ToString("C0")</MudText>
+                </MudItem>
+
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2">مخارج اضافی</MudText>
+                </MudItem>
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalExtraCostsAmount.ToString("C0")</MudText>
+                </MudItem>
+
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2">مبلغ نهایی فاکتور</MudText>
+                </MudItem>
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalInvoiceAmount.ToString("C0")</MudText>
+                </MudItem>
+
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2">جمع پرداختی</MudText>
+                </MudItem>
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalPaymentsAmount.ToString("C0")</MudText>
+                </MudItem>
+
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2">مانده حساب</MudText>
+                </MudItem>
+                <MudItem xs="6" md="3" lg="2">
+                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.RemainingAmount.ToString("C0")</MudText>
+                </MudItem>
+            </MudGrid>
+        }
+        
+
+        <MudDivider Class="my-2" />
+
+        <div class="d-flex justify-content-end mt-2">
+            <MudButton Color="Color.Primary"
+                       Disabled="@IsBusy"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (IsBusy)
                 {
-                    <MudSelectItem Value="@item">@item.GetDisplayName()</MudSelectItem>
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
                 }
-            </MudSelect>
-        </MudItem>
-        <MudItem xs="6" md="2">
-            <MudTextField Value="Model.Customer.NationalId"
-                          T="string"
-                          ValueChanged="OnCustomerNationalIdChanged"
-                          Immediate="true"
-                          DebounceInterval="200"
-                          For="@(() => Model.Customer.NationalId)"
-                          Label="@(Model.GetDisplayName(() => Model.Customer.NationalId))"
-                          Margin="Margin.Dense"
-                          Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="6" md="4">
-            <MudTextField @bind-Value="Model.Customer.FullName"
-                          For="@(() => Model.Customer.FullName)"
-                          Label="@(Model.GetDisplayName(() => Model.Customer.FullName))"
-                          Margin="Margin.Dense"
-                          Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="6" md="4">
-            <MudTextField @bind-Value="Model.Customer.PhoneNumber"
-                          For="@(() => Model.Customer.PhoneNumber)"
-                          Label="@(Model.GetDisplayName(() => Model.Customer.PhoneNumber))"
-                          Margin="Margin.Dense"
-                          Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="6" md="4">
-            <MudMenu @bind-Open="_isCustomerCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                <ActivatorContent>
-                    <MudNumericField HelperText="@Model.Customer.CreditLimitHelperText"
-                                     Value="Model.Customer.CreditLimit"
-                                     ValueChanged="OnCustomerCreditLimitChanged"
-                                     T="decimal?"
-                                     HideSpinButtons="true"
-                                     Format="G29"
-                                     Immediate="true"
-                                     For="@(() => Model.Customer.CreditLimit)"
-                                     Label="@(Model.GetDisplayName(() => Model.Customer.CreditLimit))"
-                                     Margin="Margin.Dense"
-                                     Variant="Variant.Outlined"
-                                     Adornment="Adornment.End"
-                                     AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
-                                     OnAdornmentClick="() => _isCustomerCreditLimitMenuOpen = true" />
-                </ActivatorContent>
-                <ChildContent>
-                    @foreach (var item in _priceUnits)
-                    {
-                        <MudMenuItem OnClick="() => SelectCustomerCreditLimitUnit(item)">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                @if (item.HasIcon)
-                                {
-                                    <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                    </MudAvatar>
-                                }
-                                @item.Title
-                            </div>
-                        </MudMenuItem>
-                    }
-                </ChildContent>
-            </MudMenu>
-        </MudItem>
-        <MudItem xs="6" md="8">
-            <MudTextField @bind-Value="Model.Customer.Address"
-                          For="@(() => Model.Customer.Address)"
-                          Label="@(Model.GetDisplayName(() => Model.Customer.Address))"
-                          Margin="Margin.Dense"
-                          Variant="Variant.Outlined" />
-        </MudItem>
-    </MudGrid>
-    <MudText Class="mt-4" Typo="Typo.h6" GutterBottom="true">اقلام فاکتور</MudText>
-    <MudDivider Class="mb-2" />
-
-    <MudGrid>
-        <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
-            <MudTextField Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.QrCode"
-                          Clearable="true"
-                          HelperText="@_barcodeFieldHelperText"
-                          Label="بارکد جنس"
-                          Immediate="true"
-                          OnClearButtonClick="OnBarcodeCleared"
-                          T="string"
-                          Value="_barcode"
-                          ValueChanged="OnBarcodeChanged"
-                          Variant="Variant.Outlined"></MudTextField>
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
         </div>
-
-        <div class="container">
-            <MudSimpleTable Style="overflow-x: auto;">
-                <thead>
-                    <tr>
-                        <th>عنوان جنس</th>
-                        <th>تعداد</th>
-                        <th>سود</th>
-                        <th>مالیات</th>
-                        <th>اجرت</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.InvoiceItems)
-                    {
-                        <tr>
-                            <td>@item.Product.Name</td>
-                            <td>@item.Quantity</td>
-                            <td>@item.ProfitPercent</td>
-                            <td>@item.TaxPercent</td>
-                            <td>@item.Product.Wage</td>
-                        </tr>
-                    }
-                </tbody>
-            </MudSimpleTable>
-        </div>
-    </MudGrid>
-
-    <div class="d-flex justify-content-end">
-        <MudButton Color="Color.Primary"
-                   Disabled="@IsBusy"
-                   StartIcon="@Icons.Material.Filled.Save"
-                   OnClick="@(async () => await Submit())"
-                   Variant="Variant.Filled">
-            @if (IsBusy)
-            {
-                <MudProgressCircular Class="ms-n1"
-                                     Size="Size.Small"
-                                     Indeterminate="true" />
-                <MudText Class="ms-2">
-                    در حال ذخیره
-                </MudText>
-            }
-            else
-            {
-                <MudText>ذخیره</MudText>
-            }
-        </MudButton>
-    </div>
-</MudForm>
+    </MudForm>
+</MudCard>
