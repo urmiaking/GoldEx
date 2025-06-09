@@ -242,8 +242,9 @@
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Discount" Color="Color.Success" OnClick="OnDiscountMenuToggled"></MudIconButton>
                     <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <MudText>Content of the popover can be anything.</MudText>
-                            <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                            <DiscountList Items="@Model.InvoiceDiscounts" />
+                            <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>
                     </MudPopover>
                 </MudItem>
