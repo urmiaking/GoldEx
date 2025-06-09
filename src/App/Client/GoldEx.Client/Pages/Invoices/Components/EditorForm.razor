@@ -279,8 +279,9 @@
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Payments" Color="Color.Success" OnClick="OnPaymentsMenuToggled"></MudIconButton>
                     <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <MudText>Content of the popover can be anything.</MudText>
-                            <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                            <PaymentList Items="Model.InvoicePayments" />
+                            <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>
                     </MudPopover>
                 </MudItem>
