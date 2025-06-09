@@ -1,15 +1,24 @@
-﻿using GoldEx.Shared.DTOs.PaymentMethods;
+﻿using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class InvoicePaymentVm
 {
-    public DateTime PaymentDate { get; private set; }
-    public string? ReferenceNumber { get; private set; }
-    public string? Note { get; private set; }
+    [Display(Name = "تاریخ پرداخت")]
+    public DateTime? PaymentDate { get; set; }
 
-    public decimal Amount { get; private set; }
-    public GetPriceUnitTitleResponse? PriceUnit { get; private set; }
-    public GetPaymentMethodResponse? PaymentMethod { get; private set; }
+    [Display(Name = "کد پیگیری")]
+    public string? ReferenceNumber { get; set; }
+
+    [Display(Name = "یادداشت")]
+    public string? Note { get; set; }
+
+    [Display(Name = "مبلغ")]
+    public decimal Amount { get; set; }
+    public GetPriceUnitTitleResponse? PriceUnit { get; set; }
+
+    [Display(Name = "روش پرداخت")]
+    public GetPaymentMethodResponse? PaymentMethod { get; set; }
 }

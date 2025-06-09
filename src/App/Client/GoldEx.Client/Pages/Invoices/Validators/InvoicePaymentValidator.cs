@@ -11,6 +11,7 @@ public class InvoicePaymentValidator : AbstractValidator<InvoicePaymentVm>
             .GreaterThan(0).WithMessage("مبلغ پرداختی باید بزرگتر از صفر باشد");
 
         RuleFor(p => p.PaymentDate)
+            .NotNull().WithMessage("تاریخ پرداخت الزامی است")
             .NotEmpty().WithMessage("تاریخ پرداخت الزامی است");
 
         RuleFor(p => p.PaymentMethod)
