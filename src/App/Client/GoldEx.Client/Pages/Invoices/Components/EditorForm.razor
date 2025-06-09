@@ -257,8 +257,9 @@
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
                     <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <MudText>Content of the popover can be anything.</MudText>
-                            <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                            <ExtraCostList Items="Model.InvoiceExtraCosts" />
+                            <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>
                     </MudPopover>
                 </MudItem>

@@ -1,1 +1,57 @@
-﻿
+﻿@inherits GoldExComponentBase
+
+<div>
+    <MudStack Row AlignItems="AlignItems.Center" Class="mt-2">
+        <MudText Typo="Typo.h6">مخارج اضافی</MudText>
+        <MudSpacer />
+        <MudPaper Width="40px" Elevation="0">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info"
+                           OnClick="AddItem"></MudIconButton>
+        </MudPaper>
+    </MudStack>
+
+    <MudTable Items="@Items" Elevation="0">
+        <HeaderContent>
+            <MudTh>مبلغ</MudTh>
+            <MudTh>بابت</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="مبلغ" Class="p-1">
+                <MudNumericField @bind-Value="context.Amount"
+                                 For="@(() => context.Amount)"
+                                 HelperTextOnFocus="true"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Label="@(context.GetDisplayName(() => context.Amount))"
+                                 Margin="Margin.Dense"
+                                 Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
+                                 Variant="Variant.Outlined" />
+            </MudTd>
+            <MudTd DataLabel="بابت" Class="p-1">
+                <MudTextField @bind-Value="@context.Description"
+                              T="string"
+                              Immediate="true"
+                              DebounceInterval="200"
+                              For="@(() => context.Description!)"
+                              Label="@(context.GetDisplayName(() => context.Description))"
+                              Margin="Margin.Dense"
+                              AdornmentIcon="@Icons.Material.Filled.QuestionMark"
+                              Adornment="Adornment.End"
+                              Variant="Variant.Outlined" />
+            </MudTd>
+            <MudTd DataLabel="عملیات">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Variant="Variant.Filled"
+                               Color="Color.Error" OnClick="() => RemoveItem(context)"></MudIconButton>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1">مخارج اضافی وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <div>
+        جمع کل مخارج اضافی: @Items.Sum(x => x.Amount).ToString("C0")
+    </div>
+</div>
