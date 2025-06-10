@@ -2,6 +2,7 @@
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -11,9 +12,6 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using System;
-using GoldEx.Client.Pages.Products.ViewModels;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -24,31 +22,36 @@ public partial class EditorForm
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
     private GetSettingResponse? _setting;
-    private GetPriceResponse? _gramPrice;
+    private InvoiceItemVm? _selectedInvoiceItem;
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private bool _isCustomerCreditLimitMenuOpen;
     private string? _barcode;
     private string? _barcodeFieldHelperText;
-    private InvoiceItemVm? _selectedInvoiceItem;
+    private decimal? _gramPrice;
+    private bool _isCustomerCreditLimitMenuOpen;
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
     private bool _paymentsMenuOpen;
-
 
     protected override async Task OnParametersSetAsync()
     {
         await LoadPriceUnitsAsync();
         await LoadSettingsAsync();
-        await LoadGramPrice();
+        await LoadGramPriceAsync();
         await base.OnParametersSetAsync();
     }
 
-    private async Task LoadGramPrice()
+    #region Load Initial Data
+
+    private async Task LoadGramPriceAsync()
     {
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(UnitType.Gold18K, ct),
-            afterSend: response => _gramPrice = response);
+            afterSend: response =>
+            {
+                decimal.TryParse(response?.Value, out var price);
+                _gramPrice = price;
+            });
     }
 
     private async Task LoadSettingsAsync()
@@ -64,6 +67,10 @@ public partial class EditorForm
             action: (s, ct) => s.GetTitlesAsync(ct),
             afterSend: response => _priceUnits = response);
     }
+
+    #endregion
+
+    #region Customer
 
     private void OnCustomerCreditLimitChanged(decimal? creditLimit)
     {
@@ -83,17 +90,6 @@ public partial class EditorForm
         Model.Customer.CreditLimitMenuOpen = false;
     }
 
-    private async Task Submit()
-    {
-        if (IsBusy)
-            return;
-
-        await _form.Validate();
-
-        if (!_form.IsValid)
-            return;
-    }
-
     private async Task OnCustomerNationalIdChanged(string nationalId)
     {
         Model.Customer.NationalId = nationalId;
@@ -109,6 +105,11 @@ public partial class EditorForm
                 OnCustomerCreditLimitChanged(response.CreditLimit);
             });
     }
+
+
+    #endregion
+
+    #region Barcode
 
     private async Task OnBarcodeChanged(string barcode)
     {
@@ -126,12 +127,10 @@ public partial class EditorForm
                 if (response is null)
                     return;
 
-                decimal.TryParse(_gramPrice?.Value, out var gramPrice);
-
                 Model.InvoiceItems.Add(new InvoiceItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
-                    GramPrice = gramPrice,
+                    GramPrice = _gramPrice ?? 0,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold
                         ? _setting?.GoldProfitPercent ?? 7
@@ -149,9 +148,25 @@ public partial class EditorForm
         _barcode = null;
     }
 
-    private Task OnEditInvoiceItem(InvoiceItemVm invoiceItem)
+    #endregion
+
+    #region InvoiceItem
+
+    private async Task OnEditInvoiceItem(InvoiceItemVm invoiceItemVm)
     {
-        throw new NotImplementedException();
+        var parameters = new DialogParameters<InvoiceItemEditor>
+        {
+            { x => x.Model, invoiceItemVm }
+        };
+
+        var dialog = await DialogService.ShowAsync<InvoiceItemEditor>("ویرایش جنس", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: InvoiceItemVm resultItem })
+        {
+            invoiceItemVm.Copy(resultItem);
+        }
     }
 
     private async Task OnRemoveInvoiceItem(InvoiceItemVm invoiceItem)
@@ -170,9 +185,8 @@ public partial class EditorForm
     private async Task OnAddInvoiceItem()
     {
         var model = InvoiceItemVm.CreateDefaultInstance();
-        decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
-        model.GramPrice = gramPrice;
+        model.GramPrice = _gramPrice ?? 0;
         model.TaxPercent = _setting?.TaxPercent ?? 9;
         model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
 
@@ -185,12 +199,15 @@ public partial class EditorForm
 
         var result = await dialog.Result;
 
-        if (result?.Data is InvoiceItemVm invoiceItem)
+        if (result is { Canceled: false, Data: InvoiceItemVm invoiceItem })
         {
             Model.InvoiceItems.Add(invoiceItem);
-            AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
         }
     }
+
+    #endregion
+
+    #region MenuToggle
 
     private Task OnDiscountMenuToggled()
     {
@@ -208,5 +225,20 @@ public partial class EditorForm
     {
         _paymentsMenuOpen = !_paymentsMenuOpen;
         return Task.CompletedTask;
+    }
+
+    #endregion
+
+    private async Task Submit()
+    {
+        if (IsBusy)
+            return;
+
+        await _form.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        AddSuccessToast("فاکتور با موفقیت ثبت شد");
     }
 }

@@ -53,7 +53,9 @@ internal class ProductService(
 
     public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new ProductsByBarcodeSpecification(barcode))
+        var item = await repository
+            .Get(new ProductsByBarcodeSpecification(barcode))
+            .Include(x => x.ProductCategory)
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);

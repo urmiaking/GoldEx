@@ -51,4 +51,21 @@ public class InvoiceItemVm
             Quantity = 1
         };
     }
+
+    public InvoiceItemVm Copy(InvoiceItemVm item)
+    {
+        return new InvoiceItemVm
+        {
+            Id = item.Id,
+            Product = item.Product,
+            GramPrice = item.GramPrice,
+            ExchangeRate = item.ExchangeRate,
+            ProfitPercent = item.ProfitPercent,
+            TaxPercent = item.TaxPercent,
+            Quantity = item.Quantity,
+            PriceUnit = item.PriceUnit,
+            Index = item.Index,
+            ShowDetails = item.ShowDetails
+        };
+    }
 }
