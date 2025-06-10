@@ -29,5 +29,11 @@ internal class UpdateSettingRequestValidator : AbstractValidator<UpdateSettingRe
 
         RuleFor(x => x.JewelryProfitPercent)
             .InclusiveBetween(0, 100).WithMessage("درصد سود جواهرات باید بین 0 تا 100 باشد");
+
+        RuleFor(x => x.GoldSafetyMarginPercent)
+            .InclusiveBetween(0, 100).WithMessage("درصد حاشیه ایمن طلا باید بین 0 تا 100 باشد.");
+
+        RuleFor(x => x.PriceUpdateInterval)
+            .NotEmpty().WithMessage("فاصله زمانی بروزرسانی قیمت نمی تواند خالی باشد");
     }
 }

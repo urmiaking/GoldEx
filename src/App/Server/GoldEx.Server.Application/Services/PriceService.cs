@@ -11,6 +11,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -24,6 +25,7 @@ namespace GoldEx.Server.Application.Services;
 internal class PriceService(
     IPriceRepository repository,
     IPriceUnitRepository priceUnitRepository,
+    ISettingRepository settingRepository,
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment) : IServerPriceService,
@@ -169,6 +171,21 @@ internal class PriceService(
     public async Task<GetPriceResponse?> GetAsync(UnitType unitType, CancellationToken cancellationToken = default)
     {
         var item = await repository.Get(new PricesByUnitTypeSpecification(unitType)).FirstOrDefaultAsync(cancellationToken);
+
+        if (item is not null)
+        {
+            var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
+
+            if (setting is not null && setting.GoldSafetyMarginPercent != 0)
+            {
+                if (item is { PriceHistory: not null, UnitType: UnitType.Gold18K })
+                {
+                    var adjustedValue = item.PriceHistory.CurrentValue * (1 + setting.GoldSafetyMarginPercent / 100);
+                    item.PriceHistory.SetCurrentValue(adjustedValue);
+                }
+            }
+        }
+
         return item is null ? null : mapper.Map<GetPriceResponse?>(item);
     }
 

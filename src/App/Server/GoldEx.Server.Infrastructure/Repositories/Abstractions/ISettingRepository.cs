@@ -3,6 +3,6 @@ using GoldEx.Server.Domain.SettingAggregate;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
-public interface ISettingsRepository : IRepository<Setting>,
+public interface ISettingRepository : IRepository<Setting>,
     ICreateRepository<Setting>,
     IUpdateRepository<Setting>;

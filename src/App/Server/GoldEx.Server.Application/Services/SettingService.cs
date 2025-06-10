@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class SettingService(ISettingsRepository repository,
+internal class SettingService(ISettingRepository repository,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment,
     IMapper mapper,
@@ -41,6 +41,7 @@ internal class SettingService(ISettingsRepository repository,
             request.TaxPercent,
             request.GoldProfitPercent,
             request.JewelryProfitPercent,
+            request.GoldSafetyMarginPercent,
             request.PriceUpdateInterval);
 
         await repository.CreateAsync(setting, cancellationToken);
@@ -69,6 +70,7 @@ internal class SettingService(ISettingsRepository repository,
         item.SetGoldProfit(request.GoldProfitPercent);
         item.SetJewelryProfit(request.JewelryProfitPercent);
         item.SetPriceUpdateInterval(request.PriceUpdateInterval);
+        item.SetGoldSafetyMargin(request.GoldSafetyMarginPercent);
 
         await repository.UpdateAsync(item, cancellationToken);
 
