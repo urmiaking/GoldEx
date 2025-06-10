@@ -32,6 +32,10 @@ public class SettingsVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public decimal JewelryProfitPercent { get; set; }
 
+    [Display(Name = "حاشیه اطمینان قیمت طلا")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public decimal GoldSafetyMarginPercent { get; set; }
+
     [Display(Name = "زمان بروز رسانی قیمت ها")]
     public TimeSpan PriceUpdateInterval { get; set; }
 
@@ -45,7 +49,15 @@ public class SettingsVm
 
     public UpdateSettingRequest ToRequest()
     {
-        return new UpdateSettingRequest(InstitutionName, Address, PhoneNumber, TaxPercent, GoldProfitPercent, JewelryProfitPercent, PriceUpdateInterval, IconContent);
+        return new UpdateSettingRequest(InstitutionName,
+            Address,
+            PhoneNumber,
+            TaxPercent,
+            GoldProfitPercent,
+            JewelryProfitPercent,
+            PriceUpdateInterval,
+            GoldSafetyMarginPercent,
+            IconContent);
     }
 
     public static SettingsVm CreateFromRequest(GetSettingResponse response)
@@ -60,6 +72,7 @@ public class SettingsVm
             GoldProfitPercent = response.GoldProfitPercent,
             JewelryProfitPercent = response.JewelryProfitPercent,
             PriceUpdateInterval = response.PriceUpdateInterval,
+            GoldSafetyMarginPercent = response.GoldSafetyMarginPercent,
             HasIcon = response.HasIcon
         };
     }

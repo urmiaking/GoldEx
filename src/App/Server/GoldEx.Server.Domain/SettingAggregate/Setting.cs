@@ -11,8 +11,19 @@ public class Setting : EntityBase<SettingsId>
         decimal taxPercent,
         decimal goldProfitPercent,
         decimal jewelryProfitPercent,
+        decimal goldSafetyMarginPercent,
         TimeSpan priceUpdateInterval)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(goldProfitPercent, 0, nameof(goldProfitPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(jewelryProfitPercent, 0, nameof(jewelryProfitPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(goldSafetyMarginPercent, 0, nameof(goldSafetyMarginPercent));
+
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(goldProfitPercent, 100, nameof(goldProfitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(jewelryProfitPercent, 100, nameof(jewelryProfitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(goldSafetyMarginPercent, 100, nameof(goldSafetyMarginPercent));
+
         return new Setting
         {
             Id = new SettingsId(Guid.NewGuid()),
@@ -22,6 +33,7 @@ public class Setting : EntityBase<SettingsId>
             TaxPercent = taxPercent,
             GoldProfitPercent = goldProfitPercent,
             JewelryProfitPercent = jewelryProfitPercent,
+            GoldSafetyMarginPercent = goldSafetyMarginPercent,
             PriceUpdateInterval = priceUpdateInterval
         };
     }
@@ -35,14 +47,37 @@ public class Setting : EntityBase<SettingsId>
     public string PhoneNumber { get; private set; }
     public decimal TaxPercent { get; private set; }
     public decimal GoldProfitPercent { get; private set; }
+    public decimal GoldSafetyMarginPercent { get; private set; }
     public decimal JewelryProfitPercent { get; private set; }
     public TimeSpan PriceUpdateInterval { get; private set; }
 
     public void SetInstitutionName(string institutionName) => InstitutionName = institutionName;
     public void SetAddress(string address) => Address = address;
     public void SetPhoneNumber(string phoneNumber) => PhoneNumber = phoneNumber;
-    public void SetTax(decimal taxPercent) => TaxPercent = taxPercent;
-    public void SetGoldProfit(decimal profitPercent) => GoldProfitPercent = profitPercent;
-    public void SetJewelryProfit(decimal profitPercent) => JewelryProfitPercent = profitPercent;
+    public void SetTax(decimal taxPercent)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
+
+        TaxPercent = taxPercent;
+    }
+
+    public void SetGoldProfit(decimal profitPercent)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+
+        GoldProfitPercent = profitPercent;
+    }
+
+    public void SetJewelryProfit(decimal profitPercent)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+
+        JewelryProfitPercent = profitPercent;
+    }
+
+    public void SetGoldSafetyMargin(decimal safetyMargin) => GoldSafetyMarginPercent = safetyMargin;
     public void SetPriceUpdateInterval(TimeSpan interval) => PriceUpdateInterval = interval;
 }

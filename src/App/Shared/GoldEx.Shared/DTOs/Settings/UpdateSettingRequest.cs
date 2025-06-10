@@ -8,4 +8,5 @@ public record UpdateSettingRequest(
     decimal GoldProfitPercent,
     decimal JewelryProfitPercent,
     TimeSpan PriceUpdateInterval,
+    decimal GoldSafetyMarginPercent,
     byte[]? IconContent);

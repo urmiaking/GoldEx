@@ -8,5 +8,6 @@ public record GetSettingResponse(
     decimal TaxPercent,
     decimal GoldProfitPercent,
     decimal JewelryProfitPercent,
+    decimal GoldSafetyMarginPercent,
     TimeSpan PriceUpdateInterval,
     bool HasIcon);

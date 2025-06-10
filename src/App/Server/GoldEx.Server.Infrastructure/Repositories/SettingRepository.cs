@@ -6,4 +6,4 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 namespace GoldEx.Server.Infrastructure.Repositories;
 
 [ScopedService]
-internal class SettingsRepository(GoldExDbContext dbContext) : RepositoryBase<Setting>(dbContext), ISettingsRepository;
+internal class SettingRepository(GoldExDbContext dbContext) : RepositoryBase<Setting>(dbContext), ISettingRepository;
