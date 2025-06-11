@@ -40,9 +40,9 @@ public class CalculatorHelper
         {
             case WageType.Percent:
                 return rawPrice * (wage.Value / 100);
-            case WageType.Toman:
-                return wage.Value;
-            case WageType.Dollar:
+            //case WageType.Fixed:
+            //    return wage.Value;
+            case WageType.Fixed:
                 if (exchangeRate == null)
                     return 0;
                 return wage.Value * exchangeRate.Value;
