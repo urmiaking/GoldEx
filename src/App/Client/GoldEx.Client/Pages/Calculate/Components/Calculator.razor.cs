@@ -113,15 +113,10 @@ public partial class Calculator
                 _wageField.Disabled = false;
                 _wageFieldAdornmentText = "درصد";
                 break;
-            case WageType.Toman:
+            case WageType.Fixed:
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
                 _wageField.Disabled = false;
-                _wageFieldAdornmentText = "تومان";
-                break;
-            case WageType.Dollar:
-                _wageTypeField.AdornmentIcon = Icons.Material.Filled.AttachMoney;
-                _wageField.Disabled = false;
-                _wageFieldAdornmentText = "دلار";
+                _wageFieldAdornmentText = "تومان"; // TODO: fix this
                 break;
             case null:
                 await _wageField.ResetAsync();

@@ -98,11 +98,8 @@ public partial class InvoiceItemEditor
             case WageType.Percent:
                 _wageAdornmentText = "درصد";
                 break;
-            case WageType.Toman:
-                _wageAdornmentText = "تومان";
-                break;
-            case WageType.Dollar:
-                _wageAdornmentText = "دلار";
+            case WageType.Fixed:
+                _wageAdornmentText = "TODO"; // TODO: change to unit price
                 break;
             case null:
                 _wageAdornmentText = null;
