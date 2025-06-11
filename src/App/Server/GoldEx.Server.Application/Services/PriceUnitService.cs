@@ -35,6 +35,16 @@ internal class PriceUnitService(
         return mapper.Map<GetPriceUnitResponse>(item);
     }
 
+    public async Task<GetPriceUnitResponse?> GetDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        var item = await repository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .Include(x => x.Price)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return item is null ? null : mapper.Map<GetPriceUnitResponse>(item);
+    }
+
     public async Task<List<GetPriceUnitResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
         var items = await repository

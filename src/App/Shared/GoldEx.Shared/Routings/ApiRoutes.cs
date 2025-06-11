@@ -31,7 +31,7 @@ public static class ApiRoutes
 
         public const string Get = "";
         public const string GetMarket = "Market/{marketType}";
-        public const string GetUnit = "Unit/{unitType}";
+        public const string GetUnit = "Unit/{unitType}/{priceUnitId?}";
         public const string GetSettings = "settings";
         public const string UpdateStatus = "status/{id}";
         public const string GetTitles = "titles";
@@ -100,11 +100,12 @@ public static class ApiRoutes
         public const string Base = "/api/PriceUnits";
         public const string GetList = "";
         public const string GetAll = "all";
+        public const string GetTitles = "titles";
         public const string Get = "{id}";
+        public const string GetDefault = "default";
         public const string Create = "";
         public const string Update = "{id}";
         public const string UpdateStatus = "status/{id}";
-        public const string GetTitles = "titles";
         public const string SetAsDefault = "default/{id}";
     }
 

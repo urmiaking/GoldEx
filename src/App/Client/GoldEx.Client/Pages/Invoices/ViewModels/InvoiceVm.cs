@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
@@ -19,6 +20,9 @@ public class InvoiceVm
     public DateTime? InvoiceDate { get; set; }
 
     public CustomerVm Customer { get; set; } = new();
+
+    [Display(Name = "واحد ارزی فاکتور")]
+    public GetPriceUnitTitleResponse? InvoicePriceUnit { get; set; }
 
     public List<InvoiceItemVm> InvoiceItems { get; set; } = [];
     public List<InvoiceDiscountVm> InvoiceDiscounts { get; set; } = [];

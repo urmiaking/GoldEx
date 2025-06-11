@@ -64,13 +64,15 @@ public partial class Calculator
 
     private async Task LoadPricesAsync()
     {
-        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.Gold18K, ct),
+        // TODO: Add price unit and load price based on price unit.
+        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.Gold18K, null, ct),
             response =>
             {
                 _model.GramPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;
             });
 
-        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.USD, ct),
+        //TODO: revise this
+        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.USD, null, ct),
             response =>
             {
                 _model.UsDollarPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;

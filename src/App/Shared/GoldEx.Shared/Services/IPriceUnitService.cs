@@ -5,6 +5,7 @@ namespace GoldEx.Shared.Services;
 public interface IPriceUnitService
 {
     Task<GetPriceUnitResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<GetPriceUnitResponse?> GetDefaultAsync(CancellationToken cancellationToken = default);
     Task<List<GetPriceUnitResponse>> GetListAsync(CancellationToken cancellationToken = default);
     Task<List<GetPriceUnitResponse>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<List<GetPriceUnitTitleResponse>> GetTitlesAsync(CancellationToken cancellationToken = default);

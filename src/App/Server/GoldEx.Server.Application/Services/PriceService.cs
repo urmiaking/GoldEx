@@ -168,25 +168,63 @@ internal class PriceService(
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
-    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, CancellationToken cancellationToken = default)
+    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new PricesByUnitTypeSpecification(unitType)).FirstOrDefaultAsync(cancellationToken);
+        var baseItem = await repository.Get(new PricesByUnitTypeSpecification(unitType))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (item is not null)
+        if (baseItem?.PriceHistory is null)
+            return null;
+
+        var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
+        if (setting is not null && setting.GoldSafetyMarginPercent != 0)
         {
-            var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
-
-            if (setting is not null && setting.GoldSafetyMarginPercent != 0)
+            if (baseItem is { UnitType: UnitType.Gold18K })
             {
-                if (item is { PriceHistory: not null, UnitType: UnitType.Gold18K })
-                {
-                    var adjustedValue = item.PriceHistory.CurrentValue * (1 + setting.GoldSafetyMarginPercent / 100);
-                    item.PriceHistory.SetCurrentValue(adjustedValue);
-                }
+                var adjustedValue = baseItem.PriceHistory.CurrentValue * (1 + setting.GoldSafetyMarginPercent / 100);
+                baseItem.PriceHistory.SetCurrentValue(adjustedValue);
             }
         }
 
-        return item is null ? null : mapper.Map<GetPriceResponse?>(item);
+        if (priceUnitId.HasValue)
+        {
+            var conversionUnit = await priceUnitRepository
+                .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)))
+                .Include(pu => pu.Price)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (conversionUnit?.Price?.PriceHistory != null && conversionUnit.Price.PriceHistory.CurrentValue != 0)
+            {
+                var baseValueInRial = baseItem.PriceHistory.CurrentValue;
+                var conversionUnitValueInRial = conversionUnit.Price.PriceHistory.CurrentValue;
+
+                var convertedValue = baseValueInRial / conversionUnitValueInRial;
+
+                return new GetPriceResponse(
+                    Id: baseItem.Id.Value,
+                    Title: baseItem.Title,
+                    Value: convertedValue.ToString("G29"),
+                    Unit: conversionUnit.Title,
+                    Change: baseItem.PriceHistory.DailyChangeRate,
+                    LastUpdate: baseItem.PriceHistory.LastUpdate,
+                    HasIcon: webHostEnvironment.PriceUnitIconExists(baseItem.Id.Value),
+                    Type: baseItem.MarketType,
+                    UnitType: baseItem.UnitType
+                );
+            }
+        }
+
+        return new GetPriceResponse(
+            Id: baseItem.Id.Value,
+            Title: baseItem.Title,
+            Value: baseItem.PriceHistory.CurrentValue.ToString("G29"),
+            Unit: baseItem.PriceHistory.Unit,
+            Change: baseItem.PriceHistory.DailyChangeRate,
+            LastUpdate: baseItem.PriceHistory.LastUpdate,
+            HasIcon: webHostEnvironment.PriceUnitIconExists(baseItem.Id.Value),
+            Type: baseItem.MarketType,
+            UnitType: baseItem.UnitType
+        );
     }
 
     public async Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default)

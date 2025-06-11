@@ -46,8 +46,8 @@ public class ApiUrls
         public static string Get(MarketType marketType) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetMarket).FormatRoute(new { marketType });
 
-        public static string Get(UnitType unitType) =>
-            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetUnit).FormatRoute(new { unitType });
+        public static string Get(UnitType unitType, Guid? priceUnitId) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetUnit).FormatRoute(new { unitType, priceUnitId });
 
         public static string GetByPriceUnit(Guid priceUnitId) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetByPriceUnit).FormatRoute(new { priceUnitId });
@@ -159,6 +159,8 @@ public class ApiUrls
 
         public static string Get(Guid id) => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Get)
             .FormatRoute(new { id });
+
+        public static string GetDefault() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetDefault);
 
         public static string Create() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Create);
 
