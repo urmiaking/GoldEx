@@ -3,7 +3,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
-using MediatR;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -15,6 +15,21 @@ internal class PriceUnitService(HttpClient client, JsonSerializerOptions jsonOpt
     public async Task<GetPriceUnitResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.PriceUnits.Get(id), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetPriceUnitResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<GetPriceUnitResponse?> GetDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.PriceUnits.GetDefault(), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

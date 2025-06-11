@@ -40,6 +40,13 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
         return Ok(priceUnit);
     }
 
+    [HttpGet(ApiRoutes.PriceUnits.GetDefault)]
+    public async Task<IActionResult> GetDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        var item = await service.GetDefaultAsync(cancellationToken);
+        return item is null ? NotFound() : Ok(item);
+    }
+
     [HttpPost(ApiRoutes.PriceUnits.Create)]
     public async Task<IActionResult> CreateAsync(CreatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {

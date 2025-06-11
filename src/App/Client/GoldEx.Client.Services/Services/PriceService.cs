@@ -51,9 +51,9 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, CancellationToken cancellationToken = default)
+    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Price.Get(unitType), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Price.Get(unitType, priceUnitId), cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;

@@ -49,8 +49,6 @@
             <MudTd DataLabel="یادداشت" Class="p-1">
                 <MudTextField @bind-Value="@context.Note"
                               T="string"
-                              Immediate="true"
-                              DebounceInterval="200"
                               For="@(() => context.Note!)"
                               Label="@(context.GetDisplayName(() => context.Note))"
                               Margin="Margin.Dense"
@@ -61,8 +59,6 @@
             <MudTd DataLabel="کد پیگیری" Class="p-1">
                 <MudTextField @bind-Value="@context.ReferenceNumber"
                               T="string"
-                              Immediate="true"
-                              DebounceInterval="200"
                               For="@(() => context.ReferenceNumber!)"
                               Label="@(context.GetDisplayName(() => context.ReferenceNumber))"
                               Margin="Margin.Dense"

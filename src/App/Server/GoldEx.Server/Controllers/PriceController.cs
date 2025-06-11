@@ -39,9 +39,9 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Price.GetUnit)]
-    public async Task<IActionResult> GetAsync(UnitType unitType, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAsync(UnitType unitType, Guid? priceUnitId, CancellationToken cancellationToken = default)
     {
-        var price = await priceService.GetAsync(unitType, cancellationToken);
+        var price = await priceService.GetAsync(unitType, priceUnitId, cancellationToken);
         return price is not null ? Ok(price) : NotFound();
     }
 

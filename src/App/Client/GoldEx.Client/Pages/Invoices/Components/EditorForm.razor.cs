@@ -22,12 +22,12 @@ public partial class EditorForm
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
     private GetSettingResponse? _setting;
+    private GetPriceResponse? _gramPrice;
     private InvoiceItemVm? _selectedInvoiceItem;
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _barcode;
     private string? _barcodeFieldHelperText;
-    private decimal? _gramPrice;
     private bool _isCustomerCreditLimitMenuOpen;
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
@@ -46,11 +46,10 @@ public partial class EditorForm
     private async Task LoadGramPriceAsync()
     {
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
-            action: (s, ct) => s.GetAsync(UnitType.Gold18K, ct),
+            action: (s, ct) => s.GetAsync(UnitType.Gold18K, Model.InvoicePriceUnit?.Id, ct),
             afterSend: response =>
             {
-                decimal.TryParse(response?.Value, out var price);
-                _gramPrice = price;
+                _gramPrice = response;
             });
     }
 
@@ -65,7 +64,16 @@ public partial class EditorForm
     {
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
-            afterSend: response => _priceUnits = response);
+            afterSend: response =>
+            {
+                _priceUnits = response;
+
+                if (Model.InvoicePriceUnit is null)
+                {
+                    Model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                    StateHasChanged();
+                }
+            });
     }
 
     #endregion
@@ -127,10 +135,12 @@ public partial class EditorForm
                 if (response is null)
                     return;
 
+                decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+
                 Model.InvoiceItems.Add(new InvoiceItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
-                    GramPrice = _gramPrice ?? 0,
+                    GramPrice = gramPrice,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold
                         ? _setting?.GoldProfitPercent ?? 7
@@ -186,7 +196,9 @@ public partial class EditorForm
     {
         var model = InvoiceItemVm.CreateDefaultInstance();
 
-        model.GramPrice = _gramPrice ?? 0;
+        decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+
+        model.GramPrice = gramPrice;
         model.TaxPercent = _setting?.TaxPercent ?? 9;
         model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
 
@@ -240,5 +252,19 @@ public partial class EditorForm
             return;
 
         AddSuccessToast("فاکتور با موفقیت ثبت شد");
+    }
+
+    private async Task OnInvoicePriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
+    {
+        await LoadGramPriceAsync();
+
+        Model.InvoicePriceUnit = priceUnit;
+        Model.InvoiceItems.ForEach(item =>
+        {
+            item.PriceUnit = priceUnit;
+            // item.GramPrice = _gramPrice TODO: change logic here!
+        });
+
+        StateHasChanged();
     }
 }
