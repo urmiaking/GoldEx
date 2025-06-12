@@ -8,5 +8,7 @@ public class ProductsByIdSpecification : SpecificationBase<Product>
     public ProductsByIdSpecification(ProductId id)
     {
         AddCriteria(x => x.Id == id);
+
+        AddInclude(x => x.WagePriceUnit!);
     }
 }

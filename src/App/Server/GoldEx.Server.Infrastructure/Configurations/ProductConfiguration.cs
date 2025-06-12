@@ -35,6 +35,11 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasForeignKey(x => x.ProductCategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.WagePriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.WagePriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(x => x.Barcode)
             .IsUnique();
 

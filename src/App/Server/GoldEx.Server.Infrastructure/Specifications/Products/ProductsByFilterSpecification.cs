@@ -17,6 +17,8 @@ public class ProductsByFilterSpecification : SpecificationBase<Product>
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
+        AddInclude(x => x.WagePriceUnit!);
+
         // Apply search filter
         if (!string.IsNullOrEmpty(filter.Search))
         {

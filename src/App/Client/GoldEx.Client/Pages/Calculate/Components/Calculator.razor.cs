@@ -278,6 +278,9 @@ public partial class Calculator
 
         await LoadGramPriceAsync();
 
+        if (_model.WagePriceUnit != null) 
+            await SelectWagePriceUnit(_model.WagePriceUnit);
+
         UpdateWageFields();
         await Calculate();
 
@@ -298,7 +301,7 @@ public partial class Calculator
             }
 
             await SendRequestAsync<IProductService, GetProductResponse?>(async (s, ct) => await s.GetAsync(barcode, ct),
-                async response =>
+                 async response =>
                 {
                     if (response is null)
                         return;
@@ -308,9 +311,10 @@ public partial class Calculator
                     _model.Wage = response.Wage;
                     _model.WageType = response.WageType;
                     _model.ProductType = response.ProductType;
+                    _model.WagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
 
-                    await OnWageTypeChanged(_model.WageType);
-                    OnWageChanged(_model.Wage);
+                    UpdateWageFields();
+                    await SelectWagePriceUnit(_model.WagePriceUnit!);
                     OnProductTypeChanged(_model.ProductType);
                 });
         }
@@ -381,7 +385,7 @@ public partial class Calculator
     {
         if (_model.WageType is WageType.Fixed)
         {
-            _wageFieldMenuOpen = true;
+            _wageFieldMenuOpen = !_wageFieldMenuOpen;
         }
     }
 

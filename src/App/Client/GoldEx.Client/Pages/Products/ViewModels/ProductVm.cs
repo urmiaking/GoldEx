@@ -34,10 +34,14 @@ public class ProductVm
     public CaratType CaratType { get; set; }
 
     [Display(Name = "دسته بندی")]
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public Guid? ProductCategoryId { get; set; }
 
     public string? ProductCategoryTitle { get; set; } = string.Empty;
+
+    [Display(Name = "واحد قیمت اجرت")]
+    public Guid? WagePriceUnitId { get; set; }
+
+    public string? WagePriceUnitTitle { get; set; }
 
     public ProductCategoryVm? CategoryVm { get; set; }
 
@@ -60,6 +64,8 @@ public class ProductVm
             CaratType = item.CaratType,
             ProductCategoryId = item.ProductCategoryId,
             ProductCategoryTitle = item.ProductCategoryTitle,
+            WagePriceUnitId = item.WagePriceUnitId,
+            WagePriceUnitTitle = item.WagePriceUnitTitle,
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm
             {
                 Id = item.ProductCategoryId.Value,
@@ -89,7 +95,8 @@ public class ProductVm
             item.WageType!.Value,
             item.ProductType,
             item.CaratType,
-            item.ProductCategoryId!.Value, // TODO: fix this in order to handle nullability
+            item.ProductCategoryId,
+            item.WagePriceUnitId,
             item.Stones?.Select(x => new CreateGemStoneRequest(
                     x.Code,
                     x.Type,
@@ -112,7 +119,8 @@ public class ProductVm
             item.WageType ?? 0,
             item.ProductType,
             item.CaratType,
-            item.ProductCategoryId!.Value, // TODO: fix this in order to handle nullability
+            item.ProductCategoryId,
+            item.WagePriceUnitId,
             item.Stones?
                 .Select(x => 
                     new UpdateGemStoneRequest(x.Code, x.Type, x.Color, x.Cut, x.Carat, x.Purity))

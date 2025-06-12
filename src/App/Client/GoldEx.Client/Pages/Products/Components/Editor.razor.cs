@@ -2,13 +2,13 @@
 using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
-using GoldEx.Sdk.Common.Extensions;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
@@ -19,14 +19,17 @@ public partial class Editor
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly ProductValidator _productValidator = new();
-    private MudForm _form = default!;
-    private string? _wageAdornmentText = "درصد";
     private IEnumerable<ProductCategoryVm> _productCategories = [];
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _wageFieldHelperText;
+    private string? _wageAdornmentText = "درصد";
+    private string? _wageFieldAdornmentText;
+    private bool _wageFieldMenuOpen;
+    private MudForm _form = default!;
 
     protected override void OnParametersSet()
     {
-        if (Id is null) 
+        if (Id is null)
             GenerateBarcode();
 
         OnWageTypeChanged(Model.WageType);
@@ -37,18 +40,31 @@ public partial class Editor
     protected override async Task OnParametersSetAsync()
     {
         await LoadCategoriesAsync();
+        await LoadPricesAsync();
 
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadPricesAsync()
+    {
+        await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(ct),
+            afterSend: response =>
+            {
+                _priceUnits = response;
+
+                var defaultUnit = _priceUnits.FirstOrDefault(x => x.IsDefault);
+
+                Model.WagePriceUnitId ??= defaultUnit?.Id;
+                Model.WagePriceUnitTitle ??= defaultUnit?.Title;
+            });
     }
 
     private async Task LoadCategoriesAsync()
     {
         await SendRequestAsync<IProductCategoryService, List<GetProductCategoryResponse>>(
             action: (s, ct) => s.GetListAsync(ct),
-            afterSend: response =>
-            {
-                _productCategories = response.Select(ProductCategoryVm.CreateFrom);
-            });
+            afterSend: response => _productCategories = response.Select(ProductCategoryVm.CreateFrom));
     }
 
     private async Task Submit()
@@ -73,7 +89,7 @@ public partial class Editor
         {
             var request = ProductVm.ToUpdateRequest(Model);
             await SendRequestAsync<IProductService>(
-                action: (s, ct) => s.UpdateAsync(Model.Id, request, ct), 
+                action: (s, ct) => s.UpdateAsync(Model.Id, request, ct),
                 afterSend: () =>
                 {
                     MudDialog.Close(DialogResult.Ok(true));
@@ -117,9 +133,11 @@ public partial class Editor
         {
             case WageType.Percent:
                 _wageAdornmentText = "درصد";
+                _wageFieldAdornmentText = "درصد";
                 break;
             case WageType.Fixed:
-                _wageAdornmentText = "TODO"; // TODO: fix this
+                _wageAdornmentText = Model.WagePriceUnitTitle;
+                _wageFieldAdornmentText = Model.WagePriceUnitTitle;
                 break;
             case null:
                 _wageAdornmentText = null;
@@ -132,7 +150,7 @@ public partial class Editor
         OnWageChanged(Model.Wage);
     }
 
-    private void OnAddGemStone(MouseEventArgs obj)
+    private void OnAddGemStone()
     {
         Model.Stones ??= [];
         Model.Stones.Add(new GemStoneVm
@@ -164,5 +182,22 @@ public partial class Editor
         _wageFieldHelperText = Model.Wage.HasValue || wage is not null
             ? $"{Model.Wage.FormatNumber()} {_wageAdornmentText}".Trim()
             : string.Empty;
+    }
+
+    private void OnWageAdornmentClicked()
+    {
+        if (Model.WageType is WageType.Fixed)
+        {
+            _wageFieldMenuOpen = !_wageFieldMenuOpen;
+        }
+    }
+
+    private void SelectWagePriceUnit(GetPriceUnitTitleResponse item)
+    {
+        Model.WagePriceUnitId = item.Id;
+        Model.WagePriceUnitTitle = item.Title;
+
+        _wageFieldMenuOpen = false;
+        OnWageTypeChanged(Model.WageType);
     }
 }
