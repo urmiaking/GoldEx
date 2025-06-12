@@ -1,8 +1,10 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Products;
@@ -16,11 +18,13 @@ internal class UpdateProductRequestValidator : AbstractValidator<(Guid id, Updat
 {
     private readonly IProductRepository _repository;
     private readonly IProductCategoryRepository _categoryRepository;
+    private readonly IPriceUnitRepository _priceUnitRepository;
 
-    public UpdateProductRequestValidator(IProductRepository repository, IProductCategoryRepository categoryRepository)
+    public UpdateProductRequestValidator(IProductRepository repository, IProductCategoryRepository categoryRepository, IPriceUnitRepository priceUnitRepository)
     {
         _repository = repository;
         _categoryRepository = categoryRepository;
+        _priceUnitRepository = priceUnitRepository;
 
         RuleFor(x => x.request.Name)
             .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
@@ -34,18 +38,23 @@ internal class UpdateProductRequestValidator : AbstractValidator<(Guid id, Updat
         RuleFor(x => x.request.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
 
-        When(product => product.request.ProductType is ProductType.Gold or ProductType.Jewelry, () =>
-        {
-            RuleFor(product => product.request.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
-            RuleFor(product => product.request.WageType)
-                .NotNull()
-                .WithMessage("لطفا نوع اجرت را وارد کنید");
-        });
+        RuleFor(x => x)
+            .Must(x => x.request.ProductType is not ProductType.OldGold)
+            .WithMessage("نوع جنس نمی تواند طلای کهنه باشد. لطفا نوع دیگری انتخاب کنید");
 
-        When(product => product.request.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>
+        RuleFor(product => product.request.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
+
+        RuleFor(product => product.request.WageType)
+            .NotNull()
+            .WithMessage("لطفا نوع اجرت را وارد کنید");
+
+        When(x => x.request.WageType is WageType.Fixed, () =>
         {
-            RuleFor(product => product.request.Wage).Null().WithMessage("اجرت ساخت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
-            RuleFor(product => product.request.WageType).Null().WithMessage("نوع اجرت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
+            RuleFor(product => product.request.WagePriceUnitId)
+                .NotNull().WithMessage("لطفا واحد قیمت اجرت را وارد کنید")
+                .NotEmpty().WithMessage("واحد قیمت اجرت نمی تواند خالی باشد")
+                .MustAsync(BeValidWagePriceId)
+                .WithMessage("واحد قیمت اجرت وارد شده معتبر نیست");
         });
 
         RuleFor(x => x.request.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
@@ -53,11 +62,14 @@ internal class UpdateProductRequestValidator : AbstractValidator<(Guid id, Updat
         RuleFor(x => x.request.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
 
         RuleFor(x => x.request.ProductCategoryId)
+            .NotEmpty()
+            .When(x => x.request.ProductType is ProductType.Gold or ProductType.Jewelry)
+            .WithMessage("دسته بندی جنس نمی تواند خالی باشد")
             .MustAsync(BeValidCategoryId).WithMessage("دسته بندی وارد شده معتبر نیست");
 
         RuleFor(x => x.id)
-            .NotEmpty().WithMessage("شناسه کالا نمی تواند خالی باشد")
-            .MustAsync(BeValidId).WithMessage("شناسه کالا معتبر نیست");
+            .MustAsync(BeValidId)
+            .WithMessage("شناسه جنس وارد شده معتبر نیست");
     }
 
     private async Task<bool> BeUniqueBarcode((Guid id, UpdateProductRequest request) request, string barcode, CancellationToken cancellationToken = default)
@@ -78,6 +90,14 @@ internal class UpdateProductRequestValidator : AbstractValidator<(Guid id, Updat
             return true;
 
         return await _categoryRepository.ExistsAsync(new ProductCategoriesByIdSpecification(new ProductCategoryId(categoryId.Value)), cancellationToken);
+    }
+
+    private async Task<bool> BeValidWagePriceId(Guid? priceUnitId, CancellationToken cancellationToken = default)
+    {
+        if (!priceUnitId.HasValue)
+            return true;
+
+        return await _priceUnitRepository.ExistsAsync(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)), cancellationToken);
     }
 
     private async Task<bool> BeValidId(Guid id, CancellationToken cancellationToken = default)

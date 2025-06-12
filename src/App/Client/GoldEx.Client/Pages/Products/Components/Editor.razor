@@ -57,7 +57,7 @@
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect For="() => Model.WageType"
-                               Label="@Model.GetDisplayName(() => Model.Weight)"
+                               Label="@Model.GetDisplayName(() => Model.WageType)"
                                Margin="Margin.Dense"
                                T="WageType?"
                                Value="Model.WageType"
@@ -72,21 +72,46 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="6">
-                    <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="@_wageAdornmentText"
-                                     For="@(() => Model.Wage)"
-                                     Format="G29"
-                                     HideSpinButtons="true"
-                                     HelperText="@_wageFieldHelperText"
-                                     Immediate="true"
-                                     Label="@Model.GetDisplayName(() => Model.Wage)"
-                                     Margin="Margin.Dense"
-                                     T="decimal?"
-                                     Value="Model.Wage"
-                                     ValueChanged="OnWageChanged"
-                                     Variant="Variant.Outlined" />
-                </MudItem>
+                @if (Model.WageType != null)
+                {
+                    <MudItem xs="12" md="6" lg="6"> 
+                        <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                            <ActivatorContent>
+                                <MudNumericField Adornment="Adornment.End"
+                                                 AdornmentText="@_wageFieldAdornmentText"
+                                                 For="() => Model.Wage"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 HelperText="@_wageFieldHelperText"
+                                                 Immediate="true"
+                                                 Margin="Margin.Dense"
+                                                 Label="@(Model.GetDisplayName(() => Model.Wage))"
+                                                 T="decimal?"
+                                                 Value="Model.Wage"
+                                                 ValueChanged="OnWageChanged"
+                                                 Variant="Variant.Outlined"
+                                                 OnAdornmentClick="OnWageAdornmentClicked"></MudNumericField>
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in _priceUnits)
+                                {
+                                    <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            @if (item.HasIcon)
+                                            {
+                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                </MudAvatar>
+                                            }
+                                            @item.Title
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </MudItem>
+                }
+                
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect @bind-Value="Model.CaratType"
                                For="() => Model.CaratType"

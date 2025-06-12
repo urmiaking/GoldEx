@@ -13,4 +13,6 @@ public record GetProductResponse(
     CaratType CaratType,
     Guid? ProductCategoryId,
     string? ProductCategoryTitle,
+    Guid? WagePriceUnitId,
+    string? WagePriceUnitTitle,
     List<GetGemStoneResponse>? GemStones);

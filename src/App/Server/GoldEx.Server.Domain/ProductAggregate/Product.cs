@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
 
@@ -15,7 +16,8 @@ public class Product : EntityBase<ProductId>
         ProductType productType,
         CaratType caratType,
         WageType wageType,
-        ProductCategoryId productCategoryId)
+        PriceUnitId? wagePriceUnitId,
+        ProductCategoryId? productCategoryId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(weight, 0, nameof(weight));
 
@@ -34,6 +36,7 @@ public class Product : EntityBase<ProductId>
             ProductType = productType,
             CaratType = caratType,
             WageType = wageType,
+            WagePriceUnitId = wagePriceUnitId,
             ProductCategoryId = productCategoryId,
             ProductStatus = ProductStatus.Available
         };
@@ -49,10 +52,14 @@ public class Product : EntityBase<ProductId>
     public decimal Wage { get; private set; }
     public ProductType ProductType { get; private set; }
     public CaratType CaratType { get; private set; }
-    public WageType WageType { get; private set; } // TODO: bro! we have to change this to WagePriceUnitId or maybe not! Or we can add a nullable field! omg so much work to do! :D
+    public WageType WageType { get; private set; }
     public ProductStatus ProductStatus { get; private set; }
+
     public ProductCategoryId? ProductCategoryId { get; private set; }
     public ProductCategory? ProductCategory { get; private set; }
+
+    public PriceUnitId? WagePriceUnitId { get; set; }
+    public PriceUnit? WagePriceUnit { get; set; }
 
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
@@ -95,6 +102,9 @@ public class Product : EntityBase<ProductId>
 
     public Product SetWageType(WageType wageType)
     {
+        if (wageType is WageType.Percent) 
+            WagePriceUnitId = null;
+
         WageType = wageType;
         return this;
     }
@@ -125,6 +135,15 @@ public class Product : EntityBase<ProductId>
     public Product MarkAsAvailable()
     {
         ProductStatus = ProductStatus.Available;
+        return this;
+    }
+
+    public Product SetWagePriceUnitId(PriceUnitId wagePriceUnitId)
+    {
+        if (WageType is WageType.Percent)
+            throw new InvalidOperationException("Percent wage type cannot have wage price unit");
+
+        WagePriceUnitId = wagePriceUnitId;
         return this;
     }
 }

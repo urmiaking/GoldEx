@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Validators.Products;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -73,7 +74,8 @@ internal class ProductService(
             request.ProductType,
             request.CaratType,
             request.WageType,
-            new ProductCategoryId(request.ProductCategoryId));
+            request.WagePriceUnitId.HasValue ? new PriceUnitId(request.WagePriceUnitId.Value) : null,
+            request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : null);
 
         if (request.ProductType == ProductType.Jewelry)
         {
@@ -109,6 +111,11 @@ internal class ProductService(
         else
             item.SetProductCategory(null);
 
+        if (request.WagePriceUnitId.HasValue)
+            item.WagePriceUnitId = new PriceUnitId(request.WagePriceUnitId.Value);
+        else
+            item.WagePriceUnitId = null;
+
         if (request.ProductType == ProductType.Jewelry)
         {
             item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(s.Code,
@@ -120,9 +127,8 @@ internal class ProductService(
                 item.Id)));
         }
         else
-        {
             item.ClearGemStones();
-        }
+
         await repository.UpdateAsync(item, cancellationToken);
     }
 

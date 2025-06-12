@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Products;
@@ -14,10 +16,12 @@ internal class CreateProductRequestValidator : AbstractValidator<CreateProductRe
 {
     private readonly IProductRepository _repository;
     private readonly IProductCategoryRepository _categoryRepository;
-    public CreateProductRequestValidator(IProductRepository repository, IProductCategoryRepository categoryRepository)
+    private readonly IPriceUnitRepository _priceUnitRepository;
+    public CreateProductRequestValidator(IProductRepository repository, IProductCategoryRepository categoryRepository, IPriceUnitRepository priceUnitRepository)
     {
         _repository = repository;
         _categoryRepository = categoryRepository;
+        _priceUnitRepository = priceUnitRepository;
 
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
@@ -31,20 +35,23 @@ internal class CreateProductRequestValidator : AbstractValidator<CreateProductRe
         RuleFor(x => x.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
 
-        When(product => product.ProductType is ProductType.Gold or ProductType.Jewelry, () =>
-        {
-            RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
-            RuleFor(product => product.WageType)
-                .NotNull()
-                .WithMessage("لطفا نوع اجرت را وارد کنید");
-        });
+        RuleFor(x => x)
+            .Must(x => x.ProductType is not ProductType.OldGold)
+            .WithMessage("نوع جنس نمی تواند طلای کهنه باشد. لطفا نوع دیگری انتخاب کنید");
 
-        When(product => product.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>
+        RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
+
+        RuleFor(product => product.WageType)
+            .NotNull()
+            .WithMessage("لطفا نوع اجرت را وارد کنید");
+
+        When(x => x.WageType is WageType.Fixed, () =>
         {
-            RuleFor(product => product.Wage).NotNull().WithMessage("لطفا کامزد را وارد کنید");
-            RuleFor(product => product.WageType)
-                .NotNull()
-                .WithMessage("لطفا کامزد را وارد کنید");
+            RuleFor(product => product.WagePriceUnitId)
+                .NotNull().WithMessage("لطفا واحد قیمت اجرت را وارد کنید")
+                .NotEmpty().WithMessage("واحد قیمت اجرت نمی تواند خالی باشد")
+                .MustAsync(BeValidWagePriceId)
+                .WithMessage("واحد قیمت اجرت وارد شده معتبر نیست");
         });
 
         RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
@@ -52,9 +59,18 @@ internal class CreateProductRequestValidator : AbstractValidator<CreateProductRe
         RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
 
         RuleFor(x => x.ProductCategoryId)
-            .NotEmpty().WithMessage("دسته بندی جنس نمی تواند خالی باشد")
-            .NotEqual(Guid.Empty).WithMessage("دسته بندی جنس نمی تواند خالی باشد")
+            .NotEmpty()
+                .When(x => x.ProductType is ProductType.Gold or ProductType.Jewelry)
+                .WithMessage("دسته بندی جنس نمی تواند خالی باشد")
             .MustAsync(BeValidCategoryId).WithMessage("دسته بندی وارد شده معتبر نیست");
+    }
+
+    private async Task<bool> BeValidWagePriceId(Guid? priceUnitId, CancellationToken cancellationToken = default)
+    {
+        if (!priceUnitId.HasValue)
+            return true;
+
+        return await _priceUnitRepository.ExistsAsync(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)), cancellationToken);
     }
 
     private async Task<bool> BeUniqueBarcode(CreateProductRequest request, string barcode, CancellationToken cancellationToken = default)
@@ -62,8 +78,11 @@ internal class CreateProductRequestValidator : AbstractValidator<CreateProductRe
         return !await _repository.ExistsAsync(new ProductsByBarcodeSpecification(barcode), cancellationToken);
     }
 
-    private async Task<bool> BeValidCategoryId(Guid categoryId, CancellationToken cancellationToken = default)
+    private async Task<bool> BeValidCategoryId(Guid? categoryId, CancellationToken cancellationToken = default)
     {
-        return await _categoryRepository.ExistsAsync(new ProductCategoriesByIdSpecification(new ProductCategoryId(categoryId)), cancellationToken);
+        if (!categoryId.HasValue)
+            return true;
+
+        return await _categoryRepository.ExistsAsync(new ProductCategoriesByIdSpecification(new ProductCategoryId(categoryId.Value)), cancellationToken);
     }
 }

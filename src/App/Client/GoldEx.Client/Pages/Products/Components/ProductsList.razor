@@ -1,4 +1,5 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Helpers
+@inherits GoldExComponentBase
 
 <MudTable T="ProductVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadProductsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
@@ -31,7 +32,14 @@
         <MudTd DataLabel="نوع جنس">@context.ProductType.GetDisplayName()</MudTd>
         <MudTd DataLabel="عنوان">@context.Name</MudTd>
         <MudTd DataLabel="وزن">@(context.Weight?.ToString("G29") + " گرم")</MudTd>
-        <MudTd DataLabel="اجرت">@(context.WageType.HasValue ? $"{context.Wage:N0} {context.WageType.GetDisplayName()}" : "ندارد")</MudTd>
+        <MudTd DataLabel="اجرت">
+            @(context.WageType switch
+            {
+                WageType.Fixed => $"{context.Wage.FormatNumber()} {context.WagePriceUnitTitle}",
+                WageType.Percent => context.Wage.FormatNumber() + " درصد",
+                _ => "ندارد"
+            })
+        </MudTd>
         <MudTd DataLabel="عیار">@context.CaratType.GetDisplayName()</MudTd>
         <MudTd DataLabel="دسته">@context.ProductCategoryTitle</MudTd>
         <MudTd DataLabel="عملیات">
