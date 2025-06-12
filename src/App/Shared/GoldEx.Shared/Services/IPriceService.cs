@@ -18,6 +18,8 @@ public interface IPriceService
     /// <returns></returns>
     Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, CancellationToken cancellationToken = default);
     Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default);
+    Task<GetExchangeRateResponse> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId,
+        CancellationToken cancellationToken = default);
     Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default);
     Task SetStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default);
 }

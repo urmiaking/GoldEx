@@ -59,6 +59,10 @@ public class ApiUrls
 
         public static string UpdateStatus(Guid id) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.UpdateStatus).FormatRoute(new { id });
+
+        public static string GetExchangeRate(Guid primaryPriceUnitId, Guid secondaryPriceUnitId) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetExchange)
+                .FormatRoute(new { primaryPriceUnitId, secondaryPriceUnitId });
     }
 
     public class Health

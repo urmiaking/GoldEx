@@ -1,6 +1,8 @@
-﻿using GoldEx.Client.Pages.Calculate.Validators;
+﻿using GoldEx.Client.Helpers;
+using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
@@ -15,12 +17,16 @@ public partial class Calculator
     private CalculatorVm _model = new();
     private MudForm _from = default!;
     private CalculatorValidator _calculatorValidator = new();
-    private GetSettingResponse? _settings;
     private MudSelect<WageType?> _wageTypeField = default!;
     private MudNumericField<decimal?> _wageField = default!;
     private MudNumericField<decimal> _profitField = default!;
 
     private string? _wageFieldAdornmentText = "درصد";
+    private string? _gramPriceAdornmentText;
+    private string? _gramPriceHelperText;
+    private string? _extraCostsAdornmentText;
+    private bool _wageFieldMenuOpen;
+
     private decimal? _rawPrice;
     private decimal? _wage;
     private decimal? _profit;
@@ -30,13 +36,59 @@ public partial class Calculator
     private string? _barcodeFieldHelperText;
     private Timer? _timer;
     private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
+    private GetSettingResponse? _settings;
+    private GetPriceResponse? _gramPrice;
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
+
+    private string? _wageExchangeRateLabel;
+    private string? _wageFieldHelperText;
+    private string? _wageExchangeRateHelperText;
+
+    private bool _isInitialLoading = true;
+    private bool _isBarcodeProcessing = false;
+    private bool _isRecalculating = false;
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadPricesAsync();
-        await LoadSettingsAsync();
-        await StartTimer();
+        _isInitialLoading = true;
+        try
+        {
+            await LoadPriceUnitsAsync();
+            await LoadSettingsAsync();
+            await StartTimer();
+        }
+        finally
+        {
+            _isInitialLoading = false;
+            StateHasChanged();
+        }
         await base.OnParametersSetAsync();
+    }
+
+    #region Load Initial Data
+
+    private async Task LoadPriceUnitsAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authenticationState.User.Identity is { IsAuthenticated: false })
+            return;
+
+        await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(ct),
+            afterSend: async response =>
+            {
+                _priceUnits = response;
+
+                if (_model.PriceUnit is null)
+                {
+                    _model.PriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                    await OnPriceUnitChanged(_model.PriceUnit);
+                }
+
+                _model.WagePriceUnit ??= response.FirstOrDefault(x => x.IsDefault);
+                UpdateWageFields();
+            });
     }
 
     private async Task LoadSettingsAsync()
@@ -62,61 +114,79 @@ public partial class Calculator
             });
     }
 
-    private async Task LoadPricesAsync()
+    private async Task LoadGramPriceAsync()
     {
-        // TODO: Add price unit and load price based on price unit.
-        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.Gold18K, null, ct),
-            response =>
+        await SendRequestAsync<IPriceService, GetPriceResponse?>(
+            action: (s, ct) => s.GetAsync(UnitType.Gold18K, _model.PriceUnit?.Id, ct),
+            afterSend: response =>
             {
-                _model.GramPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;
-            });
+                _gramPrice = response;
 
-        //TODO: revise this
-        await SendRequestAsync<IPriceService, GetPriceResponse?>((s, ct) => s.GetAsync(UnitType.USD, null, ct),
-            response =>
-            {
-                _model.UsDollarPrice = response != null ? decimal.Parse(response.Value) / 10m : 0m;
-            });
+                decimal.TryParse(response?.Value, out var gramPriceValue);
 
-        StateHasChanged();
+                _model.GramPrice = Math.Round(gramPriceValue, 3, MidpointRounding.AwayFromZero);
+
+                _gramPriceAdornmentText = response?.Unit;
+                _gramPriceHelperText = $"{_model.GramPrice.FormatNumber()} {response?.Unit}";
+            });
     }
+
+    #endregion
 
     private async Task Calculate()
     {
-        await _from.Validate();
+        _isRecalculating = true;
 
-        if (_from.IsValid)
+        try
         {
-            _rawPrice = CalculatorHelper.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.CaratType, _model.ProductType);
-            _wage = CalculatorHelper.CalculateWage(_rawPrice.Value, _model.Wage, _model.WageType, _model.UsDollarPrice);
-            _profit = CalculatorHelper.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
-            _tax = CalculatorHelper.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType);
-            _finalPrice = CalculatorHelper.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.AdditionalPrices, _model.ProductType);
+            if (_model.Weight == 0 || _model is { WageType: not null, Wage: null })
+                return;
+
+            await _from.Validate();
+
+            if (_from.IsValid)
+            {
+                _rawPrice = CalculatorHelper.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.CaratType, _model.ProductType);
+                _wage = CalculatorHelper.CalculateWage(_rawPrice.Value, _model.Weight, _model.Wage, _model.WageType, _model.ExchangeRate);
+                _profit = CalculatorHelper.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
+                _tax = CalculatorHelper.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType);
+                _finalPrice = CalculatorHelper.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType);
+            }
+            else
+            {
+                _rawPrice = null;
+                _wage = null;
+                _profit = null;
+                _tax = null;
+                _finalPrice = null;
+            }
         }
-        else
+        finally
         {
-            _rawPrice = null;
-            _wage = null;
-            _profit = null;
-            _tax = null;
-            _finalPrice = null;
+            _isRecalculating = false;
         }
     }
 
-    private async void OnWageTypeChanged(WageType? wageType)
+    #region OnChanged
+
+    private async Task OnWageTypeChanged(WageType? wageType)
     {
         _model.WageType = wageType;
         switch (wageType)
         {
             case WageType.Percent:
+                UpdateWageFields();
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Percent;
                 _wageField.Disabled = false;
-                _wageFieldAdornmentText = "درصد";
                 break;
             case WageType.Fixed:
+                UpdateWageFields();
+
+                if (_model.WagePriceUnit != null)
+                    await SelectWagePriceUnit(_model.WagePriceUnit);
+
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
                 _wageField.Disabled = false;
-                _wageFieldAdornmentText = "تومان"; // TODO: fix this
                 break;
             case null:
                 await _wageField.ResetAsync();
@@ -133,6 +203,8 @@ public partial class Calculator
     private async void OnWageChanged(decimal? wage)
     {
         _model.Wage = wage;
+
+        UpdateWageFields();
 
         await Calculate();
     }
@@ -162,13 +234,6 @@ public partial class Calculator
         await Calculate();
     }
 
-    private async void OnDollarPriceChanged(decimal? dollarPrice)
-    {
-        _model.UsDollarPrice = dollarPrice;
-
-        await Calculate();
-    }
-
     private async void OnCaratTypeChanged(CaratType caratType)
     {
         _model.CaratType = caratType;
@@ -178,7 +243,8 @@ public partial class Calculator
 
     private async void OnGramPriceChanged(decimal gramPrice)
     {
-        _model.GramPrice = gramPrice;
+        _model.GramPrice = Math.Round(gramPrice, 3, MidpointRounding.AwayFromZero);
+        _gramPriceHelperText = $"{_model.GramPrice.FormatNumber()} {_model.PriceUnit?.Title}";
 
         await Calculate();
     }
@@ -197,49 +263,77 @@ public partial class Calculator
         await Calculate();
     }
 
-    private async void OnAdditionalPricesChanges(decimal? additionalPrices)
+    private async void OnExtraCostChanges(decimal? additionalPrices)
     {
-        _model.AdditionalPrices = additionalPrices;
+        _model.ExtraCosts = additionalPrices;
 
         await Calculate();
+    }
+
+    private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
+    {
+        _model.PriceUnit = priceUnit;
+
+        _extraCostsAdornmentText = priceUnit?.Title;
+
+        await LoadGramPriceAsync();
+
+        UpdateWageFields();
+        await Calculate();
+
+        StateHasChanged();
     }
 
     private async Task OnBarcodeChanged(string barcode)
     {
-        _barcode = barcode;
-
-        if (string.IsNullOrWhiteSpace(barcode))
+        _isBarcodeProcessing = true;
+        try
         {
-            OnBarcodeCleared();
-            return;
-        }
+            _barcode = barcode;
 
-        await SendRequestAsync<IProductService, GetProductResponse?>(async (s, ct) => await s.GetAsync(barcode, ct),
-            response =>
+            if (string.IsNullOrWhiteSpace(barcode))
             {
-                if (response is null)
-                    return;
+                OnBarcodeCleared();
+                return;
+            }
 
-                _model.Weight = response.Weight;
-                _model.CaratType = response.CaratType;
-                _model.Wage = response.Wage;
-                _model.WageType = response.WageType;
-                _model.ProductType = response.ProductType;
+            await SendRequestAsync<IProductService, GetProductResponse?>(async (s, ct) => await s.GetAsync(barcode, ct),
+                async response =>
+                {
+                    if (response is null)
+                        return;
 
-                OnWageTypeChanged(_model.WageType);
-                OnWageChanged(_model.Wage);
-                OnProductTypeChanged(_model.ProductType);
-            });
+                    _model.Weight = response.Weight;
+                    _model.CaratType = response.CaratType;
+                    _model.Wage = response.Wage;
+                    _model.WageType = response.WageType;
+                    _model.ProductType = response.ProductType;
 
-        await Calculate();
+                    await OnWageTypeChanged(_model.WageType);
+                    OnWageChanged(_model.Wage);
+                    OnProductTypeChanged(_model.ProductType);
+                });
+        }
+        finally
+        {
+            _isBarcodeProcessing = false;
+            await Calculate();
+        }
     }
 
     private async void OnBarcodeCleared()
     {
-        _barcode = null;
-
-        ResetModel();
-        await Calculate();
+        _isBarcodeProcessing = true;
+        try
+        {
+            _barcode = null;
+            ResetModel();
+        }
+        finally
+        {
+            _isBarcodeProcessing = false;
+            await Calculate();
+        }
     }
 
     private void ResetModel()
@@ -248,9 +342,13 @@ public partial class Calculator
         _model.CaratType = CaratType.Eighteen;
         _model.Wage = 0;
         _model.WageType = null;
-        _model.AdditionalPrices = null;
+        _model.ExtraCosts = null;
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
     }
+
+    #endregion
+
+    #region Timer
 
     private Task StartTimer()
     {
@@ -266,7 +364,8 @@ public partial class Calculator
 
     private async void TimerCallback(object? state)
     {
-        await LoadPricesAsync();
+        await LoadGramPriceAsync();
+        await Calculate();
         StateHasChanged();
     }
 
@@ -274,5 +373,75 @@ public partial class Calculator
     {
         _timer?.Dispose();
         base.Dispose();
+    }
+
+    #endregion
+
+    private void OnWageAdornmentClicked()
+    {
+        if (_model.WageType is WageType.Fixed)
+        {
+            _wageFieldMenuOpen = true;
+        }
+    }
+
+    private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
+    {
+        _isRecalculating = true;
+        try
+        {
+            _model.WagePriceUnit = priceUnit;
+
+            if (_model.PriceUnit is null)
+                return;
+
+            if (_model.PriceUnit != _model.WagePriceUnit)
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) => s.GetExchangeRateAsync(_model.WagePriceUnit.Id, _model.PriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        if (response.ExchangeRate.HasValue)
+                        {
+                            _model.ExchangeRate = Math.Round(response.ExchangeRate.Value, 7, MidpointRounding.AwayFromZero);
+                        }
+                    });
+        }
+        finally
+        {
+            UpdateWageFields();
+            await Calculate();
+
+            _isRecalculating = false;
+        }
+    }
+
+    private void OnWageExchangeRateChanged(decimal? exchangeRate)
+    {
+        _model.ExchangeRate = exchangeRate;
+
+        UpdateWageFields();
+    }
+
+    private void UpdateWageFields()
+    {
+        if (_model.WageType is WageType.Fixed)
+        {
+            _wageFieldAdornmentText = _model.WagePriceUnit?.Title;
+            _wageFieldHelperText = _model.Wage is not null ? $"{_model.Wage.FormatNumber()} {_model.WagePriceUnit?.Title}" : null;
+
+            if (_model.WagePriceUnit?.Id != _model.PriceUnit?.Id)
+            {
+                _wageExchangeRateLabel = $"نرخ تبدیل {_model.WagePriceUnit?.Title} به {_model.PriceUnit?.Title}";
+                _wageExchangeRateHelperText = _model.ExchangeRate.HasValue ? $"{_model.ExchangeRate.FormatNumber()} {_model.PriceUnit?.Title}" : "";
+            }
+        }
+        else
+        {
+            _wageFieldAdornmentText = "درصد";
+            _wageFieldHelperText = null;
+            _wageExchangeRateLabel = null;
+            _wageExchangeRateHelperText = null;
+            _model.ExchangeRate = null;
+        }
     }
 }

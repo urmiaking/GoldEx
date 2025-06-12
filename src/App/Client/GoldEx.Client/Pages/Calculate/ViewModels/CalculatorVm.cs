@@ -1,5 +1,6 @@
 ﻿using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Client.Pages.Calculate.ViewModels;
 
@@ -25,13 +26,21 @@ public class CalculatorVm
     [Required(ErrorMessage = "لطفا نرخ گرم را وارد کنید")]
     public decimal GramPrice { get; set; }
 
-    [Display(Name = "نرخ دلار")]
-    public decimal? UsDollarPrice { get; set; }
+    [Display(Name = "نرخ تبدیل اجرت")]
+    public decimal? ExchangeRate { get; set; }
 
     [Display(Name = "عیار")]
     public CaratType CaratType { get; set; } = CaratType.Eighteen;
 
+    [Display(Name = "مالیات")]
     public decimal TaxPercent { get; set; } = 9;
 
-    public decimal? AdditionalPrices { get; set; }
+    [Display(Name = "هزینه های جانبی")]
+    public decimal? ExtraCosts { get; set; }
+
+    [Display(Name = "واحد ارزی")]
+    public GetPriceUnitTitleResponse? PriceUnit { get; set; }
+
+    [Display(Name = "واحد ارزی اجرت")]
+    public GetPriceUnitTitleResponse? WagePriceUnit { get; set; }
 }

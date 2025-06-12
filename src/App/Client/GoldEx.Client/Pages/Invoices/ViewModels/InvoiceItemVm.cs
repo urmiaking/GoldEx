@@ -33,7 +33,7 @@ public class InvoiceItemVm
 
     // --- Calculated Properties ---
     public decimal RawAmount => CalculatorHelper.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.CaratType, Product.ProductType);
-    public decimal WageAmount => CalculatorHelper.CalculateWage(RawAmount, Product.Wage, Product.WageType, ExchangeRate);
+    public decimal WageAmount => CalculatorHelper.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, ExchangeRate);
     public decimal ProfitAmount => CalculatorHelper.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
     public decimal TaxAmount => CalculatorHelper.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
     public decimal FinalAmount => RawAmount + WageAmount + ProfitAmount + TaxAmount;

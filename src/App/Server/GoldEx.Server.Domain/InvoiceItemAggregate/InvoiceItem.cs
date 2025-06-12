@@ -72,7 +72,7 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
     public decimal ItemWageAmount =>
         Product is null
             ? 0
-            : CalculatorHelper.CalculateWage(ItemRawAmount, Product.Wage, Product.WageType, ExchangeRate);
+            : CalculatorHelper.CalculateWage(ItemRawAmount, Product.Weight, Product.Wage, Product.WageType, ExchangeRate);
 
     public decimal ItemProfitAmount =>
         Product is null

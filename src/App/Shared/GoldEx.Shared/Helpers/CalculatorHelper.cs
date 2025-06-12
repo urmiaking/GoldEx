@@ -21,34 +21,40 @@ public class CalculatorHelper
 
         var gramPrice24 = gramPrice / 0.75m;
         var caratRatio = GetCaratRatio(caratType);
-        return weight * gramPrice24 * caratRatio;
+        return Math.Round(weight * gramPrice24 * caratRatio, 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
     /// محاسبه اجرت ساخت ریالی بر اساس قیمت خام، اجرت، نوع اجرت و نرخ تبدیل
     /// </summary>
     /// <param name="rawPrice">قیمت خام طلا</param>
-    /// <param name="wage">اجرت</param>
+    /// <param name="weight">وزن</param>
+    /// <param name="wageAmount">اجرت</param>
     /// <param name="wageType">نوع اجرت</param>
     /// <param name="exchangeRate">نرخ تبدیل دلار</param>
     /// <returns>اجرت ساخت ریالی</returns>
-    public static decimal CalculateWage(decimal rawPrice, decimal? wage, WageType? wageType, decimal? exchangeRate)
+    public static decimal CalculateWage(decimal rawPrice, decimal weight, decimal? wageAmount, WageType? wageType, decimal? exchangeRate)
     {
-        if (wage == null) return 0;
+        if (wageAmount == null) return 0;
+
+        decimal wage;
 
         switch (wageType)
         {
             case WageType.Percent:
-                return rawPrice * (wage.Value / 100);
-            //case WageType.Fixed:
-            //    return wage.Value;
+                wage = rawPrice * (wageAmount.Value / 100);
+                break;
             case WageType.Fixed:
                 if (exchangeRate == null)
-                    return 0;
-                return wage.Value * exchangeRate.Value;
+                    wage = wageAmount.Value * weight;
+                else
+                    wage = wageAmount.Value * exchangeRate.Value * weight;
+                break;
             default:
                 return 0;
         }
+
+        return Math.Round(wage, 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -64,7 +70,7 @@ public class CalculatorHelper
         if (productType is ProductType.OldGold or ProductType.MoltenGold)
             return 0;
 
-        return (rawPrice + wage) * (profitPercent / 100);
+        return Math.Round((rawPrice + wage) * (profitPercent / 100), 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary> 
@@ -80,7 +86,7 @@ public class CalculatorHelper
         if (productType is ProductType.OldGold or ProductType.MoltenGold)
             return 0;
 
-        return (wage + profit) * (taxPercent / 100);
+        return Math.Round((wage + profit) * (taxPercent / 100), 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -100,7 +106,7 @@ public class CalculatorHelper
             return rawPrice + (additionalPrices ?? 0);
         }
 
-        return rawPrice + wage + profit + tax + (additionalPrices ?? 0);
+        return Math.Round(rawPrice + wage + profit + tax + (additionalPrices ?? 0), 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
