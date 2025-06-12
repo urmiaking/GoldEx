@@ -11,4 +11,11 @@ public static class NumberHelper
             "N0" :
             "#,##0.#############################");
     }
+
+    public static string FormatNumber(this decimal number)
+    {
+        return number.ToString(number % 1 == 0 ?
+            "N0" :
+            "#,##0.#############################");
+    }
 }

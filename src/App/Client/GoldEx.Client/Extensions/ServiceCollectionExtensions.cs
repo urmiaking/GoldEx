@@ -5,15 +5,12 @@ using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
 using GoldEx.Shared.Abstractions;
-using Mapster;
-using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
 using System.Globalization;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace GoldEx.Client.Extensions;

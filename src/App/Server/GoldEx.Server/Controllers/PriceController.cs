@@ -45,6 +45,13 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return price is not null ? Ok(price) : NotFound();
     }
 
+    [HttpGet(ApiRoutes.Price.GetExchange)]
+    public async Task<IActionResult> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId, CancellationToken cancellationToken = default)
+    {
+        var exchangeRate = await priceService.GetExchangeRateAsync(primaryPriceUnitId, secondaryPriceUnitId, cancellationToken);
+        return Ok(exchangeRate);
+    }
+
     [HttpGet(ApiRoutes.Price.GetByPriceUnit)]
     public async Task<IActionResult> GetByPriceUnitAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
     {

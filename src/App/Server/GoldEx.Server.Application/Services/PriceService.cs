@@ -74,10 +74,11 @@ internal class PriceService(
                     UnitTypeMapper.GetUnitType(incomingPrice));
 
                 pricesToCreate.Add(price);
-                
+
                 if (!string.IsNullOrEmpty(incomingPrice.IconUrl))
                 {
-                    downloadTasks.Add(Task.Run(async () => {
+                    downloadTasks.Add(Task.Run(async () =>
+                    {
                         var result = await ImageConverter.ToByteArrayAsync(incomingPrice.IconUrl);
                         return (price, result.ByteArray, result.ImageFormat);
                     }, cancellationToken));
@@ -237,6 +238,54 @@ internal class PriceService(
         return item?.Price is null ? null : mapper.Map<GetPriceResponse>(item.Price);
     }
 
+    public async Task<GetExchangeRateResponse> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        var primaryPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(primaryPriceUnitId)))
+            .Include(pu => pu.Price)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var secondaryPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(secondaryPriceUnitId)))
+            .Include(pu => pu.Price)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (primaryPriceUnit?.Price is null && primaryPriceUnit?.Title == "ریال")
+        {
+            if (secondaryPriceUnit?.Price?.PriceHistory is not null && secondaryPriceUnit.Price?.PriceHistory?.CurrentValue != 0)
+            {
+                var rate = 1 / secondaryPriceUnit.Price?.PriceHistory?.CurrentValue;
+                return new GetExchangeRateResponse(rate);
+            }
+        }
+
+        if (primaryPriceUnit?.Price is null)
+            return new GetExchangeRateResponse(0);
+
+        if (secondaryPriceUnit?.Price is null)
+            return new GetExchangeRateResponse(primaryPriceUnit.Price?.PriceHistory?.CurrentValue);
+
+        if (primaryPriceUnit == secondaryPriceUnit)
+            throw new InvalidOperationException("Secondary unit cannot be as same as Primary unit");
+
+        if ((primaryPriceUnit.Price?.PriceHistory is null && primaryPriceUnit.Price?.PriceHistory?.CurrentValue == 0) ||
+            (secondaryPriceUnit.Price?.PriceHistory is null && secondaryPriceUnit.Price?.PriceHistory?.CurrentValue == 0))
+            return new GetExchangeRateResponse(0);
+
+        var primaryValue = primaryPriceUnit.Price?.PriceHistory?.CurrentValue;
+        var secondaryValue = secondaryPriceUnit.Price?.PriceHistory?.CurrentValue;
+
+        if (primaryValue is null or 0 || secondaryValue is null or 0)
+            return new GetExchangeRateResponse(0);
+
+        var exchangeRate = primaryValue / secondaryValue;
+
+        return new GetExchangeRateResponse(
+            exchangeRate.Value
+        );
+    }
+
     public async Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default)
     {
         var items = await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken);
@@ -263,7 +312,7 @@ internal class PriceService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetStatus(request.IsActive);
-        
+
         await repository.UpdateAsync(item, cancellationToken);
     }
 
