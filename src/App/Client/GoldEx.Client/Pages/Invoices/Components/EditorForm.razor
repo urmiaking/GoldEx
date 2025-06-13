@@ -125,19 +125,18 @@
             <MudItem xs="12" md="4">
                 <MudMenu @bind-Open="_isCustomerCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                     <ActivatorContent>
-                        <MudNumericField HelperText="@Model.Customer.CreditLimitHelperText"
-                                         Value="Model.Customer.CreditLimit"
+                        <MudNumericField Value="Model.Customer.CreditLimit"
                                          ValueChanged="OnCustomerCreditLimitChanged"
                                          T="decimal?"
                                          HideSpinButtons="true"
-                                         Format="G29"
+                                         Format="#,##0.##"
                                          Immediate="true"
                                          For="@(() => Model.Customer.CreditLimit)"
                                          Label="@(Model.GetDisplayName(() => Model.Customer.CreditLimit))"
                                          Margin="Margin.Dense"
                                          Variant="Variant.Outlined"
                                          Adornment="Adornment.End"
-                                         AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                         AdornmentText="@_customerCreditLimitAdornmentText"
                                          OnAdornmentClick="() => _isCustomerCreditLimitMenuOpen = true" />
                     </ActivatorContent>
                     <ChildContent>

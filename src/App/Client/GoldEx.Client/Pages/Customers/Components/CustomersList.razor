@@ -8,11 +8,11 @@
         <MudSpacer />
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">ثبت مشتری جدید</MudButton>
+            <MudFab Class="ml-4" Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Label="ثبت مشتری جدید" OnClick="@(_ => OnCreate())" Size="Size.Small" />
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
+            <MudFab Class="ml-4" Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())" Size="Size.Small" />
         </MudHidden>
     </ToolBarContent>
     <HeaderContent>
@@ -30,16 +30,13 @@
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="مشاهده تراکنش های مشتری">
-                    <MudIconButton Icon="@Icons.Material.Filled.DocumentScanner" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Success" OnClick="_ => OnViewTransaction(context)"></MudIconButton>
+                    <MudFab Color="Color.Info" EndIcon="@Icons.Material.Filled.DocumentScanner" Size="Size.Small" OnClick="_ => OnViewTransaction(context)" />
                 </MudTooltip>
                 <MudTooltip Text="ویرایش">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                    <MudFab Color="Color.Primary" EndIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="_ => OnEdit(context)" />
                 </MudTooltip>
                 <MudTooltip Text="حذف">
-                    <MudIconButton OnClick="@(_ => OnRemove(context))" ClickPropagation="true"
-                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    <MudFab Color="Color.Error" EndIcon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="_ => OnRemove(context)" />
                 </MudTooltip>
             </div>
         </MudTd>

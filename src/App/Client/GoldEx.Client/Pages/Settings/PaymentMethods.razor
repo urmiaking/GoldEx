@@ -5,11 +5,18 @@
 
 <PageTitle>مدیریت روش های پرداخت</PageTitle>
 
-<MudText Typo="Typo.h6" GutterBottom="true">مدیریت روش های پرداخت</MudText>
-<hr />
+<div class="d-flex align-center justify-space-between">
+    <MudText Typo="Typo.h6" GutterBottom="true">مدیریت روش های پرداخت</MudText>
+    
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Label="افزودن روش پرداخت جدید" Size="Size.Small" OnClick="_ => OnCreate()" />
+    </MudHidden>
 
-<MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())"
-           Size="Size.Small" Variant="Variant.Filled" FullWidth="true">افزودن روش پرداخت جدید</MudButton>
+    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="_ => OnCreate()" />
+    </MudHidden>
+</div>
+<MudDivider Class="my-2" />
 
 <MudTable T="PaymentMethodVm" Hover="true" FixedHeader="true" Dense="true" Items="_paymentMethods"
           SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="3" Height="350px">
@@ -26,21 +33,18 @@
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="ویرایش">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                    <MudFab Color="Color.Primary" EndIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="_ => OnEdit(context)" />
                 </MudTooltip>
                 @if (context.IsActive)
                 {
                     <MudTooltip Text="غیرفعال سازی">
-                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" ClickPropagation="true"
-                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Lock" Color="@Color.Error"></MudIconButton>
+                        <MudFab Color="Color.Error" EndIcon="@Icons.Material.Filled.Lock" Size="Size.Small" OnClick="_ => OnStatusChanged(context)" />
                     </MudTooltip>
                 }
                 else
                 {
                     <MudTooltip Text="فعال سازی">
-                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" ClickPropagation="true"
-                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Success"></MudIconButton>
+                        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.LockOpen" Size="Size.Small" OnClick="_ => OnStatusChanged(context)" />
                     </MudTooltip>
                 }
 

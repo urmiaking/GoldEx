@@ -6,7 +6,15 @@
 <PageTitle>مدیریت نمادها</PageTitle>
 
 <MudText Typo="Typo.h6" GutterBottom="true">مدیریت نمادها</MudText>
-<hr />
+<MudDivider Class="my-4" />
+
+@if (_showAlert)
+{
+    <MudAlert Class="mb-4" ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Info" Elevation="3"
+              Variant="Variant.Filled" ShowCloseIcon="true" CloseIconClicked="() => CloseAlert(true)">
+        با انتخاب هر کدام از آیتم های زیر، قیمت آن در تابلوی قیمت ها نمایش داده می شود.
+    </MudAlert>
+}
 
 <MudPaper Elevation="3">
     <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">  
