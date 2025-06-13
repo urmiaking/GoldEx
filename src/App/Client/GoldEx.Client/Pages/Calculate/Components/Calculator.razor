@@ -91,9 +91,8 @@
                     <MudNumericField Adornment="Adornment.End"
                                      AdornmentText="@_gramPriceAdornmentText"
                                      For="() => _model.GramPrice"
-                                     Format="G29"
+                                     Format="#,##0.##"
                                      HideSpinButtons="true"
-                                     HelperText="@_gramPriceHelperText"
                                      Immediate="true"
                                      Margin="Margin.Dense"
                                      Label="@(_model.GetDisplayName(() => _model.GramPrice))"
@@ -189,9 +188,8 @@
                                 <MudNumericField Adornment="Adornment.End"
                                                  AdornmentText="@_wageFieldAdornmentText"
                                                  For="() => _model.Wage"
-                                                 Format="G29"
+                                                 Format="#,##0.##"
                                                  HideSpinButtons="true"
-                                                 HelperText="@_wageFieldHelperText"
                                                  Immediate="true"
                                                  Margin="Margin.Dense"
                                                  Label="@(_model.GetDisplayName(() => _model.Wage))"
@@ -232,9 +230,8 @@
                         else
                         {
                             <MudNumericField For="() => _model.ExchangeRate"
-                                             Format="G29"
+                                             Format="#,##0.########"
                                              HideSpinButtons="true"
-                                             HelperText="@_wageExchangeRateHelperText"
                                              Immediate="true"
                                              Margin="Margin.Dense"
                                              Label="@_wageExchangeRateLabel"
@@ -280,7 +277,7 @@
                     <MudNumericField Adornment="Adornment.End"
                                      AdornmentText="@_extraCostsAdornmentText"
                                      For="() => _model.ExtraCosts"
-                                     Format="G29"
+                                     Format="#,##0.##"
                                      HideSpinButtons="true"
                                      Immediate="true"
                                      Margin="Margin.Dense"
@@ -309,46 +306,46 @@
                 }
                 else
                 {
-                    <MudExpansionPanel Text="@($"قیمت نهایی جنس : {_finalPrice.FormatNumber()} {_model.PriceUnit?.Title}")">
+                    <MudExpansionPanel Text="@($"قیمت نهایی جنس : {_finalPrice?.ToCurrencyFormat()} {_model.PriceUnit?.Title}")">
                         <div class="d-flex flex-column gap-3 mt-2">
                             @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.OldGold ? "× (750 / 735)" : "")</MudText>
-                                    <MudText>@_rawPrice.Value.FormatNumber() @_model.PriceUnit?.Title</MudText>
+                                    <MudText>@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
                             }
                             @if (_wage.HasValue && _wage.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>اجرت ساخت: @(_model.WageType is WageType.Fixed ? "مبلغ ثابت" : $"{_model.Wage:G29}% قیمت طلا")</MudText>
-                                    <MudText>@_wage.Value.FormatNumber() @_model.PriceUnit?.Title</MudText>
+                                    <MudText>اجرت ساخت: @(_model.WageType is WageType.Fixed ? "مبلغ ثابت" : $"{_model.Wage?.ToCurrencyFormat()}% قیمت طلا")</MudText>
+                                    <MudText>@_wage.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
                             }
                             @if (_profit.HasValue && _profit.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent.ToString("G29")%</MudText>
-                                    <MudText>@_profit.Value.FormatNumber() @_model.PriceUnit?.Title</MudText>
+                                    <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent.ToCurrencyFormat()%</MudText>
+                                    <MudText>@_profit.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
                             }
                             @if (_tax.HasValue && _tax.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent.ToString("G29")%</MudText>
-                                    <MudText>@_tax.Value.FormatNumber() @_model.PriceUnit?.Title</MudText>
+                                    <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent.ToCurrencyFormat()%</MudText>
+                                    <MudText>@_tax.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
                             }
                             @if (_model.ExtraCosts.HasValue && _model.ExtraCosts.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <MudText>هزینه های جانبی</MudText>
-                                    <MudText>@_model.ExtraCosts.Value.FormatNumber() @_model.PriceUnit?.Title</MudText>
+                                    <MudText>@_model.ExtraCosts?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
                             }
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <MudText>مجموع:</MudText>
-                                <MudText Typo="Typo.h6">@_finalPrice.Value.FormatNumber() @_model.PriceUnit?.Title</MudText>
+                                <MudText Typo="Typo.h6">@_finalPrice?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                             </div>
                         </div>
 

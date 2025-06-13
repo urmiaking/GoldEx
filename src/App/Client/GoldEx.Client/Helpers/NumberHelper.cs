@@ -12,10 +12,6 @@ public static class NumberHelper
             "#,##0.#############################");
     }
 
-    public static string FormatNumber(this decimal number)
-    {
-        return number.ToString(number % 1 == 0 ?
-            "N0" :
-            "#,##0.#############################");
-    }
+    public static string ToCurrencyFormat(this decimal number) => number.ToString("#,##0.##");
+
 }

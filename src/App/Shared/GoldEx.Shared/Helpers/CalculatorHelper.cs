@@ -21,7 +21,7 @@ public class CalculatorHelper
 
         var gramPrice24 = gramPrice / 0.75m;
         var caratRatio = GetCaratRatio(caratType);
-        return Math.Round(weight * gramPrice24 * caratRatio, 2, MidpointRounding.AwayFromZero);
+        return weight * gramPrice24 * caratRatio;
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class CalculatorHelper
                 return 0;
         }
 
-        return Math.Round(wage, 2, MidpointRounding.AwayFromZero);
+        return wage;
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class CalculatorHelper
         if (productType is ProductType.OldGold or ProductType.MoltenGold)
             return 0;
 
-        return Math.Round((rawPrice + wage) * (profitPercent / 100), 2, MidpointRounding.AwayFromZero);
+        return (rawPrice + wage) * (profitPercent / 100);
     }
 
     /// <summary> 
@@ -86,7 +86,7 @@ public class CalculatorHelper
         if (productType is ProductType.OldGold or ProductType.MoltenGold)
             return 0;
 
-        return Math.Round((wage + profit) * (taxPercent / 100), 2, MidpointRounding.AwayFromZero);
+        return (wage + profit) * (taxPercent / 100);
     }
 
     /// <summary>
@@ -106,7 +106,7 @@ public class CalculatorHelper
             return rawPrice + (additionalPrices ?? 0);
         }
 
-        return Math.Round(rawPrice + wage + profit + tax + (additionalPrices ?? 0), 2, MidpointRounding.AwayFromZero);
+        return rawPrice + wage + profit + tax + (additionalPrices ?? 0);
     }
 
     /// <summary>
