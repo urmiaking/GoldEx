@@ -37,7 +37,6 @@ public class CustomerVm
     [Display(Name = "واحد سقف اعتبار مشتری")]
     public GetPriceUnitTitleResponse? CreditLimitPriceUnit { get; set; }
 
-    public string? CreditLimitHelperText { get; set; }
     public bool CreditLimitMenuOpen { get; set; }
 
     internal static CustomerVm CreateFrom(GetCustomerResponse response)

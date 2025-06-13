@@ -23,7 +23,6 @@ public partial class EditorForm
     private readonly InvoiceValidator _invoiceValidator = new();
     private GetSettingResponse? _setting;
     private GetPriceResponse? _gramPrice;
-    private InvoiceItemVm? _selectedInvoiceItem;
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _barcode;
@@ -32,6 +31,7 @@ public partial class EditorForm
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
     private bool _paymentsMenuOpen;
+    private string? _customerCreditLimitAdornmentText;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -71,6 +71,10 @@ public partial class EditorForm
                 if (Model.InvoicePriceUnit is null)
                 {
                     Model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                    Model.Customer.CreditLimitPriceUnit = response.FirstOrDefault(x => x.IsDefault);
+
+                    _customerCreditLimitAdornmentText = Model.Customer.CreditLimitPriceUnit?.Title;
+
                     StateHasChanged();
                 }
             });
@@ -83,18 +87,19 @@ public partial class EditorForm
     private void OnCustomerCreditLimitChanged(decimal? creditLimit)
     {
         Model.Customer.CreditLimit = creditLimit;
-        Model.Customer.CreditLimitHelperText = $"{creditLimit.FormatNumber()} {Model.Customer.CreditLimitPriceUnit?.Title}".Trim();
+        _customerCreditLimitAdornmentText = Model.Customer.CreditLimitPriceUnit?.Title;
     }
 
-    private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? unitType)
+    private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
-        Model.Customer.CreditLimitPriceUnit = unitType;
-        Model.Customer.CreditLimitHelperText = $"{Model.Customer.CreditLimit.FormatNumber()} {unitType?.Title}".Trim();
+        Model.Customer.CreditLimitPriceUnit = priceUnit;
+        _customerCreditLimitAdornmentText = priceUnit?.Title;
     }
 
     private void SelectCustomerCreditLimitUnit(GetPriceUnitTitleResponse selectedUnit)
     {
         OnCreditLimitUnitChanged(selectedUnit);
+        _customerCreditLimitAdornmentText = selectedUnit.Title;
         Model.Customer.CreditLimitMenuOpen = false;
     }
 

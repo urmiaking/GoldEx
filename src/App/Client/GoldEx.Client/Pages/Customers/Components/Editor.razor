@@ -35,21 +35,20 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
-                    <MudMenu @bind-Open="Model.CreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                    <MudMenu @bind-Open="Model.CreditLimitMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
                         <ActivatorContent>
-                            <MudNumericField HelperText="@Model.CreditLimitHelperText"
-                                             Value="Model.CreditLimit"
+                            <MudNumericField Value="Model.CreditLimit"
                                              ValueChanged="OnCreditLimitChanged"
                                              T="decimal?"
                                              HideSpinButtons="true"
-                                             Format="G29"
+                                             Format="#,##0.##"
                                              Immediate="true"
                                              For="@(() => Model.CreditLimit)"
                                              Label="@(Model.GetDisplayName(() => Model.CreditLimit))"
                                              Margin="Margin.Dense"
                                              Variant="Variant.Outlined"
                                              Adornment="Adornment.End"
-                                             AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                             AdornmentText="@_creditLimitAdornmentText"
                                              OnAdornmentClick="() => Model.CreditLimitMenuOpen = true" />
                         </ActivatorContent>
                         <ChildContent>
