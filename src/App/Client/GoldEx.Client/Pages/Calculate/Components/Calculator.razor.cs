@@ -23,7 +23,6 @@ public partial class Calculator
 
     private string? _wageFieldAdornmentText = "درصد";
     private string? _gramPriceAdornmentText;
-    private string? _gramPriceHelperText;
     private string? _extraCostsAdornmentText;
     private bool _wageFieldMenuOpen;
 
@@ -41,8 +40,6 @@ public partial class Calculator
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     private string? _wageExchangeRateLabel;
-    private string? _wageFieldHelperText;
-    private string? _wageExchangeRateHelperText;
 
     private bool _isInitialLoading = true;
     private bool _isBarcodeProcessing = false;
@@ -124,10 +121,9 @@ public partial class Calculator
 
                 decimal.TryParse(response?.Value, out var gramPriceValue);
 
-                _model.GramPrice = Math.Round(gramPriceValue, 3, MidpointRounding.AwayFromZero);
+                _model.GramPrice = gramPriceValue;
 
                 _gramPriceAdornmentText = response?.Unit;
-                _gramPriceHelperText = $"{_model.GramPrice.FormatNumber()} {response?.Unit}";
             });
     }
 
@@ -243,8 +239,7 @@ public partial class Calculator
 
     private async void OnGramPriceChanged(decimal gramPrice)
     {
-        _model.GramPrice = Math.Round(gramPrice, 3, MidpointRounding.AwayFromZero);
-        _gramPriceHelperText = $"{_model.GramPrice.FormatNumber()} {_model.PriceUnit?.Title}";
+        _model.GramPrice = gramPrice;
 
         await Calculate();
     }
@@ -406,7 +401,7 @@ public partial class Calculator
                     {
                         if (response.ExchangeRate.HasValue)
                         {
-                            _model.ExchangeRate = Math.Round(response.ExchangeRate.Value, 7, MidpointRounding.AwayFromZero);
+                            _model.ExchangeRate = response.ExchangeRate.Value;
                         }
                     });
         }
@@ -431,20 +426,16 @@ public partial class Calculator
         if (_model.WageType is WageType.Fixed)
         {
             _wageFieldAdornmentText = _model.WagePriceUnit?.Title;
-            _wageFieldHelperText = _model.Wage is not null ? $"{_model.Wage.FormatNumber()} {_model.WagePriceUnit?.Title}" : null;
 
             if (_model.WagePriceUnit?.Id != _model.PriceUnit?.Id)
             {
                 _wageExchangeRateLabel = $"نرخ تبدیل {_model.WagePriceUnit?.Title} به {_model.PriceUnit?.Title}";
-                _wageExchangeRateHelperText = _model.ExchangeRate.HasValue ? $"{_model.ExchangeRate.FormatNumber()} {_model.PriceUnit?.Title}" : "";
             }
         }
         else
         {
             _wageFieldAdornmentText = "درصد";
-            _wageFieldHelperText = null;
             _wageExchangeRateLabel = null;
-            _wageExchangeRateHelperText = null;
             _model.ExchangeRate = null;
         }
     }
