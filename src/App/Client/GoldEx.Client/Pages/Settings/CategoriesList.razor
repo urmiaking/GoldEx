@@ -10,11 +10,11 @@
     <MudText Typo="Typo.h6" GutterBottom="true">دسته بندی اجناس</MudText>
     
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Label="افزودن دسته جدید" Size="Size.Small" OnClick="_ => OnCreateCategory()" />
+        <MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Size="Size.Small" OnClick="_ => OnCreateCategory()">افزودن دسته جدید</MudButton>
     </MudHidden>
 
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="_ => OnCreateCategory()" />
+        <MudIconButton Color="Color.Success" Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" OnClick="_ => OnCreateCategory()" />
     </MudHidden>
 </div>
 <MudDivider Class="my-2" />
@@ -32,10 +32,12 @@
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="ویرایش">
-                    <MudFab Color="Color.Primary" EndIcon="@Icons.Material.Filled.Edit" OnClick="_ => OnEditCategory(context)" Size="Size.Small"></MudFab>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEditCategory(context)"></MudIconButton>
                 </MudTooltip>
                 <MudTooltip Text="حذف">
-                    <MudFab Color="@Color.Error" EndIcon="@Icons.Material.Filled.Delete" OnClick="@(_ => OnRemoveCategory(context))" Size="@Size.Small"></MudFab>
+                    <MudIconButton OnClick="@(_ => OnRemoveCategory(context))" ClickPropagation="true"
+                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                 </MudTooltip>
             </div>
         </MudTd>
