@@ -11,12 +11,13 @@ public class CalculatorHelper
     /// <param name="gramPrice">نرخ گرم بر اساس ریال</param>
     /// <param name="caratType">عیار</param>
     /// <param name="productType">نوع محصول</param>
+    /// <param name="oldGoldCarat"></param>
     /// <returns>قیمت خام طلا</returns>
-    public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, CaratType caratType, ProductType productType)
+    public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, CaratType caratType, ProductType productType, int? oldGoldCarat = null)
     {
-        if (productType == ProductType.OldGold)
+        if (productType == ProductType.OldGold && oldGoldCarat.HasValue)
         {
-            return weight * 735 / 750 * gramPrice;
+            return weight * oldGoldCarat.Value / 750 * gramPrice;
         }
 
         var gramPrice24 = gramPrice / 0.75m;

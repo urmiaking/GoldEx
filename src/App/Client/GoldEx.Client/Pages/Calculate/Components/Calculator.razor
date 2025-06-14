@@ -132,20 +132,34 @@
                 }
                 else
                 {
-                    <MudSelect Adornment="Adornment.End"
-                               For="() => _model.CaratType"
-                               Immediate="true"
-                               Margin="Margin.Dense"
-                               Label="@(_model.GetDisplayName(() => _model.CaratType))"
-                               T="CaratType"
-                               Value="_model.CaratType"
-                               ValueChanged="OnCaratTypeChanged"
-                               Variant="Variant.Outlined">
-                        @foreach (CaratType caratType in Enum.GetValues(typeof(CaratType)))
-                        {
-                            <MudSelectItem Value="@caratType">@caratType.GetDisplayName()</MudSelectItem>
-                        }
-                    </MudSelect>
+                    @if (_model.ProductType != ProductType.OldGold)
+                    {
+                        <MudSelect Adornment="Adornment.End"
+                                   For="() => _model.CaratType"
+                                   Immediate="true"
+                                   Margin="Margin.Dense"
+                                   Label="@(_model.GetDisplayName(() => _model.CaratType))"
+                                   T="CaratType"
+                                   Value="_model.CaratType"
+                                   ValueChanged="OnCaratTypeChanged"
+                                   Variant="Variant.Outlined">
+                            @foreach (CaratType caratType in Enum.GetValues(typeof(CaratType)))
+                            {
+                                <MudSelectItem Value="@caratType">@caratType.GetDisplayName()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        <MudNumericField For="() => _model.OldGoldCarat"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(_model.GetDisplayName(() => _model.OldGoldCarat))"
+                                         T="int?"
+                                         Value="_model.OldGoldCarat"
+                                         ValueChanged="OnOldGoldCaratChanged"
+                                         Variant="Variant.Outlined"></MudNumericField>
+                    }
                 }
             </MudItem>
 
@@ -311,7 +325,7 @@
                             @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.OldGold ? "× (750 / 735)" : "")</MudText>
+                                    <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.OldGold ? $"× (750 / {_model.OldGoldCarat})" : "")</MudText>
                                     <MudText>@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
                             }

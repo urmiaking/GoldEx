@@ -46,8 +46,8 @@ public class ApiUrls
         public static string Get(MarketType marketType) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetMarket).FormatRoute(new { marketType });
 
-        public static string Get(UnitType unitType, Guid? priceUnitId) =>
-            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetUnit).FormatRoute(new { unitType, priceUnitId });
+        public static string Get(UnitType unitType, Guid? priceUnitId, bool? applySafetyMargin = true) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetUnit).FormatRoute(new { unitType, priceUnitId }).AppendQueryString(new { applySafetyMargin });
 
         public static string GetByPriceUnit(Guid priceUnitId) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetByPriceUnit).FormatRoute(new { priceUnitId });
