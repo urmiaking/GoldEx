@@ -139,7 +139,8 @@ public static class ServiceProviderExtensions
                 defaultSetting.TaxPercent,
                 defaultSetting.GoldProfitPercent,
                 defaultSetting.JewelryProfitPercent,
-                0,
+                defaultSetting.GoldSafetyMarginPercent,
+                defaultSetting.OldGoldCarat,
                 defaultSetting.PriceUpdateInterval);
 
             await serverSettingService.CreateAsync(setting);

@@ -42,6 +42,7 @@ internal class SettingService(ISettingRepository repository,
             request.GoldProfitPercent,
             request.JewelryProfitPercent,
             request.GoldSafetyMarginPercent,
+            request.OldGoldCarat,
             request.PriceUpdateInterval);
 
         await repository.CreateAsync(setting, cancellationToken);
@@ -71,6 +72,7 @@ internal class SettingService(ISettingRepository repository,
         item.SetJewelryProfit(request.JewelryProfitPercent);
         item.SetPriceUpdateInterval(request.PriceUpdateInterval);
         item.SetGoldSafetyMargin(request.GoldSafetyMarginPercent);
+        item.SetOldGoldCarat(request.OldGoldCarat);
 
         await repository.UpdateAsync(item, cancellationToken);
 

@@ -36,6 +36,10 @@ public class SettingsVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public decimal GoldSafetyMarginPercent { get; set; }
 
+    [Display(Name = "عیار طلای کهنه")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public decimal OldGoldCarat { get; set; }
+
     [Display(Name = "زمان بروز رسانی قیمت ها")]
     public TimeSpan PriceUpdateInterval { get; set; }
 
@@ -57,6 +61,7 @@ public class SettingsVm
             JewelryProfitPercent,
             PriceUpdateInterval,
             GoldSafetyMarginPercent,
+            OldGoldCarat,
             IconContent);
     }
 
@@ -73,6 +78,7 @@ public class SettingsVm
             JewelryProfitPercent = response.JewelryProfitPercent,
             PriceUpdateInterval = response.PriceUpdateInterval,
             GoldSafetyMarginPercent = response.GoldSafetyMarginPercent,
+            OldGoldCarat = response.OldGoldCarat,
             HasIcon = response.HasIcon
         };
     }

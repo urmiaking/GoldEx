@@ -8,4 +8,5 @@ public record CreateSettingRequest(
     decimal GoldProfitPercent,
     decimal JewelryProfitPercent,
     decimal GoldSafetyMarginPercent,
+    decimal OldGoldCarat,
     TimeSpan PriceUpdateInterval);

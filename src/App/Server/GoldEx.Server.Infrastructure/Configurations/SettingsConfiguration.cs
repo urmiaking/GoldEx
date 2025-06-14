@@ -37,5 +37,8 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
 
         builder.Property(x => x.GoldSafetyMarginPercent)
             .HasPrecision(9, 6);
+
+        builder.Property(x => x.OldGoldCarat)
+            .HasPrecision(9, 6);
     }
 }

@@ -31,5 +31,8 @@ internal class CreateSettingRequestValidator : AbstractValidator<CreateSettingRe
 
         RuleFor(x => x.GoldSafetyMarginPercent)
             .InclusiveBetween(0, 100).WithMessage("درصد حاشیه ایمن طلا باید بین 0 تا 100 باشد.");
+
+        RuleFor(x => x.OldGoldCarat)
+            .InclusiveBetween(0, 1000).WithMessage("عیار طلای کهنه باید بین 0 تا 1000 باشد.");
     }
 }

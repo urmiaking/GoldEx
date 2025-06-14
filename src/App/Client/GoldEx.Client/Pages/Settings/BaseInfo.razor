@@ -100,6 +100,16 @@
                              HideSpinButtons="true"
                              For="() => _model.GoldSafetyMarginPercent"></MudNumericField>
         </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudNumericField Adornment="Adornment.End"
+                             AdornmentIcon="@Icons.Material.Filled.Percent"
+                             @bind-Value="_model.OldGoldCarat"
+                             Variant="Variant.Outlined"
+                             Format="G29"
+                             Label="@_model.GetDisplayName(() => _model.OldGoldCarat)"
+                             HideSpinButtons="true"
+                             For="() => _model.OldGoldCarat"></MudNumericField>
+        </MudItem>
     </MudGrid>
 
     <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">قیمت</MudText>
