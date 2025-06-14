@@ -89,7 +89,7 @@ public partial class TransactionsList
     {
         var parameters = new DialogParameters<Remove>
         {
-            { x => x.Id, model.Id },
+            { x => x.Id, model.TransactionId },
             { x => x.TransactionNumber, model.TransactionNumber }
         };
 
@@ -108,7 +108,7 @@ public partial class TransactionsList
     {
         var parameters = new DialogParameters<Editor>
         {
-            { x => x.Id, model.Id }
+            { x => x.Model, model }
         };
 
         var dialog = await DialogService.ShowAsync<Editor>("ویرایش تراکنش", parameters, _dialogOptions);

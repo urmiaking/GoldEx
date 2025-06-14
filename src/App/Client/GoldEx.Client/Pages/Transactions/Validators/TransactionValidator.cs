@@ -4,7 +4,7 @@ using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Transactions.Validators;
 
-public class TransactionValidator : AbstractValidator<TransactionEditorVm>
+public class TransactionValidator : AbstractValidator<TransactionVm>
 {
     public TransactionValidator()
     {
@@ -47,14 +47,14 @@ public class TransactionValidator : AbstractValidator<TransactionEditorVm>
         });
     }
 
-    private static bool HaveAtLeastCreditOrDebitInfo(TransactionEditorVm transaction)
+    private static bool HaveAtLeastCreditOrDebitInfo(TransactionVm transaction)
     {
         return transaction.Credit.HasValue || transaction.Debit.HasValue;
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
     {
-        var result = await ValidateAsync(ValidationContext<TransactionEditorVm>.CreateWithOptions((TransactionEditorVm)model,
+        var result = await ValidateAsync(ValidationContext<TransactionVm>.CreateWithOptions((TransactionVm)model,
             x => x.IncludeProperties(propertyName)));
         return result.IsValid ? Array.Empty<string>() : result.Errors.Select(e => e.ErrorMessage);
     };
