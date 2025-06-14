@@ -9,11 +9,11 @@
     <MudText Typo="Typo.h6" GutterBottom="true">مدیریت واحدهای ارزی</MudText>
     
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Label="افزودن واحد ارزی جدید" Size="Size.Small" OnClick="_ => OnCreate()" />
+        <MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Size="Size.Small" OnClick="_ => OnCreate()">افزودن واحد ارزی جدید</MudButton>
     </MudHidden>
 
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="_ => OnCreate()" />
+        <MudIconButton Color="Color.Success" Icon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Size="Size.Small" OnClick="_ => OnCreate()" />
     </MudHidden>
 </div>
 <MudDivider Class="my-2" />
@@ -48,24 +48,28 @@
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="ویرایش">
-                    <MudFab Color="Color.Primary" EndIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="_ => OnEdit(context)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
                 </MudTooltip>
                 @if (context.IsActive)
                 {
                     <MudTooltip Text="غیرفعال سازی">
-                        <MudFab Color="Color.Error" EndIcon="@Icons.Material.Filled.Lock" Size="Size.Small" OnClick="_ => OnStatusChanged(context)" />
+                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Lock" Color="@Color.Error"></MudIconButton>
                     </MudTooltip>
                 }
                 else
                 {
                     <MudTooltip Text="فعال سازی">
-                        <MudFab Color="Color.Success" EndIcon="@Icons.Material.Filled.LockOpen" Size="Size.Small" OnClick="_ => OnStatusChanged(context)" />
+                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Success"></MudIconButton>
                     </MudTooltip>
                 }
                 @if (context is { IsDefault: false, IsActive: true })
                 {
                     <MudTooltip Text="تنظیم به عنوان ارز پیش فرض">
-                        <MudFab Color="Color.Info" EndIcon="@Icons.Material.Filled.Check" Size="Size.Small" OnClick="_ => OnSetAsDefault(context.Id)" />
+                        <MudIconButton OnClick="@(_ => OnSetAsDefault(context.Id))" Size="@Size.Small" Variant="@Variant.Filled"
+                                       Icon="@Icons.Material.Filled.Check" Color="@Color.Success"></MudIconButton>
                     </MudTooltip>
                 }
             </div>
