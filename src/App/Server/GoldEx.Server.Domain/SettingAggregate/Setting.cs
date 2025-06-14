@@ -12,17 +12,20 @@ public class Setting : EntityBase<SettingsId>
         decimal goldProfitPercent,
         decimal jewelryProfitPercent,
         decimal goldSafetyMarginPercent,
+        decimal oldGoldCarat,
         TimeSpan priceUpdateInterval)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(goldProfitPercent, 0, nameof(goldProfitPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(jewelryProfitPercent, 0, nameof(jewelryProfitPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(goldSafetyMarginPercent, 0, nameof(goldSafetyMarginPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(oldGoldCarat, 0, nameof(oldGoldCarat));
 
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(goldProfitPercent, 100, nameof(goldProfitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(jewelryProfitPercent, 100, nameof(jewelryProfitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(goldSafetyMarginPercent, 100, nameof(goldSafetyMarginPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(oldGoldCarat, 1000, nameof(oldGoldCarat));
 
         return new Setting
         {
@@ -34,6 +37,7 @@ public class Setting : EntityBase<SettingsId>
             GoldProfitPercent = goldProfitPercent,
             JewelryProfitPercent = jewelryProfitPercent,
             GoldSafetyMarginPercent = goldSafetyMarginPercent,
+            OldGoldCarat = oldGoldCarat,
             PriceUpdateInterval = priceUpdateInterval
         };
     }
@@ -49,6 +53,7 @@ public class Setting : EntityBase<SettingsId>
     public decimal GoldProfitPercent { get; private set; }
     public decimal GoldSafetyMarginPercent { get; private set; }
     public decimal JewelryProfitPercent { get; private set; }
+    public decimal OldGoldCarat { get; private set; }
     public TimeSpan PriceUpdateInterval { get; private set; }
 
     public void SetInstitutionName(string institutionName) => InstitutionName = institutionName;
@@ -80,4 +85,10 @@ public class Setting : EntityBase<SettingsId>
 
     public void SetGoldSafetyMargin(decimal safetyMargin) => GoldSafetyMarginPercent = safetyMargin;
     public void SetPriceUpdateInterval(TimeSpan interval) => PriceUpdateInterval = interval;
+    public void SetOldGoldCarat(decimal oldGoldCarat)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(oldGoldCarat, 0, nameof(oldGoldCarat));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(oldGoldCarat, 1000, nameof(oldGoldCarat));
+        OldGoldCarat = oldGoldCarat;
+    }
 }

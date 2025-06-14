@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Calculate.Validators;
+﻿using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -109,6 +108,7 @@ public partial class Calculator
 
                 _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 _model.TaxPercent = _settings?.TaxPercent ?? 9;
+                _model.OldGoldCarat = (int?)_settings?.OldGoldCarat ?? 735;
             });
     }
 
@@ -291,7 +291,7 @@ public partial class Calculator
                 break;
             case ProductType.OldGold:
                 _applySafetyMargin = false;
-                _model.OldGoldCarat = 735; // Default carat for old gold
+                _model.OldGoldCarat = (int?)_settings?.OldGoldCarat ?? 735;
                 await _wageField.ResetAsync();
                 await _wageTypeField.ResetAsync();
                 await _profitField.ResetAsync();

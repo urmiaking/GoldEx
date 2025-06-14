@@ -50,16 +50,4 @@ public partial class BaseInfo
         await LoadSettingsAsync();
         StateHasChanged();
     }
-
-    //private void OnFileChanged(IBrowserFile file)
-    //{
-    //    var buffer = new byte[file.Size];
-    //    file.OpenReadStream().Read(buffer);
-
-    //    _model.IconContent = buffer;
-
-    //    _model.HasIcon = true;
-
-    //    StateHasChanged();
-    //}
 }
