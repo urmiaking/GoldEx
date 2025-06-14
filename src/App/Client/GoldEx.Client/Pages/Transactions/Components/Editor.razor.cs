@@ -23,6 +23,8 @@ public partial class Editor
     private bool _isCreditMenuOpen;
     private bool _isCreditLimitMenuOpen;
     private string? _creditLimitAdornmentText;
+    private string? _creditAdornmentText;
+    private string? _debitAdornmentText;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     protected override async Task OnParametersSetAsync()
@@ -30,6 +32,8 @@ public partial class Editor
         if (Model.TransactionId.HasValue)
         {
             SetCreditLimitAdornmentText();
+            SetCreditAdornmentText();
+            SetDebitAdornmentText();
             OnDebitChanged(Model.Debit);
             OnCreditChanged(Model.Credit);
         }
@@ -46,8 +50,11 @@ public partial class Editor
 
     private async Task LoadCustomerAsync()
     {
+        if (!CustomerId.HasValue)
+            return;
+
         await SendRequestAsync<ICustomerService, GetCustomerResponse>(
-            action: (s, ct) => s.GetAsync(Model.Customer.Id, ct),
+            action: (s, ct) => s.GetAsync(CustomerId.Value, ct),
             afterSend: response =>
             {
                 Model.Customer = CustomerVm.CreateFrom(response);
@@ -59,16 +66,18 @@ public partial class Editor
     {
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
-            afterSend: response =>
+            afterSend: async response =>
             {
                 _priceUnits = response;
 
-                if (Model.Customer.CreditLimitPriceUnit is null)
-                {
-                    var selectedUnit = _priceUnits.FirstOrDefault(u => u.IsDefault);
-                    
-                    OnCustomerCreditLimitUnitChanged(selectedUnit);
-                }
+                if (Model.Customer.CreditLimitPriceUnit is null) 
+                    OnCustomerCreditLimitUnitChanged(_priceUnits.FirstOrDefault(u => u.IsDefault));
+
+                if (Model.DebitUnit is null) 
+                    await OnDebitUnitChanged(_priceUnits.FirstOrDefault(u => u.IsDefault));
+
+                if (Model.CreditUnit is null)
+                    await OnCreditUnitChanged(_priceUnits.FirstOrDefault(u => u.IsDefault));
             });
     }
 
@@ -145,6 +154,7 @@ public partial class Editor
     private async Task OnDebitUnitChanged(GetPriceUnitTitleResponse? debitUnit)
     {
         Model.DebitUnit = debitUnit;
+        SetDebitAdornmentText();
 
         if (debitUnit != null)
             await SendRequestAsync<IPriceService, GetPriceResponse?>(
@@ -179,6 +189,7 @@ public partial class Editor
     private async Task OnCreditUnitChanged(GetPriceUnitTitleResponse? creditUnit)
     {
         Model.CreditUnit = creditUnit;
+        SetCreditAdornmentText();
 
         if (creditUnit != null)
             await SendRequestAsync<IPriceService, GetPriceResponse?>(
@@ -189,6 +200,7 @@ public partial class Editor
                         OnCreditRateChanged(decimal.Parse(response.Value));
                     else
                         OnCreditRateChanged(null);
+
                 });
     }
 
@@ -215,6 +227,7 @@ public partial class Editor
     private void OnCustomerNationalIdCleared()
     {
         Model.Customer = new CustomerVm();
+        SetCreditLimitAdornmentText();
     }
 
     private async Task SelectDebitUnit(GetPriceUnitTitleResponse selectedUnit)
@@ -241,6 +254,19 @@ public partial class Editor
         _creditLimitAdornmentText = Model.Customer.CreditLimitPriceUnit?.Title;
         StateHasChanged();
     }
+
+    private void SetCreditAdornmentText()
+    {
+        _creditAdornmentText = Model.CreditUnit?.Title;
+        StateHasChanged();
+    }
+
+    private void SetDebitAdornmentText()
+    {
+        _debitAdornmentText = Model.DebitUnit?.Title;
+        StateHasChanged();
+    }
+
 
     private void Close() => MudDialog.Cancel();
 }
