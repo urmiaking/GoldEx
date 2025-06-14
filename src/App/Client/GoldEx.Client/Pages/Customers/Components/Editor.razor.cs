@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Customers.Validators;
+﻿using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services;
@@ -11,7 +10,7 @@ namespace GoldEx.Client.Pages.Customers.Components;
 public partial class Editor
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public CustomerVm Model { get; set; } = CustomerVm.CreateDefaultInstance();
+    [Parameter] public CustomerVm Model { get; set; } = new();
     [Parameter] public Guid? Id { get; set; }
 
     private readonly CustomerValidator _customerValidator = new();

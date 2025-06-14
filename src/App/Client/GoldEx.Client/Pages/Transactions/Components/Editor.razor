@@ -1,26 +1,19 @@
-﻿@using GoldEx.Client.Helpers
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
-<MudForm Model="_model" @ref="@_form" Validation="@(_transactionValidator.ValidateValue)" ValidationDelay="0">
+<MudForm Model="Model" @ref="@_form" Validation="@(_transactionValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
 
             <div class="d-flex align-center justify-content-between">
                 <MudText Typo="Typo.h6" GutterBottom="true">مشخصات مشتری</MudText>
-                @if (_model is { CustomerCreditRemaining: not null, CustomerCreditRemainingUnit: not null })
-                {
-                    <MudText Typo="Typo.body1" Class="d-none d-sm-flex">
-                        اعتبار باقی مانده مشتری: @($"{_model.CustomerCreditRemaining.FormatNumber()} {_model.CustomerCreditRemainingUnit.Title}")
-                    </MudText>
-                }
             </div>
             <MudDivider Class="mb-2" />
             <MudGrid>
-                <MudItem xs="12" md="4" lg="2">
+                <MudItem xs="12" md="2">
                     <MudSelect T="CustomerType"
-                               Value="_model.CustomerType"
+                               Value="Model.Customer.CustomerType"
                                Label="نوع مشتری"
-                               For="() => _model.CustomerType"
+                               For="() => Model.Customer.CustomerType"
                                Margin="Margin.Dense"
                                Variant="Variant.Outlined">
                         @foreach (var item in Enum.GetValues<CustomerType>())
@@ -29,47 +22,52 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="4" lg="2">
-                    <MudTextField Value="_model.CustomerNationalId"
-                                  ValueChanged="OnCustomerNationalIdChanged"
-                                  Variant="Variant.Outlined"
-                                  Immediate="true"
+                <MudItem xs="12" md="2">
+                    <MudTextField Value="Model.Customer.NationalId"
                                   T="string"
-                                  DebounceInterval="500"
-                                  For="@(() => _model.CustomerNationalId)"
-                                  Label="شناسه یکتا"
-                                  Clearable="true"
-                                  OnClearButtonClick="OnCustomerNationalIdCleared"
-                                  HelperText="کد ملی یا شناسه یکتای مشتری"
-                                  HelperTextOnFocus="true"
-                                  Margin="Margin.Dense" />
-                </MudItem>
-                <MudItem xs="12" md="4" lg="4" Class="pt-lg-6 pt-md-6 pt-sm-0">
-                    <MudTextField @bind-Value="_model.CustomerFullName"
-                                  Variant="Variant.Outlined"
+                                  ValueChanged="OnCustomerNationalIdChanged"
                                   Immediate="true"
-                                  Label="نام مشتری"
-                                  HelperText="نام و نام خانوادگی مشتری"
-                                  HelperTextOnFocus="true"
-                                  Margin="Margin.Dense"></MudTextField>
+                                  DebounceInterval="200"
+                                  For="@(() => Model.Customer.NationalId)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.NationalId))"
+                                  Margin="Margin.Dense"
+                                  AdornmentIcon="@Icons.Material.Filled.Person"
+                                  Adornment="Adornment.End"
+                                  Variant="Variant.Outlined" />
                 </MudItem>
-
-                <MudItem xs="12" md="12" lg="4" Class="pt-md-0 pt-lg-6">
-                    <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="Model.Customer.FullName"
+                                  For="@(() => Model.Customer.FullName)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.FullName))"
+                                  Margin="Margin.Dense"
+                                  AdornmentIcon="@Icons.Material.Filled.Person"
+                                  Adornment="Adornment.End"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="Model.Customer.PhoneNumber"
+                                  For="@(() => Model.Customer.PhoneNumber)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.PhoneNumber))"
+                                  Margin="Margin.Dense"
+                                  AdornmentIcon="@Icons.Material.Filled.Phone"
+                                  Adornment="Adornment.End"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudMenu @bind-Open="_isCreditLimitMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
                         <ActivatorContent>
-                            <MudNumericField Value="_model.CustomerCreditLimit"
+                            <MudNumericField Value="Model.Customer.CreditLimit"
                                              ValueChanged="OnCustomerCreditLimitChanged"
                                              T="decimal?"
-                                             Immediate="true"
-                                             For="@(() => _model.CustomerCreditLimit)"
-                                             Format="G29"
                                              HideSpinButtons="true"
-                                             HelperText="@_customerCreditLimitHelperText"
-                                             Label="سقف اعتبار"
+                                             Format="#,##0.##"
+                                             Immediate="true"
+                                             For="@(() => Model.Customer.CreditLimit)"
+                                             Label="@(Model.GetDisplayName(() => Model.Customer.CreditLimit))"
                                              Margin="Margin.Dense"
                                              Variant="Variant.Outlined"
                                              Adornment="Adornment.End"
-                                             AdornmentIcon="@Icons.Material.Filled.UnfoldMore"
+                                             AdornmentText="@_creditLimitAdornmentText"
                                              OnAdornmentClick="() => _isCreditLimitMenuOpen = true" />
                         </ActivatorContent>
                         <ChildContent>
@@ -90,23 +88,13 @@
                         </ChildContent>
                     </MudMenu>
                 </MudItem>
-
-                <MudItem xs="12" md="4" lg="4" Class="pt-lg-0 pt-md-0 pt-sm-6">
-                    <MudTextField @bind-Value="_model.CustomerPhoneNumber"
-                                  Variant="Variant.Outlined"
-                                  Immediate="true"
-                                  Label="شماره تماس"
-                                  HelperText="شماره تماس مشتری"
-                                  HelperTextOnFocus="true"
-                                  Margin="Margin.Dense"></MudTextField>
-                </MudItem>
-                <MudItem xs="12" md="8" lg="8" Class="pt-0">
-                    <MudTextField @bind-Value="_model.CustomerAddress"
-                                  For="@(() => _model.CustomerAddress)"
-                                  Label="آدرس"
-                                  HelperText="آدرس مشتری"
-                                  HelperTextOnFocus="true"
+                <MudItem xs="12" md="8">
+                    <MudTextField @bind-Value="Model.Customer.Address"
+                                  For="@(() => Model.Customer.Address)"
+                                  Label="@(Model.GetDisplayName(() => Model.Customer.Address))"
                                   Margin="Margin.Dense"
+                                  AdornmentIcon="@Icons.Material.Filled.Home"
+                                  Adornment="Adornment.End"
                                   Variant="Variant.Outlined" />
                 </MudItem>
             </MudGrid>
@@ -114,7 +102,7 @@
             <MudDivider Class="mb-2" />
             <MudGrid>
                 <MudItem xs="12" md="3" lg="2">
-                    <MudTextField @bind-Value="_model.TransactionNumber"
+                    <MudTextField @bind-Value="Model.TransactionNumber"
                                   Variant="Variant.Outlined"
                                   Immediate="true"
                                   Label="شماره تراکنش"
@@ -123,20 +111,20 @@
                                   Margin="Margin.Dense"></MudTextField>
                 </MudItem>
                 <MudItem xs="12" md="9" lg="6" Class="pt-md-6 pt-sm-0">
-                    <MudTextField @bind-Value="_model.Description"
+                    <MudTextField @bind-Value="Model.Description"
                                   Immediate="true"
-                                  For="@(() => _model.Description)"
+                                  For="@(() => Model.Description)"
                                   Label="شرح تراکنش"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" sm="6" md="6" lg="2" Class="pt-lg-6 pt-md-0 pt-sm-6">
-                    <MudDatePicker @bind-Date="_model.TransactionDate"
+                    <MudDatePicker @bind-Date="Model.TransactionDate"
                                    Color="Color.Secondary"
                                    Editable="true"
                                    AnchorOrigin="Origin.TopCenter"
                                    TransformOrigin="Origin.BottomCenter"
-                                   For="@(() => _model.TransactionDate)"
+                                   For="@(() => Model.TransactionDate)"
                                    HelperText="تاریخ ثبت تراکنش"
                                    HelperTextOnFocus="true"
                                    Label="تاریخ تراکنش"
@@ -147,7 +135,7 @@
                 </MudItem>
                 <MudItem xs="12" sm="6" md="6" lg="2" Class="pt-lg-6 pt-md-0 pt-sm-6">
                     <MudTimePicker AmPm="true"
-                                   @bind-Time="_model.TransactionTime"
+                                   @bind-Time="Model.TransactionTime"
                                    Label="زمان"
                                    HelperText="زمان ثبت تراکنش"
                                    HelperTextOnFocus="true"
@@ -164,19 +152,18 @@
                 <MudItem xs="12" md="12" lg="6">
                     <MudPaper Elevation="0" Class="">
                         <MudText Typo="Typo.body1" GutterBottom="true">
-                            بستانکار @(_model.CreditEquivalent.HasValue ? $" - معادل ریالی : {_model.CreditEquivalent:N0} ریال" : "")
+                            بستانکار @(Model.CreditEquivalent.HasValue ? $" - معادل ریالی : {Model.CreditEquivalent:N0} ریال" : "")
                         </MudText>
                         <MudGrid>
                             <MudItem xs="12" md="6" lg="6">
                                 <MudMenu @bind-Open="_isCreditMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                                     <ActivatorContent>
-                                        <MudNumericField Value="_model.Credit"
+                                        <MudNumericField Value="Model.Credit"
                                                          ValueChanged="OnCreditChanged"
-                                                         HelperText="@_creditHelperText"
                                                          T="decimal?"
                                                          Immediate="true"
-                                                         For="@(() => _model.Credit)"
-                                                         Format="G29"
+                                                         For="@(() => Model.Credit)"
+                                                         Format="#,##0.##"
                                                          HideSpinButtons="true"
                                                          Label="بستانکار"
                                                          Margin="Margin.Dense"
@@ -204,13 +191,12 @@
                                 </MudMenu>
                             </MudItem>
                             <MudItem xs="12" md="6" lg="6">
-                                <MudNumericField Value="_model.CreditRate"
+                                <MudNumericField Value="Model.CreditRate"
                                                  ValueChanged="OnCreditRateChanged"
-                                                 HelperText="@_creditRateHelperText"
                                                  T="decimal?"
                                                  Immediate="true"
-                                                 For="@(() => _model.CreditRate)"
-                                                 Format="G29"
+                                                 For="@(() => Model.CreditRate)"
+                                                 Format="#,##0.##"
                                                  HideSpinButtons="true"
                                                  Label="نرخ تبدیل"
                                                  Margin="Margin.Dense"
@@ -223,19 +209,18 @@
                 <MudItem xs="12" md="12" lg="6">
                     <MudPaper Elevation="0" Class="">
                         <MudText Typo="Typo.body1" GutterBottom="true">
-                            بدهکار @(_model.DebitEquivalent.HasValue ? $" - معادل ریالی : {_model.DebitEquivalent:N0} ریال" : "")
+                            بدهکار @(Model.DebitEquivalent.HasValue ? $" - معادل ریالی : {Model.DebitEquivalent:N0} ریال" : "")
                         </MudText>
                         <MudGrid>
                             <MudItem xs="12" md="6" lg="6">
                                 <MudMenu @bind-Open="_isDebitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                                     <ActivatorContent>
-                                        <MudNumericField Value="_model.Debit"
+                                        <MudNumericField Value="Model.Debit"
                                                          ValueChanged="OnDebitChanged"
-                                                         HelperText="@_debitHelperText"
                                                          T="decimal?"
                                                          Immediate="true"
-                                                         For="@(() => _model.Debit)"
-                                                         Format="G29"
+                                                         For="@(() => Model.Debit)"
+                                                         Format="#,##0.##"
                                                          HideSpinButtons="true"
                                                          Label="بدهکار"
                                                          Margin="Margin.Dense"
@@ -264,13 +249,12 @@
                             </MudItem>
 
                             <MudItem xs="12" md="6" lg="6">
-                                <MudNumericField Value="_model.DebitRate"
+                                <MudNumericField Value="Model.DebitRate"
                                                  ValueChanged="OnDebitRateChanged"
-                                                 HelperText="@_debitRateHelperText"
                                                  T="decimal?"
                                                  Immediate="true"
-                                                 For="@(() => _model.DebitRate)"
-                                                 Format="G29"
+                                                 For="@(() => Model.DebitRate)"
+                                                 Format="#,##0.##"
                                                  HideSpinButtons="true"
                                                  Label="نرخ تبدیل"
                                                  Margin="Margin.Dense"

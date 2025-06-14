@@ -33,12 +33,12 @@
     <RowTemplate>
         <MudTd DataLabel="شماره تراکنش">@context.TransactionNumber</MudTd>
         <MudTd DataLabel="شرح">@context.Description</MudTd>
-        <MudTd DataLabel="نام مشتری">@context.CustomerFullName</MudTd>
-        <MudTd DataLabel="شناسه یکتای مشتری">@context.CustomerNationalId</MudTd>
-        <MudTd DataLabel="بستانکاری">@(context.Credit.HasValue ? $"{context.Credit:N0} {context.CreditUnit}" : "-")</MudTd>
-        <MudTd DataLabel="بدهکاری">@(context.Debit.HasValue ? $"{context.Debit:N0} {context.DebitUnit}" : "-")</MudTd>
+        <MudTd DataLabel="نام مشتری">@context.Customer.FullName</MudTd>
+        <MudTd DataLabel="شناسه یکتای مشتری">@context.Customer.NationalId</MudTd>
+        <MudTd DataLabel="بستانکاری">@(context.Credit.HasValue ? $"{context.Credit:#,##0.##} {context.CreditUnit?.Title}" : "-")</MudTd>
+        <MudTd DataLabel="بدهکاری">@(context.Debit.HasValue ? $"{context.Debit:#,##0.##} {context.DebitUnit?.Title}" : "-")</MudTd>
         @* <MudTd DataLabel="مانده">@($"{context.Remaining:N0} {context.RemainingUnit}")</MudTd> *@
-        <MudTd DataLabel="تاریخ">@context.DateTime.ToShortDateString()</MudTd>
+        <MudTd DataLabel="تاریخ">@context.TransactionDate?.ToShortDateString()</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ تراکنش">

@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Helpers;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Transactions.Validators;
 using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
@@ -14,42 +14,62 @@ namespace GoldEx.Client.Pages.Transactions.Components;
 public partial class Editor
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Guid? Id { get; set; }
+    [Parameter] public TransactionVm Model { get; set; } = new();
     [Parameter] public Guid? CustomerId { get; set; }
 
-    private readonly TransactionEditorVm _model = new();
     private readonly TransactionValidator _transactionValidator = new();
     private MudForm _form = default!;
-    private string? _customerCreditLimitHelperText;
-    private string? _creditHelperText;
-    private string? _creditRateHelperText;
-    private string? _debitHelperText;
-    private string? _debitRateHelperText;
     private bool _isDebitMenuOpen;
     private bool _isCreditMenuOpen;
     private bool _isCreditLimitMenuOpen;
+    private string? _creditLimitAdornmentText;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Id is not null)
-            await LoadTransactionAsync(Id.Value);
+        if (Model.TransactionId.HasValue)
+        {
+            SetCreditLimitAdornmentText();
+            OnDebitChanged(Model.Debit);
+            OnCreditChanged(Model.Credit);
+        }
         else
             await GetLastNumberAsync();
 
-        if (CustomerId is not null)
-            await LoadCustomerAsync(CustomerId.Value);
+        if (CustomerId.HasValue)
+            await LoadCustomerAsync();
 
         await LoadPriceUnitsAsync();
 
         await base.OnParametersSetAsync();
     }
 
+    private async Task LoadCustomerAsync()
+    {
+        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+            action: (s, ct) => s.GetAsync(Model.Customer.Id, ct),
+            afterSend: response =>
+            {
+                Model.Customer = CustomerVm.CreateFrom(response);
+                OnCustomerCreditLimitChanged(response.CreditLimit);
+            });
+    }
+
     private async Task LoadPriceUnitsAsync()
     {
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
-            afterSend: response => _priceUnits = response);
+            afterSend: response =>
+            {
+                _priceUnits = response;
+
+                if (Model.Customer.CreditLimitPriceUnit is null)
+                {
+                    var selectedUnit = _priceUnits.FirstOrDefault(u => u.IsDefault);
+                    
+                    OnCustomerCreditLimitUnitChanged(selectedUnit);
+                }
+            });
     }
 
     private async Task GetLastNumberAsync()
@@ -58,41 +78,9 @@ public partial class Editor
             action: (s, ct) => s.GetLastNumberAsync(ct),
             afterSend: response =>
             {
-                _model.TransactionNumber = response.Number + 1;
+                Model.TransactionNumber = response.Number + 1;
             },
             createScope: true);
-    }
-
-    private async Task LoadCustomerAsync(Guid customerId)
-    {
-        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
-            action: (s, ct) => s.GetAsync(customerId, ct),
-            afterSend: response =>
-            {
-                _model.SetCustomer(response);
-                OnCustomerCreditLimitChanged(response.CreditLimit);
-            });
-    }
-
-    private async Task LoadTransactionAsync(Guid id)
-    {
-        await SendRequestAsync<ITransactionService, GetTransactionResponse>(
-            action: (s, ct) => s.GetAsync(id, ct),
-            afterSend: async response =>
-            {
-                _model.SetTransaction(response);
-                await LoadHelperTexts(response);
-            });
-    }
-
-    private async Task LoadHelperTexts(GetTransactionResponse response)
-    {
-        OnCustomerCreditLimitChanged(response.Customer.CreditLimit);
-        OnCustomerCreditLimitUnitChanged(response.CreditPriceUnit);
-        OnCreditChanged(response.Credit);
-        await OnCreditUnitChanged(response.CreditPriceUnit);
-        OnDebitChanged(response.Debit);
-        await OnDebitUnitChanged(response.DebitPriceUnit);
     }
 
     private async Task OnSubmit()
@@ -105,11 +93,11 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        if (Id.HasValue)
+        if (Model.TransactionId.HasValue)
         {
-            var request = TransactionEditorVm.ToUpdateTransactionRequest(_model);
+            var request = TransactionVm.ToUpdateRequest(Model);
             await SendRequestAsync<ITransactionService>(
-                action: (s, ct) => s.UpdateAsync(Id.Value, request, ct),
+                action: (s, ct) => s.UpdateAsync(Model.TransactionId.Value, request, ct),
                 afterSend: () =>
                 {
                     MudDialog.Close(DialogResult.Ok(true));
@@ -118,7 +106,7 @@ public partial class Editor
         }
         else
         {
-            var request = TransactionEditorVm.ToCreateTransactionRequest(_model);
+            var request = TransactionVm.ToCreateRequest(Model);
             await SendRequestAsync<ITransactionService>(
                 action: (s, ct) => s.CreateAsync(request, ct),
                 afterSend: () =>
@@ -131,7 +119,7 @@ public partial class Editor
 
     private async Task OnCustomerNationalIdChanged(string nationalId)
     {
-        _model.CustomerNationalId = nationalId;
+        Model.Customer.NationalId = nationalId;
 
         await SendRequestAsync<ICustomerService, GetCustomerResponse?>(
             action: (s, ct) => s.GetAsync(nationalId, ct),
@@ -140,29 +128,23 @@ public partial class Editor
                 if (response is null)
                     return;
 
-                _model.SetCustomer(response);
+                Model.Customer = CustomerVm.CreateFrom(response);
                 OnCustomerCreditLimitChanged(response.CreditLimit);
             });
     }
 
     private void OnDebitChanged(decimal? debit)
     {
-        _model.Debit = debit;
-        _debitHelperText = debit.HasValue || _model.DebitUnit is not null
-            ? $"{debit.FormatNumber()} {_model.DebitUnit?.Title}".Trim()
-            : string.Empty;
+        Model.Debit = debit;
 
-        _model.DebitEquivalent = debit is null || _model.DebitRate is null
+        Model.DebitEquivalent = debit is null || Model.DebitRate is null
             ? null
-            : debit.Value * _model.DebitRate.Value;
+            : debit.Value * Model.DebitRate.Value;
     }
 
     private async Task OnDebitUnitChanged(GetPriceUnitTitleResponse? debitUnit)
     {
-        _model.DebitUnit = debitUnit;
-        _debitHelperText = _model.Debit.HasValue || debitUnit is not null
-            ? $"{_model.Debit.FormatNumber()} {debitUnit?.Title}".Trim()
-            : string.Empty;
+        Model.DebitUnit = debitUnit;
 
         if (debitUnit != null)
             await SendRequestAsync<IPriceService, GetPriceResponse?>(
@@ -178,34 +160,25 @@ public partial class Editor
 
     private void OnDebitRateChanged(decimal? debitRate)
     {
-        _model.DebitRate = debitRate;
-        _debitRateHelperText = debitRate.HasValue
-            ? $"{debitRate.FormatNumber()} ریال"
-            : string.Empty;
+        Model.DebitRate = debitRate;
 
-        _model.DebitEquivalent = debitRate is null || _model.Debit is null
+        Model.DebitEquivalent = debitRate is null || Model.Debit is null
             ? null
-            : _model.Debit.Value * debitRate.Value;
+            : Model.Debit.Value * debitRate.Value;
     }
 
     private void OnCreditChanged(decimal? credit)
     {
-        _model.Credit = credit;
-        _creditHelperText = credit.HasValue || _model.CreditUnit is not null
-            ? $"{credit.FormatNumber()} {_model.CreditUnit?.Title}".Trim()
-            : string.Empty;
+        Model.Credit = credit;
 
-        _model.CreditEquivalent = credit is null || _model.CreditRate is null
+        Model.CreditEquivalent = credit is null || Model.CreditRate is null
             ? null
-            : credit.Value * _model.CreditRate.Value;
+            : credit.Value * Model.CreditRate.Value;
     }
 
     private async Task OnCreditUnitChanged(GetPriceUnitTitleResponse? creditUnit)
     {
-        _model.CreditUnit = creditUnit;
-        _creditHelperText = _model.Credit.HasValue || creditUnit is not null
-            ? $"{_model.Credit.FormatNumber()} {creditUnit?.Title}".Trim()
-            : string.Empty;
+        Model.CreditUnit = creditUnit;
 
         if (creditUnit != null)
             await SendRequestAsync<IPriceService, GetPriceResponse?>(
@@ -221,43 +194,27 @@ public partial class Editor
 
     private void OnCreditRateChanged(decimal? creditRate)
     {
-        _model.CreditRate = creditRate;
-        _creditRateHelperText = creditRate.HasValue
-            ? $"{creditRate.FormatNumber()} ریال"
-            : string.Empty;
+        Model.CreditRate = creditRate;
 
-        _model.CreditEquivalent = creditRate is null || _model.Credit is null
+        Model.CreditEquivalent = creditRate is null || Model.Credit is null
             ? null
-            : _model.Credit.Value * creditRate.Value;
+            : Model.Credit.Value * creditRate.Value;
     }
 
     private void OnCustomerCreditLimitChanged(decimal? creditLimit)
     {
-        _model.CustomerCreditLimit = creditLimit;
-        _customerCreditLimitHelperText = creditLimit.HasValue
-            ? $"{creditLimit.FormatNumber()} {_model.CustomerCreditLimitUnit?.Title}".Trim()
-            : "سقف اعتبار مشتری";
+        Model.Customer.CreditLimit = creditLimit;
     }
 
     private void OnCustomerCreditLimitUnitChanged(GetPriceUnitTitleResponse? creditLimitUnit)
     {
-        _model.CustomerCreditLimitUnit = creditLimitUnit;
-        _customerCreditLimitHelperText = _model.CustomerCreditLimit.HasValue || creditLimitUnit is not null
-            ? $"{_model.CustomerCreditLimit.FormatNumber()} {creditLimitUnit?.Title}".Trim()
-            : "سقف اعتبار مشتری";
+        Model.Customer.CreditLimitPriceUnit = creditLimitUnit;
+        SetCreditLimitAdornmentText();
     }
 
     private void OnCustomerNationalIdCleared()
     {
-        _model.CustomerNationalId = string.Empty;
-        _model.CustomerId = null;
-        _model.CustomerFullName = string.Empty;
-        _model.CustomerPhoneNumber = string.Empty;
-        _model.CustomerAddress = string.Empty;
-        _model.CustomerCreditLimit = null;
-        _model.CustomerCreditLimitUnit = null;
-        _model.CustomerCreditRemaining = null;
-        _model.CustomerCreditRemainingUnit = null;
+        Model.Customer = new CustomerVm();
     }
 
     private async Task SelectDebitUnit(GetPriceUnitTitleResponse selectedUnit)
@@ -276,6 +233,13 @@ public partial class Editor
     {
         OnCustomerCreditLimitUnitChanged(selectedUnit);
         _isCreditLimitMenuOpen = false;
+        SetCreditLimitAdornmentText();
+    }
+
+    private void SetCreditLimitAdornmentText()
+    {
+        _creditLimitAdornmentText = Model.Customer.CreditLimitPriceUnit?.Title;
+        StateHasChanged();
     }
 
     private void Close() => MudDialog.Cancel();

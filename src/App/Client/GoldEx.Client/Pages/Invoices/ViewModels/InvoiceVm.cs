@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using GoldEx.Client.Pages.Customers.ViewModels;
-using GoldEx.Client.Pages.Products.ViewModels;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.DTOs.Products;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -44,7 +42,7 @@ public class InvoiceVm
         return new InvoiceVm
         {
             InvoiceDate = DateTime.Now,
-            Customer = CustomerVm.CreateDefaultInstance(),
+            Customer = new CustomerVm(),
             InvoiceItems = [],
             InvoiceDiscounts = [],
             InvoiceExtraCosts = [],

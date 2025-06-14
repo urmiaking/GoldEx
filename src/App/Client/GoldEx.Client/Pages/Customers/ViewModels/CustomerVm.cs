@@ -54,11 +54,6 @@ public class CustomerVm
         };
     }
 
-    public static CustomerVm CreateDefaultInstance()
-    {
-        return new CustomerVm();
-    }
-
     public static CustomerRequestDto ToCreateRequest(CustomerVm model)
     {
         return new CustomerRequestDto(null,
