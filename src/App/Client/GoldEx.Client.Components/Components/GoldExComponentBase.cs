@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
 using System.Security.Claims;
+using GoldEx.Client.Abstractions.Common;
 using Severity = MudBlazor.Severity;
 
 namespace GoldEx.Client.Components.Components;
@@ -42,6 +43,7 @@ public class GoldExComponentBase : ComponentBase, IDisposable
     [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
     [Inject] protected IAuthorizationService AuthorizationService { get; set; } = default!;
     [Inject] private IStringLocalizer<Resources.GoldExComponentBase> Localizer { get; set; } = default!;
+    [Inject] private INetworkStatusService NetworkService { get; set; } = default!;
 
     public bool IsBusy => _busyCount > 0;
     protected ClaimsPrincipal? User { get; private set; }
@@ -205,6 +207,13 @@ public class GoldExComponentBase : ComponentBase, IDisposable
     {
         try
         {
+            var isOnline = await NetworkService.IsOnlineAsync(CancellationToken);
+            if (!isOnline)
+            {
+                AddErrorToast("لطفا ارتباط اینترنت خود را بررسی کنید");
+                return default!;
+            }
+
             CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
@@ -234,6 +243,13 @@ public class GoldExComponentBase : ComponentBase, IDisposable
     {
         try
         {
+            var isOnline = await NetworkService.IsOnlineAsync(CancellationToken);
+            if (!isOnline)
+            {
+                AddErrorToast("لطفا ارتباط اینترنت خود را بررسی کنید");
+                return default!;
+            }
+
             CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
@@ -263,6 +279,13 @@ public class GoldExComponentBase : ComponentBase, IDisposable
     {
         try
         {
+            var isOnline = await NetworkService.IsOnlineAsync(CancellationToken);
+            if (!isOnline)
+            {
+                AddErrorToast("لطفا ارتباط اینترنت خود را بررسی کنید");
+                return;
+            }
+
             CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
@@ -293,6 +316,13 @@ public class GoldExComponentBase : ComponentBase, IDisposable
         var scope = createScope ? CreateServiceScope() : CurrentScope;
         try
         {
+            var isOnline = await NetworkService.IsOnlineAsync(CancellationToken);
+            if (!isOnline)
+            {
+                AddErrorToast("لطفا ارتباط اینترنت خود را بررسی کنید");
+                return;
+            }
+
             CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>(scope);
@@ -320,6 +350,13 @@ public class GoldExComponentBase : ComponentBase, IDisposable
         var scope = createScope ? CreateServiceScope() : CurrentScope;
         try
         {
+            var isOnline = await NetworkService.IsOnlineAsync(CancellationToken);
+            if (!isOnline)
+            {
+                AddErrorToast("لطفا ارتباط اینترنت خود را بررسی کنید");
+                return default;
+            }
+
             CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>(scope);
@@ -330,7 +367,7 @@ public class GoldExComponentBase : ComponentBase, IDisposable
         {
             HandleRequestException(ex);
 
-            return default(TResult);
+            return default;
         }
         finally
         {
@@ -348,6 +385,13 @@ public class GoldExComponentBase : ComponentBase, IDisposable
     {
         try
         {
+            var isOnline = await NetworkService.IsOnlineAsync(CancellationToken);
+            if (!isOnline)
+            {
+                AddErrorToast("لطفا ارتباط اینترنت خود را بررسی کنید");
+                return;
+            }
+
             CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
