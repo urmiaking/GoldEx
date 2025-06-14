@@ -46,7 +46,7 @@ public partial class EditorForm
     private async Task LoadGramPriceAsync()
     {
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
-            action: (s, ct) => s.GetAsync(UnitType.Gold18K, Model.InvoicePriceUnit?.Id, ct),
+            action: (s, ct) => s.GetAsync(UnitType.Gold18K, Model.InvoicePriceUnit?.Id, true, ct),
             afterSend: response =>
             {
                 _gramPrice = response;

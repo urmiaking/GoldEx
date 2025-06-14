@@ -169,7 +169,8 @@ internal class PriceService(
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
-    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, CancellationToken cancellationToken = default)
+    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
+        CancellationToken cancellationToken = default)
     {
         var baseItem = await repository.Get(new PricesByUnitTypeSpecification(unitType))
             .FirstOrDefaultAsync(cancellationToken);
@@ -178,7 +179,7 @@ internal class PriceService(
             return null;
 
         var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
-        if (setting is not null && setting.GoldSafetyMarginPercent != 0)
+        if (setting is not null && setting.GoldSafetyMarginPercent != 0 && applySafetyMargin)
         {
             if (baseItem is { UnitType: UnitType.Gold18K })
             {

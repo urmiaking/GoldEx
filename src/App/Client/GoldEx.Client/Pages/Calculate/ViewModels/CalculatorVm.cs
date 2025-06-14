@@ -43,4 +43,7 @@ public class CalculatorVm
 
     [Display(Name = "واحد ارزی اجرت")]
     public GetPriceUnitTitleResponse? WagePriceUnit { get; set; }
+
+    [Display(Name = "عیار طلای کهنه")]
+    public int? OldGoldCarat { get; set; }
 }
