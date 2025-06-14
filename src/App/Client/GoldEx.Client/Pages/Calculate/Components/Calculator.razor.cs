@@ -136,7 +136,10 @@ public partial class Calculator
         try
         {
             if (_model.Weight == 0 || _model is { WageType: not null, Wage: null })
+            {
+                ResetCalculations();
                 return;
+            }
 
             await _from.Validate();
 
@@ -150,11 +153,7 @@ public partial class Calculator
             }
             else
             {
-                _rawPrice = null;
-                _wage = null;
-                _profit = null;
-                _tax = null;
-                _finalPrice = null;
+                ResetCalculations();
             }
         }
         finally
@@ -201,6 +200,72 @@ public partial class Calculator
         _model.Wage = wage;
 
         UpdateWageFields();
+
+        await Calculate();
+    }
+
+    private void OnWageAdornmentClicked()
+    {
+        if (_model.WageType is WageType.Fixed)
+        {
+            _wageFieldMenuOpen = !_wageFieldMenuOpen;
+        }
+    }
+
+    private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
+    {
+        _isRecalculating = true;
+        try
+        {
+            _model.WagePriceUnit = priceUnit;
+
+            if (_model.PriceUnit is null)
+                return;
+
+            if (_model.PriceUnit != _model.WagePriceUnit)
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) => s.GetExchangeRateAsync(_model.WagePriceUnit.Id, _model.PriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        if (response.ExchangeRate.HasValue)
+                        {
+                            _model.ExchangeRate = response.ExchangeRate.Value;
+                        }
+                    });
+        }
+        finally
+        {
+            UpdateWageFields();
+            await Calculate();
+
+            _isRecalculating = false;
+        }
+    }
+
+    private void OnWageExchangeRateChanged(decimal? exchangeRate)
+    {
+        _model.ExchangeRate = exchangeRate;
+
+        UpdateWageFields();
+    }
+
+    private async void UpdateWageFields()
+    {
+        if (_model.WageType is WageType.Fixed)
+        {
+            _wageFieldAdornmentText = _model.WagePriceUnit?.Title;
+
+            if (_model.WagePriceUnit?.Id != _model.PriceUnit?.Id)
+            {
+                _wageExchangeRateLabel = $"نرخ تبدیل {_model.WagePriceUnit?.Title} به {_model.PriceUnit?.Title}";
+            }
+        }
+        else
+        {
+            _wageFieldAdornmentText = "درصد";
+            _wageExchangeRateLabel = null;
+            _model.ExchangeRate = null;
+        }
 
         await Calculate();
     }
@@ -301,6 +366,8 @@ public partial class Calculator
                     if (response is null)
                         return;
 
+                    _barcodeFieldHelperText = response.Name;
+
                     _model.Weight = response.Weight;
                     _model.CaratType = response.CaratType;
                     _model.Wage = response.Wage;
@@ -320,18 +387,19 @@ public partial class Calculator
         }
     }
 
-    private async void OnBarcodeCleared()
+    private void OnBarcodeCleared()
     {
         _isBarcodeProcessing = true;
         try
         {
             _barcode = null;
+            _barcodeFieldHelperText = null;
             ResetModel();
+            ResetCalculations();
         }
         finally
         {
             _isBarcodeProcessing = false;
-            await Calculate();
         }
     }
 
@@ -343,6 +411,15 @@ public partial class Calculator
         _model.WageType = null;
         _model.ExtraCosts = null;
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+    }
+
+    private void ResetCalculations()
+    {
+        _rawPrice = null;
+        _wage = null;
+        _profit = null;
+        _tax = null;
+        _finalPrice = null;
     }
 
     #endregion
@@ -375,68 +452,4 @@ public partial class Calculator
     }
 
     #endregion
-
-    private void OnWageAdornmentClicked()
-    {
-        if (_model.WageType is WageType.Fixed)
-        {
-            _wageFieldMenuOpen = !_wageFieldMenuOpen;
-        }
-    }
-
-    private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
-    {
-        _isRecalculating = true;
-        try
-        {
-            _model.WagePriceUnit = priceUnit;
-
-            if (_model.PriceUnit is null)
-                return;
-
-            if (_model.PriceUnit != _model.WagePriceUnit)
-                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-                    action: (s, ct) => s.GetExchangeRateAsync(_model.WagePriceUnit.Id, _model.PriceUnit.Id, ct),
-                    afterSend: response =>
-                    {
-                        if (response.ExchangeRate.HasValue)
-                        {
-                            _model.ExchangeRate = response.ExchangeRate.Value;
-                        }
-                    });
-        }
-        finally
-        {
-            UpdateWageFields();
-            await Calculate();
-
-            _isRecalculating = false;
-        }
-    }
-
-    private void OnWageExchangeRateChanged(decimal? exchangeRate)
-    {
-        _model.ExchangeRate = exchangeRate;
-
-        UpdateWageFields();
-    }
-
-    private void UpdateWageFields()
-    {
-        if (_model.WageType is WageType.Fixed)
-        {
-            _wageFieldAdornmentText = _model.WagePriceUnit?.Title;
-
-            if (_model.WagePriceUnit?.Id != _model.PriceUnit?.Id)
-            {
-                _wageExchangeRateLabel = $"نرخ تبدیل {_model.WagePriceUnit?.Title} به {_model.PriceUnit?.Title}";
-            }
-        }
-        else
-        {
-            _wageFieldAdornmentText = "درصد";
-            _wageExchangeRateLabel = null;
-            _model.ExchangeRate = null;
-        }
-    }
 }

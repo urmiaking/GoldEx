@@ -7,7 +7,7 @@
         <Authorized>
             <MudGrid Class="mt-3" Justify="Justify.SpaceBetween">
                 <MudItem xs="12" sm="6" md="4">
-                    @if (_isInitialLoading || _isBarcodeProcessing)
+                    @if (_isInitialLoading)
                     {
                         <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
                     }
@@ -293,7 +293,7 @@
         @if (_finalPrice.HasValue && _finalPrice.Value is not 0)
         {
             <MudExpansionPanels Class="mt-4">
-                @if (_isRecalculating)
+                @if (_isRecalculating || _isBarcodeProcessing)
                 {
                     <MudExpansionPanel Text="در حال محاسبه...">
                         <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
