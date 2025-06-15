@@ -1,9 +1,10 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Invoices.Validators;
+﻿using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
@@ -17,18 +18,28 @@ public partial class InvoiceItemEditor
 {
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public InvoiceItemVm Model { get; set; } = InvoiceItemVm.CreateDefaultInstance();
+    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly InvoiceItemValidator _invoiceItemValidator = new();
     private MudForm _form = default!;
-    private string? _wageAdornmentText = "درصد";
-    private string? _wageFieldHelperText;
+    private MudNumericField<decimal?> _wageField = new();
+    private MudSelect<WageType?> _wageTypeField = default!;
     private IEnumerable<ProductCategoryVm> _productCategories = [];
+    private bool _wageFieldMenuOpen;
+    private string? _wageFieldAdornmentText = "درصد";
+    private string? _wageExchangeRateLabel;
 
     protected override void OnParametersSet()
     {
         if (Id is null)
             GenerateBarcode();
+
+        if (!Model.Product.WagePriceUnitId.HasValue)
+        {
+            Model.Product.WagePriceUnitId = PriceUnits.FirstOrDefault(x => x.IsDefault)?.Id;
+            Model.Product.WagePriceUnitTitle = PriceUnits.FirstOrDefault(x => x.IsDefault)?.Title;
+        }
 
         OnWageTypeChanged(Model.Product.WageType);
 
@@ -89,21 +100,30 @@ public partial class InvoiceItemEditor
         }
     }
 
-    private void OnWageTypeChanged(WageType? wageType)
+    private async void OnWageTypeChanged(WageType? wageType)
     {
         Model.Product.WageType = wageType;
 
         switch (wageType)
         {
             case WageType.Percent:
-                _wageAdornmentText = "درصد";
+                UpdateWageFields();
+                //_wageTypeField.AdornmentIcon = Icons.Material.Filled.Percent;
+                //_wageField.Disabled = false;
                 break;
             case WageType.Fixed:
-                _wageAdornmentText = "TODO"; // TODO: change to unit price
+                UpdateWageFields();
+
+                if (Model.Product.WagePriceUnitId.HasValue)
+                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == Model.Product.WagePriceUnitId));
+
+                //_wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
+                //_wageField.Disabled = false;
                 break;
             case null:
-                _wageAdornmentText = null;
-                Model.Product.Wage = null;
+                await _wageField.ResetAsync();
+                //_wageFieldAdornmentText = null;
+                //_wageField.Disabled = true;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
@@ -141,8 +161,53 @@ public partial class InvoiceItemEditor
     private void OnWageChanged(decimal? wage)
     {
         Model.Product.Wage = wage;
-        _wageFieldHelperText = Model.Product.Wage.HasValue || wage is not null
-            ? $"{Model.Product.Wage.FormatNumber()} {_wageAdornmentText}".Trim()
-            : string.Empty;
+    }
+
+    private void OnWageAdornmentClicked()
+    {
+        if (Model.Product.WageType is WageType.Fixed) 
+            _wageFieldMenuOpen = !_wageFieldMenuOpen;
+    }
+
+    private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
+    {
+        Model.Product.WagePriceUnitId = priceUnit.Id;
+        Model.Product.WagePriceUnitTitle = priceUnit.Title;
+
+        if (Model.PriceUnit is null)
+            return;
+
+        if (Model.PriceUnit.Id != Model.Product.WagePriceUnitId)
+            await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                action: (s, ct) => s.GetExchangeRateAsync(Model.Product.WagePriceUnitId.Value, Model.PriceUnit.Id, ct),
+                afterSend: response =>
+                {
+                    if (response.ExchangeRate.HasValue)
+                    {
+                        Model.ExchangeRate = response.ExchangeRate.Value;
+                    }
+                });
+
+        UpdateWageFields();
+        StateHasChanged();
+    }
+
+    private void UpdateWageFields()
+    {
+        if (Model.Product.WageType is WageType.Fixed)
+        {
+            _wageFieldAdornmentText = Model.Product.WagePriceUnitTitle;
+
+            if (Model.Product.WagePriceUnitId != Model.PriceUnit?.Id)
+            {
+                _wageExchangeRateLabel = $"نرخ تبدیل {Model.Product.WagePriceUnitTitle} به {Model.PriceUnit?.Title}";
+            }
+        }
+        else
+        {
+            _wageFieldAdornmentText = "درصد";
+            _wageExchangeRateLabel = null;
+            Model.ExchangeRate = null;
+        }
     }
 }

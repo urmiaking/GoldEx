@@ -20,8 +20,8 @@
             <MudTd DataLabel="مبلغ" Class="p-1">
                 <MudNumericField @bind-Value="context.Amount"
                                  For="@(() => context.Amount)"
-                                 HelperTextOnFocus="true"
                                  HideSpinButtons="true"
+                                 Format="#,##0.##"
                                  Immediate="true"
                                  Label="@(context.GetDisplayName(() => context.Amount))"
                                  Margin="Margin.Dense"

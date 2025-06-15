@@ -145,6 +145,7 @@ public partial class EditorForm
                 Model.InvoiceItems.Add(new InvoiceItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
+                    PriceUnit = Model.InvoicePriceUnit,
                     GramPrice = gramPrice,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold
@@ -171,7 +172,8 @@ public partial class EditorForm
     {
         var parameters = new DialogParameters<InvoiceItemEditor>
         {
-            { x => x.Model, invoiceItemVm }
+            { x => x.Model, invoiceItemVm },
+            { x => x.PriceUnits, _priceUnits }
         };
 
         var dialog = await DialogService.ShowAsync<InvoiceItemEditor>("ویرایش جنس", parameters, _dialogOptions);
@@ -206,10 +208,12 @@ public partial class EditorForm
         model.GramPrice = gramPrice;
         model.TaxPercent = _setting?.TaxPercent ?? 9;
         model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
+        model.PriceUnit = Model.InvoicePriceUnit;
 
         var parameters = new DialogParameters<InvoiceItemEditor>
         {
-            { x => x.Model, model }
+            { x => x.Model, model },
+            { x => x.PriceUnits, _priceUnits }
         };
 
         var dialog = await DialogService.ShowAsync<InvoiceItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
@@ -261,13 +265,16 @@ public partial class EditorForm
 
     private async Task OnInvoicePriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
+        Model.InvoicePriceUnit = priceUnit;
+
         await LoadGramPriceAsync();
 
-        Model.InvoicePriceUnit = priceUnit;
         Model.InvoiceItems.ForEach(item =>
         {
+            decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+
             item.PriceUnit = priceUnit;
-            // item.GramPrice = _gramPrice TODO: change logic here!
+            item.GramPrice = gramPrice;
         });
 
         StateHasChanged();
