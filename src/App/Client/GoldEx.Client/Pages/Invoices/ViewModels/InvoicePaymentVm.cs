@@ -17,8 +17,19 @@ public class InvoicePaymentVm
 
     [Display(Name = "مبلغ")]
     public decimal Amount { get; set; }
+
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
     [Display(Name = "روش پرداخت")]
     public GetPaymentMethodResponse? PaymentMethod { get; set; }
+
+    [Display(Name = "نرخ تبدیل")]
+    public decimal? ExchangeRate { get; set; }
+
+    public string? ExchangeRateLabel { get; set; }
+
+    public string AmountAdornmentText { get; set; } = default!;
+    public bool AmountMenuOpen { get; set; }
+
+    public decimal TotalAmount => Amount * (ExchangeRate ?? 1);
 }

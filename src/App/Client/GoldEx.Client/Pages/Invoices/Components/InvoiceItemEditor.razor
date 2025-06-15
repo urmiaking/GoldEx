@@ -6,12 +6,10 @@
         <DialogContent>
             <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
                 <MudNumericField Adornment="Adornment.End"
-                                 AdornmentText="ریال"
+                                 AdornmentText="@Model.PriceUnit?.Title"
                                  @bind-Value="Model.GramPrice"
                                  For="@(() => Model.GramPrice)"
-                                 Format="N0"
-                                 HelperTextOnFocus="true"
-                                 HelperText="نرخ هر گرم طلا"
+                                 Format="#,##0.##"
                                  HideSpinButtons="true"
                                  Label="@Model.Product.GetDisplayName(() => Model.GramPrice)"
                                  Margin="Margin.Dense"
@@ -71,6 +69,7 @@
                     <MudSelect For="() => Model.Product.WageType"
                                Label="@Model.Product.GetDisplayName(() => Model.Product.WageType)"
                                Margin="Margin.Dense"
+                               @ref="_wageTypeField"
                                T="WageType?"
                                Value="Model.Product.WageType"
                                ValueChanged="OnWageTypeChanged"
@@ -85,20 +84,57 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="@_wageAdornmentText"
-                                     For="@(() => Model.Product.Wage)"
-                                     Format="G29"
-                                     HideSpinButtons="true"
-                                     HelperText="@_wageFieldHelperText"
-                                     Immediate="true"
-                                     Label="@Model.Product.GetDisplayName(() => Model.Product.Wage)"
-                                     Margin="Margin.Dense"
-                                     T="decimal?"
-                                     Value="Model.Product.Wage"
-                                     ValueChanged="OnWageChanged"
-                                     Variant="Variant.Outlined" />
+                    <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@_wageFieldAdornmentText"
+                                             For="() => Model.Product.Wage"
+                                             Format="#,##0.##"
+                                             HideSpinButtons="true"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(Model.GetDisplayName(() => Model.Product.Wage))"
+                                             @ref="_wageField"
+                                             T="decimal?"
+                                             Value="Model.Product.Wage"
+                                             ValueChanged="OnWageChanged"
+                                             Variant="Variant.Outlined"
+                                             OnAdornmentClick="OnWageAdornmentClicked"></MudNumericField>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in PriceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
                 </MudItem>
+                @if (Model.Product.WageType is WageType.Fixed && Model.PriceUnit?.Id != Model.Product.WagePriceUnitId)
+                {
+                    <MudItem xs="12" md="4">
+                        <MudNumericField For="@(() => Model.ExchangeRate)"
+                                         Format="#,##0.########"
+                                         Immediate="true"
+                                         Label="@_wageExchangeRateLabel"
+                                         Margin="Margin.Dense"
+                                         T="decimal?"
+                                         @bind-Value="Model.ExchangeRate"
+                                         Adornment="Adornment.End"
+                                         AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                }
                 <MudItem xs="12" md="4">
                     <MudSelect @bind-Value="Model.Product.CaratType"
                                For="() => Model.Product.CaratType"
@@ -164,20 +200,6 @@
                                      @bind-Value="Model.Quantity"
                                      Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudNumericField For="@(() => Model.ExchangeRate)"
-                                     Format="G29"
-                                     Immediate="true"
-                                     Label="@Model.GetDisplayName(() => Model.ExchangeRate)"
-                                     Margin="Margin.Dense"
-                                     T="decimal?"
-                                     @bind-Value="Model.ExchangeRate"
-                                     Adornment="Adornment.End"
-                                     AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
-                                     HideSpinButtons="true"
-                                     Variant="Variant.Outlined" />
-                </MudItem>
-                <!-- TODO: Add price unit here! -->
                 @if (Model.Product.ProductType is ProductType.Jewelry)
                 {
                     @if (Model.Product.Stones is not null)

@@ -172,8 +172,7 @@
                     }
                     else
                     {
-                        <MudSelect Adornment="Adornment.End"
-                                   For="() => _model.WageType"
+                        <MudSelect For="() => _model.WageType"
                                    Immediate="true"
                                    Margin="Margin.Dense"
                                    Label="@(_model.GetDisplayName(() => _model.WageType))"

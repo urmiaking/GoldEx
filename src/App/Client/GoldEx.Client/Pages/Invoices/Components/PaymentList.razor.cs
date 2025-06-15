@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.PaymentMethods;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -8,6 +9,8 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 public partial class PaymentList
 {
     [Parameter] public List<InvoicePaymentVm> Items { get; set; } = [];
+    [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
+    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
 
     private List<GetPaymentMethodResponse> _paymentMethods = [];
 
@@ -17,6 +20,14 @@ public partial class PaymentList
         await base.OnParametersSetAsync();
     }
 
+    protected override void OnInitialized()
+    {
+        if (!Items.Any()) 
+            AddItem();
+
+        base.OnInitialized();
+    }
+
     private async Task LoadPaymentMethodsAsync()
     {
         await SendRequestAsync<IPaymentMethodService, List<GetPaymentMethodResponse>>(
@@ -24,18 +35,6 @@ public partial class PaymentList
             afterSend: response =>
             {
                 _paymentMethods = response;
-
-                if (!Items.Any())
-                {
-                    Items.Add(new InvoicePaymentVm
-                    {
-                        Amount = 0,
-                        Note = string.Empty,
-                        PaymentDate = DateTime.Now
-                    });
-                }
-
-                StateHasChanged();
             });
     }
 
@@ -43,9 +42,11 @@ public partial class PaymentList
     {
         Items.Add(new InvoicePaymentVm
         {
-            Amount = 0,
+            Amount = 0m,
             Note = string.Empty,
-            PaymentDate = DateTime.Now
+            PaymentDate = DateTime.Now,
+            PriceUnit = PriceUnit,
+            AmountAdornmentText = PriceUnit.Title
         });
     }
 
@@ -53,5 +54,18 @@ public partial class PaymentList
     {
         if (Items.Count > 1)
             Items.Remove(item);
+    }
+
+    private void OnAmountChanged(decimal? amount, InvoicePaymentVm item)
+    {
+        if (amount.HasValue)
+            item.Amount = amount.Value;
+    }
+
+    private void SelectPriceUnit(GetPriceUnitTitleResponse priceUnit, InvoicePaymentVm item)
+    {
+        item.PriceUnit = priceUnit;
+        item.AmountAdornmentText = priceUnit.Title;
+        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {PriceUnit.Title}";
     }
 }
