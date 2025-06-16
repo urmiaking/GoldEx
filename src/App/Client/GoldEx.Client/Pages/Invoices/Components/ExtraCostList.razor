@@ -1,8 +1,9 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Helpers
+@inherits GoldExComponentBase
 
 <div>
     <MudStack Row AlignItems="AlignItems.Center" Class="mt-2">
-        <MudText Typo="Typo.h6">مخارج اضافی</MudText>
+        <MudText Typo="Typo.h6">مخارج جانبی</MudText>
         <MudSpacer />
         <MudPaper Width="40px" Elevation="0">
             <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info"
@@ -11,24 +12,55 @@
     </MudStack>
 
     <MudTable Items="@Items" Elevation="0">
-        <HeaderContent>
-            <MudTh></MudTh>
-            <MudTh></MudTh>
-            <MudTh></MudTh>
-        </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="مبلغ" Class="p-1">
-                <MudNumericField @bind-Value="context.Amount"
-                                 For="@(() => context.Amount)"
-                                 Format="#,##0.##"
-                                 HideSpinButtons="true"
-                                 Immediate="true"
-                                 Label="@(context.GetDisplayName(() => context.Amount))"
-                                 Margin="Margin.Dense"
-                                 Adornment="Adornment.End"
-                                 AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
-                                 Variant="Variant.Outlined" />
+                <MudMenu @bind-Open="context.AmountMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                    <ActivatorContent>
+                        <MudNumericField @bind-Value="context.Amount"
+                                         T="decimal"
+                                         HideSpinButtons="true"
+                                         Format="#,##0.##"
+                                         Immediate="true"
+                                         For="@(() => context.Amount)"
+                                         Label="@(context.GetDisplayName(() => context.Amount))"
+                                         Margin="Margin.Dense"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="@context.AmountAdornmentText"
+                                         OnAdornmentClick="() => context.AmountMenuOpen = true" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        @foreach (var item in PriceUnits)
+                        {   
+                            <MudMenuItem OnClick="() => SelectPriceUnit(item, context)">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    @if (item.HasIcon)
+                                    {
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                        </MudAvatar>
+                                    }
+                                    @item.Title
+                                </div>
+                            </MudMenuItem>
+                        }
+                    </ChildContent>
+                </MudMenu>
             </MudTd>
+            @if (context.PriceUnit != PriceUnit)
+            {
+                <MudTd DataLabel="@context.ExchangeRateLabel">
+                    <MudNumericField For="@(() => context.ExchangeRate)"
+                                     Format="#,##0.########"
+                                     Immediate="true"
+                                     Label="@context.ExchangeRateLabel"
+                                     Margin="Margin.Dense"
+                                     T="decimal?"
+                                     @bind-Value="context.ExchangeRate"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudTd>
+            }
             <MudTd DataLabel="بابت" Class="p-1">
                 <MudTextField @bind-Value="@context.Description"
                               T="string"
@@ -50,8 +82,8 @@
             <MudText Typo="Typo.body1">مخارج اضافی وجود ندارد.</MudText>
         </NoRecordsContent>
     </MudTable>
-
-    <div>
-        جمع کل مخارج اضافی: @Items.Sum(x => x.Amount).ToString("C0")
+    
+    <div class="d-flex flex-row justify-content-between">
+        <MudText>جمع کل مخارج جانبی: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat() @PriceUnit.Title</MudText>
     </div>
 </div>

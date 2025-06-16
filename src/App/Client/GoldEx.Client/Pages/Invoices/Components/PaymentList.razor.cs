@@ -64,18 +64,14 @@ public partial class PaymentList
 
     private void RemoveItem(InvoicePaymentVm item)
     {
-        if (Items.Count > 1)
-        {
+        if (Items.Count > 1) 
             Items.Remove(item);
-        }
     }
 
     private void OnAmountChanged(decimal? amount, InvoicePaymentVm item)
     {
         if (amount.HasValue)
-        {
             item.Amount = amount.Value;
-        }
     }
 
     private async Task SelectPriceUnit(GetPriceUnitTitleResponse priceUnit, InvoicePaymentVm item)
