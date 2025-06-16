@@ -277,11 +277,11 @@
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
-                    <MudText Typo="Typo.body2">مخارج اضافی</MudText>
+                    <MudText Typo="Typo.body2">مخارج جانبی</MudText>
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
                     <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <ExtraCostList Items="Model.InvoiceExtraCosts" />
+                            <ExtraCostList Items="Model.InvoiceExtraCosts" PriceUnit="Model.InvoicePriceUnit" PriceUnits="_priceUnits" />
                             <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>

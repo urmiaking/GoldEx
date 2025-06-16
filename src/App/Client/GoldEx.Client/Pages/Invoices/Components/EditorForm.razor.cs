@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Customers.ViewModels;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
