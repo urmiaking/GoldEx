@@ -35,6 +35,7 @@ public partial class PaymentList
             afterSend: response =>
             {
                 _paymentMethods = response;
+                StateHasChanged();
             });
     }
 
