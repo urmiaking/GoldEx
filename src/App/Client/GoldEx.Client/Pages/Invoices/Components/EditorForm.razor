@@ -303,7 +303,7 @@
                     <MudText Typo="Typo.body2">جمع پرداختی</MudText>
                     <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <PaymentList Items="Model.InvoicePayments" PriceUnit="Model.InvoicePriceUnit" PriceUnits="_priceUnits"/>
+                            <PaymentList Items="Model.InvoicePayments" PriceUnit="Model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalInvoiceAmount="@Model.TotalInvoiceAmount" />
                             <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>

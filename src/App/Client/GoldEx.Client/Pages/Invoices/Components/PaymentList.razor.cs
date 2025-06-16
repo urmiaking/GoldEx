@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.PaymentMethods;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
@@ -11,18 +12,28 @@ public partial class PaymentList
     [Parameter] public List<InvoicePaymentVm> Items { get; set; } = [];
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
+    [Parameter] public decimal TotalInvoiceAmount { get; set; }
 
     private List<GetPaymentMethodResponse> _paymentMethods = [];
 
+    private decimal GetTotalPaid()
+    {
+        return Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1));
+    }
+
+    private decimal TotalRemainingCalculated => TotalInvoiceAmount - GetTotalPaid();
+
     protected override async Task OnParametersSetAsync()
     {
-        await LoadPaymentMethodsAsync();
+        if (!_paymentMethods.Any()) 
+            await LoadPaymentMethodsAsync();
+
         await base.OnParametersSetAsync();
     }
 
     protected override void OnInitialized()
     {
-        if (!Items.Any()) 
+        if (!Items.Any())
             AddItem();
 
         base.OnInitialized();
@@ -54,19 +65,68 @@ public partial class PaymentList
     private void RemoveItem(InvoicePaymentVm item)
     {
         if (Items.Count > 1)
+        {
             Items.Remove(item);
+        }
     }
 
     private void OnAmountChanged(decimal? amount, InvoicePaymentVm item)
     {
         if (amount.HasValue)
+        {
             item.Amount = amount.Value;
+        }
     }
 
-    private void SelectPriceUnit(GetPriceUnitTitleResponse priceUnit, InvoicePaymentVm item)
+    private async Task SelectPriceUnit(GetPriceUnitTitleResponse priceUnit, InvoicePaymentVm item)
     {
         item.PriceUnit = priceUnit;
         item.AmountAdornmentText = priceUnit.Title;
         item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {PriceUnit.Title}";
+
+        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+            action: (s, ct) => s.GetExchangeRateAsync(priceUnit.Id, PriceUnit.Id, ct),
+            afterSend: response =>
+            {
+                if (response.ExchangeRate.HasValue)
+                    item.ExchangeRate = response.ExchangeRate.Value;
+
+                StateHasChanged();
+            });
     }
+
+    private void OnTotalRemainingClicked()
+    {
+        var remaining = TotalRemainingCalculated;
+        if (remaining <= 0)
+            return;
+
+        if (Items.Count == 1 && Items.First().Amount == 0)
+        {
+            var item = Items.First();
+
+            item.Amount = remaining;
+            item.AmountAdornmentText = PriceUnit.Title;
+            item.PriceUnit = PriceUnit;
+        }
+        else if (Items.Count > 1 && Items.Last().Amount == 0)
+        {
+            var item = Items.Last();
+
+            item.Amount = remaining;
+            item.AmountAdornmentText = PriceUnit.Title;
+            item.PriceUnit = PriceUnit;
+        }
+        else
+        {
+            Items.Add(new InvoicePaymentVm
+            {
+                Amount = remaining,
+                AmountAdornmentText = PriceUnit.Title,
+                PriceUnit = PriceUnit,
+                PaymentDate = DateTime.Now
+            });
+        }
+    }
+
 }
