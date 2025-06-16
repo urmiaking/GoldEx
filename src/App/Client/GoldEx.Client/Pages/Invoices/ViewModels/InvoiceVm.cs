@@ -29,7 +29,7 @@ public class InvoiceVm
 
     // --- Calculated properties ---
     public decimal TotalItemsAmount => InvoiceItems.Sum(i => i.TotalAmount);
-    public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(d => d.Amount);
+    public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
