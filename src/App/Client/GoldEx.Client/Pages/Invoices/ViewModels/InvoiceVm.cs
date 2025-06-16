@@ -31,7 +31,7 @@ public class InvoiceVm
     public decimal TotalItemsAmount => InvoiceItems.Sum(i => i.TotalAmount);
     public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(d => d.Amount);
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(e => e.Amount);
-    public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount);
+    public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
     public decimal RemainingAmount => TotalInvoiceAmount - TotalPaymentsAmount;
     public bool IsPaid => RemainingAmount <= 0; // Used with MudChip to indicate payment status
