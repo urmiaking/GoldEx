@@ -134,18 +134,35 @@ public partial class EditorForm
         }
 
         await SendRequestAsync<IProductService, GetProductResponse?>(async (s, ct) => await s.GetAsync(barcode, ct),
-            response =>
+            async response =>
             {
                 if (response is null)
                     return;
 
                 decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
+                decimal? exchangeRate = null;
+
+                if (response.WagePriceUnitId.HasValue && response.WagePriceUnitId.Value != Model.InvoicePriceUnit?.Id)
+                {
+                    if (Model.InvoicePriceUnit != null)
+                    {
+                        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                            action: (s, ct) =>
+                                s.GetExchangeRateAsync(response.WagePriceUnitId.Value, Model.InvoicePriceUnit.Id, ct),
+                            afterSend: respExchangeRate =>
+                            {
+                                exchangeRate = respExchangeRate.ExchangeRate;
+                            });
+                    }
+                }
+
                 Model.InvoiceItems.Add(new InvoiceItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
                     PriceUnit = Model.InvoicePriceUnit,
                     GramPrice = gramPrice,
+                    ExchangeRate = exchangeRate,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold
                         ? _setting?.GoldProfitPercent ?? 7
@@ -227,6 +244,111 @@ public partial class EditorForm
 
     #endregion
 
+    #region Invoice
+
+    private async Task OnInvoicePriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
+    {
+        if (priceUnit is null)
+            return;
+
+        Model.InvoicePriceUnit = priceUnit;
+
+        if (Model.InvoicePriceUnit is null)
+            return;
+
+        await LoadGramPriceAsync();
+
+        foreach (var item in Model.InvoiceItems)
+        {
+            decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+            item.GramPrice = gramPrice;
+
+            item.PriceUnit = priceUnit;
+
+            if (item.Product.WagePriceUnitId.HasValue && Model.InvoicePriceUnit.Id != item.Product.WagePriceUnitId)
+            {
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) => 
+                        s.GetExchangeRateAsync(item.Product.WagePriceUnitId.Value, Model.InvoicePriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        item.ExchangeRate = response.ExchangeRate;
+                    });
+            }
+            else if (item.ExchangeRate.HasValue)
+            {
+                item.ExchangeRate = null;
+            }
+        }
+
+        foreach (var item in Model.InvoiceDiscounts)
+        {
+            if (item.PriceUnit != null && item.PriceUnit.Id != priceUnit.Id)
+            {
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) =>
+                        s.GetExchangeRateAsync(item.PriceUnit.Id, Model.InvoicePriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        item.ExchangeRate = response.ExchangeRate;
+                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {Model.InvoicePriceUnit.Title}";
+                    });
+            }
+            else
+            {
+                item.ExchangeRate = null;
+            }
+        }
+
+        foreach (var item in Model.InvoiceExtraCosts)
+        {
+            if (item.PriceUnit != null && item.PriceUnit.Id != priceUnit.Id)
+            {
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) =>
+                        s.GetExchangeRateAsync(item.PriceUnit.Id, Model.InvoicePriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        item.ExchangeRate = response.ExchangeRate;
+                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {Model.InvoicePriceUnit.Title}";
+                    });
+            }
+            else
+            {
+                item.ExchangeRate = null;
+            }
+        }
+
+        foreach (var item in Model.InvoicePayments)
+        {
+            if (item.PriceUnit != null && item.PriceUnit.Id != priceUnit.Id)
+            {
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) =>
+                        s.GetExchangeRateAsync(item.PriceUnit.Id, Model.InvoicePriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        item.ExchangeRate = response.ExchangeRate;
+                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {Model.InvoicePriceUnit.Title}";
+                    });
+            }
+            else
+            {
+                item.ExchangeRate = null;
+            }
+        }
+
+        if (Model.Customer.Id == Guid.Empty)
+        {
+            Model.Customer.CreditLimitPriceUnit = priceUnit;
+            _customerCreditLimitAdornmentText = priceUnit?.Title;
+        }
+
+        StateHasChanged();
+    }
+
+    #endregion
+
     #region MenuToggle
 
     private Task OnDiscountMenuToggled()
@@ -260,22 +382,5 @@ public partial class EditorForm
             return;
 
         AddSuccessToast("فاکتور با موفقیت ثبت شد");
-    }
-
-    private async Task OnInvoicePriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
-    {
-        Model.InvoicePriceUnit = priceUnit;
-
-        await LoadGramPriceAsync();
-
-        Model.InvoiceItems.ForEach(item =>
-        {
-            decimal.TryParse(_gramPrice?.Value, out var gramPrice);
-
-            item.PriceUnit = priceUnit;
-            item.GramPrice = gramPrice;
-        });
-
-        StateHasChanged();
     }
 }

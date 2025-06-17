@@ -33,8 +33,16 @@ public partial class ExtraCostList
 
     private void RemoveItem(InvoiceExtraCostVm item)
     {
-        if (Items.Count > 1)
-            Items.Remove(item);
+        switch (Items.Count)
+        {
+            case > 1:
+                Items.Remove(item);
+                break;
+            case 1:
+                Items.First().Amount = 0;
+                Items.First().Description = null;
+                break;
+        }
     }
 
     private async Task SelectPriceUnit(GetPriceUnitTitleResponse priceUnit, InvoiceExtraCostVm item)
