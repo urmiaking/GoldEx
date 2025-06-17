@@ -64,8 +64,17 @@ public partial class PaymentList
 
     private void RemoveItem(InvoicePaymentVm item)
     {
-        if (Items.Count > 1) 
-            Items.Remove(item);
+        switch (Items.Count)
+        {
+            case > 1:
+                Items.Remove(item);
+                break;
+            case 1:
+                Items.First().Amount = 0;
+                Items.First().Note = null;
+                Items.First().ReferenceNumber = null;
+                break;
+        }
     }
 
     private void OnAmountChanged(decimal? amount, InvoicePaymentVm item)
