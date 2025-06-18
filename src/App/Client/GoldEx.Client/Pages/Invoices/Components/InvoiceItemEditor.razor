@@ -24,18 +24,21 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudSelect T="ProductCategoryVm?"
-                               Value="Model.Product.CategoryVm"
-                               ValueChanged="OnProductCategoryChanged"
-                               Label="@Model.Product.GetDisplayName(() => Model.Product.ProductCategoryId)"
-                               For="() => Model.Product.CategoryVm"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined">
-                        @foreach (var item in _productCategories)
-                        {
-                            <MudSelectItem Value="item">@item.Title</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <div class="d-flex flex-row align-center">
+                        <MudSelect T="ProductCategoryVm?"
+                                   Value="Model.Product.CategoryVm"
+                                   ValueChanged="OnProductCategoryChanged"
+                                   Label="@Model.Product.GetDisplayName(() => Model.Product.ProductCategoryId)"
+                                   For="() => Model.Product.CategoryVm"
+                                   Margin="Margin.Dense"
+                                   Variant="Variant.Outlined">
+                            @foreach (var item in _productCategories)
+                            {
+                                <MudSelectItem Value="item">@item.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCategory"></MudIconButton>
+                    </div>
                 </MudItem>
                 <MudItem xs="12" md="4">
                     <MudSelect For="() => Model.Product.ProductType"

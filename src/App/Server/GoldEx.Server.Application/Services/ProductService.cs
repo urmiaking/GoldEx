@@ -20,8 +20,7 @@ namespace GoldEx.Server.Application.Services;
 internal class ProductService(
     IProductRepository repository,
     IMapper mapper,
-    CreateProductRequestValidator createValidator,
-    UpdateProductRequestValidator updateValidator,
+    ProductRequestDtoValidator validator,
     DeleteProductValidator deleteValidator) : IProductService
 {
     public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
@@ -62,9 +61,9 @@ internal class ProductService(
         return item is null ? null : mapper.Map<GetProductResponse>(item);
     }
 
-    public async Task CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
+    public async Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default)
     {
-        await createValidator.ValidateAndThrowAsync(request, cancellationToken);
+        await validator.ValidateAndThrowAsync(request, cancellationToken);
 
         var item = Product.Create(
             request.Name,
@@ -91,9 +90,9 @@ internal class ProductService(
         await repository.CreateAsync(item, cancellationToken);
     }
 
-    public async Task UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default)
     {
-        await updateValidator.ValidateAndThrowAsync((id, request), cancellationToken);
+        await validator.ValidateAndThrowAsync(request, cancellationToken);
 
         var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();

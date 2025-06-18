@@ -1,9 +1,12 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.Settings.Components.PaymentMethods;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using MudBlazor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -134,4 +137,18 @@ public partial class PaymentList
         }
     }
 
+    private async Task OnAddPaymentMethod()
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن روش پرداخت جدید", dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: true })
+        {
+            await LoadPaymentMethodsAsync();
+            StateHasChanged();
+        }
+    }
 }

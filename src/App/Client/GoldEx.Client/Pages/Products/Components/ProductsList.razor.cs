@@ -92,8 +92,7 @@ public partial class ProductsList
     {
         var parameters = new DialogParameters<Editor>
         {
-            { x => x.Model, model },
-            { x => x.Id, model.Id }
+            { x => x.Model, model }
         };
 
         var dialog = await DialogService.ShowAsync<Editor>("ویرایش جنس", parameters, _dialogOptions);

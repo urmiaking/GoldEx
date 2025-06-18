@@ -15,6 +15,7 @@ public class InvoiceVm
     public DateTime? DueDate { get; set; }
 
     [Display(Name = "تاریخ فاکتور")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public DateTime? InvoiceDate { get; set; }
 
     public CustomerVm Customer { get; set; } = new();
