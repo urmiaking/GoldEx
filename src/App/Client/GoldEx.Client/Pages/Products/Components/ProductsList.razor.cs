@@ -14,7 +14,7 @@ public partial class ProductsList
 
     private string? _searchString;
     private MudTable<ProductVm> _table = new ();
-    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium};
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small};
 
     private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -71,9 +71,12 @@ public partial class ProductsList
 
     private async Task OnRemoveProduct(ProductVm model)
     {
+        if (!model.Id.HasValue)
+            return;
+
         var parameters = new DialogParameters<Remove>
         {
-            { x => x.Id, model.Id },
+            { x => x.Id, model.Id.Value },
             { x => x.ProductName, model.Name }
         };
 
