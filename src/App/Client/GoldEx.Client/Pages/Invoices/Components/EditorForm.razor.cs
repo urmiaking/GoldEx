@@ -106,6 +106,9 @@ public partial class EditorForm
     {
         Model.Customer.NationalId = nationalId;
 
+        if (string.IsNullOrEmpty(nationalId))
+            return;
+
         await SendRequestAsync<ICustomerService, GetCustomerResponse?>(
             action: (s, ct) => s.GetAsync(nationalId, ct),
             afterSend: response =>

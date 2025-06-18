@@ -35,14 +35,14 @@ public class ProductsController(IProductService service) : ApiControllerBase
     }
 
     [HttpPost(ApiRoutes.Products.Create)]
-    public async Task<IActionResult> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateAsync(ProductRequestDto request, CancellationToken cancellationToken)
     {
         await service.CreateAsync(request, cancellationToken);
         return Created();
     }
 
     [HttpPut(ApiRoutes.Products.Update)]
-    public async Task<IActionResult> UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken)
     {
         await service.UpdateAsync(id, request, cancellationToken);
         return Ok();

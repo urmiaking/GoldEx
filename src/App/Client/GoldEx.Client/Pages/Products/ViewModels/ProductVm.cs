@@ -7,7 +7,7 @@ namespace GoldEx.Client.Pages.Products.ViewModels;
 
 public class ProductVm
 {
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
 
     [Display(Name = "نام جنس")]
     [Required(ErrorMessage = "نام جنس الزامی است")]
@@ -83,11 +83,11 @@ public class ProductVm
         };
     }
 
-    internal static CreateProductRequest ToCreateRequest(ProductVm item)
+    internal static ProductRequestDto ToRequest(ProductVm item)
     {
-        return new CreateProductRequest
+        return new ProductRequestDto
         (
-            Guid.NewGuid(),
+            item.Id,
             item.Name,
             item.Barcode,
             item.Weight ?? 0,
@@ -97,33 +97,13 @@ public class ProductVm
             item.CaratType,
             item.ProductCategoryId,
             item.WagePriceUnitId,
-            item.Stones?.Select(x => new CreateGemStoneRequest(
+            item.Stones?.Select(x => new GemStoneRequestDto(
                     x.Code,
                     x.Type,
                     x.Color,
                     x.Cut,
                     x.Carat,
                     x.Purity))
-                .ToList()
-        );
-    }
-
-    internal static UpdateProductRequest ToUpdateRequest(ProductVm item)
-    {
-        return new UpdateProductRequest
-        (
-            item.Name,
-            item.Barcode,
-            item.Weight ?? 0,
-            item.Wage ?? 0,
-            item.WageType ?? 0,
-            item.ProductType,
-            item.CaratType,
-            item.ProductCategoryId,
-            item.WagePriceUnitId,
-            item.Stones?
-                .Select(x => 
-                    new UpdateGemStoneRequest(x.Code, x.Type, x.Color, x.Cut, x.Carat, x.Purity))
                 .ToList()
         );
     }

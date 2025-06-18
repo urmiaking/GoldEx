@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Client.Pages.Settings.Components.Categories;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Prices;
@@ -208,6 +209,21 @@ public partial class InvoiceItemEditor
             _wageFieldAdornmentText = "درصد";
             _wageExchangeRateLabel = null;
             Model.ExchangeRate = null;
+        }
+    }
+
+    private async Task OnAddCategory()
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن دسته بندی جدید", dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: true })
+        {
+            await LoadCategoriesAsync();
+            StateHasChanged();
         }
     }
 }

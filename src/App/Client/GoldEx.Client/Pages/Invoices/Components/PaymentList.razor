@@ -64,17 +64,20 @@
                 </MudTd>
             }
             <MudTd DataLabel="روش پرداخت" Class="p-1">
-                <MudSelect @bind-Value="@context.PaymentMethod"
-                           T="GetPaymentMethodResponse?"
-                           For="@(() => context.PaymentMethod)"
-                           Label="@(context.GetDisplayName(() => context.PaymentMethod))"
-                           Margin="Margin.Dense"
-                           Variant="Variant.Outlined">
-                    @foreach (var method in _paymentMethods)
-                    {
-                        <MudSelectItem T="GetPaymentMethodResponse" Value="@method">@method.Title</MudSelectItem>
-                    }
-                </MudSelect>
+                <div class="d-flex flex-row align-center">
+                    <MudSelect @bind-Value="@context.PaymentMethod"
+                               T="GetPaymentMethodResponse?"
+                               For="@(() => context.PaymentMethod)"
+                               Label="@(context.GetDisplayName(() => context.PaymentMethod))"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var method in _paymentMethods)
+                        {
+                            <MudSelectItem T="GetPaymentMethodResponse" Value="@method">@method.Title</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddPaymentMethod"></MudIconButton>
+                </div>
             </MudTd>
             <MudTd DataLabel="یادداشت" Class="p-1">
                 <MudTextField @bind-Value="@context.Note"

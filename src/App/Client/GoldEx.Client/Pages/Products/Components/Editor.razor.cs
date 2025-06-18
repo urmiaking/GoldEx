@@ -14,14 +14,12 @@ namespace GoldEx.Client.Pages.Products.Components;
 
 public partial class Editor
 {
-    [Parameter] public Guid? Id { get; set; }
     [Parameter] public ProductVm Model { get; set; } = ProductVm.CreateDefaultInstance();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly ProductValidator _productValidator = new();
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private string? _wageFieldHelperText;
     private string? _wageAdornmentText = "درصد";
     private string? _wageFieldAdornmentText;
     private bool _wageFieldMenuOpen;
@@ -29,7 +27,7 @@ public partial class Editor
 
     protected override void OnParametersSet()
     {
-        if (Id is null)
+        if (Model.Id is null)
             GenerateBarcode();
 
         OnWageTypeChanged(Model.WageType);
@@ -74,9 +72,10 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        if (Id is null)
+        var request = ProductVm.ToRequest(Model);
+
+        if (!Model.Id.HasValue)
         {
-            var request = ProductVm.ToCreateRequest(Model);
             await SendRequestAsync<IProductService>(
                 action: (s, ct) => s.CreateAsync(request, ct),
                 afterSend: () =>
@@ -87,9 +86,8 @@ public partial class Editor
         }
         else
         {
-            var request = ProductVm.ToUpdateRequest(Model);
             await SendRequestAsync<IProductService>(
-                action: (s, ct) => s.UpdateAsync(Model.Id, request, ct),
+                action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
                 afterSend: () =>
                 {
                     MudDialog.Close(DialogResult.Ok(true));
@@ -179,9 +177,6 @@ public partial class Editor
     private void OnWageChanged(decimal? wage)
     {
         Model.Wage = wage;
-        _wageFieldHelperText = Model.Wage.HasValue || wage is not null
-            ? $"{Model.Wage.FormatNumber()} {_wageAdornmentText}".Trim()
-            : string.Empty;
     }
 
     private void OnWageAdornmentClicked()
@@ -199,5 +194,20 @@ public partial class Editor
 
         _wageFieldMenuOpen = false;
         OnWageTypeChanged(Model.WageType);
+    }
+
+    private async Task OnAddCategory()
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+        var dialog = await DialogService.ShowAsync<Settings.Components.Categories.Editor>("افزودن دسته بندی جدید", dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: true })
+        {
+            await LoadCategoriesAsync();
+            StateHasChanged();
+        }
     }
 }

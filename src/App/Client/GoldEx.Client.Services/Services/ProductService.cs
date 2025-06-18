@@ -52,7 +52,7 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
+    public async Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default)
     {
         using var response = await client.PostAsJsonAsync(ApiUrls.Products.Create(), request, jsonOptions, cancellationToken);
 
@@ -60,7 +60,7 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
-    public async Task UpdateAsync(Guid id, UpdateProductRequest request,
+    public async Task UpdateAsync(Guid id, ProductRequestDto request,
         CancellationToken cancellationToken = default)
     {
         using var response = await client.PutAsJsonAsync(ApiUrls.Products.Update(id), request, jsonOptions, cancellationToken);

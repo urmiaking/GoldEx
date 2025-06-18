@@ -21,6 +21,7 @@ public class InvoicePaymentVm
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
     [Display(Name = "روش پرداخت")]
+    [Required(ErrorMessage = "وارد کردن روش پرداخت الزامی است")]
     public GetPaymentMethodResponse? PaymentMethod { get; set; }
 
     [Display(Name = "نرخ تبدیل")]
