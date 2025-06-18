@@ -6,14 +6,9 @@ namespace GoldEx.Client.Pages.Products.Components;
 
 public partial class Remove
 {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; } = default!;
-
-    [Parameter]
-    public string ProductName { get; set; } = string.Empty;
-
-    [Parameter]
-    public Guid Id { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string ProductName { get; set; } = string.Empty;
+    [Parameter] public Guid Id { get; set; }
 
     private async Task OnValidSubmit()
     {

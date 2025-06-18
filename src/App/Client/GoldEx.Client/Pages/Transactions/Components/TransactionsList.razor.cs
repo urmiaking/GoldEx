@@ -87,9 +87,12 @@ public partial class TransactionsList
 
     private async Task OnRemoveTransaction(TransactionVm model)
     {
+        if (!model.TransactionId.HasValue)
+            return;
+
         var parameters = new DialogParameters<Remove>
         {
-            { x => x.Id, model.TransactionId },
+            { x => x.Id, model.TransactionId.Value },
             { x => x.TransactionNumber, model.TransactionNumber }
         };
 
