@@ -19,7 +19,9 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
     private readonly IProductRepository _repository;
     private readonly IProductCategoryRepository _categoryRepository;
     private readonly IPriceUnitRepository _priceUnitRepository;
-    public ProductRequestDtoValidator(IProductRepository repository, IProductCategoryRepository categoryRepository, IPriceUnitRepository priceUnitRepository)
+    public ProductRequestDtoValidator(IProductRepository repository,
+        IProductCategoryRepository categoryRepository,
+        IPriceUnitRepository priceUnitRepository)
     {
         _repository = repository;
         _categoryRepository = categoryRepository;

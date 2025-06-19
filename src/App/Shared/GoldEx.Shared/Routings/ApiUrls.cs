@@ -179,7 +179,7 @@ public class ApiUrls
 
     }
 
-public class PaymentMethods
+    public class PaymentMethods
     {
         public static string GetList() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetList);
         public static string GetAll() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetAll);
@@ -190,5 +190,10 @@ public class PaymentMethods
             BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.Update).FormatRoute(new { id });
         public static string UpdateStatus(Guid id) =>
             BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.UpdateStatus).FormatRoute(new { id });
+    }
+
+    public class Invoices
+    {
+        public static string Create() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Create);
     }
 }

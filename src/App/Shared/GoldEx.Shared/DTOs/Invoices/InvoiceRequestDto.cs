@@ -3,7 +3,8 @@ using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Shared.DTOs.Invoices;
 
-public record CreateInvoiceRequest(
+public record InvoiceRequestDto(
+    Guid? Id,
     long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
@@ -24,7 +25,7 @@ public record InvoiceItemDto(
     decimal GramPrice,
     decimal ProfitPercent,
     decimal TaxPercent,
-    decimal ExchangeRate,
+    decimal? ExchangeRate,
     int Quantity,
     ProductRequestDto Product,
     Guid PriceUnit);

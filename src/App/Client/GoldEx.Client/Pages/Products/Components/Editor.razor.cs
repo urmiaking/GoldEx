@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Products.Validators;
+﻿using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
@@ -20,7 +19,6 @@ public partial class Editor
     private readonly ProductValidator _productValidator = new();
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private string? _wageAdornmentText = "درصد";
     private string? _wageFieldAdornmentText;
     private bool _wageFieldMenuOpen;
     private MudForm _form = default!;
@@ -130,15 +128,12 @@ public partial class Editor
         switch (wageType)
         {
             case WageType.Percent:
-                _wageAdornmentText = "درصد";
                 _wageFieldAdornmentText = "درصد";
                 break;
             case WageType.Fixed:
-                _wageAdornmentText = Model.WagePriceUnitTitle;
                 _wageFieldAdornmentText = Model.WagePriceUnitTitle;
                 break;
             case null:
-                _wageAdornmentText = null;
                 Model.Wage = null;
                 break;
             default:

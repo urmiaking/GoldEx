@@ -1,5 +1,6 @@
 ﻿using GoldEx.Shared.DTOs.PriceUnits;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -19,4 +20,12 @@ public class InvoiceExtraCostVm
     public string? ExchangeRateLabel { get; set; }
     public string AmountAdornmentText { get; set; } = default!;
     public bool AmountMenuOpen { get; set; }
+
+    public static InvoiceExtraCostsDto ToRequest(InvoiceExtraCostVm item)
+    {
+        if (item.PriceUnit is null)
+            throw new ValidationException("واحد ارزی مخارج جانبی وارد نشده است");
+
+        return new InvoiceExtraCostsDto(item.Amount, item.Description, item.PriceUnit.Id);
+    }
 }

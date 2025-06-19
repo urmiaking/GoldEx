@@ -11,7 +11,6 @@ public partial class Editor
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public CustomerVm Model { get; set; } = new();
-    [Parameter] public Guid? Id { get; set; }
 
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
@@ -20,7 +19,7 @@ public partial class Editor
 
     protected override void OnParametersSet()
     {
-        if (Id is not null)
+        if (Model.Id.HasValue)
             OnCreditLimitChanged(Model.CreditLimit);
 
         base.OnParametersSet();
@@ -62,9 +61,10 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
-        if (Id is null)
+        var request = CustomerVm.ToRequest(Model);
+
+        if (!Model.Id.HasValue)
         {
-            var request = CustomerVm.ToCreateRequest(Model);
             await SendRequestAsync<ICustomerService>(
                 action:(s, ct) => s.CreateAsync(request, ct),
                 afterSend: () =>
@@ -75,9 +75,8 @@ public partial class Editor
         }
         else
         {
-            var request = CustomerVm.ToUpdateRequest(Model);
             await SendRequestAsync<ICustomerService>(
-                action:(s, ct) => s.UpdateAsync(Model.Id, request, ct),
+                action:(s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
                 afterSend: () =>
                 {
                     MudDialog.Close(DialogResult.Ok(true));

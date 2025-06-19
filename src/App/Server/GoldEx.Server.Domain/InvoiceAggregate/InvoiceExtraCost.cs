@@ -5,7 +5,7 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public class InvoiceExtraCost : EntityBase
 {
-    public static InvoiceExtraCost Create(decimal amount, string? description, PriceUnitId priceUnitId)
+    public static InvoiceExtraCost Create(decimal amount, PriceUnitId priceUnitId, string? description = null)
     {
         return new InvoiceExtraCost
         {

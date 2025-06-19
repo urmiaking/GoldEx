@@ -138,7 +138,7 @@ public class Product : EntityBase<ProductId>
         return this;
     }
 
-    public Product SetWagePriceUnitId(PriceUnitId wagePriceUnitId)
+    public Product SetWagePriceUnitId(PriceUnitId? wagePriceUnitId)
     {
         if (WageType is WageType.Percent)
             throw new InvalidOperationException("Percent wage type cannot have wage price unit");

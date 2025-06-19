@@ -82,7 +82,7 @@ public class TransactionVm
             model.Debit,
             model.DebitUnit?.Id,
             model.DebitRate,
-            CustomerVm.ToUpdateRequest(model.Customer)
+            CustomerVm.ToRequest(model.Customer)
         );
     }
 
@@ -98,7 +98,7 @@ public class TransactionVm
             model.Debit,
             model.DebitUnit?.Id,
             model.DebitRate,
-            CustomerVm.ToCreateRequest(model.Customer)
+            CustomerVm.ToRequest(model.Customer)
         );
     }
 }

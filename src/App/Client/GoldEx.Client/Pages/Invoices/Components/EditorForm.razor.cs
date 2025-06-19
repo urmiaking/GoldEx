@@ -384,6 +384,14 @@ public partial class EditorForm
         if (!_form.IsValid)
             return;
 
-        AddSuccessToast("فاکتور با موفقیت ثبت شد");
+        var request = InvoiceVm.ToRequest(Model);
+
+        await SendRequestAsync<IInvoiceService>(
+            action:(s, ct) => s.CreateAsync(request, ct),
+            afterSend: () =>
+            {
+                AddSuccessToast("فاکتور با موفقیت ثبت شد");
+                return Task.CompletedTask;
+            });
     }
 }
