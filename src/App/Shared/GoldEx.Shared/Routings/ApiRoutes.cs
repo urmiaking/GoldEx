@@ -120,4 +120,11 @@ public static class ApiRoutes
         public const string Update = "{id}";
         public const string UpdateStatus = "status/{id}";
     }
+
+    public class Invoices
+    {
+        public const string Base = "/api/Invoices";
+        public const string Create = "";
+        public const string Update = "{id}";
+    }
 }

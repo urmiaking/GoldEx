@@ -1,6 +1,8 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.Invoices;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -78,5 +80,21 @@ public class InvoiceVm
         {
             InvoiceItems[i].Index = i + 1;
         }
+    }
+
+    public static InvoiceRequestDto ToRequest(InvoiceVm model)
+    {
+        if (!model.InvoiceDate.HasValue)
+            throw new ValidationException("لطفا تاریخ فاکتور را وارد کنید");
+
+        return new InvoiceRequestDto(model.InvoiceId,
+            model.InvoiceNumber,
+            model.InvoiceDate.Value,
+            model.DueDate,
+            CustomerVm.ToRequest(model.Customer),
+            model.InvoiceItems.Select(InvoiceItemVm.ToRequest).ToList(),
+            model.InvoiceDiscounts.Select(InvoiceDiscountVm.ToRequest).ToList(),
+            model.InvoicePayments.Select(InvoicePaymentVm.ToRequest).ToList(),
+            model.InvoiceExtraCosts.Select(InvoiceExtraCostVm.ToRequest).ToList());
     }
 }

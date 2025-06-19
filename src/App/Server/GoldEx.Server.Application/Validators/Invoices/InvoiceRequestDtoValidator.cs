@@ -8,12 +8,12 @@ using GoldEx.Shared.DTOs.Invoices;
 namespace GoldEx.Server.Application.Validators.Invoices;
 
 [ScopedService]
-internal class CreateInvoiceRequestValidator : AbstractValidator<CreateInvoiceRequest>
+internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 {
     private readonly IInvoiceRepository _invoiceRepository;
 
-    public CreateInvoiceRequestValidator(CustomerRequestDtoValidator customerValidator,
-        IPriceUnitRepository priceUnitRepository,
+    public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
+        IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository,
         IPaymentMethodRepository paymentMethodRepository, IInvoiceRepository invoiceRepository)
     {
         _invoiceRepository = invoiceRepository;
@@ -41,7 +41,7 @@ internal class CreateInvoiceRequestValidator : AbstractValidator<CreateInvoiceRe
             .NotEmpty().WithMessage("فاکتور باید حداقل دارای یک آیتم باشد");
 
         RuleForEach(x => x.InvoiceItems)
-            .SetValidator(new InvoiceItemDtoValidator());
+            .SetValidator(new InvoiceItemDtoValidator(productCategoryRepository, productRepository, priceUnitRepository));
 
         RuleForEach(x => x.InvoiceDiscounts)
             .SetValidator(new InvoiceDiscountDtoValidator(priceUnitRepository));

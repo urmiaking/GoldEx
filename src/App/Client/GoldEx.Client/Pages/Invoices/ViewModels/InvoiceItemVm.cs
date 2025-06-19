@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Helpers;
 
@@ -67,5 +68,20 @@ public class InvoiceItemVm
             Index = item.Index,
             ShowDetails = item.ShowDetails
         };
+    }
+
+    public static InvoiceItemDto ToRequest(InvoiceItemVm item)
+    {
+        if (item.PriceUnit is null)
+            throw new ValidationException($"واحد ارزی جنس {item.Product.Name} وارد نشده است");
+
+        return new InvoiceItemDto(item.Id,
+            item.GramPrice,
+            item.ProfitPercent,
+            item.TaxPercent,
+            item.ExchangeRate,
+            item.Quantity,
+            ProductVm.ToRequest(item.Product),
+            item.PriceUnit.Id);
     }
 }

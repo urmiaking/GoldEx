@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Application.Validators.Products;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
@@ -7,7 +9,9 @@ namespace GoldEx.Server.Application.Validators.Invoices;
 [ScopedService]
 internal class InvoiceItemDtoValidator : AbstractValidator<InvoiceItemDto>
 {
-    public InvoiceItemDtoValidator()
+    public InvoiceItemDtoValidator(IProductCategoryRepository categoryRepository,
+        IProductRepository productRepository,
+        IPriceUnitRepository priceUnitRepository)
     {
         RuleFor(i => i.Quantity)
             .GreaterThan(0).WithMessage("تعداد باید بزرگتر از صفر باشد");
@@ -22,7 +26,7 @@ internal class InvoiceItemDtoValidator : AbstractValidator<InvoiceItemDto>
             .GreaterThanOrEqualTo(0).WithMessage("درصد مالیات نمی‌تواند منفی باشد");
 
         RuleFor(i => i.Product)
-            .NotNull().WithMessage("اطلاعات محصول برای آیتم فاکتور الزامی است");
-        //.SetValidator(new CreateProductRequestValidator()); TODO: fix
+            .NotNull().WithMessage("اطلاعات محصول برای آیتم فاکتور الزامی است")
+            .SetValidator(new ProductRequestDtoValidator(productRepository, categoryRepository, priceUnitRepository));
     }
 }

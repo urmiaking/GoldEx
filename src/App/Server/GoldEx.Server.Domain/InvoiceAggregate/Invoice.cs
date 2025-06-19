@@ -7,13 +7,14 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceId(Guid Value);
 public class Invoice : EntityBase<InvoiceId>
 {
-    public static Invoice Create(long invoiceNumber, CustomerId customerId, DateOnly? dueDate)
+    public static Invoice Create(long invoiceNumber, CustomerId customerId, DateOnly invoiceDate, DateOnly? dueDate)
     {
         return new Invoice
         {
             Id = new InvoiceId(Guid.NewGuid()),
             InvoiceNumber = invoiceNumber,
             CustomerId = customerId,
+            InvoiceDate = invoiceDate,
             DueDate = dueDate
         };
     }

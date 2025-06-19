@@ -7,7 +7,7 @@ namespace GoldEx.Client.Pages.Customers.ViewModels;
 
 public class CustomerVm
 {
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
 
     [Display(Name = "نام و نام خانوادگی")]
     [Required(ErrorMessage = "{0} الزامی است")]
@@ -54,19 +54,7 @@ public class CustomerVm
         };
     }
 
-    public static CustomerRequestDto ToCreateRequest(CustomerVm model)
-    {
-        return new CustomerRequestDto(null,
-            model.FullName,
-            model.NationalId,
-            model.PhoneNumber,
-            model.Address,
-            model.CreditLimit,
-            model.CreditLimitPriceUnit?.Id,
-            model.CustomerType);
-    }
-
-    public static CustomerRequestDto ToUpdateRequest(CustomerVm model)
+    public static CustomerRequestDto ToRequest(CustomerVm model)
     {
         return new CustomerRequestDto(model.Id,
             model.FullName,

@@ -4,5 +4,5 @@ namespace GoldEx.Shared.Services;
 
 public interface IInvoiceService
 {
-    Task CreateAsync(CreateInvoiceRequest request, CancellationToken cancellationToken);
+    Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken);
 }

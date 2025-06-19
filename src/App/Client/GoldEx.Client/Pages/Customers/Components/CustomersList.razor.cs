@@ -96,8 +96,7 @@ public partial class CustomersList
     {
         var parameters = new DialogParameters<Editor>
         {
-            { x => x.Model, model },
-            { x => x.Id, model.Id }
+            { x => x.Model, model }
         };
 
         var dialog = await DialogService.ShowAsync<Editor>("ویرایش اطلاعات مشتری", parameters, _dialogOptions);
