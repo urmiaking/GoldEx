@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Transactions;
+using MediatR;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -34,8 +35,11 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        using var response = await client.DeleteAsync(ApiUrls.Invoices.Delete(id, deleteProducts), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 }
