@@ -24,7 +24,7 @@ public class InvoiceExtraCostVm
     public static InvoiceExtraCostsDto ToRequest(InvoiceExtraCostVm item)
     {
         if (item.PriceUnit is null)
-            throw new ValidationException("واحد ارزی مخارج جانبی وارد نشده است");
+            throw new FluentValidation.ValidationException("واحد ارزی مخارج جانبی وارد نشده است");
 
         return new InvoiceExtraCostsDto(item.Amount, item.Description, item.PriceUnit.Id);
     }

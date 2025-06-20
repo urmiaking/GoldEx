@@ -1,7 +1,9 @@
 ﻿using System.Data;
 using FluentValidation;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Application.Validators.Invoices;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -11,8 +13,13 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
+using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.Products;
+using GoldEx.Server.Infrastructure.Specifications.Transactions;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using MapsterMapper;
@@ -39,7 +46,7 @@ internal class InvoiceService(
             try
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
-                
+
                 Guid customerId;
 
                 if (request.Customer.Id.HasValue)
@@ -54,6 +61,7 @@ internal class InvoiceService(
 
                 var invoice = Invoice.Create(request.InvoiceNumber,
                     new CustomerId(customerId),
+                    new PriceUnitId(request.PriceUnitId),
                     DateOnly.FromDateTime(request.InvoiceDate),
                     request.DueDate.HasValue
                         ? DateOnly.FromDateTime(request.DueDate.Value)
@@ -67,7 +75,7 @@ internal class InvoiceService(
 
                 if (request.InvoiceExtraCosts.Any())
                 {
-                    invoice.SetExtraCosts(request.InvoiceDiscounts.Select(x =>
+                    invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
                         InvoiceExtraCost.Create(x.Amount, new PriceUnitId(x.PriceUnitId), x.Description)));
                 }
 
@@ -153,6 +161,7 @@ internal class InvoiceService(
                         invoiceItemRequest.Quantity,
                         productId,
                         new PriceUnitId(invoiceItemRequest.PriceUnit),
+                        invoice.Id,
                         invoiceItemRequest.ExchangeRate);
 
                     await invoiceItemRepository.CreateAsync(invoiceItem, cancellationToken);
@@ -166,5 +175,40 @@ internal class InvoiceService(
                 await dbTransaction.RollbackAsync(cancellationToken);
             }
         }
+    }
+
+    public async Task<PagedList<GetInvoiceResponse>> GetListAsync(RequestFilter filter, Guid? customerId, CancellationToken cancellationToken = default)
+    {
+        var skip = filter.Skip ?? 0;
+        var take = filter.Take ?? 100;
+
+        var data = await invoiceRepository
+            .Get(new InvoicesByFilterSpecification(filter,
+                customerId.HasValue
+                    ? new CustomerId(customerId.Value)
+                    : null))
+            .Include(x => x.Items)
+                .ThenInclude(x => x.Product)
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+
+        var totalCount = await invoiceRepository.CountAsync(new InvoicesByFilterSpecification(filter,
+                customerId.HasValue
+                    ? new CustomerId(customerId.Value)
+                    : null),
+            cancellationToken);
+
+        return new PagedList<GetInvoiceResponse>
+        {
+            Data = mapper.Map<List<GetInvoiceResponse>>(data),
+            Skip = skip,
+            Take = take,
+            Total = totalCount
+        };
+    }
+
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

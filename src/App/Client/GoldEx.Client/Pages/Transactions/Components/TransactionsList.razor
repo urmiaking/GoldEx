@@ -1,6 +1,4 @@
-﻿@using System.Globalization
-@using Humanizer
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
 <MudTable T="TransactionVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">

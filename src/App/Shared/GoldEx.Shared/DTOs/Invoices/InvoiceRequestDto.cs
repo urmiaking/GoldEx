@@ -8,6 +8,7 @@ public record InvoiceRequestDto(
     long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
+    Guid PriceUnitId,
     CustomerRequestDto Customer,
     List<InvoiceItemDto> InvoiceItems,
     List<InvoiceDiscountDto> InvoiceDiscounts,

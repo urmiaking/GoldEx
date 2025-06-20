@@ -1,22 +1,29 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+﻿
+using System.ComponentModel.DataAnnotations;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class EditorForm
 {
     [Parameter] public InvoiceVm Model { get; set; } = InvoiceVm.CreateDefaultInstance();
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
@@ -384,14 +391,36 @@ public partial class EditorForm
         if (!_form.IsValid)
             return;
 
+        try
+        {
+            InvoiceVm.ToRequest(Model);
+        }
+        catch (ValidationException e)
+        {
+            AddErrorToast(e.Message);
+            return;
+        }
+
         var request = InvoiceVm.ToRequest(Model);
 
         await SendRequestAsync<IInvoiceService>(
-            action:(s, ct) => s.CreateAsync(request, ct),
+            action: (s, ct) => s.CreateAsync(request, ct),
             afterSend: () =>
             {
                 AddSuccessToast("فاکتور با موفقیت ثبت شد");
+                NavigationManager.NavigateTo(ClientRoutes.Invoices.Index);
                 return Task.CompletedTask;
             });
+    }
+
+    private void OnCustomerCleared()
+    {
+        Model.Customer = new CustomerVm();
+    }
+
+    private void OnCustomerNationalIdAdornmentClicked()
+    {
+        Model.Customer.NationalId = StringExtensions.GenerateRandomCode(10);
+        StateHasChanged();
     }
 }

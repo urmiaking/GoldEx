@@ -17,6 +17,7 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         var take = filter.Take ?? 100;
 
         AddInclude(x => x.Customer!);
+        AddInclude(x => x.PriceUnit!);
 
         // Apply customer filter if provided
         if (customerId.HasValue)

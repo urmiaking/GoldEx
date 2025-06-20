@@ -16,6 +16,7 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
         int quantity,
         ProductId productId,
         PriceUnitId priceUnitId,
+        InvoiceId invoiceId,
         decimal? exchangeRate = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
@@ -35,7 +36,8 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
             Quantity = quantity,
             ProductId = productId,
             PriceUnitId = priceUnitId,
-            ExchangeRate = exchangeRate
+            ExchangeRate = exchangeRate,
+            InvoiceId = invoiceId
         };
     }
 

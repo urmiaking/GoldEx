@@ -1,8 +1,10 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Validators.Customers;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
@@ -11,11 +13,12 @@ namespace GoldEx.Server.Application.Validators.Invoices;
 internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 {
     private readonly IInvoiceRepository _invoiceRepository;
-
+    private readonly IPriceUnitRepository _priceUnitRepository;
     public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
         IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository,
         IPaymentMethodRepository paymentMethodRepository, IInvoiceRepository invoiceRepository)
     {
+        _priceUnitRepository = priceUnitRepository;
         _invoiceRepository = invoiceRepository;
 
         RuleFor(x => x.InvoiceNumber)
@@ -40,6 +43,10 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .NotEmpty()
             .NotEmpty().WithMessage("فاکتور باید حداقل دارای یک آیتم باشد");
 
+        RuleFor(x => x.PriceUnitId)
+            .MustAsync(BeValidPriceUnit)
+            .WithMessage("واحد ارزی فاکتور معتبر نمی باشد");
+
         RuleForEach(x => x.InvoiceItems)
             .SetValidator(new InvoiceItemDtoValidator(productCategoryRepository, productRepository, priceUnitRepository));
 
@@ -51,6 +58,11 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         RuleForEach(x => x.InvoicePayments)
             .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository, paymentMethodRepository));
+    }
+
+    private async Task<bool> BeValidPriceUnit(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _priceUnitRepository.ExistsAsync(new PriceUnitsByIdSpecification(new PriceUnitId(id)), cancellationToken);
     }
 
     private async Task<bool> BeUniqueNumber(long invoiceNumber, CancellationToken cancellationToken = default)

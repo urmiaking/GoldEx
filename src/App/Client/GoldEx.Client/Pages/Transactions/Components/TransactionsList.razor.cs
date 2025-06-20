@@ -12,7 +12,6 @@ public partial class TransactionsList
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
 
-    [Parameter] public string? CustomerName { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
 
     private string? _searchString;

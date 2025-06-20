@@ -73,7 +73,7 @@ public class InvoiceItemVm
     public static InvoiceItemDto ToRequest(InvoiceItemVm item)
     {
         if (item.PriceUnit is null)
-            throw new ValidationException($"واحد ارزی جنس {item.Product.Name} وارد نشده است");
+            throw new FluentValidation.ValidationException($"واحد ارزی جنس {item.Product.Name} وارد نشده است");
 
         return new InvoiceItemDto(item.Id,
             item.GramPrice,

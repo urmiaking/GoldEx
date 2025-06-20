@@ -5,6 +5,8 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.Transactions;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -17,5 +19,23 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task<PagedList<GetInvoiceResponse>> GetListAsync(RequestFilter filter, Guid? customerId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Invoices.GetList(filter, customerId), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetInvoiceResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

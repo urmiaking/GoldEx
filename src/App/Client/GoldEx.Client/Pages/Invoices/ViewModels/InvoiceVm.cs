@@ -87,14 +87,18 @@ public class InvoiceVm
         if (!model.InvoiceDate.HasValue)
             throw new ValidationException("لطفا تاریخ فاکتور را وارد کنید");
 
+        if (model.InvoicePriceUnit == null)
+            throw new ValidationException("لطفا واحد ارزی فاکتور را وارد کنید");
+
         return new InvoiceRequestDto(model.InvoiceId,
             model.InvoiceNumber,
             model.InvoiceDate.Value,
             model.DueDate,
+            model.InvoicePriceUnit.Id,
             CustomerVm.ToRequest(model.Customer),
             model.InvoiceItems.Select(InvoiceItemVm.ToRequest).ToList(),
             model.InvoiceDiscounts.Select(InvoiceDiscountVm.ToRequest).ToList(),
-            model.InvoicePayments.Select(InvoicePaymentVm.ToRequest).ToList(),
+            model.InvoicePayments.Where(x => x.Amount > 0).Select(InvoicePaymentVm.ToRequest).ToList(),
             model.InvoiceExtraCosts.Select(InvoiceExtraCostVm.ToRequest).ToList());
     }
 }

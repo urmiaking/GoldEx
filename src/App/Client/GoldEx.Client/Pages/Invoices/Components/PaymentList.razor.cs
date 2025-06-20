@@ -49,6 +49,8 @@ public partial class PaymentList
             afterSend: response =>
             {
                 _paymentMethods = response;
+                Items.First().PaymentMethod = _paymentMethods.FirstOrDefault();
+
                 StateHasChanged();
             });
     }

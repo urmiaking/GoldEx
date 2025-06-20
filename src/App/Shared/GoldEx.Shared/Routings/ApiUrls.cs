@@ -195,5 +195,10 @@ public class ApiUrls
     public class Invoices
     {
         public static string Create() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Create);
+
+        public static string GetList(RequestFilter filter, Guid? customerId) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(new { customerId });
     }
 }

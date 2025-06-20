@@ -1,5 +1,6 @@
 ﻿using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -8,6 +9,7 @@ using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -15,6 +17,7 @@ using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.DTOs.Transactions;
+using GoldEx.Shared.Enums;
 using Mapster;
 
 namespace GoldEx.Server.Common;
@@ -23,6 +26,29 @@ public class MapsterConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
+        #region Customers
+
+        config.NewConfig<Customer, GetCustomerResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CreditLimitPriceUnit, src => src.CreditLimitPriceUnit);
+
+        #endregion
+
+        #region Invoices
+
+        config.NewConfig<Invoice, GetInvoiceResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
+            .Map(dest => dest.AmountUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
+            .Map(dest => dest.PaymentStatus,
+                src => src.TotalUnpaidAmount == 0
+                    ? InvoicePaymentStatus.Paid
+                    : src.TotalUnpaidAmount == src.TotalAmount
+                        ? InvoicePaymentStatus.Unpaid
+                        : InvoicePaymentStatus.PartiallyPaid);
+
+        #endregion
+
         #region PaymentMethods
 
         config.NewConfig<PaymentMethod, GetPaymentMethodResponse>()
@@ -94,14 +120,6 @@ public class MapsterConfig : IRegister
         config.NewConfig<Setting, GetSettingResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.HasIcon, src => MapContext.Current.GetService<IWebHostEnvironment>().AppIconExists());
-
-        #endregion
-
-        #region Customers
-
-        config.NewConfig<Customer, GetCustomerResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.CreditLimitPriceUnit, src => src.CreditLimitPriceUnit);
 
         #endregion
 

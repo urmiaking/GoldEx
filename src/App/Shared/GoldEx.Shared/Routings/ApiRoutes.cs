@@ -126,5 +126,6 @@ public static class ApiRoutes
         public const string Base = "/api/Invoices";
         public const string Create = "";
         public const string Update = "{id}";
+        public const string GetList = ""; // GET /api/Invoices or /api/Invoices?customerId=123
     }
 }

@@ -1,6 +1,7 @@
 ﻿@attribute [Route(ClientRoutes.Invoices.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 <!-- TODO: Add Policy -->
+@using GoldEx.Client.Pages.Invoices.Components
 @inherits GoldExComponentBase
 
 <PageTitle>فاکتورها</PageTitle>
@@ -12,6 +13,6 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    @* <InvoicesList /> *@
+    <InvoicesList />
 
 </MudContainer>
