@@ -92,17 +92,19 @@
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12" md="2">
+            <MudItem xs="12" md="4">
                 <MudTextField Value="Model.Customer.NationalId"
                               T="string"
                               ValueChanged="OnCustomerNationalIdChanged"
                               Immediate="true"
-                              DebounceInterval="200"
+                              Clearable="true"
+                              OnClearButtonClick="OnCustomerCleared"
                               For="@(() => Model.Customer.NationalId)"
                               Label="@(Model.GetDisplayName(() => Model.Customer.NationalId))"
                               Margin="Margin.Dense"
                               AdornmentIcon="@Icons.Material.Filled.Person"
                               Adornment="Adornment.End"
+                              OnAdornmentClick="OnCustomerNationalIdAdornmentClicked"
                               Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="4">
@@ -114,7 +116,7 @@
                               Adornment="Adornment.End"
                               Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="2">
                 <MudTextField @bind-Value="Model.Customer.PhoneNumber"
                               For="@(() => Model.Customer.PhoneNumber)"
                               Label="@(Model.GetDisplayName(() => Model.Customer.PhoneNumber))"

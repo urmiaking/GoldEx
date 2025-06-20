@@ -1,13 +1,14 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public readonly record struct InvoiceId(Guid Value);
 public class Invoice : EntityBase<InvoiceId>
 {
-    public static Invoice Create(long invoiceNumber, CustomerId customerId, DateOnly invoiceDate, DateOnly? dueDate)
+    public static Invoice Create(long invoiceNumber, CustomerId customerId, PriceUnitId priceUnitId, DateOnly invoiceDate, DateOnly? dueDate)
     {
         return new Invoice
         {
@@ -15,11 +16,14 @@ public class Invoice : EntityBase<InvoiceId>
             InvoiceNumber = invoiceNumber,
             CustomerId = customerId,
             InvoiceDate = invoiceDate,
+            PriceUnitId = priceUnitId,
             DueDate = dueDate
         };
     }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private Invoice() { }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public long InvoiceNumber { get; private set; }
     public DateOnly? DueDate { get; private set; }
@@ -44,7 +48,7 @@ public class Invoice : EntityBase<InvoiceId>
 
     #region InvoiceItems
 
-    public IReadOnlyList<InvoiceItem>? Items { get; private set; }
+    public IReadOnlyList<InvoiceItem> Items { get; private set; }
 
     #endregion
 
@@ -102,6 +106,13 @@ public class Invoice : EntityBase<InvoiceId>
     }
 
     public void ClearDiscounts() => _discounts.Clear();
+
+    #endregion
+
+    #region Unit
+
+    public PriceUnit? PriceUnit { get; private set; }
+    public PriceUnitId PriceUnitId { get; private set; }
 
     #endregion
 

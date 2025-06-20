@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -35,13 +36,13 @@ public class InvoicePaymentVm
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {
         if (item.PriceUnit is null)
-            throw new ValidationException("واحد ارزی برای پرداختی ها مشخص نشده است");
+            throw new FluentValidation.ValidationException("واحد ارزی برای پرداختی ها مشخص نشده است");
 
         if (item.PaymentMethod is null)
-            throw new ValidationException("روش پرداخت برای پرداختی ها مشخص نشده است");
+            throw new FluentValidation.ValidationException("روش پرداخت برای پرداختی ها مشخص نشده است");
 
         if (!item.PaymentDate.HasValue)
-            throw new ValidationException("تاریخ پرداخت مشخص نشده است");
+            throw new FluentValidation.ValidationException("تاریخ پرداخت مشخص نشده است");
 
         return new InvoicePaymentDto(item.Amount, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
             item.PaymentMethod.Id, item.PriceUnit.Id);

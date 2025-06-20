@@ -1,0 +1,30 @@
+﻿@inherits GoldExComponentBase
+
+<MudDialog>
+    <DialogContent>
+        <MudText>آیا از حذف فاکتور @InvoiceNumber مطمئن هستید؟</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">لغو</MudButton>
+        <MudButton Class="m-3"
+                   Color="Color.Error"
+                   Disabled="@IsBusy"
+                   StartIcon="@Icons.Material.Filled.Delete"
+                   OnClick="@(async () => await OnValidSubmit())"
+                   Variant="Variant.Filled">
+            @if (IsBusy)
+            {
+                <MudProgressCircular Class="ms-n1"
+                                     Size="Size.Small"
+                                     Indeterminate="true" />
+                <MudText Class="ms-2">
+                    در حال حذف
+                </MudText>
+            }
+            else
+            {
+                <MudText>حذف</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

@@ -114,8 +114,7 @@ public partial class CustomersList
     {
         var parameters = new DialogParameters
         {
-            { nameof(TransactionsList.CustomerId), customerVm.Id },
-            { nameof(TransactionsList.CustomerName), customerVm.FullName }
+            { nameof(TransactionsList.CustomerId), customerVm.Id }
         };
         var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
         var result = await dialog.Result;

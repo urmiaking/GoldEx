@@ -1,0 +1,69 @@
+﻿@using GoldEx.Client.Helpers
+@using GoldEx.Client.Pages.Invoices.ViewModels
+@inherits GoldExComponentBase
+
+<MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+          Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+    <ToolBarContent>
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateInvoice())" Size="Size.Small" Variant="Variant.Filled">ثبت فاکتور جدید</MudButton>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateInvoice())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
+        </MudHidden>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره فاکتور</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">نام مشتری</MudTableSortLabel></MudTh>
+        <MudTh>ارزش کل</MudTh>
+        <MudTh><MudTableSortLabel SortLabel="InvoiceDate" T="InvoiceListVm">تاریخ فاکتور</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="DueDate" T="InvoiceListVm">تاریخ سررسید</MudTableSortLabel></MudTh>
+        <MudTh>وضعیت</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
+        <MudTd DataLabel="نام مشتری">@context.CustomerFullName</MudTd>
+        <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat() @context.AmountUnit</MudTd>
+        <MudTd DataLabel="تاریخ فاکتور">@context.InvoiceDate.ToShortDateString()</MudTd>
+        <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
+        <MudTd DataLabel="وضعیت">@context.PaymentStatus.GetDisplayName()</MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="چاپ فاکتور">
+                    <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                   Color="@Color.Success"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="ویرایش فاکتور">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEditInvoice(context)"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="حذف فاکتور">
+                    <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))" ClickPropagation="true"
+                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ فاکتوری یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <div class="d-flex flex-column align-center">
+            <MudPagination SelectedChanged="PageChanged"
+                           Color="Color.Primary"
+                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
+                           Class="pa-4"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+        </div>
+    </PagerContent>
+</MudTable>
