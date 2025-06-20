@@ -1,5 +1,5 @@
-﻿using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Common;
+﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Routings;
@@ -18,6 +18,13 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     {
         await service.CreateAsync(request, cancellationToken);
         return Created();
+    }
+
+    [HttpDelete(ApiRoutes.Invoices.Delete)]
+    public async Task<IActionResult> DeleteAsync(Guid id, [FromQuery] bool deleteProducts, CancellationToken cancellationToken = default)
+    {
+        await service.DeleteAsync(id, deleteProducts, cancellationToken);
+        return Ok();
     }
 
     [HttpGet(ApiRoutes.Invoices.GetList)]

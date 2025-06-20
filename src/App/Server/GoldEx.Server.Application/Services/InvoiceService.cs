@@ -114,6 +114,8 @@ internal class InvoiceService(
                                 ? new ProductCategoryId(productRequest.ProductCategoryId.Value)
                                 : null);
 
+                        product.MarkAsSold();
+
                         await productRepository.CreateAsync(product, cancellationToken);
 
                         productId = product.Id;
@@ -152,6 +154,10 @@ internal class InvoiceService(
                         else
                             product.ClearGemStones();
 
+                        product.MarkAsSold();
+
+                        await productRepository.UpdateAsync(product, cancellationToken);
+
                         productId = product.Id;
                     }
 
@@ -173,6 +179,7 @@ internal class InvoiceService(
             {
                 logger.LogError(e, e.Message);
                 await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
             }
         }
     }
@@ -207,8 +214,43 @@ internal class InvoiceService(
         };
     }
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                var item = await invoiceRepository
+                    .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+                    .Include(x => x.Items)
+                        .ThenInclude(x => x.Product)
+                    .AsSplitQuery()
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                var products = item.Items.Select(x => x.Product!).ToList();
+
+                await invoiceRepository.DeleteAsync(item, cancellationToken);
+
+                if (deleteProducts)
+                {
+                    await productRepository.DeleteRangeAsync(products, cancellationToken);
+                }
+                else
+                {
+                    foreach (var product in products)
+                        product.MarkAsAvailable();
+
+                    await productRepository.UpdateRangeAsync(products, cancellationToken);
+                }
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 }

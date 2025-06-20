@@ -7,5 +7,5 @@ public interface IInvoiceService
 {
     Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default);
     Task<PagedList<GetInvoiceResponse>> GetListAsync(RequestFilter filter, Guid? customerId, CancellationToken cancellationToken = default);
-    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default);
 }

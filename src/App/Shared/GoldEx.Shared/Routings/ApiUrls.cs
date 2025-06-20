@@ -200,5 +200,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetList)
                 .AppendQueryString(filter)
                 .AppendQueryString(new { customerId });
+
+        public static string Delete(Guid id, bool deleteProducts) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Delete)
+                .FormatRoute(new { id })
+                .AppendQueryString(new { deleteProducts });
     }
 }
