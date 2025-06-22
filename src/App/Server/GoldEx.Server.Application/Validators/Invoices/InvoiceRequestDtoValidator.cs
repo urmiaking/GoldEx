@@ -48,7 +48,10 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .WithMessage("واحد ارزی فاکتور معتبر نمی باشد");
 
         RuleForEach(x => x.InvoiceItems)
-            .SetValidator(new InvoiceItemDtoValidator(productCategoryRepository, productRepository, priceUnitRepository));
+            .SetValidator(new InvoiceItemDtoValidator(
+                productCategoryRepository, 
+                productRepository, 
+                priceUnitRepository));
 
         RuleForEach(x => x.InvoiceDiscounts)
             .SetValidator(new InvoiceDiscountDtoValidator(priceUnitRepository));

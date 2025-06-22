@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -51,12 +52,18 @@ internal class ProductService(
         return mapper.Map<GetProductResponse>(item);
     }
 
-    public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse?> GetAsync(string barcode, bool? forCalculation = true, CancellationToken cancellationToken = default)
     {
         var item = await repository
             .Get(new ProductsByBarcodeSpecification(barcode))
             .Include(x => x.ProductCategory)
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (item is not null && forCalculation is false)
+            throw new ValidationException(new List<ValidationFailure>
+            {
+                new(nameof(barcode), "این جنس قبلا فروخته شده است", barcode)
+            });
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);
     }

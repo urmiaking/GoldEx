@@ -36,7 +36,7 @@ public partial class InvoiceItemEditor
         if (Id is null)
             GenerateBarcode();
 
-        if (!Model.Product.WagePriceUnitId.HasValue)
+        if (!Model.Product.WagePriceUnitId.HasValue && Model.Product.WageType is WageType.Fixed)
         {
             Model.Product.WagePriceUnitId = PriceUnits.FirstOrDefault(x => x.IsDefault)?.Id;
             Model.Product.WagePriceUnitTitle = PriceUnits.FirstOrDefault(x => x.IsDefault)?.Title;

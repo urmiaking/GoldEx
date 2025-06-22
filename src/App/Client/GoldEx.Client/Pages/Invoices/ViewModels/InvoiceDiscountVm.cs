@@ -26,6 +26,17 @@ public class InvoiceDiscountVm
         if (item.PriceUnit is null)
             throw new ValidationException("واحد ارزی تخفیف وارد نشده است");
 
-        return new InvoiceDiscountDto(item.Amount, item.Description, item.PriceUnit.Id);
+        return new InvoiceDiscountDto(item.Amount, item.ExchangeRate, item.Description, item.PriceUnit.Id);
+    }
+
+    public static InvoiceDiscountVm CreateFrom(GetInvoiceDiscountResponse response)
+    {
+        return new InvoiceDiscountVm
+        {
+            Amount = response.Amount,
+            Description = response.Description,
+            PriceUnit = response.PriceUnit,
+            AmountAdornmentText = response.PriceUnit.Title
+        };
     }
 }

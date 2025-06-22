@@ -4,15 +4,15 @@
 @inherits GoldExComponentBase
 
 <MudCard Class="p-4" Elevation="4">
-    <MudForm Model="Model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
+    <MudForm Model="_model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
         <MudStack Row AlignItems="AlignItems.End">
             <MudText Typo="Typo.h6" GutterBottom="true">اطلاعات فاکتور</MudText>
             <MudSpacer />
             <MudSelect T="GetPriceUnitTitleResponse?"
-                       Value="Model.InvoicePriceUnit"
+                       Value="_model.InvoicePriceUnit"
                        ValueChanged="OnInvoicePriceUnitChanged"
-                       Label="@Model.GetDisplayName(() => Model.InvoicePriceUnit)"
-                       For="() => Model.InvoicePriceUnit"
+                       Label="@_model.GetDisplayName(() => _model.InvoicePriceUnit)"
+                       For="() => _model.InvoicePriceUnit"
                        FitContent="true"
                        Margin="Margin.Dense"
                        Variant="Variant.Outlined">
@@ -32,12 +32,12 @@
         <MudDivider Class="mb-2" />
         <MudGrid>
             <MudItem xs="12" md="2">
-                <MudNumericField @bind-Value="Model.InvoiceNumber"
-                                 For="@(() => Model.InvoiceNumber)"
+                <MudNumericField @bind-Value="_model.InvoiceNumber"
+                                 For="@(() => _model.InvoiceNumber)"
                                  HelperText="شماره یکتای فاکتور"
                                  HelperTextOnFocus="true"
                                  HideSpinButtons="true"
-                                 Label="@(Model.GetDisplayName(() => Model.InvoiceNumber))"
+                                 Label="@(_model.GetDisplayName(() => _model.InvoiceNumber))"
                                  Margin="Margin.Dense"
                                  Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Numbers"
@@ -45,30 +45,30 @@
             </MudItem>
             <MudSpacer />
             <MudItem xs="12" md="2">
-                <MudDatePicker @bind-Date="Model.InvoiceDate"
+                <MudDatePicker @bind-Date="_model.InvoiceDate"
                                Color="Color.Secondary"
                                Editable="true"
                                AnchorOrigin="Origin.TopCenter"
                                TransformOrigin="Origin.BottomCenter"
-                               For="@(() => Model.InvoiceDate)"
+                               For="@(() => _model.InvoiceDate)"
                                HelperText="تاریخ ثبت فاکتور"
                                HelperTextOnFocus="true"
-                               Label="@(Model.GetDisplayName(() => Model.InvoiceDate))"
+                               Label="@(_model.GetDisplayName(() => _model.InvoiceDate))"
                                ImmediateText="true"
                                Margin="Margin.Dense"
                                Rounded="true"
                                Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="2">
-                <MudDatePicker @bind-Date="Model.DueDate"
+                <MudDatePicker @bind-Date="_model.DueDate"
                                Color="Color.Secondary"
                                Editable="true"
                                AnchorOrigin="Origin.TopCenter"
                                TransformOrigin="Origin.BottomCenter"
-                               For="@(() => Model.DueDate)"
-                               HelperText="@(Model.GetDisplayName(() => Model.DueDate))"
+                               For="@(() => _model.DueDate)"
+                               HelperText="@(_model.GetDisplayName(() => _model.DueDate))"
                                HelperTextOnFocus="true"
-                               Label="@(Model.GetDisplayName(() => Model.DueDate))"
+                               Label="@(_model.GetDisplayName(() => _model.DueDate))"
                                ImmediateText="true"
                                Margin="Margin.Dense"
                                Rounded="true"
@@ -81,9 +81,9 @@
         <MudGrid>
             <MudItem xs="12" md="2">
                 <MudSelect T="CustomerType"
-                           Value="Model.Customer.CustomerType"
+                           Value="_model.Customer.CustomerType"
                            Label="نوع مشتری"
-                           For="() => Model.Customer.CustomerType"
+                           For="() => _model.Customer.CustomerType"
                            Margin="Margin.Dense"
                            Variant="Variant.Outlined">
                     @foreach (var item in Enum.GetValues<CustomerType>())
@@ -93,14 +93,14 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudTextField Value="Model.Customer.NationalId"
+                <MudTextField Value="_model.Customer.NationalId"
                               T="string"
                               ValueChanged="OnCustomerNationalIdChanged"
                               Immediate="true"
                               Clearable="true"
                               OnClearButtonClick="OnCustomerCleared"
-                              For="@(() => Model.Customer.NationalId)"
-                              Label="@(Model.GetDisplayName(() => Model.Customer.NationalId))"
+                              For="@(() => _model.Customer.NationalId)"
+                              Label="@(_model.GetDisplayName(() => _model.Customer.NationalId))"
                               Margin="Margin.Dense"
                               AdornmentIcon="@Icons.Material.Filled.Person"
                               Adornment="Adornment.End"
@@ -108,18 +108,18 @@
                               Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="Model.Customer.FullName"
-                              For="@(() => Model.Customer.FullName)"
-                              Label="@(Model.GetDisplayName(() => Model.Customer.FullName))"
+                <MudTextField @bind-Value="_model.Customer.FullName"
+                              For="@(() => _model.Customer.FullName)"
+                              Label="@(_model.GetDisplayName(() => _model.Customer.FullName))"
                               Margin="Margin.Dense"
                               AdornmentIcon="@Icons.Material.Filled.Person"
                               Adornment="Adornment.End"
                               Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="2">
-                <MudTextField @bind-Value="Model.Customer.PhoneNumber"
-                              For="@(() => Model.Customer.PhoneNumber)"
-                              Label="@(Model.GetDisplayName(() => Model.Customer.PhoneNumber))"
+                <MudTextField @bind-Value="_model.Customer.PhoneNumber"
+                              For="@(() => _model.Customer.PhoneNumber)"
+                              Label="@(_model.GetDisplayName(() => _model.Customer.PhoneNumber))"
                               Margin="Margin.Dense"
                               AdornmentIcon="@Icons.Material.Filled.Phone"
                               Adornment="Adornment.End"
@@ -128,14 +128,14 @@
             <MudItem xs="12" md="4">
                 <MudMenu @bind-Open="_isCustomerCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                     <ActivatorContent>
-                        <MudNumericField Value="Model.Customer.CreditLimit"
+                        <MudNumericField Value="_model.Customer.CreditLimit"
                                          ValueChanged="OnCustomerCreditLimitChanged"
                                          T="decimal?"
                                          HideSpinButtons="true"
                                          Format="#,##0.##"
                                          Immediate="true"
-                                         For="@(() => Model.Customer.CreditLimit)"
-                                         Label="@(Model.GetDisplayName(() => Model.Customer.CreditLimit))"
+                                         For="@(() => _model.Customer.CreditLimit)"
+                                         Label="@(_model.GetDisplayName(() => _model.Customer.CreditLimit))"
                                          Margin="Margin.Dense"
                                          Variant="Variant.Outlined"
                                          Adornment="Adornment.End"
@@ -161,9 +161,9 @@
                 </MudMenu>
             </MudItem>
             <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="Model.Customer.Address"
-                              For="@(() => Model.Customer.Address)"
-                              Label="@(Model.GetDisplayName(() => Model.Customer.Address))"
+                <MudTextField @bind-Value="_model.Customer.Address"
+                              For="@(() => _model.Customer.Address)"
+                              Label="@(_model.GetDisplayName(() => _model.Customer.Address))"
                               Margin="Margin.Dense"
                               AdornmentIcon="@Icons.Material.Filled.Home"
                               Adornment="Adornment.End"
@@ -197,7 +197,7 @@
         <MudDivider Class="mb-2" />
 
         <div class="my-2">
-            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@Model.InvoiceItems" T="InvoiceItemVm" Elevation="1">
+            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@_model.InvoiceItems" T="InvoiceItemVm" Elevation="1">
                 <ColGroup>
                     <col />
                     <col />
@@ -223,7 +223,7 @@
                     <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
                     <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") گرم</MudTd>
                     <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
-                    <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat() @Model.InvoicePriceUnit?.Title</MudTd>
+                    <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudTd>
                     <MudTd DataLabel="عملیات">
                         <div class="d-flex gap-2">
                             <MudTooltip Text="چاپ بارکد">
@@ -250,7 +250,7 @@
             </MudTable>
         </div>
 
-        @if (Model.InvoiceItems.Any())
+        @if (_model.InvoiceItems.Any())
         {
             <MudText Class="mt-2" Typo="Typo.h6" GutterBottom="true">هزینه ها</MudText>
             <MudDivider Class="my-2" />
@@ -260,7 +260,7 @@
                     <MudText Typo="Typo.body2">ارزش تمام شده اقلام</MudText>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalItemsAmount.ToCurrencyFormat() @Model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
@@ -268,14 +268,14 @@
                     <MudText Typo="Typo.body2">تخفیف</MudText>
                     <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <DiscountList Items="@Model.InvoiceDiscounts" PriceUnit="Model.InvoicePriceUnit" PriceUnits="_priceUnits" />
+                            <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
                             <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>
                     </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalDiscountsAmount.ToCurrencyFormat() @Model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalDiscountsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
@@ -283,21 +283,21 @@
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
                     <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <ExtraCostList Items="Model.InvoiceExtraCosts" PriceUnit="Model.InvoicePriceUnit" PriceUnits="_priceUnits" />
+                            <ExtraCostList Items="_model.InvoiceExtraCosts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
                             <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>
                     </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalExtraCostsAmount.ToCurrencyFormat() @Model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalExtraCostsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2">
                     <MudText Typo="Typo.body2">مبلغ نهایی فاکتور</MudText>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalInvoiceAmount.ToCurrencyFormat() @Model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalInvoiceAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
@@ -305,21 +305,21 @@
                     <MudText Typo="Typo.body2">جمع پرداختی</MudText>
                     <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
                         <div class="d-flex flex-column">
-                            <PaymentList Items="Model.InvoicePayments" PriceUnit="Model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalInvoiceAmount="@Model.TotalInvoiceAmount" />
+                            <PaymentList Items="_model.InvoicePayments" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalInvoiceAmount="@_model.TotalInvoiceAmount" />
                             <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>
                     </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.TotalPaymentsAmount.ToCurrencyFormat() @Model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalPaymentsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2">
                     <MudText Typo="Typo.body2">مانده حساب</MudText>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@Model.RemainingAmount.ToCurrencyFormat() @Model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.RemainingAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
                 </MudItem>
             </MudGrid>
         }

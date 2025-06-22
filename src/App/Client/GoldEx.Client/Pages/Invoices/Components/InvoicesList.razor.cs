@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
@@ -11,7 +12,7 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 public partial class InvoicesList
 {
     [Parameter] public string Class { get; set; } = default!;
-    [Parameter] public int Elevation { get; set; } = 0;
+    [Parameter] public int Elevation { get; set; } = 4;
     [Parameter] public Guid? CustomerId { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
@@ -32,7 +33,7 @@ public partial class InvoicesList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceResponse>>(
+        await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
             action: (service, token) => service.GetListAsync(filter, CustomerId, token),
             afterSend: response =>
             {
@@ -61,7 +62,7 @@ public partial class InvoicesList
 
     public async Task OnCreateInvoice()
     {
-        NavigationManager.NavigateTo(ClientRoutes.Invoices.Create);
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.SetInvoice);
     }
 
     private async Task OnRemoveInvoice(InvoiceListVm model)
@@ -83,21 +84,8 @@ public partial class InvoicesList
         }
     }
 
-    private async Task OnEditInvoice(InvoiceListVm model)
+    private void OnEditInvoice(InvoiceListVm model)
     {
-        //var parameters = new DialogParameters<Editor>
-        //{
-        //    { x => x.Model, model }
-        //};
-
-        //var dialog = await DialogService.ShowAsync<Editor>("ویرایش فاکتور", parameters, _dialogOptions);
-
-        //var result = await dialog.Result;
-
-        //if (result is { Canceled: false })
-        //{
-        //    AddSuccessToast("فاکتور با موفقیت ویرایش شد.");
-        //    await _table.ReloadServerData();
-        //}
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { model.Id }));
     }
 }

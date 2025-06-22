@@ -14,18 +14,18 @@ public class InvoiceListVm
     public string AmountUnit { get; set; } = default!;
     public InvoicePaymentStatus PaymentStatus { get; set; }
 
-    public static InvoiceListVm CreateFrom(GetInvoiceResponse response)
+    public static InvoiceListVm CreateFrom(GetInvoiceListResponse listResponse)
     {
         return new InvoiceListVm
         {
-            Id = response.Id,
-            CustomerFullName = response.CustomerFullName,
-            InvoiceNumber = response.InvoiceNumber,
-            InvoiceDate = response.InvoiceDate,
-            DueDate = response.DueDate,
-            TotalAmount = response.TotalAmount,
-            AmountUnit = response.AmountUnit,
-            PaymentStatus = response.PaymentStatus
+            Id = listResponse.Id,
+            CustomerFullName = listResponse.CustomerFullName,
+            InvoiceNumber = listResponse.InvoiceNumber,
+            InvoiceDate = listResponse.InvoiceDate,
+            DueDate = listResponse.DueDate,
+            TotalAmount = listResponse.TotalAmount,
+            AmountUnit = listResponse.AmountUnit,
+            PaymentStatus = listResponse.PaymentStatus
         };
     }
 }

@@ -101,4 +101,21 @@ public class InvoiceVm
             model.InvoicePayments.Where(x => x.Amount > 0).Select(InvoicePaymentVm.ToRequest).ToList(),
             model.InvoiceExtraCosts.Select(InvoiceExtraCostVm.ToRequest).ToList());
     }
+
+    public static InvoiceVm CreateFrom(GetInvoiceResponse response)
+    {
+        return new InvoiceVm
+        {
+            InvoiceId = response.Id,
+            InvoiceNumber = response.InvoiceNumber,
+            InvoiceDate = response.InvoiceDate,
+            DueDate = response.DueDate,
+            Customer = CustomerVm.CreateFrom(response.Customer),
+            InvoiceDiscounts = response.InvoiceDiscounts.Select(InvoiceDiscountVm.CreateFrom).ToList(),
+            InvoiceExtraCosts = response.InvoiceExtraCosts.Select(InvoiceExtraCostVm.CreateFrom).ToList(),
+            InvoicePayments = response.InvoicePayments.Select(InvoicePaymentVm.CreateFrom).ToList(),
+            InvoiceItems = response.InvoiceItems.Select(InvoiceItemVm.CreateFrom).ToList(),
+            InvoicePriceUnit = response.PriceUnit
+        };
+    }
 }
