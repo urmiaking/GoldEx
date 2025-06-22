@@ -24,7 +24,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.OwnsMany(x => x.InvoicePayment, Configure);
+        builder.OwnsMany(x => x.InvoicePayments, Configure);
         builder.OwnsMany(x => x.Discounts, Configure);
         builder.OwnsMany(x => x.ExtraCosts, Configure);
 
@@ -37,6 +37,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.Amount)
             .HasPrecision(36, 10)
             .IsRequired();
+
+        builder.Property(x => x.ExchangeRate)
+            .HasPrecision(36, 10);
 
         builder.Property(x => x.Description)
             .HasMaxLength(500);
@@ -55,12 +58,15 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
+        builder.Property(x => x.ExchangeRate)
+            .HasPrecision(36, 10);
+
         builder.Property(x => x.Description)
             .HasMaxLength(500);
 
-        builder.HasOne(x => x.DiscountUnit)
+        builder.HasOne(x => x.PriceUnit)
             .WithMany()
-            .HasForeignKey(x => x.DiscountUnitId)
+            .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 
@@ -72,15 +78,18 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
+        builder.Property(x => x.ExchangeRate)
+            .HasPrecision(36, 10);
+
         builder.Property(x => x.ReferenceNumber)
             .HasMaxLength(100);
 
         builder.Property(x => x.Note)
             .HasMaxLength(500);
 
-        builder.HasOne(x => x.AmountUnit)
+        builder.HasOne(x => x.PriceUnit)
             .WithMany()
-            .HasForeignKey(x => x.AmountUnitId)
+            .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.PaymentMethod)

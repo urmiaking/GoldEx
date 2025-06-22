@@ -26,6 +26,18 @@ public class InvoiceExtraCostVm
         if (item.PriceUnit is null)
             throw new FluentValidation.ValidationException("واحد ارزی مخارج جانبی وارد نشده است");
 
-        return new InvoiceExtraCostsDto(item.Amount, item.Description, item.PriceUnit.Id);
+        return new InvoiceExtraCostsDto(item.Amount, item.ExchangeRate, item.Description, item.PriceUnit.Id);
+    }
+
+    public static InvoiceExtraCostVm CreateFrom(GetInvoiceExtraCostsResponse response)
+    {
+        return new InvoiceExtraCostVm
+        {
+            Amount = response.Amount,
+            Description = response.Description,
+            PriceUnit = response.PriceUnit,
+            AmountAdornmentText = response.PriceUnit.Title,
+            ExchangeRate = response.ExchangeRate
+        };
     }
 }

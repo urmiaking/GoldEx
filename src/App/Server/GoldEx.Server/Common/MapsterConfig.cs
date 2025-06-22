@@ -1,6 +1,7 @@
 ﻿using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoiceItemAggregate;
 using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -36,7 +37,7 @@ public class MapsterConfig : IRegister
 
         #region Invoices
 
-        config.NewConfig<Invoice, GetInvoiceResponse>()
+        config.NewConfig<Invoice, GetInvoiceListResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
             .Map(dest => dest.AmountUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
@@ -46,6 +47,30 @@ public class MapsterConfig : IRegister
                     : src.TotalUnpaidAmount == src.TotalAmount
                         ? InvoicePaymentStatus.Unpaid
                         : InvoicePaymentStatus.PartiallyPaid);
+
+        config.NewConfig<Invoice, GetInvoiceResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Customer, src => src.Customer)
+            .Map(dest => dest.InvoiceItems, src => src.Items)
+            .Map(dest => dest.InvoiceDiscounts, src => src.Discounts)
+            .Map(dest => dest.InvoiceExtraCosts, src => src.ExtraCosts)
+            .Map(dest => dest.InvoiceDate, 
+                src => new DateTime(src.InvoiceDate, TimeOnly.MinValue))
+            .Map(dest => dest.DueDate,
+                src => src.DueDate.HasValue
+                    ? new DateTime(src.DueDate.Value, TimeOnly.MinValue)
+                    : (DateTime?)null)
+            .Map(dest => dest.PriceUnit, src => src.PriceUnit);
+
+        config.NewConfig<InvoiceItem, GetInvoiceItemResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Product, src => src.Product);
+
+        config.NewConfig<InvoiceDiscount, GetInvoiceDiscountResponse>();
+
+        config.NewConfig<InvoiceExtraCost, GetInvoiceExtraCostsResponse>();
+
+        config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>();
 
         #endregion
 

@@ -37,9 +37,10 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task<GetProductResponse?> GetAsync(string barcode, bool? forCalculation = true,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.Get(barcode), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Products.Get(barcode, forCalculation), cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;

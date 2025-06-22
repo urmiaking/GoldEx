@@ -84,4 +84,19 @@ public class InvoiceItemVm
             ProductVm.ToRequest(item.Product),
             item.PriceUnit.Id);
     }
+
+    public static InvoiceItemVm CreateFrom(GetInvoiceItemResponse response)
+    {
+        return new InvoiceItemVm
+        {
+            ExchangeRate = response.ExchangeRate,
+            GramPrice = response.GramPrice,
+            ProfitPercent = response.ProfitPercent,
+            TaxPercent = response.TaxPercent,
+            Quantity = response.Quantity,
+            Id = response.Id,
+            PriceUnit = response.PriceUnit,
+            Product = ProductVm.CreateFrom(response.Product)
+        };
+    }
 }

@@ -6,4 +6,7 @@ namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 public interface IInvoiceRepository : IRepository<Invoice>,
     ICreateRepository<Invoice>,
     IUpdateRepository<Invoice>,
-    IDeleteRepository<Invoice>;
+    IDeleteRepository<Invoice>
+{
+    Task<long> GetLastNumberAsync(CancellationToken cancellationToken = default);
+}

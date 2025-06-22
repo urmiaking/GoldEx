@@ -33,4 +33,18 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
         var list = await service.GetListAsync(filter, customerId, cancellationToken);
         return Ok(list);
     }
+
+    [HttpGet(ApiRoutes.Invoices.Get)]
+    public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var item = await service.GetAsync(id, cancellationToken);
+        return Ok(item);
+    }
+
+    [HttpGet(ApiRoutes.Invoices.GetLastNumber)]
+    public async Task<IActionResult> GetLastNumberAsync(CancellationToken cancellationToken = default)
+    {
+        var lastNumber = await service.GetLastNumberAsync(cancellationToken);
+        return Ok(lastNumber);
+    }
 }

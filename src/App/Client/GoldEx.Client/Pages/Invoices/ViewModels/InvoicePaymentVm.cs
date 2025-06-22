@@ -44,7 +44,22 @@ public class InvoicePaymentVm
         if (!item.PaymentDate.HasValue)
             throw new FluentValidation.ValidationException("تاریخ پرداخت مشخص نشده است");
 
-        return new InvoicePaymentDto(item.Amount, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
+        return new InvoicePaymentDto(item.Amount, item.ExchangeRate, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
             item.PaymentMethod.Id, item.PriceUnit.Id);
+    }
+
+    public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response)
+    {
+        return new InvoicePaymentVm
+        {
+            Amount = response.Amount,
+            PriceUnit = response.PriceUnit,
+            PaymentMethod = response.PaymentMethod,
+            PaymentDate = response.PaymentDate,
+            ReferenceNumber = response.ReferenceNumber,
+            Note = response.Note,
+            ExchangeRate = response.ExchangeRate,
+            AmountAdornmentText = response.PriceUnit.Title
+        };
     }
 }

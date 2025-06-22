@@ -1,11 +1,11 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using FluentValidation;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -14,17 +14,16 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
-using ValidationException = FluentValidation.ValidationException;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class EditorForm
 {
-    [Parameter] public InvoiceVm Model { get; set; } = InvoiceVm.CreateDefaultInstance();
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [Parameter] public Guid? Id { get; set; }
 
+    private InvoiceVm _model = InvoiceVm.CreateDefaultInstance();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
     private GetSettingResponse? _setting;
@@ -41,6 +40,8 @@ public partial class EditorForm
 
     protected override async Task OnParametersSetAsync()
     {
+        await LoadInvoiceAsync();
+
         await LoadPriceUnitsAsync();
         await LoadSettingsAsync();
         await LoadGramPriceAsync();
@@ -49,10 +50,33 @@ public partial class EditorForm
 
     #region Load Initial Data
 
+    private async Task LoadInvoiceAsync()
+    {
+        if (Id.HasValue)
+        {
+            await SendRequestAsync<IInvoiceService, GetInvoiceResponse>(
+                action: (s, ct) => s.GetAsync(Id.Value, ct),
+                afterSend: response =>
+                {
+                    _model = InvoiceVm.CreateFrom(response);
+                    OnCustomerCreditLimitChanged(_model.Customer.CreditLimit);
+                });
+        }
+        else
+        {
+            await SendRequestAsync<IInvoiceService, GetInvoiceNumberResponse>(
+                action: (s, ct) => s.GetLastNumberAsync(ct),
+                afterSend: response =>
+                {
+                    _model.InvoiceNumber = response.InvoiceNumber + 1;
+                });
+        }
+    }
+
     private async Task LoadGramPriceAsync()
     {
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
-            action: (s, ct) => s.GetAsync(UnitType.Gold18K, Model.InvoicePriceUnit?.Id, true, ct),
+            action: (s, ct) => s.GetAsync(UnitType.Gold18K, _model.InvoicePriceUnit?.Id, true, ct),
             afterSend: response =>
             {
                 _gramPrice = response;
@@ -74,12 +98,12 @@ public partial class EditorForm
             {
                 _priceUnits = response;
 
-                if (Model.InvoicePriceUnit is null)
+                if (_model.InvoicePriceUnit is null)
                 {
-                    Model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsDefault);
-                    Model.Customer.CreditLimitPriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                    _model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                    _model.Customer.CreditLimitPriceUnit = response.FirstOrDefault(x => x.IsDefault);
 
-                    _customerCreditLimitAdornmentText = Model.Customer.CreditLimitPriceUnit?.Title;
+                    _customerCreditLimitAdornmentText = _model.Customer.CreditLimitPriceUnit?.Title;
 
                     StateHasChanged();
                 }
@@ -92,13 +116,13 @@ public partial class EditorForm
 
     private void OnCustomerCreditLimitChanged(decimal? creditLimit)
     {
-        Model.Customer.CreditLimit = creditLimit;
-        _customerCreditLimitAdornmentText = Model.Customer.CreditLimitPriceUnit?.Title;
+        _model.Customer.CreditLimit = creditLimit;
+        _customerCreditLimitAdornmentText = _model.Customer.CreditLimitPriceUnit?.Title;
     }
 
     private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
-        Model.Customer.CreditLimitPriceUnit = priceUnit;
+        _model.Customer.CreditLimitPriceUnit = priceUnit;
         _customerCreditLimitAdornmentText = priceUnit?.Title;
     }
 
@@ -106,12 +130,12 @@ public partial class EditorForm
     {
         OnCreditLimitUnitChanged(selectedUnit);
         _customerCreditLimitAdornmentText = selectedUnit.Title;
-        Model.Customer.CreditLimitMenuOpen = false;
+        _model.Customer.CreditLimitMenuOpen = false;
     }
 
     private async Task OnCustomerNationalIdChanged(string nationalId)
     {
-        Model.Customer.NationalId = nationalId;
+        _model.Customer.NationalId = nationalId;
 
         if (string.IsNullOrEmpty(nationalId))
             return;
@@ -123,7 +147,7 @@ public partial class EditorForm
                 if (response is null)
                     return;
 
-                Model.Customer = CustomerVm.CreateFrom(response);
+                _model.Customer = CustomerVm.CreateFrom(response);
                 OnCustomerCreditLimitChanged(response.CreditLimit);
             });
     }
@@ -143,7 +167,8 @@ public partial class EditorForm
             return;
         }
 
-        await SendRequestAsync<IProductService, GetProductResponse?>(async (s, ct) => await s.GetAsync(barcode, ct),
+        await SendRequestAsync<IProductService, GetProductResponse?>(
+            action: async (s, ct) => await s.GetAsync(barcode, false, ct),
             async response =>
             {
                 if (response is null)
@@ -153,13 +178,13 @@ public partial class EditorForm
 
                 decimal? exchangeRate = null;
 
-                if (response.WagePriceUnitId.HasValue && response.WagePriceUnitId.Value != Model.InvoicePriceUnit?.Id)
+                if (response.WagePriceUnitId.HasValue && response.WagePriceUnitId.Value != _model.InvoicePriceUnit?.Id)
                 {
-                    if (Model.InvoicePriceUnit != null)
+                    if (_model.InvoicePriceUnit != null)
                     {
                         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                             action: (s, ct) =>
-                                s.GetExchangeRateAsync(response.WagePriceUnitId.Value, Model.InvoicePriceUnit.Id, ct),
+                                s.GetExchangeRateAsync(response.WagePriceUnitId.Value, _model.InvoicePriceUnit.Id, ct),
                             afterSend: respExchangeRate =>
                             {
                                 exchangeRate = respExchangeRate.ExchangeRate;
@@ -167,10 +192,10 @@ public partial class EditorForm
                     }
                 }
 
-                Model.InvoiceItems.Add(new InvoiceItemVm
+                _model.InvoiceItems.Add(new InvoiceItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
-                    PriceUnit = Model.InvoicePriceUnit,
+                    PriceUnit = _model.InvoicePriceUnit,
                     GramPrice = gramPrice,
                     ExchangeRate = exchangeRate,
                     TaxPercent = _setting?.TaxPercent ?? 9,
@@ -178,7 +203,7 @@ public partial class EditorForm
                         ? _setting?.GoldProfitPercent ?? 7
                         : _setting?.JewelryProfitPercent ?? 20,
                     Quantity = 1,
-                    Index = Model.GetLastIndexNumber() + 1
+                    Index = _model.GetLastIndexNumber() + 1
                 });
 
                 OnBarcodeCleared();
@@ -222,7 +247,7 @@ public partial class EditorForm
         if (result is null)
             return;
 
-        Model.RemoveInvoiceItem(invoiceItem);
+        _model.RemoveInvoiceItem(invoiceItem);
     }
 
     private async Task OnAddInvoiceItem()
@@ -234,7 +259,7 @@ public partial class EditorForm
         model.GramPrice = gramPrice;
         model.TaxPercent = _setting?.TaxPercent ?? 9;
         model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
-        model.PriceUnit = Model.InvoicePriceUnit;
+        model.PriceUnit = _model.InvoicePriceUnit;
 
         var parameters = new DialogParameters<InvoiceItemEditor>
         {
@@ -248,7 +273,7 @@ public partial class EditorForm
 
         if (result is { Canceled: false, Data: InvoiceItemVm invoiceItem })
         {
-            Model.InvoiceItems.Add(invoiceItem);
+            _model.InvoiceItems.Add(invoiceItem);
         }
     }
 
@@ -261,25 +286,25 @@ public partial class EditorForm
         if (priceUnit is null)
             return;
 
-        Model.InvoicePriceUnit = priceUnit;
+        _model.InvoicePriceUnit = priceUnit;
 
-        if (Model.InvoicePriceUnit is null)
+        if (_model.InvoicePriceUnit is null)
             return;
 
         await LoadGramPriceAsync();
 
-        foreach (var item in Model.InvoiceItems)
+        foreach (var item in _model.InvoiceItems)
         {
             decimal.TryParse(_gramPrice?.Value, out var gramPrice);
             item.GramPrice = gramPrice;
 
             item.PriceUnit = priceUnit;
 
-            if (item.Product.WagePriceUnitId.HasValue && Model.InvoicePriceUnit.Id != item.Product.WagePriceUnitId)
+            if (item.Product.WagePriceUnitId.HasValue && _model.InvoicePriceUnit.Id != item.Product.WagePriceUnitId)
             {
                 await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-                    action: (s, ct) => 
-                        s.GetExchangeRateAsync(item.Product.WagePriceUnitId.Value, Model.InvoicePriceUnit.Id, ct),
+                    action: (s, ct) =>
+                        s.GetExchangeRateAsync(item.Product.WagePriceUnitId.Value, _model.InvoicePriceUnit.Id, ct),
                     afterSend: response =>
                     {
                         item.ExchangeRate = response.ExchangeRate;
@@ -291,17 +316,17 @@ public partial class EditorForm
             }
         }
 
-        foreach (var item in Model.InvoiceDiscounts)
+        foreach (var item in _model.InvoiceDiscounts)
         {
             if (item.PriceUnit != null && item.PriceUnit.Id != priceUnit.Id)
             {
                 await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                     action: (s, ct) =>
-                        s.GetExchangeRateAsync(item.PriceUnit.Id, Model.InvoicePriceUnit.Id, ct),
+                        s.GetExchangeRateAsync(item.PriceUnit.Id, _model.InvoicePriceUnit.Id, ct),
                     afterSend: response =>
                     {
                         item.ExchangeRate = response.ExchangeRate;
-                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {Model.InvoicePriceUnit.Title}";
+                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {_model.InvoicePriceUnit.Title}";
                     });
             }
             else
@@ -310,17 +335,17 @@ public partial class EditorForm
             }
         }
 
-        foreach (var item in Model.InvoiceExtraCosts)
+        foreach (var item in _model.InvoiceExtraCosts)
         {
             if (item.PriceUnit != null && item.PriceUnit.Id != priceUnit.Id)
             {
                 await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                     action: (s, ct) =>
-                        s.GetExchangeRateAsync(item.PriceUnit.Id, Model.InvoicePriceUnit.Id, ct),
+                        s.GetExchangeRateAsync(item.PriceUnit.Id, _model.InvoicePriceUnit.Id, ct),
                     afterSend: response =>
                     {
                         item.ExchangeRate = response.ExchangeRate;
-                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {Model.InvoicePriceUnit.Title}";
+                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {_model.InvoicePriceUnit.Title}";
                     });
             }
             else
@@ -329,17 +354,17 @@ public partial class EditorForm
             }
         }
 
-        foreach (var item in Model.InvoicePayments)
+        foreach (var item in _model.InvoicePayments)
         {
             if (item.PriceUnit != null && item.PriceUnit.Id != priceUnit.Id)
             {
                 await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                     action: (s, ct) =>
-                        s.GetExchangeRateAsync(item.PriceUnit.Id, Model.InvoicePriceUnit.Id, ct),
+                        s.GetExchangeRateAsync(item.PriceUnit.Id, _model.InvoicePriceUnit.Id, ct),
                     afterSend: response =>
                     {
                         item.ExchangeRate = response.ExchangeRate;
-                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {Model.InvoicePriceUnit.Title}";
+                        item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {_model.InvoicePriceUnit.Title}";
                     });
             }
             else
@@ -348,9 +373,9 @@ public partial class EditorForm
             }
         }
 
-        if (Model.Customer.Id == Guid.Empty)
+        if (_model.Customer.Id == Guid.Empty)
         {
-            Model.Customer.CreditLimitPriceUnit = priceUnit;
+            _model.Customer.CreditLimitPriceUnit = priceUnit;
             _customerCreditLimitAdornmentText = priceUnit?.Title;
         }
 
@@ -393,7 +418,7 @@ public partial class EditorForm
 
         try
         {
-            InvoiceVm.ToRequest(Model);
+            InvoiceVm.ToRequest(_model);
         }
         catch (ValidationException e)
         {
@@ -401,7 +426,7 @@ public partial class EditorForm
             return;
         }
 
-        var request = InvoiceVm.ToRequest(Model);
+        var request = InvoiceVm.ToRequest(_model);
 
         await SendRequestAsync<IInvoiceService>(
             action: (s, ct) => s.CreateAsync(request, ct),
@@ -415,12 +440,12 @@ public partial class EditorForm
 
     private void OnCustomerCleared()
     {
-        Model.Customer = new CustomerVm();
+        _model.Customer = new CustomerVm();
     }
 
     private void OnCustomerNationalIdAdornmentClicked()
     {
-        Model.Customer.NationalId = StringExtensions.GenerateRandomCode(10);
+        _model.Customer.NationalId = StringExtensions.GenerateRandomCode(10);
         StateHasChanged();
     }
 }

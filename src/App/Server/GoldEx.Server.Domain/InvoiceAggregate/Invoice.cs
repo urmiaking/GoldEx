@@ -55,7 +55,7 @@ public class Invoice : EntityBase<InvoiceId>
     #region Payments
 
     private readonly List<InvoicePayment> _invoicePayments = [];
-    public IReadOnlyList<InvoicePayment> InvoicePayment => _invoicePayments;
+    public IReadOnlyList<InvoicePayment> InvoicePayments => _invoicePayments;
 
     public Invoice SetInvoicePayments(IEnumerable<InvoicePayment>? invoicePayments)
     {
@@ -128,11 +128,11 @@ public class Invoice : EntityBase<InvoiceId>
 
     public decimal TotalRawAmount => Items.Sum(item => item.ItemRawAmount);
 
-    public decimal TotalPaidAmount => InvoicePayment.Sum(payment => payment.Amount);
+    public decimal TotalPaidAmount => InvoicePayments.Sum(payment => payment.Amount * (payment.ExchangeRate ?? 1));
 
-    public decimal TotalDiscountAmount => Discounts.Sum(discount => discount.Amount);
+    public decimal TotalDiscountAmount => Discounts.Sum(discount => discount.Amount * (discount.ExchangeRate ?? 1));
 
-    public decimal TotalExtraCostAmount => ExtraCosts.Sum(extraCost => extraCost.Amount);
+    public decimal TotalExtraCostAmount => ExtraCosts.Sum(extraCost => extraCost.Amount * (extraCost.ExchangeRate ?? 1));
 
     public decimal TotalAmountWithDiscountsAndExtraCosts => TotalAmount - TotalDiscountAmount + TotalExtraCostAmount;
 

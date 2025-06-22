@@ -140,7 +140,7 @@ public class Product : EntityBase<ProductId>
 
     public Product SetWagePriceUnitId(PriceUnitId? wagePriceUnitId)
     {
-        if (WageType is WageType.Percent)
+        if (WageType is WageType.Percent && WagePriceUnitId is not null)
             throw new InvalidOperationException("Percent wage type cannot have wage price unit");
 
         WagePriceUnitId = wagePriceUnitId;

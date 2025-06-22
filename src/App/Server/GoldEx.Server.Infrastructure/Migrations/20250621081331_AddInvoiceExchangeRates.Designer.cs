@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250621081331_AddInvoiceExchangeRates")]
+    partial class AddInvoiceExchangeRates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -731,29 +734,29 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasMaxLength(500)
                                 .HasColumnType("nvarchar(500)");
 
+                            b1.Property<Guid>("DiscountUnitId")
+                                .HasColumnType("uniqueidentifier");
+
                             b1.Property<decimal?>("ExchangeRate")
                                 .HasPrecision(36, 10)
                                 .HasColumnType("decimal(36,10)");
 
-                            b1.Property<Guid>("PriceUnitId")
-                                .HasColumnType("uniqueidentifier");
-
                             b1.HasKey("InvoiceId", "Id");
 
-                            b1.HasIndex("PriceUnitId");
+                            b1.HasIndex("DiscountUnitId");
 
                             b1.ToTable("InvoiceDiscounts", (string)null);
+
+                            b1.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "DiscountUnit")
+                                .WithMany()
+                                .HasForeignKey("DiscountUnitId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
 
                             b1.WithOwner()
                                 .HasForeignKey("InvoiceId");
 
-                            b1.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "PriceUnit")
-                                .WithMany()
-                                .HasForeignKey("PriceUnitId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
-
-                            b1.Navigation("PriceUnit");
+                            b1.Navigation("DiscountUnit");
                         });
 
                     b.OwnsMany("GoldEx.Server.Domain.InvoiceAggregate.InvoiceExtraCost", "ExtraCosts", b1 =>
@@ -818,6 +821,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasPrecision(36, 10)
                                 .HasColumnType("decimal(36,10)");
 
+                            b1.Property<Guid>("AmountUnitId")
+                                .HasColumnType("uniqueidentifier");
+
                             b1.Property<DateTime>("CreatedAt")
                                 .HasColumnType("datetime2");
 
@@ -835,20 +841,23 @@ namespace GoldEx.Server.Infrastructure.Migrations
                             b1.Property<Guid>("PaymentMethodId")
                                 .HasColumnType("uniqueidentifier");
 
-                            b1.Property<Guid>("PriceUnitId")
-                                .HasColumnType("uniqueidentifier");
-
                             b1.Property<string>("ReferenceNumber")
                                 .HasMaxLength(100)
                                 .HasColumnType("nvarchar(100)");
 
                             b1.HasKey("InvoiceId", "Id");
 
+                            b1.HasIndex("AmountUnitId");
+
                             b1.HasIndex("PaymentMethodId");
 
-                            b1.HasIndex("PriceUnitId");
-
                             b1.ToTable("InvoicePayments", (string)null);
+
+                            b1.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "AmountUnit")
+                                .WithMany()
+                                .HasForeignKey("AmountUnitId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
 
                             b1.WithOwner()
                                 .HasForeignKey("InvoiceId");
@@ -859,15 +868,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .OnDelete(DeleteBehavior.Restrict)
                                 .IsRequired();
 
-                            b1.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "PriceUnit")
-                                .WithMany()
-                                .HasForeignKey("PriceUnitId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
+                            b1.Navigation("AmountUnit");
 
                             b1.Navigation("PaymentMethod");
-
-                            b1.Navigation("PriceUnit");
                         });
 
                     b.Navigation("Customer");

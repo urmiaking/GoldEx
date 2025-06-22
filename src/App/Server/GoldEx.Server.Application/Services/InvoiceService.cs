@@ -1,9 +1,7 @@
-﻿using System.Data;
-using FluentValidation;
+﻿using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Application.Validators.Invoices;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -13,18 +11,15 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.Products;
-using GoldEx.Server.Infrastructure.Specifications.Transactions;
-using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -45,6 +40,7 @@ internal class InvoiceService(
         {
             try
             {
+                //TODO: check if the product is sold or not.
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
 
                 Guid customerId;
@@ -70,13 +66,13 @@ internal class InvoiceService(
                 if (request.InvoiceDiscounts.Any())
                 {
                     invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
-                        InvoiceDiscount.Create(x.Amount, new PriceUnitId(x.PriceUnitId), x.Description)));
+                        InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
                 }
 
                 if (request.InvoiceExtraCosts.Any())
                 {
                     invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
-                        InvoiceExtraCost.Create(x.Amount, new PriceUnitId(x.PriceUnitId), x.Description)));
+                        InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
                 }
 
                 if (request.InvoicePayments.Any())
@@ -84,6 +80,7 @@ internal class InvoiceService(
                     invoice.SetInvoicePayments(request.InvoicePayments.Select(x =>
                         InvoicePayment.Create(x.PaymentDate,
                             x.Amount,
+                            x.ExchangeRate,
                             new PriceUnitId(x.PriceUnitId),
                             new PaymentMethodId(x.PaymentMethodId),
                             x.ReferenceNumber,
@@ -184,7 +181,7 @@ internal class InvoiceService(
         }
     }
 
-    public async Task<PagedList<GetInvoiceResponse>> GetListAsync(RequestFilter filter, Guid? customerId, CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetInvoiceListResponse>> GetListAsync(RequestFilter filter, Guid? customerId, CancellationToken cancellationToken = default)
     {
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
@@ -205,13 +202,28 @@ internal class InvoiceService(
                     : null),
             cancellationToken);
 
-        return new PagedList<GetInvoiceResponse>
+        return new PagedList<GetInvoiceListResponse>
         {
-            Data = mapper.Map<List<GetInvoiceResponse>>(data),
+            Data = mapper.Map<List<GetInvoiceListResponse>>(data),
             Skip = skip,
             Take = take,
             Total = totalCount
         };
+    }
+
+    public async Task<GetInvoiceResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var item = await invoiceRepository
+            .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+            .Include(x => x.Customer)
+                .ThenInclude(x => x.CreditLimitPriceUnit)
+            .Include(x => x.PriceUnit)
+            .Include(x => x.Items)
+                .ThenInclude(x => x.Product)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        return mapper.Map<GetInvoiceResponse>(item);
     }
 
     public async Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default)
@@ -252,5 +264,12 @@ internal class InvoiceService(
                 throw;
             }
         }
+    }
+
+    public async Task<GetInvoiceNumberResponse> GetLastNumberAsync(CancellationToken cancellationToken = default)
+    {
+        var number = await invoiceRepository.GetLastNumberAsync(cancellationToken);
+
+        return new GetInvoiceNumberResponse(number);
     }
 }

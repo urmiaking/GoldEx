@@ -9,7 +9,8 @@ public class InvoicePayment : EntityBase
     public static InvoicePayment Create(
         DateTime paymentDate,
         decimal amount,
-        PriceUnitId amountUnitId,
+        decimal? exchangeRate,
+        PriceUnitId priceUnitId,
         PaymentMethodId paymentMethodId,
         string? referenceNumber = null,
         string? note = null)
@@ -18,7 +19,8 @@ public class InvoicePayment : EntityBase
         {
             PaymentDate = paymentDate,
             Amount = amount,
-            AmountUnitId = amountUnitId,
+            PriceUnitId = priceUnitId,
+            ExchangeRate = exchangeRate,
             PaymentMethodId = paymentMethodId,
             ReferenceNumber = referenceNumber,
             Note = note
@@ -32,8 +34,9 @@ public class InvoicePayment : EntityBase
     public string? Note { get; private set; }
 
     public decimal Amount { get; private set; }
-    public PriceUnitId AmountUnitId { get; private set; }
-    public PriceUnit? AmountUnit { get; private set; }
+    public decimal? ExchangeRate { get; private set; }
+    public PriceUnitId PriceUnitId { get; private set; }
+    public PriceUnit? PriceUnit { get; private set; }
 
     public PaymentMethodId PaymentMethodId { get; private set; }
     public PaymentMethod? PaymentMethod { get; private set; }
@@ -44,7 +47,7 @@ public class InvoicePayment : EntityBase
     public void SetAmount(decimal amount, PriceUnitId amountUnitId)
     {
         Amount = amount;
-        AmountUnitId = amountUnitId;
+        PriceUnitId = amountUnitId;
     }
     public void SetPaymentMethodId(PaymentMethodId paymentMethodId) => PaymentMethodId = paymentMethodId;
 }

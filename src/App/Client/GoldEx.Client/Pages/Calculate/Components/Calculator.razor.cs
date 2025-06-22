@@ -375,7 +375,8 @@ public partial class Calculator
                 return;
             }
 
-            await SendRequestAsync<IProductService, GetProductResponse?>(async (s, ct) => await s.GetAsync(barcode, ct),
+            await SendRequestAsync<IProductService, GetProductResponse?>(
+                action: async (s, ct) => await s.GetAsync(barcode, true, ct),
                  async response =>
                 {
                     if (response is null)
