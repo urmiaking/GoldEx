@@ -373,10 +373,10 @@ public partial class EditorForm
             }
         }
 
-        if (_model.Customer.Id == Guid.Empty)
+        if (_model.Customer.Id == null)
         {
             _model.Customer.CreditLimitPriceUnit = priceUnit;
-            _customerCreditLimitAdornmentText = priceUnit?.Title;
+            _customerCreditLimitAdornmentText = priceUnit.Title;
         }
 
         StateHasChanged();
@@ -429,7 +429,7 @@ public partial class EditorForm
         var request = InvoiceVm.ToRequest(_model);
 
         await SendRequestAsync<IInvoiceService>(
-            action: (s, ct) => s.CreateAsync(request, ct),
+            action: (s, ct) => s.SetAsync(request, ct),
             afterSend: () =>
             {
                 AddSuccessToast("فاکتور با موفقیت ثبت شد");

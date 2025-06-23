@@ -113,7 +113,8 @@ public class InvoiceVm
             Customer = CustomerVm.CreateFrom(response.Customer),
             InvoiceDiscounts = response.InvoiceDiscounts.Select(InvoiceDiscountVm.CreateFrom).ToList(),
             InvoiceExtraCosts = response.InvoiceExtraCosts.Select(InvoiceExtraCostVm.CreateFrom).ToList(),
-            InvoicePayments = response.InvoicePayments.Select(InvoicePaymentVm.CreateFrom).ToList(),
+            InvoicePayments = response.InvoicePayments.Select(x => 
+                InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoiceItems = response.InvoiceItems.Select(InvoiceItemVm.CreateFrom).ToList(),
             InvoicePriceUnit = response.PriceUnit
         };

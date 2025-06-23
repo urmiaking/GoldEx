@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -48,7 +49,7 @@ public class InvoicePaymentVm
             item.PaymentMethod.Id, item.PriceUnit.Id);
     }
 
-    public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response)
+    public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response, GetPriceUnitTitleResponse? priceUnit)
     {
         return new InvoicePaymentVm
         {
@@ -59,7 +60,8 @@ public class InvoicePaymentVm
             ReferenceNumber = response.ReferenceNumber,
             Note = response.Note,
             ExchangeRate = response.ExchangeRate,
-            AmountAdornmentText = response.PriceUnit.Title
+            AmountAdornmentText = response.PriceUnit.Title,
+            ExchangeRateLabel = $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}"
         };
     }
 }
