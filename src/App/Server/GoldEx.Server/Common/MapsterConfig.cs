@@ -42,9 +42,9 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
             .Map(dest => dest.AmountUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
             .Map(dest => dest.PaymentStatus,
-                src => src.TotalUnpaidAmount == 0
+                src => Math.Abs(src.TotalUnpaidAmount - 0m) < 0.01m
                     ? InvoicePaymentStatus.Paid
-                    : src.TotalUnpaidAmount == src.TotalAmount
+                    : Math.Abs(src.TotalUnpaidAmount - src.TotalAmount) < 0.01m
                         ? InvoicePaymentStatus.Unpaid
                         : InvoicePaymentStatus.PartiallyPaid);
 
@@ -54,6 +54,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.InvoiceItems, src => src.Items)
             .Map(dest => dest.InvoiceDiscounts, src => src.Discounts)
             .Map(dest => dest.InvoiceExtraCosts, src => src.ExtraCosts)
+            .Map(dest => dest.InvoicePayments, src => src.InvoicePayments)
             .Map(dest => dest.InvoiceDate, 
                 src => new DateTime(src.InvoiceDate, TimeOnly.MinValue))
             .Map(dest => dest.DueDate,
@@ -70,7 +71,8 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<InvoiceExtraCost, GetInvoiceExtraCostsResponse>();
 
-        config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>();
+        config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>()
+            .Map(dest => dest.PriceUnit, src => src.PriceUnit);
 
         #endregion
 

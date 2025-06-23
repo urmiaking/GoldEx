@@ -16,7 +16,7 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     [HttpPost(ApiRoutes.Invoices.Create)]
     public async Task<IActionResult> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        await service.CreateAsync(request, cancellationToken);
+        await service.SetAsync(request, cancellationToken);
         return Created();
     }
 

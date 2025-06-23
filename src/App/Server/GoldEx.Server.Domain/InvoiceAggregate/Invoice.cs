@@ -30,7 +30,7 @@ public class Invoice : EntityBase<InvoiceId>
     public DateOnly InvoiceDate { get; private set; }
 
     public void SetInvoiceNumber(long invoiceNumber) => InvoiceNumber = invoiceNumber;
-    public void SetDueDate(DateOnly dueDate) => DueDate = dueDate;
+    public void SetDueDate(DateOnly? dueDate) => DueDate = dueDate;
     public void SetInvoiceDate(DateOnly invoiceDate) => InvoiceDate = invoiceDate;
 
     #region Customer

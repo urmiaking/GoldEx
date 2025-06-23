@@ -21,8 +21,12 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
+
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
 
         if (exchangeRate is < 0)
             throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero.");
@@ -98,6 +102,49 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
                 Product.ProductType);
 
     public decimal TotalAmount => ItemFinalAmount * Quantity;
+
+    #endregion
+
+    #region Methods
+
+    public void SetGramPrice(decimal gramPrice)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
+        GramPrice = gramPrice;
+    }
+
+    public void SetQuantity(int quantity)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
+        Quantity = quantity;
+    }
+
+    public void SetProfitPercent(decimal profitPercent)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+        ProfitPercent = profitPercent;
+    }
+
+    public void SetTaxPercent(decimal taxPercent)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
+        TaxPercent = taxPercent;
+    }
+
+    public void SetExchangeRate(decimal? exchangeRate)
+    {
+        if (exchangeRate is < 0)
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero.");
+
+        ExchangeRate = exchangeRate;
+    }
+
+    public void SetPriceUnitId(PriceUnitId priceUnitId)
+    {
+        PriceUnitId = priceUnitId;
+    }
 
     #endregion
 }

@@ -12,7 +12,7 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptions) : IInvoiceService
 {
-    public async Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken)
+    public async Task SetAsync(InvoiceRequestDto request, CancellationToken cancellationToken)
     {
         using var response = await client.PostAsJsonAsync(ApiUrls.Invoices.Create(), request, jsonOptions, cancellationToken);
 
