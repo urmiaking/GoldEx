@@ -19,7 +19,8 @@ public static class DependencyInjection
             .AddCache()
             .AddSettings(configuration)
             .AddAppHealthCheck(configuration)
-            .AddSerilogUiService(configuration);
+            .AddSerilogUiService(configuration)
+            .AddDevExpress();
 
         services.DiscoverServices();
         return services;
