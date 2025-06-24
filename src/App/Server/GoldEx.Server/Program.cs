@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Serilog.Ui.Web.Extensions;
+using DevExpress.AspNetCore.Reporting;
+using DevExpress.AspNetCore;
 
 var logger = GetStartupLogger();
 
@@ -112,6 +114,12 @@ void SetupPipeline()
 
     app.UseHttpsRedirection();
 
+    app.UseReporting(settings => {
+        settings.UserDesignerOptions.DataBindingMode =
+            DevExpress.XtraReports.UI.DataBindingMode.ExpressionsAdvanced;
+    });
+    app.UseDevExpressControls();
+
     var cacheMaxAgeOneWeek = (60 * 60 * 24 * 7).ToString();
     app.UseStaticFiles(new StaticFileOptions
     {
@@ -154,6 +162,8 @@ void SetupPipeline()
         options.AsideMenuOpened = false;
         options.PageTitle = "GoldEx Health Monitor";
     });
+
+    AppDomain.CurrentDomain.SetData("DXResourceDirectory", app.Environment.ContentRootPath);
 }
 
 ILogger GetStartupLogger()

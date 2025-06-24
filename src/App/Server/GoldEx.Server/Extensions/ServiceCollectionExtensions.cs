@@ -21,7 +21,10 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DevExpress.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Google;
+using DevExpress.XtraReports.Web.Extensions;
+using DevExpress.XtraReports.Web.WebDocumentViewer.Native.Services;
 
 namespace GoldEx.Server.Extensions;
 
@@ -251,6 +254,13 @@ internal static class ServiceCollectionExtensions
                     .WithTable("Logs");
             });
         });
+
+        return services;
+    }
+
+    internal static IServiceCollection AddDevExpress(this IServiceCollection services)
+    {
+        services.AddDevExpressControls();
 
         return services;
     }
