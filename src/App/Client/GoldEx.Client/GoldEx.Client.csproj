@@ -25,4 +25,8 @@
 		<Folder Include="wwwroot\assets\screenshots\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.2.7" />
+	</ItemGroup>
+
 </Project>

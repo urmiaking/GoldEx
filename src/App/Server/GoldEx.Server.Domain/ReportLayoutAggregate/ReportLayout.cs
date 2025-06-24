@@ -32,7 +32,7 @@ public class ReportLayout : EntityBase<ReportLayoutId>
     /// <summary>
     /// The raw byte data of the .repx file content (XML).
     /// </summary>
-    public byte[] LayoutData { get; set; } = default!;
+    public byte[] LayoutData { get; private set; } = default!;
 
     public void SetName(string name) => Name = name;
     public void SetDisplayName(string displayName) => DisplayName = displayName;
