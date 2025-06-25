@@ -88,4 +88,9 @@ public partial class InvoicesList
     {
         NavigationManager.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { model.Id }));
     }
+
+    private void OnViewInvoice(InvoiceListVm model)
+    {
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { model.Id }));
+    }
 }

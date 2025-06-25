@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GoldEx.Server.Application.Extensions;
+namespace GoldEx.Server.Application.Reporting;
 
 [ScopedService]
 public class ReportStorageExtension(IServiceProvider serviceProvider, IWebHostEnvironment hostingEnvironment)

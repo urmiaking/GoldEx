@@ -107,5 +107,12 @@ public static class ClientRoutes
         private const string InvoicesPrefix = "/invoices";
         public const string Index = $"{InvoicesPrefix}";
         public const string SetInvoice = $"{InvoicesPrefix}/set/{{id?}}";
+        public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{id:guid}}";
+    }
+
+    public static class Reporting
+    {
+        private const string ReportingPrefix = "/reporting";
+        public const string DesignReport = $"{ReportingPrefix}/designer/{{name}}";
     }
 }

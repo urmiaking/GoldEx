@@ -27,7 +27,7 @@ public class CustomReportDesignerController(IReportDesignerMvcControllerService 
     {
         var dataSources = new Dictionary<string, object>();
         var ds = new SqlDataSource("GoldEx");
-        dataSources.Add("sqlDataSource1", ds);
+        //dataSources.Add("sqlDataSource1", ds);
         ReportDesignerModel model;
         model = string.IsNullOrEmpty(reportUrl)
             ? designerClientSideModelGenerator.GetModel(new XtraReport(),
@@ -40,7 +40,7 @@ public class CustomReportDesignerController(IReportDesignerMvcControllerService 
                 "/DXXRD",
                 "/DXXRDV",
                 "/DXXQB");
-        model.WizardSettings.EnableSqlDataSource = true;
+        //model.WizardSettings.EnableSqlDataSource = true;
         model.Assign(designerModelSettings);
         var modelJsonScript = designerClientSideModelGenerator.GetJsonModelScript(model);
         return Content(modelJsonScript, "application/json");

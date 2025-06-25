@@ -6,10 +6,8 @@ using GoldEx.Server.Infrastructure.Specifications.ReportLayouts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting.Internal;
-using System;
 
-namespace GoldEx.Server.Application.Factories;
+namespace GoldEx.Server.Application.Reporting;
 
 [ScopedService]
 internal class ReportFactory(IServiceProvider serviceProvider, IWebHostEnvironment hostingEnvironment) : IReportProviderAsync, IReportProvider
@@ -38,10 +36,14 @@ internal class ReportFactory(IServiceProvider serviceProvider, IWebHostEnvironme
 
     public XtraReport GetReport(string id, ReportProviderContext context)
     {
+        var parts = id.Split(['?'], 2);
+        var reportName = parts[0];
+        var queryString = parts.Length > 1 ? parts[1] : string.Empty;
+
         using var scope = serviceProvider.CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IReportLayoutRepository>();
 
-        var layout = repo.Get(new ReportLayoutsByNameSpecification(id)).FirstOrDefault();
+        var layout = repo.Get(new ReportLayoutsByNameSpecification(reportName)).FirstOrDefault();
         if (layout != null)
         {
             using var ms = new MemoryStream(layout.LayoutData);
@@ -57,7 +59,7 @@ internal class ReportFactory(IServiceProvider serviceProvider, IWebHostEnvironme
             return report;
         }
 
-        var reportPath = Path.Combine(hostingEnvironment.ContentRootPath, "Reports", $"{id}.resx");
+        var reportPath = Path.Combine(hostingEnvironment.ContentRootPath, "Reports", $"{reportName}.repx");
         if (File.Exists(reportPath))
         {
             var bytes = File.ReadAllBytes(reportPath);

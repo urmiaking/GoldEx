@@ -1,8 +1,25 @@
-﻿@page "/viewer"
+﻿@inherits GoldExComponentBase
+@attribute [Route(ClientRoutes.Invoices.ViewInvoice)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+<!-- TODO: Add Policy -->
 
-<DxWasmDocumentViewer ReportName="InvoiceReport" Height="700px" Width="100%">
-    <DxDocumentViewerExportSettings UseSameTab=false>
-    </DxDocumentViewerExportSettings>
-    <DxWasmDocumentViewerRequestOptions InvokeAction="DXXRDV">
-    </DxWasmDocumentViewerRequestOptions>
-</DxWasmDocumentViewer>
+<PageTitle>مشاهده فاکتور</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <DxWasmDocumentViewer ReportName="@_reportUrl" Height="600px" Width="100%" RightToLeft="true">
+        <DxDocumentViewerExportSettings UseSameTab=true>
+        </DxDocumentViewerExportSettings>
+        <DxWasmDocumentViewerRequestOptions InvokeAction="DXXRDV">
+        </DxWasmDocumentViewerRequestOptions>
+        <DxReportDesignerModelSettings AllowMDI=true RightToLeft="true">
+            <DxReportDesignerWizardSettings UseFullscreenWizard=true />
+        </DxReportDesignerModelSettings>
+    </DxWasmDocumentViewer>
+
+</MudContainer>
