@@ -37,7 +37,7 @@
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ فاکتور">
                     <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
-                                   Color="@Color.Success"></MudIconButton>
+                                   Color="@Color.Success" OnClick="_ => OnViewInvoice(context)"></MudIconButton>
                 </MudTooltip>
                 <MudTooltip Text="ویرایش فاکتور">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
