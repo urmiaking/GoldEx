@@ -132,4 +132,10 @@ public static class ApiRoutes
         public const string GetLastNumber = "last-number";
         public const string GetByNumber = "number/{number}";
     }
+
+    public class Reports
+    {
+        public const string Base = "/api/Reports";
+        public const string GetList = "";
+    }
 }
