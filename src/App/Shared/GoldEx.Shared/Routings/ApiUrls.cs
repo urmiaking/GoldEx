@@ -218,4 +218,10 @@ public class ApiUrls
         public static string GetLastNumber() =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber);
     }
+
+    public class Reports
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.Reports.Base, ApiRoutes.Reports.GetList);
+    }
 }
