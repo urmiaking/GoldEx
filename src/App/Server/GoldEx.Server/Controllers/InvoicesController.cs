@@ -41,6 +41,13 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
         return Ok(item);
     }
 
+    [HttpGet(ApiRoutes.Invoices.GetByNumber)]
+    public async Task<IActionResult> GetAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    {
+        var item = await service.GetAsync(invoiceNumber, cancellationToken);
+        return Ok(item);
+    }
+
     [HttpGet(ApiRoutes.Invoices.GetLastNumber)]
     public async Task<IActionResult> GetLastNumberAsync(CancellationToken cancellationToken = default)
     {

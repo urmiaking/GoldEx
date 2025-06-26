@@ -1,6 +1,7 @@
 ﻿using GoldEx.Server.Extensions;
 using GoldEx.Client.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using GoldEx.Shared.DTOs.Reporting;
 
 namespace GoldEx.Server;
 

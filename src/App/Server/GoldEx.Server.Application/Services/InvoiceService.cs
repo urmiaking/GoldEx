@@ -267,6 +267,26 @@ internal class InvoiceService(
         return mapper.Map<GetInvoiceResponse>(item);
     }
 
+    public async Task<GetInvoiceResponse> GetAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    {
+        var item = await invoiceRepository
+            .Get(new InvoicesByNumberSpecification(invoiceNumber))
+            .Include(x => x.Customer)
+                .ThenInclude(x => x.CreditLimitPriceUnit)
+            .Include(x => x.PriceUnit)
+            .Include(x => x.Items)
+                .ThenInclude(x => x.Product)
+                    .ThenInclude(x => x!.ProductCategory)
+            .Include(x => x.InvoicePayments)
+                .ThenInclude(x => x.PriceUnit)
+            .Include(x => x.InvoicePayments)
+                .ThenInclude(x => x.PaymentMethod)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        return mapper.Map<GetInvoiceResponse>(item);
+    }
+
     public async Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default)
     {
         await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);

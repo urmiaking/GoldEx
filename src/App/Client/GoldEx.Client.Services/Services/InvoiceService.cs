@@ -45,6 +45,18 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
+    public async Task<GetInvoiceResponse> GetAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Invoices.Get(invoiceNumber), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetInvoiceResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default)
     {
         using var response = await client.DeleteAsync(ApiUrls.Invoices.Delete(id, deleteProducts), cancellationToken);

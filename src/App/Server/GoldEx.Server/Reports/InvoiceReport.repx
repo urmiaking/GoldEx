@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="24.2.7.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.2, Version=24.2.7.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="InvoiceReport" Margins="50, 50, 139.583328, 140" PageWidth="850" PageHeight="1100" Version="24.2" RequestParameters="false" RightToLeft="Yes" RightToLeftLayout="Yes" DataSource="#Ref-0" Font="B Homa, 12pt">
+  <Parameters>
+    <Item1 Ref="3" Description="شماره فاکتور" ValueInfo="0" Name="invoiceNumber" Type="#Ref-2" />
+  </Parameters>
+  <Bands>
+    <Item1 Ref="4" ControlType="TopMarginBand" Name="TopMargin" HeightF="139.583328">
+      <Controls>
+        <Item1 Ref="5" ControlType="XRLabel" Name="xrLabel3" Multiline="true" SizeF="369.7916,33.4166679" LocationFloat="0,56.58334" Padding="2,2,0,0,100">
+          <ExpressionBindings>
+            <Item1 Ref="6" EventName="BeforePrint" PropertyName="Text" Expression="شماره فاکتور: [Response].[InvoiceNumber]" />
+          </ExpressionBindings>
+        </Item1>
+        <Item2 Ref="7" ControlType="XRLabel" Name="xrLabel2" Multiline="true" Text="xrLabel2" SizeF="250,33.4166756" LocationFloat="446.8749,56.58334" Padding="2,2,0,0,100">
+          <ExpressionBindings>
+            <Item1 Ref="8" EventName="BeforePrint" PropertyName="Text" Expression="[Response].[Customer].[FullName]" />
+          </ExpressionBindings>
+        </Item2>
+        <Item3 Ref="9" ControlType="XRLabel" Name="xrLabel1" Multiline="true" Text="فاکتور فروش" SizeF="140.624939,33.4166679" LocationFloat="331.25,10.0000067" Padding="2,2,0,0,100" />
+      </Controls>
+    </Item1>
+    <Item2 Ref="10" ControlType="BottomMarginBand" Name="BottomMargin" HeightF="140" />
+    <Item3 Ref="11" ControlType="DetailBand" Name="Detail" />
+  </Bands>
+  <StyleSheet>
+    <Item1 Ref="12" Name="baseControlStyle" BorderStyle="Inset" Padding="2,2,0,0,100" Font="Segoe UI, 9.75pt" StringFormat="Near;Near;0;None;Character;GenericDefault" />
+    <Item2 Ref="13" Name="evenDetailStyle" BorderStyle="Inset" Padding="2,2,0,0,100" BackColor="255,235,233,234" StringFormat="Near;Near;0;None;Character;GenericDefault" />
+    <Item3 Ref="14" Name="oddDetailStyle" BorderStyle="Inset" Padding="2,2,0,0,100" BackColor="WhiteSmoke" StringFormat="Near;Near;0;None;Character;GenericDefault" />
+  </StyleSheet>
+  <ComponentStorage>
+    <Item1 Ref="0" ObjectType="DevExpress.DataAccess.ObjectBinding.ObjectDataSource,DevExpress.DataAccess.v24.2" Name="objectDataSource2" Base64="PE9iamVjdERhdGFTb3VyY2UgTmFtZT0ib2JqZWN0RGF0YVNvdXJjZTIiPjxEYXRhU291cmNlIFR5cGU9IkdvbGRFeC5TaGFyZWQuRFRPcy5SZXBvcnRpbmcuR2V0SW52b2ljZVJlcG9ydFJlc3BvbnNlLCBHb2xkRXguU2hhcmVkLCBWZXJzaW9uPTEuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbCIgLz48Q29uc3RydWN0b3I+PFBhcmFtZXRlciBOYW1lPSJSZXNwb25zZSIgVHlwZT0iR29sZEV4LlNoYXJlZC5EVE9zLkludm9pY2VzLkdldEludm9pY2VSZXNwb25zZSwgR29sZEV4LlNoYXJlZCwgVmVyc2lvbj0xLjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwiIElzTnVsbD0idHJ1ZSIgLz48UGFyYW1ldGVyIE5hbWU9IlNldHRpbmciIFR5cGU9IkdvbGRFeC5TaGFyZWQuRFRPcy5TZXR0aW5ncy5HZXRTZXR0aW5nUmVzcG9uc2UsIEdvbGRFeC5TaGFyZWQsIFZlcnNpb249MS4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsIiBJc051bGw9InRydWUiIC8+PC9Db25zdHJ1Y3Rvcj48L09iamVjdERhdGFTb3VyY2U+" />
+  </ComponentStorage>
+  <ObjectStorage>
+    <Item1 ObjectType="DevExpress.XtraReports.Serialization.ObjectStorageInfo, DevExpress.XtraReports.v24.2" Ref="2" Content="System.Int64" Type="System.Type" />
+  </ObjectStorage>
+</XtraReportsLayoutSerializer>
