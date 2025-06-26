@@ -47,4 +47,10 @@
 	  <Folder Include="uploads\icons\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="Reports\InvoiceReport.repx">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>

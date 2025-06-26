@@ -211,6 +211,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Get)
                 .FormatRoute(new { id });
 
+        public static string Get(long invoiceNumber) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetByNumber)
+                .FormatRoute(new { invoiceNumber });
+
         public static string GetLastNumber() =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber);
     }

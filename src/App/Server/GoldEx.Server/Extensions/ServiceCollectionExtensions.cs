@@ -25,6 +25,10 @@ using DevExpress.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Google;
 using DevExpress.XtraReports.Web.Extensions;
 using DevExpress.XtraReports.Web.WebDocumentViewer.Native.Services;
+using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.Reporting;
+using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Server.Extensions;
 
@@ -261,6 +265,16 @@ internal static class ServiceCollectionExtensions
     internal static IServiceCollection AddDevExpress(this IServiceCollection services)
     {
         services.AddDevExpressControls();
+
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedAssembly(typeof(GetInvoiceReportResponse).Assembly);
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceReportResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetPriceUnitTitleResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceItemResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetSettingResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceDiscountResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoicePaymentResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceExtraCostsResponse));
 
         return services;
     }
