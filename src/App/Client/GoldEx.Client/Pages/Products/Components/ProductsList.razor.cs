@@ -10,7 +10,7 @@ namespace GoldEx.Client.Pages.Products.Components;
 public partial class ProductsList
 {
     [Parameter] public string Class { get; set; } = default!;
-    [Parameter] public int Elevation { get; set; } = 0;
+    [Parameter] public int Elevation { get; set; } = 24;
 
     private string? _searchString;
     private MudTable<ProductVm> _table = new ();

@@ -37,31 +37,28 @@ internal class ReportFactory(
         {
             // Parse invoiceNumber from query string, e.g., "InvoiceReport?invoiceNumber=123"
             var queryParams = System.Web.HttpUtility.ParseQueryString(queryString);
-            if (!long.TryParse(queryParams["invoiceNumber"], out var invoiceNumber))
+            if (long.TryParse(queryParams["invoiceNumber"], out var invoiceNumber))
             {
-                throw new ArgumentException("Invalid or missing invoiceNumber parameter");
+                // Fetch data from IReportingService
+                var response = await reportingService.GetInvoiceReportAsync(invoiceNumber);
+
+                // Create ObjectDataSource
+                var dataSource = new ObjectDataSource
+                {
+                    Name = "objectDataSource2",
+                    DataSource = response, // Set the GetInvoiceReportResponse object
+                    DataMember = null // Set to null for a single object
+                };
+
+                // Assign data source to the report
+                report.DataSource = dataSource;
+
+                // Map report parameter to invoiceNumber (if defined in the report)
+                if (report.Parameters["invoiceNumber"] != null)
+                {
+                    report.Parameters["invoiceNumber"].Value = invoiceNumber;
+                }
             }
-
-            // Fetch data from IReportingService
-            var response = await reportingService.GetInvoiceReportAsync(invoiceNumber);
-
-            // Create ObjectDataSource
-            var dataSource = new ObjectDataSource
-            {
-                Name = "objectDataSource2",
-                DataSource = response, // Set the GetInvoiceReportResponse object
-                DataMember = null // Set to null for a single object
-            };
-
-            // Assign data source to the report
-            report.DataSource = dataSource;
-
-            // Map report parameter to invoiceNumber (if defined in the report)
-            if (report.Parameters["invoiceNumber"] != null)
-            {
-                report.Parameters["invoiceNumber"].Value = invoiceNumber;
-            }
-
         }
 
         report.DisplayName = reportName;

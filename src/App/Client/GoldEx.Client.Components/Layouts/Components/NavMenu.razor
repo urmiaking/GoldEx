@@ -11,8 +11,9 @@
     <AuthorizeView>
         <Authorized>
             <MudNavLink Href="@ClientRoutes.Products.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Warehouse">اجناس من</MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Transactions.Create" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PostAdd">ثبت تراکنش حدید</MudNavLink>
+            @* <MudNavLink Href="@ClientRoutes.Transactions.Create" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PostAdd">ثبت تراکنش حدید</MudNavLink> *@
             <MudNavLink Href="@ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" })" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAdd">ثبت فاکتور حدید</MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AutoStories">فاکتورهای من</MudNavLink>
             <MudNavLink Href="@ClientRoutes.Accounts.Manage.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">مدیریت حساب</MudNavLink>
             <MudNavLink Href="@ClientRoutes.Settings.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">تنظیمات</MudNavLink>
             <MudNavLink Href="@ApiUrls.Account.Logout(_currentUrl)" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">خروج</MudNavLink>

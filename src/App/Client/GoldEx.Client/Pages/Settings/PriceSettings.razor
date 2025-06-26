@@ -10,13 +10,13 @@
 
 @if (_showAlert)
 {
-    <MudAlert Class="mb-4" ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Info" Elevation="3"
+    <MudAlert Class="mb-4" ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Info" Elevation="24"
               Variant="Variant.Filled" ShowCloseIcon="true" CloseIconClicked="() => CloseAlert(true)">
         با انتخاب هر کدام از آیتم های زیر، قیمت آن در تابلوی قیمت ها نمایش داده می شود.
     </MudAlert>
 }
 
-<MudPaper Elevation="3">
+<MudPaper Elevation="24">
     <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">  
         @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))  
         {  
