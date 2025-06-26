@@ -2,238 +2,169 @@
 @using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
-    <AuthorizeView>
-        <Authorized>
-            <MudGrid Class="mt-3" Justify="Justify.SpaceBetween">
-                <MudItem xs="12" sm="6" md="4">
-                    @if (_isInitialLoading)
-                    {
-                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                    }
-                    else
-                    {
-                        <MudTextField Adornment="Adornment.End"
-                                      AdornmentIcon="@Icons.Material.Filled.QrCode"
-                                      AutoFocus="true"
-                                      Clearable="true"
-                                      HelperText="@_barcodeFieldHelperText"
-                                      Label="بارکد جنس"
-                                      Immediate="true"
-                                      Margin="Margin.Dense"
-                                      OnClearButtonClick="OnBarcodeCleared"
-                                      T="string"
-                                      Value="_barcode"
-                                      ValueChanged="OnBarcodeChanged"
-                                      Variant="Variant.Outlined"></MudTextField>
-                    }
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    @if (_isInitialLoading)
-                    {
-                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                    }
-                    else
-                    {
-                        <MudSelect T="GetPriceUnitTitleResponse?"
-                                   Value="_model.PriceUnit"
-                                   ValueChanged="OnPriceUnitChanged"
-                                   Label="@_model.GetDisplayName(() => _model.PriceUnit)"
-                                   For="() => _model.PriceUnit"
-                                   Margin="Margin.Dense"
-                                   Variant="Variant.Outlined">
-                            @foreach (var item in _priceUnits)
-                            {
-                                <MudSelectItem Value="item">
-                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                        <MudAvatar Size="Size.Small">
-                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
-                                        </MudAvatar>
-                                        <MudText Class="d-none d-md-inline">@item.Title</MudText>
-                                    </MudStack>
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-                </MudItem>
-            </MudGrid>
-        </Authorized>
-    </AuthorizeView>
-
-    <MudForm Model="_model" @ref="@_from" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
-        <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
-            @if (_isInitialLoading)
-            {
-                <MudSkeleton Class="rounded-5 mb-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="30px" Animation="Animation.Wave" />
-            }
-            else
-            {
-                <MudRadioGroup For="() => _model.ProductType"
-                               T="ProductType"
-                               Value="_model.ProductType"
-                               ValueChanged="OnProductTypeChanged">
-                    <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
-                    <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
-                    <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
-                    <MudRadio Value="ProductType.OldGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
-                </MudRadioGroup>
-            }
-        </div>
-
-        <MudGrid Justify="Justify.Center" Spacing="4">
-            <MudItem xs="12" sm="6">
-                @if (_isInitialLoading || _isBarcodeProcessing)
-                {
-                    <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                }
-                else
-                {
-                    <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="@_gramPriceAdornmentText"
-                                     For="() => _model.GramPrice"
-                                     Format="#,##0.##"
-                                     HideSpinButtons="true"
-                                     Immediate="true"
-                                     Margin="Margin.Dense"
-                                     Label="@(_model.GetDisplayName(() => _model.GramPrice))"
-                                     T="decimal"
-                                     Value="@_model.GramPrice"
-                                     ValueChanged="OnGramPriceChanged"
-                                     Variant="Variant.Outlined"></MudNumericField>
-                }
-            </MudItem>
-
-            <MudItem xs="12" sm="6">
-                @if (_isInitialLoading || _isBarcodeProcessing)
-                {
-                    <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                }
-                else
-                {
-                    <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="گرم"
-                                     For="() => _model.Weight"
-                                     Format="G29"
-                                     HideSpinButtons="true"
-                                     Immediate="true"
-                                     Margin="Margin.Dense"
-                                     Label="@(_model.GetDisplayName(() => _model.Weight))"
-                                     T="decimal"
-                                     Value="_model.Weight"
-                                     ValueChanged="OnWeightChanged"
-                                     Variant="Variant.Outlined"></MudNumericField>
-                }
-            </MudItem>
-
-            <MudItem xs="12" sm="6">
-                @if (_isInitialLoading || _isBarcodeProcessing)
-                {
-                    <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                }
-                else
-                {
-                    @if (_model.ProductType != ProductType.OldGold)
-                    {
-                        <MudSelect Adornment="Adornment.End"
-                                   For="() => _model.CaratType"
-                                   Immediate="true"
-                                   Margin="Margin.Dense"
-                                   Label="@(_model.GetDisplayName(() => _model.CaratType))"
-                                   T="CaratType"
-                                   Value="_model.CaratType"
-                                   ValueChanged="OnCaratTypeChanged"
-                                   Variant="Variant.Outlined">
-                            @foreach (CaratType caratType in Enum.GetValues(typeof(CaratType)))
-                            {
-                                <MudSelectItem Value="@caratType">@caratType.GetDisplayName()</MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-                    else
-                    {
-                        <MudNumericField For="() => _model.OldGoldCarat"
-                                         Immediate="true"
-                                         Margin="Margin.Dense"
-                                         Label="@(_model.GetDisplayName(() => _model.OldGoldCarat))"
-                                         T="int?"
-                                         Value="_model.OldGoldCarat"
-                                         ValueChanged="OnOldGoldCaratChanged"
-                                         Variant="Variant.Outlined"></MudNumericField>
-                    }
-                }
-            </MudItem>
-
-            @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
-            {
-                <MudItem xs="12" sm="6">
-                    @if (_isInitialLoading || _isBarcodeProcessing)
-                    {
-                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                    }
-                    else
-                    {
-                        <MudSelect For="() => _model.WageType"
-                                   Immediate="true"
-                                   Margin="Margin.Dense"
-                                   Label="@(_model.GetDisplayName(() => _model.WageType))"
-                                   @ref="_wageTypeField"
-                                   T="WageType?"
-                                   Value="_model.WageType"
-                                   ValueChanged="OnWageTypeChanged"
-                                   Variant="Variant.Outlined">
-                            <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
-                            @foreach (WageType wageType in Enum.GetValues(typeof(WageType)))
-                            {
-                                <MudSelectItem Value="@((WageType?)wageType)">@wageType.GetDisplayName()</MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-                </MudItem>
-                <MudItem xs="12" sm="6">
-                    @if (_isInitialLoading || _isBarcodeProcessing)
-                    {
-                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                    }
-                    else
-                    {
-                        <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                            <ActivatorContent>
-                                <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@_wageFieldAdornmentText"
-                                                 For="() => _model.Wage"
-                                                 Format="#,##0.##"
-                                                 HideSpinButtons="true"
-                                                 Immediate="true"
-                                                 Margin="Margin.Dense"
-                                                 Label="@(_model.GetDisplayName(() => _model.Wage))"
-                                                 @ref="_wageField"
-                                                 T="decimal?"
-                                                 Value="_model.Wage"
-                                                 ValueChanged="OnWageChanged"
-                                                 Variant="Variant.Outlined"
-                                                 OnAdornmentClick="OnWageAdornmentClicked"></MudNumericField>
-                            </ActivatorContent>
-                            <ChildContent>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@Class" Gutters="false">
+    <MudCard Elevation="@Elevation" Class="px-5 pb-5">
+        <AuthorizeView>
+            <Authorized>
+                <MudGrid Class="mt-3" Justify="Justify.SpaceBetween">
+                    <MudItem xs="12" sm="6" md="4">
+                        @if (_isInitialLoading)
+                        {
+                            <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                        }
+                        else
+                        {
+                            <MudTextField Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.QrCode"
+                                          AutoFocus="true"
+                                          Clearable="true"
+                                          HelperText="@_barcodeFieldHelperText"
+                                          Label="بارکد جنس"
+                                          Immediate="true"
+                                          Margin="Margin.Dense"
+                                          OnClearButtonClick="OnBarcodeCleared"
+                                          T="string"
+                                          Value="_barcode"
+                                          ValueChanged="OnBarcodeChanged"
+                                          Variant="Variant.Outlined"></MudTextField>
+                        }
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        @if (_isInitialLoading)
+                        {
+                            <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                        }
+                        else
+                        {
+                            <MudSelect T="GetPriceUnitTitleResponse?"
+                                       Value="_model.PriceUnit"
+                                       ValueChanged="OnPriceUnitChanged"
+                                       Label="@_model.GetDisplayName(() => _model.PriceUnit)"
+                                       For="() => _model.PriceUnit"
+                                       Margin="Margin.Dense"
+                                       Variant="Variant.Outlined">
                                 @foreach (var item in _priceUnits)
                                 {
-                                    <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            @if (item.HasIcon)
-                                            {
-                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                </MudAvatar>
-                                            }
-                                            @item.Title
-                                        </div>
-                                    </MudMenuItem>
+                                    <MudSelectItem Value="item">
+                                        <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                            <MudAvatar Size="Size.Small">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                            </MudAvatar>
+                                            <MudText Class="d-none d-md-inline">@item.Title</MudText>
+                                        </MudStack>
+                                    </MudSelectItem>
                                 }
-                            </ChildContent>
-                        </MudMenu>
+                            </MudSelect>
+                        }
+                    </MudItem>
+                </MudGrid>
+            </Authorized>
+        </AuthorizeView>
+
+        <MudForm Model="_model" @ref="@_from" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
+            <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
+                @if (_isInitialLoading)
+                {
+                    <MudSkeleton Class="rounded-5 mb-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="30px" Animation="Animation.Wave" />
+                }
+                else
+                {
+                    <MudRadioGroup For="() => _model.ProductType"
+                                   T="ProductType"
+                                   Value="_model.ProductType"
+                                   ValueChanged="OnProductTypeChanged">
+                        <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
+                        <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
+                        <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
+                        <MudRadio Value="ProductType.OldGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
+                    </MudRadioGroup>
+                }
+            </div>
+
+            <MudGrid Justify="Justify.Center" Spacing="4">
+                <MudItem xs="12" sm="6">
+                    @if (_isInitialLoading || _isBarcodeProcessing)
+                    {
+                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                    }
+                    else
+                    {
+                        <MudNumericField Adornment="Adornment.End"
+                                         AdornmentText="@_gramPriceAdornmentText"
+                                         For="() => _model.GramPrice"
+                                         Format="#,##0.##"
+                                         HideSpinButtons="true"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(_model.GetDisplayName(() => _model.GramPrice))"
+                                         T="decimal"
+                                         Value="@_model.GramPrice"
+                                         ValueChanged="OnGramPriceChanged"
+                                         Variant="Variant.Outlined"></MudNumericField>
                     }
                 </MudItem>
 
-                @if (_model.WageType is WageType.Fixed && _model.PriceUnit != _model.WagePriceUnit)
+                <MudItem xs="12" sm="6">
+                    @if (_isInitialLoading || _isBarcodeProcessing)
+                    {
+                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                    }
+                    else
+                    {
+                        <MudNumericField Adornment="Adornment.End"
+                                         AdornmentText="گرم"
+                                         For="() => _model.Weight"
+                                         Format="G29"
+                                         HideSpinButtons="true"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(_model.GetDisplayName(() => _model.Weight))"
+                                         T="decimal"
+                                         Value="_model.Weight"
+                                         ValueChanged="OnWeightChanged"
+                                         Variant="Variant.Outlined"></MudNumericField>
+                    }
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    @if (_isInitialLoading || _isBarcodeProcessing)
+                    {
+                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                    }
+                    else
+                    {
+                        @if (_model.ProductType != ProductType.OldGold)
+                        {
+                            <MudSelect Adornment="Adornment.End"
+                                       For="() => _model.CaratType"
+                                       Immediate="true"
+                                       Margin="Margin.Dense"
+                                       Label="@(_model.GetDisplayName(() => _model.CaratType))"
+                                       T="CaratType"
+                                       Value="_model.CaratType"
+                                       ValueChanged="OnCaratTypeChanged"
+                                       Variant="Variant.Outlined">
+                                @foreach (CaratType caratType in Enum.GetValues(typeof(CaratType)))
+                                {
+                                    <MudSelectItem Value="@caratType">@caratType.GetDisplayName()</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <MudNumericField For="() => _model.OldGoldCarat"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(_model.GetDisplayName(() => _model.OldGoldCarat))"
+                                             T="int?"
+                                             Value="_model.OldGoldCarat"
+                                             ValueChanged="OnOldGoldCaratChanged"
+                                             Variant="Variant.Outlined"></MudNumericField>
+                        }
+                    }
+                </MudItem>
+
+                @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
                 {
                     <MudItem xs="12" sm="6">
                         @if (_isInitialLoading || _isBarcodeProcessing)
@@ -242,15 +173,109 @@
                         }
                         else
                         {
-                            <MudNumericField For="() => _model.ExchangeRate"
-                                             Format="#,##0.########"
+                            <MudSelect For="() => _model.WageType"
+                                       Immediate="true"
+                                       Margin="Margin.Dense"
+                                       Label="@(_model.GetDisplayName(() => _model.WageType))"
+                                       @ref="_wageTypeField"
+                                       T="WageType?"
+                                       Value="_model.WageType"
+                                       ValueChanged="OnWageTypeChanged"
+                                       Variant="Variant.Outlined">
+                                <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
+                                @foreach (WageType wageType in Enum.GetValues(typeof(WageType)))
+                                {
+                                    <MudSelectItem Value="@((WageType?)wageType)">@wageType.GetDisplayName()</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        @if (_isInitialLoading || _isBarcodeProcessing)
+                        {
+                            <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                        }
+                        else
+                        {
+                            <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                                <ActivatorContent>
+                                    <MudNumericField Adornment="Adornment.End"
+                                                     AdornmentText="@_wageFieldAdornmentText"
+                                                     For="() => _model.Wage"
+                                                     Format="#,##0.##"
+                                                     HideSpinButtons="true"
+                                                     Immediate="true"
+                                                     Margin="Margin.Dense"
+                                                     Label="@(_model.GetDisplayName(() => _model.Wage))"
+                                                     @ref="_wageField"
+                                                     T="decimal?"
+                                                     Value="_model.Wage"
+                                                     ValueChanged="OnWageChanged"
+                                                     Variant="Variant.Outlined"
+                                                     OnAdornmentClick="OnWageAdornmentClicked"></MudNumericField>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    @foreach (var item in _priceUnits)
+                                    {
+                                        <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                @if (item.HasIcon)
+                                                {
+                                                    <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                    </MudAvatar>
+                                                }
+                                                @item.Title
+                                            </div>
+                                        </MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                        }
+                    </MudItem>
+
+                    @if (_model.WageType is WageType.Fixed && _model.PriceUnit != _model.WagePriceUnit)
+                    {
+                        <MudItem xs="12" sm="6">
+                            @if (_isInitialLoading || _isBarcodeProcessing)
+                            {
+                                <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                            }
+                            else
+                            {
+                                <MudNumericField For="() => _model.ExchangeRate"
+                                                 Format="#,##0.########"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true"
+                                                 Margin="Margin.Dense"
+                                                 Label="@_wageExchangeRateLabel"
+                                                 T="decimal?"
+                                                 Value="_model.ExchangeRate"
+                                                 ValueChanged="OnWageExchangeRateChanged"
+                                                 Variant="Variant.Outlined"></MudNumericField>
+                            }
+                        </MudItem>
+                    }
+
+                    <MudItem xs="12" sm="6">
+                        @if (_isInitialLoading || _isBarcodeProcessing)
+                        {
+                            <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
+                        }
+                        else
+                        {
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentIcon="@Icons.Material.Filled.Percent"
+                                             For="() => _model.ProfitPercent"
+                                             Format="G29"
                                              HideSpinButtons="true"
                                              Immediate="true"
                                              Margin="Margin.Dense"
-                                             Label="@_wageExchangeRateLabel"
-                                             T="decimal?"
-                                             Value="_model.ExchangeRate"
-                                             ValueChanged="OnWageExchangeRateChanged"
+                                             Label="@(_model.GetDisplayName(() => _model.ProfitPercent))"
+                                             @ref="_profitField"
+                                             T="decimal"
+                                             Value="_model.ProfitPercent"
+                                             ValueChanged="OnProfitChanged"
                                              Variant="Variant.Outlined"></MudNumericField>
                         }
                     </MudItem>
@@ -264,107 +289,84 @@
                     else
                     {
                         <MudNumericField Adornment="Adornment.End"
-                                         AdornmentIcon="@Icons.Material.Filled.Percent"
-                                         For="() => _model.ProfitPercent"
-                                         Format="G29"
+                                         AdornmentText="@_extraCostsAdornmentText"
+                                         For="() => _model.ExtraCosts"
+                                         Format="#,##0.##"
                                          HideSpinButtons="true"
                                          Immediate="true"
                                          Margin="Margin.Dense"
-                                         Label="@(_model.GetDisplayName(() => _model.ProfitPercent))"
-                                         @ref="_profitField"
-                                         T="decimal"
-                                         Value="_model.ProfitPercent"
-                                         ValueChanged="OnProfitChanged"
+                                         Label="@(_model.GetDisplayName(() => _model.ExtraCosts))"
+                                         T="decimal?"
+                                         Value="_model.ExtraCosts"
+                                         ValueChanged="OnExtraCostChanges"
                                          Variant="Variant.Outlined"></MudNumericField>
                     }
                 </MudItem>
-            }
+            </MudGrid>
 
-            <MudItem xs="12" sm="6">
-                @if (_isInitialLoading || _isBarcodeProcessing)
-                {
-                    <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                }
-                else
-                {
-                    <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="@_extraCostsAdornmentText"
-                                     For="() => _model.ExtraCosts"
-                                     Format="#,##0.##"
-                                     HideSpinButtons="true"
-                                     Immediate="true"
-                                     Margin="Margin.Dense"
-                                     Label="@(_model.GetDisplayName(() => _model.ExtraCosts))"
-                                     T="decimal?"
-                                     Value="_model.ExtraCosts"
-                                     ValueChanged="OnExtraCostChanges"
-                                     Variant="Variant.Outlined"></MudNumericField>
-                }
-            </MudItem>
-        </MudGrid>
-
-        @if (_finalPrice.HasValue && _finalPrice.Value is not 0)
-        {
-            <MudExpansionPanels Class="mt-4">
-                @if (_isRecalculating || _isBarcodeProcessing)
-                {
-                    <MudExpansionPanel Text="در حال محاسبه...">
-                        <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
-                        <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
-                        <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
-                        <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
-                        <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
-                        <MudSkeleton Class="rounded-5 my-4" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="30px" Animation="Animation.Wave" />
-                    </MudExpansionPanel>
-                }
-                else
-                {
-                    <MudExpansionPanel Text="@($"قیمت نهایی جنس : {_finalPrice?.ToCurrencyFormat()} {_model.PriceUnit?.Title}")">
-                        <div class="d-flex flex-column gap-3 mt-2">
-                            @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
-                            {
+            @if (_finalPrice.HasValue && _finalPrice.Value is not 0)
+            {
+                <MudExpansionPanels Class="mt-4">
+                    @if (_isRecalculating || _isBarcodeProcessing)
+                    {
+                        <MudExpansionPanel Text="در حال محاسبه...">
+                            <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
+                            <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
+                            <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
+                            <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
+                            <MudSkeleton Class="rounded-5 my-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="20px" Animation="Animation.Wave" />
+                            <MudSkeleton Class="rounded-5 my-4" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="30px" Animation="Animation.Wave" />
+                        </MudExpansionPanel>
+                    }
+                    else
+                    {
+                        <MudExpansionPanel Text="@($"قیمت نهایی جنس : {_finalPrice?.ToCurrencyFormat()} {_model.PriceUnit?.Title}")">
+                            <div class="d-flex flex-column gap-3 mt-2">
+                                @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.OldGold ? $"× (750 / {_model.OldGoldCarat})" : "")</MudText>
+                                        <MudText>@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                    </div>
+                                }
+                                @if (_wage.HasValue && _wage.Value is not 0)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <MudText>اجرت ساخت: @(_model.WageType is WageType.Fixed ? "مبلغ ثابت" : $"{_model.Wage?.ToCurrencyFormat()}% قیمت طلا")</MudText>
+                                        <MudText>@_wage.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                    </div>
+                                }
+                                @if (_profit.HasValue && _profit.Value is not 0)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent.ToCurrencyFormat()%</MudText>
+                                        <MudText>@_profit.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                    </div>
+                                }
+                                @if (_tax.HasValue && _tax.Value is not 0)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent.ToCurrencyFormat()%</MudText>
+                                        <MudText>@_tax.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                    </div>
+                                }
+                                @if (_model.ExtraCosts.HasValue && _model.ExtraCosts.Value is not 0)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <MudText>هزینه های جانبی</MudText>
+                                        <MudText>@_model.ExtraCosts?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                    </div>
+                                }
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.OldGold ? $"× (750 / {_model.OldGoldCarat})" : "")</MudText>
-                                    <MudText>@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                    <MudText>مجموع:</MudText>
+                                    <MudText Typo="Typo.h6">@_finalPrice?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
-                            }
-                            @if (_wage.HasValue && _wage.Value is not 0)
-                            {
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>اجرت ساخت: @(_model.WageType is WageType.Fixed ? "مبلغ ثابت" : $"{_model.Wage?.ToCurrencyFormat()}% قیمت طلا")</MudText>
-                                    <MudText>@_wage.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
-                                </div>
-                            }
-                            @if (_profit.HasValue && _profit.Value is not 0)
-                            {
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent.ToCurrencyFormat()%</MudText>
-                                    <MudText>@_profit.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
-                                </div>
-                            }
-                            @if (_tax.HasValue && _tax.Value is not 0)
-                            {
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent.ToCurrencyFormat()%</MudText>
-                                    <MudText>@_tax.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
-                                </div>
-                            }
-                            @if (_model.ExtraCosts.HasValue && _model.ExtraCosts.Value is not 0)
-                            {
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>هزینه های جانبی</MudText>
-                                    <MudText>@_model.ExtraCosts?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
-                                </div>
-                            }
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <MudText>مجموع:</MudText>
-                                <MudText Typo="Typo.h6">@_finalPrice?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                             </div>
-                        </div>
 
-                    </MudExpansionPanel>
-                }
-            </MudExpansionPanels>
-        }
-    </MudForm>
+                        </MudExpansionPanel>
+                    }
+                </MudExpansionPanels>
+            }
+        </MudForm>
+    </MudCard>
 </MudContainer>

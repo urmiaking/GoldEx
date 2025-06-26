@@ -7,12 +7,16 @@ using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
 
 public partial class Calculator
 {
+    [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public int Elevation { get; set; } = 24;
+
     private CalculatorVm _model = new();
     private MudForm _from = default!;
     private CalculatorValidator _calculatorValidator = new();
