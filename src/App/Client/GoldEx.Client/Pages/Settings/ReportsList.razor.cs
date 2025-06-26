@@ -27,6 +27,6 @@ public partial class ReportsList
 
     private void OnDesignReport(GetReportResponse context)
     {
-        NavigationManager.NavigateTo(ClientRoutes.Reporting.DesignReport.FormatRoute(new { name = context.Name }));
+        NavigationManager.NavigateTo(ClientRoutes.Reporting.DesignReport.FormatRoute(new { name = context.Name }).AppendQueryString(new { context.DisplayName }));
     }
 }
