@@ -1,29 +1,30 @@
 ﻿using DevExpress.DataAccess.ObjectBinding;
+using DevExpress.Drawing;
+using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.Services;
 using DevExpress.XtraReports.UI;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Shared.Enums;
 using Microsoft.AspNetCore.Hosting;
 
 namespace GoldEx.Server.Application.Reporting;
 
 [ScopedService]
 internal class ReportFactory(
-    IServiceProvider serviceProvider,
     IWebHostEnvironment hostingEnvironment,
+    IIconService iconService,
     IReportingService reportingService)
     : IReportProviderAsync, IReportProvider
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-
     public async Task<XtraReport> GetReportAsync(string id, ReportProviderContext context)
     {
         var parts = id.Split(['?'], 2);
         var reportName = parts[0];
         var queryString = parts.Length > 1 ? parts[1] : string.Empty;
 
-        var reportPath = Path.Combine(hostingEnvironment.ContentRootPath, "Reports", $"{reportName}.repx"); // Use .repx extension
+        var reportPath = Path.Combine(hostingEnvironment.ContentRootPath, "Reports", $"{reportName}.repx");
         if (!File.Exists(reportPath))
             throw new NotFoundException($"Report {reportName} not found");
 
@@ -41,6 +42,7 @@ internal class ReportFactory(
             {
                 // Fetch data from IReportingService
                 var response = await reportingService.GetInvoiceReportAsync(invoiceNumber);
+                var iconPath = await iconService.GetIconAsync(IconType.App, Guid.Empty);
 
                 // Create ObjectDataSource
                 var dataSource = new ObjectDataSource
@@ -53,6 +55,21 @@ internal class ReportFactory(
                 // Assign data source to the report
                 report.DataSource = dataSource;
 
+                // Assign logo for report
+                if (report.FindControl("logoBox", true) is XRPictureBox pictureBox)
+                {
+                    if (iconPath != null)
+                    {
+                        using var iconStream = new MemoryStream(iconPath);
+                        pictureBox.ImageSource = new ImageSource(DXImage.FromStream(iconStream));
+                    }
+                    else
+                    {
+                        pictureBox.ImageSource = null;
+                    }
+                }
+
+
                 // Map report parameter to invoiceNumber (if defined in the report)
                 if (report.Parameters["invoiceNumber"] != null)
                 {
@@ -61,8 +78,6 @@ internal class ReportFactory(
             }
         }
 
-        report.DisplayName = reportName;
-        report.Name = id;
         return report;
     }
 
