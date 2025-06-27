@@ -22,4 +22,7 @@ public static class WebHostEnvironmentExtensions
     public static string GetAppIconPath(this IWebHostEnvironment environment)
         => Path.Combine(environment.ContentRootPath, "uploads", "icons", "app", "logo.png");
 
+    public static string GetAppIconDirectory(this IWebHostEnvironment environment)
+        => Path.Combine(environment.ContentRootPath, "uploads", "icons", "app");
+
 }

@@ -71,6 +71,8 @@ bool SetupServices()
     {
         var configuration = builder.Configuration;
 
+        builder.SetupIconDirectory();
+
         builder.Services
             .AddClientServerServices()
             .AddServer(configuration)

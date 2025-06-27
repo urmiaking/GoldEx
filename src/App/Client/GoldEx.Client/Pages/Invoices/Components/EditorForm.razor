@@ -266,7 +266,7 @@
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Discount" Color="Color.Success" OnClick="OnDiscountMenuToggled"></MudIconButton>
                     <MudText Typo="Typo.body2">تخفیف</MudText>
-                    <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                    <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
                             <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
                             <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1"
@@ -281,7 +281,7 @@
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
                     <MudText Typo="Typo.body2">مخارج جانبی</MudText>
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
-                    <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                    <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
                             <ExtraCostList Items="_model.InvoiceExtraCosts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
                             <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1"
@@ -303,7 +303,7 @@
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Payments" Color="Color.Success" OnClick="OnPaymentsMenuToggled"></MudIconButton>
                     <MudText Typo="Typo.body2">جمع پرداختی</MudText>
-                    <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter">
+                    <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
                             <PaymentList Items="_model.InvoicePayments" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalInvoiceAmount="@_model.TotalInvoiceAmount" />
                             <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
