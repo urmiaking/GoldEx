@@ -1,4 +1,6 @@
-﻿using GoldEx.Sdk.Common.Authorization;
+﻿using DevExpress.AspNetCore;
+using DevExpress.Drawing.Internal;
+using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Api.Identity;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
@@ -6,11 +8,16 @@ using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.HealthChecks;
 using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
+using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Reporting;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Settings;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -21,14 +28,7 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DevExpress.AspNetCore;
-using Microsoft.AspNetCore.Authentication.Google;
-using DevExpress.XtraReports.Web.Extensions;
-using DevExpress.XtraReports.Web.WebDocumentViewer.Native.Services;
-using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.DTOs.Reporting;
-using GoldEx.Shared.DTOs.Settings;
-using GoldEx.Shared.DTOs.PriceUnits;
+using DevExpress.Drawing;
 
 namespace GoldEx.Server.Extensions;
 
@@ -265,6 +265,8 @@ internal static class ServiceCollectionExtensions
     internal static IServiceCollection AddDevExpress(this IServiceCollection services)
     {
         services.AddDevExpressControls();
+
+        DXDrawingEngine.ForceSkia();
 
         DevExpress.Utils.DeserializationSettings.RegisterTrustedAssembly(typeof(GetInvoiceReportResponse).Assembly);
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceReportResponse));

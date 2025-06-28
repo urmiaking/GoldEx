@@ -55,17 +55,25 @@ internal class ReportFactory(
                 // Assign data source to the report
                 report.DataSource = dataSource;
 
-                // Assign logo for report
                 if (report.FindControl("logoBox", true) is XRPictureBox pictureBox)
                 {
-                    if (iconPath != null)
+                    var iconBytes = await iconService.GetIconAsync(IconType.App, Guid.Empty);
+
+                    if (iconBytes != null && iconBytes.Length > 0)
                     {
-                        using var iconStream = new MemoryStream(iconPath);
-                        pictureBox.ImageSource = new ImageSource(DXImage.FromStream(iconStream));
-                    }
-                    else
-                    {
-                        pictureBox.ImageSource = null;
+                        try
+                        {
+                            using var ms = new MemoryStream(iconBytes);
+
+                            // WARNING: INTENTIONALLY NOT DISPOSING OF dxImage FOR TESTING
+                            var dxImage = DevExpress.Drawing.DXImage.FromStream(ms);
+
+                            pictureBox.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource(dxImage);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to create DXImage from stream: {ex.ToString()}");
+                        }
                     }
                 }
 
