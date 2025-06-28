@@ -10,6 +10,13 @@
 		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <Compile Remove="wwwroot\NewFolder\**" />
+	  <Content Remove="wwwroot\NewFolder\**" />
+	  <EmbeddedResource Remove="wwwroot\NewFolder\**" />
+	  <None Remove="wwwroot\NewFolder\**" />
+	</ItemGroup>
+
 
 	<ItemGroup>
 		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />

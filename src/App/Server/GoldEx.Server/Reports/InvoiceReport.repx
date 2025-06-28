@@ -13,37 +13,37 @@
         <Item3 Ref="8" ControlType="XRLabel" Name="xrLabel17" Multiline="true" Text="مشخصات خریدار" SizeF="126.0416,40.70836" LocationFloat="10.00012,202.2499" Font="B Titr, 14pt, style=Bold" Padding="2,2,0,0,100">
           <StylePriority Ref="9" UseFont="false" />
         </Item3>
-        <Item4 Ref="10" ControlType="XRLabel" Name="xrLabel15" Multiline="true" Text="آدرس:" TextAlignment="TopLeft" SizeF="126.4583,23" LocationFloat="398.5417,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item4 Ref="10" ControlType="XRLabel" Name="xrLabel15" Multiline="true" Text="آدرس:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="398.541656,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <StylePriority Ref="11" UseFont="false" UseTextAlignment="false" />
         </Item4>
-        <Item5 Ref="12" ControlType="XRLabel" Name="xrLabel16" Multiline="true" AutoWidth="true" CanGrow="false" SizeF="225,22.99998" LocationFloat="525,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item5 Ref="12" ControlType="XRLabel" Name="xrLabel16" Multiline="true" AutoWidth="true" CanGrow="false" SizeF="271.666656,22.99997" LocationFloat="478.333344,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
             <Item1 Ref="13" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[Address]" />
           </ExpressionBindings>
           <StylePriority Ref="14" UseFont="false" />
         </Item5>
-        <Item6 Ref="15" ControlType="XRLabel" Name="xrLabel13" Multiline="true" Text="شماره تماس:" TextAlignment="TopLeft" SizeF="100,23" LocationFloat="10.00012,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item6 Ref="15" ControlType="XRLabel" Name="xrLabel13" Multiline="true" Text="شماره تماس:" TextAlignment="TopLeft" SizeF="126.041565,23" LocationFloat="10.0001221,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <StylePriority Ref="16" UseFont="false" UseTextAlignment="false" />
         </Item6>
-        <Item7 Ref="17" ControlType="XRLabel" Name="xrLabel14" Multiline="true" AutoWidth="true" CanGrow="false" SizeF="237.4997,22.99998" LocationFloat="116.6667,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item7 Ref="17" ControlType="XRLabel" Name="xrLabel14" Multiline="true" AutoWidth="true" CanGrow="false" SizeF="237.4997,22.99998" LocationFloat="136.041656,265.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
             <Item1 Ref="18" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[PhoneNumber]" />
           </ExpressionBindings>
           <StylePriority Ref="19" UseFont="false" />
         </Item7>
-        <Item8 Ref="20" ControlType="XRLabel" Name="xrLabel11" Multiline="true" Text="کد یکتای مشتری:" TextAlignment="TopLeft" SizeF="126.4583,23" LocationFloat="398.5417,240.7915" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item8 Ref="20" ControlType="XRLabel" Name="xrLabel11" Multiline="true" Text="کد یکتا:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="398.541656,240.7915" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <StylePriority Ref="21" UseFont="false" UseTextAlignment="false" />
         </Item8>
-        <Item9 Ref="22" ControlType="XRLabel" Name="xrLabel12" Multiline="true" AutoWidth="true" CanGrow="false" Text="کد یکتای مشتری:" SizeF="225,22.99998" LocationFloat="525,240.7916" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item9 Ref="22" ControlType="XRLabel" Name="xrLabel12" Multiline="true" AutoWidth="true" CanGrow="false" Text="کد یکتای مشتری:" SizeF="271.666656,22.99997" LocationFloat="478.333344,240.7916" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
             <Item1 Ref="23" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[NationalId]" />
           </ExpressionBindings>
           <StylePriority Ref="24" UseFont="false" />
         </Item9>
-        <Item10 Ref="25" ControlType="XRLabel" Name="xrLabel9" Multiline="true" Text="نام مشتری:" TextAlignment="TopLeft" SizeF="100,23" LocationFloat="10.00012,242.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item10 Ref="25" ControlType="XRLabel" Name="xrLabel9" Multiline="true" Text="نام و نام خانوادگی:" TextAlignment="TopLeft" SizeF="126.041565,23.0000153" LocationFloat="10.0001221,242.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <StylePriority Ref="26" UseFont="false" UseTextAlignment="false" />
         </Item10>
-        <Item11 Ref="27" ControlType="XRLabel" Name="xrLabel10" Multiline="true" AutoWidth="true" CanGrow="false" Text="نام مشتری:" SizeF="237.4997,23" LocationFloat="116.6667,242.9583" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item11 Ref="27" ControlType="XRLabel" Name="xrLabel10" Multiline="true" AutoWidth="true" CanGrow="false" Text="نام مشتری:" SizeF="237.4997,23" LocationFloat="136.041656,242.958328" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
             <Item1 Ref="28" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[FullName]" />
           </ExpressionBindings>
@@ -51,7 +51,7 @@
         </Item11>
         <Item12 Ref="30" ControlType="XRLine" Name="xrLine1" LineWidth="2" SizeF="613.9583,23" LocationFloat="136.0417,207.3749" />
         <Item13 Ref="31" ControlType="XRBarCode" Name="xrBarCode1" AutoModule="true" TextAlignment="BottomCenter" SizeF="125,75" LocationFloat="11.04175,21.16661" Padding="10,10,0,0,100">
-          <Symbology Ref="32" Name="Code39" WideNarrowRatio="3" />
+          <Symbology Ref="32" Name="Code93" />
           <ExpressionBindings>
             <Item1 Ref="33" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[InvoiceNumber]" />
           </ExpressionBindings>
