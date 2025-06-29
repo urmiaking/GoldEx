@@ -1,11 +1,9 @@
 ﻿using DevExpress.XtraReports.UI;
 using DevExpress.XtraReports.Web.Extensions;
-using GoldEx.Sdk.Common.DependencyInjections;
 using Microsoft.AspNetCore.Hosting;
 
 namespace GoldEx.Server.Application.Reporting;
 
-[ScopedService]
 public class ReportStorageExtension : ReportStorageWebExtension
 {
     private readonly IWebHostEnvironment _hostingEnvironment;

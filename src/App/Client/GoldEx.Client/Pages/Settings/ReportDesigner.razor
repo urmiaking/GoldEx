@@ -1,4 +1,6 @@
-﻿@attribute [Route(ClientRoutes.Reporting.DesignReport)]
+﻿@using GoldEx.Client.Components.Layouts
+@attribute [Route(ClientRoutes.Reporting.DesignReport)]
+@layout MainLayout
 
 <PageTitle>طراحی گزارش @(DisplayName ?? Name)</PageTitle>
 
