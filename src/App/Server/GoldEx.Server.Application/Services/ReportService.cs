@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using DevExpress.XtraReports.Web.Extensions;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Reporting;
 using GoldEx.Shared.DTOs.Reports;
 using GoldEx.Shared.Services;
@@ -6,7 +7,7 @@ using GoldEx.Shared.Services;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class ReportService(ReportStorageExtension reportStorage) : IReportService
+internal class ReportService(ReportStorageWebExtension reportStorage) : IReportService
 {
     public Task<List<GetReportResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
