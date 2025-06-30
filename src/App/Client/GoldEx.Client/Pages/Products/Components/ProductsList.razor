@@ -35,7 +35,7 @@
         <MudTd DataLabel="اجرت">
             @(context.WageType switch
             {
-                WageType.Fixed => $"{context.Wage?.ToCurrencyFormat()} {context.WagePriceUnitTitle}",
+                WageType.Fixed => $"{context.Wage?.ToCurrencyFormat(context.WagePriceUnitTitle)}",
                 WageType.Percent => context.Wage?.ToString("G29") + " درصد",
                 _ => "ندارد"
             })

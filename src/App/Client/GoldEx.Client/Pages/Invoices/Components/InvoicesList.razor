@@ -29,7 +29,7 @@
     <RowTemplate>
         <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
         <MudTd DataLabel="نام مشتری">@context.CustomerFullName</MudTd>
-        <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat() @context.AmountUnit</MudTd>
+        <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.AmountUnit)</MudTd>
         <MudTd DataLabel="تاریخ فاکتور">@context.InvoiceDate.ToShortDateString()</MudTd>
         <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
         <MudTd DataLabel="وضعیت">@context.PaymentStatus.GetDisplayName()</MudTd>

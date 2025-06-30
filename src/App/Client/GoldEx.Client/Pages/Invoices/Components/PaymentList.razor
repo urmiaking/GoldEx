@@ -123,7 +123,7 @@
     </MudTable>
 
     <div class="d-flex flex-row justify-content-between">
-        <MudText>جمع کل پرداختی ها: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat() @PriceUnit.Title</MudText>
-        <MudText Style="cursor: pointer" @onclick="OnTotalRemainingClicked">مانده کل: @TotalRemainingCalculated.ToCurrencyFormat() @PriceUnit.Title</MudText>
+        <MudText>جمع کل پرداختی ها: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)</MudText>
+        <MudText Style="cursor: pointer" @onclick="OnTotalRemainingClicked">مانده کل: @TotalRemainingCalculated.ToCurrencyFormat(PriceUnit.Title)</MudText>
     </div>
 </div>

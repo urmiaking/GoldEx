@@ -320,7 +320,7 @@
                     }
                     else
                     {
-                        <MudExpansionPanel Text="@($"قیمت نهایی جنس : {_finalPrice?.ToCurrencyFormat()} {_model.PriceUnit?.Title}")">
+                        <MudExpansionPanel Text="@($"قیمت نهایی جنس : {_finalPrice?.ToCurrencyFormat(_model.PriceUnit?.Title)}")">
                             <div class="d-flex flex-column gap-3 mt-2">
                                 @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
                                 {
@@ -347,19 +347,19 @@
                                 {
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent.ToCurrencyFormat()%</MudText>
-                                        <MudText>@_tax.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                        <MudText>@_tax.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                                     </div>
                                 }
                                 @if (_model.ExtraCosts.HasValue && _model.ExtraCosts.Value is not 0)
                                 {
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <MudText>هزینه های جانبی</MudText>
-                                        <MudText>@_model.ExtraCosts?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                        <MudText>@_model.ExtraCosts?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                                     </div>
                                 }
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <MudText>مجموع:</MudText>
-                                    <MudText Typo="Typo.h6">@_finalPrice?.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                    <MudText Typo="Typo.h6">@_finalPrice?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                                 </div>
                             </div>
 
