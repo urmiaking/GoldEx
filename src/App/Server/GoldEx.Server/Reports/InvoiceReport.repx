@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<XtraReportsLayoutSerializer SerializerVersion="24.2.7.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.2, Version=24.2.7.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="InvoiceReport" DisplayName="فاکتور فروش" Margins="50, 50, 394.2276, 74.37502" PageWidth="850" PageHeight="1100" Version="24.2" RequestParameters="false" RightToLeft="Yes" RightToLeftLayout="Yes" DataMember="Invoice.InvoiceItems" DataSource="#Ref-0" Font="B Nazanin, 12pt">
+<XtraReportsLayoutSerializer SerializerVersion="24.2.7.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.2, Version=24.2.7.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="InvoiceReport" DisplayName="فاکتور فروش" Margins="50, 50, 418.18594, 74.37502" PageWidth="850" PageHeight="1100" Version="24.2" RequestParameters="false" RightToLeft="Yes" RightToLeftLayout="Yes" DataMember="Invoice.InvoiceItems" DataSource="#Ref-0" Font="B Nazanin, 12pt">
   <Parameters>
     <Item1 Ref="3" Description="شماره فاکتور" ValueInfo="0" Name="invoiceNumber" Type="#Ref-2" />
   </Parameters>
   <Bands>
-    <Item1 Ref="4" ControlType="TopMarginBand" Name="TopMargin" HeightF="394.2276">
+    <Item1 Ref="4" ControlType="TopMarginBand" Name="TopMargin" HeightF="418.18594">
       <Controls>
         <Item1 Ref="5" ControlType="XRLabel" Name="xrLabel15" Multiline="true" Text="آدرس:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="393.3334,296.8109" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <StylePriority Ref="6" UseFont="false" UseTextAlignment="false" />
@@ -69,7 +69,7 @@
           </ExpressionBindings>
           <StylePriority Ref="39" UseFont="false" />
         </Item14>
-        <Item15 Ref="40" ControlType="XRLabel" Name="xrLabel5" Multiline="true" AutoWidth="true" CanGrow="false" Text="xrLabel5" SizeF="215.0001,57.375" LocationFloat="519.7916,161.01923" Font="B Titr, 26pt" Padding="2,2,0,0,100">
+        <Item15 Ref="40" ControlType="XRLabel" Name="xrLabel5" Multiline="true" AutoWidth="true" CanGrow="false" Text="xrLabel5" SizeF="215.0001,57.375" LocationFloat="529.7916,173.01918" Font="B Titr, 22pt" Padding="2,2,0,0,100">
           <ExpressionBindings>
             <Item1 Ref="41" EventName="BeforePrint" PropertyName="Text" Expression="[Setting].[InstitutionName]" />
           </ExpressionBindings>
@@ -89,11 +89,11 @@
           </ExpressionBindings>
           <StylePriority Ref="51" UseTextAlignment="false" />
         </Item19>
-        <Item20 Ref="52" ControlType="XRPictureBox" Name="logoBox" Sizing="ZoomImage" SizeF="100,100" LocationFloat="557.2917,52.019226" />
+        <Item20 Ref="52" ControlType="XRPictureBox" Name="logoBox" Sizing="ZoomImage" SizeF="150,150" LocationFloat="533.3334,17.708332" />
         <Item21 Ref="53" ControlType="XRLabel" Name="xrLabel18" Multiline="true" Text="اقلام فاکتور" SizeF="88.54163,40.70837" LocationFloat="4.791748,343.51923" Font="B Titr, 14pt, style=Bold" Padding="2,2,0,0,100">
           <StylePriority Ref="54" UseFont="false" />
         </Item21>
-        <Item22 Ref="55" ControlType="XRLine" Name="xrLine2" LineWidth="2" SizeF="651.4583,23" LocationFloat="93.33342,348.64423" />
+        <Item22 Ref="55" ControlType="XRLine" Name="xrLine2" LineWidth="2" SizeF="651.4583,23" LocationFloat="93.33342,353.85257" />
       </Controls>
     </Item1>
     <Item2 Ref="56" ControlType="GroupHeaderBand" Name="GroupHeader1" HeightF="25">
