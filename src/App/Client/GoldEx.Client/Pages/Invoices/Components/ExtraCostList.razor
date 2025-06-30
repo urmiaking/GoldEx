@@ -84,6 +84,6 @@
     </MudTable>
     
     <div class="d-flex flex-row justify-content-between">
-        <MudText>جمع کل مخارج جانبی: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat() @PriceUnit.Title</MudText>
+        <MudText>جمع کل مخارج جانبی: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)</MudText>
     </div>
 </div>

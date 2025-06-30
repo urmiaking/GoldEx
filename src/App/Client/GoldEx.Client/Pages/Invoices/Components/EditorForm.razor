@@ -223,7 +223,7 @@
                     <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
                     <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") گرم</MudTd>
                     <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
-                    <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudTd>
+                    <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudTd>
                     <MudTd DataLabel="عملیات">
                         <div class="d-flex gap-2">
                             <MudTooltip Text="چاپ بارکد">
@@ -260,7 +260,7 @@
                     <MudText Typo="Typo.body2">ارزش تمام شده اقلام</MudText>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
@@ -275,7 +275,7 @@
                     </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalDiscountsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalDiscountsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
@@ -290,14 +290,14 @@
                     </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalExtraCostsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalExtraCostsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2">
                     <MudText Typo="Typo.body2">مبلغ نهایی فاکتور</MudText>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalInvoiceAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalInvoiceAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
@@ -312,14 +312,14 @@
                     </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalPaymentsAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2">
                     <MudText Typo="Typo.body2">مانده حساب</MudText>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.RemainingAmount.ToCurrencyFormat() @_model.InvoicePriceUnit?.Title</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.RemainingAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
                 </MudItem>
             </MudGrid>
         }
