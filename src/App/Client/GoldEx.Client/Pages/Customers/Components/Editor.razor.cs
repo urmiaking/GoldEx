@@ -16,6 +16,7 @@ public partial class Editor
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _creditLimitAdornmentText;
+    private bool _processing;
 
     protected override void OnParametersSet()
     {
@@ -53,8 +54,10 @@ public partial class Editor
 
     private async Task Submit()
     {
-        if (IsBusy)
+        if (_processing)
             return;
+
+        _processing = true;
 
         await _form.Validate();
 
@@ -83,6 +86,8 @@ public partial class Editor
                     return Task.CompletedTask;
                 });
         }
+
+        _processing = false;
     }
 
     private void Close() => MudDialog.Cancel();
@@ -90,6 +95,15 @@ public partial class Editor
     private void OnCreditLimitChanged(decimal? creditLimit)
     {
         Model.CreditLimit = creditLimit;
+
+        if (!string.IsNullOrEmpty(_creditLimitAdornmentText) && creditLimit.HasValue)
+        {
+            Model.CreditLimitPriceUnit = _priceUnits.FirstOrDefault(u => u.Title == _creditLimitAdornmentText);
+        }
+        else
+        {
+            Model.CreditLimitPriceUnit = null;
+        }
     }
 
     private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? unitType)
