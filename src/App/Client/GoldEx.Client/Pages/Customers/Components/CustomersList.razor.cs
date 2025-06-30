@@ -75,9 +75,12 @@ public partial class CustomersList
 
     private async Task OnRemove(CustomerVm model)
     {
+        if (!model.Id.HasValue)
+            throw new InvalidOperationException();
+
         var parameters = new DialogParameters<Remove>
         {
-            { x => x.Id, model.Id },
+            { x => x.Id, model.Id.Value },
             { x => x.CustomerName, model.FullName }
         };
 
