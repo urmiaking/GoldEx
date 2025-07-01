@@ -41,7 +41,14 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
             ProductId = productId,
             PriceUnitId = priceUnitId,
             ExchangeRate = exchangeRate,
-            InvoiceId = invoiceId
+            InvoiceId = invoiceId,
+            // Stored calculated values are initialized to 0
+            ItemRawAmount = 0,
+            ItemWageAmount = 0,
+            ItemProfitAmount = 0,
+            ItemTaxAmount = 0,
+            ItemFinalAmount = 0,
+            TotalAmount = 0
         };
     }
 
@@ -70,38 +77,43 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
 
     #region Calculations
 
-    public decimal ItemRawAmount =>
-        Product is null
-            ? 0
-            : CalculatorHelper.CalculateRawPrice(Product.Weight, GramPrice, Product.CaratType, Product.ProductType);
+    public decimal ItemRawAmount { get; private set; }
+    public decimal ItemWageAmount { get; private set; }
+    public decimal ItemProfitAmount { get; private set; }
+    public decimal ItemTaxAmount { get; private set; }
+    public decimal ItemFinalAmount { get; private set; }
+    public decimal TotalAmount { get; private set; }
 
-    public decimal ItemWageAmount =>
-        Product is null
-            ? 0
-            : CalculatorHelper.CalculateWage(ItemRawAmount, Product.Weight, Product.Wage, Product.WageType, ExchangeRate);
+    /// <summary>
+    /// Calculates all financial amounts for the invoice item and updates its state.
+    /// This method should be called after creation or after any property that affects
+    /// totals has been changed.
+    /// </summary>
+    /// <param name="product">The fully loaded Product entity, required for calculation.</param>
+    public void RecalculateAmounts(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
 
-    public decimal ItemProfitAmount =>
-        Product is null
-            ? 0
-            : CalculatorHelper.CalculateProfit(ItemRawAmount, ItemWageAmount, Product.ProductType, ProfitPercent);
+        if (product.Id != ProductId)
+        {
+            throw new ArgumentException("The provided product does not match the item's ProductId.", nameof(product));
+        }
 
-    public decimal ItemTaxAmount =>
-        Product is null
-            ? 0
-            : CalculatorHelper.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, Product.ProductType);
+        ItemRawAmount = CalculatorHelper.CalculateRawPrice(product.Weight, GramPrice, product.CaratType, product.ProductType);
+        ItemWageAmount = CalculatorHelper.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, ExchangeRate);
+        ItemProfitAmount = CalculatorHelper.CalculateProfit(ItemRawAmount, ItemWageAmount, product.ProductType, ProfitPercent);
+        ItemTaxAmount = CalculatorHelper.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, product.ProductType);
 
-    public decimal ItemFinalAmount =>
-        Product is null
-            ? 0
-            : CalculatorHelper.CalculateFinalPrice(
-                ItemRawAmount,
-                ItemWageAmount,
-                ItemProfitAmount,
-                ItemTaxAmount,
-                null,
-                Product.ProductType);
+        ItemFinalAmount = CalculatorHelper.CalculateFinalPrice(
+            ItemRawAmount,
+            ItemWageAmount,
+            ItemProfitAmount,
+            ItemTaxAmount,
+            null,
+            product.ProductType);
 
-    public decimal TotalAmount => ItemFinalAmount * Quantity;
+        TotalAmount = ItemFinalAmount * Quantity;
+    }
 
     #endregion
 
