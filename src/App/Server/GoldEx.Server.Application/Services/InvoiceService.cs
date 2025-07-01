@@ -107,11 +107,11 @@ internal class InvoiceService(
                 foreach (var itemDto in request.InvoiceItems)
                 {
                     
-                    ProductId productId;
+                    Product product;
 
                     if (!itemDto.Product.Id.HasValue)
                     {
-                        var product = Product.Create(itemDto.Product.Name,
+                        var newProduct = Product.Create(itemDto.Product.Name,
                             itemDto.Product.Barcode,
                             itemDto.Product.Weight,
                             itemDto.Product.Wage,
@@ -125,11 +125,11 @@ internal class InvoiceService(
                                 ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
                                 : null);
 
-                        product.MarkAsSold();
+                        newProduct.MarkAsSold();
 
-                        await productRepository.CreateAsync(product, cancellationToken);
+                        await productRepository.CreateAsync(newProduct, cancellationToken);
 
-                        productId = product.Id;
+                        product = newProduct;
                     }
                     else
                     {
@@ -169,10 +169,10 @@ internal class InvoiceService(
 
                         await productRepository.UpdateAsync(existingProduct, cancellationToken);
 
-                        productId = existingProduct.Id;
+                        product = existingProduct;
                     }
 
-                    var existingItem = existingItems.FirstOrDefault(x => x.ProductId == productId);
+                    var existingItem = existingItems.FirstOrDefault(x => x.ProductId == product.Id);
 
                     if (existingItem != null)
                     {
@@ -183,8 +183,10 @@ internal class InvoiceService(
                         existingItem.SetExchangeRate(itemDto.ExchangeRate);
                         existingItem.SetPriceUnitId(new PriceUnitId(itemDto.PriceUnit));
 
+                        existingItem.RecalculateAmounts(product);
+
                         await invoiceItemRepository.UpdateAsync(existingItem, cancellationToken);
-                        existingItems.Remove(existingItem); // So we know what's left to delete
+                        existingItems.Remove(existingItem);
                     }
                     else
                     {
@@ -192,10 +194,12 @@ internal class InvoiceService(
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
                             itemDto.Quantity,
-                            productId,
+                            product.Id,
                             new PriceUnitId(itemDto.PriceUnit),
                             invoice.Id,
                             itemDto.ExchangeRate);
+
+                        invoiceItem.RecalculateAmounts(product);
 
                         await invoiceItemRepository.CreateAsync(invoiceItem, cancellationToken);
                     }

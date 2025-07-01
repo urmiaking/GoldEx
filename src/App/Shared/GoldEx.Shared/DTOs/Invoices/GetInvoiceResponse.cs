@@ -1,6 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PaymentMethods;
-using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 
@@ -25,6 +24,12 @@ public record GetInvoiceItemResponse(
     decimal TaxPercent,
     decimal? ExchangeRate,
     int Quantity,
+    decimal ItemRawAmount,
+    decimal ItemWageAmount,
+    decimal ItemProfitAmount,
+    decimal ItemTaxAmount,
+    decimal ItemFinalAmount,
+    decimal TotalAmount,
     GetProductResponse Product,
     GetPriceUnitTitleResponse PriceUnit);
 

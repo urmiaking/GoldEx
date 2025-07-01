@@ -72,7 +72,6 @@
                     <MudSelect For="() => Model.Product.WageType"
                                Label="@Model.Product.GetDisplayName(() => Model.Product.WageType)"
                                Margin="Margin.Dense"
-                               @ref="_wageTypeField"
                                T="WageType?"
                                Value="Model.Product.WageType"
                                ValueChanged="OnWageTypeChanged"

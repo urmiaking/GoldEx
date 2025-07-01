@@ -25,7 +25,6 @@ public partial class InvoiceItemEditor
     private readonly InvoiceItemValidator _invoiceItemValidator = new();
     private MudForm _form = default!;
     private MudNumericField<decimal?> _wageField = new();
-    private MudSelect<WageType?> _wageTypeField = default!;
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private bool _wageFieldMenuOpen;
     private string? _wageFieldAdornmentText = "درصد";
@@ -109,22 +108,15 @@ public partial class InvoiceItemEditor
         {
             case WageType.Percent:
                 UpdateWageFields();
-                //_wageTypeField.AdornmentIcon = Icons.Material.Filled.Percent;
-                //_wageField.Disabled = false;
                 break;
             case WageType.Fixed:
                 UpdateWageFields();
-
                 if (Model.Product.WagePriceUnitId.HasValue)
-                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == Model.Product.WagePriceUnitId));
-
-                //_wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
-                //_wageField.Disabled = false;
+                    await SelectWagePriceUnit(PriceUnits.First(x => 
+                        x.Id == Model.Product.WagePriceUnitId));
                 break;
             case null:
                 await _wageField.ResetAsync();
-                //_wageFieldAdornmentText = null;
-                //_wageField.Disabled = true;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
