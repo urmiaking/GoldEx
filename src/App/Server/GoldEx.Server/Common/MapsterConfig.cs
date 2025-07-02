@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Application.Utilities;
+﻿using GoldEx.Client.Helpers;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
@@ -73,6 +74,59 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>()
             .Map(dest => dest.PriceUnit, src => src.PriceUnit);
+
+        #endregion
+
+        #region Reporting
+
+        config.NewConfig<Invoice, GetInvoiceDetailResponse>()
+            .Map(dest => dest.Customer, src => src.Customer)
+            .Map(dest => dest.InvoiceItems, src => src.Items)
+            .Map(dest => dest.TaxPercent, src => $"{src.Items.First().TaxPercent.ToCurrencyFormat(null)}%")
+            .Map(dest => dest.ProfitPercent, src => $"{src.Items.First().ProfitPercent.ToCurrencyFormat(null)}%")
+            .Map(dest => dest.DailyGramPrice, src => $"{src.Items.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalAmount, src => $"{src.TotalAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalPaidAmount, src => $"{src.TotalPaidAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalDiscountAmount, src => $"{src.TotalDiscountAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalExtraCostAmount, src => $"{src.TotalExtraCostAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalUnpaidAmount, src => $"{src.TotalUnpaidAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalAmountWithDiscountsAndExtraCosts,
+                src => $"{src.TotalAmountWithDiscountsAndExtraCosts.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.InvoiceDate,
+                src => new DateTime(src.InvoiceDate, TimeOnly.MinValue))
+            .Map(dest => dest.DueDate,
+                src => src.DueDate.HasValue
+                    ? new DateTime(src.DueDate.Value, TimeOnly.MinValue)
+                    : (DateTime?)null);
+
+        config.NewConfig<InvoiceItem, GetInvoiceItemReportResponse>()
+            .Map(dest => dest.Product, src => src.Product)
+            .Map(dest => dest.ItemRawAmount, src => $"{src.ItemRawAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.ItemWageAmount, src => $"{src.ItemWageAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.ItemProfitAmount, src => $"{src.ItemProfitAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.ItemTaxAmount, src => $"{src.ItemTaxAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.ItemFinalAmount, src => $"{src.ItemFinalAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalAmount, src => $"{src.TotalAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.GramPrice, src => $"{src.GramPrice.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.ProfitPercent, src => $"{src.ProfitPercent.ToCurrencyReportFormat(null)}%")
+            .Map(dest => dest.TaxPercent, src => $"{src.TaxPercent.ToCurrencyReportFormat(null)}%")
+            .Map(dest => dest.ExchangeRate,
+                src => src.ExchangeRate.HasValue
+                    ? $"{src.ExchangeRate.Value.ToCurrencyReportFormat(src.PriceUnit!.Title)}"
+                    : null);
+
+        config.NewConfig<Product, GetProductReportResponse>()
+            .Map(dest => dest.Name, src => src.Name)
+            .Map(dest => dest.Barcode, src => src.Barcode)
+            .Map(dest => dest.Weight, src => $"{src.Weight.ToWeightFormat()}")
+            .Map(dest => dest.Wage, src => src.WageType == WageType.Percent
+                ? $"{src.Wage.ToCurrencyReportFormat(null)}%"
+                : $"{src.Wage.ToCurrencyReportFormat(src.WagePriceUnit!.Title)}")
+            .Map(dest => dest.ProductType, src => src.ProductType)
+            .Map(dest => dest.WageType, src => src.WageType)
+            .Map(dest => dest.CaratType, src => src.CaratType)
+            .Map(dest => dest.ProductCategoryTitle,
+                src => src.ProductCategory != null ? src.ProductCategory.Title : string.Empty);
 
         #endregion
 

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
+using DevExpress.Drawing;
 
 namespace GoldEx.Server.Reports
 {
