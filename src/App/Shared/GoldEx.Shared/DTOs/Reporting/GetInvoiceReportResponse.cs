@@ -3,4 +3,4 @@ using GoldEx.Shared.DTOs.Settings;
 
 namespace GoldEx.Shared.DTOs.Reporting;
 
-public record GetInvoiceReportResponse(GetInvoiceResponse Invoice, GetSettingResponse Setting);
+public record GetInvoiceReportResponse(GetInvoiceDetailResponse Invoice, GetSettingResponse Setting);
