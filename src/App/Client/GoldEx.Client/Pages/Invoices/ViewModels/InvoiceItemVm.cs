@@ -101,7 +101,7 @@ public class InvoiceItemVm
     /// This method performs the client-side calculation and updates the display properties.
     /// It's called whenever an input property changes.
     /// </summary>
-    private void RecalculateAmounts()
+    public void RecalculateAmounts()
     {
         RawAmount = CalculatorHelper.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.CaratType, Product.ProductType);
         WageAmount = CalculatorHelper.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, ExchangeRate);

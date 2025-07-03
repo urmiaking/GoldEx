@@ -111,9 +111,14 @@ public partial class InvoiceItemEditor
                 break;
             case WageType.Fixed:
                 UpdateWageFields();
+
                 if (Model.Product.WagePriceUnitId.HasValue)
-                    await SelectWagePriceUnit(PriceUnits.First(x => 
+                    await SelectWagePriceUnit(PriceUnits.First(x =>
                         x.Id == Model.Product.WagePriceUnitId));
+                else
+                {
+                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == Model.PriceUnit?.Id));
+                }
                 break;
             case null:
                 await _wageField.ResetAsync();
@@ -158,7 +163,7 @@ public partial class InvoiceItemEditor
 
     private void OnWageAdornmentClicked()
     {
-        if (Model.Product.WageType is WageType.Fixed) 
+        if (Model.Product.WageType is WageType.Fixed)
             _wageFieldMenuOpen = !_wageFieldMenuOpen;
     }
 
@@ -202,6 +207,7 @@ public partial class InvoiceItemEditor
             _wageExchangeRateLabel = null;
             Model.ExchangeRate = null;
         }
+        StateHasChanged();
     }
 
     private async Task OnAddCategory()

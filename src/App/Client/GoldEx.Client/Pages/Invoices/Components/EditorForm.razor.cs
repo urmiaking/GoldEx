@@ -273,7 +273,9 @@ public partial class EditorForm
 
         if (result is { Canceled: false, Data: InvoiceItemVm invoiceItem })
         {
+            invoiceItem.RecalculateAmounts();
             _model.InvoiceItems.Add(invoiceItem);
+            StateHasChanged();
         }
     }
 
