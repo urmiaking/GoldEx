@@ -10,6 +10,7 @@ public partial class PriceUnits
 {
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IEnumerable<PriceUnitVm> _priceUnits = new List<PriceUnitVm>();
+    private bool _processing;
 
     protected override async Task OnInitializedAsync()
     {
@@ -19,6 +20,7 @@ public partial class PriceUnits
 
     private async Task LoadPriceUnitsAsync()
     {
+        _processing = true;
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitResponse>>(
             action: (s, ct) => s.GetAllAsync(ct),
             afterSend: response =>
@@ -29,6 +31,8 @@ public partial class PriceUnits
                     vm.Index = index + 1;
                     return vm;
                 });
+
+                _processing = false;
             });
     }
 

@@ -232,7 +232,7 @@
                             </MudTooltip>
                             <MudTooltip Text="ویرایش جنس">
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                               Color="Color.Primary" OnClick="_ => OnEditInvoiceItem(context)"></MudIconButton>
+                                               Color="Color.Primary" OnClick="() => OnEditInvoiceItem(context)"></MudIconButton>
                             </MudTooltip>
                             <MudTooltip Text="حذف جنس">
                                 <MudIconButton OnClick="@(_ => OnRemoveInvoiceItem(context))" ClickPropagation="true"
@@ -329,11 +329,11 @@
 
         <div class="d-flex justify-content-end mt-2">
             <MudButton Color="Color.Primary"
-                       Disabled="@IsBusy"
+                       Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
                        Variant="Variant.Filled">
-                @if (IsBusy)
+                @if (_processing)
                 {
                     <MudProgressCircular Class="ms-n1"
                                          Size="Size.Small"
