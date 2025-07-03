@@ -268,7 +268,7 @@
                     <MudText Typo="Typo.body2">تخفیف</MudText>
                     <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
-                            <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
+                            <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalRemainingAmount="@_model.RemainingAmount" />
                             <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>

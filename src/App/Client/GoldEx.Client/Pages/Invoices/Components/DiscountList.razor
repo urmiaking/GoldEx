@@ -61,7 +61,7 @@
                                      Label="@context.ExchangeRateLabel"
                                      Margin="Margin.Dense"
                                      T="decimal?"
-                                     @bind-Value="context.ExchangeRate"
+                                     @bind-Value="context.ExchangeRate" 
                                      HideSpinButtons="true"
                                      Variant="Variant.Outlined" />
                 </MudTd>
@@ -90,5 +90,9 @@
     
     <div class="d-flex flex-row justify-content-between">
         <MudText>جمع کل تخفیف: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)</MudText>
+        @if (TotalRemainingCalculated > 0)
+        {
+            <MudText Style="cursor: pointer" @onclick="OnTotalRemainingClicked">مانده کل: @TotalRemainingCalculated.ToCurrencyFormat(PriceUnit.Title)</MudText>
+        }
     </div>
 </div>

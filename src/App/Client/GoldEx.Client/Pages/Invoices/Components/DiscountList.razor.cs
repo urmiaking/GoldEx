@@ -11,6 +11,14 @@ public partial class DiscountList
     [Parameter] public List<InvoiceDiscountVm> Items { get; set; } = [];
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
+    [Parameter] public decimal TotalRemainingAmount { get; set; }
+
+    private decimal TotalRemainingCalculated => TotalRemainingAmount - GetTotalPaid();
+
+    private decimal GetTotalPaid()
+    {
+        return Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1));
+    }
 
     protected override void OnParametersSet()
     {
@@ -60,5 +68,38 @@ public partial class DiscountList
 
                 StateHasChanged();
             });
+    }
+
+    private void OnTotalRemainingClicked()
+    {
+        var remaining = TotalRemainingCalculated;
+        if (remaining <= 0)
+            return;
+
+        if (Items.Count == 1 && Items.First().Amount == 0)
+        {
+            var item = Items.First();
+
+            item.Amount = remaining;
+            item.AmountAdornmentText = PriceUnit.Title;
+            item.PriceUnit = PriceUnit;
+        }
+        else if (Items.Count > 1 && Items.Last().Amount == 0)
+        {
+            var item = Items.Last();
+
+            item.Amount = remaining;
+            item.AmountAdornmentText = PriceUnit.Title;
+            item.PriceUnit = PriceUnit;
+        }
+        else
+        {
+            Items.Add(new InvoiceDiscountVm
+            {
+                Amount = remaining,
+                AmountAdornmentText = PriceUnit.Title,
+                PriceUnit = PriceUnit
+            });
+        }
     }
 }
