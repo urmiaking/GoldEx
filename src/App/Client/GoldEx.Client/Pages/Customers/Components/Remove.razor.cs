@@ -6,43 +6,22 @@ namespace GoldEx.Client.Pages.Customers.Components;
 
 public partial class Remove
 {
-    [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; } = default!;
-
-    [Parameter]
-    public string CustomerName { get; set; } = string.Empty;
-
-    [Parameter]
-    public Guid Id { get; set; }
-
-    private bool _processing;
-    private ICustomerClientService CustomerService => GetRequiredService<ICustomerClientService>();
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string CustomerName { get; set; } = string.Empty;
+    [Parameter] public Guid Id { get; set; }
 
     private async Task OnValidSubmit()
     {
-        try
-        {
-            if (_processing)
-                return;
+        if (IsBusy)
+            return;
 
-            SetBusy();
-            CancelToken();
-
-            _processing = true;
-
-            await CustomerService.DeleteAsync(Id, cancellationToken: CancellationTokenSource.Token);
-
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-            _processing = false;
-        }
+        await SendRequestAsync<ICustomerService>(
+            action: (s, ct) => s.DeleteAsync(Id, ct),
+            afterSend: () =>
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+                return Task.CompletedTask;
+            });
     }
 
     private void Cancel() => MudDialog.Cancel();

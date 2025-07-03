@@ -10,6 +10,13 @@
 		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <Compile Remove="wwwroot\NewFolder\**" />
+	  <Content Remove="wwwroot\NewFolder\**" />
+	  <EmbeddedResource Remove="wwwroot\NewFolder\**" />
+	  <None Remove="wwwroot\NewFolder\**" />
+	</ItemGroup>
+
 
 	<ItemGroup>
 		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
@@ -23,6 +30,10 @@
 	<ItemGroup>
 		<Folder Include="Pages\Home\ViewModels\" />
 		<Folder Include="wwwroot\assets\screenshots\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.2.7" />
 	</ItemGroup>
 
 </Project>

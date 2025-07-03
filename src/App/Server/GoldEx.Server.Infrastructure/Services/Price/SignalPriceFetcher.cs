@@ -1,14 +1,16 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json;
-using GoldEx.Sdk.Server.Infrastructure.Abstractions;
+﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Infrastructure.Services.Price.DTOs.Signal;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace GoldEx.Server.Infrastructure.Services.Price;
 
-public class SignalPriceFetcher(HttpClient httpClient, JsonSerializerOptions options) : IPriceFetcher
+public class SignalPriceFetcher(
+    HttpClient httpClient,
+    JsonSerializerOptions options) : IPriceFetcher
 {
     public async Task<List<PriceResponse>> GetPriceAsync(CancellationToken cancellationToken = default)
     {
@@ -27,8 +29,8 @@ public class SignalPriceFetcher(HttpClient httpClient, JsonSerializerOptions opt
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            Console.WriteLine(e.Message);
+            return [];
         }
     }
 

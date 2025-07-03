@@ -1,0 +1,27 @@
+﻿@inherits GoldExComponentBase
+@attribute [Route(ClientRoutes.Invoices.ViewInvoice)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+<!-- TODO: Add Policy -->
+
+<PageTitle>مشاهده فاکتور</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <DxWasmDocumentViewer ReportName="@_reportUrl" Height="1000px" Width="100%">
+        <DxDocumentViewerExportSettings UseSameTab=true>
+        </DxDocumentViewerExportSettings>
+        <DxWasmDocumentViewerRequestOptions InvokeAction="DXXRDV">
+        </DxWasmDocumentViewerRequestOptions>
+        <DxReportDesignerModelSettings AllowMDI=true>
+            <DxReportDesignerWizardSettings UseFullscreenWizard=true />
+        </DxReportDesignerModelSettings>
+        <DxDocumentViewerCallbacks BeforeRender="reportingCustomization.onBeforeRender" />
+    </DxWasmDocumentViewer>
+</MudContainer>
+
+<script src="/js/reporting-customization.js"></script>

@@ -5,7 +5,6 @@ namespace GoldEx.Shared.Enums;
 public enum UnitType
 {
     [Display(Name = "ریال")]
-    
     IRR = 0,
 
     [Display(Name = "دلار سنگاپور")]

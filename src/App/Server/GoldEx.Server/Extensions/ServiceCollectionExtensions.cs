@@ -1,29 +1,34 @@
-﻿using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Reflection;
+﻿using DevExpress.AspNetCore;
+using DevExpress.Drawing.Internal;
+using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using GoldEx.Sdk.Server.Api.Identity;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Infrastructure;
-using Mapster;
-using MapsterMapper;
-using Microsoft.AspNetCore.Identity;
-using GoldEx.Sdk.Common.Authorization;
-using GoldEx.Sdk.Server.Api.Identity;
+using GoldEx.Server.Infrastructure.HealthChecks;
 using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
+using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Reporting;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Routings;
-using Google.Apis.Auth.AspNetCore3;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using GoldEx.Shared.Settings;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using GoldEx.Server.Infrastructure.HealthChecks;
+using Mapster;
+using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using GoldEx.Shared.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog.Ui.Core.Extensions;
 using Serilog.Ui.MsSqlServerProvider.Extensions;
 using Serilog.Ui.Web.Extensions;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using DevExpress.Drawing;
 
 namespace GoldEx.Server.Extensions;
 
@@ -93,6 +98,8 @@ internal static class ServiceCollectionExtensions
     {
         services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
         services.Configure<SmsSettings>(configuration.GetSection(nameof(SmsSettings)));
+        services.Configure<DefaultSetting>(configuration.GetSection(nameof(DefaultSetting)));
+        services.Configure<UserSetting>(configuration.GetSection(nameof(UserSetting)));
 
         return services;
     }
@@ -114,12 +121,7 @@ internal static class ServiceCollectionExtensions
         if (string.IsNullOrEmpty(connectionString))
             throw new Exception("GoldEx connection string is not available");
 
-        services.AddDbContextFactory<GoldExDbContext>(options =>
-        {
-            options.UseSqlServer(connectionString);
-        });
-
-        services.AddScoped<IGoldExDbContextFactory, GoldExDbContextFactory>();
+        services.AddSqlServer<GoldExDbContext>(connectionString);
 
         return services;
     }
@@ -136,24 +138,20 @@ internal static class ServiceCollectionExtensions
 
         if (isGoogleAuthConfigured)
         {
-            services.AddAuthentication(o =>
+            services.AddAuthentication(options =>
                 {
-                    // This forces challenge results to be handled by Google OpenID Handler
-                    o.DefaultChallengeScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
-                    // This forces forbid results to be handled by Google OpenID Handler
-                    o.DefaultForbidScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
-                    // Default scheme that will handle everything else. Use the Identity Cookie Scheme as the default.
-                    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                 })
                 .AddCookie(GoldExSignInManager<AppUser>.GoldExScheme,
                     config =>
                     {
                         config.ExpireTimeSpan = TimeSpan.FromHours(1);
                     })
-                .AddGoogleOpenIdConnect(options =>
+                .AddGoogle(options =>
                 {
-                    options.ClientId = googleClientId;
-                    options.ClientSecret = googleClientSecret;
+                    options.ClientId = googleClientId!;
+                    options.ClientSecret = googleClientSecret!;
                 });
         }
         else
@@ -260,6 +258,25 @@ internal static class ServiceCollectionExtensions
                     .WithTable("Logs");
             });
         });
+
+        return services;
+    }
+
+    internal static IServiceCollection AddDevExpress(this IServiceCollection services)
+    {
+        services.AddDevExpressControls();
+
+        DXDrawingEngine.ForceSkia();
+
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedAssembly(typeof(GetInvoiceReportResponse).Assembly);
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceReportResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetPriceUnitTitleResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceItemResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetSettingResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceDiscountResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoicePaymentResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceExtraCostsResponse));
 
         return services;
     }

@@ -6,70 +6,130 @@
 <PageTitle>اطلاعات پایه</PageTitle>
 
 <MudText Typo="Typo.h6" GutterBottom="true">اطلاعات پایه</MudText>
-<hr />
+<MudDivider Class="my-4" />
 
-<EditForm Model="_model" OnValidSubmit="OnGallerySettingsSubmitted">
-    <DataAnnotationsValidator />
+<MudCard Elevation="24" Class="p-4">
+    <EditForm Model="_model" OnValidSubmit="OnGallerySettingsSubmitted">
+        <DataAnnotationsValidator />
 
-    <MudGrid Spacing="8">
-        <MudItem xs="12" sm="4">
-            <MudTextField Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Info"
-                          @bind-Value="_model.InstitutionName"
-                          Label="نام گالری"
-                          AutoFocus="true"
-                          Variant="Variant.Outlined"
-                          For="() => _model.InstitutionName"></MudTextField>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudTextField Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.House"
-                          @bind-Value="_model.Address"
-                          Label="آدرس"
-                          Variant="Variant.Outlined"
-                          For="() => _model.Address"></MudTextField>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudTextField Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Phone"
-                          @bind-Value="_model.PhoneNumber"
-                          Label="شماره تلفن"
-                          Variant="Variant.Outlined"
-                          For="() => _model.PhoneNumber"></MudTextField>
-        </MudItem>
-    </MudGrid>
-    
-    <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">پیش فرض های برنامه</MudText>
-    <hr />
-    <MudGrid Spacing="8">
-        <MudItem xs="12" sm="4">
-            <MudTextField Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Percent"
-                          @bind-Value="_model.Tax"
-                          Variant="Variant.Outlined"
-                          Label="مالیات"
-                          For="() => _model.Tax"></MudTextField>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudTextField Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Percent"
-                          @bind-Value="_model.GoldProfit"
-                          Variant="Variant.Outlined"
-                          Label="سود طلا"
-                          For="() => _model.GoldProfit"></MudTextField>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudTextField Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Percent"
-                          @bind-Value="_model.JewelryProfit"
-                          Variant="Variant.Outlined"
-                          Label="سود جواهر"
-                          For="() => _model.JewelryProfit"></MudTextField>
-        </MudItem>
-    </MudGrid>
-    
-    <MudButton Class="mt-4" ButtonType="ButtonType.Submit"
-               Variant="Variant.Filled"
-               StartIcon="@Icons.Material.Filled.Save"
-               Color="Color.Primary">ذخیره</MudButton>
-</EditForm>
+        <div class="d-flex justify-content-center mb-2">
+            <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!">
+                <ActivatorContent>
+                    <MudAvatar Size="Size.Large" Style="cursor: pointer;">
+                        @if (_model.HasIcon)
+                        {
+                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.App, _model.Id))" Alt="img" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                        }
+                    </MudAvatar>
+                </ActivatorContent>
+            </MudFileUpload>
+        </div>
+
+        <MudGrid Spacing="8">
+            <MudItem xs="12" sm="4">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Info"
+                              @bind-Value="_model.InstitutionName"
+                              Label="@_model.GetDisplayName(() => _model.InstitutionName)"
+                              AutoFocus="true"
+                              Variant="Variant.Outlined"
+                              For="() => _model.InstitutionName"></MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.House"
+                              @bind-Value="_model.Address"
+                              Label="@_model.GetDisplayName(() => _model.Address)"
+                              Variant="Variant.Outlined"
+                              For="() => _model.Address"></MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Phone"
+                              @bind-Value="_model.PhoneNumber"
+                              Label="@_model.GetDisplayName(() => _model.PhoneNumber)"
+                              Variant="Variant.Outlined"
+                              For="() => _model.PhoneNumber"></MudTextField>
+            </MudItem>
+
+        </MudGrid>
+
+        <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">پیش فرض های برنامه</MudText>
+        <hr />
+        <MudGrid Spacing="8">
+            <MudItem xs="12" sm="4">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 @bind-Value="_model.TaxPercent"
+                                 Format="G29"
+                                 Variant="Variant.Outlined"
+                                 Label="@_model.GetDisplayName(() => _model.TaxPercent)"
+                                 HideSpinButtons="true"
+                                 For="() => _model.TaxPercent"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 @bind-Value="_model.GoldProfitPercent"
+                                 Variant="Variant.Outlined"
+                                 Format="G29"
+                                 Label="@_model.GetDisplayName(() => _model.GoldProfitPercent)"
+                                 HideSpinButtons="true"
+                                 For="() => _model.GoldProfitPercent"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 @bind-Value="_model.JewelryProfitPercent"
+                                 Variant="Variant.Outlined"
+                                 Format="G29"
+                                 Label="@_model.GetDisplayName(() => _model.JewelryProfitPercent)"
+                                 HideSpinButtons="true"
+                                 For="() => _model.JewelryProfitPercent"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 @bind-Value="_model.GoldSafetyMarginPercent"
+                                 Variant="Variant.Outlined"
+                                 Format="G29"
+                                 Label="@_model.GetDisplayName(() => _model.GoldSafetyMarginPercent)"
+                                 HideSpinButtons="true"
+                                 For="() => _model.GoldSafetyMarginPercent"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 @bind-Value="_model.OldGoldCarat"
+                                 Variant="Variant.Outlined"
+                                 Format="G29"
+                                 Label="@_model.GetDisplayName(() => _model.OldGoldCarat)"
+                                 HideSpinButtons="true"
+                                 For="() => _model.OldGoldCarat"></MudNumericField>
+            </MudItem>
+        </MudGrid>
+
+        <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">قیمت</MudText>
+        <hr />
+
+        <MudGrid Spacing="8">
+            <MudItem xs="12" sm="4">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Outlined.Timer"
+                              @bind-Value="_model.PriceUpdateInterval"
+                              Variant="Variant.Outlined"
+                              Label="@(_model.GetDisplayName(() => _model.PriceUpdateInterval))"
+                              For="() => _model.PriceUpdateInterval"></MudTextField>
+            </MudItem>
+        </MudGrid>
+
+        <MudButton Class="mt-4" ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   Color="Color.Primary">ذخیره</MudButton>
+    </EditForm>
+</MudCard>

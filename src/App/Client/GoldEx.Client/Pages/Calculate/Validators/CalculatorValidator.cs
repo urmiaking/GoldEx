@@ -15,13 +15,12 @@ public class CalculatorValidator : AbstractValidator<CalculatorVm>
         {
             RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
             RuleFor(product => product.WageType)
-                .NotNull()
-                .WithMessage("لطفا نوع اجرت را وارد کنید");
+                .NotNull().WithMessage("لطفا نوع اجرت را وارد کنید");
         });
 
         When(product => product.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>
         {
-            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
+            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای طلای آبشده و دست دوم نباید وارد شود");
             RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
         });
 
@@ -36,7 +35,7 @@ public class CalculatorValidator : AbstractValidator<CalculatorVm>
 
         RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
 
-        RuleFor(x => x.Profit)
+        RuleFor(x => x.ProfitPercent)
             .InclusiveBetween(0, 100)
             .WithMessage("سود باید بین 0 تا 100 درصد باشد");
     }

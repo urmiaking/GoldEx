@@ -12,7 +12,6 @@ public partial class TransactionsList
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
 
-    [Parameter] public string? CustomerName { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
 
     private string? _searchString;
@@ -29,50 +28,29 @@ public partial class TransactionsList
     private async Task<TableData<TransactionVm>> LoadTransactionsAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<TransactionVm>();
-        using var scope = CreateServiceScope();
-        var service = GetRequiredService<ITransactionClientService>(scope);
 
-        try
-        {
-            SetBusy();
-            CancelToken();
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+            state.SortDirection switch
+            {
+                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
+                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
+                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
+                _ => throw new ArgumentOutOfRangeException()
+            });
 
-            var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-                state.SortDirection switch
+        await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
+            action: (s, ct) => s.GetListAsync(filter, CustomerId, ct),
+            afterSend: response =>
+            {
+                var items = response.Data.Select(TransactionVm.CreateFrom).ToList();
+
+                result = new TableData<TransactionVm>
                 {
-                    SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                    SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                    SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
-
-            PagedList<GetTransactionResponse> response;
-
-            if (CustomerId.HasValue)
-            {
-                response = await service.GetListAsync(filter, CustomerId.Value, cancellationToken);
+                    TotalItems = response.Total,
+                    Items = items
+                };
             }
-            else
-            {
-                response = await service.GetListAsync(filter, cancellationToken);
-            }
-
-            var items = response.Data.Select(TransactionVm.CreateFrom).ToList();
-
-            result = new TableData<TransactionVm>
-            {
-                TotalItems = response.Total,
-                Items = items
-            };
-        }
-        catch (Exception ex)
-        {
-            AddExceptionToast(ex);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+        );
 
         return result;
     }
@@ -90,12 +68,12 @@ public partial class TransactionsList
 
     public async Task OnCreateTransaction()
     {
-        var parameters = new DialogParameters<Create>
+        var parameters = new DialogParameters<Editor>
         {
             { x => x.CustomerId, CustomerId }
         };
 
-        var dialog = await DialogService.ShowAsync<Create>("افزودن تراکنش جدید", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن تراکنش جدید", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -108,9 +86,12 @@ public partial class TransactionsList
 
     private async Task OnRemoveTransaction(TransactionVm model)
     {
+        if (!model.TransactionId.HasValue)
+            return;
+
         var parameters = new DialogParameters<Remove>
         {
-            { x => x.Id, model.Id },
+            { x => x.Id, model.TransactionId.Value },
             { x => x.TransactionNumber, model.TransactionNumber }
         };
 
@@ -127,12 +108,12 @@ public partial class TransactionsList
 
     private async Task OnEditTransaction(TransactionVm model)
     {
-        var parameters = new DialogParameters<Update>
+        var parameters = new DialogParameters<Editor>
         {
-            { x => x.TransactionId, model.Id }
+            { x => x.Model, model }
         };
 
-        var dialog = await DialogService.ShowAsync<Update>("ویرایش تراکنش", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("ویرایش تراکنش", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 

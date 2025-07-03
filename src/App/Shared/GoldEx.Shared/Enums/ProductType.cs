@@ -10,12 +10,9 @@ public enum ProductType
     [Display(Name = "طلا")]
     Gold = 2,
 
-    [Display(Name = "سکه")]
-    Coin = 3,
-
     [Display(Name = "طلای آب شده")]
-    MoltenGold = 4,
+    MoltenGold = 3,
 
-    [Display(Name = "طلای دست دوم")]
-    UsedGold = 5
+    [Display(Name = "طلای کهنه")]
+    OldGold = 99 // Not used for database operations but for UI purposes
 }

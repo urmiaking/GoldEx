@@ -59,32 +59,5 @@ namespace GoldEx.Client.Components.Components.Resources {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string Request_failed_with_status_Forbidden_ {
-            get {
-                return ResourceManager.GetString("Request failed with status Forbidden.", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string Request_failed_with_status_InternalServerError_ {
-            get {
-                return ResourceManager.GetString("Request failed with status InternalServerError.", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string Request_failed_with_status_Unauthorized_ {
-            get {
-                return ResourceManager.GetString("Request failed with status Unauthorized.", resourceCulture);
-            }
-        }
     }
 }

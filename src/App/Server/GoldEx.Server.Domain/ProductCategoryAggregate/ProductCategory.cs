@@ -1,18 +1,27 @@
-﻿using GoldEx.Shared.Domain.Aggregates.ProductCategoryAggregate;
-using GoldEx.Shared.Domain.Entities;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.ProductAggregate;
 
 namespace GoldEx.Server.Domain.ProductCategoryAggregate;
 
-public class ProductCategory : ProductCategoryBase, ISoftDeleteEntity
+public readonly record struct ProductCategoryId(Guid Value);
+
+public class ProductCategory : EntityBase<ProductCategoryId>
 {
-    public ProductCategory(string title) : base(title)
+    public static ProductCategory Create(string title)
     {
+        return new ProductCategory
+        {
+            Id = new ProductCategoryId(Guid.NewGuid()),
+            Title = title
+        };
     }
 
-    public ProductCategory(ProductCategoryId id, string title) : base(id, title)
-    {
-    }
+#pragma warning disable CS8618
+    private ProductCategory() { }
+#pragma warning restore CS8618
 
-    public bool IsDeleted { get; private set; }
-    public void SetDeleted() => IsDeleted = true;
+    public string Title { get; private set; }
+    public IReadOnlyList<Product>? Products { get; private set; }
+
+    public void SetTitle(string title) => Title = title;
 }

@@ -1,6 +1,8 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using System.Globalization;
+using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.Routings;
 
@@ -9,6 +11,21 @@ public class ApiUrls
     private static string BuildUrl(params string[] segments)
     {
         return string.Join('/', segments);
+    }
+
+    private static CultureInfo EnCulture => new("en-US")
+    {
+        DateTimeFormat =
+        {
+            DateSeparator = "-"
+        }
+    };
+
+    public class Icons
+    {
+        public static string Get(IconType iconType, Guid id) =>
+            BuildUrl(ApiRoutes.Icons.Base, ApiRoutes.Icons.GetIcon).FormatRoute(new { iconType, id })
+                .AppendQueryString(iconType is IconType.App ? new { DateTime.Now } : null);
     }
 
     public static class Account
@@ -24,10 +41,28 @@ public class ApiUrls
 
     public class Price
     {
-        public static string GetLatestPrices() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetLatestPrices);
+        public static string Get() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.Get);
 
-        public static string GetPendings(DateTime checkpointDate) => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetPendings)
-            .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+        public static string Get(MarketType marketType) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetMarket).FormatRoute(new { marketType });
+
+        public static string Get(UnitType unitType, Guid? priceUnitId, bool? applySafetyMargin = true) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetUnit).FormatRoute(new { unitType, priceUnitId }).AppendQueryString(new { applySafetyMargin });
+
+        public static string GetByPriceUnit(Guid priceUnitId) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetByPriceUnit).FormatRoute(new { priceUnitId });
+
+        public static string GetSettings() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetSettings);
+
+        public static string GetTitles(MarketType[] marketTypes) => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetTitles)
+            .AppendQueryString(new { marketTypes });
+
+        public static string UpdateStatus(Guid id) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.UpdateStatus).FormatRoute(new { id });
+
+        public static string GetExchangeRate(Guid primaryPriceUnitId, Guid secondaryPriceUnitId) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetExchange)
+                .FormatRoute(new { primaryPriceUnitId, secondaryPriceUnitId });
     }
 
     public class Health
@@ -37,10 +72,12 @@ public class ApiUrls
 
     public class Products
     {
-        public static string GetList(RequestFilter filter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList).AppendQueryString(filter);
+        public static string GetList(RequestFilter filter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList)
+            .AppendQueryString(filter);
         public static string Get(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Get).FormatRoute(new { id });
-        public static string GetByBarcode(string barcode) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
-            .AppendQueryString(new { barcode });
+        public static string Get(string barcode, bool? forCalculation = true) 
+            => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
+                .FormatRoute(new { barcode }).AppendQueryString(new { forCalculation });
 
         public static string Create() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Create);
 
@@ -49,32 +86,17 @@ public class ApiUrls
 
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Delete).FormatRoute(new { id });
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     public class Settings
     {
-        public static string Get() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.GetAll);
-        public static string Get(Guid id) => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Get).FormatRoute(new { id });
-        public static string Update(Guid id) => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Update).FormatRoute(new { id });
-        public static string GetUpdate(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.GetUpdate)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+        public static string Get() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Get);
+        public static string Update() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Update);
     }
-
-    private static CultureInfo EnCulture => new("en-US")
-    {
-        DateTimeFormat =
-        {
-            DateSeparator = "-"
-        }
-    };
 
     public class ProductCategories
     {
-        public static string GetAll() => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetAll);
+        public static string GetList() => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetList);
 
         public static string Get(Guid id) => BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Get)
             .FormatRoute(new { id });
@@ -86,10 +108,6 @@ public class ApiUrls
 
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Delete).FormatRoute(new { id });
-
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     public class Customers
@@ -100,31 +118,26 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Get).FormatRoute(new { id });
         public static string GetByNationalId(string nationalId) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByNationalId)
-            .AppendQueryString(new { nationalId });
+            .FormatRoute(new { nationalId });
         public static string GetByPhoneNumber(string phoneNumber) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByPhoneNumber)
-                .AppendQueryString(new { phoneNumber });
+                .FormatRoute(new { phoneNumber });
         public static string Create() => BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Create);
         public static string Update(Guid id) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Update).FormatRoute(new { id });
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Delete).FormatRoute(new { id });
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
     }
 
     public class Transactions
     {
-        public static string GetList(RequestFilter filter) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter);
-        public static string GetList(RequestFilter filter, Guid customerId) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetListByCustomerId).FormatRoute(new { customerId }).AppendQueryString(filter);
+        public static string GetList(RequestFilter filter, Guid? customerId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter).AppendQueryString(new { customerId });
 
         public static string Get(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });
 
-        public static string GetByNumber(int number) =>
+        public static string Get(int number) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetByNumber)
                 .AppendQueryString(new { number });
 
@@ -137,14 +150,78 @@ public class ApiUrls
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Delete).FormatRoute(new { id });
 
-        public static string GetPendingItems(DateTime checkpointDate) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetPendingItems)
-                .FormatRoute(new { checkpointDate = checkpointDate.ToString("o", EnCulture) });
+        public static string GetLastNumber() =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLastNumber);
+    }
 
-        public static string GetLatestTransactionNumber() =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLatestTransactionNumber);
+    public class PriceUnits
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetList);
 
-        public static string GetCustomerRemainingCredit(Guid customerId) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetCustomerRemainingCredit).FormatRoute(new { customerId });
+        public static string GetAll() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetAll);
+
+        public static string GetTitles() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetTitles);
+
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Get)
+            .FormatRoute(new { id });
+
+        public static string GetDefault() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.GetDefault);
+
+        public static string Create() => BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.Update).FormatRoute(new { id });
+
+        public static string SetStatus(Guid id) =>
+            BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.UpdateStatus).FormatRoute(new { id });
+
+        public static string SetAsDefault(Guid id) =>
+            BuildUrl(ApiRoutes.PriceUnits.Base, ApiRoutes.PriceUnits.SetAsDefault).FormatRoute(new { id });
+
+    }
+
+    public class PaymentMethods
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetList);
+        public static string GetAll() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.GetAll);
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.Get)
+            .FormatRoute(new { id });
+        public static string Create() => BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.Create);
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.Update).FormatRoute(new { id });
+        public static string UpdateStatus(Guid id) =>
+            BuildUrl(ApiRoutes.PaymentMethods.Base, ApiRoutes.PaymentMethods.UpdateStatus).FormatRoute(new { id });
+    }
+
+    public class Invoices
+    {
+        public static string Create() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Create);
+
+        public static string GetList(RequestFilter filter, Guid? customerId) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(new { customerId });
+
+        public static string Delete(Guid id, bool deleteProducts) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Delete)
+                .FormatRoute(new { id })
+                .AppendQueryString(new { deleteProducts });
+
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Get)
+                .FormatRoute(new { id });
+
+        public static string Get(long invoiceNumber) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetByNumber)
+                .FormatRoute(new { invoiceNumber });
+
+        public static string GetLastNumber() =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber);
+    }
+
+    public class Reports
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.Reports.Base, ApiRoutes.Reports.GetList);
     }
 }

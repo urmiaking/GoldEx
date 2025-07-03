@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
-using GoldEx.Shared.DTOs.Categories;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -10,12 +10,12 @@ namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.ProductCategories.Base)]
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-public class ProductCategoriesController(IProductCategoryClientService service) : ApiControllerBase
+public class ProductCategoriesController(IProductCategoryService service) : ApiControllerBase
 {
-    [HttpGet(ApiRoutes.ProductCategories.GetAll)]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken = default)
+    [HttpGet(ApiRoutes.ProductCategories.GetList)]
+    public async Task<IActionResult> GetListAsync(CancellationToken cancellationToken = default)
     {
-        var list = await service.GetAllAsync(cancellationToken);
+        var list = await service.GetListAsync(cancellationToken);
         return Ok(list);
     }
 
@@ -23,18 +23,18 @@ public class ProductCategoriesController(IProductCategoryClientService service) 
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var item = await service.GetAsync(id, cancellationToken);
-        return item is null ? NotFound() : Ok(item);
+        return Ok(item);
     }
 
     [HttpPost(ApiRoutes.ProductCategories.Create)]
-    public async Task<IActionResult> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateAsync(CreateProductCategoryRequest request, CancellationToken cancellationToken)
     {
         await service.CreateAsync(request, cancellationToken);
-        return Ok();
+        return Created();
     }
 
     [HttpPut(ApiRoutes.ProductCategories.Update)]
-    public async Task<IActionResult> UpdateAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateAsync(Guid id, UpdateProductCategoryRequest request, CancellationToken cancellationToken)
     {
         await service.UpdateAsync(id, request, cancellationToken);
         return Ok();
@@ -43,15 +43,7 @@ public class ProductCategoriesController(IProductCategoryClientService service) 
     [HttpDelete(ApiRoutes.ProductCategories.Delete)]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await service.DeleteAsync(id, false, cancellationToken);
+        await service.DeleteAsync(id, cancellationToken);
         return Ok();
-    }
-
-    [HttpGet(ApiRoutes.ProductCategories.GetPendingItems)]
-    public async Task<IActionResult> GetPendingsAsync(DateTime checkPointDate, CancellationToken cancellationToken)
-    {
-        var list = await service.GetPendingsAsync(checkPointDate, cancellationToken);
-
-        return Ok(list);
     }
 }

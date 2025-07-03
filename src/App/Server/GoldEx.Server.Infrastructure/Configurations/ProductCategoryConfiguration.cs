@@ -1,5 +1,4 @@
 ﻿using GoldEx.Server.Domain.ProductCategoryAggregate;
-using GoldEx.Shared.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,6 +8,17 @@ internal class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCa
 {
     public void Configure(EntityTypeBuilder<ProductCategory> builder)
     {
-        ProductCategoryBaseConfiguration.Configure(builder);
+        builder.ToTable("ProductCategories");
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new ProductCategoryId(value));
+
+        builder.Property(x => x.Title)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        builder.HasIndex(x => x.Title)
+            .IsUnique();
     }
 }

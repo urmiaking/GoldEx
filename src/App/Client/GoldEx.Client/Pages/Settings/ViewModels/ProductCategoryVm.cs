@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
-using GoldEx.Shared.DTOs.Categories;
+using GoldEx.Shared.DTOs.ProductCategories;
 
 namespace GoldEx.Client.Pages.Settings.ViewModels;
 
@@ -14,7 +14,7 @@ public class ProductCategoryVm : IEquatable<ProductCategoryVm>
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public string Title { get; set; } = default!;
 
-    public static ProductCategoryVm CreateFrom(GetCategoryResponse response)
+    public static ProductCategoryVm CreateFrom(GetProductCategoryResponse response)
     {
         return new ProductCategoryVm
         {
@@ -23,14 +23,14 @@ public class ProductCategoryVm : IEquatable<ProductCategoryVm>
         };
     }
 
-    public static CreateCategoryRequest ToCreateRequest(ProductCategoryVm item)
+    public static CreateProductCategoryRequest ToCreateRequest(ProductCategoryVm item)
     {
-        return new CreateCategoryRequest(item.Id, item.Title);
+        return new CreateProductCategoryRequest(item.Title);
     }
 
-    public static UpdateCategoryRequest ToUpdateRequest(ProductCategoryVm item)
+    public static UpdateProductCategoryRequest ToUpdateRequest(ProductCategoryVm item)
     {
-        return new UpdateCategoryRequest(item.Title);
+        return new UpdateProductCategoryRequest(item.Title);
     }
 
     public bool Equals(ProductCategoryVm? other)

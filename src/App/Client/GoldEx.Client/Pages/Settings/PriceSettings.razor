@@ -1,0 +1,35 @@
+﻿@inherits GoldExComponentBase
+
+@attribute [Route(ClientRoutes.Settings.PriceSettings)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+<PageTitle>مدیریت نمادها</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">مدیریت نمادها</MudText>
+<MudDivider Class="my-4" />
+
+@if (_showAlert)
+{
+    <MudAlert Class="mb-4" ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Info" Elevation="24"
+              Variant="Variant.Filled" ShowCloseIcon="true" CloseIconClicked="() => CloseAlert(true)">
+        با انتخاب هر کدام از آیتم های زیر، قیمت آن در تابلوی قیمت ها نمایش داده می شود.
+    </MudAlert>
+}
+
+<MudPaper Elevation="24">
+    <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">  
+        @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))  
+        {  
+            <MudTreeViewItem T="object" Value="response.Key" Text="@response.Key.GetDisplayName()">  
+                @foreach (var price in response.SelectMany(r => r.Prices ?? []))  
+                {  
+                    <MudTreeViewItem T="object"   
+                                     Value="price"   
+                                     Text="@price.Title"   
+                                     Selected="price.IsActive"
+                                     SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)" />
+                }  
+            </MudTreeViewItem>
+        }
+    </MudTreeView>
+</MudPaper>

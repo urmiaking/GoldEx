@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared;
 

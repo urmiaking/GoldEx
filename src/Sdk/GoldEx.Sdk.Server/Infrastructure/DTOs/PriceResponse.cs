@@ -4,7 +4,7 @@ namespace GoldEx.Sdk.Server.Infrastructure.DTOs;
 
 public record PriceResponse(
     string Title,
-    double CurrentValue,
+    decimal CurrentValue,
     string Unit,
     string LastUpdate,
     string Change,

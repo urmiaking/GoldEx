@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -8,8 +9,6 @@ public partial class BaseInfo
 {
     private SettingsVm _model = new();
 
-    private ISettingsClientService SettingsService => GetRequiredService<ISettingsClientService>();
-
     protected override async Task OnInitializedAsync()
     {
         await LoadSettingsAsync();
@@ -18,52 +17,37 @@ public partial class BaseInfo
 
     private async Task LoadSettingsAsync()
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var response = await SettingsService.GetAsync(CancellationTokenSource.Token);
-
-            if (response is not null)
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response =>
             {
-                _model = SettingsVm.CreateFromRequest(response);
-            }
-            else
-            {
-                AddErrorToast("فراخوانی تنظیمات با مشکل مواجه شد");
-            }
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+                if (response is not null)
+                {
+                    _model = SettingsVm.CreateFromRequest(response);
+                }
+                else
+                {
+                    AddErrorToast("فراخوانی تنظیمات با مشکل مواجه شد");
+                }
+            });
     }
 
     private async Task OnGallerySettingsSubmitted(EditContext context)
     {
-        try
+        if (_model.IconFile is not null)
         {
-            SetBusy();
-            CancelToken();
-
-            var request = _model.ToRequest();
-
-            await SettingsService.UpdateAsync(_model.Id, request, CancellationTokenSource.Token);
-
-            AddSuccessToast("تنظیمات با موفقیت ذخیره شد");
+            await using var stream = _model.IconFile.OpenReadStream();
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            _model.IconContent = memoryStream.ToArray();
         }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+
+        await SendRequestAsync<ISettingService>(
+            action: (s, ct) => s.UpdateAsync(_model.ToRequest(), ct));
+
+        AddSuccessToast("تنظیمات گالری با موفقیت ذخیره شد");
+
+        await LoadSettingsAsync();
+        StateHasChanged();
     }
 }
