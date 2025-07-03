@@ -36,6 +36,7 @@ public partial class EditorForm
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
     private bool _paymentsMenuOpen;
+    private bool _processing;
     private string? _customerCreditLimitAdornmentText;
 
     protected override async Task OnParametersSetAsync()
@@ -410,7 +411,7 @@ public partial class EditorForm
 
     private async Task Submit()
     {
-        if (IsBusy)
+        if (_processing)
             return;
 
         await _form.Validate();
@@ -418,12 +419,15 @@ public partial class EditorForm
         if (!_form.IsValid)
             return;
 
+        _processing = true;
+
         try
         {
             InvoiceVm.ToRequest(_model);
         }
         catch (ValidationException e)
         {
+            _processing = false;
             AddErrorToast(e.Message);
             return;
         }
@@ -435,6 +439,7 @@ public partial class EditorForm
             afterSend: () =>
             {
                 AddSuccessToast("فاکتور با موفقیت ثبت شد");
+                _processing = false;
                 NavigationManager.NavigateTo(ClientRoutes.Invoices.Index);
                 return Task.CompletedTask;
             });

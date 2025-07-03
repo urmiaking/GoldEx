@@ -16,20 +16,30 @@
     </MudAlert>
 }
 
-<MudPaper Elevation="24">
-    <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">  
-        @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))  
-        {  
-            <MudTreeViewItem T="object" Value="response.Key" Text="@response.Key.GetDisplayName()">  
-                @foreach (var price in response.SelectMany(r => r.Prices ?? []))  
-                {  
-                    <MudTreeViewItem T="object"   
-                                     Value="price"   
-                                     Text="@price.Title"   
-                                     Selected="price.IsActive"
-                                     SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)" />
-                }  
-            </MudTreeViewItem>
-        }
-    </MudTreeView>
-</MudPaper>
+@if (!_priceSettings.Any())
+{
+    <div class="align-center d-flex flex-column gap-3 justify-content-center">
+        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+        <div>در حال بارگذاری</div>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="24">
+        <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">  
+            @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))  
+            {  
+                <MudTreeViewItem T="object" Value="response.Key" Text="@response.Key.GetDisplayName()">  
+                    @foreach (var price in response.SelectMany(r => r.Prices ?? []))  
+                    {  
+                        <MudTreeViewItem T="object"   
+                                         Value="price"   
+                                         Text="@price.Title"   
+                                         Selected="price.IsActive"
+                                         SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)" />
+                    }  
+                </MudTreeViewItem>
+            }
+        </MudTreeView>
+    </MudPaper>
+}

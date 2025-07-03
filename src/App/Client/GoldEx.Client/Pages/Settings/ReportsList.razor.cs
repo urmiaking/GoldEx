@@ -11,6 +11,7 @@ public partial class ReportsList
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     private List<GetReportResponse> _reports = [];
+    private bool _processing;
 
     protected override async Task OnInitializedAsync()
     {
@@ -20,9 +21,15 @@ public partial class ReportsList
 
     private async Task LoadReportsAsync()
     {
+        _processing = true;
+
         await SendRequestAsync<IReportService, List<GetReportResponse>>(
             action: (s, ct) => s.GetListAsync(ct),
-            afterSend: response => _reports = response);
+            afterSend: response =>
+            {
+                _reports = response;
+                _processing = false;
+            });
     }
 
     private void OnDesignReport(GetReportResponse context)

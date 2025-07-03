@@ -21,6 +21,7 @@ public partial class Editor
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _wageFieldAdornmentText;
     private bool _wageFieldMenuOpen;
+    private bool _processing;
     private MudForm _form = default!;
 
     protected override void OnParametersSet()
@@ -70,6 +71,8 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
+        _processing = true;
+
         var request = ProductVm.ToRequest(Model);
 
         if (!Model.Id.HasValue)
@@ -92,6 +95,8 @@ public partial class Editor
                     return Task.CompletedTask;
                 });
         }
+
+        _processing = false;
     }
 
     private void GenerateBarcode() => Model.Barcode = StringExtensions.GenerateRandomBarcode();

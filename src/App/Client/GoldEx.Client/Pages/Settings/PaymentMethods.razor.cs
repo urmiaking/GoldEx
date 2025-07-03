@@ -10,6 +10,7 @@ public partial class PaymentMethods
 {
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IEnumerable<PaymentMethodVm> _paymentMethods = new List<PaymentMethodVm>();
+    private bool _processing;
 
     protected override async Task OnInitializedAsync()
     {
@@ -19,6 +20,8 @@ public partial class PaymentMethods
 
     private async Task LoadPaymentMethodsAsync()
     {
+        _processing = true;
+
         await SendRequestAsync<IPaymentMethodService, List<GetPaymentMethodResponse>>(
             action: (s, ct) => s.GetAllAsync(ct),
             afterSend: response =>
@@ -29,6 +32,8 @@ public partial class PaymentMethods
                     vm.Index = index + 1;
                     return vm;
                 });
+
+                _processing = false;
             });
     }
 
