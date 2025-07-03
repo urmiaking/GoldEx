@@ -1,6 +1,7 @@
 ﻿using GoldEx.Server.Extensions;
 using GoldEx.Client.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using GoldEx.Shared.DTOs.Reporting;
 
 namespace GoldEx.Server;
 
@@ -19,7 +20,8 @@ public static class DependencyInjection
             .AddCache()
             .AddSettings(configuration)
             .AddAppHealthCheck(configuration)
-            .AddSerilogUiService(configuration);
+            .AddSerilogUiService(configuration)
+            .AddDevExpress();
 
         services.DiscoverServices();
         return services;

@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="PaymentMethodAggregate\" />
     <Folder Include="TransactionAggregate\" />
-    <Folder Include="SettingsAggregate\" />
   </ItemGroup>
 
 </Project>

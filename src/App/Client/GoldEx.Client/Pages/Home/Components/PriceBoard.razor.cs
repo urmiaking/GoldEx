@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -11,8 +12,6 @@ public partial class PriceBoard
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
 
-    private IPriceClientService PriceService => GetRequiredService<IPriceClientService>();
-
     private readonly TableGroupDefinition<GetPriceResponse> _groupDefinition = new()
     {
         GroupName = "گروه",
@@ -23,43 +22,55 @@ public partial class PriceBoard
 
     private IEnumerable<GetPriceResponse>? _items;
     private Timer? _timer;
+    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadLatestPricesAsync();
+        await LoadSettingsAsync();
+        await LoadPricesAsync();
         await StartTimer();
         await base.OnInitializedAsync();
     }
 
-    private async Task LoadLatestPricesAsync()
+    private async Task LoadSettingsAsync()
     {
-        try
-        {
-            SetBusy();
-            CancelToken();
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response =>
+            {
+                if (response?.PriceUpdateInterval > TimeSpan.Zero)
+                {
+                    _updateInterval = response.PriceUpdateInterval;
+                }
+            },
+            createScope: true
+        );
+    }
 
-            _items = await PriceService.GetLatestPricesAsync(CancellationTokenSource.Token);
-        }
-        catch (Exception e)
-        {
-            AddExceptionToast(e);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+    private async Task LoadPricesAsync()
+    {
+        await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
+            action: (s, ct) => s.GetListAsync(ct),
+            afterSend: response => _items = response,
+            createScope: true
+        );
     }
 
     private Task StartTimer()
     {
-        _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        _timer = new Timer(
+            TimerCallback,
+            null,
+            _updateInterval,
+            _updateInterval
+        );
 
         return Task.CompletedTask;
     }
 
     private async void TimerCallback(object? state)
     {
-        await LoadLatestPricesAsync();
+        await LoadPricesAsync();
         StateHasChanged();
     }
 

@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
-using GoldEx.Server.Domain.PriceAggregate;
-using GoldEx.Shared.Application.Services.Abstractions;
+using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -21,14 +21,20 @@ public class PriceUpdaterBackgroundService(IServiceScopeFactory serviceScopeFact
             {
                 using var scope = serviceScopeFactory.CreateScope();
 
-                var priceService = scope.ServiceProvider.GetRequiredService<IPriceService<Price, PriceHistory>>();
+                var priceService = scope.ServiceProvider.GetRequiredService<IServerPriceService>();
                 var priceFetcher = scope.ServiceProvider.GetRequiredService<IPriceFetcher>();
+                var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+
+                var setting = await settingService.GetAsync(stoppingToken);
+                var updateInterval = TimeSpan.FromMinutes(1);
+
+                if (setting is not null) 
+                    updateInterval = setting.PriceUpdateInterval;
 
                 var apiPrices = await priceFetcher.GetPriceAsync(stoppingToken);
-                var dbPrices = await priceService.GetLatestPricesAsync(stoppingToken);
+                await priceService.AddOrUpdateAsync(apiPrices, stoppingToken);
 
-                await BackgroundServiceHelper.AddOrUpdatePrices(apiPrices, dbPrices, priceService, stoppingToken);
-                await Task.Delay(30_000, stoppingToken);
+                await Task.Delay(updateInterval, stoppingToken);
             }
         }
         catch (Exception e)

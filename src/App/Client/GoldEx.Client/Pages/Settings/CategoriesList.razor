@@ -5,14 +5,22 @@
 
 <PageTitle>دسته بندی اجناس</PageTitle>
 
-<MudText Typo="Typo.h6" GutterBottom="true">دسته بندی اجناس</MudText>
-<hr />
 
-<MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateCategory())" 
-           Size="Size.Small" Variant="Variant.Filled" FullWidth="true">افزودن دسته جدید</MudButton>
+<div class="d-flex align-center justify-space-between">
+    <MudText Typo="Typo.h6" GutterBottom="true">دسته بندی اجناس</MudText>
+    
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        <MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Size="Size.Small" OnClick="_ => OnCreateCategory()">افزودن دسته جدید</MudButton>
+    </MudHidden>
 
-<MudTable T="ProductCategoryVm" Hover="true" @ref="_table" FixedHeader="true" Dense="true" Items="_productCategories"
-          SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="3" Height="350px">
+    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        <MudIconButton Color="Color.Success" Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" OnClick="_ => OnCreateCategory()" />
+    </MudHidden>
+</div>
+<MudDivider Class="my-2" />
+
+<MudTable T="ProductCategoryVm" Hover="true" FixedHeader="true" Dense="true" Items="_productCategories"
+          SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="24" Height="350px">
     <HeaderContent>
         <MudTh>ردیف</MudTh>
         <MudTh>عنوان</MudTh>

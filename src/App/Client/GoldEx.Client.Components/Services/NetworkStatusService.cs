@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace GoldEx.Client.Components.Services;
 
 [ScopedService]
-public class NetworkStatusService(IJSRuntime jsRuntime) : INetworkStatusService
+internal class NetworkStatusService(IJSRuntime jsRuntime) : INetworkStatusService
 {
     public async Task<bool> IsOnlineAsync(CancellationToken cancellationToken = default)
     {

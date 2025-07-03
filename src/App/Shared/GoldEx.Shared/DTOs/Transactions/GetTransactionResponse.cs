@@ -1,16 +1,16 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
-using GoldEx.Shared.Enums;
+using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Shared.DTOs.Transactions;
 
 public record GetTransactionResponse(Guid Id, 
-    int Number, 
+    long Number, 
     string Description,
     DateTime DateTime,
-    double? Credit,
-    UnitType? CreditUnit,
-    double? CreditRate,
-    double? Debit,
-    UnitType? DebitUnit,
-    double? DebitRate,
+    decimal? Credit,
+    GetPriceUnitTitleResponse? CreditPriceUnit,
+    decimal? CreditRate,
+    decimal? Debit,
+    GetPriceUnitTitleResponse? DebitPriceUnit,
+    decimal? DebitRate,
     GetCustomerResponse Customer);

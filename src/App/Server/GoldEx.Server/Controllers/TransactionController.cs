@@ -10,42 +10,39 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.Transactions.Base)]
-public class TransactionController(ITransactionClientService service) : ApiControllerBase
+[Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+public class TransactionController(ITransactionService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Transactions.GetList)]
     [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] Guid? customerId, CancellationToken cancellationToken = default)
     {
-        var list = await service.GetListAsync(filter, cancellationToken);
+        var list = await service.GetListAsync(filter, customerId, cancellationToken);
         return Ok(list);
     }
 
     [HttpGet(ApiRoutes.Transactions.Get)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var transaction = await service.GetAsync(id, cancellationToken);
-        return transaction is null ? NotFound() : Ok(transaction);
+        var item = await service.GetAsync(id, cancellationToken);
+        return Ok(item);
     }
 
     [HttpGet(ApiRoutes.Transactions.GetByNumber)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> GetAsync(int number, CancellationToken cancellationToken = default)
     {
         var transaction = await service.GetAsync(number, cancellationToken);
-        return transaction is null ? NotFound() : Ok(transaction);
+        return Ok(transaction);
     }
 
     [HttpPost(ApiRoutes.Transactions.Create)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
     {
         await service.CreateAsync(request, cancellationToken);
-        return Ok();
+        return Created();
     }
 
     [HttpPut(ApiRoutes.Transactions.Update)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateAsync(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
     {
         await service.UpdateAsync(id, request, cancellationToken);
@@ -53,35 +50,16 @@ public class TransactionController(ITransactionClientService service) : ApiContr
     }
 
     [HttpDelete(ApiRoutes.Transactions.Delete)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> DeleteAsync(Guid id, bool deletePermanently = false, CancellationToken cancellationToken = default)
     {
-        await service.DeleteAsync(id, deletePermanently, cancellationToken);
+        await service.DeleteAsync(id, cancellationToken);
         return Ok();
     }
 
-    [HttpGet(ApiRoutes.Transactions.GetPendingItems)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-    public async Task<IActionResult> GetPendingItemsAsync(DateTime checkPointDate,
-        CancellationToken cancellationToken = default)
+    [HttpGet(ApiRoutes.Transactions.GetLastNumber)]
+    public async Task<IActionResult> GetLastNumberAsync(CancellationToken cancellationToken = default)
     {
-        var list = await service.GetPendingsAsync(checkPointDate, cancellationToken);
-        return Ok(list);
-    }
-
-    [HttpGet(ApiRoutes.Transactions.GetLatestTransactionNumber)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-    public async Task<IActionResult> GetLatestTransactionNumberAsync(CancellationToken cancellationToken = default)
-    {
-        var transactionNumber = await service.GetLatestTransactionNumberAsync(cancellationToken);
+        var transactionNumber = await service.GetLastNumberAsync(cancellationToken);
         return Ok(transactionNumber);
-    }
-
-    [HttpGet(ApiRoutes.Transactions.GetCustomerRemainingCredit)]
-    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-    public async Task<IActionResult> GetCustomerRemainingCreditAsync(Guid customerId, CancellationToken cancellationToken = default)
-    {
-        var remainingCredit = await service.GetCustomerRemainingCreditAsync(customerId, cancellationToken);
-        return remainingCredit is null ? NotFound() : Ok(remainingCredit);
     }
 }

@@ -21,7 +21,7 @@ public class GemStoneVm
 
     [Display(Name = "قيراط")]
     [Required(ErrorMessage = "وارد كردن {0} الزامی است")]
-    public double Carat { get; set; } = default!;
+    public decimal Carat { get; set; } = default!;
 
     [Display(Name = "پاكي")]
     public string? Purity { get; set; } 

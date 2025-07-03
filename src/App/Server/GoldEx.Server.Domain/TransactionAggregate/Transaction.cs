@@ -1,59 +1,69 @@
-﻿using GoldEx.Server.Domain.CustomerAggregate;
-using GoldEx.Shared.Domain.Aggregates.CustomerAggregate;
-using GoldEx.Shared.Domain.Aggregates.TransactionAggregate;
-using GoldEx.Shared.Domain.Entities;
-using GoldEx.Shared.Enums;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 
 namespace GoldEx.Server.Domain.TransactionAggregate;
 
-public class Transaction : TransactionBase<Customer>, ISoftDeleteEntity
+public readonly record struct TransactionId(Guid Value);
+public class Transaction : EntityBase<TransactionId>
 {
-    public Transaction(DateTime dateTime,
-        int number,
+    public static Transaction Create(DateTime dateTime,
+        long number,
         string description,
-        double? credit,
-        UnitType? creditUnit,
-        double? creditRate,
-        double? debit,
-        UnitType? debitUnit,
-        double? debitRate,
-        CustomerId customerId) : base(dateTime,
-        number,
-        description,
-        credit,
-        creditUnit,
-        creditRate,
-        debit,
-        debitUnit,
-        debitRate,
-        customerId)
+        decimal? credit,
+        PriceUnitId? creditUnitId,
+        decimal? creditRate,
+        decimal? debit,
+        PriceUnitId? debitUnitId,
+        decimal? debitRate,
+        CustomerId customerId)
     {
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            DateTime = dateTime,
+            Number = number,
+            Description = description,
+            Credit = credit,
+            CreditUnitId = creditUnitId,
+            CreditRate = creditRate,
+            Debit = debit,
+            DebitUnitId = debitUnitId,
+            DebitRate = debitRate,
+            CustomerId = customerId
+        };
+
     }
 
-    public Transaction(TransactionId id,
-        DateTime dateTime,
-        int number,
-        string description,
-        double? credit,
-        UnitType? creditUnit,
-        double? creditRate,
-        double? debit,
-        UnitType? debitUnit,
-        double? debitRate,
-        CustomerId customerId) : base(id,
-        dateTime,
-        number,
-        description,
-        credit,
-        creditUnit,
-        creditRate,
-        debit,
-        debitUnit,
-        debitRate,
-        customerId)
-    {
-    }
+#pragma warning disable CS8618
+    private Transaction() { }
+#pragma warning restore CS8618
 
-    public bool IsDeleted { get; private set; }
-    public void SetDeleted() => IsDeleted = true;
+    public DateTime DateTime { get; private set; }
+    public long Number { get; private set; }
+    public string Description { get; private set; }
+    public decimal? Credit { get; private set; }
+    public decimal? CreditRate { get; private set; }
+    public decimal? Debit { get; private set; }
+    public decimal? DebitRate { get; private set; }
+
+    public PriceUnitId? CreditUnitId { get; private set; }
+    public PriceUnit? CreditUnit { get; private set; }
+
+    public PriceUnitId? DebitUnitId { get; private set; }
+    public PriceUnit? DebitUnit { get; private set; }
+
+    public Customer? Customer { get; private set; }
+    public CustomerId CustomerId { get; private set; }
+
+    public void SetDateTime(DateTime date) => DateTime = date;
+    public void SetNumber(long number) => Number = number;
+    public void SetDescription(string description) => Description = description;
+    public void SetCredit(decimal? credit) => Credit = credit;
+    public void SetCreditUnit(PriceUnitId? unitTypeId) => CreditUnitId = unitTypeId;
+    public void SetCreditRate(decimal? creditRate) => CreditRate = creditRate;
+    public void SetDebit(decimal? debit) => Debit = debit;
+    public void SetDebitUnit(PriceUnitId? unitTypeId) => DebitUnitId = unitTypeId;
+    public void SetDebitRate(decimal? debitRate) => DebitRate = debitRate;
+    public void SetCustomer(CustomerId customerId) => CustomerId = customerId;
 }

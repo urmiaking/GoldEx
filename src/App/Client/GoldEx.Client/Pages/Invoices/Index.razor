@@ -1,0 +1,18 @@
+﻿@attribute [Route(ClientRoutes.Invoices.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+<!-- TODO: Add Policy -->
+@using GoldEx.Client.Pages.Invoices.Components
+@inherits GoldExComponentBase
+
+<PageTitle>فاکتورها</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <InvoicesList />
+
+</MudContainer>

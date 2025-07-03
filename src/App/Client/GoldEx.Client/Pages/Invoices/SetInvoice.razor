@@ -1,0 +1,19 @@
+﻿@inherits GoldExComponentBase
+@using GoldEx.Client.Pages.Invoices.Components
+
+@attribute [Route(ClientRoutes.Invoices.SetInvoice)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+<!-- TODO: Add Policy -->
+
+<PageTitle>@(IdValue.HasValue ? "ویرایش فاکتور" : "فاکتور جدید")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <EditorForm Id="IdValue" />
+
+</MudContainer>

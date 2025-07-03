@@ -1,8 +1,8 @@
-﻿using GoldEx.Server.Domain.ProductAggregate;
-using GoldEx.Shared.Application.Validators;
-using GoldEx.Shared.Enums;
+﻿//using GoldEx.Server.Domain.ProductAggregate;
+//using GoldEx.Shared.Application.Validators;
+//using GoldEx.Shared.Enums;
 
-namespace GoldEx.Tests.Server.Application.Services;
+//namespace GoldEx.Tests.Server.Application.Services;
 
 //[TestFixture]
 //public class ProductServiceTester

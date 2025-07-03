@@ -22,15 +22,15 @@
         <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.Key}")</MudTh>
     </GroupHeaderTemplate>
     <RowTemplate>
-        @if (!string.IsNullOrEmpty(context.IconFileBase64))
+        @if (context.HasIcon)
         {
             <MudTd DataLabel="">
                 <MudAvatar Size="Size.Small">
-                    <MudImage Src="@context.IconFileBase64" Alt="img" />
+                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.Price, context.Id))" Alt="img" />
                 </MudAvatar>
             </MudTd>
         }
-
+            
         <MudTd DataLabel="عنوان">@context.Title</MudTd>
         <MudTd DataLabel="قیمت">@context.Value @context.Unit</MudTd>
         <MudTd DataLabel="تغییرات">

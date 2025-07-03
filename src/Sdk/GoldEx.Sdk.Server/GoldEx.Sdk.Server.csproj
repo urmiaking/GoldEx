@@ -11,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -19,7 +19,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Application\Extensions\" />
 		<Folder Include="Infrastructure\Extensions\Configurations\" />
 	</ItemGroup>
 

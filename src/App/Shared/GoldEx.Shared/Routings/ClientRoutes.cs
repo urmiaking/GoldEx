@@ -78,7 +78,11 @@ public static class ClientRoutes
     public static class Settings
     {
         private const string SettingsPrefix = "/base-info";
-        public const string Index = $"{SettingsPrefix}";    
+        public const string Index = $"{SettingsPrefix}";
+        public const string PriceSettings = $"{SettingsPrefix}/price-settings";
+        public const string PriceUnits = $"{SettingsPrefix}/price-units";
+        public const string PaymentMethods = $"{SettingsPrefix}/payment-methods";
+        public const string ReportsList = $"{SettingsPrefix}/reports-list";
     }
 
     public static class Logs
@@ -97,5 +101,19 @@ public static class ClientRoutes
         private const string TransactionsPrefix = "/transactions";
         public const string Index = $"{TransactionsPrefix}";
         public const string Create = $"{TransactionsPrefix}/create";
+    }
+
+    public static class Invoices
+    {
+        private const string InvoicesPrefix = "/invoices";
+        public const string Index = $"{InvoicesPrefix}";
+        public const string SetInvoice = $"{InvoicesPrefix}/set/{{id?}}";
+        public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{number:long}}";
+    }
+
+    public static class Reporting
+    {
+        private const string ReportingPrefix = "/reporting";
+        public const string DesignReport = $"{ReportingPrefix}/designer/{{name}}";
     }
 }

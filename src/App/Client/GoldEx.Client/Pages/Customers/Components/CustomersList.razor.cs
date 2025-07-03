@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -20,41 +21,30 @@ public partial class CustomersList
     private async Task<TableData<CustomerVm>> LoadCustomersAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<CustomerVm>();
-        using var scope = CreateServiceScope();
-        var service = GetRequiredService<ICustomerClientService>(scope);
 
-        try
-        {
-            SetBusy();
-            CancelToken();
-
-            var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-                state.SortDirection switch
-                {
-                    SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                    SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                    SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
-
-            var response = await service.GetListAsync(filter, cancellationToken);
-
-            var items = response.Data.Select(CustomerVm.CreateFrom).ToList();
-
-            result = new TableData<CustomerVm>
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+            state.SortDirection switch
             {
-                TotalItems = response.Total,
-                Items = items
-            };
-        }
-        catch (Exception ex)
-        {
-            AddExceptionToast(ex);
-        }
-        finally
-        {
-            SetIdeal();
-        }
+                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
+                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
+                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
+                _ => throw new ArgumentOutOfRangeException()
+            });
+
+        await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
+            action: (s, token) => s.GetListAsync(filter, token),
+            afterSend: response =>
+            {
+                var items = response.Data.Select(CustomerVm.CreateFrom).ToList();
+
+                result = new TableData<CustomerVm>
+                {
+                    TotalItems = response.Total,
+                    Items = items
+                };
+            },
+            createScope: true
+        );
 
         return result;
     }
@@ -72,11 +62,11 @@ public partial class CustomersList
 
     public async Task OnCreate()
     {
-        var dialog = await DialogService.ShowAsync<Create>("افزودن مشتری جدید", _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("افزودن مشتری جدید", _dialogOptions);
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false })
+        if (result is {Canceled: false})
         {
             AddSuccessToast("مشتری جدید با موفقیت افزوده شد.");
             await _table.ReloadServerData();
@@ -85,9 +75,12 @@ public partial class CustomersList
 
     private async Task OnRemove(CustomerVm model)
     {
+        if (!model.Id.HasValue)
+            throw new InvalidOperationException();
+
         var parameters = new DialogParameters<Remove>
         {
-            { x => x.Id, model.Id },
+            { x => x.Id, model.Id.Value },
             { x => x.CustomerName, model.FullName }
         };
 
@@ -104,12 +97,12 @@ public partial class CustomersList
 
     private async Task OnEdit(CustomerVm model)
     {
-        var parameters = new DialogParameters<Update>
+        var parameters = new DialogParameters<Editor>
         {
             { x => x.Model, model }
         };
 
-        var dialog = await DialogService.ShowAsync<Update>("ویرایش اطلاعات مشتری", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Editor>("ویرایش اطلاعات مشتری", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -124,8 +117,7 @@ public partial class CustomersList
     {
         var parameters = new DialogParameters
         {
-            { nameof(TransactionsList.CustomerId), customerVm.Id },
-            { nameof(TransactionsList.CustomerName), customerVm.FullName }
+            { nameof(TransactionsList.CustomerId), customerVm.Id }
         };
         var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
         var result = await dialog.Result;

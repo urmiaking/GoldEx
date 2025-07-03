@@ -8,10 +8,11 @@
         <MudButton OnClick="Cancel">لغو</MudButton>
         <MudButton Class="m-3"
                    Color="Color.Error"
-                   Disabled="@_processing"
+                   Disabled="@IsBusy"
+                   StartIcon="@Icons.Material.Filled.Delete"
                    OnClick="@(async () => await OnValidSubmit())"
                    Variant="Variant.Filled">
-            @if (_processing)
+            @if (IsBusy)
             {
                 <MudProgressCircular Class="ms-n1"
                                      Size="Size.Small"

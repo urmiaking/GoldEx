@@ -33,7 +33,6 @@ public class EmailSender(IOptions<EmailSettings> emailSettings, ILogger<EmailSen
         catch (Exception ex)
         {
             logger.LogError($"Error sending email: {ex.Message}");
-            throw;
         }
     }
 }

@@ -14,7 +14,7 @@ public partial class Profile
     private string? _username;
     private string _status = "در حال بررسی...";
 
-    private IHealthClientService HealthService => GetRequiredService<IHealthClientService>();
+    private IHealthService HealthService => GetRequiredService<IHealthService>();
 
     private async Task CheckServerHealthAsync()
     {

@@ -14,17 +14,16 @@
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Extensions.MudBlazor.StaticInput" Version="3.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.4" />
-    <PackageReference Include="MudBlazor" Version="8.5.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5" />
+    <PackageReference Include="MudBlazor" Version="8.7.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup>
 	  <ProjectReference Include="..\..\..\Sdk\GoldEx.Sdk.Client\GoldEx.Sdk.Client.csproj" />
 	  <ProjectReference Include="..\..\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
 	  <ProjectReference Include="..\GoldEx.Client.Abstractions\GoldEx.Client.Abstractions.csproj" />
-	  <ProjectReference Include="..\GoldEx.Client.Offline\GoldEx.Client.Offline.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,10 +39,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>GoldExComponentBase.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>
