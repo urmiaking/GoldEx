@@ -15,6 +15,7 @@ public record GetInvoiceDetailResponse(long InvoiceNumber,
     string DailyGramPrice,
     string TaxPercent,
     string ProfitPercent,
+    string TotalUnpaidSecondaryAmount,
     GetCustomerResponse Customer,
     List<GetInvoiceItemReportResponse> InvoiceItems);
 

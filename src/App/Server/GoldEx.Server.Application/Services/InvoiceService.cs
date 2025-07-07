@@ -292,6 +292,7 @@ internal class InvoiceService(
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.InvoicePayments)
                 .ThenInclude(x => x.PaymentMethod)
+            .Include(x => x.UnpaidPriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
