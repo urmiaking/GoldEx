@@ -268,7 +268,7 @@
                     <MudText Typo="Typo.body2">تخفیف</MudText>
                     <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
-                            <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalRemainingAmount="@_model.RemainingAmount" />
+                            <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalRemainingAmount="@_model.TotalUnpaidAmount" />
                             <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>
@@ -279,8 +279,8 @@
                 </MudItem>
 
                 <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
-                    <MudText Typo="Typo.body2">مخارج جانبی</MudText>
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
+                    <MudText Typo="Typo.body2">مخارج جانبی</MudText>
                     <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
                             <ExtraCostList Items="_model.InvoiceExtraCosts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
@@ -315,15 +315,35 @@
                     <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
                 </MudItem>
 
-                <MudItem xs="6" md="3" lg="2">
+                <MudItem xs="6" md="3" lg="2" Class="d-flex align-center">
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Success" OnClick="OnTotalUnpaidMenuToggled"></MudIconButton>
                     <MudText Typo="Typo.body2">مانده حساب</MudText>
+                    <MudPopover Open="@_totalUnpaidMenuOpen" MaxHeight="250" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
+                        <div class="d-flex flex-column">
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectTotalUnpaidPriceUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                            <MudButton OnClick="@OnTotalUnpaidMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
+                        </div>
+                    </MudPopover>
                 </MudItem>
                 <MudItem xs="6" md="3" lg="2">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.RemainingAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalUnpaidAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title) @(_model.UnpaidExchangeRate.HasValue ? $"({_model.TotalUnpaidSecondaryAmount.ToCurrencyFormat(_model.UnpaidPriceUnit?.Title)})" : string.Empty)</MudText>
                 </MudItem>
             </MudGrid>
         }
-
 
         <MudDivider Class="my-2" />
 

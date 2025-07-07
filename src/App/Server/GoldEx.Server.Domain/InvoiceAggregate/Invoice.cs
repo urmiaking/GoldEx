@@ -6,9 +6,11 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public readonly record struct InvoiceId(Guid Value);
+
 public class Invoice : EntityBase<InvoiceId>
 {
-    public static Invoice Create(long invoiceNumber, CustomerId customerId, PriceUnitId priceUnitId, DateOnly invoiceDate, DateOnly? dueDate)
+    public static Invoice Create(long invoiceNumber, decimal? unpaidAmountExchangeRate, CustomerId customerId, 
+        PriceUnitId priceUnitId, PriceUnitId? unpaidPriceUnitId, DateOnly invoiceDate, DateOnly? dueDate)
     {
         return new Invoice
         {
@@ -17,12 +19,16 @@ public class Invoice : EntityBase<InvoiceId>
             CustomerId = customerId,
             InvoiceDate = invoiceDate,
             PriceUnitId = priceUnitId,
-            DueDate = dueDate
+            DueDate = dueDate,
+            UnpaidPriceUnitId = unpaidPriceUnitId,
+            UnpaidAmountExchangeRate = unpaidAmountExchangeRate
         };
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private Invoice() { }
+    private Invoice()
+    {
+    }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public long InvoiceNumber { get; private set; }
@@ -113,6 +119,26 @@ public class Invoice : EntityBase<InvoiceId>
 
     public PriceUnit? PriceUnit { get; private set; }
     public PriceUnitId PriceUnitId { get; private set; }
+
+    public void SetPriceUnitId(PriceUnitId priceUnitId)
+    {
+        PriceUnitId = priceUnitId;
+    }
+
+    public PriceUnit? UnpaidPriceUnit { get; private set; }
+    public PriceUnitId? UnpaidPriceUnitId { get; private set; }
+
+    public void SetUnpaidPriceUnitId(PriceUnitId? priceUnitId)
+    {
+        UnpaidPriceUnitId = priceUnitId;
+    }
+
+    public decimal? UnpaidAmountExchangeRate { get; set; }
+
+    public void SetUnpaidAmountExchangeRate(decimal? exchangeRate)
+    {
+        UnpaidAmountExchangeRate = exchangeRate;
+    }
 
     #endregion
 

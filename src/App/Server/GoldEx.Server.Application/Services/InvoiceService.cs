@@ -61,8 +61,10 @@ internal class InvoiceService(
                 if (isNewInvoice)
                 {
                     invoice = Invoice.Create(request.InvoiceNumber,
+                        request.UnpaidAmountExchangeRate,
                         new CustomerId(customerId),
                         new PriceUnitId(request.PriceUnitId),
+                        request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
                         DateOnly.FromDateTime(request.InvoiceDate),
                         request.DueDate.HasValue
                             ? DateOnly.FromDateTime(request.DueDate.Value)
@@ -75,10 +77,15 @@ internal class InvoiceService(
                     invoice = await invoiceRepository.Get(new InvoicesByIdSpecification(new InvoiceId(request.Id!.Value)))
                         .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
+                    invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
                     invoice.SetCustomerId(new CustomerId(customerId));
                     invoice.SetInvoiceDate(DateOnly.FromDateTime(request.InvoiceDate));
                     invoice.SetDueDate(request.DueDate.HasValue ? DateOnly.FromDateTime(request.DueDate.Value) : null);
                     invoice.SetInvoiceNumber(request.InvoiceNumber);
+                    invoice.SetUnpaidAmountExchangeRate(request.UnpaidAmountExchangeRate);
+                    invoice.SetUnpaidPriceUnitId(request.UnpaidPriceUnitId.HasValue 
+                        ? new PriceUnitId(request.UnpaidPriceUnitId.Value) 
+                        : null);
                 }
 
                 invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
@@ -106,7 +113,6 @@ internal class InvoiceService(
 
                 foreach (var itemDto in request.InvoiceItems)
                 {
-                    
                     Product product;
 
                     if (!itemDto.Product.Id.HasValue)
@@ -265,6 +271,7 @@ internal class InvoiceService(
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.InvoicePayments)    
                 .ThenInclude(x => x.PaymentMethod)
+            .Include(x => x.UnpaidPriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 

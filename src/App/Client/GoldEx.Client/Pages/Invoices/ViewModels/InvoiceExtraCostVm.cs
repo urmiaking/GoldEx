@@ -29,7 +29,7 @@ public class InvoiceExtraCostVm
         return new InvoiceExtraCostsDto(item.Amount, item.ExchangeRate, item.Description, item.PriceUnit.Id);
     }
 
-    public static InvoiceExtraCostVm CreateFrom(GetInvoiceExtraCostsResponse response)
+    public static InvoiceExtraCostVm CreateFrom(GetInvoiceExtraCostsResponse response, GetPriceUnitTitleResponse? priceUnit)
     {
         return new InvoiceExtraCostVm
         {
@@ -37,7 +37,8 @@ public class InvoiceExtraCostVm
             Description = response.Description,
             PriceUnit = response.PriceUnit,
             AmountAdornmentText = response.PriceUnit.Title,
-            ExchangeRate = response.ExchangeRate
+            ExchangeRate = response.ExchangeRate,
+            ExchangeRateLabel = $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}"
         };
     }
 }

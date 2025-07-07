@@ -15,6 +15,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -38,11 +39,11 @@ public partial class EditorForm
     private bool _paymentsMenuOpen;
     private bool _processing;
     private string? _customerCreditLimitAdornmentText;
+    private bool _totalUnpaidMenuOpen;
 
     protected override async Task OnParametersSetAsync()
     {
         await LoadInvoiceAsync();
-
         await LoadPriceUnitsAsync();
         await LoadSettingsAsync();
         await LoadGramPriceAsync();
@@ -382,6 +383,23 @@ public partial class EditorForm
             _customerCreditLimitAdornmentText = priceUnit.Title;
         }
 
+        if (_model is { UnpaidExchangeRate: not null, UnpaidPriceUnit: not null })
+        {
+            if (_model.InvoicePriceUnit.Id == _model.UnpaidPriceUnit.Id)
+            {
+                _model.UnpaidExchangeRate = null;
+                return;
+            }
+
+            await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                action: (s, ct) =>
+                    s.GetExchangeRateAsync(_model.InvoicePriceUnit.Id, _model.UnpaidPriceUnit.Id, ct),
+                afterSend: response =>
+                {
+                    _model.UnpaidExchangeRate = response.ExchangeRate;
+                });
+        }
+
         StateHasChanged();
     }
 
@@ -389,22 +407,24 @@ public partial class EditorForm
 
     #region MenuToggle
 
-    private Task OnDiscountMenuToggled()
+    private void OnDiscountMenuToggled()
     {
         _discountMenuOpen = !_discountMenuOpen;
-        return Task.CompletedTask;
     }
 
-    private Task OnExtraCostsMenuToggled()
+    private void OnExtraCostsMenuToggled()
     {
         _extraCostsMenuOpen = !_extraCostsMenuOpen;
-        return Task.CompletedTask;
     }
 
-    private Task OnPaymentsMenuToggled()
+    private void OnPaymentsMenuToggled()
     {
         _paymentsMenuOpen = !_paymentsMenuOpen;
-        return Task.CompletedTask;
+    }
+
+    private void OnTotalUnpaidMenuToggled()
+    {
+        _totalUnpaidMenuOpen = !_totalUnpaidMenuOpen;
     }
 
     #endregion
@@ -454,5 +474,32 @@ public partial class EditorForm
     {
         _model.Customer.NationalId = StringExtensions.GenerateRandomCode(10);
         StateHasChanged();
+    }
+
+    private async Task SelectTotalUnpaidPriceUnit(GetPriceUnitTitleResponse item)
+    {
+        _model.UnpaidPriceUnit = item;
+
+        if (_model.InvoicePriceUnit is null)
+            return;
+
+        if (_model.InvoicePriceUnit.Id == item.Id)
+        {
+            _model.UnpaidExchangeRate = null;
+            _totalUnpaidMenuOpen = false;
+            return;
+        }
+
+        decimal? exchangeRate;
+
+        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+            action: (s, ct) =>
+                s.GetExchangeRateAsync(_model.InvoicePriceUnit.Id, item.Id, ct),
+            afterSend: respExchangeRate =>
+            {
+                exchangeRate = respExchangeRate.ExchangeRate;
+                _model.UnpaidExchangeRate = exchangeRate;
+                _totalUnpaidMenuOpen = false;
+            });
     }
 }
