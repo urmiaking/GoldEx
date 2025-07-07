@@ -36,6 +36,7 @@ internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingSe
             .ThenInclude(x => x.PriceUnit)
             .Include(x => x.InvoicePayments)
             .ThenInclude(x => x.PaymentMethod)
+            .Include(x => x.UnpaidPriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 

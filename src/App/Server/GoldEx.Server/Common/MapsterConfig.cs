@@ -90,6 +90,10 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.TotalDiscountAmount, src => $"{src.TotalDiscountAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.TotalExtraCostAmount, src => $"{src.TotalExtraCostAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.TotalUnpaidAmount, src => $"{src.TotalUnpaidAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalUnpaidSecondaryAmount,
+                src => src.UnpaidPriceUnitId.HasValue
+                    ? $"({(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1)).ToCurrencyReportFormat(src.UnpaidPriceUnit!.Title)})"
+                    : null)
             .Map(dest => dest.TotalAmountWithDiscountsAndExtraCosts,
                 src => $"{src.TotalAmountWithDiscountsAndExtraCosts.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.InvoiceDate,
