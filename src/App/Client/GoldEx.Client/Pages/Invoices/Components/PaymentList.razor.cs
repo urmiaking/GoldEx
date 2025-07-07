@@ -94,6 +94,12 @@ public partial class PaymentList
         item.AmountAdornmentText = priceUnit.Title;
         item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {PriceUnit.Title}";
 
+        if (PriceUnit.Id == priceUnit.Id)
+        {
+            StateHasChanged();
+            return;
+        }
+
         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
             action: (s, ct) => s.GetExchangeRateAsync(priceUnit.Id, PriceUnit.Id, ct),
             afterSend: response =>

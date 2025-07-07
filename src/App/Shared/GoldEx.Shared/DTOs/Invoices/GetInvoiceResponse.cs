@@ -16,6 +16,8 @@ public record GetInvoiceResponse(
     decimal TotalExtraCostAmount,
     decimal TotalUnpaidAmount,
     decimal TotalAmountWithDiscountsAndExtraCosts,
+    decimal? UnpaidAmountExchangeRate,
+    GetPriceUnitTitleResponse UnpaidPriceUnit,
     GetPriceUnitTitleResponse PriceUnit,
     GetCustomerResponse Customer,
     List<GetInvoiceItemResponse> InvoiceItems,

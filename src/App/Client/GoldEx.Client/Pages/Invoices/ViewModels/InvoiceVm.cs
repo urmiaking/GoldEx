@@ -25,6 +25,10 @@ public class InvoiceVm
     [Display(Name = "واحد ارزی فاکتور")]
     public GetPriceUnitTitleResponse? InvoicePriceUnit { get; set; }
 
+    public GetPriceUnitTitleResponse? UnpaidPriceUnit { get; set; }
+    public decimal? UnpaidExchangeRate { get; set; }
+    public decimal TotalUnpaidSecondaryAmount => TotalUnpaidAmount * UnpaidExchangeRate ?? 1;
+
     public List<InvoiceItemVm> InvoiceItems { get; set; } = [];
     public List<InvoiceDiscountVm> InvoiceDiscounts { get; set; } = [];
     public List<InvoiceExtraCostVm> InvoiceExtraCosts { get; set; } = [];
@@ -36,8 +40,8 @@ public class InvoiceVm
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
-    public decimal RemainingAmount => TotalInvoiceAmount - TotalPaymentsAmount;
-    public bool IsPaid => RemainingAmount <= 0; // Used with MudChip to indicate payment status
+    public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount;
+    public bool IsPaid => TotalUnpaidAmount <= 0; // Used with MudChip to indicate payment status
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.Now && !IsPaid;
 
     public static InvoiceVm CreateDefaultInstance()
@@ -95,6 +99,8 @@ public class InvoiceVm
             model.InvoiceDate.Value,
             model.DueDate,
             model.InvoicePriceUnit.Id,
+            model.UnpaidExchangeRate,
+            model.UnpaidPriceUnit?.Id,
             CustomerVm.ToRequest(model.Customer),
             model.InvoiceItems.Select(InvoiceItemVm.ToRequest).ToList(),
             model.InvoiceDiscounts.Select(InvoiceDiscountVm.ToRequest).ToList(),
@@ -111,12 +117,14 @@ public class InvoiceVm
             InvoiceDate = response.InvoiceDate,
             DueDate = response.DueDate,
             Customer = CustomerVm.CreateFrom(response.Customer),
-            InvoiceDiscounts = response.InvoiceDiscounts.Select(InvoiceDiscountVm.CreateFrom).ToList(),
-            InvoiceExtraCosts = response.InvoiceExtraCosts.Select(InvoiceExtraCostVm.CreateFrom).ToList(),
+            InvoiceDiscounts = response.InvoiceDiscounts.Select(x => InvoiceDiscountVm.CreateFrom(x, response.PriceUnit)).ToList(),
+            InvoiceExtraCosts = response.InvoiceExtraCosts.Select(x => InvoiceExtraCostVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoicePayments = response.InvoicePayments.Select(x => 
                 InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoiceItems = response.InvoiceItems.Select(InvoiceItemVm.CreateFrom).ToList(),
-            InvoicePriceUnit = response.PriceUnit
+            InvoicePriceUnit = response.PriceUnit,
+            UnpaidExchangeRate = response.UnpaidAmountExchangeRate,
+            UnpaidPriceUnit = response.UnpaidPriceUnit
         };
     }
 }

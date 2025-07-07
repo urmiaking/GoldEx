@@ -266,7 +266,7 @@ internal static class ServiceCollectionExtensions
     {
         services.AddDevExpressControls();
 
-        DXDrawingEngine.ForceSkia();
+        DevExpress.Drawing.Settings.DrawingEngine = DrawingEngine.Skia;
 
         DevExpress.Utils.DeserializationSettings.RegisterTrustedAssembly(typeof(GetInvoiceReportResponse).Assembly);
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceReportResponse));

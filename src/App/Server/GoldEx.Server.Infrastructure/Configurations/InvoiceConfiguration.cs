@@ -14,6 +14,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasConversion(id => id.Value,
                 value => new InvoiceId(value));
 
+        builder.Property(x => x.UnpaidAmountExchangeRate)
+            .HasPrecision(36, 10);
+
         builder.HasOne(x => x.Customer)
             .WithMany()
             .HasForeignKey(x => x.CustomerId)
@@ -24,10 +27,14 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.UnpaidPriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.UnpaidPriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.OwnsMany(x => x.InvoicePayments, Configure);
         builder.OwnsMany(x => x.Discounts, Configure);
         builder.OwnsMany(x => x.ExtraCosts, Configure);
-
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceExtraCost> builder)
