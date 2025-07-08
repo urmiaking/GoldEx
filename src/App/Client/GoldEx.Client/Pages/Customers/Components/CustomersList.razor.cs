@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Customers;
@@ -123,7 +124,20 @@ public partial class CustomersList
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
-            AddSuccessToast("اطلاعات مشتری با موفقیت ویرایش شد.");
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task OnViewInvoices(CustomerVm customerVm)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(InvoicesList.CustomerId), customerVm.Id }
+        };
+        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
             await _table.ReloadServerData();
         }
     }
