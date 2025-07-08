@@ -45,9 +45,9 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.PaymentStatus,
                 src => Math.Abs(src.TotalUnpaidAmount - 0m) < 0.01m
                     ? InvoicePaymentStatus.Paid
-                    : Math.Abs(src.TotalUnpaidAmount - src.TotalAmount) < 0.01m
-                        ? InvoicePaymentStatus.Unpaid
-                        : InvoicePaymentStatus.PartiallyPaid);
+                    : src.DueDate.HasValue && src.DueDate.Value < DateOnly.FromDateTime(DateTime.Today)
+                        ? InvoicePaymentStatus.Overdue
+                        : InvoicePaymentStatus.HasDebt);
 
         config.NewConfig<Invoice, GetInvoiceResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)

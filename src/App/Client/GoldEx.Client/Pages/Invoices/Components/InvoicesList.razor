@@ -32,7 +32,22 @@
         <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.AmountUnit)</MudTd>
         <MudTd DataLabel="تاریخ فاکتور">@context.InvoiceDate.ToShortDateString()</MudTd>
         <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
-        <MudTd DataLabel="وضعیت">@context.PaymentStatus.GetDisplayName()</MudTd>
+        <MudTd DataLabel="وضعیت">
+            @switch (context.PaymentStatus)
+            {
+                case InvoicePaymentStatus.Paid:
+                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled">@context.PaymentStatus.GetDisplayName()</MudChip>
+                    break;
+                case InvoicePaymentStatus.HasDebt:
+                    <MudChip Size="Size.Small" T="string" Color="Color.Primary" Variant="Variant.Filled">@context.PaymentStatus.GetDisplayName()</MudChip>
+                    break;
+                case InvoicePaymentStatus.Overdue:
+                    <MudChip Size="Size.Small" T="string" Color="Color.Error" Variant="Variant.Filled">@context.PaymentStatus.GetDisplayName()</MudChip>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        </MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ فاکتور">
