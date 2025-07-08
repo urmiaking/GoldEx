@@ -60,7 +60,7 @@ public partial class InvoicesList
         _table.NavigateTo(i - 1);
     }
 
-    public async Task OnCreateInvoice()
+    public void OnCreateInvoice()
     {
         NavigationManager.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute( new { Id = "" }));
     }

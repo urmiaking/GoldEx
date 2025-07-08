@@ -32,7 +32,6 @@ public partial class EditorForm
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _barcode;
-    private string? _barcodeFieldHelperText;
     private bool _isCustomerCreditLimitMenuOpen;
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
