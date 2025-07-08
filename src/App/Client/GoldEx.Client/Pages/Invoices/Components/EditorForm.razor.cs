@@ -22,6 +22,7 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 public partial class EditorForm
 {
     [Parameter] public Guid? Id { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
 
     private InvoiceVm _model = InvoiceVm.CreateDefaultInstance();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
@@ -41,11 +42,22 @@ public partial class EditorForm
 
     protected override async Task OnParametersSetAsync()
     {
+        await LoadCustomerAsync();
         await LoadInvoiceAsync();
         await LoadPriceUnitsAsync();
         await LoadSettingsAsync();
         await LoadGramPriceAsync();
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadCustomerAsync()
+    {
+        if (CustomerId.HasValue)
+        {
+            await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+                action: (s, ct) => s.GetAsync(CustomerId.Value, ct),
+                afterSend: response => _model.Customer = CustomerVm.CreateFrom(response));
+        }
     }
 
     #region Load Initial Data
