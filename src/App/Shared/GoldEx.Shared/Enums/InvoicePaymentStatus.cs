@@ -8,8 +8,8 @@ public enum InvoicePaymentStatus
     Paid = 0,
 
     [Display(Name = "دارای بدهی")]
-    PartiallyPaid = 1,
+    HasDebt = 1,
 
-    [Display(Name = "پرداخت نشده")]
-    Unpaid = 2
+    [Display(Name = "موعد سررسید گذشته")]
+    Overdue = 2
 }
