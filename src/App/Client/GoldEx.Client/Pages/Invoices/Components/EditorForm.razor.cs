@@ -21,7 +21,6 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class EditorForm
 {
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
     [Parameter] public Guid? Id { get; set; }
 
     private InvoiceVm _model = InvoiceVm.CreateDefaultInstance();
@@ -428,15 +427,15 @@ public partial class EditorForm
 
     #endregion
 
-    private async Task Submit()
+    private async Task<bool> SubmitAsync()
     {
         if (_processing)
-            return;
+            return false;
 
         await _form.Validate();
 
         if (!_form.IsValid)
-            return;
+            return false;
 
         _processing = true;
 
@@ -448,7 +447,7 @@ public partial class EditorForm
         {
             _processing = false;
             AddErrorToast(e.Message);
-            return;
+            return false;
         }
 
         var request = InvoiceVm.ToRequest(_model);
@@ -459,9 +458,11 @@ public partial class EditorForm
             {
                 AddSuccessToast("فاکتور با موفقیت ثبت شد");
                 _processing = false;
-                NavigationManager.NavigateTo(ClientRoutes.Invoices.Index);
+                Navigation.NavigateTo(ClientRoutes.Invoices.Index);
                 return Task.CompletedTask;
             });
+
+        return true;
     }
 
     private void OnCustomerCleared()
@@ -500,5 +501,13 @@ public partial class EditorForm
                 _model.UnpaidExchangeRate = exchangeRate;
                 _totalUnpaidMenuOpen = false;
             });
+    }
+
+    private async Task OnSubmitAndPrintAsync()
+    {
+        var isSubmitted = await SubmitAsync();
+
+        if (isSubmitted) 
+            Navigation.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = _model.InvoiceNumber }));
     }
 }

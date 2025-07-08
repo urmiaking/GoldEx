@@ -346,11 +346,33 @@
 
         <MudDivider Class="my-2" />
 
-        <div class="d-flex justify-content-end mt-2">
+        <div class="d-flex justify-content-end gap-3 mt-2">
+
+            <MudButton Color="Color.Info"
+                       StartIcon="@Icons.Material.Filled.Print"
+                       Disabled="@_processing"
+                       Variant="Variant.Filled"
+                       OnClick="@(async () => await OnSubmitAndPrintAsync())">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره و چاپ فاکتور</MudText>
+                }
+
+            </MudButton>
+
             <MudButton Color="Color.Primary"
                        Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"
-                       OnClick="@(async () => await Submit())"
+                       OnClick="@(async () => await SubmitAsync())"
                        Variant="Variant.Filled">
                 @if (_processing)
                 {
