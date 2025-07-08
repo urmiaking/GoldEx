@@ -9,7 +9,7 @@ namespace GoldEx.Sdk.Server.Infrastructure;
 
 public abstract class
     GoldExDbContextBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>(
-        DbContextOptions options, IPublisher publisher)
+        DbContextOptions options)
     : IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>(options)
     where TUser : IdentityUser<TKey>
     where TRole : IdentityRole<TKey>
@@ -23,7 +23,6 @@ public abstract class
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new PersianizerInterceptor());
-        optionsBuilder.AddInterceptors(new DomainEventsInterceptor(publisher));
 
         base.OnConfiguring(optionsBuilder);
     }

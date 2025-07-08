@@ -3,7 +3,6 @@ using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Price;
 using GoldEx.Shared;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace GoldEx.Server.Infrastructure;
 
@@ -11,8 +10,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
         services.AddHttpClient("TalaIrApi");
         services.AddScoped<IPriceFetcher, TalaIrPriceFetcher>(sp =>
         {

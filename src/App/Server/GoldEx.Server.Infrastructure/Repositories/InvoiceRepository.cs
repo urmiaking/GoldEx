@@ -13,6 +13,7 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
     {
         var invoiceNumber = await Query
             .OrderByDescending(x => x.InvoiceNumber)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
 
         return invoiceNumber?.InvoiceNumber ?? 0;

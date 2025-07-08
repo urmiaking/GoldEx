@@ -7,11 +7,9 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Infrastructure;
 
 public class GoldExDbContext(
-    DbContextOptions<GoldExDbContext> options,
-    IPublisher publisher)
+    DbContextOptions<GoldExDbContext> options)
     : GoldExDbContextBase<AppUser, AppRole, Guid, AppUserClaim, AppUserRole, AppUserLogin, AppRoleClaim, AppUserToken>(
-        options,
-        publisher)
+        options)
 {
     protected override void OnModelCreating(ModelBuilder builder)
     {
