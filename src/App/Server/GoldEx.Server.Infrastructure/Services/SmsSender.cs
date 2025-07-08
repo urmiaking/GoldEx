@@ -20,6 +20,7 @@ public class SmsSender(IOptions<SmsSettings> options, ILogger<SmsSender> logger)
             logger.LogInformation($"Sms sent to {phoneNumber} with this message : {message}");
             return true;
 #endif
+#if !DEBUG
             var now = DateTime.Now;
             var start = new DateTime(now.Year, now.Month, now.Day, 08, 0, 0);
             var end = start.AddHours(14); // 08:00 of the next day
@@ -36,7 +37,8 @@ public class SmsSender(IOptions<SmsSettings> options, ILogger<SmsSender> logger)
 
             var result = await smsIrClient.BulkSendAsync(lineNumber, message, [phoneNumber]);
 
-            return result.Status == 1;
+            return result.Status == 1;  
+#endif
         }
         catch (Exception e)
         {

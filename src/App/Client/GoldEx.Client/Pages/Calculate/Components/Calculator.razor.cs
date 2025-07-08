@@ -73,7 +73,17 @@ public partial class Calculator
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
         if (authenticationState.User.Identity is { IsAuthenticated: false })
+        {
+            var priceUnit = new GetPriceUnitTitleResponse(Guid.Empty, "ریال", false, true);
+
+            _model.PriceUnit = priceUnit;
+            _model.WagePriceUnit = priceUnit;
+
+            await OnPriceUnitChanged(_model.PriceUnit);
+            UpdateWageFields();
+
             return;
+        }
 
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
@@ -456,7 +466,7 @@ public partial class Calculator
         _timer = new Timer(
             TimerCallback,
             null,
-            _updateInterval,
+            TimeSpan.FromSeconds(0),
             _updateInterval
         );
 
