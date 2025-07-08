@@ -16,7 +16,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using GoldEx.Server.Domain.PaymentMethodAggregate;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
+using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 
 namespace GoldEx.Server.Extensions;
 
@@ -66,9 +68,9 @@ public static class ServiceProviderExtensions
     {
         var repository = serviceProvider.GetRequiredService<IPaymentMethodRepository>();
 
-        var paymentMethods = await repository.Get(new PaymentMethodsWithoutSpecification()).ToListAsync();
+        var paymentMethodsCount = await repository.CountAsync(new PaymentMethodsWithoutSpecification());
 
-        if (paymentMethods.Any())
+        if (paymentMethodsCount > 0)
             return;
 
         var defaultPaymentMethods = new List<PaymentMethod>
@@ -81,18 +83,34 @@ public static class ServiceProviderExtensions
         await repository.CreateRangeAsync(defaultPaymentMethods);
     }
 
-    private static Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)
+    private static async Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)
     {
-        return Task.CompletedTask; // TODO: populate default product categories
+        var repository = serviceProvider.GetRequiredService<IProductCategoryRepository>();
+
+        var productCategoryCount = await repository.CountAsync(new ProductCategoriesDefaultSpecification());
+
+        if (productCategoryCount > 0)
+            return;
+
+        var defaultCategories = new List<ProductCategory>
+        {
+            ProductCategory.Create("انگشتر"),
+            ProductCategory.Create("النگو"),
+            ProductCategory.Create("دستبند"),
+            ProductCategory.Create("گوشواره"),
+            ProductCategory.Create("گردنبند"),
+        };
+
+        await repository.CreateRangeAsync(defaultCategories);
     }
 
     private static async Task PopulateDefaultPriceUnitsAsync(IServiceProvider serviceProvider)
     {
         var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
 
-        var priceUnits = await priceUnitRepository.Get(new PriceUnitsWithoutSpecification()).ToListAsync();
+        var priceUnitCount = await priceUnitRepository.CountAsync(new PriceUnitsWithoutSpecification());
 
-        if (priceUnits.Any())
+        if (priceUnitCount > 0)
             return;
 
         var unitTypes = Enum.GetValues<UnitType>()
