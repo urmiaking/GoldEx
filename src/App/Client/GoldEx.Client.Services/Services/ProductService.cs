@@ -25,6 +25,18 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
+    public async Task<List<GetProductResponse>> GetListAsync(string name, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Products.GetList(name), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetProductResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Products.Get(id), cancellationToken);

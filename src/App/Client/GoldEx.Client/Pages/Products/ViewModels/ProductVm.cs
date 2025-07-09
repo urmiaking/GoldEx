@@ -1,7 +1,8 @@
-﻿using GoldEx.Shared.Enums;
-using System.ComponentModel.DataAnnotations;
-using GoldEx.Client.Pages.Settings.ViewModels;
+﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Products.ViewModels;
 
@@ -11,7 +12,7 @@ public class ProductVm
 
     [Display(Name = "نام جنس")]
     [Required(ErrorMessage = "نام جنس الزامی است")]
-    public string Name { get; set; } = default!;
+    public string? Name { get; set; }
 
     [Display(Name = "بارکد")]
     [Required(ErrorMessage = "بارکد الزامی است")]
@@ -88,7 +89,7 @@ public class ProductVm
         return new ProductRequestDto
         (
             item.Id,
-            item.Name,
+            item.Name ?? string.Empty,
             item.Barcode,
             item.Weight ?? 0,
             item.Wage ?? 0,
@@ -106,5 +107,30 @@ public class ProductVm
                     x.Purity))
                 .ToList()
         );
+    }
+
+    public static ProductVm CreateFromSearch(GetProductResponse item)
+    {
+        return new ProductVm
+        {
+            Name = item.Name,
+            Weight = item.Weight,
+            Wage = item.Wage,
+            WageType = item.WageType,
+            ProductType = item.ProductType,
+            CaratType = item.CaratType,
+            ProductCategoryId = item.ProductCategoryId,
+            ProductCategoryTitle = item.ProductCategoryTitle,
+            WagePriceUnitId = item.WagePriceUnitId,
+            WagePriceUnitTitle = item.WagePriceUnitTitle,
+            CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle)
+                ? new ProductCategoryVm
+                {
+                    Id = item.ProductCategoryId.Value,
+                    Title = item.ProductCategoryTitle
+                }
+                : null,
+            Barcode = StringExtensions.GenerateRandomBarcode()
+        };
     }
 }

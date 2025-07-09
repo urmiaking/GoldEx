@@ -6,12 +6,23 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="6" lg="6">
-                    <MudTextField @bind-Value="Model.Name"
-                                  For="@(() => Model.Name)"
-                                  Label="@Model.GetDisplayName(() => Model.Name)"
-                                  Margin="Margin.Dense"
-                                  Variant="Variant.Outlined" />
+                <MudItem xs="12" md="6" lg="6">  
+                    <MudAutocomplete T="string"   
+                                     Value="Model.Name"
+                                     ValueChanged="OnProductNameChanged"
+                                     @bind-Text="Model.Name"
+                                     For="@(() => Model.Name!)"
+                                     Label="@Model.GetDisplayName(() => Model.Name)"  
+                                     Margin="Margin.Dense"  
+                                     Variant="Variant.Outlined" 
+                                     SearchFunc="@SearchNames"
+                                     AutoFocus="true"
+                                     ResetValueOnEmptyText="true"
+                                     CoerceValue="false"
+                                     Strict="false"
+                                     DebounceInterval="0"
+                                     ShowProgressIndicator="true">
+                    </MudAutocomplete>  
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <div class="d-flex flex-row align-center">

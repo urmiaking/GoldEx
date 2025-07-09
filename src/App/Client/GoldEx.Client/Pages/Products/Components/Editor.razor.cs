@@ -4,6 +4,7 @@ using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
@@ -18,6 +19,7 @@ public partial class Editor
 
     private readonly ProductValidator _productValidator = new();
     private IEnumerable<ProductCategoryVm> _productCategories = [];
+    private List<GetProductResponse> _products = [];
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _wageFieldAdornmentText;
     private bool _wageFieldMenuOpen;
@@ -181,10 +183,8 @@ public partial class Editor
 
     private void OnWageAdornmentClicked()
     {
-        if (Model.WageType is WageType.Fixed)
-        {
+        if (Model.WageType is WageType.Fixed) 
             _wageFieldMenuOpen = !_wageFieldMenuOpen;
-        }
     }
 
     private void SelectWagePriceUnit(GetPriceUnitTitleResponse item)
@@ -209,5 +209,27 @@ public partial class Editor
             await LoadCategoriesAsync();
             StateHasChanged();
         }
+    }
+
+    private async Task<IEnumerable<string>?> SearchNames(string? name, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(name))
+            return null;
+
+        await SendRequestAsync<IProductService, List<GetProductResponse>> (
+            action: (s, ct) => s.GetListAsync(name, ct),
+            afterSend: response => _products = response);
+
+        return _products.Select(x => x.Name);
+    }
+
+    private void OnProductNameChanged(string name)
+    {
+        var product = _products.FirstOrDefault(x => x.Name == name);
+
+        if (product != null)
+            Model = ProductVm.CreateFromSearch(product);
+
+        StateHasChanged();
     }
 }

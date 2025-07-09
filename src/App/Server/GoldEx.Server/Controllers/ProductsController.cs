@@ -20,6 +20,13 @@ public class ProductsController(IProductService service) : ApiControllerBase
         return Ok(list);
     }
 
+    [HttpGet(ApiRoutes.Products.GetListByName)]
+    public async Task<IActionResult> GetListAsync([FromQuery] string name, CancellationToken cancellationToken)
+    {
+        var list = await service.GetListAsync(name, cancellationToken);
+        return Ok(list);
+    }
+
     [HttpGet(ApiRoutes.Products.Get)]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
     {
