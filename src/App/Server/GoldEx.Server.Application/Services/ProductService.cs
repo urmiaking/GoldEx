@@ -44,6 +44,21 @@ internal class ProductService(
         };
     }
 
+    public async Task<List<GetProductResponse>> GetListAsync(string name, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(name))
+            return [];
+
+        var products = await repository
+            .Get(new ProductsByNameSpecification(name))
+            .Include(x => x.ProductCategory)
+            .GroupBy(x => x.Name)
+            .Select(x => x.First())
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetProductResponse>>(products);
+    }
+
     public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))

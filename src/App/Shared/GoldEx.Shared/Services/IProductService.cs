@@ -6,6 +6,7 @@ namespace GoldEx.Shared.Services;
 public interface IProductService
 {
     Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default);
+    Task<List<GetProductResponse>> GetListAsync(string name, CancellationToken cancellationToken = default);
     Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetProductResponse?> GetAsync(string barcode, bool? forCalculation = true, CancellationToken cancellationToken = default);
     Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default);
