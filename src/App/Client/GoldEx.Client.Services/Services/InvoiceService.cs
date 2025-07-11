@@ -20,10 +20,10 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
-    public async Task<PagedList<GetInvoiceListResponse>> GetListAsync(RequestFilter filter, Guid? customerId,
-        CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetInvoiceListResponse>> GetListAsync(RequestFilter filter, InvoiceFilter invoiceFilter,
+        Guid? customerId, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Invoices.GetList(filter, customerId), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Invoices.GetList(filter, invoiceFilter, customerId), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

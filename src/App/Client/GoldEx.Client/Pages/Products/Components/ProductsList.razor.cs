@@ -24,7 +24,7 @@ public partial class ProductsList
     private MudTable<ProductVm> _table = new ();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small};
     private ProductStatus _productStatus = ProductStatus.Available;
-    private DateRange? _filterDateRange;
+    private DateRange _filterDateRange = new();
 
     private string DateRangeFilterLabel => _productStatus == ProductStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
     private string ProductStatusIcon => _productStatus == ProductStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
@@ -39,7 +39,7 @@ public partial class ProductsList
     {
         var result = new TableData<ProductVm>();
 
-        var productFilter = new ProductFilter(_productStatus, _filterDateRange?.Start, _filterDateRange?.End);
+        var productFilter = new ProductFilter(_productStatus, _filterDateRange.Start, _filterDateRange.End);
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch

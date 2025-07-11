@@ -28,9 +28,10 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Invoices.GetList)]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] Guid? customerId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] InvoiceFilter invoiceFilter,
+        [FromQuery] Guid? customerId, CancellationToken cancellationToken = default)
     {
-        var list = await service.GetListAsync(filter, customerId, cancellationToken);
+        var list = await service.GetListAsync(filter, invoiceFilter, customerId, cancellationToken);
         return Ok(list);
     }
 
