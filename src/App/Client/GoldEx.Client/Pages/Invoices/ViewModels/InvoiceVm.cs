@@ -94,6 +94,9 @@ public class InvoiceVm
         if (model.InvoicePriceUnit == null)
             throw new ValidationException("لطفا واحد ارزی فاکتور را وارد کنید");
 
+        if (!model.InvoiceItems.Any())
+            throw new ValidationException("فاکتور باید حداقل دارای یک آیتم باشد");
+
         return new InvoiceRequestDto(model.InvoiceId,
             model.InvoiceNumber,
             model.InvoiceDate.Value,
