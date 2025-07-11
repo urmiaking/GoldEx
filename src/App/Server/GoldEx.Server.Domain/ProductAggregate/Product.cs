@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.InvoiceItemAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
@@ -58,11 +59,13 @@ public class Product : EntityBase<ProductId>
     public ProductCategoryId? ProductCategoryId { get; private set; }
     public ProductCategory? ProductCategory { get; private set; }
 
-    public PriceUnitId? WagePriceUnitId { get; set; }
-    public PriceUnit? WagePriceUnit { get; set; }
+    public PriceUnitId? WagePriceUnitId { get; private set; }
+    public PriceUnit? WagePriceUnit { get; private set; }
 
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
+
+    public InvoiceItem? InvoiceItem { get; private set; }
 
     public Product SetName(string name)
     {

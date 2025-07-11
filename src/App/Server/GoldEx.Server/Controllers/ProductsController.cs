@@ -14,9 +14,9 @@ namespace GoldEx.Server.Controllers;
 public class ProductsController(IProductService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Products.GetList)]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] ProductFilter productFilter, CancellationToken cancellationToken)
     {
-        var list = await service.GetListAsync(filter, cancellationToken);
+        var list = await service.GetListAsync(filter, productFilter, cancellationToken);
         return Ok(list);
     }
 

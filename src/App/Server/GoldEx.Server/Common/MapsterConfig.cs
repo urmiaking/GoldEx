@@ -187,6 +187,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.ProductCategoryTitle, src => src.ProductCategory != null ? src.ProductCategory.Title : null)
             .Map(dest => dest.WagePriceUnitId, src => src.WagePriceUnitId.HasValue ? src.WagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.WagePriceUnitTitle, src => src.WagePriceUnit != null ? src.WagePriceUnit.Title : null)
+            .Map(dest => dest.InvoiceId, src => src.InvoiceItem != null ? src.InvoiceItem.InvoiceId.Value : (Guid?)null)
             .Map(dest => dest.GemStones, src => src.GemStones);
 
         config.NewConfig<GemStone, GetGemStoneResponse>();

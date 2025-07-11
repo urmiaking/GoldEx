@@ -57,8 +57,8 @@ public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
             .IsRequired();
 
         builder.HasOne(x => x.Product)
-            .WithMany()
-            .HasForeignKey(x => x.ProductId)
+            .WithOne(x => x.InvoiceItem)
+            .HasForeignKey<InvoiceItem>(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Invoice)
