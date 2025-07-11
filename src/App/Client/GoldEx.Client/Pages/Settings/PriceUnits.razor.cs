@@ -1,7 +1,7 @@
 ﻿using GoldEx.Client.Pages.Settings.Components.PriceUnits;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Settings;

@@ -4,16 +4,16 @@ using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoldEx.Server.Controllers;
 
-[AllowAnonymous]
 [Route(ApiRoutes.Price.Base)]
 public class PriceController(IPriceService priceService) : ApiControllerBase
 {
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.Get)]
     public async Task<IActionResult> GetAsync(CancellationToken cancellationToken = default)
     {
@@ -22,6 +22,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return Ok(list);
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetTitles)]
     public async Task<IActionResult> GetTitlesAsync([FromQuery] MarketType[] marketTypes, CancellationToken cancellationToken = default)
     {
@@ -30,6 +31,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return Ok(list);
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetMarket)]
     public async Task<IActionResult> GetAsync(MarketType marketType, CancellationToken cancellationToken = default)
     {
@@ -38,6 +40,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return Ok(list);
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetUnit)]
     public async Task<IActionResult> GetAsync(UnitType unitType, Guid? priceUnitId, [FromQuery] bool applySafetyMargin, CancellationToken cancellationToken = default)
     {
@@ -45,6 +48,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return price is not null ? Ok(price) : NotFound();
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetExchange)]
     public async Task<IActionResult> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId, CancellationToken cancellationToken = default)
     {
@@ -52,6 +56,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return Ok(exchangeRate);
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetByPriceUnit)]
     public async Task<IActionResult> GetByPriceUnitAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
     {
@@ -59,6 +64,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return price is not null ? Ok(price) : NotFound();
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetSettings)]
     public async Task<IActionResult> GetSettingsAsync(CancellationToken cancellationToken = default)
     {

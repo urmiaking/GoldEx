@@ -1,7 +1,7 @@
 ﻿using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

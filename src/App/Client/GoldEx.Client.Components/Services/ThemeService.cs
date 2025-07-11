@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.Abstractions;
+﻿using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Client.Components.Services;
 

@@ -14,7 +14,7 @@ using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;

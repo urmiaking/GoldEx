@@ -1,6 +1,6 @@
 ﻿using GoldEx.Shared.DTOs.Settings;
 
-namespace GoldEx.Shared.Services;
+namespace GoldEx.Shared.Services.Abstractions;
 
 public interface ISettingService
 {

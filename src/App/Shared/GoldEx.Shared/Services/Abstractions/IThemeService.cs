@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.Abstractions;
+﻿namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IThemeService
 {

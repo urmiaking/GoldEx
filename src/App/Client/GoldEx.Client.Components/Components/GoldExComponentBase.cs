@@ -9,6 +9,8 @@ using MudBlazor;
 using System.Security.Claims;
 using GoldEx.Client.Abstractions.Common;
 using Severity = MudBlazor.Severity;
+using GoldEx.Client.Components.Services;
+using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Client.Components.Components;
 

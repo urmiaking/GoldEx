@@ -1,5 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.Prices;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Client.Pages.Settings;
 

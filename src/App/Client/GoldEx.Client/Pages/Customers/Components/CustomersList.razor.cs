@@ -3,7 +3,7 @@ using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Customers;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

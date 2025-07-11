@@ -9,7 +9,7 @@ using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.DTOs.Transactions;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 

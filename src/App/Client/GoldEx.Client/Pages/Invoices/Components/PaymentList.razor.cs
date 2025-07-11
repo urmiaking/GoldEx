@@ -3,7 +3,7 @@ using GoldEx.Client.Pages.Settings.Components.PaymentMethods;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;

@@ -51,92 +51,104 @@ function printBarcode({ text, name, weight, wage }) {
     // It uses physical units (inches, points) to ensure it prints correctly.
     const htmlContent = `
       <html>
+
         <head>
-          <title>پرینت بارکد</title>
-          <style>
-            body {
-              margin: 0;
-              padding: 0;
-            }
-            * {
-              font-family: "IRANSans", "B Nazanin", Tahoma, sans-serif;
-            }
+            <title>پرینت بارکد</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                }
 
-            /* Styles for the printable label container. */
-            .printable-label {
-              width: 2.09in;
-              height: 0.33in;
-              box-sizing: border-box;
-              display: flex;
-              flex-direction: row;
-              justify-content: space-between;
-              align-items: flex-start;
-              overflow: hidden;
-            }
+                * {
+                    font-family: "IRANSans", "B Nazanin", Tahoma, sans-serif;
+                }
 
-            /* Left section containing barcode and name */
-            .left-section {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: space-between;
-              /* height: 100%; */
-              padding: 0.02in;
-              flex-grow: 1; /* Allows this section to take up remaining space */
-            }
+                /* Styles for the printable label container. */
+                .printable-label {
+                    width: 2.09in;
+                    height: 0.33in;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    overflow: hidden;
+                }
 
-            .barcode-img {
-              max-width: 1.4in;
-              height: 0.18in;
-              object-fit: fill; /* Stretches barcode to fill the space */
-            }
+                /* Left section containing barcode and name */
+                .left-section {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    /* Stick to left horizontally */
+                    justify-content: flex-end;
+                    /* Stick to top vertically */
+                    padding: 0;
+                    /* Remove padding */
+                    margin: 0;
+                    flex-grow: 1;
+                }
 
-            .name-text {
-              font-size: 5pt;
-              text-align: center;
-            }
+                .barcode-img {
+                    max-width: 1.4in;
+                    height: 0.18in;
+                    object-fit: fill;
+                    margin: 0;
+                }
 
-            /* Right section containing weight and wage */
-            .right-section {
-              display: flex;
-              flex-direction: column;
-              justify-content: space-around;
-              align-items: center;
-              height: 100%;
-              padding: 0.02in;
-              width: 0.6in; /* Fixed width for the right column */
-            }
+                .name-text {
+                    font-size: 5pt;
+                    text-align: right;
+                    /* Adjust for RTL */
+                    margin: 0;
+                }
 
-            .right-text {
-              font-size: 7pt;
-              font-weight: bold;
-              text-align: center;
-            }
+                /* Right section containing weight and wage */
+                .right-section {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-around;
+                    align-items: center;
+                    padding: 0.02in;
+                    width: 0.6in;
+                    /* Fixed width for the right column */
+                }
 
-            /* Print-specific rules */
-            @media print {
-              /* Define the exact page size for the printer */
-              @page {
-                size: 2.09in 0.33in;
-                margin: 0;
-              }
-            }
-          </style>
+                .right-text {
+                    font-size: 5pt;
+                    font-weight: bold;
+                    text-align: center;
+                }
+
+                /* Print-specific rules */
+                @media print {
+
+                    /* Define the exact page size for the printer */
+                    @page {
+                        size: 2.09in 0.33in;
+                        margin: 0;
+                    }
+                }
+            </style>
         </head>
-        <body onload="window.focus(); window.print();">
-          <!-- The actual label structure -->
-          <div class="printable-label">
-              <div class="left-section">
-                  <img src="${barcodeUrl}" class="barcode-img" alt="barcode" />
-                  <div class="name-text">${name}</div>
-              </div>
-              <div class="right-section">
-                  <div class="right-text">${weight}</div>
-                  <div class="right-text">${wage}</div>
-              </div>
-          </div>
+
+        <body dir=rtl onload="window.focus(); window.print();">
+            <!-- The actual label structure -->
+            <div class="printable-label">
+                <div class="right-section">
+                    <div class="right-text">${weight}</div>
+                    <div class="right-text">${wage}</div>
+                </div>
+                <div class="left-section">
+                    <img src="${barcodeUrl}" class="barcode-img" alt="barcode" />
+                    <div class="name-text">${name}</div>
+                </div>
+
+            </div>
         </body>
-      </html>
+
+        </html>
     `;
 
     // Write the complete HTML into the iframe

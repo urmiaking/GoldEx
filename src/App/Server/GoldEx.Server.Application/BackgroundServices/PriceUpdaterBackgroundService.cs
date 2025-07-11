@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Application.Services.Abstractions;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

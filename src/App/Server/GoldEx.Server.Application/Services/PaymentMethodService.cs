@@ -6,7 +6,7 @@ using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
 using GoldEx.Shared.DTOs.PaymentMethods;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
