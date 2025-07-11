@@ -227,26 +227,24 @@ internal class InvoiceService(
         }
     }
 
-    public async Task<PagedList<GetInvoiceListResponse>> GetListAsync(RequestFilter filter, Guid? customerId, CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetInvoiceListResponse>> GetListAsync(RequestFilter filter, InvoiceFilter invoiceFilter,
+        Guid? customerId, CancellationToken cancellationToken = default)
     {
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
+        var spec = new InvoicesByFilterSpecification(
+            filter,
+            invoiceFilter,
+            customerId.HasValue ? new CustomerId(customerId.Value) : null
+        );
+
         var data = await invoiceRepository
-            .Get(new InvoicesByFilterSpecification(filter,
-                customerId.HasValue
-                    ? new CustomerId(customerId.Value)
-                    : null))
-            .Include(x => x.Items)
-                .ThenInclude(x => x.Product)
+            .Get(spec)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
-        var totalCount = await invoiceRepository.CountAsync(new InvoicesByFilterSpecification(filter,
-                customerId.HasValue
-                    ? new CustomerId(customerId.Value)
-                    : null),
-            cancellationToken);
+        var totalCount = await invoiceRepository.CountAsync(spec, cancellationToken);
 
         return new PagedList<GetInvoiceListResponse>
         {

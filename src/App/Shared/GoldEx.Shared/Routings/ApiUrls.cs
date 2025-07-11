@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Extensions;
 using System.Globalization;
 using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 
@@ -203,9 +204,10 @@ public class ApiUrls
     {
         public static string Create() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Create);
 
-        public static string GetList(RequestFilter filter, Guid? customerId) =>
+        public static string GetList(RequestFilter filter, InvoiceFilter invoiceFilter, Guid? customerId) =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetList)
                 .AppendQueryString(filter)
+                .AppendQueryString(invoiceFilter)
                 .AppendQueryString(new { customerId });
 
         public static string Delete(Guid id, bool deleteProducts) =>

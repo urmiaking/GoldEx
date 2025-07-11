@@ -8,6 +8,34 @@
         <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
+        
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+                                PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ فاکتور" Clearable="true" />
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@InvoicePaymentStatusIcon">@(_invoicePaymentStatus == null ? "همه" : _invoicePaymentStatus.GetDisplayName())</MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.HasDebt)">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.MoreTime" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Overdue)">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Paid)">@InvoicePaymentStatus.Paid.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton StartIcon="@InvoicePaymentStatusIcon"></MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.HasDebt)">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.MoreTime" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Overdue)">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Paid)">@InvoicePaymentStatus.Paid.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateInvoice())" Size="Size.Small" Variant="Variant.Filled">ثبت فاکتور جدید</MudButton>
