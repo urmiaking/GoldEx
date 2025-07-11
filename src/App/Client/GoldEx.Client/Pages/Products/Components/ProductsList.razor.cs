@@ -1,9 +1,13 @@
-﻿using GoldEx.Client.Pages.Products.ViewModels;
+﻿using GoldEx.Client.Helpers;
+using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
+using System.Xml.Linq;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
@@ -11,6 +15,9 @@ public partial class ProductsList
 {
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
+
+    private string _version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.1";
 
     private string? _searchString;
     private MudTable<ProductVm> _table = new ();
@@ -107,5 +114,23 @@ public partial class ProductsList
             AddSuccessToast("جنس با موفقیت ویرایش شد.");
             await _table.ReloadServerData();
         }
+    }
+
+    private async Task OnPrintBarcode(ProductVm product)
+    {
+        var labelData = new
+        {
+            text = product.Barcode,
+            name = product.Name,
+            weight = "وزن: " + product.Weight?.ToString("G29") + "g",
+            wage = "اجرت: " + product.WageType switch
+            {
+                WageType.Fixed => $"{product.Wage?.ToCurrencyFormat(product.WagePriceUnitTitle)}",
+                WageType.Percent => product.Wage?.ToString("G29") + "%",
+                _ => "ندارد"
+            }
+        };
+
+        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
     }
 }
