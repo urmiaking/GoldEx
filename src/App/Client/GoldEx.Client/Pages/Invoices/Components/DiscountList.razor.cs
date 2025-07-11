@@ -1,7 +1,7 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Pages.Invoices.Components;

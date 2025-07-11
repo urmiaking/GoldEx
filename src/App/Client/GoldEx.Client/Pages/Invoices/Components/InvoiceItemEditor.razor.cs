@@ -8,7 +8,7 @@ using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;

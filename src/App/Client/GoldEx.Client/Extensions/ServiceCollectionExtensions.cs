@@ -4,7 +4,7 @@ using GoldEx.Client.Services;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
-using GoldEx.Shared.Abstractions;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;

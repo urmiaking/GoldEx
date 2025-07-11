@@ -3,7 +3,7 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

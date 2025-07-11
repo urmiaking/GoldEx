@@ -1,75 +1,114 @@
-// In development, always fetch from the network and do not enable offline support.
-// This is because caching would make development more difficult (changes would not
-// be reflected on the first load after each change).
-self.addEventListener('fetch', () => { });
+//self.addEventListener('fetch', () => { });
 
-//// Caution! Be sure you understand the caveats before publishing an application with
-//// offline support. See https://aka.ms/blazor-offline-considerations
+self.importScripts('./service-worker-assets.js');
 
-//self.importScripts('./service-worker-assets.js');
-//self.addEventListener('install', event => event.waitUntil(onInstall(event)));
-//self.addEventListener('activate', event => event.waitUntil(onActivate(event)));
-//self.addEventListener('fetch', event => event.respondWith(onFetch(event)));
+// Immediately activate and claim control of pages
+self.addEventListener('install', event => {
+    self.skipWaiting();
 
-//const cacheNamePrefix = 'offline-cache-';
-//const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
-//const offlineAssetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/];
-//const offlineAssetsExclude = [/^service-worker\.js$/];
+    // Notify clients before waiting for the install process
+    event.waitUntil((async () => {
+        const clientsList = await self.clients.matchAll({ type: 'window' });
+        for (const client of clientsList) {
+            client.postMessage({ type: 'INSTALLING_NEW_VERSION' });
+        }
 
-//// Replace with your base path if you are hosting on a subfolder. Ensure there is a trailing '/'.
-//const base = "/";
-//const baseUrl = new URL(base, self.origin);
-//const manifestUrlList = self.assetsManifest.assets.map(asset => new URL(asset.url, baseUrl).href);
+        // Then run the actual install logic
+        await onInstall(event);
+    })());
+});
 
-//async function onInstall(event) {
-//    console.info('Service worker: Install');
+self.addEventListener('activate', event => {
+    event.waitUntil(onActivate(event));
+    self.clients.claim();
 
-//    // remove prev. offline cache
-//    var keys = await caches.keys()
-//    keys.forEach(key => {
-//        if (key.startsWith(cacheNamePrefix) && key !== cacheName)
-//            caches.delete(key);
-//    })
+    // Notify all clients about the new version
+    event.waitUntil((async () => {
+        const allClients = await self.clients.matchAll({ type: 'window' });
+        for (const client of allClients) {
+            client.postMessage({ type: 'NEW_VERSION_AVAILABLE' });
+        }
+    })());
+});
 
-//    // Fetch and cache all matching items from the assets manifest
-//    const assetsRequests = self.assetsManifest.assets
-//        .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
-//        .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
-//        .map(asset => new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
+self.addEventListener('fetch', event => {
+    event.respondWith(onFetch(event));
+});
 
-//    await caches.open(cacheName).then(cache => assetsRequests.forEach(r => {
-//        try {
-//            cache.add(r);
-//        }
-//        catch (e) {
-//            console.error(e);
-//        }
-//    }));
-//}
+const cacheNamePrefix = 'offline-cache-';
+const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
+const offlineAssetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/];
+const offlineAssetsExclude = [/^service-worker\.js$/, /^Artemis\.Client\.styles\.css$/i];
 
-//async function onActivate(event) {
-//    console.info('Service worker: Activate');
+// Replace with your base path if you are hosting on a subfolder. Ensure there is a trailing '/'.
+const base = "/";
+const baseUrl = new URL(base, self.origin);
+const manifestUrlList = self.assetsManifest.assets.map(asset => new URL(asset.url, baseUrl).href);
 
-//    // Delete unused caches
-//    const cacheKeys = await caches.keys();
-//    await Promise.all(cacheKeys
-//        .filter(key => key.startsWith(cacheNamePrefix) && key !== cacheName)
-//        .map(key => caches.delete(key)));
-//}
+async function onInstall(event) {
+    // Fetch and cache all matching items from the assets manifest
+    const assetsRequests = self.assetsManifest.assets
+        .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
+        .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
+        .map(asset => new Request(asset.url, { cache: 'no-cache' }));;
 
-//async function onFetch(event) {
-//    let cachedResponse = null;
-//    if (event.request.method === 'GET') {
-//        // For all navigation requests, try to serve index.html from cache,
-//        // unless that request is for an offline resource.
-//        // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
-//        const shouldServeIndexHtml = event.request.mode === 'navigate'
-//            && !manifestUrlList.some(url => url === event.request.url);
+    const cache = await caches.open(cacheName);
+    await cache.addAll(assetsRequests);
 
-//        const request = shouldServeIndexHtml ? 'index.html' : event.request;
-//        const cache = await caches.open(cacheName);
-//        cachedResponse = await cache.match(request);
-//    }
+    // Manually cache home page (root path)
+    try {
+        await cache.add(new Request(base, { cache: 'no-cache' }));
+    } catch (err) {
+        console.warn('Service worker: Failed to cache root path:', err);
+    }
+}
 
-//    return cachedResponse || fetch(event.request);
-//}
+async function onActivate(event) {
+    // Delete old caches
+    const cacheKeys = await caches.keys();
+    await Promise.all(cacheKeys
+        .filter(key => key.startsWith(cacheNamePrefix) && key !== cacheName)
+        .map(key => caches.delete(key)));
+}
+
+async function onFetch(event) {
+    if (event.request.method !== 'GET') {
+        return fetch(event.request);
+    }
+
+    try {
+        // Try to fetch from network first
+        const response = await fetch(event.request);
+
+        // Cache the response if successful
+        const cache = await caches.open(cacheName);
+        cache.put(event.request, response.clone());
+
+        return response;
+    } catch (error) {
+        // Fallback to cache
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match(event.request);
+
+        if (cachedResponse) {
+            // Notify all clients about offline state
+            event.waitUntil((async () => {
+                const allClients = await self.clients.matchAll({ type: 'window' });
+                for (const client of allClients) {
+                    client.postMessage({ type: 'NETWORK_UNAVAILABLE' });
+                }
+            })());
+
+            return cachedResponse;
+        }
+
+        // Return 404 if not cached
+        return new Response('Not found', {
+            status: 404,
+            statusText: 'Resource Not Found',
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        });
+    }
+}

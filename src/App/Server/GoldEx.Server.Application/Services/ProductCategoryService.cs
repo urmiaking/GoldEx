@@ -6,7 +6,7 @@ using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Shared.DTOs.ProductCategories;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 

@@ -15,12 +15,12 @@ using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using GoldEx.Server.Infrastructure.Specifications.InvoiceItems;
+using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Server.Application.Services;
 

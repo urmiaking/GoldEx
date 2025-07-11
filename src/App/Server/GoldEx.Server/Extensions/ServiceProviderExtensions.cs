@@ -9,7 +9,6 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
 using GoldEx.Shared.Settings;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +18,7 @@ using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
+using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Server.Extensions;
 

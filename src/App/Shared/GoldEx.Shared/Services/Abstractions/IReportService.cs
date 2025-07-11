@@ -1,6 +1,6 @@
 ﻿using GoldEx.Shared.DTOs.Reports;
 
-namespace GoldEx.Shared.Services;
+namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IReportService
 {

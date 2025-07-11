@@ -8,7 +8,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Shared.DTOs.Customers;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 

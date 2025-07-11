@@ -5,7 +5,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 

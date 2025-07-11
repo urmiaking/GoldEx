@@ -4,9 +4,9 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Client.Services.Services;
 

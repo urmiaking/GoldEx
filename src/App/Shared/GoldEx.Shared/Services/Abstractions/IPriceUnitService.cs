@@ -1,6 +1,6 @@
 ﻿using GoldEx.Shared.DTOs.PriceUnits;
 
-namespace GoldEx.Shared.Services;
+namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IPriceUnitService
 {

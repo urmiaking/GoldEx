@@ -1,7 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Reports;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Pages.Settings;

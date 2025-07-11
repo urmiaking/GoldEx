@@ -5,7 +5,7 @@ using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

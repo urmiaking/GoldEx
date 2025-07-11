@@ -2,7 +2,7 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Reporting;
 using GoldEx.Shared.DTOs.Reports;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Server.Application.Services;
 

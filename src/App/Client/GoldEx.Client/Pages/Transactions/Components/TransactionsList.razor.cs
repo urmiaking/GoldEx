@@ -1,7 +1,7 @@
 ﻿using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Transactions;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

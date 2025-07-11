@@ -1,6 +1,6 @@
 ﻿using GoldEx.Client.Components.Extensions;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components.Routing;
 using MudBlazor;
 

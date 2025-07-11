@@ -2,7 +2,7 @@
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Shared.Services;
+namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IPriceService
 {

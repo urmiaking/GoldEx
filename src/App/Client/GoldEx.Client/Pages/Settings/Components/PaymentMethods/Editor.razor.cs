@@ -1,5 +1,5 @@
 ﻿using GoldEx.Client.Pages.Settings.ViewModels;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

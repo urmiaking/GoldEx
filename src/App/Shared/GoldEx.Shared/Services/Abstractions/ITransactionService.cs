@@ -1,7 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Transactions;
 
-namespace GoldEx.Shared.Services;
+namespace GoldEx.Shared.Services.Abstractions;
 
 public interface ITransactionService
 {
