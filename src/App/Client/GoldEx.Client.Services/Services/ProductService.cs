@@ -13,9 +13,10 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptions) : IProductService
 {
-    public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter, productFilter), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

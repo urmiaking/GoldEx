@@ -9,9 +9,32 @@
         <MudSpacer />
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateProduct())" Size="Size.Small" Variant="Variant.Filled">ثبت جنس جدید</MudButton>
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3" 
+                                PlaceholderStart="از" PlaceholderEnd="تا" Label="@DateRangeFilterLabel" Clearable="true" />
         </MudHidden>
 
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@ProductStatusIcon">@_productStatus.GetDisplayName()</MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse" OnClick="() => SetStatusFilterText(ProductStatus.Available)">@ProductStatus.Available.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket" OnClick="() => SetStatusFilterText(ProductStatus.Sold)">@ProductStatus.Sold.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton StartIcon="@ProductStatusIcon"></MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse" OnClick="() => SetStatusFilterText(ProductStatus.Available)">@ProductStatus.Available.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket" OnClick="() => SetStatusFilterText(ProductStatus.Sold)">@ProductStatus.Sold.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateProduct())" Size="Size.Small" Variant="Variant.Filled">ثبت جنس جدید</MudButton>
+        </MudHidden>
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateProduct())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
         </MudHidden>
@@ -28,7 +51,6 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="بارکد">@context.Barcode</MudTd>
-
         <MudTd DataLabel="نوع جنس">@context.ProductType.GetDisplayName()</MudTd>
         <MudTd DataLabel="عنوان">@context.Name</MudTd>
         <MudTd DataLabel="وزن">@(context.Weight?.ToString("G29") + " گرم")</MudTd>
@@ -79,4 +101,4 @@
 </MudTable>
 
 <script src="/js/libs/jsbarcode.all.min.js"></script>
-<script src="/js/print.js?v=@_version"></script>
+<script src="/js/print.js?v=@_jsVersion"></script>

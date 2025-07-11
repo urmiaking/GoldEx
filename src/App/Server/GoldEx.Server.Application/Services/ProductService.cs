@@ -24,16 +24,19 @@ internal class ProductService(
     ProductRequestDtoValidator validator,
     DeleteProductValidator deleteValidator) : IProductService
 {
-    public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter,
+        CancellationToken cancellationToken = default)
     {
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
+        var spec = new ProductsByFilterSpecification(filter, productFilter);
+
         var data = await repository
-            .Get(new ProductsByFilterSpecification(filter))
-            .Include(x => x.ProductCategory)
+            .Get(spec)
             .ToListAsync(cancellationToken);
-        var totalCount = await repository.CountAsync(new ProductsByFilterSpecification(filter), cancellationToken);
+
+        var totalCount = await repository.CountAsync(spec, cancellationToken);
 
         return new PagedList<GetProductResponse>
         {
@@ -52,6 +55,7 @@ internal class ProductService(
         var products = await repository
             .Get(new ProductsByNameSpecification(name))
             .Include(x => x.ProductCategory)
+            .Include(x => x.WagePriceUnit)
             .GroupBy(x => x.Name)
             .Select(x => x.First())
             .ToListAsync(cancellationToken);
@@ -133,9 +137,9 @@ internal class ProductService(
             item.SetProductCategory(null);
 
         if (request.WagePriceUnitId.HasValue)
-            item.WagePriceUnitId = new PriceUnitId(request.WagePriceUnitId.Value);
+            item.SetWagePriceUnitId(new PriceUnitId(request.WagePriceUnitId.Value)); 
         else
-            item.WagePriceUnitId = null;
+            item.SetWagePriceUnitId(null);
 
         if (request.ProductType == ProductType.Jewelry)
         {

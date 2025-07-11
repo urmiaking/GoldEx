@@ -17,15 +17,27 @@ public partial class ProductsList
     [Parameter] public int Elevation { get; set; } = 24;
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
-    private string _version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.1";
-
     private string? _searchString;
+    private string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<ProductVm> _table = new ();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small};
+    private ProductStatus _productStatus = ProductStatus.Available;
+    private DateRange? _filterDateRange;
+
+    private string DateRangeFilterLabel => _productStatus == ProductStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
+    private string ProductStatusIcon => _productStatus == ProductStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
+
+    private async Task RefreshAsync()
+    {
+        await _table.ReloadServerData();
+        StateHasChanged();
+    }
 
     private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<ProductVm>();
+
+        var productFilter = new ProductFilter(_productStatus, _filterDateRange?.Start, _filterDateRange?.End);
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch
@@ -37,7 +49,7 @@ public partial class ProductsList
             });
 
         await SendRequestAsync<IProductService, PagedList<GetProductResponse>>(
-            action: (service, token) => service.GetListAsync(filter, token),
+            action: (service, token) => service.GetListAsync(filter, productFilter, token),
             afterSend: response =>
             {
                 var items = response.Data.Select(ProductVm.CreateFrom).ToList();
@@ -55,7 +67,7 @@ public partial class ProductsList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await _table.ReloadServerData();
+        await RefreshAsync();
     }
 
     private void PageChanged(int i)
@@ -72,7 +84,7 @@ public partial class ProductsList
         if (result is { Canceled: false })
         {
             AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -94,7 +106,7 @@ public partial class ProductsList
         if (result is { Canceled: false })
         {
             AddSuccessToast("جنس با موفقیت حذف شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -112,7 +124,7 @@ public partial class ProductsList
         if (result is { Canceled: false })
         {
             AddSuccessToast("جنس با موفقیت ویرایش شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -132,5 +144,17 @@ public partial class ProductsList
         };
 
         await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
+    }
+
+    private async Task SetStatusFilterText(ProductStatus filterType)
+    {
+        _productStatus = filterType;
+        await RefreshAsync();
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _filterDateRange = dateRange;
+        await RefreshAsync();
     }
 }

@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Extensions;
 using System.Globalization;
 using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.Routings;
@@ -72,8 +73,8 @@ public class ApiUrls
 
     public class Products
     {
-        public static string GetList(RequestFilter filter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList)
-            .AppendQueryString(filter);
+        public static string GetList(RequestFilter filter, ProductFilter productFilter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList)
+            .AppendQueryString(filter).AppendQueryString(productFilter);
 
         public static string GetList(string name) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetListByName).AppendQueryString(new { name });

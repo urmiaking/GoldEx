@@ -228,7 +228,10 @@ public partial class Editor
         var product = _products.FirstOrDefault(x => x.Name == name);
 
         if (product != null)
+        {
             Model = ProductVm.CreateFromSearch(product);
+            OnWageTypeChanged(product.WageType);
+        }
 
         StateHasChanged();
     }
