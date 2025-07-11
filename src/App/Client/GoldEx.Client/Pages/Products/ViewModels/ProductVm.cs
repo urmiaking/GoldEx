@@ -48,6 +48,8 @@ public class ProductVm
 
     public List<GemStoneVm>? Stones { get; set; }
 
+    public Guid? InvoiceId { get; set; }
+
     internal static ProductVm CreateDefaultInstance() => new()
         { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
 
@@ -67,6 +69,7 @@ public class ProductVm
             ProductCategoryTitle = item.ProductCategoryTitle,
             WagePriceUnitId = item.WagePriceUnitId,
             WagePriceUnitTitle = item.WagePriceUnitTitle,
+            InvoiceId = item.InvoiceId,
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm
             {
                 Id = item.ProductCategoryId.Value,

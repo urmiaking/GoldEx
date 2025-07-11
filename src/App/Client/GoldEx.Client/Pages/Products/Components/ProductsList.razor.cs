@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Xml.Linq;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.Routings;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
@@ -156,5 +158,10 @@ public partial class ProductsList
     {
         _filterDateRange = dateRange;
         await RefreshAsync();
+    }
+
+    private void OnViewInvoice(Guid? invoiceId)
+    {
+        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
     }
 }

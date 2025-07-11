@@ -71,14 +71,24 @@
                                    OnClick="_ => OnPrintBarcode(context)"
                                    Color="@Color.Success"></MudIconButton>
                 </MudTooltip>
-                <MudTooltip Text="ویرایش جنس">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnEditProduct(context)"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="حذف جنس">
-                    <MudIconButton OnClick="@(_ => OnRemoveProduct(context))" ClickPropagation="true"
-                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                </MudTooltip>
+                @if (context.InvoiceId.HasValue)
+                {
+                    <MudTooltip Text="مشاهده فاکتور">
+                        <MudIconButton Icon="@Icons.Material.Filled.Search" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Primary" OnClick="_ => OnViewInvoice(context.InvoiceId)"></MudIconButton>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="ویرایش جنس">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Primary" OnClick="_ => OnEditProduct(context)"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="حذف جنس">
+                        <MudIconButton OnClick="@(_ => OnRemoveProduct(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    </MudTooltip>
+                }
             </div>
         </MudTd>
     </RowTemplate>
