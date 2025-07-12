@@ -21,8 +21,10 @@ internal class CustomerService(
     CustomerRequestDtoValidator validator,
     DeleteCustomerValidator deleteValidator) : ICustomerService
 {
-    public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CustomerFilter customerFilter,
+        CancellationToken cancellationToken = default)
     {
+        //TODO: apply filter
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
