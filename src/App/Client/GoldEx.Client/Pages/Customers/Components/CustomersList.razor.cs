@@ -15,6 +15,7 @@ public partial class CustomersList
     [Parameter] public int Elevation { get; set; } = 0;
 
     private string? _searchString;
+    private DateRange _filterDateRange = new();
     private MudTable<CustomerVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
     private readonly DialogOptions _viewTransactionDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
@@ -70,7 +71,7 @@ public partial class CustomersList
         if (result is {Canceled: false})
         {
             AddSuccessToast("مشتری جدید با موفقیت افزوده شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -92,7 +93,7 @@ public partial class CustomersList
         if (result is { Canceled: false })
         {
             AddSuccessToast("مشتری با موفقیت حذف شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -110,7 +111,7 @@ public partial class CustomersList
         if (result is { Canceled: false })
         {
             AddSuccessToast("اطلاعات مشتری با موفقیت ویرایش شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -124,7 +125,7 @@ public partial class CustomersList
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -138,7 +139,19 @@ public partial class CustomersList
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _filterDateRange = dateRange;
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        await _table.ReloadServerData();
+        StateHasChanged();
     }
 }

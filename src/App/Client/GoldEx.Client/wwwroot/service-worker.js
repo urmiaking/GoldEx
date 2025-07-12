@@ -37,8 +37,8 @@ self.addEventListener('fetch', event => {
 
 const cacheNamePrefix = 'offline-cache-';
 const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
-const offlineAssetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/];
-const offlineAssetsExclude = [/^service-worker\.js$/, /^Artemis\.Client\.styles\.css$/i];
+const offlineAssetsInclude = [/\.dll$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/];
+const offlineAssetsExclude = [/^service-worker\.js$/, /^GoldEx\.Client\.styles\.css$/i];
 
 // Replace with your base path if you are hosting on a subfolder. Ensure there is a trailing '/'.
 const base = "/";
@@ -50,7 +50,7 @@ async function onInstall(event) {
     const assetsRequests = self.assetsManifest.assets
         .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
         .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
-        .map(asset => new Request(asset.url, { cache: 'no-cache' }));;
+        .map(asset => new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
 
     const cache = await caches.open(cacheName);
     await cache.addAll(assetsRequests);
