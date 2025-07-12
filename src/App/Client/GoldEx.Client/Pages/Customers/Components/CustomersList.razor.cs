@@ -34,7 +34,7 @@ public partial class CustomersList
             });
 
         await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
-            action: (s, token) => s.GetListAsync(filter, token),
+            action: (s, token) => s.GetListAsync(filter, TODO, token),
             afterSend: response =>
             {
                 var items = response.Data.Select(CustomerVm.CreateFrom).ToList();
