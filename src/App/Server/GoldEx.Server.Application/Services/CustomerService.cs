@@ -24,16 +24,15 @@ internal class CustomerService(
     public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CustomerFilter customerFilter,
         CancellationToken cancellationToken = default)
     {
-        //TODO: apply filter
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
         var data = await repository
-            .Get(new CustomersByFilterSpecification(filter))
+            .Get(new CustomersByFilterSpecification(filter, customerFilter))
             .Include(x => x.CreditLimitPriceUnit)
             .ToListAsync(cancellationToken);
 
-        var totalCount = await repository.CountAsync(new CustomersByFilterSpecification(filter), cancellationToken);
+        var totalCount = await repository.CountAsync(new CustomersByFilterSpecification(filter, customerFilter), cancellationToken);
 
         return new PagedList<GetCustomerResponse>
         {

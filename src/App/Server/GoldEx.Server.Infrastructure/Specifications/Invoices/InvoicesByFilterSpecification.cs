@@ -18,13 +18,8 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         ApplyPaging(skip, take);
 
         // --- Includes ---
-        // Includes are still valuable for hydrating the entity for the final response
         AddInclude(x => x.Customer!);
         AddInclude(x => x.PriceUnit!);
-        AddInclude(x => x.Items);
-        AddInclude(x => x.InvoicePayments);
-        AddInclude(x => x.Discounts);
-        AddInclude(x => x.ExtraCosts);
 
         // --- Main Filtering Logic ---
 
@@ -79,6 +74,8 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
                     // Combine the "has debt" logic with the "not overdue" check
                     AddCriteria(hasDebtExpression.And(x => !x.DueDate.HasValue || x.DueDate.Value >= todayForDebt));
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -87,7 +84,7 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         {
             if (long.TryParse(filter.Search, out var number))
             {
-                AddCriteria(x => x.InvoiceNumber == number);
+                AddCriteria(x => x.InvoiceNumber == number || x.Items.Any(i => i.Product!.Barcode == number.ToString()));
             }
             else
             {

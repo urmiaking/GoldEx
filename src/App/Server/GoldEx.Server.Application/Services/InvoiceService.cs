@@ -241,6 +241,8 @@ internal class InvoiceService(
 
         var data = await invoiceRepository
             .Get(spec)
+            .Include(x => x.Items)
+                .ThenInclude(x => x.Product)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
