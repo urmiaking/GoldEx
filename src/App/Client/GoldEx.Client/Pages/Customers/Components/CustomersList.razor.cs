@@ -33,8 +33,10 @@ public partial class CustomersList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
+        var customerFilter = new CustomerFilter(_filterDateRange.Start, _filterDateRange.End);
+
         await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
-            action: (s, token) => s.GetListAsync(filter, TODO, token),
+            action: (s, token) => s.GetListAsync(filter, customerFilter, token),
             afterSend: response =>
             {
                 var items = response.Data.Select(CustomerVm.CreateFrom).ToList();
