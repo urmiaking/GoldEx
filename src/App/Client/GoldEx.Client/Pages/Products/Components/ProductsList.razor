@@ -9,7 +9,7 @@
         <MudSpacer />
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3" 
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
                                 PlaceholderStart="از" PlaceholderEnd="تا" Label="@DateRangeFilterLabel" Clearable="true" />
         </MudHidden>
 
@@ -50,7 +50,11 @@
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="بارکد">@context.Barcode</MudTd>
+        <MudTd DataLabel="بارکد">
+            <MudTooltip Text="@GetTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                @context.Barcode
+            </MudTooltip>
+        </MudTd>
         <MudTd DataLabel="نوع جنس">@context.ProductType.GetDisplayName()</MudTd>
         <MudTd DataLabel="عنوان">@context.Name</MudTd>
         <MudTd DataLabel="وزن">@(context.Weight?.ToString("G29") + " گرم")</MudTd>

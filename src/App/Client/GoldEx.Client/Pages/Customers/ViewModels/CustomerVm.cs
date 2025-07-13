@@ -39,6 +39,8 @@ public class CustomerVm
 
     public bool CreditLimitMenuOpen { get; set; }
 
+    public DateTime CreatedAt { get; set; }
+
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {
         return new CustomerVm
@@ -50,7 +52,8 @@ public class CustomerVm
             PhoneNumber = response.PhoneNumber,
             Address = response.Address,
             CreditLimit = response.CreditLimit,
-            CreditLimitPriceUnit = response.CreditLimitPriceUnit
+            CreditLimitPriceUnit = response.CreditLimitPriceUnit,
+            CreatedAt = response.CreatedAt
         };
     }
 

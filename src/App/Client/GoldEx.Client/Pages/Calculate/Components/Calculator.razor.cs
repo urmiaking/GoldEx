@@ -239,7 +239,7 @@ public partial class Calculator
             if (_model.PriceUnit is null)
                 return;
 
-            if (_model.PriceUnit != _model.WagePriceUnit)
+            if (_model.PriceUnit != _model.WagePriceUnit && _model.WagePriceUnit != null)
                 await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                     action: (s, ct) => s.GetExchangeRateAsync(_model.WagePriceUnit.Id, _model.PriceUnit.Id, ct),
                     afterSend: response =>

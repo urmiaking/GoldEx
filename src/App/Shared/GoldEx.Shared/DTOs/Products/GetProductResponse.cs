@@ -16,4 +16,5 @@ public record GetProductResponse(
     Guid? WagePriceUnitId,
     string? WagePriceUnitTitle,
     Guid? InvoiceId,
+    DateTime DateTime,
     List<GetGemStoneResponse>? GemStones);

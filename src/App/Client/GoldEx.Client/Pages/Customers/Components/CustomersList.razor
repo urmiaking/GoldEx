@@ -25,6 +25,7 @@
         <MudTh><MudTableSortLabel SortLabel="CustomerType" T="CustomerVm">نوع</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="NationalId" T="CustomerVm">کد یکتا</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="PhoneNumber" T="CustomerVm">شماره تماس</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="CreatedAt" T="CustomerVm">تاریخ ثبت</MudTableSortLabel></MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -32,6 +33,7 @@
         <MudTd DataLabel="نوع">@context.CustomerType.GetDisplayName()</MudTd>
         <MudTd DataLabel="کد یکتا">@context.NationalId</MudTd>
         <MudTd DataLabel="شماره تماس">@context.PhoneNumber</MudTd>
+        <MudTd DataLabel="تاریخ ثبت">@context.CreatedAt</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="مشاهده تراکنش های مشتری">
