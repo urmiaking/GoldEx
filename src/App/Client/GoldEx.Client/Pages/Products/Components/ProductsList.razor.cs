@@ -164,4 +164,9 @@ public partial class ProductsList
     {
         Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
     }
+
+    private string GetTooltipText(ProductVm item)
+    {
+        return item.InvoiceId.HasValue ? $"تاریخ فروش: {item.DateTime.ToShortDateString()}" : $"تاریخ ثبت: {item.DateTime}";
+    }
 }

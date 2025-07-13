@@ -50,6 +50,8 @@ public class ProductVm
 
     public Guid? InvoiceId { get; set; }
 
+    public DateTime DateTime { get; set; }
+
     internal static ProductVm CreateDefaultInstance() => new()
         { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
 
@@ -70,6 +72,7 @@ public class ProductVm
             WagePriceUnitId = item.WagePriceUnitId,
             WagePriceUnitTitle = item.WagePriceUnitTitle,
             InvoiceId = item.InvoiceId,
+            DateTime = item.DateTime,
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm
             {
                 Id = item.ProductCategoryId.Value,

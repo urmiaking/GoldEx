@@ -10,4 +10,5 @@ public record GetCustomerResponse(Guid Id,
     string? Address,
     decimal? CreditLimit,
     GetPriceUnitTitleResponse? CreditLimitPriceUnit,
+    DateTime CreatedAt,
     CustomerType CustomerType);

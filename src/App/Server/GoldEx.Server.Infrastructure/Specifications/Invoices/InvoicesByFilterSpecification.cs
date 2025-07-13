@@ -84,11 +84,14 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         {
             if (long.TryParse(filter.Search, out var number))
             {
-                AddCriteria(x => x.InvoiceNumber == number || x.Items.Any(i => i.Product!.Barcode == number.ToString()));
+                AddCriteria(x =>
+                    x.InvoiceNumber == number || x.Items.Any(i => i.Product!.Barcode == number.ToString()));
             }
             else
             {
-                AddCriteria(x => x.Customer!.FullName.Contains(filter.Search));
+                AddCriteria(x =>
+                    x.Customer!.FullName.Contains(filter.Search) ||
+                    x.Items.Any(i => i.Product!.Name.Contains(filter.Search)));
             }
         }
 
