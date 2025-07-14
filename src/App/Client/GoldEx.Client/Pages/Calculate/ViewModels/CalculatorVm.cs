@@ -50,4 +50,16 @@ public class CalculatorVm
 
     [Display(Name = "واحد سنجش طلا")]
     public GoldUnitType GoldUnitType { get; set; } = GoldUnitType.Gram;
+
+    public static CalculatorVm CreateFrom(GetProductResponse response, CalculatorVm model, GetPriceUnitTitleResponse? wagePriceUnit)
+    {
+        model.Weight = response.Weight;
+        model.ProductType = response.ProductType;
+        model.Wage = response.Wage;
+        model.WageType = response.WageType;
+        model.CaratType = response.CaratType;
+        model.WagePriceUnit = wagePriceUnit;
+
+        return model;
+    }
 }

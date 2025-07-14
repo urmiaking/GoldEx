@@ -355,7 +355,7 @@
                                 {
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent.ToCurrencyFormat()%</MudText>
-                                        <MudText>@_profit.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                        <MudText>@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title) @_model.PriceUnit?.Title</MudText>
                                     </div>
                                 }
                                 @if (_tax.HasValue && _tax.Value is not 0)
