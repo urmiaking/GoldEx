@@ -251,7 +251,7 @@
                     <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
                     <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
                     <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
-                    <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") گرم</MudTd>
+                    <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
                     <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
                     <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudTd>
                     <MudTd DataLabel="عملیات">

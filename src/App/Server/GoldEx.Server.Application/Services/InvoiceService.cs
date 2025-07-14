@@ -123,6 +123,7 @@ internal class InvoiceService(
                             itemDto.Product.Wage,
                             itemDto.Product.ProductType,
                             itemDto.Product.CaratType,
+                            itemDto.Product.GoldUnitType,
                             itemDto.Product.WageType,
                             itemDto.Product.WagePriceUnitId.HasValue
                                 ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
@@ -147,6 +148,7 @@ internal class InvoiceService(
                         existingProduct.SetBarcode(itemDto.Product.Barcode);
                         existingProduct.SetWeight(itemDto.Product.Weight);
                         existingProduct.SetCaratType(itemDto.Product.CaratType);
+                        existingProduct.SetGoldUnitType(itemDto.Product.GoldUnitType);
                         existingProduct.SetProductType(itemDto.Product.ProductType);
                         existingProduct.SetWage(itemDto.Product.Wage);
                         existingProduct.SetWageType(itemDto.Product.WageType);

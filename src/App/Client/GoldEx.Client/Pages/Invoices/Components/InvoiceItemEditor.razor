@@ -11,7 +11,7 @@
                                  For="@(() => Model.GramPrice)"
                                  Format="#,##0.##"
                                  HideSpinButtons="true"
-                                 Label="@Model.Product.GetDisplayName(() => Model.GramPrice)"
+                                 Label="@($"نرخ هر {Model.Product.GoldUnitType.GetDisplayName()} طلا")"
                                  Margin="Margin.Dense"
                                  Variant="Variant.Outlined" />
             </div>
@@ -58,15 +58,31 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="گرم"
-                                     @bind-Value="Model.Product.Weight"
-                                     For="@(() => Model.Product.Weight)"
-                                     Format="G29"
-                                     HideSpinButtons="true"
-                                     Label="@Model.Product.GetDisplayName(() => Model.Product.Weight)"
-                                     Margin="Margin.Dense"
-                                     Variant="Variant.Outlined" />
+                    <MudMenu @bind-Open="_weightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@Model.Product.GoldUnitType.GetDisplayName()"
+                                             For="() => Model.Product.Weight"
+                                             Format="G29"
+                                             HideSpinButtons="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(Model.GetDisplayName(() => Model.Product.Weight))"
+                                             T="decimal?"
+                                             @bind-Value="Model.Product.Weight"
+                                             Variant="Variant.Outlined"
+                                             OnAdornmentClick="() => _weightFieldMenuOpen = !_weightFieldMenuOpen"></MudNumericField>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in Enum.GetValues<GoldUnitType>())
+                            {
+                                <MudMenuItem OnClick="() => OnGoldUnitTypeSelected(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @item.GetDisplayName()
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
                 </MudItem>
                 <MudItem xs="12" md="4">
                     <MudSelect For="() => Model.Product.WageType"

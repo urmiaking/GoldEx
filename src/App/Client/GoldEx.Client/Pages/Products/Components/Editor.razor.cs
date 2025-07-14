@@ -24,6 +24,7 @@ public partial class Editor
     private string? _wageFieldAdornmentText;
     private bool _wageFieldMenuOpen;
     private bool _processing;
+    private bool _weightFieldMenuOpen;
     private MudForm _form = default!;
 
     protected override void OnParametersSet()

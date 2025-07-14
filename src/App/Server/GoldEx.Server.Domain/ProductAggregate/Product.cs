@@ -16,6 +16,7 @@ public class Product : EntityBase<ProductId>
         decimal wage,
         ProductType productType,
         CaratType caratType,
+        GoldUnitType goldUnitType,
         WageType wageType,
         PriceUnitId? wagePriceUnitId,
         ProductCategoryId? productCategoryId)
@@ -36,6 +37,7 @@ public class Product : EntityBase<ProductId>
             Wage = wage,
             ProductType = productType,
             CaratType = caratType,
+            GoldUnitType = goldUnitType,
             WageType = wageType,
             WagePriceUnitId = wagePriceUnitId,
             ProductCategoryId = productCategoryId,
@@ -55,6 +57,7 @@ public class Product : EntityBase<ProductId>
     public CaratType CaratType { get; private set; }
     public WageType WageType { get; private set; }
     public ProductStatus ProductStatus { get; private set; }
+    public GoldUnitType GoldUnitType { get; private set; }
 
     public ProductCategoryId? ProductCategoryId { get; private set; }
     public ProductCategory? ProductCategory { get; private set; }
@@ -100,6 +103,12 @@ public class Product : EntityBase<ProductId>
     public Product SetCaratType(CaratType caratType)
     {
         CaratType = caratType;
+        return this;
+    }
+
+    public Product SetGoldUnitType(GoldUnitType goldUnitType)
+    {
+        GoldUnitType = goldUnitType;
         return this;
     }
 

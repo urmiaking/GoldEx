@@ -57,7 +57,7 @@
         </MudTd>
         <MudTd DataLabel="نوع جنس">@context.ProductType.GetDisplayName()</MudTd>
         <MudTd DataLabel="عنوان">@context.Name</MudTd>
-        <MudTd DataLabel="وزن">@(context.Weight?.ToString("G29") + " گرم")</MudTd>
+        <MudTd DataLabel="وزن">@(context.Weight?.ToString("G29")) @context.GoldUnitType.GetDisplayName()</MudTd>
         <MudTd DataLabel="اجرت">
             @(context.WageType switch
             {

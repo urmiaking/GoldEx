@@ -59,6 +59,7 @@ public class CalculatorVm
         model.WageType = response.WageType;
         model.CaratType = response.CaratType;
         model.WagePriceUnit = wagePriceUnit;
+        model.GoldUnitType = response.GoldUnitType;
 
         return model;
     }

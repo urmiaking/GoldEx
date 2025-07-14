@@ -462,7 +462,7 @@
             this.xrTableCell2.Name = "xrTableCell2";
             this.xrTableCell2.StylePriority.UseFont = false;
             this.xrTableCell2.Text = "عنوان";
-            this.xrTableCell2.Weight = 1.3440000436921282D;
+            this.xrTableCell2.Weight = 1.2159999186921284D;
             // 
             // xrTableCell3
             // 
@@ -473,7 +473,7 @@
             this.xrTableCell3.StylePriority.UseTextAlignment = false;
             this.xrTableCell3.Text = "اجرت ساخت";
             this.xrTableCell3.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
-            this.xrTableCell3.Weight = 0.675555579969618D;
+            this.xrTableCell3.Weight = 0.67555552842882149D;
             // 
             // xrTableCell4
             // 
@@ -484,7 +484,7 @@
             this.xrTableCell4.StylePriority.UseTextAlignment = false;
             this.xrTableCell4.Text = "تعداد";
             this.xrTableCell4.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
-            this.xrTableCell4.Weight = 0.27022222154405395D;
+            this.xrTableCell4.Weight = 0.30399999794741178D;
             // 
             // xrTableCell5
             // 
@@ -495,7 +495,7 @@
             this.xrTableCell5.StylePriority.UseTextAlignment = false;
             this.xrTableCell5.Text = "وزن";
             this.xrTableCell5.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
-            this.xrTableCell5.Weight = 0.40533333875868033D;
+            this.xrTableCell5.Weight = 0.49955573889611882D;
             // 
             // xrTableCell6
             // 
@@ -589,7 +589,7 @@
             this.xrTableCell8.StylePriority.UseTextAlignment = false;
             this.xrTableCell8.Text = "xrTableCell8";
             this.xrTableCell8.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
-            this.xrTableCell8.Weight = 1.3439999181840667D;
+            this.xrTableCell8.Weight = 1.2160001810312864D;
             // 
             // xrTableCell9
             // 
@@ -601,7 +601,7 @@
             this.xrTableCell9.Text = "xrTableCell9";
             this.xrTableCell9.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
             this.xrTableCell9.TextFormatString = "{0:#,##0.##}";
-            this.xrTableCell9.Weight = 0.67555622750003141D;
+            this.xrTableCell9.Weight = 0.67555566055116134D;
             // 
             // xrTableCell10
             // 
@@ -612,7 +612,7 @@
             this.xrTableCell10.StylePriority.UseTextAlignment = false;
             this.xrTableCell10.Text = "xrTableCell10";
             this.xrTableCell10.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
-            this.xrTableCell10.Weight = 0.27022202899203696D;
+            this.xrTableCell10.Weight = 0.30400004378881412D;
             // 
             // xrTableCell11
             // 
@@ -624,7 +624,7 @@
             this.xrTableCell11.Text = "xrTableCell11";
             this.xrTableCell11.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
             this.xrTableCell11.TextFormatString = "{0:#,##0.##}";
-            this.xrTableCell11.Weight = 0.40533349447013511D;
+            this.xrTableCell11.Weight = 0.49955578377500848D;
             // 
             // xrTableCell12
             // 
@@ -716,7 +716,7 @@
             this.xrLabel25.StylePriority.UseBorders = false;
             this.xrLabel25.StylePriority.UseFont = false;
             this.xrLabel25.StylePriority.UseTextAlignment = false;
-            this.xrLabel25.Text = "نرخ روز هرگرم طلای 18 عیار:[Invoice.DailyGramPrice]";
+            this.xrLabel25.Text = "نرخ روز هر واحد طلای 18 عیار";
             this.xrLabel25.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
             // 
             // xrLabel36
