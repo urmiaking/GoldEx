@@ -92,7 +92,6 @@ public partial class Calculator
             _model.WagePriceUnit = priceUnit;
 
             await OnPriceUnitChanged(_model.PriceUnit);
-            UpdateWageFields();
 
             return;
         }
@@ -110,7 +109,6 @@ public partial class Calculator
                 }
 
                 _model.WagePriceUnit ??= response.FirstOrDefault(x => x.IsDefault);
-                UpdateWageFields();
             });
     }
 
@@ -199,16 +197,13 @@ public partial class Calculator
         switch (wageType)
         {
             case WageType.Percent:
-                UpdateWageFields();
+                _model.ExchangeRate = null;
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Percent;
                 _wageField.Disabled = false;
                 break;
             case WageType.Fixed:
-                UpdateWageFields();
-
                 if (_model.WagePriceUnit != null)
                     await SelectWagePriceUnit(_model.WagePriceUnit);
-
                 _wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
                 _wageField.Disabled = false;
                 break;
@@ -226,8 +221,6 @@ public partial class Calculator
     private async void OnWageChanged(decimal? wage)
     {
         _model.Wage = wage;
-
-        UpdateWageFields();
 
         await Calculate();
     }
@@ -268,7 +261,6 @@ public partial class Calculator
         }
         finally
         {
-            UpdateWageFields();
             await Calculate();
 
             _isRecalculating = false;
@@ -284,19 +276,13 @@ public partial class Calculator
     private void OnWageExchangeRateChanged(decimal? exchangeRate)
     {
         _model.ExchangeRate = exchangeRate;
-
-        UpdateWageFields();
     }
 
     private async void UpdateWageFields()
     {
         //TODO: remove
 
-        if (_model.WageType is WageType.Fixed)
-        {
-            
-        }
-        else
+        if (_model.WageType is WageType.Percent)
         {
             _model.ExchangeRate = null;
         }
@@ -387,7 +373,6 @@ public partial class Calculator
         if (_model.WagePriceUnit != null) 
             await SelectWagePriceUnit(_model.WagePriceUnit);
 
-        UpdateWageFields();
         await Calculate();
 
         StateHasChanged();
@@ -415,14 +400,10 @@ public partial class Calculator
 
                     _barcodeFieldHelperText = response.Name;
 
-                    _model.Weight = response.Weight;
-                    _model.CaratType = response.CaratType;
-                    _model.Wage = response.Wage;
-                    _model.WageType = response.WageType;
-                    _model.ProductType = response.ProductType;
-                    _model.WagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
+                    var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
 
-                    UpdateWageFields();
+                    _model = CalculatorVm.CreateFrom(response, _model, wagePriceUnit);
+                    //TODO: check exchange rate
                     await SelectWagePriceUnit(_model.WagePriceUnit!);
                     OnProductTypeChanged(_model.ProductType);
                 });
