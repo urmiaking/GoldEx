@@ -21,12 +21,11 @@ public partial class Calculator
     private CalculatorVm _model = new();
     private MudForm _from = default!;
     private CalculatorValidator _calculatorValidator = new();
-    private MudSelect<WageType?> _wageTypeField = default!;
-    private MudNumericField<decimal?> _wageField = default!;
-    private MudNumericField<decimal> _profitField = default!;
 
-    private string? _gramPriceAdornmentText;
-    private string? _extraCostsAdornmentText;
+    private Timer? _timer;
+    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
+    private GetSettingResponse? _settings;
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     private decimal? _rawPrice;
     private decimal? _wage;
@@ -35,10 +34,6 @@ public partial class Calculator
     private decimal? _finalPrice;
     private string? _barcode;
     private string? _barcodeFieldHelperText;
-    private Timer? _timer;
-    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
-    private GetSettingResponse? _settings;
-    private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     private bool _isInitialLoading = true;
     private bool _isBarcodeProcessing = false;
@@ -47,6 +42,7 @@ public partial class Calculator
     private bool _wageFieldMenuOpen;
     private bool _weightFieldMenuOpen;
 
+    private string? PriceUnitTitle => _model.PriceUnit?.Title;
     private string WeightFieldAdornmentText => _model.GoldUnitType.GetDisplayName();
     private string GramPriceFieldLabel => $"نرخ {_model.GoldUnitType.GetDisplayName()}";
     private string? WageFieldAdornmentText => _model.WageType switch
@@ -56,6 +52,14 @@ public partial class Calculator
         null => null,
         _ => throw new ArgumentOutOfRangeException(nameof(_model.WageType), _model.WageType, null)
     };
+    private string? WageTypeAdornmentIcon =>
+        _model.WageType switch
+        {
+            WageType.Percent => Icons.Material.Filled.Percent,
+            WageType.Fixed => Icons.Material.Filled.Money,
+            null => Icons.Material.Filled.MoneyOff,
+            _ => throw new ArgumentOutOfRangeException(nameof(_model.WageType), _model.WageType, null)
+        };
     private string? WageExchangeRateLabel =>
         _model is { WageType: WageType.Fixed, WagePriceUnit: not null, PriceUnit: not null }
             ? $"نرخ تبدیل {_model.WagePriceUnit.Title} به {_model.PriceUnit.Title}"
@@ -140,13 +144,12 @@ public partial class Calculator
     {
         _isBarcodeProcessing = true;
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
-            action: (s, ct) => s.GetAsync(UnitType.Gold18K, _model.PriceUnit?.Id, _applySafetyMargin, ct),
+            action: (s, ct) => s.GetAsync(_model.GoldUnitType, _model.PriceUnit?.Id, _applySafetyMargin, ct),
             afterSend: response =>
             {
                 decimal.TryParse(response?.Value, out var gramPriceValue);
 
                 _model.GramPrice = gramPriceValue;
-                _gramPriceAdornmentText = response?.Unit;
 
                 StateHasChanged();
             });
@@ -198,18 +201,13 @@ public partial class Calculator
         {
             case WageType.Percent:
                 _model.ExchangeRate = null;
-                _wageTypeField.AdornmentIcon = Icons.Material.Filled.Percent;
-                _wageField.Disabled = false;
                 break;
             case WageType.Fixed:
                 if (_model.WagePriceUnit != null)
                     await SelectWagePriceUnit(_model.WagePriceUnit);
-                _wageTypeField.AdornmentIcon = Icons.Material.Filled.Money;
-                _wageField.Disabled = false;
                 break;
             case null:
-                await _wageField.ResetAsync();
-                _wageField.Disabled = true;
+                _model.Wage = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
@@ -270,24 +268,12 @@ public partial class Calculator
     private async Task SelectGoldUnitType(GoldUnitType unitType)
     {
         _model.GoldUnitType = unitType;
-        //TODO: add requests and calculations
+        await LoadGramPriceAsync();
     }
 
     private void OnWageExchangeRateChanged(decimal? exchangeRate)
     {
         _model.ExchangeRate = exchangeRate;
-    }
-
-    private async void UpdateWageFields()
-    {
-        //TODO: remove
-
-        if (_model.WageType is WageType.Percent)
-        {
-            _model.ExchangeRate = null;
-        }
-
-        await Calculate();
     }
 
     private async void OnProductTypeChanged(ProductType productType)
@@ -309,9 +295,9 @@ public partial class Calculator
             case ProductType.OldGold:
                 _applySafetyMargin = false;
                 _model.OldGoldCarat = (int?)_settings?.OldGoldCarat ?? 735;
-                await _wageField.ResetAsync();
-                await _wageTypeField.ResetAsync();
-                await _profitField.ResetAsync();
+                _model.Wage = null;
+                _model.WageType = null;
+                _model.ProfitPercent = 0;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
@@ -366,8 +352,6 @@ public partial class Calculator
     {
         _model.PriceUnit = priceUnit;
 
-        _extraCostsAdornmentText = priceUnit?.Title;
-
         await LoadGramPriceAsync();
 
         if (_model.WagePriceUnit != null) 
@@ -403,7 +387,6 @@ public partial class Calculator
                     var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
 
                     _model = CalculatorVm.CreateFrom(response, _model, wagePriceUnit);
-                    //TODO: check exchange rate
                     await SelectWagePriceUnit(_model.WagePriceUnit!);
                     OnProductTypeChanged(_model.ProductType);
                 });

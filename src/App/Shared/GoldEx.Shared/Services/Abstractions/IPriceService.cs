@@ -18,7 +18,7 @@ public interface IPriceService
     /// <param name="applySafetyMargin"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
+    Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
         CancellationToken cancellationToken = default);
     Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default);
     Task<GetExchangeRateResponse> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId,

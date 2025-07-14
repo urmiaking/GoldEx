@@ -87,8 +87,9 @@ public partial class EditorForm
 
     private async Task LoadGramPriceAsync()
     {
+        // TODO: change it to use mesghal too
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
-            action: (s, ct) => s.GetAsync(UnitType.Gold18K, _model.InvoicePriceUnit?.Id, true, ct),
+            action: (s, ct) => s.GetAsync(GoldUnitType.Gram, _model.InvoicePriceUnit?.Id, true, ct),
             afterSend: response =>
             {
                 _gramPrice = response;

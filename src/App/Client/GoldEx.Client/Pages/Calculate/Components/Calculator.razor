@@ -90,7 +90,7 @@
                     else
                     {
                         <MudNumericField Adornment="Adornment.End"
-                                         AdornmentText="@_gramPriceAdornmentText"
+                                         AdornmentText="@PriceUnitTitle"
                                          For="() => _model.GramPrice"
                                          Format="#,##0.##"
                                          HideSpinButtons="true"
@@ -192,11 +192,11 @@
                                        Immediate="true"
                                        Margin="Margin.Dense"
                                        Label="@(_model.GetDisplayName(() => _model.WageType))"
-                                       @ref="_wageTypeField"
                                        T="WageType?"
                                        Value="_model.WageType"
                                        ValueChanged="OnWageTypeChanged"
-                                       Variant="Variant.Outlined">
+                                       Variant="Variant.Outlined"
+                                       AdornmentIcon="@WageTypeAdornmentIcon">
                                 <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
                                 @foreach (WageType wageType in Enum.GetValues(typeof(WageType)))
                                 {
@@ -222,7 +222,6 @@
                                                      Immediate="true"
                                                      Margin="Margin.Dense"
                                                      Label="@(_model.GetDisplayName(() => _model.Wage))"
-                                                     @ref="_wageField"
                                                      T="decimal?"
                                                      Value="_model.Wage"
                                                      ValueChanged="OnWageChanged"
@@ -287,7 +286,6 @@
                                              Immediate="true"
                                              Margin="Margin.Dense"
                                              Label="@(_model.GetDisplayName(() => _model.ProfitPercent))"
-                                             @ref="_profitField"
                                              T="decimal"
                                              Value="_model.ProfitPercent"
                                              ValueChanged="OnProfitChanged"
@@ -304,7 +302,7 @@
                     else
                     {
                         <MudNumericField Adornment="Adornment.End"
-                                         AdornmentText="@_extraCostsAdornmentText"
+                                         AdornmentText="@PriceUnitTitle"
                                          For="() => _model.ExtraCosts"
                                          Format="#,##0.##"
                                          HideSpinButtons="true"
