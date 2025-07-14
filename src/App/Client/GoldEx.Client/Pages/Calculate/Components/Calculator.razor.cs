@@ -42,9 +42,6 @@ public partial class Calculator
     private bool _wageFieldMenuOpen;
     private bool _weightFieldMenuOpen;
 
-    private string? PriceUnitTitle => _model.PriceUnit?.Title;
-    private string WeightFieldAdornmentText => _model.GoldUnitType.GetDisplayName();
-    private string GramPriceFieldLabel => $"نرخ {_model.GoldUnitType.GetDisplayName()}";
     private string? WageFieldAdornmentText => _model.WageType switch
     {
         WageType.Percent => WageType.Percent.GetDisplayName(),

@@ -40,5 +40,6 @@ public record GetProductReportResponse(
     string? Wage,
     ProductType ProductType,
     WageType? WageType,
+    GoldUnitType GoldUnitType,
     CaratType CaratType,
     string? ProductCategoryTitle);

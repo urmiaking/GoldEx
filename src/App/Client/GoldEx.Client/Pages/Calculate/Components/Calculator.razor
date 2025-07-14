@@ -90,13 +90,13 @@
                     else
                     {
                         <MudNumericField Adornment="Adornment.End"
-                                         AdornmentText="@PriceUnitTitle"
+                                         AdornmentText="@_model.PriceUnit?.Title"
                                          For="() => _model.GramPrice"
                                          Format="#,##0.##"
                                          HideSpinButtons="true"
                                          Immediate="true"
                                          Margin="Margin.Dense"
-                                         Label="@GramPriceFieldLabel"
+                                         Label="@($"نرخ {_model.GoldUnitType.GetDisplayName()}")"
                                          T="decimal"
                                          Value="@_model.GramPrice"
                                          ValueChanged="OnGramPriceChanged"
@@ -114,7 +114,7 @@
                         <MudMenu @bind-Open="_weightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                             <ActivatorContent>
                                 <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@WeightFieldAdornmentText"
+                                                 AdornmentText="@_model.GoldUnitType.GetDisplayName()"
                                                  For="() => _model.Weight"
                                                  Format="G29"
                                                  HideSpinButtons="true"
@@ -302,7 +302,7 @@
                     else
                     {
                         <MudNumericField Adornment="Adornment.End"
-                                         AdornmentText="@PriceUnitTitle"
+                                         AdornmentText="@_model.PriceUnit?.Title"
                                          For="() => _model.ExtraCosts"
                                          Format="#,##0.##"
                                          HideSpinButtons="true"

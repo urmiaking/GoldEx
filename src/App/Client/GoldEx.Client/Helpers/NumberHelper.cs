@@ -1,6 +1,6 @@
-﻿using System.Globalization;
-using System.Text;
-using static MudBlazor.Colors;
+﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.Enums;
+using System.Globalization;
 
 namespace GoldEx.Client.Helpers;
 
@@ -17,9 +17,9 @@ public static class NumberHelper
         return number.ToString("#,##0.##") + " " + unit;
     }
 
-    public static string ToWeightFormat(this decimal number)
+    public static string ToWeightFormat(this decimal number, GoldUnitType unitType)
     {
-        return $"{number:G29} گرم";
+        return $"{number:G29} {unitType.GetDisplayName()}";
     }
 
     public static string ToCurrencyReportFormat(this decimal number, string? unit = null)

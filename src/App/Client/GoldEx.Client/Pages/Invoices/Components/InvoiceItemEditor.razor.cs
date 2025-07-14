@@ -29,6 +29,7 @@ public partial class InvoiceItemEditor
     private bool _wageFieldMenuOpen;
     private string? _wageFieldAdornmentText = "درصد";
     private string? _wageExchangeRateLabel;
+    private bool _weightFieldMenuOpen;
 
     protected override void OnParametersSet()
     {
@@ -60,6 +61,20 @@ public partial class InvoiceItemEditor
             afterSend: response =>
             {
                 _productCategories = response.Select(ProductCategoryVm.CreateFrom);
+            });
+    }
+
+    private async Task LoadGramPriceAsync()
+    {
+        await SendRequestAsync<IPriceService, GetPriceResponse?>(
+            action: (s, ct) => s.GetAsync(Model.Product.GoldUnitType, Model.PriceUnit?.Id, true, ct),
+            afterSend: response =>
+            {
+                decimal.TryParse(response?.Value, out var gramPriceValue);
+
+                Model.GramPrice = gramPriceValue;
+
+                StateHasChanged();
             });
     }
 
@@ -223,5 +238,11 @@ public partial class InvoiceItemEditor
             await LoadCategoriesAsync();
             StateHasChanged();
         }
+    }
+
+    private async Task OnGoldUnitTypeSelected(GoldUnitType unitType)
+    {
+        Model.Product.GoldUnitType = unitType;
+        await LoadGramPriceAsync();
     }
 }

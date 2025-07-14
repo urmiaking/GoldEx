@@ -52,6 +52,8 @@ public class ProductVm
 
     public DateTime DateTime { get; set; }
 
+    public GoldUnitType GoldUnitType { get; set; }
+
     internal static ProductVm CreateDefaultInstance() => new()
         { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
 
@@ -73,6 +75,7 @@ public class ProductVm
             WagePriceUnitTitle = item.WagePriceUnitTitle,
             InvoiceId = item.InvoiceId,
             DateTime = item.DateTime,
+            GoldUnitType = item.GoldUnitType,
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm
             {
                 Id = item.ProductCategoryId.Value,
@@ -102,6 +105,7 @@ public class ProductVm
             item.WageType!.Value,
             item.ProductType,
             item.CaratType,
+            item.GoldUnitType,
             item.ProductCategoryId,
             item.WagePriceUnitId,
             item.Stones?.Select(x => new GemStoneRequestDto(

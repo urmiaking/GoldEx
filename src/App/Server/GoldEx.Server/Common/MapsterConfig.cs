@@ -122,7 +122,7 @@ public class MapsterConfig : IRegister
         config.NewConfig<Product, GetProductReportResponse>()
             .Map(dest => dest.Name, src => src.Name)
             .Map(dest => dest.Barcode, src => src.Barcode)
-            .Map(dest => dest.Weight, src => $"{src.Weight.ToWeightFormat()}")
+            .Map(dest => dest.Weight, src => $"{src.Weight.ToWeightFormat(src.GoldUnitType)}")
             .Map(dest => dest.Wage, src => src.WageType == WageType.Percent
                 ? $"{src.Wage.ToCurrencyReportFormat(null)}%"
                 : $"{src.Wage.ToCurrencyReportFormat(src.WagePriceUnit!.Title)}")
