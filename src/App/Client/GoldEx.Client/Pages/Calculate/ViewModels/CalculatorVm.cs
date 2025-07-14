@@ -1,6 +1,7 @@
 ﻿using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Client.Pages.Calculate.ViewModels;
 
@@ -46,4 +47,7 @@ public class CalculatorVm
 
     [Display(Name = "عیار طلای کهنه")]
     public int? OldGoldCarat { get; set; }
+
+    [Display(Name = "واحد سنجش طلا")]
+    public GoldUnitType GoldUnitType { get; set; } = GoldUnitType.Gram;
 }

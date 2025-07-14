@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -24,10 +25,8 @@ public partial class Calculator
     private MudNumericField<decimal?> _wageField = default!;
     private MudNumericField<decimal> _profitField = default!;
 
-    private string? _wageFieldAdornmentText = "درصد";
     private string? _gramPriceAdornmentText;
     private string? _extraCostsAdornmentText;
-    private bool _wageFieldMenuOpen;
 
     private decimal? _rawPrice;
     private decimal? _wage;
@@ -41,13 +40,26 @@ public partial class Calculator
     private GetSettingResponse? _settings;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
-    private string? _wageExchangeRateLabel;
-
     private bool _isInitialLoading = true;
     private bool _isBarcodeProcessing = false;
     private bool _isRecalculating = false;
-
     private bool _applySafetyMargin = true;
+    private bool _wageFieldMenuOpen;
+    private bool _weightFieldMenuOpen;
+
+    private string WeightFieldAdornmentText => _model.GoldUnitType.GetDisplayName();
+    private string GramPriceFieldLabel => $"نرخ {_model.GoldUnitType.GetDisplayName()}";
+    private string? WageFieldAdornmentText => _model.WageType switch
+    {
+        WageType.Percent => WageType.Percent.GetDisplayName(),
+        WageType.Fixed => _model.WagePriceUnit?.Title,
+        null => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(_model.WageType), _model.WageType, null)
+    };
+    private string? WageExchangeRateLabel =>
+        _model is { WageType: WageType.Fixed, WagePriceUnit: not null, PriceUnit: not null }
+            ? $"نرخ تبدیل {_model.WagePriceUnit.Title} به {_model.PriceUnit.Title}"
+            : null;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -202,7 +214,6 @@ public partial class Calculator
                 break;
             case null:
                 await _wageField.ResetAsync();
-                _wageFieldAdornmentText = null;
                 _wageField.Disabled = true;
                 break;
             default:
@@ -227,6 +238,11 @@ public partial class Calculator
         {
             _wageFieldMenuOpen = !_wageFieldMenuOpen;
         }
+    }
+
+    private void OnWeightAdornmentClicked()
+    {
+        _weightFieldMenuOpen = !_weightFieldMenuOpen;
     }
 
     private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
@@ -259,6 +275,12 @@ public partial class Calculator
         }
     }
 
+    private async Task SelectGoldUnitType(GoldUnitType unitType)
+    {
+        _model.GoldUnitType = unitType;
+        //TODO: add requests and calculations
+    }
+
     private void OnWageExchangeRateChanged(decimal? exchangeRate)
     {
         _model.ExchangeRate = exchangeRate;
@@ -268,19 +290,14 @@ public partial class Calculator
 
     private async void UpdateWageFields()
     {
+        //TODO: remove
+
         if (_model.WageType is WageType.Fixed)
         {
-            _wageFieldAdornmentText = _model.WagePriceUnit?.Title;
-
-            if (_model.WagePriceUnit?.Id != _model.PriceUnit?.Id)
-            {
-                _wageExchangeRateLabel = $"نرخ تبدیل {_model.WagePriceUnit?.Title} به {_model.PriceUnit?.Title}";
-            }
+            
         }
         else
         {
-            _wageFieldAdornmentText = "درصد";
-            _wageExchangeRateLabel = null;
             _model.ExchangeRate = null;
         }
 
