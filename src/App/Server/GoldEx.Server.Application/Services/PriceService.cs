@@ -169,10 +169,18 @@ internal class PriceService(
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
-    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
+    public async Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
         CancellationToken cancellationToken = default)
     {
-        var baseItem = await repository.Get(new PricesByUnitTypeSpecification(unitType))
+        var unit = unitType switch
+        {
+            GoldUnitType.Gram => UnitType.Gold18K,
+            GoldUnitType.Mesghal => UnitType.Mesghal,
+            _ => throw new ArgumentOutOfRangeException(nameof(unitType), unitType, null)
+        };
+
+        var baseItem = await repository
+            .Get(new PricesByUnitTypeSpecification(unit))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (baseItem?.PriceHistory is null)
@@ -181,7 +189,7 @@ internal class PriceService(
         var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
         if (setting is not null && setting.GoldSafetyMarginPercent != 0 && applySafetyMargin)
         {
-            if (baseItem is { UnitType: UnitType.Gold18K })
+            if (baseItem.UnitType is UnitType.Gold18K or UnitType.Mesghal)
             {
                 var adjustedValue = baseItem.PriceHistory.CurrentValue * (1 + setting.GoldSafetyMarginPercent / 100);
                 baseItem.PriceHistory.SetCurrentValue(adjustedValue);

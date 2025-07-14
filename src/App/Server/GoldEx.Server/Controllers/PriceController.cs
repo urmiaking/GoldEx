@@ -42,7 +42,7 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.GetUnit)]
-    public async Task<IActionResult> GetAsync(UnitType unitType, Guid? priceUnitId, [FromQuery] bool applySafetyMargin, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAsync(GoldUnitType unitType, Guid? priceUnitId, [FromQuery] bool applySafetyMargin, CancellationToken cancellationToken = default)
     {
         var price = await priceService.GetAsync(unitType, priceUnitId, applySafetyMargin, cancellationToken);
         return price is not null ? Ok(price) : NotFound();
