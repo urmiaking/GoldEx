@@ -96,7 +96,7 @@
                                          HideSpinButtons="true"
                                          Immediate="true"
                                          Margin="Margin.Dense"
-                                         Label="@(_model.GetDisplayName(() => _model.GramPrice))"
+                                         Label="@GramPriceFieldLabel"
                                          T="decimal"
                                          Value="@_model.GramPrice"
                                          ValueChanged="OnGramPriceChanged"
@@ -111,18 +111,33 @@
                     }
                     else
                     {
-                        <MudNumericField Adornment="Adornment.End"
-                                         AdornmentText="گرم"
-                                         For="() => _model.Weight"
-                                         Format="G29"
-                                         HideSpinButtons="true"
-                                         Immediate="true"
-                                         Margin="Margin.Dense"
-                                         Label="@(_model.GetDisplayName(() => _model.Weight))"
-                                         T="decimal"
-                                         Value="_model.Weight"
-                                         ValueChanged="OnWeightChanged"
-                                         Variant="Variant.Outlined"></MudNumericField>
+                        <MudMenu @bind-Open="_weightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                            <ActivatorContent>
+                                <MudNumericField Adornment="Adornment.End"
+                                                 AdornmentText="@WeightFieldAdornmentText"
+                                                 For="() => _model.Weight"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true"
+                                                 Margin="Margin.Dense"
+                                                 Label="@(_model.GetDisplayName(() => _model.Weight))"
+                                                 T="decimal"
+                                                 Value="_model.Weight"
+                                                 ValueChanged="OnWeightChanged"
+                                                 Variant="Variant.Outlined"
+                                                 OnAdornmentClick="OnWeightAdornmentClicked"></MudNumericField>
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in Enum.GetValues<GoldUnitType>())
+                                {
+                                    <MudMenuItem OnClick="() => SelectGoldUnitType(item)">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            @item.GetDisplayName()
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
                     }
                 </MudItem>
 
@@ -200,7 +215,7 @@
                             <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                                 <ActivatorContent>
                                     <MudNumericField Adornment="Adornment.End"
-                                                     AdornmentText="@_wageFieldAdornmentText"
+                                                     AdornmentText="@WageFieldAdornmentText"
                                                      For="() => _model.Wage"
                                                      Format="#,##0.##"
                                                      HideSpinButtons="true"
@@ -248,7 +263,7 @@
                                                  HideSpinButtons="true"
                                                  Immediate="true"
                                                  Margin="Margin.Dense"
-                                                 Label="@_wageExchangeRateLabel"
+                                                 Label="@WageExchangeRateLabel"
                                                  T="decimal?"
                                                  Value="_model.ExchangeRate"
                                                  ValueChanged="OnWageExchangeRateChanged"
