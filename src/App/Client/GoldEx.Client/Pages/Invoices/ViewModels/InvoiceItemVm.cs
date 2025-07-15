@@ -79,27 +79,19 @@ public class InvoiceItemVm
         get => _product;
         set
         {
-            // 1. Unsubscribe from the old object's event to prevent memory leaks
             _product.PropertyChanged -= OnProductChanged;
 
             _product = value;
 
-            // 2. Subscribe to the new object's event
             _product.PropertyChanged += OnProductChanged;
 
-            // 3. Recalculate when the whole object is replaced
             RecalculateAmounts();
         }
     }
 
-    /// <summary>
-    /// This method will be called whenever a property on the ProductVm changes.
-    /// </summary>
     private void OnProductChanged(object? sender, PropertyChangedEventArgs e)
     {
         RecalculateAmounts();
-        // Optional: You could add logic here to only recalculate for specific property changes
-        // if (e.PropertyName == nameof(ProductVm.Weight)) { ... }
     }
 
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }

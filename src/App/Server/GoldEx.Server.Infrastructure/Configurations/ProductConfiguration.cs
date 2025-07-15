@@ -43,8 +43,6 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasIndex(x => x.Barcode)
             .IsUnique();
 
-        builder.HasIndex(x => x.ProductStatus);
-
         builder.HasIndex(x => x.Name);
 
         builder.OwnsMany(x => x.GemStones, Configure);

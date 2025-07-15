@@ -83,10 +83,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .Get(new ProductsByIdSpecification(productId))
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (product is null)
-            return true;
-
-        if (product.ProductStatus == ProductStatus.Available)
+        if (product?.InvoiceItem is null)
             return true;
 
         if (invoiceDto.Id.HasValue)

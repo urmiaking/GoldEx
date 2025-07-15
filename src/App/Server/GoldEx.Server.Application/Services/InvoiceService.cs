@@ -132,8 +132,6 @@ internal class InvoiceService(
                                 ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
                                 : null);
 
-                        newProduct.MarkAsSold();
-
                         await productRepository.CreateAsync(newProduct, cancellationToken);
 
                         product = newProduct;
@@ -172,8 +170,6 @@ internal class InvoiceService(
                         }
                         else
                             existingProduct.ClearGemStones();
-
-                        existingProduct.MarkAsSold();
 
                         await productRepository.UpdateAsync(existingProduct, cancellationToken);
 
@@ -318,17 +314,8 @@ internal class InvoiceService(
 
                 await invoiceRepository.DeleteAsync(item, cancellationToken);
 
-                if (deleteProducts)
-                {
+                if (deleteProducts) 
                     await productRepository.DeleteRangeAsync(products, cancellationToken);
-                }
-                else
-                {
-                    foreach (var product in products)
-                        product.MarkAsAvailable();
-
-                    await productRepository.UpdateRangeAsync(products, cancellationToken);
-                }
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }

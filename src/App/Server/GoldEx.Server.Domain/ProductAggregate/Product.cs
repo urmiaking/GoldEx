@@ -40,8 +40,7 @@ public class Product : EntityBase<ProductId>
             GoldUnitType = goldUnitType,
             WageType = wageType,
             WagePriceUnitId = wagePriceUnitId,
-            ProductCategoryId = productCategoryId,
-            ProductStatus = ProductStatus.Available
+            ProductCategoryId = productCategoryId
         };
     }
 
@@ -56,7 +55,6 @@ public class Product : EntityBase<ProductId>
     public ProductType ProductType { get; private set; }
     public CaratType CaratType { get; private set; }
     public WageType WageType { get; private set; }
-    public ProductStatus ProductStatus { get; private set; }
     public GoldUnitType GoldUnitType { get; private set; }
 
     public ProductCategoryId? ProductCategoryId { get; private set; }
@@ -137,18 +135,6 @@ public class Product : EntityBase<ProductId>
         return this;
     }
     public void ClearGemStones() => _stones.Clear();
-
-    public Product MarkAsSold()
-    {
-        ProductStatus = ProductStatus.Sold;
-        return this;
-    }
-
-    public Product MarkAsAvailable()
-    {
-        ProductStatus = ProductStatus.Available;
-        return this;
-    }
 
     public Product SetWagePriceUnitId(PriceUnitId? wagePriceUnitId)
     {
