@@ -108,13 +108,13 @@
                 <Item2 Ref="61" ControlType="XRTableCell" Name="xrTableCell2" Weight="1.2159999186921284" Multiline="true" Text="عنوان" Font="B Nazanin, 12pt, style=Bold">
                   <StylePriority Ref="62" UseFont="false" />
                 </Item2>
-                <Item3 Ref="63" ControlType="XRTableCell" Name="xrTableCell3" Weight="0.67555552842882149" Multiline="true" Text="اجرت ساخت" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                <Item3 Ref="63" ControlType="XRTableCell" Name="xrTableCell3" Weight="0.759999969437216" Multiline="true" Text="اجرت ساخت" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                   <StylePriority Ref="64" UseFont="false" UseTextAlignment="false" />
                 </Item3>
-                <Item4 Ref="65" ControlType="XRTableCell" Name="xrTableCell4" Weight="0.30399999794741178" Multiline="true" Text="تعداد" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                <Item4 Ref="65" ControlType="XRTableCell" Name="xrTableCell4" Weight="0.25671111098271082" Multiline="true" Text="تعداد" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                   <StylePriority Ref="66" UseFont="false" UseTextAlignment="false" />
                 </Item4>
-                <Item5 Ref="67" ControlType="XRTableCell" Name="xrTableCell5" Weight="0.49955573889611882" Multiline="true" Text="وزن" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                <Item5 Ref="67" ControlType="XRTableCell" Name="xrTableCell5" Weight="0.46240018485242523" Multiline="true" Text="وزن" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                   <StylePriority Ref="68" UseFont="false" UseTextAlignment="false" />
                 </Item5>
                 <Item6 Ref="69" ControlType="XRTableCell" Name="xrTableCell6" Weight="0.6079999572573096" Multiline="true" Text="عیار" Font="B Nazanin, 12pt, style=Bold">
@@ -154,19 +154,19 @@
                   </ExpressionBindings>
                   <StylePriority Ref="85" UseTextAlignment="false" />
                 </Item2>
-                <Item3 Ref="86" ControlType="XRTableCell" Name="xrTableCell9" Weight="0.67555566055116134" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell9" TextAlignment="TopCenter">
+                <Item3 Ref="86" ControlType="XRTableCell" Name="xrTableCell9" Weight="0.759999911545807" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell9" TextAlignment="TopCenter">
                   <ExpressionBindings>
                     <Item1 Ref="87" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[Wage]" />
                   </ExpressionBindings>
                   <StylePriority Ref="88" UseTextAlignment="false" />
                 </Item3>
-                <Item4 Ref="89" ControlType="XRTableCell" Name="xrTableCell10" Weight="0.30400004378881412" Multiline="true" Text="xrTableCell10" TextAlignment="TopCenter">
+                <Item4 Ref="89" ControlType="XRTableCell" Name="xrTableCell10" Weight="0.25671156010685725" Multiline="true" Text="xrTableCell10" TextAlignment="TopCenter">
                   <ExpressionBindings>
                     <Item1 Ref="90" EventName="BeforePrint" PropertyName="Text" Expression="[Quantity]" />
                   </ExpressionBindings>
                   <StylePriority Ref="91" UseTextAlignment="false" />
                 </Item4>
-                <Item5 Ref="92" ControlType="XRTableCell" Name="xrTableCell11" Weight="0.49955578377500848" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell11" TextAlignment="TopCenter">
+                <Item5 Ref="92" ControlType="XRTableCell" Name="xrTableCell11" Weight="0.46240001646231965" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell11" TextAlignment="TopCenter">
                   <ExpressionBindings>
                     <Item1 Ref="93" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[Weight]" />
                   </ExpressionBindings>
@@ -188,7 +188,7 @@
     <Item4 Ref="99" ControlType="BottomMarginBand" Name="BottomMargin" HeightF="86.81822" />
     <Item5 Ref="100" ControlType="GroupFooterBand" Name="GroupFooter1" HeightF="158.1868">
       <Controls>
-        <Item1 Ref="101" ControlType="XRLabel" Name="xrLabel25" Multiline="true" Text="نرخ روز هر واحد طلای 18 عیار" TextAlignment="TopCenter" SizeF="478.9474,25" LocationFloat="0,125" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Left, Top, Bottom">
+        <Item1 Ref="101" ControlType="XRLabel" Name="xrLabel25" Multiline="true" Text="نرخ روز هر [Invoice.GoldUnitType] طلای 18 عیار: [Invoice.DailyGramPrice]" TextAlignment="TopCenter" SizeF="478.9474,25" LocationFloat="0,125" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Left, Top, Bottom">
           <StylePriority Ref="102" UseFont="false" UseBorders="false" UseTextAlignment="false" />
         </Item1>
         <Item2 Ref="103" ControlType="XRLabel" Name="xrLabel36" RightToLeft="Yes" Multiline="true" Text="مانده حساب:" TextAlignment="TopRight" SizeF="90,25" LocationFloat="478.9473,125" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
