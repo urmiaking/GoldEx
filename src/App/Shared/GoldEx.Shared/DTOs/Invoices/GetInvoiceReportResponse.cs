@@ -16,6 +16,7 @@ public record GetInvoiceDetailResponse(long InvoiceNumber,
     string TaxPercent,
     string ProfitPercent,
     string TotalUnpaidSecondaryAmount,
+    GoldUnitType GoldUnitType,
     GetCustomerResponse Customer,
     List<GetInvoiceItemReportResponse> InvoiceItems);
 

@@ -247,6 +247,7 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: InvoiceItemVm resultItem })
         {
             invoiceItemVm.Copy(resultItem);
+            StateHasChanged();
         }
     }
 

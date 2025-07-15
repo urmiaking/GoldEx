@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Helpers;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -85,6 +86,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.TaxPercent, src => $"{src.Items.First().TaxPercent.ToCurrencyFormat(null)}%")
             .Map(dest => dest.ProfitPercent, src => $"{src.Items.First().ProfitPercent.ToCurrencyFormat(null)}%")
             .Map(dest => dest.DailyGramPrice, src => $"{src.Items.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
+            .Map(dest => dest.GoldUnitType, src => src.Items.First().Product!.GoldUnitType)
             .Map(dest => dest.TotalAmount, src => $"{src.TotalAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.TotalPaidAmount, src => $"{src.TotalPaidAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.TotalDiscountAmount, src => $"{src.TotalDiscountAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
