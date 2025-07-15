@@ -34,6 +34,7 @@ internal class ProductService(
 
         var data = await repository
             .Get(spec)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         var totalCount = await repository.CountAsync(spec, cancellationToken);
