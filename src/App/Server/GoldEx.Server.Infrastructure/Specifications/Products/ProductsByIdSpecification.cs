@@ -10,5 +10,6 @@ public class ProductsByIdSpecification : SpecificationBase<Product>
         AddCriteria(x => x.Id == id);
 
         AddInclude(x => x.WagePriceUnit!);
+        AddInclude(x => x.InvoiceItem!);
     }
 }

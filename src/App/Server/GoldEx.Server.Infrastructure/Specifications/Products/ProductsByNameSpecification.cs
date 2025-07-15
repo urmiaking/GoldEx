@@ -8,5 +8,6 @@ public class ProductsByNameSpecification : SpecificationBase<Product>
     public ProductsByNameSpecification(string name)
     {
         AddCriteria(x => x.Name.Contains(name));
+        AddInclude(x => x.InvoiceItem!);
     }
 }

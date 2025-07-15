@@ -11,59 +11,56 @@ public class ProductsByFilterSpecification : SpecificationBase<Product>
 {
     public ProductsByFilterSpecification(RequestFilter filter, ProductFilter productFilter)
     {
-        if (filter.Skip < 0)
-            filter.Skip = 0;
-
-        var skip = filter.Skip ?? 0;
-        var take = filter.Take ?? 100;
-
-        ApplyPaging(skip, take);
+        ApplyPaging(Math.Max(0, filter.Skip ?? 0), filter.Take ?? 100);
 
         AddInclude(x => x.WagePriceUnit!);
         AddInclude(x => x.ProductCategory!);
 
-        if (!string.IsNullOrEmpty(filter.Search))
+        if (!string.IsNullOrWhiteSpace(filter.Search))
         {
             AddCriteria(x => x.Name.Contains(filter.Search) || x.Barcode.Contains(filter.Search));
         }
 
-        AddCriteria(x => x.ProductStatus == productFilter.Status);
-
-        if (productFilter.Status == ProductStatus.Sold)
+        switch (productFilter.Status)
         {
-            AddInclude(x => x.InvoiceItem!.Invoice!);
-            AddCriteria(x => x.InvoiceItem != null && x.InvoiceItem.Invoice != null);
+            case ProductStatus.Available:
+                AddCriteria(x => x.InvoiceItem == null);
+                if (productFilter.Start.HasValue)
+                {
+                    AddCriteria(x => x.CreatedAt >= productFilter.Start.Value);
+                }
+                if (productFilter.End.HasValue)
+                {
+                    AddCriteria(x => x.CreatedAt <= productFilter.End.Value);
+                }
+                break;
 
-            if (productFilter.Start.HasValue)
-            {
-                var startDateOnly = DateOnly.FromDateTime(productFilter.Start.Value.Date);
-                AddCriteria(x => x.InvoiceItem!.Invoice!.InvoiceDate >= startDateOnly);
-            }
-            if (productFilter.End.HasValue)
-            {
-                var endDateOnly = DateOnly.FromDateTime(productFilter.End.Value.Date);
-                AddCriteria(x => x.InvoiceItem!.Invoice!.InvoiceDate <= endDateOnly);
-            }
-        }
-        else 
-        {
-            if (productFilter.Start.HasValue)
-            {
-                AddCriteria(x => x.CreatedAt >= productFilter.Start.Value);
-            }
-            if (productFilter.End.HasValue)
-            {
-                AddCriteria(x => x.CreatedAt <= productFilter.End.Value);
-            }
+            case ProductStatus.Sold:
+                AddCriteria(x => x.InvoiceItem!.Invoice != null);
+                AddInclude(x => x.InvoiceItem!.Invoice!);
+
+                if (productFilter.Start.HasValue)
+                {
+                    var startDateOnly = DateOnly.FromDateTime(productFilter.Start.Value.Date);
+                    AddCriteria(x => x.InvoiceItem!.Invoice!.InvoiceDate >= startDateOnly);
+                }
+                if (productFilter.End.HasValue)
+                {
+                    var endDateOnly = DateOnly.FromDateTime(productFilter.End.Value.Date);
+                    AddCriteria(x => x.InvoiceItem!.Invoice!.InvoiceDate <= endDateOnly);
+                }
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(productFilter.Status), "Unsupported product status provided.");
         }
 
-        if (!string.IsNullOrEmpty(filter.SortLabel) && filter.SortDirection.HasValue && filter.SortDirection != SortDirection.None)
+        if (!string.IsNullOrWhiteSpace(filter.SortLabel) && filter.SortDirection.HasValue && filter.SortDirection != SortDirection.None)
         {
             ApplySorting(filter.SortLabel, filter.SortDirection.Value);
         }
         else
         {
-            // Default sort order
             ApplySorting(nameof(Product.CreatedAt), SortDirection.Descending);
         }
     }
