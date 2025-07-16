@@ -1,12 +1,38 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Helpers
+@using GoldEx.Shared.DTOs.PriceUnits
+@inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_transactionValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
+            <MudStack Row AlignItems="AlignItems.End">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    مشخصات مشتری
+                </MudText>
 
-            <div class="d-flex align-center justify-content-between">
-                <MudText Typo="Typo.h6" GutterBottom="true">مشخصات مشتری</MudText>
-            </div>
+                <MudSpacer />
+                <MudSelect T="GetPriceUnitTitleResponse?"
+                           Value="Model.PriceUnit"
+                           ValueChanged="OnPriceUnitChanged"
+                           Label="@Model.GetDisplayName(() => Model.PriceUnit)"
+                           For="() => Model.PriceUnit"
+                           FitContent="true"
+                           Margin="Margin.Dense"
+                           Variant="Variant.Outlined">
+                    @foreach (var item in _priceUnits)
+                    {
+                        <MudSelectItem Value="item">
+                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                <MudAvatar Size="Size.Small">
+                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                </MudAvatar>
+                                <MudText Class="d-none d-md-inline">@item.Title</MudText>
+                            </MudStack>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudStack>
+
             <MudDivider Class="mb-2" />
             <MudGrid>
                 <MudItem xs="12" md="2">
@@ -154,10 +180,10 @@
                 <MudItem xs="12" md="12" lg="6">
                     <MudPaper Elevation="0" Class="">
                         <MudText Typo="Typo.body1" GutterBottom="true">
-                            بستانکار @(Model.CreditEquivalent.HasValue ? $" - معادل ریالی : {Model.CreditEquivalent:N0} ریال" : "")
+                            بستانکار @(Model.CreditEquivalent.HasValue ? $" - معادل ارزی : {Model.CreditEquivalent?.ToCurrencyFormat(Model.PriceUnit?.Title)}" : "")
                         </MudText>
                         <MudGrid>
-                            <MudItem xs="12" md="6" lg="6">
+                            <MudItem xs="12" md="@(CreditRateShow ? 6 : 12)">
                                 <MudMenu @bind-Open="_isCreditMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
                                     <ActivatorContent>
                                         <MudNumericField Value="Model.Credit"
@@ -177,33 +203,39 @@
                                     <ChildContent>
                                         @foreach (var item in _priceUnits)
                                         {
-                                            <MudMenuItem OnClick="() => SelectCreditUnit(item)">  
+                                            <MudMenuItem OnClick="() => SelectCreditUnit(item)">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
                                                     @if (item.HasIcon)
                                                     {
-                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
                                                             <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                        </MudAvatar>  
+                                                        </MudAvatar>
                                                     }
                                                     @item.Title
-                                                </div>  
-                                            </MudMenuItem>  
+                                                </div>
+                                            </MudMenuItem>
                                         }
                                     </ChildContent>
                                 </MudMenu>
                             </MudItem>
-                            <MudItem xs="12" md="6" lg="6">
-                                <MudNumericField Value="Model.CreditRate"
-                                                 ValueChanged="OnCreditRateChanged"
-                                                 T="decimal?"
-                                                 Immediate="true"
-                                                 For="@(() => Model.CreditRate)"
-                                                 Format="#,##0.##"
-                                                 HideSpinButtons="true"
-                                                 Label="نرخ تبدیل"
-                                                 Margin="Margin.Dense"
-                                                 Variant="Variant.Outlined" />
-                            </MudItem>
+                            @if (CreditRateShow)
+                            {
+                                <MudItem xs="12" md="6">
+                                    <MudNumericField Value="Model.CreditRate"
+                                                     ValueChanged="OnCreditRateChanged"
+                                                     T="decimal?"
+                                                     Immediate="true"
+                                                     For="@(() => Model.CreditRate)"
+                                                     Format="#,##0.########"
+                                                     HideSpinButtons="true"
+                                                     Label="@CreditRateLabel"
+                                                     Margin="Margin.Dense"
+                                                     Variant="Variant.Outlined"
+                                                     Adornment="Adornment.End"
+                                                     AdornmentText="@Model.PriceUnit?.Title" />
+                                </MudItem>
+                            }
+                            
                         </MudGrid>
                     </MudPaper>
                 </MudItem>
@@ -211,10 +243,10 @@
                 <MudItem xs="12" md="12" lg="6">
                     <MudPaper Elevation="0" Class="">
                         <MudText Typo="Typo.body1" GutterBottom="true">
-                            بدهکار @(Model.DebitEquivalent.HasValue ? $" - معادل ریالی : {Model.DebitEquivalent:N0} ریال" : "")
+                            بدهکار @(Model.DebitEquivalent.HasValue ? $" - معادل ارزی : {Model.DebitEquivalent?.ToCurrencyFormat(Model.PriceUnit?.Title)}" : "")
                         </MudText>
                         <MudGrid>
-                            <MudItem xs="12" md="6" lg="6">
+                            <MudItem xs="12" md="@(DebitRateShow ? 6 : 12)">
                                 <MudMenu @bind-Open="_isDebitMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
                                     <ActivatorContent>
                                         <MudNumericField Value="Model.Debit"
@@ -234,34 +266,38 @@
                                     <ChildContent>
                                         @foreach (var item in _priceUnits)
                                         {
-                                            <MudMenuItem OnClick="() => SelectDebitUnit(item)">  
+                                            <MudMenuItem OnClick="() => SelectDebitUnit(item)">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
                                                     @if (item.HasIcon)
                                                     {
-                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
                                                             <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                        </MudAvatar>  
+                                                        </MudAvatar>
                                                     }
                                                     @item.Title
-                                                </div>  
-                                            </MudMenuItem>  
+                                                </div>
+                                            </MudMenuItem>
                                         }
                                     </ChildContent>
                                 </MudMenu>
                             </MudItem>
-
-                            <MudItem xs="12" md="6" lg="6">
-                                <MudNumericField Value="Model.DebitRate"
-                                                 ValueChanged="OnDebitRateChanged"
-                                                 T="decimal?"
-                                                 Immediate="true"
-                                                 For="@(() => Model.DebitRate)"
-                                                 Format="#,##0.##"
-                                                 HideSpinButtons="true"
-                                                 Label="نرخ تبدیل"
-                                                 Margin="Margin.Dense"
-                                                 Variant="Variant.Outlined" />
-                            </MudItem>
+                            @if (DebitRateShow)
+                            {
+                                <MudItem xs="12" md="6">
+                                    <MudNumericField Value="Model.DebitRate"
+                                                     ValueChanged="OnDebitRateChanged"
+                                                     T="decimal?"
+                                                     Immediate="true"
+                                                     For="@(() => Model.DebitRate)"
+                                                     Format="#,##0.########"
+                                                     HideSpinButtons="true"
+                                                     Label="@DebitRateLabel"
+                                                     Margin="Margin.Dense"
+                                                     Variant="Variant.Outlined"
+                                                     Adornment="Adornment.End" 
+                                                     AdornmentText="@Model.PriceUnit?.Title" />
+                                </MudItem>
+                            }
                         </MudGrid>
                     </MudPaper>
                 </MudItem>

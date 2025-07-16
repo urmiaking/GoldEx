@@ -37,6 +37,9 @@ public class TransactionVm
     [Display(Name = "واحد بدهکاری")]
     public GetPriceUnitTitleResponse? DebitUnit { get; set; }
 
+    [Display(Name = "واحد تراکنش")]
+    public GetPriceUnitTitleResponse? PriceUnit { get; set; } = default!;
+
     [Display(Name = "نرخ تبدیل بستانکاری")]
     public decimal? CreditRate { get; set; }
 
@@ -76,6 +79,7 @@ public class TransactionVm
             model.TransactionNumber,
             model.Description,
             DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
+            model.PriceUnit.Id,
             model.Credit,
             model.CreditUnit?.Id,
             model.CreditRate,
@@ -92,6 +96,7 @@ public class TransactionVm
             model.TransactionNumber,
             model.Description,
             DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
+            model.PriceUnit.Id,
             model.Credit,
             model.CreditUnit?.Id,
             model.CreditRate,

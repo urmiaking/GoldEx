@@ -89,6 +89,7 @@ internal class TransactionService(
         var transaction = Transaction.Create(request.DateTime,
             request.Number,
             request.Description,
+            new PriceUnitId(request.PriceUnitId),
             request.Credit,
             request.CreditPriceUnitId.HasValue ? new PriceUnitId(request.CreditPriceUnitId.Value) : null,
             request.CreditRate,
@@ -127,6 +128,7 @@ internal class TransactionService(
         transaction.SetDebitUnit(request.DebitPriceUnitId.HasValue ? new PriceUnitId(request.DebitPriceUnitId.Value) : null);
         transaction.SetDebitRate(request.DebitRate);
         transaction.SetDateTime(request.DateTime);
+        transaction.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
         transaction.SetNumber(request.Number);
         transaction.SetDescription(request.Description);
         transaction.SetCustomer(new CustomerId(customerId));
