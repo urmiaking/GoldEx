@@ -18,14 +18,6 @@ public partial class Editor
     private string? _creditLimitAdornmentText;
     private bool _processing;
 
-    protected override void OnParametersSet()
-    {
-        if (Model.Id.HasValue)
-            OnCreditLimitChanged(Model.CreditLimit);
-
-        base.OnParametersSet();
-    }
-
     protected override async Task OnParametersSetAsync()
     {
         await LoadPriceUnitsAsync();
@@ -91,20 +83,6 @@ public partial class Editor
     }
 
     private void Close() => MudDialog.Cancel();
-
-    private void OnCreditLimitChanged(decimal? creditLimit)
-    {
-        Model.CreditLimit = creditLimit;
-
-        if (!string.IsNullOrEmpty(_creditLimitAdornmentText) && creditLimit.HasValue)
-        {
-            Model.CreditLimitPriceUnit = _priceUnits.FirstOrDefault(u => u.Title == _creditLimitAdornmentText);
-        }
-        else
-        {
-            Model.CreditLimitPriceUnit = null;
-        }
-    }
 
     private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? unitType)
     {
