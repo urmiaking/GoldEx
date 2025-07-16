@@ -10,6 +10,7 @@ public class Transaction : EntityBase<TransactionId>
     public static Transaction Create(DateTime dateTime,
         long number,
         string description,
+        PriceUnitId priceUnitId,
         decimal? credit,
         PriceUnitId? creditUnitId,
         decimal? creditRate,
@@ -24,6 +25,7 @@ public class Transaction : EntityBase<TransactionId>
             DateTime = dateTime,
             Number = number,
             Description = description,
+            PriceUnitId = priceUnitId,
             Credit = credit,
             CreditUnitId = creditUnitId,
             CreditRate = creditRate,
@@ -47,6 +49,9 @@ public class Transaction : EntityBase<TransactionId>
     public decimal? Debit { get; private set; }
     public decimal? DebitRate { get; private set; }
 
+    public PriceUnitId? PriceUnitId { get; private set; }
+    public PriceUnit? PriceUnit { get; private set; }
+
     public PriceUnitId? CreditUnitId { get; private set; }
     public PriceUnit? CreditUnit { get; private set; }
 
@@ -56,6 +61,7 @@ public class Transaction : EntityBase<TransactionId>
     public Customer? Customer { get; private set; }
     public CustomerId CustomerId { get; private set; }
 
+    public void SetPriceUnitId(PriceUnitId priceUnitId) => PriceUnitId = priceUnitId;
     public void SetDateTime(DateTime date) => DateTime = date;
     public void SetNumber(long number) => Number = number;
     public void SetDescription(string description) => Description = description;

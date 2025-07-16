@@ -5,6 +5,7 @@ namespace GoldEx.Shared.DTOs.Transactions;
 public record UpdateTransactionRequest(long Number,
     string Description,
     DateTime DateTime,
+    Guid PriceUnitId,
     decimal? Credit,
     Guid? CreditPriceUnitId,
     decimal? CreditRate,

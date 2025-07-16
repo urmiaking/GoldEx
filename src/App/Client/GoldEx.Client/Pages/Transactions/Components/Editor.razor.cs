@@ -4,7 +4,9 @@ using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.DTOs.Transactions;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -16,6 +18,10 @@ public partial class Editor
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public TransactionVm Model { get; set; } = new();
     [Parameter] public Guid? CustomerId { get; set; }
+    private string CreditRateLabel => $"نرخ تبدیل {Model.CreditUnit?.Title} به {Model.PriceUnit?.Title}";
+    private string DebitRateLabel => $"نرخ تبدیل {Model.DebitUnit?.Title} به {Model.PriceUnit?.Title}";
+    private bool CreditRateShow => Model.PriceUnit?.Id != Model.CreditUnit?.Id;
+    private bool DebitRateShow => Model.PriceUnit?.Id != Model.DebitUnit?.Id;
 
     private readonly TransactionValidator _transactionValidator = new();
     private MudForm _form = default!;
@@ -26,6 +32,7 @@ public partial class Editor
     private string? _creditAdornmentText;
     private string? _debitAdornmentText;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
+    private GetSettingResponse? _setting;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -44,6 +51,7 @@ public partial class Editor
             await LoadCustomerAsync();
 
         await LoadPriceUnitsAsync();
+        await LoadSettingsAsync();
 
         await base.OnParametersSetAsync();
     }
@@ -70,15 +78,24 @@ public partial class Editor
             {
                 _priceUnits = response;
 
-                if (Model.Customer.CreditLimitPriceUnit is null) 
+                Model.PriceUnit ??= _priceUnits.FirstOrDefault(u => u.IsDefault);
+
+                if (Model.Customer.CreditLimitPriceUnit is null)
                     OnCustomerCreditLimitUnitChanged(_priceUnits.FirstOrDefault(u => u.IsDefault));
 
-                if (Model.DebitUnit is null) 
+                if (Model.DebitUnit is null)
                     await OnDebitUnitChanged(_priceUnits.FirstOrDefault(u => u.IsDefault));
 
                 if (Model.CreditUnit is null)
                     await OnCreditUnitChanged(_priceUnits.FirstOrDefault(u => u.IsDefault));
             });
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response => _setting = response);
     }
 
     private async Task GetLastNumberAsync()
@@ -156,16 +173,40 @@ public partial class Editor
         Model.DebitUnit = debitUnit;
         SetDebitAdornmentText();
 
-        if (debitUnit != null)
-            await SendRequestAsync<IPriceService, GetPriceResponse?>(
-                action: (s, ct) => s.GetAsync(debitUnit.Id, ct),
-                afterSend: response =>
+        if (Model.PriceUnit is null || debitUnit is null)
+        {
+            return;
+        }
+
+        if (Model.PriceUnit.Id == debitUnit.Id)
+        {
+            OnDebitChanged(null);
+            return;
+        }
+
+        await GetExchangeRateAsync(debitUnit.Id, TransactionType.Debit);
+    }
+
+    private async Task GetExchangeRateAsync(Guid priceUnitId, TransactionType transactionType)
+    {
+        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+            action: (s, ct) => s.GetExchangeRateAsync(priceUnitId, Model.PriceUnit!.Id, ct),
+            afterSend: response =>
+            {
+                switch (transactionType)
                 {
-                    if (response is not null)
-                        OnDebitRateChanged(decimal.Parse(response.Value));
-                    else
-                        OnDebitRateChanged(null);
-                });
+                    case TransactionType.Credit:
+                        OnCreditRateChanged(response.ExchangeRate);
+                        break;
+                    case TransactionType.Debit:
+                        OnDebitRateChanged(response.ExchangeRate);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(transactionType), transactionType, null);
+                }
+
+                StateHasChanged();
+            });
     }
 
     private void OnDebitRateChanged(decimal? debitRate)
@@ -191,17 +232,16 @@ public partial class Editor
         Model.CreditUnit = creditUnit;
         SetCreditAdornmentText();
 
-        if (creditUnit != null)
-            await SendRequestAsync<IPriceService, GetPriceResponse?>(
-                action: (s, ct) => s.GetAsync(creditUnit.Id, ct),
-                afterSend: response =>
-                {
-                    if (response is not null)
-                        OnCreditRateChanged(decimal.Parse(response.Value));
-                    else
-                        OnCreditRateChanged(null);
+        if (Model.PriceUnit is null || creditUnit is null)
+            return;
 
-                });
+        if (Model.PriceUnit.Id == creditUnit.Id)
+        {
+            OnCreditChanged(null);
+            return;
+        }
+
+        await GetExchangeRateAsync(creditUnit.Id, TransactionType.Credit);
     }
 
     private void OnCreditRateChanged(decimal? creditRate)
@@ -269,4 +309,39 @@ public partial class Editor
 
 
     private void Close() => MudDialog.Cancel();
+
+    private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
+    {
+        if (priceUnit is null)
+            return;
+
+        Model.PriceUnit = priceUnit;
+
+        if (!Model.Customer.CreditLimit.HasValue)
+            OnCustomerCreditLimitUnitChanged(priceUnit);
+
+        if (!Model.Debit.HasValue)
+            await OnDebitUnitChanged(priceUnit);
+
+        if (!Model.Credit.HasValue)
+            await OnCreditUnitChanged(priceUnit);
+
+        if (Model.CreditUnit is not null && Model.PriceUnit.Id != Model.CreditUnit.Id)
+        {
+            await GetExchangeRateAsync(Model.CreditUnit.Id, TransactionType.Credit);
+        }
+        else
+        {
+            OnCreditRateChanged(null);
+        }
+
+        if (Model.DebitUnit is not null && Model.PriceUnit.Id != Model.DebitUnit.Id)
+        {
+            await GetExchangeRateAsync(Model.DebitUnit.Id, TransactionType.Debit);
+        }
+        else
+        {
+            OnDebitRateChanged(null);
+        }
+    }
 }

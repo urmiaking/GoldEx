@@ -6,6 +6,7 @@ public record CreateTransactionRequest(
     long Number,
     string Description,
     DateTime DateTime,
+    Guid PriceUnitId,
     decimal? Credit,
     Guid? CreditPriceUnitId,
     decimal? CreditRate,
