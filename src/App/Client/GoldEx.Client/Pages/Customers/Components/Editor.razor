@@ -37,8 +37,7 @@
                 <MudItem xs="12" md="6" lg="6">
                     <MudMenu @bind-Open="Model.CreditLimitMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
                         <ActivatorContent>
-                            <MudNumericField Value="Model.CreditLimit"
-                                             ValueChanged="OnCreditLimitChanged"
+                            <MudNumericField @bind-Value="Model.CreditLimit"
                                              T="decimal?"
                                              HideSpinButtons="true"
                                              Format="#,##0.##"
