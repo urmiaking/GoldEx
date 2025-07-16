@@ -297,7 +297,7 @@
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
                        Variant="Variant.Filled">
-                @if (IsBusy)
+                @if (_isProcessing)
                 {
                     <MudProgressCircular Class="ms-n1"
                                          Size="Size.Small"

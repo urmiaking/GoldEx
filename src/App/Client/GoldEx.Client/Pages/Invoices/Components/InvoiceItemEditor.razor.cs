@@ -30,6 +30,7 @@ public partial class InvoiceItemEditor
     private string? _wageFieldAdornmentText = "درصد";
     private string? _wageExchangeRateLabel;
     private bool _weightFieldMenuOpen;
+    private bool _isProcessing;
 
     protected override void OnParametersSet()
     {
@@ -80,11 +81,13 @@ public partial class InvoiceItemEditor
 
     private async Task Submit()
     {
+        _isProcessing = true;
         await _form.Validate();
 
         if (!_form.IsValid)
             return;
 
+        _isProcessing = false;
         MudDialog.Close(DialogResult.Ok(Model));
     }
 
