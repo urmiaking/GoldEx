@@ -3,12 +3,13 @@ using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Shared.DTOs.Transactions;
 
 namespace GoldEx.Server.Infrastructure.Specifications.Transactions;
 
 public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
 {
-    public TransactionsByFilterSpecification(RequestFilter filter, CustomerId? customerId)
+    public TransactionsByFilterSpecification(RequestFilter filter, TransactionFilter transactionFilter, CustomerId? customerId)
     {
         if (filter.Skip < 0)
             filter.Skip = 0;
@@ -21,10 +22,8 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         AddInclude(x => x.DebitUnit!);
 
         // Apply customer filter if provided
-        if (customerId.HasValue)
-        {
+        if (customerId.HasValue) 
             AddCriteria(x => x.CustomerId == customerId.Value);
-        }
 
         // Apply search filter
         if (!string.IsNullOrEmpty(filter.Search))
@@ -39,6 +38,16 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
                     x.Customer!.FullName.Contains(filter.Search) ||
                     (!string.IsNullOrEmpty(x.Description) && x.Description.Contains(filter.Search)));
             }
+        }
+
+        // Apply date range filter
+        if (transactionFilter.Start.HasValue)
+        {
+            AddCriteria(x => x.DateTime >= transactionFilter.Start.Value);
+        }
+        if (transactionFilter.End.HasValue)
+        {
+            AddCriteria(x => x.DateTime <= transactionFilter.End);
         }
 
         // Apply sorting

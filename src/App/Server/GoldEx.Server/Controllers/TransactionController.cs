@@ -15,9 +15,12 @@ public class TransactionController(ITransactionService service) : ApiControllerB
 {
     [HttpGet(ApiRoutes.Transactions.GetList)]
     [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] Guid? customerId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter,
+        [FromQuery] TransactionFilter transactionFilter,
+        [FromQuery] Guid? customerId,
+        CancellationToken cancellationToken = default)
     {
-        var list = await service.GetListAsync(filter, customerId, cancellationToken);
+        var list = await service.GetListAsync(filter, transactionFilter, customerId, cancellationToken);
         return Ok(list);
     }
 

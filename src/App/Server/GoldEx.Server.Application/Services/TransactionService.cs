@@ -24,19 +24,22 @@ internal class TransactionService(
     UpdateTransactionRequestValidator updateValidator,
     DeleteTransactionValidator deleteValidator) : ITransactionService
 {
-    public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter, Guid? customerId, CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter,
+        TransactionFilter transactionFilter, Guid? customerId, CancellationToken cancellationToken = default)
     {
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
         var data = await repository
             .Get(new TransactionsByFilterSpecification(filter,
+                transactionFilter,
                 customerId.HasValue
                     ? new CustomerId(customerId.Value)
                     : null))
             .ToListAsync(cancellationToken);
 
         var totalCount = await repository.CountAsync(new TransactionsByFilterSpecification(filter,
+                transactionFilter,
                 customerId.HasValue
                     ? new CustomerId(customerId.Value)
                     : null),

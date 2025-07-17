@@ -18,6 +18,7 @@ public partial class TransactionsList
     private MudTable<TransactionVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large, BackdropClick = false };
     private readonly DialogOptions _removeDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small, BackdropClick = false };
+    private DateRange? _filterDateRange;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -38,8 +39,10 @@ public partial class TransactionsList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
+        var transactionFilter = new TransactionFilter(_filterDateRange?.Start, _filterDateRange?.End);
+
         await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
-            action: (s, ct) => s.GetListAsync(filter, CustomerId, ct),
+            action: (s, ct) => s.GetListAsync(filter, transactionFilter, CustomerId, ct),
             afterSend: response =>
             {
                 var items = response.Data.Select(TransactionVm.CreateFrom).ToList();
@@ -58,7 +61,7 @@ public partial class TransactionsList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await _table.ReloadServerData();
+        await RefreshAsync();
     }
 
     private void PageChanged(int i)
@@ -80,7 +83,7 @@ public partial class TransactionsList
         if (result is { Canceled: false })
         {
             AddSuccessToast("تراکنش جدید با موفقیت افزوده شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -102,7 +105,7 @@ public partial class TransactionsList
         if (result is { Canceled: false })
         {
             AddSuccessToast("تراکنش با موفقیت حذف شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -120,7 +123,19 @@ public partial class TransactionsList
         if (result is { Canceled: false })
         {
             AddSuccessToast("تراکنش با موفقیت ویرایش شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _filterDateRange = dateRange;
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        await _table.ReloadServerData();
+        StateHasChanged();
     }
 }

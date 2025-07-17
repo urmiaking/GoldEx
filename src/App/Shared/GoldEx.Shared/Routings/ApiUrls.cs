@@ -5,6 +5,7 @@ using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.Routings;
@@ -141,8 +142,11 @@ public class ApiUrls
 
     public class Transactions
     {
-        public static string GetList(RequestFilter filter, Guid? customerId) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList).AppendQueryString(filter).AppendQueryString(new { customerId });
+        public static string GetList(RequestFilter filter, TransactionFilter transactionFilter, Guid? customerId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(transactionFilter)
+                .AppendQueryString(new { customerId });
 
         public static string Get(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });
