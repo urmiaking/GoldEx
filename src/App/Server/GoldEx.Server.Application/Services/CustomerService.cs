@@ -133,7 +133,7 @@ internal class CustomerService(
         }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
+            logger.LogError(e, e.Message);
             throw;
         }
     }
@@ -240,7 +240,7 @@ internal class CustomerService(
         }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
+            logger.LogError(e, e.Message);
             throw;
         }
     }

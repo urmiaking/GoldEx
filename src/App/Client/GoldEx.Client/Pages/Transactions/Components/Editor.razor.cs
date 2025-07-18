@@ -4,7 +4,6 @@ using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -28,11 +27,11 @@ public partial class Editor
     private bool _isDebitMenuOpen;
     private bool _isCreditMenuOpen;
     private bool _isCreditLimitMenuOpen;
+    private bool _processing;
     private string? _creditLimitAdornmentText;
     private string? _creditAdornmentText;
     private string? _debitAdornmentText;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private GetSettingResponse? _setting;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -51,7 +50,6 @@ public partial class Editor
             await LoadCustomerAsync();
 
         await LoadPriceUnitsAsync();
-        await LoadSettingsAsync();
 
         await base.OnParametersSetAsync();
     }
@@ -91,13 +89,6 @@ public partial class Editor
             });
     }
 
-    private async Task LoadSettingsAsync()
-    {
-        await SendRequestAsync<ISettingService, GetSettingResponse?>(
-            action: (s, ct) => s.GetAsync(ct),
-            afterSend: response => _setting = response);
-    }
-
     private async Task GetLastNumberAsync()
     {
         await SendRequestAsync<ITransactionService, GetTransactionNumberResponse>(
@@ -111,36 +102,30 @@ public partial class Editor
 
     private async Task OnSubmit()
     {
-        if (IsBusy)
+        if (_processing)
             return;
+
+        _processing = true;
 
         await _form.Validate();
 
         if (!_form.IsValid)
+        {
+            _processing = false;
             return;
+        }
 
-        if (Model.TransactionId.HasValue)
-        {
-            var request = TransactionVm.ToUpdateRequest(Model);
-            await SendRequestAsync<ITransactionService>(
-                action: (s, ct) => s.UpdateAsync(Model.TransactionId.Value, request, ct),
-                afterSend: () =>
-                {
-                    MudDialog.Close(DialogResult.Ok(true));
-                    return Task.CompletedTask;
-                });
-        }
-        else
-        {
-            var request = TransactionVm.ToCreateRequest(Model);
-            await SendRequestAsync<ITransactionService>(
-                action: (s, ct) => s.CreateAsync(request, ct),
-                afterSend: () =>
-                {
-                    MudDialog.Close(DialogResult.Ok(true));
-                    return Task.CompletedTask;
-                });
-        }
+        var request = TransactionVm.ToRequest(Model);
+
+        await SendRequestAsync<ITransactionService>(
+            action: (s, ct) => s.SetAsync(request, ct),
+            afterSend: () =>
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+                return Task.CompletedTask;
+            });
+
+        _processing = false;
     }
 
     private async Task OnCustomerNationalIdChanged(string nationalId)

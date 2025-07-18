@@ -73,26 +73,13 @@ public class TransactionVm
         };
     }
 
-    public static UpdateTransactionRequest ToUpdateRequest(TransactionVm model)
+    public static TransactionRequestDto ToRequest(TransactionVm model)
     {
-        return new UpdateTransactionRequest(
-            model.TransactionNumber,
-            model.Description,
-            DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),
-            model.PriceUnit.Id,
-            model.Credit,
-            model.CreditUnit?.Id,
-            model.CreditRate,
-            model.Debit,
-            model.DebitUnit?.Id,
-            model.DebitRate,
-            CustomerVm.ToRequest(model.Customer)
-        );
-    }
+        if (model.PriceUnit is null)
+            throw new InvalidOperationException();
 
-    public static CreateTransactionRequest ToCreateRequest(TransactionVm model)
-    {
-        return new CreateTransactionRequest(
+        return new TransactionRequestDto(
+            model.TransactionId,
             model.TransactionNumber,
             model.Description,
             DateTime.Today.Add(model.TransactionTime ?? TimeSpan.Zero),

@@ -293,7 +293,7 @@
 
             <MudButton Class="m-2"
                        Color="Color.Primary"
-                       Disabled="@IsBusy"
+                       Disabled="@_isProcessing"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await Submit())"
                        Variant="Variant.Filled">

@@ -3,14 +3,16 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.DTOs.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Transactions;
 
 [ScopedService]
-internal class CreateTransactionRequestValidator : AbstractValidator<CreateTransactionRequest>
+internal class TransactionRequestDtoValidator : AbstractValidator<TransactionRequestDto>
 {
     private readonly ITransactionRepository _repository;
-    public CreateTransactionRequestValidator(ITransactionRepository repository)
+
+    public TransactionRequestDtoValidator(ITransactionRepository repository)
     {
         _repository = repository;
 
@@ -30,33 +32,44 @@ internal class CreateTransactionRequestValidator : AbstractValidator<CreateTrans
             RuleFor(transaction => transaction.CreditPriceUnitId)
                 .NotNull().WithMessage("وارد کردن واحد تبدیل بستانکاری الزامی است");
 
-            RuleFor(transaction => transaction.CreditRate)
-                .NotNull().WithMessage("وارد کردن نرخ تبدیل بستانکاری الزامی است")
-                .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بستانکاری نباید منفی باشد");
-
             RuleFor(transaction => transaction.Credit)
-                 .GreaterThan(0).WithMessage("مقدار بستانکاری نباید منفی باشد");
+                .GreaterThan(0).WithMessage("مقدار بستانکاری نباید منفی باشد");
+
+            When(transaction => transaction.CreditPriceUnitId != transaction.PriceUnitId, () => {
+                RuleFor(transaction => transaction.CreditRate)
+                    .NotNull().WithMessage("وارد کردن نرخ تبدیل بستانکاری الزامی است")
+                    .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بستانکاری نباید منفی باشد");
+            });
         });
 
         When(transaction => transaction.Debit.HasValue, () => {
             RuleFor(transaction => transaction.DebitPriceUnitId)
                 .NotNull().WithMessage("وارد کردن واحد تبدیل بدهکاری الزامی است");
 
-            RuleFor(transaction => transaction.DebitRate)
-                .NotNull().WithMessage("وارد کردن نرخ تبدیل بدهکاری الزامی است")
-                .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بدهکاری نباید منفی باشد");
-
             RuleFor(transaction => transaction.Debit)
                 .GreaterThan(0).WithMessage("مقدار بدهکاری نباید منفی باشد");
+
+            When(transaction => transaction.DebitPriceUnitId != transaction.PriceUnitId, () => {
+                RuleFor(transaction => transaction.DebitRate)
+                    .NotNull().WithMessage("وارد کردن نرخ تبدیل بدهکاری الزامی است")
+                    .GreaterThanOrEqualTo(0).WithMessage("نرخ تبدیل بدهکاری نباید منفی باشد");
+            });
         });
     }
 
-    private async Task<bool> BeUniqueNumber(long number, CancellationToken cancellationToken = default)
+    private async Task<bool> BeUniqueNumber(TransactionRequestDto request, long number, CancellationToken cancellationToken = default)
     {
-        return !await _repository.ExistsAsync(new TransactionsByNumberSpecification(number), cancellationToken);
+        var item = await _repository
+            .Get(new TransactionsByNumberSpecification(number))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (item is null)
+            return true;
+
+        return item.Id.Value == request.Id;
     }
 
-    private static bool HaveAtLeastCreditOrDebitInfo(CreateTransactionRequest transaction)
+    private static bool HaveAtLeastCreditOrDebitInfo(TransactionRequestDto transaction)
     {
         return transaction.Credit.HasValue || transaction.Debit.HasValue;
     }

@@ -75,7 +75,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.InvoiceDiscounts, src => src.Discounts)
             .Map(dest => dest.InvoiceExtraCosts, src => src.ExtraCosts)
             .Map(dest => dest.InvoicePayments, src => src.InvoicePayments)
-            .Map(dest => dest.InvoiceDate, 
+            .Map(dest => dest.InvoiceDate,
                 src => new DateTime(src.InvoiceDate, TimeOnly.MinValue))
             .Map(dest => dest.DueDate,
                 src => src.DueDate.HasValue
@@ -99,29 +99,53 @@ public class MapsterConfig : IRegister
         #region Reporting
 
         config.NewConfig<Invoice, GetInvoiceDetailResponse>()
-            .Map(dest => dest.Customer, src => src.Customer)
-            .Map(dest => dest.InvoiceItems, src => src.Items)
-            .Map(dest => dest.TaxPercent, src => $"{src.Items.First().TaxPercent.ToCurrencyFormat(null)}%")
-            .Map(dest => dest.ProfitPercent, src => $"{src.Items.First().ProfitPercent.ToCurrencyFormat(null)}%")
-            .Map(dest => dest.DailyGramPrice, src => $"{src.Items.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
-            .Map(dest => dest.GoldUnitType, src => src.Items.First().Product!.GoldUnitType)
-            .Map(dest => dest.TotalAmount, src => $"{src.TotalAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
-            .Map(dest => dest.TotalPaidAmount, src => $"{src.TotalPaidAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
-            .Map(dest => dest.TotalDiscountAmount, src => $"{src.TotalDiscountAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
-            .Map(dest => dest.TotalExtraCostAmount, src => $"{src.TotalExtraCostAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
-            .Map(dest => dest.TotalUnpaidAmount, src => $"{src.TotalUnpaidAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
-            .Map(dest => dest.TotalUnpaidSecondaryAmount,
-                src => src.UnpaidPriceUnitId.HasValue
-                    ? $"({(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1)).ToCurrencyReportFormat(src.UnpaidPriceUnit!.Title)})"
-                    : null)
-            .Map(dest => dest.TotalAmountWithDiscountsAndExtraCosts,
-                src => $"{src.TotalAmountWithDiscountsAndExtraCosts.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
-            .Map(dest => dest.InvoiceDate,
-                src => new DateTime(src.InvoiceDate, TimeOnly.MinValue))
-            .Map(dest => dest.DueDate,
-                src => src.DueDate.HasValue
-                    ? new DateTime(src.DueDate.Value, TimeOnly.MinValue)
-                    : (DateTime?)null);
+    .Map(dest => dest.Customer, src => src.Customer)
+    .Map(dest => dest.InvoiceItems, src => src.Items)
+
+    // Check that the first item itself is not null before using it.
+    .Map(dest => dest.TaxPercent,
+        src => (src.Items.FirstOrDefault() != null)
+            ? $"{src.Items.First().TaxPercent.ToCurrencyFormat(null)}%"
+            : null)
+
+    .Map(dest => dest.ProfitPercent,
+        src => (src.Items.FirstOrDefault() != null)
+            ? $"{src.Items.First().ProfitPercent.ToCurrencyFormat(null)}%"
+            : null)
+
+    .Map(dest => dest.DailyGramPrice,
+        src => (src.Items.FirstOrDefault() != null)
+            ? $"{src.Items.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"
+            : null)
+
+    .Map(dest => dest.GoldUnitType,
+        src => (src.Items.FirstOrDefault() != null)
+            ? src.Items.First().Product == null ? GoldUnitType.Gram : src.Items.First().Product!.GoldUnitType
+            : GoldUnitType.Gram)
+
+    // The rest of the mappings were already safe against this issue.
+    .Map(dest => dest.TotalAmount,
+        src => $"{src.TotalAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+    .Map(dest => dest.TotalPaidAmount,
+        src => $"{src.TotalPaidAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+    .Map(dest => dest.TotalDiscountAmount,
+        src => $"{src.TotalDiscountAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+    .Map(dest => dest.TotalExtraCostAmount,
+        src => $"{src.TotalExtraCostAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+    .Map(dest => dest.TotalUnpaidAmount,
+        src => $"{src.TotalUnpaidAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+    .Map(dest => dest.TotalAmountWithDiscountsAndExtraCosts,
+        src => $"{src.TotalAmountWithDiscountsAndExtraCosts.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+    .Map(dest => dest.TotalUnpaidSecondaryAmount,
+        src => src.UnpaidPriceUnitId.HasValue
+            ? $"({(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1)).ToCurrencyReportFormat(src.UnpaidPriceUnit == null ? null : src.UnpaidPriceUnit.Title)})"
+            : null)
+    .Map(dest => dest.InvoiceDate,
+        src => new DateTime(src.InvoiceDate, TimeOnly.MinValue))
+    .Map(dest => dest.DueDate,
+        src => src.DueDate.HasValue
+            ? new DateTime(src.DueDate.Value, TimeOnly.MinValue)
+            : (DateTime?)null);
 
         config.NewConfig<InvoiceItem, GetInvoiceItemReportResponse>()
             .Map(dest => dest.Product, src => src.Product)

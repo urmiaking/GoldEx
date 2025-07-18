@@ -316,11 +316,11 @@
 
             <MudButton Class="m-2"
                        Color="Color.Primary"
-                       Disabled="@IsBusy"
+                       Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"
                        OnClick="@(async () => await OnSubmit())"
                        Variant="Variant.Filled">
-                @if (IsBusy)
+                @if (_processing)
                 {
                     <MudProgressCircular Class="ms-n1"
                                          Size="Size.Small"

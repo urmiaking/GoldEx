@@ -38,17 +38,10 @@ public class TransactionController(ITransactionService service) : ApiControllerB
         return Ok(transaction);
     }
 
-    [HttpPost(ApiRoutes.Transactions.Create)]
-    public async Task<IActionResult> CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
+    [HttpPost(ApiRoutes.Transactions.Set)]
+    public async Task<IActionResult> SetAsync(TransactionRequestDto requestDto, CancellationToken cancellationToken = default)
     {
-        await service.CreateAsync(request, cancellationToken);
-        return Created();
-    }
-
-    [HttpPut(ApiRoutes.Transactions.Update)]
-    public async Task<IActionResult> UpdateAsync(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
-    {
-        await service.UpdateAsync(id, request, cancellationToken);
+        await service.SetAsync(requestDto, cancellationToken);
         return Ok();
     }
 

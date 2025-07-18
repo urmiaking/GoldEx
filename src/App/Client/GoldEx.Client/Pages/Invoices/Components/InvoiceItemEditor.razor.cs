@@ -85,7 +85,10 @@ public partial class InvoiceItemEditor
         await _form.Validate();
 
         if (!_form.IsValid)
+        {
+            _isProcessing = false;
             return;
+        }
 
         _isProcessing = false;
         MudDialog.Close(DialogResult.Ok(Model));
