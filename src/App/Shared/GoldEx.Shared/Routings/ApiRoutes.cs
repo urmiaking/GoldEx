@@ -91,8 +91,7 @@ public static class ApiRoutes
         public const string GetList = ""; // GET /api/Transactions or /api/Transactions?customerId=123
         public const string Get = "{id}";
         public const string GetByNumber = "number/{number}";
-        public const string Create = "";
-        public const string Update = "{id}";
+        public const string Set = "";
         public const string Delete = "{id}";
         public const string GetLastNumber = "last-number";
     }
@@ -125,9 +124,8 @@ public static class ApiRoutes
     public class Invoices
     {
         public const string Base = "/api/Invoices";
-        public const string Create = "";
-        public const string Update = "{id}";
-        public const string GetList = ""; // GET /api/Invoices or /api/Invoices?customerId=123
+        public const string Set = "";
+        public const string GetList = "";
         public const string Get = "{id}";
         public const string Delete = "{id}";
         public const string GetLastNumber = "last-number";

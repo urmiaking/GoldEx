@@ -12,6 +12,8 @@ using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -20,8 +22,8 @@ internal class TransactionService(
     ITransactionRepository repository,
     ICustomerService customerService,
     IMapper mapper,
-    CreateTransactionRequestValidator createValidator,
-    UpdateTransactionRequestValidator updateValidator,
+    ILogger<TransactionService> logger,
+    TransactionRequestDtoValidator validator,
     DeleteTransactionValidator deleteValidator) : ITransactionService
 {
     public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter,
@@ -73,72 +75,72 @@ internal class TransactionService(
         return mapper.Map<GetTransactionResponse>(transaction);
     }
 
-    //TODO: add transaction
-    public async Task CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
+    public async Task SetAsync(TransactionRequestDto request, CancellationToken cancellationToken = default)
     {
-        await createValidator.ValidateAndThrowAsync(request, cancellationToken);
+        await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        Guid customerId;
-
-        if (request.Customer.Id.HasValue)
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         {
-            await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
-            customerId = request.Customer.Id.Value;
+            try
+            {
+                Guid customerId;
+
+                if (request.Customer.Id.HasValue)
+                {
+                    await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
+                    customerId = request.Customer.Id.Value;
+                }
+                else
+                {
+                    customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
+                }
+
+                if (request.Id.HasValue)
+                {
+                    var existingTransaction = await repository
+                        .Get(new TransactionsByIdSpecification(new TransactionId(request.Id.Value)))
+                        .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                    existingTransaction.SetCredit(request.Credit);
+                    existingTransaction.SetCreditUnit(request.CreditPriceUnitId.HasValue ? new PriceUnitId(request.CreditPriceUnitId.Value) : null);
+                    existingTransaction.SetCreditRate(request.CreditRate);
+                    existingTransaction.SetDebit(request.Debit);
+                    existingTransaction.SetDebitUnit(request.DebitPriceUnitId.HasValue ? new PriceUnitId(request.DebitPriceUnitId.Value) : null);
+                    existingTransaction.SetDebitRate(request.DebitRate);
+                    existingTransaction.SetDateTime(request.DateTime);
+                    existingTransaction.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
+                    existingTransaction.SetNumber(request.Number);
+                    existingTransaction.SetDescription(request.Description);
+                    existingTransaction.SetCustomer(new CustomerId(customerId));
+
+                    await repository.UpdateAsync(existingTransaction, cancellationToken);
+                }
+                else
+                {
+                    var newTransaction = Transaction.Create(request.DateTime,
+                        request.Number,
+                        request.Description,
+                        new PriceUnitId(request.PriceUnitId),
+                        request.Credit,
+                        request.CreditPriceUnitId.HasValue ? new PriceUnitId(request.CreditPriceUnitId.Value) : null,
+                        request.CreditRate,
+                        request.Debit,
+                        request.DebitPriceUnitId.HasValue ? new PriceUnitId(request.DebitPriceUnitId.Value) : null,
+                        request.DebitRate,
+                        new CustomerId(customerId));
+
+                    await repository.CreateAsync(newTransaction, cancellationToken);
+                }
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error occurred while create or update transaction");
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
-        else
-        {
-            customerId = await customerService.CreateAsync(request.Customer, cancellationToken: cancellationToken);
-        }
-
-        var transaction = Transaction.Create(request.DateTime,
-            request.Number,
-            request.Description,
-            new PriceUnitId(request.PriceUnitId),
-            request.Credit,
-            request.CreditPriceUnitId.HasValue ? new PriceUnitId(request.CreditPriceUnitId.Value) : null,
-            request.CreditRate,
-            request.Debit,
-            request.DebitPriceUnitId.HasValue ? new PriceUnitId(request.DebitPriceUnitId.Value) : null,
-            request.DebitRate,
-            new CustomerId(customerId));
-
-        await repository.CreateAsync(transaction, cancellationToken);
-    }
-
-    //TODO: add transaction
-    public async Task UpdateAsync(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
-    {
-        await updateValidator.ValidateAndThrowAsync((id, request), cancellationToken);
-
-        Guid customerId;
-
-        if (request.Customer.Id.HasValue)
-        {
-            await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
-            customerId = request.Customer.Id.Value;
-        }
-        else
-        {
-            customerId = await customerService.CreateAsync(request.Customer, cancellationToken: cancellationToken);
-        }
-
-        var transaction = await repository
-            .Get(new TransactionsByIdSpecification(new TransactionId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-        transaction.SetCredit(request.Credit);
-        transaction.SetCreditUnit(request.CreditPriceUnitId.HasValue ? new PriceUnitId(request.CreditPriceUnitId.Value) : null);
-        transaction.SetCreditRate(request.CreditRate);
-        transaction.SetDebit(request.Debit);
-        transaction.SetDebitUnit(request.DebitPriceUnitId.HasValue ? new PriceUnitId(request.DebitPriceUnitId.Value) : null);
-        transaction.SetDebitRate(request.DebitRate);
-        transaction.SetDateTime(request.DateTime);
-        transaction.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
-        transaction.SetNumber(request.Number);
-        transaction.SetDescription(request.Description);
-        transaction.SetCustomer(new CustomerId(customerId));
-
-        await repository.UpdateAsync(transaction, cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)

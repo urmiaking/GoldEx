@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Transactions.ViewModels;
 using GoldEx.Shared.Enums;
 
@@ -17,6 +18,14 @@ public class TransactionValidator : AbstractValidator<TransactionVm>
         RuleFor(transaction => transaction)
             .Must(HaveAtLeastCreditOrDebitInfo)
             .WithMessage("وارد کردن حداقل یکی از مقادیر بدهکاری یا بستانکاری الزامی است");
+
+        RuleFor(transaction => transaction.PriceUnit)
+            .NotNull()
+            .WithMessage("وارد کردن واحد تراکنش الزامی است");
+
+        RuleFor(x => x.Customer)
+            .NotNull().WithMessage("اطلاعات مشتری الزامی است")
+            .SetValidator(new CustomerValidator());
 
         When(transaction => transaction.Credit.HasValue, () => {
             RuleFor(transaction => transaction.CreditUnit)

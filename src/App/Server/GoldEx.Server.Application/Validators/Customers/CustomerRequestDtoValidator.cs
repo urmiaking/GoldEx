@@ -54,7 +54,7 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
                 var priceUnitHasValue = dto.CreditLimitPriceUnitId.HasValue;
 
                 if (creditLimitHasValue != priceUnitHasValue) 
-                    context.AddFailure("در صورت وارد کردن محدودیت اعتباری، وارد کردن واحد آن نیز الزامی است (و بالعکس)");
+                    context.AddFailure("در صورت وارد کردن سقف اعتبار مشتری، وارد کردن واحد آن نیز الزامی است (و بالعکس)");
             });
 
         When(x => x.BankAccounts is not null, () =>

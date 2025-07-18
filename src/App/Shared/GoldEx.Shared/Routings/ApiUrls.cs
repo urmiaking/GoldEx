@@ -155,11 +155,8 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetByNumber)
                 .AppendQueryString(new { number });
 
-        public static string Create() =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Create);
-
-        public static string Update(Guid id) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Update).FormatRoute(new { id });
+        public static string Set() =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Set);
 
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Delete).FormatRoute(new { id });
@@ -209,7 +206,7 @@ public class ApiUrls
 
     public class Invoices
     {
-        public static string Create() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Create);
+        public static string Set() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Set);
 
         public static string GetList(RequestFilter filter, InvoiceFilter invoiceFilter, Guid? customerId) =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetList)

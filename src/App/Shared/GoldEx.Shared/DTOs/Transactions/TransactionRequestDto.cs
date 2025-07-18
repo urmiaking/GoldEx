@@ -2,7 +2,9 @@
 
 namespace GoldEx.Shared.DTOs.Transactions;
 
-public record UpdateTransactionRequest(long Number,
+public record TransactionRequestDto(
+    Guid? Id,
+    long Number,
     string Description,
     DateTime DateTime,
     Guid PriceUnitId,

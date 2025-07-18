@@ -9,8 +9,7 @@ public interface ITransactionService
         Guid? customerId, CancellationToken cancellationToken = default);
     Task<GetTransactionResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetTransactionResponse> GetAsync(int number, CancellationToken cancellationToken = default);
-    Task CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default);
-    Task UpdateAsync(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken = default);
+    Task SetAsync(TransactionRequestDto request, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetTransactionNumberResponse> GetLastNumberAsync(CancellationToken cancellationToken = default);
 }

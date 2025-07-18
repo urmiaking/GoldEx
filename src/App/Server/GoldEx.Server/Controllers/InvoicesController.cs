@@ -13,8 +13,8 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class InvoicesController(IInvoiceService service) : ApiControllerBase
 {
-    [HttpPost(ApiRoutes.Invoices.Create)]
-    public async Task<IActionResult> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    [HttpPost(ApiRoutes.Invoices.Set)]
+    public async Task<IActionResult> SetAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
         await service.SetAsync(request, cancellationToken);
         return Created();

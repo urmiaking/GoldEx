@@ -49,17 +49,9 @@ internal class TransactionService(HttpClient client, JsonSerializerOptions jsonO
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
+    public async Task SetAsync(TransactionRequestDto request, CancellationToken cancellationToken = default)
     {
-        using var response = await client.PostAsJsonAsync(ApiUrls.Transactions.Create(), request, jsonOptions, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
-    }
-
-    public async Task UpdateAsync(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
-    {
-        using var response = await client.PutAsJsonAsync(ApiUrls.Transactions.Update(id), request, jsonOptions, cancellationToken);
+        using var response = await client.PostAsJsonAsync(ApiUrls.Transactions.Set(), request, jsonOptions, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
