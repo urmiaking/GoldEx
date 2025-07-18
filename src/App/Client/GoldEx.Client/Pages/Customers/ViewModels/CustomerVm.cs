@@ -2,6 +2,8 @@
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.BankAccounts;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Client.Pages.Customers.ViewModels;
 
@@ -41,6 +43,8 @@ public class CustomerVm
 
     public DateTime CreatedAt { get; set; }
 
+    public List<BankAccountVm>? BankAccounts { get; set; }
+
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {
         return new CustomerVm
@@ -53,12 +57,18 @@ public class CustomerVm
             Address = response.Address,
             CreditLimit = response.CreditLimit,
             CreditLimitPriceUnit = response.CreditLimitPriceUnit,
-            CreatedAt = response.CreatedAt
+            CreatedAt = response.CreatedAt,
+            BankAccounts = response.BankAccounts?.Select(BankAccountVm.CreateFrom).ToList()
         };
     }
 
     public static CustomerRequestDto ToRequest(CustomerVm model)
     {
+        List<BankAccountRequestDto>? bankAccounts = null;
+
+        if (model.BankAccounts is not null) 
+            bankAccounts = model.BankAccounts.Select(x => x.ToRequest()).ToList();
+
         return new CustomerRequestDto(model.Id,
             model.FullName,
             model.NationalId,
@@ -66,6 +76,7 @@ public class CustomerVm
             model.Address,
             model.CreditLimit,
             model.CreditLimitPriceUnit?.Id,
-            model.CustomerType);
+            model.CustomerType,
+            bankAccounts);
     }
 }

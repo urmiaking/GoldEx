@@ -158,6 +158,22 @@ public partial class Editor
                 OnCustomerCreditLimitChanged(response.CreditLimit);
             });
     }
+    
+    private async Task OnCustomerPhoneNumberChanged(string phoneNumber)
+    {
+        Model.Customer.PhoneNumber = phoneNumber;
+
+        await SendRequestAsync<ICustomerService, GetCustomerResponse?>(
+            action: (s, ct) => s.GetByPhoneNumberAsync(phoneNumber, ct),
+            afterSend: response =>
+            {
+                if (response is null)
+                    return;
+
+                Model.Customer = CustomerVm.CreateFrom(response);
+                OnCustomerCreditLimitChanged(response.CreditLimit);
+            });
+    }
 
     private void OnDebitChanged(decimal? debit)
     {
@@ -264,10 +280,9 @@ public partial class Editor
         SetCreditLimitAdornmentText();
     }
 
-    private void OnCustomerNationalIdCleared()
+    private void OnCustomerCleared()
     {
         Model.Customer = new CustomerVm();
-        SetCreditLimitAdornmentText();
     }
 
     private async Task SelectDebitUnit(GetPriceUnitTitleResponse selectedUnit)

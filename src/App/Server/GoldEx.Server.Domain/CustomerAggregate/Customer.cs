@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.BankAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
@@ -39,6 +40,7 @@ public class Customer : EntityBase<CustomerId>
     public PriceUnit? CreditLimitPriceUnit { get; private set; }
 
     public IReadOnlyList<Transaction>? Transactions { get; private set; }
+    public IReadOnlyList<BankAccount>? BankAccounts { get; private set; }
 
     public void SetCustomerType(CustomerType customerType) => CustomerType = customerType;
     public void SetFullName(string fullName) => FullName = fullName;

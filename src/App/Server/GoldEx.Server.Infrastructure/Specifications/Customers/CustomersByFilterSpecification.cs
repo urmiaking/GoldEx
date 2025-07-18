@@ -16,6 +16,8 @@ public class CustomersByFilterSpecification : SpecificationBase<Customer>
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
+        AddInclude(x => x.CreditLimitPriceUnit!);
+
         // Apply search filter
         if (!string.IsNullOrEmpty(filter.Search))
         {

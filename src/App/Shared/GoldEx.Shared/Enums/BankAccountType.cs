@@ -4,9 +4,9 @@ namespace GoldEx.Shared.Enums;
 
 public enum BankAccountType
 {
-    [Display(Name = "حساب بانکی محلی")]
+    [Display(Name = "داخلی")]
     Local = 0,
 
-    [Display(Name = "حساب بانکی بین المللی")]
+    [Display(Name = "خارجی")]
     International = 1
 }

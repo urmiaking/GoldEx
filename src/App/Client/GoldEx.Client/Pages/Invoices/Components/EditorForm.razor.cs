@@ -164,7 +164,25 @@ public partial class EditorForm
                 OnCustomerCreditLimitChanged(response.CreditLimit);
             });
     }
+    
+    private async Task OnCustomerPhoneNumberChanged(string phoneNumber)
+    {
+        _model.Customer.PhoneNumber = phoneNumber;
 
+        if (string.IsNullOrEmpty(phoneNumber))
+            return;
+
+        await SendRequestAsync<ICustomerService, GetCustomerResponse?>(
+            action: (s, ct) => s.GetByPhoneNumberAsync(phoneNumber, ct),
+            afterSend: response =>
+            {
+                if (response is null)
+                    return;
+
+                _model.Customer = CustomerVm.CreateFrom(response);
+                OnCustomerCreditLimitChanged(response.CreditLimit);
+            });
+    }
 
     #endregion
 
