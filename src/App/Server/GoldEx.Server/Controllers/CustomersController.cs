@@ -39,7 +39,7 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
     public async Task<IActionResult> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken)
     {
         var item = await service.GetByPhoneNumberAsync(phoneNumber, cancellationToken);
-        return Ok(item);
+        return item is null ? NotFound() : Ok(item);
     }
 
     [HttpPost(ApiRoutes.Customers.Create)]

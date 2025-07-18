@@ -146,7 +146,12 @@
                               Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="2">
-                <MudTextField @bind-Value="_model.Customer.PhoneNumber"
+                <MudTextField Value="_model.Customer.PhoneNumber"
+                              ValueChanged="OnCustomerPhoneNumberChanged"
+                              T="string"
+                              Immediate="true"
+                              Clearable="true"
+                              OnClearButtonClick="OnCustomerCleared"
                               For="@(() => _model.Customer.PhoneNumber)"
                               Label="@(_model.GetDisplayName(() => _model.Customer.PhoneNumber))"
                               Margin="Margin.Dense"

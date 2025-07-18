@@ -1,12 +1,12 @@
-﻿using System.Net;
-using GoldEx.Sdk.Common.Data;
+﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Routings;
+using GoldEx.Shared.Services.Abstractions;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -53,9 +53,12 @@ internal class CustomerService(HttpClient client, JsonSerializerOptions jsonOpti
         return result;
     }
 
-    public async Task<GetCustomerResponse> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
+    public async Task<GetCustomerResponse?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Customers.GetByPhoneNumber(phoneNumber), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

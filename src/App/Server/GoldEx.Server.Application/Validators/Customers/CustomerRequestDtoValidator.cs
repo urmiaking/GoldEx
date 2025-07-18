@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Application.Validators.BankAccounts;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -49,12 +50,19 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
         RuleFor(x => x)
             .Custom((dto, context) =>
             {
-                var creditLimitHasValue = dto.CreditLimit.HasValue && dto.CreditLimit.Value > 0;
+                var creditLimitHasValue = dto.CreditLimit is > 0;
                 var priceUnitHasValue = dto.CreditLimitPriceUnitId.HasValue;
 
                 if (creditLimitHasValue != priceUnitHasValue) 
                     context.AddFailure("در صورت وارد کردن محدودیت اعتباری، وارد کردن واحد آن نیز الزامی است (و بالعکس)");
             });
+
+        When(x => x.BankAccounts is not null, () =>
+        {
+            RuleForEach(x => x.BankAccounts)
+                .SetValidator(new BankAccountRequestDtoValidator(_priceUnitRepository))
+                .WithMessage("اطلاعات حساب بانکی نامعتبر است");
+        });
     }
 
     private async Task<bool> BeValidPriceUnitId(CustomerRequestDto request, Guid? priceUnitId, CancellationToken cancellationToken = default)

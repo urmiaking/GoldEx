@@ -12,11 +12,13 @@ public partial class Editor
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public CustomerVm Model { get; set; } = new();
 
+    private readonly DialogOptions _bankAccountsDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _creditLimitAdornmentText;
     private bool _processing;
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -61,7 +63,7 @@ public partial class Editor
         if (!Model.Id.HasValue)
         {
             await SendRequestAsync<ICustomerService>(
-                action:(s, ct) => s.CreateAsync(request, ct),
+                action:(s, ct) => s.CreateAsync(request, cancellationToken: ct),
                 afterSend: () =>
                 {
                     MudDialog.Close(DialogResult.Ok(true));
@@ -95,5 +97,46 @@ public partial class Editor
 
         _creditLimitAdornmentText = selectedUnit.Title;
         Model.CreditLimitMenuOpen = false;
+    }
+
+    private async Task OnEditBankAccount(BankAccountVm bankAccount)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(BankAccountEditor.Model), bankAccount },
+            { nameof(BankAccountEditor.PriceUnits), _priceUnits }
+        };
+        var dialog = await DialogService.ShowAsync<BankAccountEditor>($"ویرایش حساب بانکی {bankAccount.AccountHolderName}", parameters, _bankAccountsDialogOptions);
+        await dialog.Result;
+    }
+
+    private async Task OnRemoveBankAccount(BankAccountVm bankAccount)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            $"آیا برای حذف حساب بانکی {bankAccount.AccountHolderName} مطمئن هستید؟",
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is true)
+        {
+            Model.BankAccounts?.Remove(bankAccount);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnAddBankAccount()
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(BankAccountEditor.PriceUnits), _priceUnits }
+        };
+        var dialog = await DialogService.ShowAsync<BankAccountEditor>("افزودن حساب بانکی", parameters, _bankAccountsDialogOptions);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: BankAccountVm bankAccount })
+        {
+            Model.BankAccounts ??= new List<BankAccountVm>();
+            Model.BankAccounts.Add(bankAccount);
+        }
     }
 }

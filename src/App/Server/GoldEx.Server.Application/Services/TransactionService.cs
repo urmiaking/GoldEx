@@ -73,6 +73,7 @@ internal class TransactionService(
         return mapper.Map<GetTransactionResponse>(transaction);
     }
 
+    //TODO: add transaction
     public async Task CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
     {
         await createValidator.ValidateAndThrowAsync(request, cancellationToken);
@@ -86,7 +87,7 @@ internal class TransactionService(
         }
         else
         {
-            customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
+            customerId = await customerService.CreateAsync(request.Customer, cancellationToken: cancellationToken);
         }
 
         var transaction = Transaction.Create(request.DateTime,
@@ -104,6 +105,7 @@ internal class TransactionService(
         await repository.CreateAsync(transaction, cancellationToken);
     }
 
+    //TODO: add transaction
     public async Task UpdateAsync(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
     {
         await updateValidator.ValidateAndThrowAsync((id, request), cancellationToken);
@@ -117,7 +119,7 @@ internal class TransactionService(
         }
         else
         {
-            customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
+            customerId = await customerService.CreateAsync(request.Customer, cancellationToken: cancellationToken);
         }
 
         var transaction = await repository

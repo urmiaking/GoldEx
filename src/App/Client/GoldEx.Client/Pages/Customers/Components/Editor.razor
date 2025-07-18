@@ -53,17 +53,17 @@
                         <ChildContent>
                             @foreach (var item in _priceUnits)
                             {
-                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">  
+                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         @if (item.HasIcon)
                                         {
-                                            <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
                                                 <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                            </MudAvatar>  
+                                            </MudAvatar>
                                         }
                                         @item.Title
-                                    </div>  
-                                </MudMenuItem>  
+                                    </div>
+                                </MudMenuItem>
                             }
                         </ChildContent>
                     </MudMenu>
@@ -75,6 +75,55 @@
                                   Label="@(Model.GetDisplayName(() => Model.Address))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+
+                        <MudText Typo="Typo.h6" GutterBottom="true">حساب های بانکی</MudText>
+                        <MudSpacer/>
+                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="OnAddBankAccount" Size="Size.Small"
+                                       Variant="Variant.Filled">ثبت حساب بانکی جدید</MudButton>
+                        </MudHidden>
+
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="OnAddBankAccount" Size="@Size.Small"
+                                           Variant="@Variant.Filled"></MudIconButton>
+                        </MudHidden>
+                    </MudStack>
+                </MudItem>
+                <MudDivider Class="mb-2" />
+                <MudItem xs="12">
+                    <MudTable Items="@Model.BankAccounts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                        <HeaderContent>
+                            <MudTh>نوع حساب</MudTh>
+                            <MudTh>نام بانک</MudTh>
+                            <MudTh>نام صاحب حساب</MudTh>
+                            <MudTh>شماره حساب</MudTh>
+                            <MudTh>عملیات</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="نوع حساب">@context.BankAccountType.GetDisplayName()</MudTd>
+                            <MudTd DataLabel="نام بانک">@context.BankName</MudTd>
+                            <MudTd DataLabel="نام صاحب حساب">@context.AccountHolderName</MudTd>
+                            <MudTd DataLabel="شماره حساب">@(context.BankAccountType == BankAccountType.Local ? context.LocalAccountNumber : context.InternationalAccountNumber)</MudTd>
+                            <MudTd DataLabel="عملیات">
+                                <div class="d-flex gap-2">
+                                    <MudTooltip Text="ویرایش">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                                       Color="Color.Info" OnClick="_ => OnEditBankAccount(context)"></MudIconButton>
+                                    </MudTooltip>
+                                    <MudTooltip Text="حذف">
+                                        <MudIconButton OnClick="() => OnRemoveBankAccount(context)" Size="@Size.Small" Variant="@Variant.Filled"
+                                                       Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                                    </MudTooltip>
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <MudText>هیچ حساب بانکی یافت نشد</MudText>
+                        </NoRecordsContent>
+                    </MudTable>
                 </MudItem>
             </MudGrid>
         </DialogContent>

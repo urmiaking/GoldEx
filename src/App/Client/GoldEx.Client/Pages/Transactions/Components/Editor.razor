@@ -53,14 +53,13 @@
                                   T="string"
                                   ValueChanged="OnCustomerNationalIdChanged"
                                   Immediate="true"
-                                  DebounceInterval="200"
                                   For="@(() => Model.Customer.NationalId)"
                                   Label="@(Model.GetDisplayName(() => Model.Customer.NationalId))"
                                   Margin="Margin.Dense"
                                   AdornmentIcon="@Icons.Material.Filled.Person"
                                   Adornment="Adornment.End"
                                   Clearable="true"
-                                  OnClearButtonClick="OnCustomerNationalIdCleared"
+                                  OnClearButtonClick="OnCustomerCleared"
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -73,7 +72,12 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="Model.Customer.PhoneNumber"
+                    <MudTextField Value="Model.Customer.PhoneNumber"
+                                  ValueChanged="OnCustomerPhoneNumberChanged"
+                                  T="string"
+                                  Clearable="true"
+                                  OnClearButtonClick="OnCustomerCleared"
+                                  Immediate="true"
                                   For="@(() => Model.Customer.PhoneNumber)"
                                   Label="@(Model.GetDisplayName(() => Model.Customer.PhoneNumber))"
                                   Margin="Margin.Dense"

@@ -8,5 +8,6 @@ public class CustomersByIdSpecification : SpecificationBase<Customer>
     public CustomersByIdSpecification(CustomerId customerId)
     {
         AddCriteria(x => x.Id == customerId);
+        AddInclude(x => x.CreditLimitPriceUnit!);
     }
 }

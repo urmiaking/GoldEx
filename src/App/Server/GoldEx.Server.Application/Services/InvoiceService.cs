@@ -11,16 +11,16 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.InvoiceItems;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using GoldEx.Server.Infrastructure.Specifications.InvoiceItems;
-using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -259,7 +259,7 @@ internal class InvoiceService(
     {
         var item = await invoiceRepository
             .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
-            .Include(x => x.Customer)
+            .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
             .Include(x => x.Items)
@@ -280,7 +280,7 @@ internal class InvoiceService(
     {
         var item = await invoiceRepository
             .Get(new InvoicesByNumberSpecification(invoiceNumber))
-            .Include(x => x.Customer)
+            .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
             .Include(x => x.Items)
