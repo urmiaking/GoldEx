@@ -1,5 +1,6 @@
 ﻿@attribute [Route(ClientRoutes.Home.Index)]
 @using GoldEx.Client.Pages.Invoices.Components
+@using GoldEx.Client.Pages.Reporting.Components
 @inherits GoldExComponentBase
 
 <PageTitle>صفحه اصلی</PageTitle>
@@ -52,7 +53,9 @@
                 <MudTabPanel Text="فاکتورهای من" Icon="@Icons.Material.Filled.LibraryBooks">
                     <InvoicesList Class="mt-5" Elevation="24" />
                 </MudTabPanel>
-                <MudTabPanel Text="گزارش گیری"></MudTabPanel>
+                <MudTabPanel Text="گزارش گیری" Icon="@Icons.Material.Filled.InsertChart">
+                    <ReportPanel Class="mt-5" Elevation="24"/>
+                </MudTabPanel>
                 <MudTabPanel Text="اجناس فروخته شده"></MudTabPanel>
                 <MudTabPanel Text="لیست بدهی ها"></MudTabPanel>
             </Authorized>
