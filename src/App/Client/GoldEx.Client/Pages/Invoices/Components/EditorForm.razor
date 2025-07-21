@@ -35,7 +35,7 @@
                     <MudChip T="string" Color="@color" Variant="Variant.Filled" Size="Size.Small">@text</MudChip>
                 }
             </MudText>
-            
+
             <MudSpacer />
             <MudSelect T="GetPriceUnitTitleResponse?"
                        Value="_model.InvoicePriceUnit"
@@ -60,6 +60,28 @@
         </MudStack>
         <MudDivider Class="mb-2" />
         <MudGrid>
+            @if (!IsEditMode) // this section is only shown when creating a new invoice
+            {
+                <MudItem xs="12" md="2">
+                    <MudSelect T="InvoiceType"
+                               Value="_model.InvoiceType"
+                               ValueChanged="OnInvoiceTypeChanged"
+                               Label="@_model.GetDisplayName(() => _model.InvoiceType)"
+                               For="() => _model.InvoiceType"
+                               FitContent="false"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var invoiceType in Enum.GetValues<InvoiceType>())
+                        {
+                            <MudSelectItem Value="invoiceType">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudText>@invoiceType.GetDisplayName()</MudText>
+                                </MudStack>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
             <MudItem xs="12" md="2">
                 <MudNumericField @bind-Value="_model.InvoiceNumber"
                                  For="@(() => _model.InvoiceNumber)"
@@ -105,7 +127,14 @@
             </MudItem>
         </MudGrid>
 
-        <MudText Typo="Typo.h6" GutterBottom="true">اطلاعات مشتری</MudText>
+        <MudText Typo="Typo.h6" GutterBottom="true">
+            مشخصات @(_model.InvoiceType switch
+            {
+                InvoiceType.Sell => "مشتری",
+                InvoiceType.Purchase => "تامین کننده",
+                _ => throw new ArgumentOutOfRangeException()
+            })
+        </MudText>
         <MudDivider Class="mb-2" />
         <MudGrid>
             <MudItem xs="12" md="2">
@@ -159,42 +188,45 @@
                               Adornment="Adornment.End"
                               Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12" md="4">
-                <MudMenu @bind-Open="_isCustomerCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                    <ActivatorContent>
-                        <MudNumericField Value="_model.Customer.CreditLimit"
-                                         ValueChanged="OnCustomerCreditLimitChanged"
-                                         T="decimal?"
-                                         HideSpinButtons="true"
-                                         Format="#,##0.##"
-                                         Immediate="true"
-                                         For="@(() => _model.Customer.CreditLimit)"
-                                         Label="@(_model.GetDisplayName(() => _model.Customer.CreditLimit))"
-                                         Margin="Margin.Dense"
-                                         Variant="Variant.Outlined"
-                                         Adornment="Adornment.End"
-                                         AdornmentText="@_customerCreditLimitAdornmentText"
-                                         OnAdornmentClick="() => _isCustomerCreditLimitMenuOpen = true" />
-                    </ActivatorContent>
-                    <ChildContent>
-                        @foreach (var item in _priceUnits)
-                        {
-                            <MudMenuItem OnClick="() => SelectCustomerCreditLimitUnit(item)">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    @if (item.HasIcon)
-                                    {
-                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                        </MudAvatar>
-                                    }
-                                    @item.Title
-                                </div>
-                            </MudMenuItem>
-                        }
-                    </ChildContent>
-                </MudMenu>
-            </MudItem>
-            <MudItem xs="12" md="8">
+            @if (_model.InvoiceType is InvoiceType.Sell)
+            {
+                <MudItem xs="12" md="4">
+                    <MudMenu @bind-Open="_isCustomerCreditLimitMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Value="_model.Customer.CreditLimit"
+                                             ValueChanged="OnCustomerCreditLimitChanged"
+                                             T="decimal?"
+                                             HideSpinButtons="true"
+                                             Format="#,##0.##"
+                                             Immediate="true"
+                                             For="@(() => _model.Customer.CreditLimit)"
+                                             Label="@(_model.GetDisplayName(() => _model.Customer.CreditLimit))"
+                                             Margin="Margin.Dense"
+                                             Variant="Variant.Outlined"
+                                             Adornment="Adornment.End"
+                                             AdornmentText="@CustomerCreditLimitAdornmentText"
+                                             OnAdornmentClick="() => _isCustomerCreditLimitMenuOpen = true" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectCustomerCreditLimitUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
+            }
+            <MudItem xs="12" md="@(_model.InvoiceType is InvoiceType.Sell ? 8 : 12)">
                 <MudTextField @bind-Value="_model.Customer.Address"
                               For="@(() => _model.Customer.Address)"
                               Label="@(_model.GetDisplayName(() => _model.Customer.Address))"
@@ -208,19 +240,22 @@
         <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
             <MudText Typo="Typo.h6">اقلام فاکتور</MudText>
             <MudSpacer />
-            <MudPaper Elevation="0">
-                <MudTextField Adornment="Adornment.End"
-                              AdornmentIcon="@Icons.Material.Filled.QrCode"
-                              Clearable="true"
-                              Label="بارکد جنس"
-                              Margin="Margin.Dense"
-                              Immediate="true"
-                              OnClearButtonClick="OnBarcodeCleared"
-                              T="string"
-                              Value="_barcode"
-                              ValueChanged="OnBarcodeChanged"
-                              Variant="Variant.Outlined"></MudTextField>
-            </MudPaper>
+            @if (_model.InvoiceType is InvoiceType.Sell)
+            {
+                <MudPaper Elevation="0">
+                    <MudTextField Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.QrCode"
+                                  Clearable="true"
+                                  Label="بارکد جنس"
+                                  Margin="Margin.Dense"
+                                  Immediate="true"
+                                  OnClearButtonClick="OnBarcodeCleared"
+                                  T="string"
+                                  Value="_barcode"
+                                  ValueChanged="OnBarcodeChanged"
+                                  Variant="Variant.Outlined"></MudTextField>
+                </MudPaper>
+            }
             <MudPaper Elevation="0">
                 <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
                                Variant="Variant.Filled" Color="Color.Info" OnClick="OnAddInvoiceItem"></MudIconButton>

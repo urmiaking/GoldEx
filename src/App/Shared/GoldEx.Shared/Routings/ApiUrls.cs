@@ -229,8 +229,8 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetByNumber)
                 .FormatRoute(new { invoiceNumber });
 
-        public static string GetLastNumber() =>
-            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber);
+        public static string GetLastNumber(InvoiceType invoiceType) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber).FormatRoute(new { invoiceType });
     }
 
     public class Reports

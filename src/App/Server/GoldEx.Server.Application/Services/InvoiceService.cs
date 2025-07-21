@@ -62,6 +62,7 @@ internal class InvoiceService(
                 {
                     invoice = Invoice.Create(request.InvoiceNumber,
                         request.UnpaidAmountExchangeRate,
+                        request.InvoiceType,
                         new CustomerId(customerId),
                         new PriceUnitId(request.PriceUnitId),
                         request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
@@ -328,9 +329,10 @@ internal class InvoiceService(
         }
     }
 
-    public async Task<GetInvoiceNumberResponse> GetLastNumberAsync(CancellationToken cancellationToken = default)
+    public async Task<GetInvoiceNumberResponse> GetLastNumberAsync(InvoiceType invoiceType,
+        CancellationToken cancellationToken = default)
     {
-        var number = await invoiceRepository.GetLastNumberAsync(cancellationToken);
+        var number = await invoiceRepository.GetLastNumberAsync(invoiceType, cancellationToken);
 
         return new GetInvoiceNumberResponse(number);
     }

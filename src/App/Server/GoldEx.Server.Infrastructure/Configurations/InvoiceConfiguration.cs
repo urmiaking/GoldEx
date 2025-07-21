@@ -17,6 +17,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.UnpaidAmountExchangeRate)
             .HasPrecision(36, 10);
 
+        builder.HasIndex(x => new { x.InvoiceNumber, x.InvoiceType })
+            .IsUnique();
+
         builder.HasOne(x => x.Customer)
             .WithMany()
             .HasForeignKey(x => x.CustomerId)

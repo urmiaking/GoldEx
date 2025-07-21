@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
@@ -50,9 +51,9 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Invoices.GetLastNumber)]
-    public async Task<IActionResult> GetLastNumberAsync(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default)
     {
-        var lastNumber = await service.GetLastNumberAsync(cancellationToken);
+        var lastNumber = await service.GetLastNumberAsync(invoiceType, cancellationToken);
         return Ok(lastNumber);
     }
 }
