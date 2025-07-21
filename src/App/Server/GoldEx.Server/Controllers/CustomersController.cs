@@ -42,6 +42,13 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
         return item is null ? NotFound() : Ok(item);
     }
 
+    [HttpGet(ApiRoutes.Customers.GetByName)]
+    public async Task<IActionResult> GetByNameAsync(string? customerName, CancellationToken cancellationToken)
+    {
+        var items = await service.GetByNameAsync(customerName, cancellationToken);
+        return Ok(items);
+    }
+
     [HttpPost(ApiRoutes.Customers.Create)]
     public async Task<IActionResult> CreateAsync(CustomerRequestDto request, CancellationToken cancellationToken)
     {

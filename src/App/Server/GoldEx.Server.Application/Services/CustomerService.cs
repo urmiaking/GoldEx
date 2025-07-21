@@ -49,6 +49,18 @@ internal class CustomerService(
         };
     }
 
+    public async Task<List<GetCustomerResponse>> GetByNameAsync(string? customerName, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(customerName))
+            return [];
+
+        var items = await repository
+            .Get(new CustomersByNameSpecification(customerName))
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetCustomerResponse>>(items);
+    }
+
     public async Task<GetCustomerResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await repository
