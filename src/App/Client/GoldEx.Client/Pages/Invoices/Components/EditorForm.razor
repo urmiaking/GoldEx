@@ -441,7 +441,7 @@
             <MudButton Color="Color.Primary"
                        Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"
-                       OnClick="@(async () => await SubmitAsync())"
+                       OnClick="@(async () => await SubmitAsync(ClientRoutes.Invoices.Index))"
                        Variant="Variant.Filled">
                 @if (_processing)
                 {

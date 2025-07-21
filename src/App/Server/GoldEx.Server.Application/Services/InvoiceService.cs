@@ -277,10 +277,11 @@ internal class InvoiceService(
         return mapper.Map<GetInvoiceResponse>(item);
     }
 
-    public async Task<GetInvoiceResponse> GetAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    public async Task<GetInvoiceResponse> GetAsync(long invoiceNumber, InvoiceType invoiceType,
+        CancellationToken cancellationToken = default)
     {
         var item = await invoiceRepository
-            .Get(new InvoicesByNumberSpecification(invoiceNumber))
+            .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)

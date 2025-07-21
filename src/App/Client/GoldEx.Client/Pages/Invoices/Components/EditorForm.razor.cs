@@ -467,15 +467,15 @@ public partial class EditorForm
 
     #endregion
 
-    private async Task<bool> SubmitAsync()
+    private async Task SubmitAsync(string navigationUrl)
     {
         if (_processing)
-            return false;
+            return;
 
         await _form.Validate();
 
         if (!_form.IsValid)
-            return false;
+            return;
 
         _processing = true;
 
@@ -487,7 +487,7 @@ public partial class EditorForm
         {
             _processing = false;
             AddErrorToast(e.Message);
-            return false;
+            return;
         }
 
         var request = InvoiceVm.ToRequest(_model);
@@ -498,11 +498,9 @@ public partial class EditorForm
             {
                 AddSuccessToast("فاکتور با موفقیت ثبت شد");
                 _processing = false;
-                Navigation.NavigateTo(ClientRoutes.Invoices.Index);
+                Navigation.NavigateTo(navigationUrl);
                 return Task.CompletedTask;
             });
-
-        return true;
     }
 
     private void OnCustomerCleared()
@@ -545,10 +543,11 @@ public partial class EditorForm
 
     private async Task OnSubmitAndPrintAsync()
     {
-        var isSubmitted = await SubmitAsync();
-
-        if (isSubmitted)
-            Navigation.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = _model.InvoiceNumber }));
+        await SubmitAsync(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
+        {
+            number = _model.InvoiceNumber,
+            invoiceType = _model.InvoiceType.ToString()
+        }));
     }
 
     private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)

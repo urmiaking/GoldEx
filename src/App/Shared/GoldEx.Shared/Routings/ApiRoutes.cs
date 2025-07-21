@@ -130,7 +130,7 @@ public static class ApiRoutes
         public const string Get = "{id}";
         public const string Delete = "{id}";
         public const string GetLastNumber = "last-number/{invoiceType}";
-        public const string GetByNumber = "number/{number}";
+        public const string GetByNumber = "number/{number}/{invoiceType}";
     }
 
     public class Reports
