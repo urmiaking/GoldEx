@@ -111,7 +111,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
     private async Task<bool> BeUniqueNumber(InvoiceRequestDto request, long invoiceNumber, CancellationToken cancellationToken = default)
     {
         var item = await _invoiceRepository
-            .Get(new InvoicesByNumberSpecification(invoiceNumber))
+            .Get(new InvoicesByNumberSpecification(invoiceNumber, request.InvoiceType))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (item is null)

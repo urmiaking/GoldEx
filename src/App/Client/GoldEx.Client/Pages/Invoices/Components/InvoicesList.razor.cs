@@ -105,7 +105,11 @@ public partial class InvoicesList
 
     private void OnViewInvoice(InvoiceListVm model)
     {
-        NavigationManager.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = model.InvoiceNumber }));
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
+        {
+            number = model.InvoiceNumber,
+            invoiceType = model.InvoiceType.ToString()
+        }));
     }
 
     private async Task SetStatusFilterText(InvoicePaymentStatus? status)

@@ -7,6 +7,7 @@ public record GetInvoiceListResponse(
     long InvoiceNumber,
     DateOnly InvoiceDate,
     DateOnly? DueDate,
+    InvoiceType InvoiceType,
     string CustomerFullName,
     decimal TotalAmount,
     string AmountUnit,
