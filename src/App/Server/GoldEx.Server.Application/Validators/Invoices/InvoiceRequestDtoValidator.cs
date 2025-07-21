@@ -42,6 +42,9 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .When(x => x.DueDate.HasValue)
             .WithMessage("تاریخ سررسید نمی‌تواند قبل از تاریخ فاکتور باشد");
 
+        RuleFor(x => x.InvoiceType)
+            .IsInEnum().WithMessage("نوع فاکتور معتبر نمی باشد");
+
         RuleFor(x => x.Customer)
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")
             .SetValidator(customerValidator);

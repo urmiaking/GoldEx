@@ -22,7 +22,7 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
         _priceUnitRepository = priceUnitRepository;
 
         RuleFor(x => x.Id)
-            .MustAsync(BeValidId).WithMessage("شناسه مشتری نامعتبر است")
+            .MustAsync(BeValidId).WithMessage("شناسه نامعتبر است")
             .When(x => x.Id.HasValue);
 
         RuleFor(x => x.NationalId)
@@ -54,7 +54,7 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
                 var priceUnitHasValue = dto.CreditLimitPriceUnitId.HasValue;
 
                 if (creditLimitHasValue != priceUnitHasValue) 
-                    context.AddFailure("در صورت وارد کردن سقف اعتبار مشتری، وارد کردن واحد آن نیز الزامی است (و بالعکس)");
+                    context.AddFailure("در صورت وارد کردن سقف اعتبار، وارد کردن واحد آن نیز الزامی است (و بالعکس)");
             });
 
         When(x => x.BankAccounts is not null, () =>

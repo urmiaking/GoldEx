@@ -43,7 +43,7 @@ public class CustomerVm
 
     public DateTime CreatedAt { get; set; }
 
-    public List<BankAccountVm>? BankAccounts { get; set; }
+    public List<BankAccountVm>? BankAccounts { get; set; } = [];
 
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {
