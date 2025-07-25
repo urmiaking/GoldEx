@@ -26,14 +26,14 @@ public class CalculatorHelper
     }
 
     /// <summary>
-    /// محاسبه اجرت ساخت ریالی بر اساس قیمت خام، اجرت، نوع اجرت و نرخ تبدیل
+    /// محاسبه اجرت ساخت بر اساس قیمت خام، اجرت، نوع اجرت و نرخ تبدیل
     /// </summary>
     /// <param name="rawPrice">قیمت خام طلا</param>
     /// <param name="weight">وزن</param>
     /// <param name="wageAmount">اجرت</param>
     /// <param name="wageType">نوع اجرت</param>
     /// <param name="exchangeRate">نرخ تبدیل دلار</param>
-    /// <returns>اجرت ساخت ریالی</returns>
+    /// <returns>اجرت ساخت</returns>
     public static decimal CalculateWage(decimal rawPrice, decimal weight, decimal? wageAmount, WageType? wageType, decimal? exchangeRate)
     {
         if (wageAmount == null) return 0;

@@ -17,15 +17,14 @@ public class Product : EntityBase<ProductId>
         ProductType productType,
         CaratType caratType,
         GoldUnitType goldUnitType,
-        WageType wageType,
+        WageType? wageType,
         PriceUnitId? wagePriceUnitId,
         ProductCategoryId? productCategoryId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(weight, 0, nameof(weight));
-
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
 
-        if (wageType is WageType.Percent && wage > 100)
+        if (wageType is Shared.Enums.WageType.Percent && wage > 100)
             throw new ArgumentOutOfRangeException(nameof(wage), "درصد اجرت باید بین 0 الی 100 باشد");
 
         return new Product
@@ -54,7 +53,7 @@ public class Product : EntityBase<ProductId>
     public decimal Wage { get; private set; }
     public ProductType ProductType { get; private set; }
     public CaratType CaratType { get; private set; }
-    public WageType WageType { get; private set; }
+    public WageType? WageType { get; private set; }
     public GoldUnitType GoldUnitType { get; private set; }
 
     public ProductCategoryId? ProductCategoryId { get; private set; }
@@ -110,9 +109,9 @@ public class Product : EntityBase<ProductId>
         return this;
     }
 
-    public Product SetWageType(WageType wageType)
+    public Product SetWageType(WageType? wageType)
     {
-        if (wageType is WageType.Percent) 
+        if (wageType is Shared.Enums.WageType.Percent) 
             WagePriceUnitId = null;
 
         WageType = wageType;
@@ -138,7 +137,7 @@ public class Product : EntityBase<ProductId>
 
     public Product SetWagePriceUnitId(PriceUnitId? wagePriceUnitId)
     {
-        if (WageType is WageType.Percent && WagePriceUnitId is not null)
+        if (WageType is Shared.Enums.WageType.Percent && WagePriceUnitId is not null)
             throw new InvalidOperationException("Percent wage type cannot have wage price unit");
 
         WagePriceUnitId = wagePriceUnitId;

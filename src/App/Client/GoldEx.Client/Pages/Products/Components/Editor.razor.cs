@@ -113,16 +113,17 @@ public partial class Editor
         switch (productType)
         {
             case ProductType.Jewelry:
+                Model.WageType = WageType.Fixed;
                 break;
             case ProductType.Gold:
+                Model.WageType = WageType.Percent;
                 break;
             case ProductType.MoltenGold:
                 Model.Wage = null;
                 Model.WageType = null;
                 break;
             case ProductType.OldGold:
-                Model.Wage = null;
-                Model.WageType = null;
+                throw new InvalidOperationException();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
@@ -169,12 +170,9 @@ public partial class Editor
 
     private void OnProductCategoryChanged(ProductCategoryVm? category)
     {
-        if (category is null)
-            return;
-
         Model.CategoryVm = category;
-        Model.ProductCategoryId = category.Id;
-        Model.ProductCategoryTitle = category.Title;
+        Model.ProductCategoryId = category?.Id;
+        Model.ProductCategoryTitle = category?.Title;
     }
 
     private void OnWageChanged(decimal? wage)
