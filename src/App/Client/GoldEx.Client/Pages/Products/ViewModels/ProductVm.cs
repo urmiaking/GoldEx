@@ -21,7 +21,7 @@ public class ProductVm : INotifyPropertyChanged
     private string _barcode = default!;
 
     [Display(Name = "نام جنس")]
-    [Required(ErrorMessage = "نام جنس الزامی است")]
+    [Required(ErrorMessage = "لطفا نام را وارد کنید")]
     public string? Name
     {
         get => _name;
@@ -35,8 +35,8 @@ public class ProductVm : INotifyPropertyChanged
         }
     }
 
-    [Display(Name = "بارکد")]
-    [Required(ErrorMessage = "بارکد الزامی است")]
+    [Display(Name = "بارکد/سریال")]
+    [Required(ErrorMessage = "بارکد/سریال جنس الزامی است")]
     public string Barcode
     {
         get => _barcode;
@@ -122,11 +122,15 @@ public class ProductVm : INotifyPropertyChanged
     }
 
     public Guid? Id { get; set; }
+
     [Display(Name = "دسته بندی")]
     public Guid? ProductCategoryId { get; set; }
+
     public string? ProductCategoryTitle { get; set; } = string.Empty;
+
     [Display(Name = "واحد قیمت اجرت")]
     public Guid? WagePriceUnitId { get; set; }
+
     public string? WagePriceUnitTitle { get; set; }
     public ProductCategoryVm? CategoryVm { get; set; }
     public List<GemStoneVm>? Stones { get; set; }
@@ -187,7 +191,7 @@ public class ProductVm : INotifyPropertyChanged
             item.Barcode,
             item.Weight ?? 0,
             item.Wage ?? 0,
-            item.WageType!.Value,
+            item.WageType,
             item.ProductType,
             item.CaratType,
             item.GoldUnitType,

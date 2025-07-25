@@ -19,12 +19,6 @@ public class ProductValidator : AbstractValidator<ProductVm>
                 .WithMessage("لطفا نوع اجرت را وارد کنید");
         });
 
-        When(product => product.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>
-        {
-            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
-            RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
-        });
-
         When(product => product.WageType is WageType.Percent, () =>
         {
             RuleFor(product => product.Wage)

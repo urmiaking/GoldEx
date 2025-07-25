@@ -23,7 +23,7 @@ public record ProductRequestDto(
     string Barcode,
     decimal Weight,
     decimal Wage,
-    WageType WageType,
+    WageType? WageType,
     ProductType ProductType,
     CaratType CaratType,
     GoldUnitType GoldUnitType,
