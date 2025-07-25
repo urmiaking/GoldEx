@@ -3,12 +3,13 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
-using GoldEx.Shared.DTOs.BankAccounts;
+using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Application.Validators.BankAccounts;
 
 [ScopedService]
-internal class BankAccountRequestDtoValidator : AbstractValidator<BankAccountRequestDto>
+internal class BankAccountRequestDtoValidator : AbstractValidator<FinancialAccountRequestDto>
 {
     private readonly IPriceUnitRepository _priceUnitRepository;
 
@@ -16,23 +17,23 @@ internal class BankAccountRequestDtoValidator : AbstractValidator<BankAccountReq
     {
         _priceUnitRepository = priceUnitRepository;
 
-        RuleFor(x => x.BankAccountType)
+        RuleFor(x => x.FinancialAccountType)
             .IsInEnum().WithMessage("نوع حساب بانکی نامعتبر است");
-
-        RuleFor(x => x.AccountHolderName)
-            .NotEmpty().WithMessage("وارد کردن نام صاحب حساب الزامی است")
-            .MaximumLength(100).WithMessage("حداکثر طول نام صاحب حساب 100 کاراکتر می باشد");
-
-        RuleFor(x => x.BankName)
-            .NotEmpty().WithMessage("وارد کردن نام بانک الزامی است")
-            .MaximumLength(100).WithMessage("حداکثر طول نام بانک 100 کاراکتر می باشد");
 
         RuleFor(x => x.PriceUnitId)
             .MustAsync(BeValidPriceUnitId)
             .WithMessage("واحد ارزی نامعتبر است");
 
-        When(x => x.LocalBankAccount is not null, () =>
+        When(x => x.FinancialAccountType is FinancialAccountType.LocalBankAccount && x.LocalBankAccount is not null, () =>
         {
+            RuleFor(x => x.LocalBankAccount!.AccountHolderName)
+                .NotEmpty().WithMessage("وارد کردن نام صاحب حساب الزامی است")
+                .MaximumLength(100).WithMessage("حداکثر طول نام صاحب حساب 100 کاراکتر می باشد");
+
+            RuleFor(x => x.LocalBankAccount!.BankName)
+                .NotEmpty().WithMessage("وارد کردن نام بانک الزامی است")
+                .MaximumLength(100).WithMessage("حداکثر طول نام بانک 100 کاراکتر می باشد");
+
             RuleFor(x => x.LocalBankAccount!.CardNumber)
                 .MaximumLength(20).WithMessage("حداکثر طول شماره کارت 20 کاراکتر می باشد");
             RuleFor(x => x.LocalBankAccount!.ShabaNumber)
@@ -41,8 +42,16 @@ internal class BankAccountRequestDtoValidator : AbstractValidator<BankAccountReq
                 .MaximumLength(30).WithMessage("حداکثر طول شماره حساب 30 کاراکتر می باشد");
         });
 
-        When(x => x.InternationalBankAccount is not null, () =>
+        When(x => x.FinancialAccountType is FinancialAccountType.InternationalBankAccount && x.InternationalBankAccount is not null, () =>
         {
+            RuleFor(x => x.InternationalBankAccount!.AccountHolderName)
+                .NotEmpty().WithMessage("وارد کردن نام صاحب حساب الزامی است")
+                .MaximumLength(100).WithMessage("حداکثر طول نام صاحب حساب 100 کاراکتر می باشد");
+
+            RuleFor(x => x.InternationalBankAccount!.BankName)
+                .NotEmpty().WithMessage("وارد کردن نام بانک الزامی است")
+                .MaximumLength(100).WithMessage("حداکثر طول نام بانک 100 کاراکتر می باشد");
+
             RuleFor(x => x.InternationalBankAccount!.SwiftBicCode)
                 .MaximumLength(11).WithMessage("حداکثر طول کد سوئیفت 11 کاراکتر می باشد");
             RuleFor(x => x.InternationalBankAccount!.IbanNumber)

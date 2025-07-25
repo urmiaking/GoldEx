@@ -3,8 +3,8 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Validators.Customers;
-using GoldEx.Server.Domain.BankAccountAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
@@ -20,7 +20,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class CustomerService(
     ICustomerRepository repository,
-    IBankAccountRepository bankAccountRepository,
+    IFinancialAccountRepository financialAccountRepository,
     IMapper mapper,
     ILogger<CustomerService> logger,
     CustomerRequestDtoValidator validator,
@@ -104,32 +104,35 @@ internal class CustomerService(
 
             await repository.CreateAsync(customer, cancellationToken);
 
-            List<BankAccount> bankAccounts = [];
+            List<FinancialAccount> bankAccounts = [];
 
             if (request.BankAccounts is not null)
             {
                 foreach (var bankAccountRequest in request.BankAccounts)
                 {
-                    var bankAccount = BankAccount.Create(bankAccountRequest.BankAccountType,
-                        bankAccountRequest.AccountHolderName,
-                        bankAccountRequest.BankName,
+                    var bankAccount = FinancialAccount.Create(bankAccountRequest.FinancialAccountType,
                         new PriceUnitId(bankAccountRequest.PriceUnitId),
                         customer.Id);
 
                     switch (bankAccount.AccountType)
                     {
-                        case BankAccountType.International when bankAccountRequest.InternationalBankAccount is not null:
+                        case FinancialAccountType.InternationalBankAccount when bankAccountRequest.InternationalBankAccount is not null:
                             bankAccount.SetInternationalAccount(InternationalBankAccount.Create(
+                                bankAccountRequest.InternationalBankAccount.AccountHolderName,
+                                bankAccountRequest.InternationalBankAccount.BankName,
                                 bankAccountRequest.InternationalBankAccount.SwiftBicCode,
                                 bankAccountRequest.InternationalBankAccount.IbanNumber,
                                 bankAccountRequest.InternationalBankAccount.AccountNumber));
                             break;
-                        case BankAccountType.Local when
-                            bankAccountRequest.LocalBankAccount is not null:
+                        case FinancialAccountType.LocalBankAccount when bankAccountRequest.LocalBankAccount is not null:
                             bankAccount.SetLocalAccount(LocalBankAccount.Create(
+                                bankAccountRequest.LocalBankAccount.AccountHolderName,
+                                bankAccountRequest.LocalBankAccount.BankName,
                                 bankAccountRequest.LocalBankAccount.CardNumber,
                                 bankAccountRequest.LocalBankAccount.ShabaNumber,
                                 bankAccountRequest.LocalBankAccount.AccountNumber));
+                            break;
+                        case FinancialAccountType.Cash:
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -138,7 +141,7 @@ internal class CustomerService(
                     bankAccounts.Add(bankAccount);
                 }
 
-                await bankAccountRepository.CreateRangeAsync(bankAccounts, cancellationToken);
+                await financialAccountRepository.CreateRangeAsync(bankAccounts, cancellationToken);
             }
 
             return customer.Id.Value;
@@ -179,7 +182,7 @@ internal class CustomerService(
                 {
                     if (request.BankAccounts.All(x => x.Id != existingAccount.Id.Value))
                     {
-                        await bankAccountRepository.DeleteAsync(existingAccount, cancellationToken);
+                        await financialAccountRepository.DeleteAsync(existingAccount, cancellationToken);
                     }
                 }
 
@@ -190,60 +193,68 @@ internal class CustomerService(
                         existingBankAccounts.FirstOrDefault(x => x.Id.Value == bankAccountRequest.Id);
                     if (existingAccount is not null)
                     {
-                        existingAccount.SetAccountType(bankAccountRequest.BankAccountType);
-                        existingAccount.SetAccountHolderName(bankAccountRequest.AccountHolderName);
-                        existingAccount.SetBankName(bankAccountRequest.BankName);
+                        existingAccount.SetAccountType(bankAccountRequest.FinancialAccountType);
                         existingAccount.SetPriceUnitId(new PriceUnitId(bankAccountRequest.PriceUnitId));
 
                         switch (existingAccount.AccountType)
                         {
-                            case BankAccountType.International when bankAccountRequest.InternationalBankAccount is not null:
+                            case FinancialAccountType.InternationalBankAccount when bankAccountRequest.InternationalBankAccount is not null:
                                 existingAccount.SetInternationalAccount(InternationalBankAccount.Create(
+                                    bankAccountRequest.InternationalBankAccount.AccountHolderName,
+                                    bankAccountRequest.InternationalBankAccount.BankName,
                                     bankAccountRequest.InternationalBankAccount.SwiftBicCode,
                                     bankAccountRequest.InternationalBankAccount.IbanNumber,
                                     bankAccountRequest.InternationalBankAccount.AccountNumber));
                                 break;
-                            case BankAccountType.Local when bankAccountRequest.LocalBankAccount is not null:
+                            case FinancialAccountType.LocalBankAccount when bankAccountRequest.LocalBankAccount is not null:
                                 existingAccount.SetLocalAccount(LocalBankAccount.Create(
+                                    bankAccountRequest.LocalBankAccount.AccountHolderName,
+                                    bankAccountRequest.LocalBankAccount.BankName,
                                     bankAccountRequest.LocalBankAccount.CardNumber,
                                     bankAccountRequest.LocalBankAccount.ShabaNumber,
                                     bankAccountRequest.LocalBankAccount.AccountNumber));
+                                break;
+                            case FinancialAccountType.Cash:
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
 
-                        await bankAccountRepository.UpdateAsync(existingAccount, cancellationToken);
+                        await financialAccountRepository.UpdateAsync(existingAccount, cancellationToken);
                     }
                     else
                     {
-                        var newBankAccount = BankAccount.Create(bankAccountRequest.BankAccountType,
-                            bankAccountRequest.AccountHolderName,
-                            bankAccountRequest.BankName,
+                        var newBankAccount = FinancialAccount.Create(bankAccountRequest.FinancialAccountType,
                             new PriceUnitId(bankAccountRequest.PriceUnitId),
                             customer.Id);
 
-                        switch (bankAccountRequest.BankAccountType)
+                        switch (bankAccountRequest.FinancialAccountType)
                         {
-                            case BankAccountType.International when
+                            case FinancialAccountType.InternationalBankAccount when
                                 bankAccountRequest.InternationalBankAccount is not null:
                                 newBankAccount.SetInternationalAccount(InternationalBankAccount.Create(
+                                    bankAccountRequest.InternationalBankAccount.AccountHolderName,
+                                    bankAccountRequest.InternationalBankAccount.BankName,
                                     bankAccountRequest.InternationalBankAccount.SwiftBicCode,
                                     bankAccountRequest.InternationalBankAccount.IbanNumber,
                                     bankAccountRequest.InternationalBankAccount.AccountNumber));
                                 break;
-                            case BankAccountType.Local when
+                            case FinancialAccountType.LocalBankAccount when
                                 bankAccountRequest.LocalBankAccount is not null:
                                 newBankAccount.SetLocalAccount(LocalBankAccount.Create(
+                                    bankAccountRequest.LocalBankAccount.AccountHolderName,
+                                    bankAccountRequest.LocalBankAccount.BankName,
                                     bankAccountRequest.LocalBankAccount.CardNumber,
                                     bankAccountRequest.LocalBankAccount.ShabaNumber,
                                     bankAccountRequest.LocalBankAccount.AccountNumber));
+                                break;
+                            case FinancialAccountType.Cash:
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
 
-                        await bankAccountRepository.CreateAsync(newBankAccount, cancellationToken);
+                        await financialAccountRepository.CreateAsync(newBankAccount, cancellationToken);
                     }
                 }
             }

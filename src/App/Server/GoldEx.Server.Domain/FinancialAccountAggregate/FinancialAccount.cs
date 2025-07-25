@@ -3,26 +3,22 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Server.Domain.BankAccountAggregate;
+namespace GoldEx.Server.Domain.FinancialAccountAggregate;
 
-public readonly record struct BankAccountId(Guid Value);
-public class BankAccount : EntityBase<BankAccountId>
+public readonly record struct FinancialAccountId(Guid Value);
+public class FinancialAccount : EntityBase<FinancialAccountId>
 {
-    public static BankAccount Create(
-        BankAccountType accountType,
-        string accountHolderName,
-        string bankName,
+    public static FinancialAccount Create(
+        FinancialAccountType accountType,
         PriceUnitId priceUnitId,
         CustomerId customerId,
         LocalBankAccount? localAccount = null,
         InternationalBankAccount? internationalAccount = null)
     {
-        return new BankAccount
+        return new FinancialAccount
         {
-            Id = new BankAccountId(Guid.NewGuid()),
+            Id = new FinancialAccountId(Guid.NewGuid()),
             AccountType = accountType,
-            AccountHolderName = accountHolderName,
-            BankName = bankName,
             PriceUnitId = priceUnitId,
             CustomerId = customerId,
             IsSystemAccount = false,
@@ -31,28 +27,23 @@ public class BankAccount : EntityBase<BankAccountId>
         };
     }
 
-    public static BankAccount CreateSystemAccount(
-        BankAccountType accountType,
-        string accountHolderName,
-        string bankName,
+    public static FinancialAccount CreateSystemAccount(
+        FinancialAccountType accountType,
         PriceUnitId priceUnitId,
         LocalBankAccount? localAccount = null,
         InternationalBankAccount? internationalAccount = null)
     {
-        return new BankAccount
+        return new FinancialAccount
         {
-            Id = new BankAccountId(Guid.NewGuid()),
+            Id = new FinancialAccountId(Guid.NewGuid()),
             AccountType = accountType,
-            AccountHolderName = accountHolderName,
-            BankName = bankName,
             PriceUnitId = priceUnitId,
             IsSystemAccount = true
         };
     }
 
-    public BankAccountType AccountType { get; private set; }
-    public string AccountHolderName { get; private set; }
-    public string BankName { get; private set; }
+    public FinancialAccountType AccountType { get; private set; }
+    
     public bool IsSystemAccount { get; private set; }
 
     public PriceUnitId PriceUnitId { get; private set; }
@@ -65,40 +56,28 @@ public class BankAccount : EntityBase<BankAccountId>
     public InternationalBankAccount? InternationalAccount { get; private set; }
 
 #pragma warning disable CS8618
-    private BankAccount() { }
+    private FinancialAccount() { }
 #pragma warning restore CS8618
 
-    public BankAccount SetAccountType(BankAccountType accountType)
+    public FinancialAccount SetAccountType(FinancialAccountType accountType)
     {
         AccountType = accountType;
         return this;
     }
 
-    public BankAccount SetAccountHolderName(string accountHolderName)
-    {
-        AccountHolderName = accountHolderName;
-        return this;
-    }
-
-    public BankAccount SetBankName(string bankName)
-    {
-        BankName = bankName;
-        return this;
-    }
-
-    public BankAccount SetPriceUnitId(PriceUnitId priceUnitId)
+    public FinancialAccount SetPriceUnitId(PriceUnitId priceUnitId)
     {
         PriceUnitId = priceUnitId;
         return this;
     }
 
-    public BankAccount SetLocalAccount(LocalBankAccount? localAccount)
+    public FinancialAccount SetLocalAccount(LocalBankAccount? localAccount)
     {
         LocalAccount = localAccount;
         return this;
     }
 
-    public BankAccount SetInternationalAccount(InternationalBankAccount? internationalAccount)
+    public FinancialAccount SetInternationalAccount(InternationalBankAccount? internationalAccount)
     {
         InternationalAccount = internationalAccount;
         return this;

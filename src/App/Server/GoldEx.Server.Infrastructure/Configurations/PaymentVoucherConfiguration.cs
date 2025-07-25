@@ -35,7 +35,7 @@ internal class PaymentVoucherConfiguration : IEntityTypeConfiguration<PaymentVou
 
         builder.HasOne(x => x.BankAccount)
             .WithMany()
-            .HasForeignKey(x => x.BankAccountId)
+            .HasForeignKey(x => x.FinancialAccountId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.AmountPriceUnit)
