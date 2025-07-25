@@ -79,11 +79,11 @@
                 <MudItem xs="12">
                     <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
-                        <MudText Typo="Typo.h6" GutterBottom="true">حساب های بانکی</MudText>
+                        <MudText Typo="Typo.h6" GutterBottom="true">حساب های مالی</MudText>
                         <MudSpacer/>
                         <MudHidden Breakpoint="Breakpoint.SmAndDown">
                             <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="OnAddBankAccount" Size="Size.Small"
-                                       Variant="Variant.Filled">ثبت حساب بانکی جدید</MudButton>
+                                       Variant="Variant.Filled">ثبت حساب مالی جدید</MudButton>
                         </MudHidden>
 
                         <MudHidden Breakpoint="Breakpoint.MdAndUp">
@@ -94,24 +94,20 @@
                 </MudItem>
                 <MudDivider Class="mb-2" />
                 <MudItem xs="12">
-                    <MudTable Items="@Model.BankAccounts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                    <MudTable Items="@Model.FinancialAccounts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
                         <HeaderContent>
                             <MudTh>نوع حساب</MudTh>
-                            <MudTh>نام بانک</MudTh>
-                            <MudTh>نام صاحب حساب</MudTh>
-                            <MudTh>شماره حساب</MudTh>
+                            <MudTh>نوع ارز</MudTh>
                             <MudTh>عملیات</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="نوع حساب">@context.BankAccountType.GetDisplayName()</MudTd>
-                            <MudTd DataLabel="نام بانک">@context.BankName</MudTd>
-                            <MudTd DataLabel="نام صاحب حساب">@context.AccountHolderName</MudTd>
-                            <MudTd DataLabel="شماره حساب">@(context.BankAccountType == BankAccountType.Local ? context.LocalAccountNumber : context.InternationalAccountNumber)</MudTd>
+                            <MudTd DataLabel="نوع حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+                            <MudTd DataLabel="نوع ارز">@context.PriceUnit?.Title</MudTd>
                             <MudTd DataLabel="عملیات">
                                 <div class="d-flex gap-2">
                                     <MudTooltip Text="ویرایش">
                                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                                       Color="Color.Info" OnClick="_ => OnEditBankAccount(context)"></MudIconButton>
+                                                       Color="Color.Info" OnClick="_ => OnEditFinancialAccount(context)"></MudIconButton>
                                     </MudTooltip>
                                     <MudTooltip Text="حذف">
                                         <MudIconButton OnClick="() => OnRemoveBankAccount(context)" Size="@Size.Small" Variant="@Variant.Filled"

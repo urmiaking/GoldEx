@@ -1,8 +1,8 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Utilities;
-using GoldEx.Server.Domain.BankAccountAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
 using GoldEx.Server.Domain.PaymentMethodAggregate;
@@ -12,8 +12,8 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
-using GoldEx.Shared.DTOs.BankAccounts;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.Prices;
@@ -33,9 +33,9 @@ public class MapsterConfig : IRegister
     {
         #region BankAccounts
 
-        config.NewConfig<BankAccount, GetBankAccountResponse>()
+        config.NewConfig<FinancialAccount, GetFinancialAccountResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.BankAccountType, src => src.AccountType)
+            .Map(dest => dest.FinancialAccountType, src => src.AccountType)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
             .Map(dest => dest.LocalBankAccount, src => src.LocalAccount)
             .Map(dest => dest.InternationalBankAccount, src => src.InternationalAccount);

@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -18,7 +19,6 @@ public partial class Editor
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _creditLimitAdornmentText;
     private bool _processing;
-
 
     protected override async Task OnParametersSetAsync()
     {
@@ -99,27 +99,28 @@ public partial class Editor
         Model.CreditLimitMenuOpen = false;
     }
 
-    private async Task OnEditBankAccount(BankAccountVm bankAccount)
+    private async Task OnEditFinancialAccount(FinancialAccountVm financialAccount)
     {
         var parameters = new DialogParameters
         {
-            { nameof(BankAccountEditor.Model), bankAccount },
-            { nameof(BankAccountEditor.PriceUnits), _priceUnits }
+            { nameof(FinancialAccountEditor.Model), financialAccount },
+            { nameof(FinancialAccountEditor.PriceUnits), _priceUnits }
         };
-        var dialog = await DialogService.ShowAsync<BankAccountEditor>($"ویرایش حساب بانکی {bankAccount.AccountHolderName}", parameters, _bankAccountsDialogOptions);
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"ویرایش حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()}", 
+            parameters, _bankAccountsDialogOptions);
         await dialog.Result;
     }
 
-    private async Task OnRemoveBankAccount(BankAccountVm bankAccount)
+    private async Task OnRemoveBankAccount(FinancialAccountVm financialAccount)
     {
         var result = await DialogService.ShowMessageBox(
             "هشدار",
-            $"آیا برای حذف حساب بانکی {bankAccount.AccountHolderName} مطمئن هستید؟",
+            $"آیا برای حذف حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");
 
         if (result is true)
         {
-            Model.BankAccounts?.Remove(bankAccount);
+            Model.FinancialAccounts?.Remove(financialAccount);
             StateHasChanged();
         }
     }
@@ -128,15 +129,16 @@ public partial class Editor
     {
         var parameters = new DialogParameters
         {
-            { nameof(BankAccountEditor.PriceUnits), _priceUnits }
+            { nameof(FinancialAccountEditor.PriceUnits), _priceUnits },
+            { nameof(FinancialAccountEditor.AccountHolderName), Model.FullName }
         };
-        var dialog = await DialogService.ShowAsync<BankAccountEditor>("افزودن حساب بانکی", parameters, _bankAccountsDialogOptions);
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی", parameters, _bankAccountsDialogOptions);
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: BankAccountVm bankAccount })
+        if (result is { Canceled: false, Data: FinancialAccountVm bankAccount })
         {
-            Model.BankAccounts ??= new List<BankAccountVm>();
-            Model.BankAccounts.Add(bankAccount);
+            Model.FinancialAccounts ??= [];
+            Model.FinancialAccounts.Add(bankAccount);
         }
     }
 }

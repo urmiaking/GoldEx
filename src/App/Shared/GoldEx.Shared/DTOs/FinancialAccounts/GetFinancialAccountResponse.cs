@@ -1,13 +1,11 @@
 ﻿using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Shared.DTOs.BankAccounts;
+namespace GoldEx.Shared.DTOs.FinancialAccounts;
 
-public record GetBankAccountResponse(
+public record GetFinancialAccountResponse(
     Guid Id,
-    BankAccountType BankAccountType,
-    string AccountHolderName,
-    string BankName,
+    FinancialAccountType FinancialAccountType,
     GetPriceUnitTitleResponse PriceUnit,
     GetLocalBankAccountResponse? LocalBankAccount,
     GetInternationalBankAccountResponse? InternationalBankAccount);

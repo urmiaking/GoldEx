@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.BankAccounts;
+﻿using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Customers;
@@ -23,4 +23,4 @@ public record CustomerRequestDto(Guid? Id,
     decimal? CreditLimit,
     Guid? CreditLimitPriceUnitId,
     CustomerType CustomerType,
-    List<BankAccountRequestDto>? BankAccounts = null);
+    List<FinancialAccountRequestDto>? BankAccounts = null);

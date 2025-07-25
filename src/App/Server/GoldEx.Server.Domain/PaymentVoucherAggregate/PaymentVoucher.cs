@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.BankAccountAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 
 namespace GoldEx.Server.Domain.PaymentVoucherAggregate;
@@ -10,7 +10,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
 {
     public static PaymentVoucher Create(
         CustomerId customerId,
-        BankAccountId bankAccountId,
+        FinancialAccountId financialAccountId,
         DateOnly paymentDate,
         decimal amount,
         PriceUnitId amountPriceUnitId,
@@ -21,7 +21,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
         {
             Id = new PaymentVoucherId(Guid.NewGuid()),
             CustomerId = customerId,
-            BankAccountId = bankAccountId,
+            FinancialAccountId = financialAccountId,
             PaymentDate = paymentDate,
             Amount = amount,
             AmountPriceUnitId = amountPriceUnitId,
@@ -33,8 +33,8 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
     public Customer? Customer { get; private set; }
     public CustomerId CustomerId { get; private set; }
 
-    public BankAccount? BankAccount { get; private set; }
-    public BankAccountId BankAccountId { get; private set; }
+    public FinancialAccount? BankAccount { get; private set; }
+    public FinancialAccountId FinancialAccountId { get; private set; }
 
     public long VoucherNumber { get; private set; }
     public string Description { get; private set; }
@@ -57,7 +57,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
 #pragma warning restore CS8618
 
     public void SetCustomerId(CustomerId customerId) => CustomerId = customerId;
-    public void SetBankAccountId(BankAccountId bankAccountId) => BankAccountId = bankAccountId;
+    public void SetBankAccountId(FinancialAccountId financialAccountId) => FinancialAccountId = financialAccountId;
     public void SetPaymentDate(DateOnly paymentDate) => PaymentDate = paymentDate;
     public void SetAmount(decimal amount) => Amount = amount;
     public void SetAmountPriceUnitId(PriceUnitId priceUnitId) => AmountPriceUnitId = priceUnitId;

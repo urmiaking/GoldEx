@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.BankAccounts;
+﻿using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 
@@ -13,4 +13,4 @@ public record GetCustomerResponse(Guid Id,
     GetPriceUnitTitleResponse? CreditLimitPriceUnit,
     DateTime CreatedAt,
     CustomerType CustomerType,
-    List<GetBankAccountResponse>? BankAccounts);
+    List<GetFinancialAccountResponse>? BankAccounts);

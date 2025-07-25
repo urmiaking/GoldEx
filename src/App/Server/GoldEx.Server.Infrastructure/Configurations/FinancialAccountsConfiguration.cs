@@ -1,26 +1,18 @@
-﻿using GoldEx.Server.Domain.BankAccountAggregate;
+﻿using GoldEx.Server.Domain.FinancialAccountAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GoldEx.Server.Infrastructure.Configurations;
 
-internal class BankAccountsConfiguration : IEntityTypeConfiguration<BankAccount>
+internal class FinancialAccountsConfiguration : IEntityTypeConfiguration<FinancialAccount>
 {
-    public void Configure(EntityTypeBuilder<BankAccount> builder)
+    public void Configure(EntityTypeBuilder<FinancialAccount> builder)
     {
-        builder.ToTable("BankAccounts");
+        builder.ToTable("FinancialAccounts");
 
         builder.Property(x => x.Id)
             .HasConversion(id => id.Value,
-                value => new BankAccountId(value));
-
-        builder.Property(x => x.AccountHolderName)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.BankName)
-            .HasMaxLength(100)
-            .IsRequired();
+                value => new FinancialAccountId(value));
 
         builder.HasOne(x => x.PriceUnit)
             .WithMany()
@@ -36,8 +28,16 @@ internal class BankAccountsConfiguration : IEntityTypeConfiguration<BankAccount>
         builder.OwnsOne(x => x.InternationalAccount, Configure);
     }
 
-    private void Configure(OwnedNavigationBuilder<BankAccount, InternationalBankAccount> builder)
+    private void Configure(OwnedNavigationBuilder<FinancialAccount, InternationalBankAccount> builder)
     {
+        builder.Property(x => x.AccountHolderName)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(x => x.BankName)
+            .HasMaxLength(100)
+            .IsRequired();
+
         builder.Property(x => x.SwiftBicCode)
             .HasMaxLength(11)
             .IsRequired();
@@ -51,8 +51,16 @@ internal class BankAccountsConfiguration : IEntityTypeConfiguration<BankAccount>
             .IsRequired();
     }
 
-    private void Configure(OwnedNavigationBuilder<BankAccount, LocalBankAccount> builder)
+    private void Configure(OwnedNavigationBuilder<FinancialAccount, LocalBankAccount> builder)
     {
+        builder.Property(x => x.AccountHolderName)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(x => x.BankName)
+            .HasMaxLength(100)
+            .IsRequired();
+
         builder.Property(x => x.CardNumber)
             .HasMaxLength(20)
             .IsRequired();
