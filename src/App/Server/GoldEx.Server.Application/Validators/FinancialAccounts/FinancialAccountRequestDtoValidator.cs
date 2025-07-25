@@ -6,14 +6,14 @@ using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Server.Application.Validators.BankAccounts;
+namespace GoldEx.Server.Application.Validators.FinancialAccounts;
 
 [ScopedService]
-internal class BankAccountRequestDtoValidator : AbstractValidator<FinancialAccountRequestDto>
+internal class FinancialAccountRequestDtoValidator : AbstractValidator<FinancialAccountRequestDto>
 {
     private readonly IPriceUnitRepository _priceUnitRepository;
 
-    public BankAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository)
+    public FinancialAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository)
     {
         _priceUnitRepository = priceUnitRepository;
 

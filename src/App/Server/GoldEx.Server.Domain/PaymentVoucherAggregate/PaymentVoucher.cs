@@ -33,7 +33,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
     public Customer? Customer { get; private set; }
     public CustomerId CustomerId { get; private set; }
 
-    public FinancialAccount? BankAccount { get; private set; }
+    public FinancialAccount? FinancialAccount { get; private set; }
     public FinancialAccountId FinancialAccountId { get; private set; }
 
     public long VoucherNumber { get; private set; }
@@ -57,7 +57,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
 #pragma warning restore CS8618
 
     public void SetCustomerId(CustomerId customerId) => CustomerId = customerId;
-    public void SetBankAccountId(FinancialAccountId financialAccountId) => FinancialAccountId = financialAccountId;
+    public void SetFinancialAccountId(FinancialAccountId financialAccountId) => FinancialAccountId = financialAccountId;
     public void SetPaymentDate(DateOnly paymentDate) => PaymentDate = paymentDate;
     public void SetAmount(decimal amount) => Amount = amount;
     public void SetAmountPriceUnitId(PriceUnitId priceUnitId) => AmountPriceUnitId = priceUnitId;

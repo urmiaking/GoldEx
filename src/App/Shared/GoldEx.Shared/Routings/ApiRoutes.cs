@@ -138,4 +138,14 @@ public static class ApiRoutes
         public const string Base = "/api/Reports";
         public const string GetList = "";
     }
+
+    public class FinancialAccounts
+    {
+        public const string Base = "/api/FinancialAccounts";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+    }
 }
