@@ -24,6 +24,8 @@ public partial class EditorForm
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
 
+    private bool IsEditMode => Id.HasValue;
+
     private InvoiceVm _model = InvoiceVm.CreateDefaultInstance();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
@@ -37,8 +39,9 @@ public partial class EditorForm
     private bool _extraCostsMenuOpen;
     private bool _paymentsMenuOpen;
     private bool _processing;
-    private string? _customerCreditLimitAdornmentText;
     private bool _totalUnpaidMenuOpen;
+
+    private string? CustomerCreditLimitAdornmentText => _model.Customer.CreditLimitPriceUnit?.Title;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -76,20 +79,31 @@ public partial class EditorForm
         }
         else
         {
-            await SendRequestAsync<IInvoiceService, GetInvoiceNumberResponse>(
-                action: (s, ct) => s.GetLastNumberAsync(ct),
-                afterSend: response =>
-                {
-                    _model.InvoiceNumber = response.InvoiceNumber + 1;
-                });
+            await LoadInvoiceNumberAsync();
         }
+    }
+
+    private async Task LoadInvoiceNumberAsync()
+    {
+        await SendRequestAsync<IInvoiceService, GetInvoiceNumberResponse>(
+            action: (s, ct) => s.GetLastNumberAsync(_model.InvoiceType, ct),
+            afterSend: response =>
+            {
+                _model.InvoiceNumber = response.InvoiceNumber + 1;
+            });
     }
 
     private async Task LoadGramPriceAsync()
     {
         // TODO: change it to use mesghal too
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
-            action: (s, ct) => s.GetAsync(GoldUnitType.Gram, _model.InvoicePriceUnit?.Id, true, ct),
+            action: (s, ct) => s.GetAsync(GoldUnitType.Gram, _model.InvoicePriceUnit?.Id,
+                _model.InvoiceType switch
+                {
+                    InvoiceType.Sell => true,
+                    InvoiceType.Purchase => false,
+                    _ => throw new ArgumentOutOfRangeException()
+                }, ct),
             afterSend: response =>
             {
                 _gramPrice = response;
@@ -116,8 +130,6 @@ public partial class EditorForm
                     _model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsDefault);
                     _model.Customer.CreditLimitPriceUnit = response.FirstOrDefault(x => x.IsDefault);
 
-                    _customerCreditLimitAdornmentText = _model.Customer.CreditLimitPriceUnit?.Title;
-
                     StateHasChanged();
                 }
             });
@@ -130,19 +142,16 @@ public partial class EditorForm
     private void OnCustomerCreditLimitChanged(decimal? creditLimit)
     {
         _model.Customer.CreditLimit = creditLimit;
-        _customerCreditLimitAdornmentText = _model.Customer.CreditLimitPriceUnit?.Title;
     }
 
     private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
         _model.Customer.CreditLimitPriceUnit = priceUnit;
-        _customerCreditLimitAdornmentText = priceUnit?.Title;
     }
 
     private void SelectCustomerCreditLimitUnit(GetPriceUnitTitleResponse selectedUnit)
     {
         OnCreditLimitUnitChanged(selectedUnit);
-        _customerCreditLimitAdornmentText = selectedUnit.Title;
         _model.Customer.CreditLimitMenuOpen = false;
     }
 
@@ -164,7 +173,7 @@ public partial class EditorForm
                 OnCustomerCreditLimitChanged(response.CreditLimit);
             });
     }
-    
+
     private async Task OnCustomerPhoneNumberChanged(string phoneNumber)
     {
         _model.Customer.PhoneNumber = phoneNumber;
@@ -410,7 +419,6 @@ public partial class EditorForm
         if (_model.Customer.Id == null)
         {
             _model.Customer.CreditLimitPriceUnit = priceUnit;
-            _customerCreditLimitAdornmentText = priceUnit.Title;
         }
 
         if (_model is { UnpaidExchangeRate: not null, UnpaidPriceUnit: not null })
@@ -459,15 +467,15 @@ public partial class EditorForm
 
     #endregion
 
-    private async Task<bool> SubmitAsync()
+    private async Task SubmitAsync(string navigationUrl)
     {
         if (_processing)
-            return false;
+            return;
 
         await _form.Validate();
 
         if (!_form.IsValid)
-            return false;
+            return;
 
         _processing = true;
 
@@ -479,7 +487,7 @@ public partial class EditorForm
         {
             _processing = false;
             AddErrorToast(e.Message);
-            return false;
+            return;
         }
 
         var request = InvoiceVm.ToRequest(_model);
@@ -490,16 +498,14 @@ public partial class EditorForm
             {
                 AddSuccessToast("فاکتور با موفقیت ثبت شد");
                 _processing = false;
-                Navigation.NavigateTo(ClientRoutes.Invoices.Index);
+                Navigation.NavigateTo(navigationUrl);
                 return Task.CompletedTask;
             });
-
-        return true;
     }
 
     private void OnCustomerCleared()
     {
-        _model.Customer = new CustomerVm();
+        _model.Customer = new CustomerVm { CreditLimitPriceUnit = _model.Customer.CreditLimitPriceUnit };
     }
 
     private void OnCustomerNationalIdAdornmentClicked()
@@ -537,9 +543,16 @@ public partial class EditorForm
 
     private async Task OnSubmitAndPrintAsync()
     {
-        var isSubmitted = await SubmitAsync();
+        await SubmitAsync(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
+        {
+            number = _model.InvoiceNumber,
+            invoiceType = _model.InvoiceType.ToString()
+        }));
+    }
 
-        if (isSubmitted) 
-            Navigation.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = _model.InvoiceNumber }));
+    private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)
+    {
+        _model.InvoiceType = invoiceType;
+        await LoadInvoiceNumberAsync();
     }
 }

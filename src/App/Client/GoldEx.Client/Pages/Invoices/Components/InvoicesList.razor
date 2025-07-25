@@ -5,18 +5,41 @@
 <MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        <MudSpacer />
-        
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
-                                PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ فاکتور" Clearable="true" />
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
+                      Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense" Class="ml-2" Style="width: 180px;"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
+            <MudDateRangePicker DateRange="@_filterDateRange"
+                                DateRangeChanged="OnDateRangeChanged"
+                                Margin="Margin.Dense"
+                                Variant="Variant.Outlined"
+                                Class="ml-3"
+                                PlaceholderStart="از"
+                                PlaceholderEnd="تا"
+                                Elevation="24"
+                                RelativeWidth="DropdownWidth.Adaptive"
+                                Label="تاریخ فاکتور"
+                                Clearable="true" />
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@InvoicePaymentStatusIcon">@(_invoicePaymentStatus == null ? "همه" : _invoicePaymentStatus.GetDisplayName())</MudButton>
+            <MudButtonGroup Size="Size.Small" Color="@InvoiceTypeColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@InvoiceTypeIcon">
+                    @(_invoiceType == null ? "همه" : _invoiceType.GetDisplayName())
+                </MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.CompareArrows" OnClick="() => SetInvoiceTypeText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.ArrowUpward" OnClick="() => SetInvoiceTypeText(InvoiceType.Purchase)">@InvoiceType.Purchase.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.ArrowDownward" OnClick="() => SetInvoiceTypeText(InvoiceType.Sell)">@InvoiceType.Sell.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="@InvoicePaymentStatusColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@InvoicePaymentStatusIcon">
+                    @(_invoicePaymentStatus == null ? "همه" : _invoicePaymentStatus.GetDisplayName())
+                </MudButton>
                 <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
                     <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
                     <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.HasDebt)">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudMenuItem>
@@ -25,20 +48,12 @@
                 </MudMenu>
             </MudButtonGroup>
         </MudHidden>
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
-                <MudButton StartIcon="@InvoicePaymentStatusIcon"></MudButton>
-                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.HasDebt)">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.MoreTime" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Overdue)">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudMenuItem>
-                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Paid)">@InvoicePaymentStatus.Paid.GetDisplayName()</MudMenuItem>
-                </MudMenu>
-            </MudButtonGroup>
-        </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateInvoice())" Size="Size.Small" Variant="Variant.Filled">ثبت فاکتور جدید</MudButton>
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OnCreateInvoice())" Size="Size.Small" Variant="Variant.Filled">
+                فاکتور جدید
+            </MudButton>
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.MdAndUp">

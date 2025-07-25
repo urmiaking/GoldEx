@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250721084405_AddInvoiceType")]
+    partial class AddInvoiceType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -348,9 +351,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasIndex("UnpaidPriceUnitId");
 
-                    b.HasIndex("InvoiceNumber", "InvoiceType")
-                        .IsUnique();
-
                     b.ToTable("Invoices", (string)null);
                 });
 
@@ -545,7 +545,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("WagePriceUnitId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("WageType")
+                    b.Property<int>("WageType")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Weight")

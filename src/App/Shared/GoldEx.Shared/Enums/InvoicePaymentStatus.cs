@@ -10,6 +10,6 @@ public enum InvoicePaymentStatus
     [Display(Name = "دارای بدهی")]
     HasDebt = 1,
 
-    [Display(Name = "موعد سررسید گذشته")]
+    [Display(Name = "سررسید گذشته")]
     Overdue = 2
 }

@@ -225,12 +225,12 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Get)
                 .FormatRoute(new { id });
 
-        public static string Get(long invoiceNumber) =>
+        public static string Get(long invoiceNumber, InvoiceType invoiceType) =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetByNumber)
-                .FormatRoute(new { invoiceNumber });
+                .FormatRoute(new { invoiceNumber, invoiceType });
 
-        public static string GetLastNumber() =>
-            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber);
+        public static string GetLastNumber(InvoiceType invoiceType) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber).FormatRoute(new { invoiceType });
     }
 
     public class Reports

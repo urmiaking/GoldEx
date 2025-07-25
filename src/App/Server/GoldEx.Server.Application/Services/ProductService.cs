@@ -59,6 +59,7 @@ internal class ProductService(
             .Include(x => x.WagePriceUnit)
             .GroupBy(x => x.Name)
             .Select(x => x.First())
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetProductResponse>>(products);

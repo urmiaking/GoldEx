@@ -26,7 +26,33 @@ public partial class InvoicesList
         _ => throw new ArgumentOutOfRangeException()
     };
 
+    public string? InvoiceTypeIcon => _invoiceType switch
+    {
+        InvoiceType.Sell => Icons.Material.Filled.ArrowDownward,
+        InvoiceType.Purchase => Icons.Material.Filled.ArrowUpward,
+        null => Icons.Material.Filled.CompareArrows,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public Color InvoiceTypeColor => _invoiceType switch
+    {
+        InvoiceType.Purchase => Color.Success,
+        InvoiceType.Sell => Color.Error,
+        null => Color.Info,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public Color InvoicePaymentStatusColor => _invoicePaymentStatus switch
+    {
+        InvoicePaymentStatus.Paid => Color.Success,
+        InvoicePaymentStatus.HasDebt => Color.Primary,
+        InvoicePaymentStatus.Overdue => Color.Error,
+        null => Color.Info,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
     private InvoicePaymentStatus? _invoicePaymentStatus;
+    private InvoiceType? _invoiceType;
     private string? _searchString;
     private MudTable<InvoiceListVm> _table = new();
     private DateRange _filterDateRange = new();
@@ -45,7 +71,7 @@ public partial class InvoicesList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _filterDateRange.Start, _filterDateRange.End);
+        var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _filterDateRange.Start, _filterDateRange.End);
 
         await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
             action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
@@ -105,12 +131,22 @@ public partial class InvoicesList
 
     private void OnViewInvoice(InvoiceListVm model)
     {
-        NavigationManager.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = model.InvoiceNumber }));
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
+        {
+            number = model.InvoiceNumber,
+            invoiceType = model.InvoiceType.ToString()
+        }));
     }
 
     private async Task SetStatusFilterText(InvoicePaymentStatus? status)
     {
         _invoicePaymentStatus = status;
+        await RefreshAsync();
+    }
+
+    private async Task SetInvoiceTypeText(InvoiceType? invoiceType)
+    {
+        _invoiceType = invoiceType;
         await RefreshAsync();
     }
 

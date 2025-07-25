@@ -74,10 +74,11 @@ h1:focus {
     background-position: center; /* Center the image */
     background-repeat: no-repeat; /* Prevent image tiling */
 }
-.mud-popover{
+
+.mud-popover {
     left: 0;
 }
 
-.mud-dialog-content{
+.mud-dialog-content {
     overflow: hidden !important;
 }

@@ -2,6 +2,7 @@
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Invoices;
 
@@ -10,6 +11,7 @@ public record GetInvoiceResponse(
     long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
+    InvoiceType InvoiceType,
     decimal TotalAmount,
     decimal TotalPaidAmount,
     decimal TotalDiscountAmount,

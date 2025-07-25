@@ -10,6 +10,7 @@ public class InvoiceListVm
     public long InvoiceNumber { get; set; }
     public DateOnly InvoiceDate { get; set; }
     public DateOnly? DueDate { get; set; }
+    public InvoiceType InvoiceType { get; set; }
     public decimal TotalAmount { get; set; }
     public string AmountUnit { get; set; } = default!;
     public InvoicePaymentStatus PaymentStatus { get; set; }
@@ -22,6 +23,7 @@ public class InvoiceListVm
             CustomerFullName = listResponse.CustomerFullName,
             InvoiceNumber = listResponse.InvoiceNumber,
             InvoiceDate = listResponse.InvoiceDate,
+            InvoiceType = listResponse.InvoiceType,
             DueDate = listResponse.DueDate,
             TotalAmount = listResponse.TotalAmount,
             AmountUnit = listResponse.AmountUnit,

@@ -41,6 +41,12 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
             AddCriteria(x => x.InvoiceDate <= endDateOnly);
         }
 
+        // Apply invoice type if provided
+        if (invoiceFilter.InvoiceType.HasValue)
+        {
+            AddCriteria(x => x.InvoiceType == invoiceFilter.InvoiceType);
+        }
+
         // Apply status filter only if a status is provided
         if (invoiceFilter.Status.HasValue)
         {
