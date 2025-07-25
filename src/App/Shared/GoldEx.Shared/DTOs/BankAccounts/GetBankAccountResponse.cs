@@ -8,7 +8,6 @@ public record GetBankAccountResponse(
     BankAccountType BankAccountType,
     string AccountHolderName,
     string BankName,
-    Guid CustomerId,
     GetPriceUnitTitleResponse PriceUnit,
     GetLocalBankAccountResponse? LocalBankAccount,
     GetInternationalBankAccountResponse? InternationalBankAccount);

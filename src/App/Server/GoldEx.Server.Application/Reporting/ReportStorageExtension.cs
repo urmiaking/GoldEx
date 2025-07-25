@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace GoldEx.Server.Application.Reporting;
 
+#nullable disable
+
 public class ReportStorageExtension : ReportStorageWebExtension
 {
     private readonly IWebHostEnvironment _hostingEnvironment;

@@ -25,19 +25,40 @@ public class BankAccount : EntityBase<BankAccountId>
             BankName = bankName,
             PriceUnitId = priceUnitId,
             CustomerId = customerId,
+            IsSystemAccount = false,
             LocalAccount = localAccount,
             InternationalAccount = internationalAccount
+        };
+    }
+
+    public static BankAccount CreateSystemAccount(
+        BankAccountType accountType,
+        string accountHolderName,
+        string bankName,
+        PriceUnitId priceUnitId,
+        LocalBankAccount? localAccount = null,
+        InternationalBankAccount? internationalAccount = null)
+    {
+        return new BankAccount
+        {
+            Id = new BankAccountId(Guid.NewGuid()),
+            AccountType = accountType,
+            AccountHolderName = accountHolderName,
+            BankName = bankName,
+            PriceUnitId = priceUnitId,
+            IsSystemAccount = true
         };
     }
 
     public BankAccountType AccountType { get; private set; }
     public string AccountHolderName { get; private set; }
     public string BankName { get; private set; }
+    public bool IsSystemAccount { get; private set; }
 
     public PriceUnitId PriceUnitId { get; private set; }
     public PriceUnit? PriceUnit { get; private set; }
 
-    public CustomerId CustomerId { get; private set; }
+    public CustomerId? CustomerId { get; private set; }
     public Customer? Customer { get; private set; }
 
     public LocalBankAccount? LocalAccount { get; private set; }
