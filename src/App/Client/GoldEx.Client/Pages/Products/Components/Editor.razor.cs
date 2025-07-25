@@ -17,15 +17,24 @@ public partial class Editor
     [Parameter] public ProductVm Model { get; set; } = ProductVm.CreateDefaultInstance();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
+    private MudForm _form = default!;
     private readonly ProductValidator _productValidator = new();
+
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private List<GetProductResponse> _products = [];
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private string? _wageFieldAdornmentText;
+    
     private bool _wageFieldMenuOpen;
     private bool _processing;
     private bool _weightFieldMenuOpen;
-    private MudForm _form = default!;
+
+    private string? WageFieldAdornmentText => Model.WageType switch
+    {
+        WageType.Percent => "درصد",
+        WageType.Fixed => Model.WagePriceUnitTitle,
+        null => null,
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
     protected override void OnParametersSet()
     {
@@ -124,7 +133,6 @@ public partial class Editor
                 break;
             case ProductType.OldGold:
                 throw new InvalidOperationException();
-                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
         }
@@ -134,22 +142,8 @@ public partial class Editor
     {
         Model.WageType = wageType;
 
-        switch (wageType)
-        {
-            case WageType.Percent:
-                _wageFieldAdornmentText = "درصد";
-                break;
-            case WageType.Fixed:
-                _wageFieldAdornmentText = Model.WagePriceUnitTitle;
-                break;
-            case null:
-                Model.Wage = null;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
-        }
-
-        OnWageChanged(Model.Wage);
+        if (wageType is null) 
+            Model.Wage = null;
     }
 
     private void OnAddGemStone()
@@ -173,11 +167,6 @@ public partial class Editor
         Model.CategoryVm = category;
         Model.ProductCategoryId = category?.Id;
         Model.ProductCategoryTitle = category?.Title;
-    }
-
-    private void OnWageChanged(decimal? wage)
-    {
-        Model.Wage = wage;
     }
 
     private void OnWageAdornmentClicked()
