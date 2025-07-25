@@ -37,7 +37,6 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.BankAccountType, src => src.AccountType)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
-            .Map(dest => dest.CustomerId, src => src.CustomerId.Value)
             .Map(dest => dest.LocalBankAccount, src => src.LocalAccount)
             .Map(dest => dest.InternationalBankAccount, src => src.InternationalAccount);
 

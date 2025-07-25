@@ -28,7 +28,7 @@ internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingSe
     {
         var item = await invoiceRepository
             .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
-            .Include(x => x.Customer)
+            .Include(x => x.Customer!)
             .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
             .Include(x => x.Items)
