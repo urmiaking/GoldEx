@@ -11,7 +11,7 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
     public static FinancialAccount Create(
         FinancialAccountType accountType,
         PriceUnitId priceUnitId,
-        CustomerId customerId,
+        CustomerId? customerId,
         LocalBankAccount? localAccount = null,
         InternationalBankAccount? internationalAccount = null)
     {
@@ -73,13 +73,32 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
 
     public FinancialAccount SetLocalAccount(LocalBankAccount? localAccount)
     {
+        if (AccountType != FinancialAccountType.LocalBankAccount)
+            throw new InvalidOperationException("Cannot set local account for non-local bank account type.");
+
         LocalAccount = localAccount;
+        InternationalAccount = null;
         return this;
     }
 
     public FinancialAccount SetInternationalAccount(InternationalBankAccount? internationalAccount)
     {
+        if (AccountType != FinancialAccountType.InternationalBankAccount)
+            throw new InvalidOperationException("Cannot set international account for non-international bank account type.");
+
         InternationalAccount = internationalAccount;
+        LocalAccount = null;
+        return this;
+    }
+
+    public FinancialAccount SetCashAccount()
+    {
+        if (AccountType != FinancialAccountType.Cash)
+            throw new InvalidOperationException("Cannot set cash account for non-cash account type.");
+
+        LocalAccount = null;
+        InternationalAccount = null;
+
         return this;
     }
 }

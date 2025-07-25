@@ -238,4 +238,17 @@ public class ApiUrls
         public static string GetList() =>
             BuildUrl(ApiRoutes.Reports.Base, ApiRoutes.Reports.GetList);
     }
+
+    public class FinancialAccounts
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetList);
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Get).FormatRoute(new { id });
+        public static string Create() => BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Create);
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Update).FormatRoute(new { id });
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Delete).FormatRoute(new { id });
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Server.Application.Validators.BankAccounts;
+using GoldEx.Server.Application.Validators.FinancialAccounts;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -57,7 +57,7 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
         When(x => x.BankAccounts is not null, () =>
         {
             RuleForEach(x => x.BankAccounts)
-                .SetValidator(new BankAccountRequestDtoValidator(_priceUnitRepository))
+                .SetValidator(new FinancialAccountRequestDtoValidator(_priceUnitRepository))
                 .WithMessage("اطلاعات حساب بانکی نامعتبر است");
         });
     }

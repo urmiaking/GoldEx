@@ -20,7 +20,7 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
 
         // --- Includes ---
         AddInclude(x => x.Customer!);
-        AddInclude(x => x.BankAccount!);
+        AddInclude(x => x.FinancialAccount!);
         AddInclude(x => x.VoucherPriceUnit!);
         AddInclude(x => x.AmountPriceUnit!);
 
