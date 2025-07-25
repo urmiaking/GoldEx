@@ -2,6 +2,7 @@
 using GoldEx.Shared.DTOs.PriceUnits;
 using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Enums;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
@@ -19,6 +20,9 @@ public class InvoiceVm
     [Display(Name = "تاریخ فاکتور")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public DateTime? InvoiceDate { get; set; }
+
+    [Display(Name = "نوع فاکتور")]
+    public InvoiceType InvoiceType { get; set; }
 
     public CustomerVm Customer { get; set; } = new();
 
@@ -101,6 +105,7 @@ public class InvoiceVm
             model.InvoiceNumber,
             model.InvoiceDate.Value,
             model.DueDate,
+            model.InvoiceType,
             model.InvoicePriceUnit.Id,
             model.UnpaidExchangeRate,
             model.UnpaidPriceUnit?.Id,

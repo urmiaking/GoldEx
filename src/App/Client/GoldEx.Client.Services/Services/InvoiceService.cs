@@ -6,6 +6,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -45,9 +46,10 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetInvoiceResponse> GetAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    public async Task<GetInvoiceResponse> GetAsync(long invoiceNumber, InvoiceType invoiceType,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Invoices.Get(invoiceNumber), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Invoices.Get(invoiceNumber, invoiceType), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
@@ -65,9 +67,10 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
-    public async Task<GetInvoiceNumberResponse> GetLastNumberAsync(CancellationToken cancellationToken = default)
+    public async Task<GetInvoiceNumberResponse> GetLastNumberAsync(InvoiceType invoiceType,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Invoices.GetLastNumber(), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Invoices.GetLastNumber(invoiceType), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

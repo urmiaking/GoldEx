@@ -42,6 +42,9 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .When(x => x.DueDate.HasValue)
             .WithMessage("تاریخ سررسید نمی‌تواند قبل از تاریخ فاکتور باشد");
 
+        RuleFor(x => x.InvoiceType)
+            .IsInEnum().WithMessage("نوع فاکتور معتبر نمی باشد");
+
         RuleFor(x => x.Customer)
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")
             .SetValidator(customerValidator);
@@ -108,7 +111,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
     private async Task<bool> BeUniqueNumber(InvoiceRequestDto request, long invoiceNumber, CancellationToken cancellationToken = default)
     {
         var item = await _invoiceRepository
-            .Get(new InvoicesByNumberSpecification(invoiceNumber))
+            .Get(new InvoicesByNumberSpecification(invoiceNumber, request.InvoiceType))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (item is null)

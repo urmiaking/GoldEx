@@ -2,6 +2,7 @@
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
@@ -9,13 +10,14 @@ public readonly record struct InvoiceId(Guid Value);
 
 public class Invoice : EntityBase<InvoiceId>
 {
-    public static Invoice Create(long invoiceNumber, decimal? unpaidAmountExchangeRate, CustomerId customerId, 
+    public static Invoice Create(long invoiceNumber, decimal? unpaidAmountExchangeRate, InvoiceType invoiceType, CustomerId customerId, 
         PriceUnitId priceUnitId, PriceUnitId? unpaidPriceUnitId, DateOnly invoiceDate, DateOnly? dueDate)
     {
         return new Invoice
         {
             Id = new InvoiceId(Guid.NewGuid()),
             InvoiceNumber = invoiceNumber,
+            InvoiceType = invoiceType,
             CustomerId = customerId,
             InvoiceDate = invoiceDate,
             PriceUnitId = priceUnitId,
@@ -26,14 +28,13 @@ public class Invoice : EntityBase<InvoiceId>
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private Invoice()
-    {
-    }
+    private Invoice() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public long InvoiceNumber { get; private set; }
     public DateOnly? DueDate { get; private set; }
     public DateOnly InvoiceDate { get; private set; }
+    public InvoiceType InvoiceType { get; private set; }
 
     public void SetInvoiceNumber(long invoiceNumber) => InvoiceNumber = invoiceNumber;
     public void SetDueDate(DateOnly? dueDate) => DueDate = dueDate;

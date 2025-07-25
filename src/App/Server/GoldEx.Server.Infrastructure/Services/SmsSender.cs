@@ -18,7 +18,7 @@ public class SmsSender(IOptions<SmsSettings> options, ILogger<SmsSender> logger)
         {
 #if DEBUG
             logger.LogInformation($"Sms sent to {phoneNumber} with this message : {message}");
-            return true;
+            return await Task.FromResult(true);
 #endif
 #if !DEBUG
             var now = DateTime.Now;

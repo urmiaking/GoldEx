@@ -16,7 +16,7 @@ public class CustomerVm
     [StringLength(100, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string FullName { get; set; } = default!;
 
-    [Display(Name = "نوع مشتری")]
+    [Display(Name = "نوع")]
     public CustomerType CustomerType { get; set; } = CustomerType.Individual;
 
     [Display(Name = "شناسه یکتا")]
@@ -43,7 +43,7 @@ public class CustomerVm
 
     public DateTime CreatedAt { get; set; }
 
-    public List<BankAccountVm>? BankAccounts { get; set; }
+    public List<BankAccountVm>? BankAccounts { get; set; } = [];
 
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {

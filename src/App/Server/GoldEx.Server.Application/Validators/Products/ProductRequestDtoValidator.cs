@@ -45,10 +45,6 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
 
         RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
 
-        RuleFor(product => product.WageType)
-            .NotNull()
-            .WithMessage("لطفا نوع اجرت را وارد کنید");
-
         When(x => x.WageType is WageType.Fixed, () =>
         {
             RuleFor(product => product.WagePriceUnitId)

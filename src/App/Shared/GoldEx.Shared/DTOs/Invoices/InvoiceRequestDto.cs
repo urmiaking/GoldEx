@@ -1,5 +1,6 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Invoices;
 
@@ -10,6 +11,7 @@ namespace GoldEx.Shared.DTOs.Invoices;
 /// <param name="InvoiceNumber"></param>
 /// <param name="InvoiceDate"></param>
 /// <param name="DueDate"></param>
+/// <param name="InvoiceType"></param>
 /// <param name="PriceUnitId"></param>
 /// <param name="UnpaidAmountExchangeRate"></param>
 /// <param name="UnpaidPriceUnitId"></param>
@@ -23,6 +25,7 @@ public record InvoiceRequestDto(
     long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
+    InvoiceType InvoiceType,
     Guid PriceUnitId,
     decimal? UnpaidAmountExchangeRate,
     Guid? UnpaidPriceUnitId,
