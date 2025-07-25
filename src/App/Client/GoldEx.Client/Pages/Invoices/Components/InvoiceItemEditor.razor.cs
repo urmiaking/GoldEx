@@ -7,6 +7,8 @@ using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
+using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -23,14 +25,33 @@ public partial class InvoiceItemEditor
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly InvoiceItemValidator _invoiceItemValidator = new();
+
     private MudForm _form = default!;
-    private MudNumericField<decimal?> _wageField = new();
+
     private IEnumerable<ProductCategoryVm> _productCategories = [];
-    private bool _wageFieldMenuOpen;
-    private string? _wageFieldAdornmentText = "درصد";
-    private string? _wageExchangeRateLabel;
+    private List<GetProductResponse> _products = [];
+
     private bool _weightFieldMenuOpen;
+    private bool _wageFieldMenuOpen;
     private bool _isProcessing;
+    private GetSettingResponse? _settings;
+
+    private string? WageFieldAdornmentText => Model.Product.WageType switch
+    {
+        WageType.Percent => "درصد",
+        WageType.Fixed => Model.Product.WagePriceUnitTitle,
+        null => null,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    private string? WageExchangeRateLabel => Model.Product.WageType switch
+    {
+        WageType.Percent => null,
+        WageType.Fixed when Model.PriceUnit?.Id != Model.Product.WagePriceUnitId =>
+            $"نرخ تبدیل {Model.Product.WagePriceUnitTitle} به {Model.PriceUnit?.Title}",
+        null => null,
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
     protected override void OnParametersSet()
     {
@@ -51,8 +72,16 @@ public partial class InvoiceItemEditor
     protected override async Task OnParametersSetAsync()
     {
         await LoadCategoriesAsync();
+        await LoadSettingsAsync();
 
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response => _settings = response);
     }
 
     private async Task LoadCategoriesAsync()
@@ -105,20 +134,51 @@ public partial class InvoiceItemEditor
         switch (productType)
         {
             case ProductType.Jewelry:
+                Model.Product.WageType = WageType.Fixed;
+                Model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
+                Model.TaxPercent = _settings?.TaxPercent ?? 9;
                 break;
             case ProductType.Gold:
+                Model.Product.WageType = WageType.Percent;
+                Model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+                Model.TaxPercent = _settings?.TaxPercent ?? 9;
                 break;
             case ProductType.MoltenGold:
                 Model.Product.Wage = null;
                 Model.Product.WageType = null;
+                Model.ProfitPercent = 0;
+                Model.TaxPercent = 0;
                 break;
             case ProductType.OldGold:
-                Model.Product.Wage = null;
-                Model.Product.WageType = null;
-                break;
+                throw new InvalidOperationException();
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
         }
+    }
+
+    private void OnProductNameChanged(string name)
+    {
+        var product = _products.FirstOrDefault(x => x.Name == name);
+
+        if (product != null)
+        {
+            Model.Product = ProductVm.CreateFromSearch(product);
+            OnWageTypeChanged(product.WageType);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task<IEnumerable<string>?> SearchNames(string? name, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(name))
+            return null;
+
+        await SendRequestAsync<IProductService, List<GetProductResponse>>(
+            action: (s, ct) => s.GetListAsync(name, ct),
+            afterSend: response => _products = response);
+
+        return _products.Select(x => x.Name);
     }
 
     private async void OnWageTypeChanged(WageType? wageType)
@@ -128,30 +188,27 @@ public partial class InvoiceItemEditor
         switch (wageType)
         {
             case WageType.Percent:
-                UpdateWageFields();
+                Model.ExchangeRate = null;
                 break;
             case WageType.Fixed:
-                UpdateWageFields();
-
                 if (Model.Product.WagePriceUnitId.HasValue)
-                    await SelectWagePriceUnit(PriceUnits.First(x =>
-                        x.Id == Model.Product.WagePriceUnitId));
+                {
+                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == Model.Product.WagePriceUnitId));
+                }
                 else
                 {
                     await SelectWagePriceUnit(PriceUnits.First(x => x.Id == Model.PriceUnit?.Id));
                 }
                 break;
             case null:
-                await _wageField.ResetAsync();
+                Model.Product.Wage = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
         }
-
-        OnWageChanged(Model.Product.Wage);
     }
 
-    private void OnAddGemStone(MouseEventArgs obj)
+    private void OnAddGemStone()
     {
         Model.Product.Stones ??= [];
         Model.Product.Stones.Add(new GemStoneVm
@@ -177,11 +234,6 @@ public partial class InvoiceItemEditor
         Model.Product.ProductCategoryTitle = category.Title;
     }
 
-    private void OnWageChanged(decimal? wage)
-    {
-        Model.Product.Wage = wage;
-    }
-
     private void OnWageAdornmentClicked()
     {
         if (Model.Product.WageType is WageType.Fixed)
@@ -201,33 +253,10 @@ public partial class InvoiceItemEditor
                 action: (s, ct) => s.GetExchangeRateAsync(Model.Product.WagePriceUnitId.Value, Model.PriceUnit.Id, ct),
                 afterSend: response =>
                 {
-                    if (response.ExchangeRate.HasValue)
-                    {
+                    if (response.ExchangeRate.HasValue) 
                         Model.ExchangeRate = response.ExchangeRate.Value;
-                    }
                 });
 
-        UpdateWageFields();
-        StateHasChanged();
-    }
-
-    private void UpdateWageFields()
-    {
-        if (Model.Product.WageType is WageType.Fixed)
-        {
-            _wageFieldAdornmentText = Model.Product.WagePriceUnitTitle;
-
-            if (Model.Product.WagePriceUnitId != Model.PriceUnit?.Id)
-            {
-                _wageExchangeRateLabel = $"نرخ تبدیل {Model.Product.WagePriceUnitTitle} به {Model.PriceUnit?.Title}";
-            }
-        }
-        else
-        {
-            _wageFieldAdornmentText = "درصد";
-            _wageExchangeRateLabel = null;
-            Model.ExchangeRate = null;
-        }
         StateHasChanged();
     }
 

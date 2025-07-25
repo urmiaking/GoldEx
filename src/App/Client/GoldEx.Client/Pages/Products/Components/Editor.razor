@@ -117,6 +117,22 @@
                     </MudMenu>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
+                    <MudSelect @bind-Value="Model.CaratType"
+                               For="() => Model.CaratType"
+                               Label="عیار"
+                               Margin="Margin.Dense"
+                               T="CaratType"
+                               Variant="Variant.Outlined">
+                        @foreach (var caratType in Enum.GetValues<CaratType>())
+                        {
+                            <MudSelectItem T="CaratType"
+                                           Value="caratType">
+                                @caratType.GetDisplayName()
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
                     <MudSelect For="() => Model.WageType"
                                Label="@Model.GetDisplayName(() => Model.WageType)"
                                Margin="Margin.Dense"
@@ -125,7 +141,7 @@
                                ValueChanged="OnWageTypeChanged"
                                Variant="Variant.Outlined">
                         <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
-                        @foreach (WageType wageType in Enum.GetValues(typeof(WageType)))
+                        @foreach (var wageType in Enum.GetValues<WageType>())
                         {
                             <MudSelectItem Value="@((WageType?)wageType)">
                                 @wageType.GetDisplayName()
@@ -139,7 +155,7 @@
                         <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                             <ActivatorContent>
                                 <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@_wageFieldAdornmentText"
+                                                 AdornmentText="@WageFieldAdornmentText"
                                                  For="() => Model.Wage"
                                                  Format="#,##0.##"
                                                  HideSpinButtons="true"
@@ -147,8 +163,7 @@
                                                  Margin="Margin.Dense"
                                                  Label="@(Model.GetDisplayName(() => Model.Wage))"
                                                  T="decimal?"
-                                                 Value="Model.Wage"
-                                                 ValueChanged="OnWageChanged"
+                                                 @bind-Value="Model.Wage"
                                                  Variant="Variant.Outlined"
                                                  OnAdornmentClick="OnWageAdornmentClicked"></MudNumericField>
                             </ActivatorContent>
@@ -171,22 +186,6 @@
                         </MudMenu>
                     </MudItem>
                 }
-                <MudItem xs="12" md="6" lg="6">
-                    <MudSelect @bind-Value="Model.CaratType"
-                               For="() => Model.CaratType"
-                               Label="عیار"
-                               Margin="Margin.Dense"
-                               T="CaratType"
-                               Variant="Variant.Outlined">
-                        @foreach (CaratType caratType in Enum.GetValues(typeof(CaratType)))
-                        {
-                            <MudSelectItem T="CaratType"
-                                           Value="caratType">
-                                @caratType.GetDisplayName()
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
                 @if (Model.ProductType is ProductType.Jewelry)
                 {
                     @if (Model.Stones is not null)
@@ -195,7 +194,7 @@
                         {
                             var index = i;
 
-                            <MudItem Key="@i" xs="12" Class="d-flex justify-center m-0">
+                            <MudItem Key="@index" xs="12" Class="d-flex justify-center m-0">
                                 <MudText Typo="Typo.body1">
                                     سنگ شماره @(index + 1)
                                     <MudIconButton Icon="@Icons.Material.Filled.Close"
@@ -204,37 +203,37 @@
                                     </MudIconButton>
                                 </MudText>
                             </MudItem>
-                            <MudItem Key="@($"{i} code")" xs="12" md="2" Class="pt-0">
+                            <MudItem Key="@($"{index} code")" xs="12" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Stones[index].Code"
                                               For="() => Model.Stones[index].Code"
                                               Label="کد" Margin="Margin.Dense"
                                               T="string" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem Key="@($"{i} type")" xs="12" md="2" Class="pt-0">
+                            <MudItem Key="@($"{index} type")" xs="12" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Stones[index].Type"
                                               For="() => Model.Stones[index].Type"
                                               Label="نوع سنگ" Margin="Margin.Dense"
                                               T="string" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem Key="@($"{i} color")" xs="6" md="2" Class="pt-0">
+                            <MudItem Key="@($"{index} color")" xs="6" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Stones[index].Color"
                                               For="() => Model.Stones[index].Color"
                                               Label="رنگ" Margin="Margin.Dense"
                                               T="string" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem Key="@($"{i} cut")" xs="6" md="2" Class="pt-0">
+                            <MudItem Key="@($"{index} cut")" xs="6" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Stones[index].Cut"
                                               For="() => Model.Stones[index].Cut"
                                               Label="برش" Margin="Margin.Dense"
                                               T="string?" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem Key="@($"{i} carat")" xs="6" md="2" Class="pt-0">
+                            <MudItem Key="@($"{index} carat")" xs="6" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Stones[index].Carat"
                                               For="() => Model.Stones[index].Carat"
-                                              Label="قیراط" Margin="Margin.Dense"
+                                              Label="قیراط" Margin="Margin.Dense" Format="G29"
                                               T="decimal" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem Key="@($"{i} purity")" xs="6" md="2" Class="pt-0">
+                            <MudItem Key="@($"{index} purity")" xs="6" md="2" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Stones[index].Purity"
                                               For="() => Model.Stones[index].Purity"
                                               Label="پاکی" Margin="Margin.Dense"
