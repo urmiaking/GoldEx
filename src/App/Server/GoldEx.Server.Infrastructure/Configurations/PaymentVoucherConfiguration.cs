@@ -28,19 +28,14 @@ internal class PaymentVoucherConfiguration : IEntityTypeConfiguration<PaymentVou
         builder.HasIndex(x => x.VoucherNumber)
             .IsUnique();
 
-        builder.HasOne(x => x.Customer)
-            .WithMany(x => x.PaymentVouchers)
-            .HasForeignKey(x => x.CustomerId)
+        builder.HasOne(x => x.SourceFinancialAccount)
+            .WithMany()
+            .HasForeignKey(x => x.SourceFinancialAccountId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.FinancialAccount)
+        builder.HasOne(x => x.DestinationFinancialAccount)
             .WithMany()
-            .HasForeignKey(x => x.FinancialAccountId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(x => x.AmountPriceUnit)
-            .WithMany()
-            .HasForeignKey(x => x.AmountPriceUnitId)
+            .HasForeignKey(x => x.DestinationFinancialAccountId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.VoucherPriceUnit)

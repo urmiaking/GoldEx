@@ -148,4 +148,16 @@ public static class ApiRoutes
         public const string Update = "{id}";
         public const string Delete = "{id}";
     }
+
+    public class PaymentVouchers
+    {
+        public const string Base = "/api/PaymentVouchers";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string GetByNumber = "number/{voucherNumber}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+        public const string GetLastNumber = "last-number";
+    }
 }

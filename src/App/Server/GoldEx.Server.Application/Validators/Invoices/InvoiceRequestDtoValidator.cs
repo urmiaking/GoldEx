@@ -9,7 +9,6 @@ using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
@@ -20,6 +19,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly IProductRepository _productRepository;
+
     public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
         IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository,
         IPaymentMethodRepository paymentMethodRepository, IInvoiceRepository invoiceRepository)
