@@ -14,3 +14,38 @@
         <MudIconButton Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="_ => OnCreate()" />
     </MudHidden>
 </div>
+
+<MudDivider Class="my-2" />
+
+<MudTable T="FinancialAccountVm" Hover="true" FixedHeader="true" Dense="true" Items="_financialAccounts" Loading="_processing"
+          SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="24" Height="350px">
+    <HeaderContent>
+        <MudTh>ردیف</MudTh>
+        <MudTh>نوع حساب</MudTh>
+        <MudTh>واحد ارزی</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ردیف">@context.Index</MudTd>
+        <MudTd DataLabel="نوع حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+        <MudTd DataLabel="واحد ارزی">@context.PriceUnit?.Title</MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="ویرایش">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="حذف">
+                    <MudIconButton OnClick="@(_ => OnRemove(context))" ClickPropagation="true"
+                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ حساب مالی وجود ندارد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+</MudTable>
