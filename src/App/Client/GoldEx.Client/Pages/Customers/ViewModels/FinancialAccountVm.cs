@@ -15,6 +15,8 @@ public class FinancialAccountVm
     [Display(Name = "واحد ارزی")]
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
+    public int Index { get; set; }
+
     public LocalBankAccountVm? LocalBankAccount { get; set; }
     public InternationalBankAccountVm? InternationalBankAccount { get; set; } 
 

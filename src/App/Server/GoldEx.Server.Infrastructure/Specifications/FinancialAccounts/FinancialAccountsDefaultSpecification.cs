@@ -9,5 +9,6 @@ public class FinancialAccountsDefaultSpecification : SpecificationBase<Financial
     {
         AddCriteria(x => isSystemAccount == null || x.IsSystemAccount == isSystemAccount);
         ApplyOrderByDescending(x => x.CreatedAt);
+        AddInclude(x => x.PriceUnit!);
     }
 }

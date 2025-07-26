@@ -33,7 +33,7 @@ internal class PaymentVoucherConfiguration : IEntityTypeConfiguration<PaymentVou
             .HasForeignKey(x => x.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.BankAccount)
+        builder.HasOne(x => x.FinancialAccount)
             .WithMany()
             .HasForeignKey(x => x.FinancialAccountId)
             .OnDelete(DeleteBehavior.Restrict);

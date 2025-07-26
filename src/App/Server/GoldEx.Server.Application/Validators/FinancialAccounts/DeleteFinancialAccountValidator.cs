@@ -19,9 +19,9 @@ internal class DeleteFinancialAccountValidator : AbstractValidator<FinancialAcco
             .WithMessage("حساب مالی در پرداخت ها استفاده شده است و قابل حذف نیست.");
     }
 
-    private Task<bool> NotUsedInPaymentVouchers(FinancialAccount financialAccount, CancellationToken cancellationToken = default)
+    private async Task<bool> NotUsedInPaymentVouchers(FinancialAccount financialAccount, CancellationToken cancellationToken = default)
     {
-        return _paymentVoucherRepository.ExistsAsync(new PaymentVouchersByFinancialAccountIdSpecification(financialAccount.Id),
+        return !await _paymentVoucherRepository.ExistsAsync(new PaymentVouchersByFinancialAccountIdSpecification(financialAccount.Id),
             cancellationToken);
     }
 }
