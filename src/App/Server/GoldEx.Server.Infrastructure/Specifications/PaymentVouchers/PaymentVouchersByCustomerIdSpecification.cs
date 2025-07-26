@@ -8,7 +8,8 @@ public class PaymentVouchersByCustomerIdSpecification : SpecificationBase<Paymen
 {
     public PaymentVouchersByCustomerIdSpecification(CustomerId customerId)
     {
-        AddCriteria(x => x.CustomerId == customerId);
+        AddInclude(x => x.DestinationFinancialAccount!);
+        AddCriteria(x => x.DestinationFinancialAccount!.CustomerId == customerId);
         ApplyOrderByDescending(x => x.CreatedAt);
     }
 }

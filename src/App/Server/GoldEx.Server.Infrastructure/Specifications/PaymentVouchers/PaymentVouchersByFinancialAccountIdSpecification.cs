@@ -8,6 +8,6 @@ public class PaymentVouchersByFinancialAccountIdSpecification : SpecificationBas
 {
     public PaymentVouchersByFinancialAccountIdSpecification(FinancialAccountId financialAccountId)
     {
-        AddCriteria(x => x.FinancialAccountId == financialAccountId);
+        AddCriteria(x => x.DestinationFinancialAccountId == financialAccountId);
     }
 }

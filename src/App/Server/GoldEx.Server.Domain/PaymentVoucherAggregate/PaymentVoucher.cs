@@ -1,5 +1,4 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 
@@ -9,40 +8,39 @@ public readonly record struct PaymentVoucherId(Guid Value);
 public class PaymentVoucher : EntityBase<PaymentVoucherId>
 {
     public static PaymentVoucher Create(
-        CustomerId customerId,
-        FinancialAccountId financialAccountId,
-        DateOnly paymentDate,
         decimal amount,
-        PriceUnitId amountPriceUnitId,
-        PriceUnitId voucherPriceUnitId,
-        string description)
+        long voucherNumber,
+        string description,
+        decimal? exchangeRate,
+        DateOnly paymentDate,
+        FinancialAccountId sourceFinancialAccountId,
+        FinancialAccountId destinationFinancialAccountId,
+        PriceUnitId voucherPriceUnitId)
     {
         return new PaymentVoucher
         {
             Id = new PaymentVoucherId(Guid.NewGuid()),
-            CustomerId = customerId,
-            FinancialAccountId = financialAccountId,
+            SourceFinancialAccountId = sourceFinancialAccountId,
+            DestinationFinancialAccountId = destinationFinancialAccountId,
+            VoucherNumber = voucherNumber,
+            Description = description,
             PaymentDate = paymentDate,
             Amount = amount,
-            AmountPriceUnitId = amountPriceUnitId,
-            VoucherPriceUnitId = voucherPriceUnitId,
-            Description = description
+            ExchangeRate = exchangeRate,
+            VoucherPriceUnitId = voucherPriceUnitId
         };
     }
 
-    public Customer? Customer { get; private set; }
-    public CustomerId CustomerId { get; private set; }
+    public FinancialAccount? DestinationFinancialAccount { get; private set; }
+    public FinancialAccountId DestinationFinancialAccountId { get; private set; }
 
-    public FinancialAccount? FinancialAccount { get; private set; }
-    public FinancialAccountId FinancialAccountId { get; private set; }
+    public FinancialAccount? SourceFinancialAccount { get; private set; }
+    public FinancialAccountId SourceFinancialAccountId { get; private set; }
 
     public long VoucherNumber { get; private set; }
     public string Description { get; private set; }
     public decimal Amount { get; private set; }
     public DateOnly PaymentDate { get; private set; }
-
-    public PriceUnit? AmountPriceUnit { get; private set; }
-    public PriceUnitId AmountPriceUnitId { get; private set; }
 
     /// <summary>
     /// The exchange rate of the amount price unit to the voucher price unit.
@@ -56,12 +54,12 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
     private PaymentVoucher() { }
 #pragma warning restore CS8618
 
-    public void SetCustomerId(CustomerId customerId) => CustomerId = customerId;
-    public void SetFinancialAccountId(FinancialAccountId financialAccountId) => FinancialAccountId = financialAccountId;
+    public void SetSourceFinancialAccountId(FinancialAccountId financialAccountId) => SourceFinancialAccountId = financialAccountId;
+    public void SetDestinationFinancialAccountId(FinancialAccountId financialAccountId) => DestinationFinancialAccountId = financialAccountId;
     public void SetPaymentDate(DateOnly paymentDate) => PaymentDate = paymentDate;
+    public void SetVoucherNumber(long voucherNumber) => VoucherNumber = voucherNumber;
     public void SetAmount(decimal amount) => Amount = amount;
-    public void SetAmountPriceUnitId(PriceUnitId priceUnitId) => AmountPriceUnitId = priceUnitId;
     public void SetVoucherPriceUnitId(PriceUnitId priceUnitId) => VoucherPriceUnitId = priceUnitId;
     public void SetDescription(string description) => Description = description;
-    public void SetExchangeRate(decimal exchangeRate) => ExchangeRate = exchangeRate;
+    public void SetExchangeRate(decimal? exchangeRate) => ExchangeRate = exchangeRate;
 }

@@ -4,6 +4,7 @@ using System.Globalization;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
@@ -250,5 +251,29 @@ public class ApiUrls
             BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Update).FormatRoute(new { id });
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Delete).FormatRoute(new { id });
+    }
+
+    public class PaymentVouchers
+    {
+        public static string GetList(RequestFilter filter, PaymentVoucherFilter voucherFilter, Guid? customerId) =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(voucherFilter)
+                .AppendQueryString(new { customerId });
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.Get).FormatRoute(new { id });
+        public static string Get(long voucherNumber) =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetByNumber)
+                .AppendQueryString(new { voucherNumber });
+        public static string Create() => BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.Create);
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.Update).FormatRoute(new { id });
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.Delete).FormatRoute(new { id });
+        public static string GetLastNumber() =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetLastNumber);
+        public static string GetByNumber(long voucherNumber) =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetByNumber)
+                .FormatRoute(new { voucherNumber });
     }
 }
