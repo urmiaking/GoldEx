@@ -1,0 +1,128 @@
+﻿@using GoldEx.Client.Helpers
+@inherits GoldExComponentBase
+
+<MudTable T="PaymentVoucherListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+          Dense="true" ServerData="LoadPaymentVouchersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+    <ToolBarContent>
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
+                                Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+                                PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ پرداخت" Clearable="true" />
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@VoucherStatusIcon">@(_voucherStatus?.GetDisplayName() ?? "همه")</MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.ViewHeadline" IconColor="Color.Info"
+                                 OnClick="() => SetStatusFilterText(null)">
+                        همه
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Check" IconColor="Color.Success"
+                                 OnClick="() => SetStatusFilterText(VoucherStatus.Applied)">
+                        @VoucherStatus.Applied.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Pending" IconColor="Color.Primary"
+                                 OnClick="() => SetStatusFilterText(VoucherStatus.Pending)">
+                        @VoucherStatus.Pending.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton StartIcon="@VoucherStatusIcon"></MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Check"
+                                 OnClick="() => SetStatusFilterText(VoucherStatus.Applied)">
+                        @VoucherStatus.Applied.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Pending"
+                                 OnClick="() => SetStatusFilterText(VoucherStatus.Pending)">
+                        @VoucherStatus.Pending.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">
+                ثبت سند جدید
+            </MudButton>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add"
+                           OnClick="@(_ => OnCreate())" Size="@Size.Small"
+                           Variant="@Variant.Filled"></MudIconButton>
+        </MudHidden>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="VoucherNumber" T="PaymentVoucherListVm">شماره سند</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="PaymentVoucherListVm">تامین کننده</MudTableSortLabel></MudTh>
+        <MudTh>شماره تماس</MudTh>
+        <MudTh>ارزش کل</MudTh>
+        <MudTh><MudTableSortLabel SortLabel="PaymentDate" T="PaymentVoucherListVm">تاریخ پرداخت</MudTableSortLabel></MudTh>
+        <MudTh>پرداخت از حساب</MudTh>
+        <MudTh>وضعیت</MudTh>    
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="شماره سند">@context.VoucherNumber</MudTd>
+        <MudTd DataLabel="تامین کننده">@context.SupplierName</MudTd>
+        <MudTd DataLabel="شماره تماس">@context.SupplierPhoneNumber</MudTd>
+        <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
+        <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate.ToShortDateString()</MudTd>
+        <MudTd DataLabel="پرداخت از حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+        <MudTd DataLabel="وضعیت">
+            @switch (context.VoucherStatus)
+            {
+                case VoucherStatus.Applied:
+                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled">@context.VoucherStatus.GetDisplayName()</MudChip>
+                    break;
+                case VoucherStatus.Pending:
+                    <MudChip Size="Size.Small" T="string" Color="Color.Primary" Variant="Variant.Filled">@context.VoucherStatus.GetDisplayName()</MudChip>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        </MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="چاپ سند">
+                    <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                   Color="@Color.Success" OnClick="_ => OnPrint(context)"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="ویرایش سند">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="حذف سند">
+                    <MudIconButton OnClick="@(_ => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
+                                   Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ سندی یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <div class="d-flex flex-column align-center">
+            <MudPagination SelectedChanged="PageChanged"
+                           Color="Color.Primary"
+                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
+                           Class="pa-4"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+        </div>
+    </PagerContent>
+</MudTable>

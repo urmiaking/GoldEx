@@ -41,7 +41,7 @@ public class Customer : EntityBase<CustomerId>
     public PriceUnit? CreditLimitPriceUnit { get; private set; }
 
     public IReadOnlyList<Transaction>? Transactions { get; private set; }
-    public IReadOnlyList<FinancialAccount>? BankAccounts { get; private set; }
+    public IReadOnlyList<FinancialAccount>? FinancialAccounts { get; private set; }
     public IReadOnlyList<PaymentVoucher>? PaymentVouchers { get; private set; }
 
     public void SetCustomerType(CustomerType customerType) => CustomerType = customerType;

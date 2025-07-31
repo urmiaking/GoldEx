@@ -44,6 +44,7 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
         }
 
         // Apply status filter only if a status is provided
+        // TODO: implement this filter
         if (voucherFilter.VoucherStatus.HasValue)
         {
             switch (voucherFilter.VoucherStatus.Value)

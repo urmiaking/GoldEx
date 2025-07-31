@@ -1,10 +1,8 @@
 ﻿@attribute [Route(ClientRoutes.Home.Index)]
-@using GoldEx.Client.Pages.Invoices.Components
-@using GoldEx.Client.Pages.Reporting.Components
+
 @inherits GoldExComponentBase
 
 <PageTitle>صفحه اصلی</PageTitle>
-
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
@@ -46,6 +44,9 @@
                 </MudTabPanel>
                 <MudTabPanel Text="مشتریان" Icon="@Icons.Material.Filled.PeopleAlt">
                     <CustomersList Class="mt-5" Elevation="24" />
+                </MudTabPanel>
+                <MudTabPanel Text="اسناد پرداخت" Icon="@Icons.Material.Filled.Payment">
+                    <PaymentVouchersList Class="mt-5" Elevation="24" />
                 </MudTabPanel>
                 <MudTabPanel Text="اسناد حسابداری" Icon="@Icons.Material.Filled.DocumentScanner">
                     <TransactionsList Class="mt-5" Elevation="24" />

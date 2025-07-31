@@ -22,6 +22,7 @@ public partial class FinancialAccountEditor
 
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public bool SubmitIndependently { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
 
     private readonly FinancialAccountValidator _financialAccountValidator = new();
     private MudForm _form = default!;
@@ -29,6 +30,9 @@ public partial class FinancialAccountEditor
     protected override void OnParametersSet()
     {
         Model.PriceUnit ??= PriceUnits.FirstOrDefault(x => x.IsDefault);
+
+        if (CustomerId.HasValue) 
+            Model.CustomerId = CustomerId.Value;
 
         if (Model.LocalBankAccount != null && !string.IsNullOrEmpty(AccountHolderName))
             Model.LocalBankAccount.AccountHolderName = AccountHolderName;

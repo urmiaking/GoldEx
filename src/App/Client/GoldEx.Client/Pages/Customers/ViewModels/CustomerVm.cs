@@ -58,7 +58,7 @@ public class CustomerVm
             CreditLimit = response.CreditLimit,
             CreditLimitPriceUnit = response.CreditLimitPriceUnit,
             CreatedAt = response.CreatedAt,
-            FinancialAccounts = response.BankAccounts?.Select(FinancialAccountVm.CreateFrom).ToList()
+            FinancialAccounts = response.FinancialAccounts?.Select(FinancialAccountVm.CreateFrom).ToList()
         };
     }
 

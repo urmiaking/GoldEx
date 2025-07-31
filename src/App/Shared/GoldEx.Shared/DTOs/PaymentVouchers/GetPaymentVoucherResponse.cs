@@ -1,4 +1,6 @@
-﻿using GoldEx.Shared.DTOs.FinancialAccounts;
+﻿using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Shared.DTOs.PaymentVouchers;
 
@@ -8,6 +10,8 @@ public record GetPaymentVoucherResponse(
     decimal Amount,
     decimal? ExchangeRate,
     string Description,
-    DateOnly PaymentDate,
-    GetFinancialAccountResponse SourceFinancialAccount,
-    GetFinancialAccountResponse DestinationFinancialAccount);
+    DateTime PaymentDate,
+    GetCustomerResponse Customer,
+    GetPriceUnitTitleResponse PriceUnit,
+    GetFinancialAccountTitleResponse SourceFinancialAccount,
+    GetFinancialAccountTitleResponse DestinationFinancialAccount);

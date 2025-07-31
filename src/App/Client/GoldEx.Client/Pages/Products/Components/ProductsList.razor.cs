@@ -1,15 +1,14 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
-using System.Xml.Linq;
-using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.Routings;
 
 namespace GoldEx.Client.Pages.Products.Components;
 

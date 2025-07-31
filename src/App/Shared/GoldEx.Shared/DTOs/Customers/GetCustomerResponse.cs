@@ -13,4 +13,4 @@ public record GetCustomerResponse(Guid Id,
     GetPriceUnitTitleResponse? CreditLimitPriceUnit,
     DateTime CreatedAt,
     CustomerType CustomerType,
-    List<GetFinancialAccountResponse>? BankAccounts);
+    List<GetFinancialAccountResponse>? FinancialAccounts);

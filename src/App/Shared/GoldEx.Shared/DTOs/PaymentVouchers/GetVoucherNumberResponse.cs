@@ -1,3 +1,3 @@
 ﻿namespace GoldEx.Shared.DTOs.PaymentVouchers;
 
-public record GetVoucherNumberResponse(long InvoiceNumber);
+public record GetVoucherNumberResponse(long VoucherNumber);

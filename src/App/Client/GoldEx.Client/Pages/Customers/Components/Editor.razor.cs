@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -12,6 +13,7 @@ public partial class Editor
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public CustomerVm Model { get; set; } = new();
+    [Parameter] public bool ReturnModel { get; set; }
 
     private readonly DialogOptions _bankAccountsDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
     private readonly CustomerValidator _customerValidator = new();
@@ -62,18 +64,26 @@ public partial class Editor
 
         if (!Model.Id.HasValue)
         {
-            await SendRequestAsync<ICustomerService>(
-                action:(s, ct) => s.CreateAsync(request, cancellationToken: ct),
-                afterSend: () =>
+            await SendRequestAsync<ICustomerService, Guid>(
+                action: (s, ct) => s.CreateAsync(request, cancellationToken: ct),
+                afterSend: async response =>
                 {
-                    MudDialog.Close(DialogResult.Ok(true));
-                    return Task.CompletedTask;
+                    if (ReturnModel)
+                    {
+                        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+                            action: (s, ct) => s.GetAsync(response, ct),
+                            afterSend: customerResponse => MudDialog.Close(DialogResult.Ok(CustomerVm.CreateFrom(customerResponse))));
+                    }
+                    else
+                    {
+                        MudDialog.Close(DialogResult.Ok(true));
+                    }
                 });
         }
         else
         {
             await SendRequestAsync<ICustomerService>(
-                action:(s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
+                action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
                 afterSend: () =>
                 {
                     MudDialog.Close(DialogResult.Ok(true));
@@ -106,7 +116,7 @@ public partial class Editor
             { nameof(FinancialAccountEditor.Model), financialAccount },
             { nameof(FinancialAccountEditor.PriceUnits), _priceUnits }
         };
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"ویرایش حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()}", 
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"ویرایش حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()}",
             parameters, _bankAccountsDialogOptions);
         await dialog.Result;
     }

@@ -117,4 +117,10 @@ public static class ClientRoutes
         private const string ReportingPrefix = "/reporting";
         public const string DesignReport = $"{ReportingPrefix}/designer/{{name}}";
     }
+
+    public static class PaymentVouchers
+    {
+        private const string PaymentVouchersPrefix = "/payment-vouchers";
+        public const string Index = $"{PaymentVouchersPrefix}";
+    }
 }

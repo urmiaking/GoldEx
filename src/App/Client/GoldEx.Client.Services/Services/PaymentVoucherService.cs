@@ -12,7 +12,7 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class PaymentVoucherService(HttpClient client, JsonSerializerOptions jsonOptions) : IPaymentVoucherService
 {
-    public async Task<PagedList<GetPaymentVoucherResponse>> GetListAsync(RequestFilter filter,
+    public async Task<PagedList<GetPaymentVoucherListResponse>> GetListAsync(RequestFilter filter,
         PaymentVoucherFilter voucherFilter, Guid? customerId, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.PaymentVouchers.GetList(filter, voucherFilter, customerId),
@@ -21,7 +21,7 @@ internal class PaymentVoucherService(HttpClient client, JsonSerializerOptions js
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        var result = await response.Content.ReadFromJsonAsync<PagedList<GetPaymentVoucherResponse>>(jsonOptions, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetPaymentVoucherListResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }

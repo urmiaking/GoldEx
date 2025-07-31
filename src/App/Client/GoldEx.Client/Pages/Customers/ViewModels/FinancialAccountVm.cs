@@ -17,6 +17,8 @@ public class FinancialAccountVm
 
     public int Index { get; set; }
 
+    public Guid? CustomerId { get; set; }
+
     public LocalBankAccountVm? LocalBankAccount { get; set; }
     public InternationalBankAccountVm? InternationalBankAccount { get; set; } 
 
@@ -55,6 +57,7 @@ public class FinancialAccountVm
         return new FinancialAccountRequestDto(Id,
             FinancialAccountType,
             PriceUnit!.Id,
+            CustomerId,
             FinancialAccountType is FinancialAccountType.LocalBankAccount && LocalBankAccount != null
                 ? new LocalBankAccountRequestDto(
                     LocalBankAccount.AccountHolderName!,

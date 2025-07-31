@@ -13,10 +13,17 @@ namespace GoldEx.Server.Controllers;
 public class FinancialAccountsController(IFinancialAccountService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.FinancialAccounts.GetList)]
-    public async Task<IActionResult> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetListAsync(Guid? customerId, CancellationToken cancellationToken = default)
     {
         var list = await service.GetListAsync(cancellationToken);
         return Ok(list);
+    }
+
+    [HttpGet(ApiRoutes.FinancialAccounts.GetTitles)]
+    public async Task<IActionResult> GetTitlesAsync([FromQuery] Guid? customerId, [FromQuery] Guid? priceUnitId, CancellationToken cancellationToken = default)
+    {
+        var titles = await service.GetTitlesAsync(customerId, priceUnitId, cancellationToken);
+        return Ok(titles);
     }
 
     [HttpGet(ApiRoutes.FinancialAccounts.Get)]

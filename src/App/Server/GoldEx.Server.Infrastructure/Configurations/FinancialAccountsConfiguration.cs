@@ -20,7 +20,7 @@ internal class FinancialAccountsConfiguration : IEntityTypeConfiguration<Financi
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Customer)
-            .WithMany(x => x.BankAccounts)
+            .WithMany(x => x.FinancialAccounts)
             .HasForeignKey(x => x.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
 
