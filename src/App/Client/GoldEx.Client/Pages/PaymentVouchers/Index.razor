@@ -1,8 +1,9 @@
-﻿@attribute [Route(ClientRoutes.Calculator.Index)]
+﻿@attribute [Route(ClientRoutes.PaymentVouchers.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @inherits GoldExComponentBase
 
-<PageTitle>محاسبه گر</PageTitle>
+<PageTitle>اسناد پرداخت</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
@@ -11,6 +12,6 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <Calculator />
+    <PaymentVouchersList />
 
 </MudContainer>

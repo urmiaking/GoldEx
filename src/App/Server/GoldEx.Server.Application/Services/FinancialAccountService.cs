@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Application.Validators.FinancialAccounts;
+using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -30,6 +32,22 @@ internal class FinancialAccountService(
         return mapper.Map<List<GetFinancialAccountResponse>>(list);
     }
 
+    public async Task<List<GetFinancialAccountTitleResponse>> GetTitlesAsync(Guid? customerId, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        ISpecification<FinancialAccount> specification = customerId.HasValue
+            ? new FinancialAccountsByCustomerIdSpecification(new CustomerId(customerId.Value),
+                priceUnitId.HasValue ? new PriceUnitId(priceUnitId.Value) : null)
+            : new FinancialAccountsDefaultSpecification(true, priceUnitId.HasValue ? new PriceUnitId(priceUnitId.Value) : null);
+
+        var list = await repository
+            .Get(specification)
+            .Include(x => x.PriceUnit)
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetFinancialAccountTitleResponse>>(list);
+    }
+
     public async Task<GetFinancialAccountResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await repository
@@ -43,7 +61,12 @@ internal class FinancialAccountService(
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var financialAccount = FinancialAccount.CreateSystemAccount(request.FinancialAccountType, new PriceUnitId(request.PriceUnitId));
+        var financialAccount = request.CustomerId.HasValue
+            ? FinancialAccount.Create(request.FinancialAccountType,
+                new PriceUnitId(request.PriceUnitId),
+                new CustomerId(request.CustomerId.Value))
+            : FinancialAccount.CreateSystemAccount(request.FinancialAccountType,
+                new PriceUnitId(request.PriceUnitId));
 
         switch (request.FinancialAccountType)
         {

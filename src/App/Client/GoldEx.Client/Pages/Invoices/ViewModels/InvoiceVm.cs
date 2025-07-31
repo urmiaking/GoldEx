@@ -125,8 +125,10 @@ public class InvoiceVm
             InvoiceDate = response.InvoiceDate,
             DueDate = response.DueDate,
             Customer = CustomerVm.CreateFrom(response.Customer),
-            InvoiceDiscounts = response.InvoiceDiscounts.Select(x => InvoiceDiscountVm.CreateFrom(x, response.PriceUnit)).ToList(),
-            InvoiceExtraCosts = response.InvoiceExtraCosts.Select(x => InvoiceExtraCostVm.CreateFrom(x, response.PriceUnit)).ToList(),
+            InvoiceDiscounts = response.InvoiceDiscounts.Select(x => 
+                InvoiceDiscountVm.CreateFrom(x, response.PriceUnit)).ToList(),
+            InvoiceExtraCosts = response.InvoiceExtraCosts.Select(x =>
+                InvoiceExtraCostVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoicePayments = response.InvoicePayments.Select(x => 
                 InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoiceItems = response.InvoiceItems.Select(InvoiceItemVm.CreateFrom).ToList(),

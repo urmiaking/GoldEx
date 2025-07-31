@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
@@ -12,10 +14,12 @@ namespace GoldEx.Server.Application.Validators.FinancialAccounts;
 internal class FinancialAccountRequestDtoValidator : AbstractValidator<FinancialAccountRequestDto>
 {
     private readonly IPriceUnitRepository _priceUnitRepository;
+    private readonly ICustomerRepository _customerRepository;
 
-    public FinancialAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository)
+    public FinancialAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository, ICustomerRepository customerRepository)
     {
         _priceUnitRepository = priceUnitRepository;
+        _customerRepository = customerRepository;
 
         RuleFor(x => x.FinancialAccountType)
             .IsInEnum().WithMessage("نوع حساب بانکی نامعتبر است");
@@ -59,10 +63,23 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
             RuleFor(x => x.InternationalBankAccount!.AccountNumber)
                 .MaximumLength(30).WithMessage("حداکثر طول شماره حساب بین المللی 30 کاراکتر می باشد");
         });
+
+        When(x => x.CustomerId.HasValue, () =>
+        {
+            RuleFor(x => x.CustomerId)
+                .MustAsync(BeValidCustomer)
+                .WithMessage("شناسه مشتری نامعتبر است");
+        });
     }
 
     private async Task<bool> BeValidPriceUnitId(Guid priceUnitId, CancellationToken cancellationToken = default)
     {
         return await _priceUnitRepository.ExistsAsync(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId)), cancellationToken);
+    }
+    
+    private async Task<bool> BeValidCustomer(Guid? customerId, CancellationToken cancellationToken = default)
+    {
+        if (!customerId.HasValue) return false;
+        return await _customerRepository.ExistsAsync(new CustomersByIdSpecification(new CustomerId(customerId.Value)), cancellationToken);
     }
 }

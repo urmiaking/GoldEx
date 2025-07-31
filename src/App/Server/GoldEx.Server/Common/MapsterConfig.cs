@@ -6,6 +6,7 @@ using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
 using GoldEx.Server.Domain.PaymentMethodAggregate;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -16,6 +17,7 @@ using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PaymentMethods;
+using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
@@ -31,26 +33,46 @@ public class MapsterConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        #region BankAccounts
+        #region FinancialAccounts
 
         config.NewConfig<FinancialAccount, GetFinancialAccountResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.FinancialAccountType, src => src.AccountType)
+            .Map(dest => dest.SupplierFullName, src =>
+                src.Customer != null ? src.Customer.FullName : string.Empty)
+            .Map(dest => dest.SupplierPhoneNumber, src => 
+                src.Customer != null ? src.Customer.PhoneNumber : string.Empty)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
             .Map(dest => dest.LocalBankAccount, src => src.LocalAccount)
-            .Map(dest => dest.InternationalBankAccount, src => src.InternationalAccount);
+            .Map(dest => dest.InternationalBankAccount, src =>
+                src.InternationalAccount);
 
         config.NewConfig<LocalBankAccount, GetLocalBankAccountResponse>();
         config.NewConfig<InternationalBankAccount, GetInternationalBankAccountResponse>();
+
+        config.NewConfig<FinancialAccount, GetFinancialAccountTitleResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Title, src =>
+                    src.PriceUnit != null
+                        ? $"{src.AccountType.GetDisplayName()} - " +
+                          $"{(src.AccountType == FinancialAccountType.Cash 
+                              ? src.PriceUnit.Title 
+                              : src.AccountType == FinancialAccountType.LocalBankAccount && src.LocalAccount != null  
+                                  ? src.LocalAccount.AccountNumber 
+                                  : src.AccountType == FinancialAccountType.InternationalBankAccount && src.InternationalAccount != null
+                                      ? src.InternationalAccount.AccountNumber 
+                                      : string.Empty)}" : string.Empty);
+
 
         #endregion
 
         #region Customers
 
         config.NewConfig<Customer, GetCustomerResponse>()
+            .PreserveReference(true)
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.CreditLimitPriceUnit, src => src.CreditLimitPriceUnit)
-            .Map(dest => dest.BankAccounts, src => src.BankAccounts);
+            .Map(dest => dest.FinancialAccounts, src => src.FinancialAccounts);
 
         #endregion
 
@@ -184,6 +206,39 @@ public class MapsterConfig : IRegister
 
         #endregion
 
+        #region PaymentVouchers
+
+        config.NewConfig<PaymentVoucher, GetPaymentVoucherListResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.VoucherNumber, src => src.VoucherNumber)
+            .Map(dest => dest.PaymentDate, src => src.PaymentDate)
+            .Map(dest => dest.Amount, src => src.Amount)
+            .Map(dest => dest.PriceUnit, src => src.VoucherPriceUnit != null ? src.VoucherPriceUnit.Title : string.Empty)
+            .Map(dest => dest.VoucherStatus, src => VoucherStatus.Pending) // TODO: Implement status logic
+            .Map(dest => dest.SupplierName,
+                src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
+                    ? src.DestinationFinancialAccount.Customer.FullName
+                    : string.Empty)
+            .Map(dest => dest.SupplierPhoneNumber, src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
+                ? src.DestinationFinancialAccount.Customer.PhoneNumber
+                : string.Empty)
+            .Map(dest => dest.FinancialAccountType, src => src.SourceFinancialAccount != null ? src.SourceFinancialAccount.AccountType : FinancialAccountType.Cash);
+
+        config.NewConfig<PaymentVoucher, GetPaymentVoucherResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.PaymentDate, src => new DateTime(src.PaymentDate.Year, src.PaymentDate.Month, src.PaymentDate.Day))
+            .Map(dest => dest.VoucherNumber, src => src.VoucherNumber)
+            .Map(dest => dest.Amount, src => src.Amount)
+            .Map(dest => dest.PriceUnit, src => src.VoucherPriceUnit)
+            .Map(dest => dest.Customer,
+                src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
+                    ? src.DestinationFinancialAccount.Customer
+                    : null)
+            .Map(dest => dest.SourceFinancialAccount, src => src.SourceFinancialAccount)
+            .Map(dest => dest.DestinationFinancialAccount, src => src.DestinationFinancialAccount);
+
+        #endregion
+
         #region Price
 
         config.NewConfig<Price, GetPriceResponse>()
@@ -232,7 +287,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.WagePriceUnitTitle, src => src.WagePriceUnit != null ? src.WagePriceUnit.Title : null)
             .Map(dest => dest.InvoiceId, src => src.InvoiceItem != null ? src.InvoiceItem.InvoiceId.Value : (Guid?)null)
             .Map(dest => dest.DateTime, src => src.InvoiceItem != null && src.InvoiceItem.Invoice != null
-                ? src.InvoiceItem.Invoice.InvoiceDate.ToDateTime(new TimeOnly(0, 0, 0)) 
+                ? src.InvoiceItem.Invoice.InvoiceDate.ToDateTime(new TimeOnly(0, 0, 0))
                 : src.CreatedAt)
             .Map(dest => dest.GemStones, src => src.GemStones);
 

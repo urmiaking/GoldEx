@@ -251,6 +251,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Update).FormatRoute(new { id });
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Delete).FormatRoute(new { id });
+        public static string GetTitles(Guid? customerId, Guid? priceUnitId) =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetTitles)
+                .AppendQueryString(new { customerId })
+                .AppendQueryString(new { priceUnitId });
     }
 
     public class PaymentVouchers

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Data;
+using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -8,6 +9,7 @@ using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -34,7 +36,7 @@ internal class CustomerService(
 
         var data = await repository
             .Get(new CustomersByFilterSpecification(filter, customerFilter))
-            .Include(x => x.BankAccounts!)
+            .Include(x => x.FinancialAccounts!)
                 .ThenInclude(x => x.PriceUnit)
             .ToListAsync(cancellationToken);
 
@@ -161,7 +163,7 @@ internal class CustomerService(
         {
             var customer = await repository
                 .Get(new CustomersByIdSpecification(new CustomerId(id)))
-                .Include(x => x.BankAccounts)
+                .Include(x => x.FinancialAccounts)
                 .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
             customer.SetFullName(request.FullName);
@@ -176,7 +178,7 @@ internal class CustomerService(
 
             if (request.BankAccounts is not null)
             {
-                var existingBankAccounts = customer.BankAccounts?.ToList() ?? [];
+                var existingBankAccounts = customer.FinancialAccounts?.ToList() ?? [];
                 // Remove bank accounts that are not in the request
                 foreach (var existingAccount in existingBankAccounts)
                 {
@@ -270,11 +272,34 @@ internal class CustomerService(
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new CustomersByIdSpecification(new CustomerId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                var item = await repository.Get(new CustomersByIdSpecification(new CustomerId(id)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
+                await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
 
-        await repository.DeleteAsync(item, cancellationToken);
+                var financialAccounts = await financialAccountRepository
+                    .Get(new FinancialAccountsByCustomerIdSpecification(item.Id))
+                    .ToListAsync(cancellationToken);
+
+                if (financialAccounts.Any())
+                {
+                    await financialAccountRepository.DeleteRangeAsync(financialAccounts, cancellationToken);
+                }
+
+                await repository.DeleteAsync(item, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 }

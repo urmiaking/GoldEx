@@ -5,18 +5,43 @@
 @inject NavigationManager NavigationManager
 
 <MudNavMenu>
-    <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">صفحه اصلی</MudNavLink>
-    <MudNavLink Href="@ClientRoutes.Calculator.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Calculate">محاسبه گر</MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        صفحه اصلی
+    </MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Calculator.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Calculate">
+        محاسبه گر
+    </MudNavLink>
 
     <AuthorizeView>
         <Authorized>
-            <MudNavLink Href="@ClientRoutes.Products.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Warehouse">اجناس من</MudNavLink>
-            @* <MudNavLink Href="@ClientRoutes.Transactions.Create" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PostAdd">ثبت تراکنش حدید</MudNavLink> *@
-            <MudNavLink Href="@ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" })" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAdd">ثبت فاکتور حدید</MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks">فاکتورهای من</MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Accounts.Manage.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">مدیریت حساب</MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Settings.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">تنظیمات</MudNavLink>
-            <MudNavLink Href="@ApiUrls.Account.Logout(_currentUrl)" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">خروج</MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Products.Index" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.Warehouse">
+                اجناس من
+            </MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" })"
+                        Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAdd">
+                ثبت فاکتور حدید
+            </MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.LibraryBooks">
+                فاکتورهای من
+            </MudNavLink>
+            <MudNavLink Href="@ClientRoutes.PaymentVouchers.Index" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.Payment">
+                اسناد پرداخت
+            </MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Accounts.Manage.Index" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.Person">
+                مدیریت حساب
+            </MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Settings.Index" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.Settings">
+                تنظیمات
+            </MudNavLink>
+            <MudNavLink Href="@ApiUrls.Account.Logout(_currentUrl)" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.Logout">
+                خروج
+            </MudNavLink>
         </Authorized>
     </AuthorizeView>
 </MudNavMenu>

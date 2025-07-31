@@ -5,7 +5,7 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IPaymentVoucherService
 {
-    Task<PagedList<GetPaymentVoucherResponse>> GetListAsync(RequestFilter filter, PaymentVoucherFilter voucherFilter,
+    Task<PagedList<GetPaymentVoucherListResponse>> GetListAsync(RequestFilter filter, PaymentVoucherFilter voucherFilter,
         Guid? customerId, CancellationToken cancellationToken = default);
     Task<GetPaymentVoucherResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetPaymentVoucherResponse> GetAsync(long voucherNumber, CancellationToken cancellationToken = default);

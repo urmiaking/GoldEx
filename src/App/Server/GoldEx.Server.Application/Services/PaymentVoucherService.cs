@@ -23,7 +23,7 @@ internal class PaymentVoucherService(
     PaymentVoucherRequestDtoValidator validator,
     DeletePaymentVoucherValidator deleteValidator) : IPaymentVoucherService
 {
-    public async Task<PagedList<GetPaymentVoucherResponse>> GetListAsync(RequestFilter filter, PaymentVoucherFilter voucherFilter, Guid? customerId,
+    public async Task<PagedList<GetPaymentVoucherListResponse>> GetListAsync(RequestFilter filter, PaymentVoucherFilter voucherFilter, Guid? customerId,
         CancellationToken cancellationToken = default)
     {
         var skip = filter.Skip ?? 0;
@@ -42,9 +42,9 @@ internal class PaymentVoucherService(
 
         var totalCount = await repository.CountAsync(spec, cancellationToken);
 
-        return new PagedList<GetPaymentVoucherResponse>
+        return new PagedList<GetPaymentVoucherListResponse>
         {
-            Data = mapper.Map<List<GetPaymentVoucherResponse>>(data),
+            Data = mapper.Map<List<GetPaymentVoucherListResponse>>(data),
             Skip = skip,
             Take = take,
             Total = totalCount
