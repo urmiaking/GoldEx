@@ -108,15 +108,32 @@ public static class ServiceProviderExtensions
     {
         var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
 
-        var priceUnitCount = await priceUnitRepository.CountAsync(new PriceUnitsWithoutSpecification());
+        if (!await priceUnitRepository.ExistsAsync(new PriceUnitsWithoutSpecification()))
+        {
+            var unitTypes = Enum.GetValues<UnitType>()
+                .Select(x => PriceUnit.Create(x.GetDisplayName(), x == UnitType.IRR))
+                .ToList();
 
-        if (priceUnitCount > 0)
+            await priceUnitRepository.CreateRangeAsync(unitTypes);
+            return;
+        }
+
+        if (await priceUnitRepository.ExistsAsync(new PriceUnitsSetAsDefaultSpecification()))
             return;
 
-        var unitTypes = Enum.GetValues<UnitType>()
-            .Select(x => PriceUnit.Create(x.GetDisplayName(), x == UnitType.IRR)).ToList();
+        var defaultUnit = await priceUnitRepository.Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName())).FirstOrDefaultAsync();
 
-        await priceUnitRepository.CreateRangeAsync(unitTypes);
+        if (defaultUnit is not null)
+        {
+            defaultUnit.SetDefault(true);
+            defaultUnit.SetStatus(true);
+            await priceUnitRepository.UpdateAsync(defaultUnit);
+        }
+        else
+        {
+            defaultUnit = PriceUnit.Create(UnitType.IRR.GetDisplayName(), true);
+            await priceUnitRepository.CreateAsync(defaultUnit);
+        }
     }
 
     private static async Task PopulateAdministratorClaimsAsync(IEnumerable<IApplicationPolicyProvider> policyProviders, IAccountService accountService)

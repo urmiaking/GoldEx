@@ -9,7 +9,6 @@ using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using System.Xml.Linq;
 
 namespace GoldEx.Client.Pages.PaymentVouchers.Components;
 
@@ -26,7 +25,6 @@ public partial class Editor
     private List<GetFinancialAccountTitleResponse> _destinationFinancialAccounts = [];
     private List<GetCustomerResponse> _suppliers = [];
     private bool _processing;
-    private string? _searchString;
 
     protected override async Task OnParametersSetAsync()
     {
