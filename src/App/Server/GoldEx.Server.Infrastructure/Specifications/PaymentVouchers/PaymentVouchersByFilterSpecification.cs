@@ -44,7 +44,7 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
         }
 
         // Apply status filter only if a status is provided
-        // TODO: implement this filter
+        // TODO: implement this filter! we may need to add a new property to the PaymentVoucher entity to track status. CONSIDER this!!!
         if (voucherFilter.VoucherStatus.HasValue)
         {
             switch (voucherFilter.VoucherStatus.Value)
