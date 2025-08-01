@@ -552,6 +552,8 @@ public partial class EditorForm
 
     private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)
     {
+        // TODO: erase all payment vouchers if invoice type is changed to sell
+
         _model.InvoiceType = invoiceType;
         await LoadInvoiceNumberAsync();
     }

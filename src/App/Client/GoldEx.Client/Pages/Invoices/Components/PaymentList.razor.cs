@@ -1,12 +1,14 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
-using GoldEx.Client.Pages.Settings.Components.PaymentMethods;
+using GoldEx.Client.Pages.PaymentVouchers.Components;
+using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
+using Editor = GoldEx.Client.Pages.Settings.Components.PaymentMethods.Editor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -16,6 +18,8 @@ public partial class PaymentList
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public decimal TotalInvoiceAmount { get; set; }
+    [Parameter] public InvoiceType InvoiceType { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
 
     private List<GetPaymentMethodResponse> _paymentMethods = [];
 
@@ -157,6 +161,48 @@ public partial class PaymentList
         {
             await LoadPaymentMethodsAsync();
             StateHasChanged();
+        }
+    }
+
+    private async Task OnAddPaymentVoucher()
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
+
+        if (CustomerId is null)
+        {
+            AddErrorToast("لطفاً ابتدا تامین کننده را انتخاب کنید");
+            return;
+        }
+
+        var parameters = new DialogParameters<PaymentVouchersSelectorList>
+        {
+            {x => x.CustomerId, CustomerId.Value },
+            {x => x.SelectedPaymentVouchers, [] }
+        };
+
+        var dialog = await DialogService.ShowAsync<PaymentVouchersSelectorList>("اسناد پرداخت", parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: HashSet<PaymentVoucherListVm> paymentVouchers })
+        {
+            AddPaymentVouchersToList(paymentVouchers);
+            StateHasChanged();
+        }
+    }
+
+    private void AddPaymentVouchersToList(HashSet<PaymentVoucherListVm> paymentVouchers)
+    {
+        foreach (var paymentVoucher in paymentVouchers)
+        {
+            Items.Add(new InvoicePaymentVm
+            {
+                Amount = paymentVoucher.Amount,
+                Note = paymentVoucher.Description,
+                PaymentDate = new DateTime(paymentVoucher.PaymentDate.Year, paymentVoucher.PaymentDate.Month, paymentVoucher.PaymentDate.Day),
+                PriceUnit = PriceUnit, // TODO: change the model
+                AmountAdornmentText = paymentVoucher.PriceUnit!
+            });
         }
     }
 }
