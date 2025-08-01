@@ -373,7 +373,8 @@
                     <MudText Typo="Typo.body2">جمع پرداختی</MudText>
                     <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
-                            <PaymentList Items="_model.InvoicePayments" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalInvoiceAmount="@_model.TotalInvoiceAmount" />
+                            <PaymentList Items="_model.InvoicePayments" PriceUnit="_model.InvoicePriceUnit" InvoiceType="_model.InvoiceType" CustomerId="_model.Customer.Id"
+                                         PriceUnits="_priceUnits" TotalInvoiceAmount="@_model.TotalInvoiceAmount" />
                             <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
                         </div>

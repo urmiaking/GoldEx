@@ -4,12 +4,19 @@
 
 <div>
     <MudStack Row AlignItems="AlignItems.Center" Class="mt-2">
-        <MudText Typo="Typo.h6">پرداخت های مشتری</MudText>
+        <MudText Typo="Typo.h6">جزئیات پرداخت ها</MudText>
         <MudSpacer />
-        <MudPaper Width="40px" Elevation="0">
+        @if (InvoiceType is InvoiceType.Purchase)
+        {
+            <MudTooltip Text="افزودن سند پرداخت" Arrow="true" Placement="Placement.Top" Color="Color.Success">
+                <MudIconButton Icon="@Icons.Material.Filled.AddCard" Size="Size.Small" Variant="Variant.Filled" Color="Color.Success"
+                               OnClick="OnAddPaymentVoucher"></MudIconButton>
+            </MudTooltip>
+        }
+        <MudTooltip Text="افزودن ردیف جدید" Arrow="true" Placement="Placement.Top" Color="Color.Info">
             <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info"
                            OnClick="AddItem"></MudIconButton>
-        </MudPaper>
+        </MudTooltip>
     </MudStack>
 
     <MudTable Items="@Items" Elevation="0">
