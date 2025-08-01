@@ -10,6 +10,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Shared.DTOs.PaymentVouchers;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,16 @@ internal class PaymentVoucherService(
             Take = take,
             Total = totalCount
         };
+    }
+
+    public async Task<List<GetPaymentVoucherResponse>> GetPendingListAsync(Guid customerId,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await repository.Get(new PaymentVouchersByCustomerIdSpecification(new CustomerId(customerId)))
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetPaymentVoucherResponse>>(list);
     }
 
     public async Task<GetPaymentVoucherResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)

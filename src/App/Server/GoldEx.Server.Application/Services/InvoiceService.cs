@@ -21,6 +21,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -100,7 +101,8 @@ internal class InvoiceService(
                         x.Amount,
                         x.ExchangeRate,
                         new PriceUnitId(x.PriceUnitId),
-                        new PaymentMethodId(x.PaymentMethodId),
+                        x.PaymentMethodId.HasValue ? new PaymentMethodId(x.PaymentMethodId.Value) : null,
+                        x.VoucherId.HasValue ? new PaymentVoucherId(x.VoucherId.Value) : null,
                         x.ReferenceNumber,
                         x.Note)));
 

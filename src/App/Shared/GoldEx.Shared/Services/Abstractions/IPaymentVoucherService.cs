@@ -7,6 +7,7 @@ public interface IPaymentVoucherService
 {
     Task<PagedList<GetPaymentVoucherListResponse>> GetListAsync(RequestFilter filter, PaymentVoucherFilter voucherFilter,
         Guid? customerId, CancellationToken cancellationToken = default);
+    Task<List<GetPaymentVoucherResponse>> GetPendingListAsync(Guid customerId, CancellationToken cancellationToken = default);
     Task<GetPaymentVoucherResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetPaymentVoucherResponse> GetAsync(long voucherNumber, CancellationToken cancellationToken = default);
     Task CreateAsync(PaymentVoucherRequestDto request, CancellationToken cancellationToken = default);

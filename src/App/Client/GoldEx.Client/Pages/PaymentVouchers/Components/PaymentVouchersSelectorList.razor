@@ -1,20 +1,23 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Shared.DTOs.PaymentVouchers
+@inherits GoldExComponentBase
 
 <MudDialog>
     <DialogContent>
-        <MudTable T="PaymentVoucherListVm" Hover="true" FixedHeader="true" Dense="true" ServerData="LoadPaymentVouchersAsync" Loading="IsBusy"
+        <MudTable T="GetPaymentVoucherResponse" Hover="true" FixedHeader="true" Dense="true" Items="_paymentVouchers" Loading="IsBusy"
                   @bind-SelectedItems="_selectedItems" SelectOnRowClick="true" MultiSelection="true" Breakpoint="Breakpoint.Xs" Elevation="0">
             <HeaderContent>
                 <MudTh>شماره سند</MudTh>
                 <MudTh>ارزش کل</MudTh>
+                <MudTh>شرح</MudTh>
                 <MudTh>تاریخ پرداخت</MudTh>
                 <MudTh>پرداخت از حساب</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="ردیف">@context.VoucherNumber</MudTd>
-                <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
+                <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit?.Title)</MudTd>
+                <MudTd DataLabel="شرح">@context.Description</MudTd>
                 <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate.ToShortDateString()</MudTd>
-                <MudTd DataLabel="پرداخت از حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+                <MudTd DataLabel="پرداخت از حساب">@context.SourceFinancialAccount.Title</MudTd>
             </RowTemplate>
             <NoRecordsContent>
                 <MudText>هیچ سند پرداختی وجود ندارد</MudText>

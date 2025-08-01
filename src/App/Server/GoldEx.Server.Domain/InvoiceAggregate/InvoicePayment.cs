@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.PaymentMethodAggregate;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
@@ -11,7 +12,8 @@ public class InvoicePayment : EntityBase
         decimal amount,
         decimal? exchangeRate,
         PriceUnitId priceUnitId,
-        PaymentMethodId paymentMethodId,
+        PaymentMethodId? paymentMethodId,
+        PaymentVoucherId? paymentVoucherId,
         string? referenceNumber = null,
         string? note = null)
     {
@@ -22,6 +24,7 @@ public class InvoicePayment : EntityBase
             PriceUnitId = priceUnitId,
             ExchangeRate = exchangeRate,
             PaymentMethodId = paymentMethodId,
+            PaymentVoucherId = paymentVoucherId,
             ReferenceNumber = referenceNumber,
             Note = note
         };
@@ -38,8 +41,11 @@ public class InvoicePayment : EntityBase
     public PriceUnitId PriceUnitId { get; private set; }
     public PriceUnit? PriceUnit { get; private set; }
 
-    public PaymentMethodId PaymentMethodId { get; private set; }
+    public PaymentMethodId? PaymentMethodId { get; private set; }
     public PaymentMethod? PaymentMethod { get; private set; }
+
+    public PaymentVoucherId? PaymentVoucherId { get; private set; }
+    public PaymentVoucher? PaymentVoucher { get; private set; }
 
     public void SetPaymentDate(DateTime paymentDate) => PaymentDate = paymentDate;
     public void SetReferenceNumber(string? referenceNumber) => ReferenceNumber = referenceNumber;
@@ -49,5 +55,6 @@ public class InvoicePayment : EntityBase
         Amount = amount;
         PriceUnitId = amountUnitId;
     }
-    public void SetPaymentMethodId(PaymentMethodId paymentMethodId) => PaymentMethodId = paymentMethodId;
+    public void SetPaymentMethodId(PaymentMethodId? paymentMethodId) => PaymentMethodId = paymentMethodId;
+    public void SetPaymentVoucherId(PaymentVoucherId? paymentVoucherId) => PaymentVoucherId = paymentVoucherId;
 }

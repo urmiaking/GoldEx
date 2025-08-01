@@ -6,6 +6,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -22,6 +23,19 @@ internal class PaymentVoucherService(HttpClient client, JsonSerializerOptions js
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<PagedList<GetPaymentVoucherListResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<GetPaymentVoucherResponse>> GetPendingListAsync(Guid customerId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.PaymentVouchers.GetPendingList(customerId), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetPaymentVoucherResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }

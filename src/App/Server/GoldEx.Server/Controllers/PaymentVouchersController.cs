@@ -24,6 +24,13 @@ public class PaymentVouchersController(IPaymentVoucherService service) : ApiCont
         return Ok(list);
     }
 
+    [HttpGet(ApiRoutes.PaymentVouchers.GetPendingList)]
+    public async Task<IActionResult> GetPendingListAsync(Guid customerId, CancellationToken cancellationToken = default)
+    {
+        var list = await service.GetPendingListAsync(customerId, cancellationToken);
+        return Ok(list);
+    }
+
     [HttpGet(ApiRoutes.PaymentVouchers.Get)]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {

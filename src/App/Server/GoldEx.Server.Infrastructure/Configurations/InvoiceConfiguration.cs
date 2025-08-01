@@ -106,5 +106,10 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .WithMany()
             .HasForeignKey(x => x.PaymentMethodId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.PaymentVoucher)
+            .WithMany()
+            .HasForeignKey(x => x.PaymentVoucherId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
