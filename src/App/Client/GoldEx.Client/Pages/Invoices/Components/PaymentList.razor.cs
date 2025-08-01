@@ -2,6 +2,7 @@
 using GoldEx.Client.Pages.PaymentVouchers.Components;
 using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 using GoldEx.Shared.DTOs.PaymentMethods;
+using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
@@ -22,6 +23,7 @@ public partial class PaymentList
     [Parameter] public Guid? CustomerId { get; set; }
 
     private List<GetPaymentMethodResponse> _paymentMethods = [];
+    private List<Guid> _voucherIds = [];
 
     private decimal GetTotalPaid()
     {
@@ -36,6 +38,15 @@ public partial class PaymentList
             await LoadPaymentMethodsAsync();
 
         await base.OnParametersSetAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _voucherIds = Items.Where(x => x.VoucherId.HasValue)
+            .Select(x => x.VoucherId!.Value)
+            .ToList();
+
+        base.OnParametersSet();
     }
 
     protected override void OnInitialized()
@@ -177,31 +188,35 @@ public partial class PaymentList
         var parameters = new DialogParameters<PaymentVouchersSelectorList>
         {
             {x => x.CustomerId, CustomerId.Value },
-            {x => x.SelectedPaymentVouchers, [] }
+            {x => x.SelectedPaymentVouchers, _voucherIds }
         };
 
         var dialog = await DialogService.ShowAsync<PaymentVouchersSelectorList>("اسناد پرداخت", parameters, dialogOptions);
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: HashSet<PaymentVoucherListVm> paymentVouchers })
+        if (result is { Canceled: false, Data: HashSet<GetPaymentVoucherResponse> paymentVouchers })
         {
             AddPaymentVouchersToList(paymentVouchers);
             StateHasChanged();
         }
     }
 
-    private void AddPaymentVouchersToList(HashSet<PaymentVoucherListVm> paymentVouchers)
+    private void AddPaymentVouchersToList(HashSet<GetPaymentVoucherResponse> paymentVouchers)
     {
         foreach (var paymentVoucher in paymentVouchers)
         {
             Items.Add(new InvoicePaymentVm
             {
+                VoucherId = paymentVoucher.Id,
                 Amount = paymentVoucher.Amount,
                 Note = paymentVoucher.Description,
+                ReferenceNumber = paymentVoucher.VoucherNumber.ToString(),
                 PaymentDate = new DateTime(paymentVoucher.PaymentDate.Year, paymentVoucher.PaymentDate.Month, paymentVoucher.PaymentDate.Day),
-                PriceUnit = PriceUnit, // TODO: change the model
-                AmountAdornmentText = paymentVoucher.PriceUnit!
+                PriceUnit = paymentVoucher.PriceUnit,
+                AmountAdornmentText = paymentVoucher.PriceUnit.Title,
+                ExchangeRate = paymentVoucher.ExchangeRate,
+                Disabled = true
             });
         }
     }

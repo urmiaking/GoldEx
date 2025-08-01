@@ -49,7 +49,8 @@ public record GetInvoicePaymentResponse(
     string? ReferenceNumber,
     string? Note,
     decimal? ExchangeRate,
-    GetPaymentMethodResponse PaymentMethod,
+    Guid? VoucherId,
+    GetPaymentMethodResponse? PaymentMethod,
     GetPriceUnitTitleResponse PriceUnit);
 
 public record GetInvoiceExtraCostsResponse(decimal Amount, decimal? ExchangeRate, string? Description, GetPriceUnitTitleResponse PriceUnit);

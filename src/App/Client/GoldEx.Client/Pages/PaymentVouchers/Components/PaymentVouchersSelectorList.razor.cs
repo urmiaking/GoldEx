@@ -1,7 +1,4 @@
-﻿using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
-using GoldEx.Sdk.Common.Data;
-using GoldEx.Shared.DTOs.PaymentVouchers;
-using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -10,42 +7,35 @@ namespace GoldEx.Client.Pages.PaymentVouchers.Components;
 
 public partial class PaymentVouchersSelectorList
 {
-    private HashSet<PaymentVoucherListVm> _selectedItems = [];
+    private HashSet<GetPaymentVoucherResponse> _selectedItems = [];
+    private IEnumerable<GetPaymentVoucherResponse>? _paymentVouchers = [];
+
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Guid CustomerId { get; set; }
     [Parameter] public List<Guid> SelectedPaymentVouchers { get; set; } = [];
 
     private void Close() => MudDialog.Cancel();
 
-    private async Task<TableData<PaymentVoucherListVm>> LoadPaymentVouchersAsync(TableState state, CancellationToken cancellationToken = default)
+    protected override async Task OnParametersSetAsync()
     {
-        var result = new TableData<PaymentVoucherListVm>();
+        await LoadPaymentVouchersAsync();
 
-        var paymentVoucherFilter = new PaymentVoucherFilter(null, null, VoucherStatus.Pending);
+        if (SelectedPaymentVouchers.Any())
+            _selectedItems = [.._paymentVouchers?.Where(voucher => SelectedPaymentVouchers.Contains(voucher.Id)) ?? []];
+        
+        await base.OnParametersSetAsync();
+    }
 
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, null, state.SortLabel,
-            state.SortDirection switch
-            {
-                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                _ => throw new ArgumentOutOfRangeException()
-            });
-
-        await SendRequestAsync<IPaymentVoucherService, PagedList<GetPaymentVoucherListResponse>>(
-            action: (service, token) => service.GetListAsync(filter, paymentVoucherFilter, CustomerId, token),
+    private async Task LoadPaymentVouchersAsync()
+    {
+        await SendRequestAsync<IPaymentVoucherService, List<GetPaymentVoucherResponse>>(
+            action: (service, token) => service.GetPendingListAsync(CustomerId, token),
             afterSend: response =>
             {
-                var items = response.Data.Select(PaymentVoucherListVm.CreateFrom).ToList();
-                result = new TableData<PaymentVoucherListVm>
-                {
-                    TotalItems = response.Total,
-                    Items = items
-                };
+                _paymentVouchers = response;
+                StateHasChanged();
             }
         );
-
-        return result;
     }
 
     private void Submit()

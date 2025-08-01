@@ -154,6 +154,7 @@ public static class ApiRoutes
     {
         public const string Base = "/api/PaymentVouchers";
         public const string GetList = "";
+        public const string GetPendingList = "pending/{customerId}";
         public const string Get = "{id}";
         public const string GetByNumber = "number/{voucherNumber}";
         public const string Create = "";

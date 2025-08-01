@@ -22,7 +22,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
     public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
         IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository,
-        IPaymentMethodRepository paymentMethodRepository, IInvoiceRepository invoiceRepository)
+        IPaymentMethodRepository paymentMethodRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository)
     {
         _priceUnitRepository = priceUnitRepository;
         _productRepository = productRepository;
@@ -72,7 +72,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .SetValidator(new InvoiceExtraCostDtoValidator(priceUnitRepository));
 
         RuleForEach(x => x.InvoicePayments)
-            .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository, paymentMethodRepository));
+            .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository, paymentMethodRepository, paymentVoucherRepository));
     }
 
     private async Task<bool> ProductAvailable(InvoiceRequestDto invoiceDto, InvoiceItemDto invoiceItem, CancellationToken cancellationToken = default)

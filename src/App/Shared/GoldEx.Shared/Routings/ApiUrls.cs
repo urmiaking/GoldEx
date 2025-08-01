@@ -279,5 +279,7 @@ public class ApiUrls
         public static string GetByNumber(long voucherNumber) =>
             BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetByNumber)
                 .FormatRoute(new { voucherNumber });
+        public static string GetPendingList(Guid customerId) =>
+            BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetPendingList).FormatRoute(new { customerId });
     }
 }
