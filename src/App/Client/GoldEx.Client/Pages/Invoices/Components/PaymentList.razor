@@ -73,12 +73,12 @@
                                      Variant="Variant.Outlined" />
                 </MudTd>
             }
-            <MudTd DataLabel="روش پرداخت" Class="p-1">
+            <MudTd DataLabel="@FinancialAccountLabelText" Class="p-1">
                 <div class="d-flex flex-row align-center">
                     <MudSelect @bind-Value="@context.FinancialAccount"
                                T="GetFinancialAccountTitleResponse?"
                                For="@(() => context.FinancialAccount)"
-                               Label="@(context.GetDisplayName(() => context.FinancialAccount))"
+                               Label="@FinancialAccountLabelText"
                                Margin="Margin.Dense"
                                Disabled="context.Disabled"
                                Variant="Variant.Outlined">
