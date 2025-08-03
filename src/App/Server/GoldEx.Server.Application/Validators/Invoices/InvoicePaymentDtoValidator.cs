@@ -9,6 +9,7 @@ using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
 
@@ -41,18 +42,8 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
         {
             RuleFor(x => x.VoucherId)
                 .MustAsync(BeValidVoucherId)
-                .WithMessage("شناسه سند پرداخت معتبر نمی باشد")
-                .MustAsync(NotUsedInAnotherInvoice)
-                .WithMessage("این سند پرداخت در فاکتور دیگری استفاده شده است");
+                .WithMessage("شناسه سند پرداخت معتبر نمی باشد");
         });
-    }
-
-    private async Task<bool> NotUsedInAnotherInvoice(Guid? voucherId, CancellationToken cancellationToken = default)
-    {
-        if (voucherId is null)
-            return true;
-
-        return !await _invoiceRepository.ExistsAsync(new InvoicesByVoucherIdSpecification(new PaymentVoucherId(voucherId.Value)), cancellationToken);
     }
 
     private async Task<bool> BeValidVoucherId(Guid? voucherId, CancellationToken cancellationToken = default)

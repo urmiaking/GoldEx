@@ -1,8 +1,7 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
-using System.Linq.Expressions;
+﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Sdk.Server.Infrastructure.Helpers;
-using GoldEx.Sdk.Common.Definitions;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace GoldEx.Sdk.Server.Infrastructure.Specifications;
