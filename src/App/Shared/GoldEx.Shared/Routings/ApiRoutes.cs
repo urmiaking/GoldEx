@@ -111,17 +111,6 @@ public static class ApiRoutes
         public const string SetAsDefault = "default/{id}";
     }
 
-    public class PaymentMethods
-    {
-        public const string Base = "/api/PaymentMethods";
-        public const string GetList = "";
-        public const string GetAll = "all";
-        public const string Get = "{id}";
-        public const string Create = "";
-        public const string Update = "{id}";
-        public const string UpdateStatus = "status/{id}";
-    }
-
     public class Invoices
     {
         public const string Base = "/api/Invoices";

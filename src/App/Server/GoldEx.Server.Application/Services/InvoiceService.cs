@@ -4,9 +4,10 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Validators.Invoices;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
-using GoldEx.Server.Domain.PaymentMethodAggregate;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
@@ -21,8 +22,6 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using GoldEx.Server.Domain.FinancialAccountAggregate;
-using GoldEx.Server.Domain.PaymentVoucherAggregate;
 
 namespace GoldEx.Server.Application.Services;
 
