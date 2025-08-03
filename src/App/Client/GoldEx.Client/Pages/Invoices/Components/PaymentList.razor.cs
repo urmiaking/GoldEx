@@ -32,6 +32,13 @@ public partial class PaymentList
 
     private decimal TotalRemainingCalculated => TotalInvoiceAmount - GetTotalPaid();
 
+    public string FinancialAccountLabelText => InvoiceType switch
+    {
+        InvoiceType.Purchase => "پرداخت از حساب",
+        InvoiceType.Sell => "پرداخت به حساب",
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
     protected override async Task OnParametersSetAsync()
     {
         if (!_financialAccounts.Any()) 
