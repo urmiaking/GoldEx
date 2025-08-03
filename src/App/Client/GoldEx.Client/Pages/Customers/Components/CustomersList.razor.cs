@@ -12,7 +12,7 @@ namespace GoldEx.Client.Pages.Customers.Components;
 public partial class CustomersList
 {
     [Parameter] public string Class { get; set; } = default!;
-    [Parameter] public int Elevation { get; set; } = 0;
+    [Parameter] public int Elevation { get; set; } = 24;
 
     private string? _searchString;
     private DateRange _filterDateRange = new();
