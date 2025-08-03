@@ -106,7 +106,7 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<InvoiceItem, GetInvoiceItemResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.Product, src => src.Product);
+            .Map(dest => dest.Product, src => src.SellProduct);
 
         config.NewConfig<InvoiceDiscount, GetInvoiceDiscountResponse>();
 
@@ -143,7 +143,7 @@ public class MapsterConfig : IRegister
 
     .Map(dest => dest.GoldUnitType,
         src => (src.Items.FirstOrDefault() != null)
-            ? src.Items.First().Product == null ? GoldUnitType.Gram : src.Items.First().Product!.GoldUnitType
+            ? src.Items.First().SellProduct == null ? GoldUnitType.Gram : src.Items.First().SellProduct!.GoldUnitType
             : GoldUnitType.Gram)
 
     // The rest of the mappings were already safe against this issue.
@@ -171,7 +171,7 @@ public class MapsterConfig : IRegister
             : (DateTime?)null);
 
         config.NewConfig<InvoiceItem, GetInvoiceItemReportResponse>()
-            .Map(dest => dest.Product, src => src.Product)
+            .Map(dest => dest.Product, src => src.SellProduct)
             .Map(dest => dest.ItemRawAmount, src => $"{src.ItemRawAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.ItemWageAmount, src => $"{src.ItemWageAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.ItemProfitAmount, src => $"{src.ItemProfitAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
@@ -287,9 +287,9 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.ProductCategoryTitle, src => src.ProductCategory != null ? src.ProductCategory.Title : null)
             .Map(dest => dest.WagePriceUnitId, src => src.WagePriceUnitId.HasValue ? src.WagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.WagePriceUnitTitle, src => src.WagePriceUnit != null ? src.WagePriceUnit.Title : null)
-            .Map(dest => dest.InvoiceId, src => src.InvoiceItem != null ? src.InvoiceItem.InvoiceId.Value : (Guid?)null)
-            .Map(dest => dest.DateTime, src => src.InvoiceItem != null && src.InvoiceItem.Invoice != null
-                ? src.InvoiceItem.Invoice.InvoiceDate.ToDateTime(new TimeOnly(0, 0, 0))
+            .Map(dest => dest.InvoiceId, src => src.SellInvoiceItem != null ? src.SellInvoiceItem.InvoiceId.Value : (Guid?)null)
+            .Map(dest => dest.DateTime, src => src.SellInvoiceItem != null && src.SellInvoiceItem.Invoice != null
+                ? src.SellInvoiceItem.Invoice.InvoiceDate.ToDateTime(new TimeOnly(0, 0, 0))
                 : src.CreatedAt)
             .Map(dest => dest.GemStones, src => src.GemStones);
 

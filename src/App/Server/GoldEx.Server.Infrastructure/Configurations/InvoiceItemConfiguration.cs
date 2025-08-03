@@ -56,9 +56,14 @@ public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
             .HasPrecision(36, 10)
             .IsRequired();
 
-        builder.HasOne(x => x.Product)
-            .WithOne(x => x.InvoiceItem)
-            .HasForeignKey<InvoiceItem>(x => x.ProductId)
+        builder.HasOne(x => x.SellProduct)
+            .WithOne(x => x.SellInvoiceItem)
+            .HasForeignKey<InvoiceItem>(x => x.SellProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.PurchaseProduct)
+            .WithOne(x => x.PurchaseInvoiceItem)
+            .HasForeignKey<InvoiceItem>(x => x.PurchaseProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Invoice)
@@ -70,5 +75,13 @@ public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
             .WithMany()
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.PurchaseProductId)
+            .IsUnique()
+            .HasFilter("[PurchaseProductId] IS NOT NULL");
+
+        builder.HasIndex(x => x.SellProductId)
+            .IsUnique()
+            .HasFilter("[SellProductId] IS NOT NULL");
     }
 }

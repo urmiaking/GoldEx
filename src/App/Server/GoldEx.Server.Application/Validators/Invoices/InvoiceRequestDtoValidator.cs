@@ -86,7 +86,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .Get(new ProductsByIdSpecification(productId))
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (product?.InvoiceItem is null)
+        if (product?.SellInvoiceItem is null)
             return true;
 
         if (invoiceDto.Id.HasValue)
@@ -96,7 +96,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
                 .Include(x => x.Items)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingInvoice != null && existingInvoice.Items.Any(item => item.ProductId == productId))
+            if (existingInvoice != null && existingInvoice.Items.Any(item => item.SellProductId == productId))
                 return true;
         }
 

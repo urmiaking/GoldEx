@@ -179,7 +179,9 @@ internal class InvoiceService(
                         product = existingProduct;
                     }
 
-                    var existingItem = existingItems.FirstOrDefault(x => x.ProductId == product.Id);
+                    var existingItem = request.InvoiceType == InvoiceType.Sell
+                        ? existingItems.FirstOrDefault(x => x.SellProductId == product.Id)
+                        : existingItems.FirstOrDefault(x => x.PurchaseProductId == product.Id);
 
                     if (existingItem != null)
                     {
@@ -197,11 +199,13 @@ internal class InvoiceService(
                     }
                     else
                     {
-                        var invoiceItem = InvoiceItem.Create(itemDto.GramPrice,
+                        var invoiceItem = InvoiceItem.Create(
+                            itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
                             itemDto.Quantity,
                             product.Id,
+                            request.InvoiceType,
                             new PriceUnitId(itemDto.PriceUnit),
                             invoice.Id,
                             itemDto.ExchangeRate);
@@ -243,7 +247,7 @@ internal class InvoiceService(
         var data = await invoiceRepository
             .Get(spec)
             .Include(x => x.Items)
-                .ThenInclude(x => x.Product)
+                .ThenInclude(x => x.SellProduct)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
@@ -266,7 +270,7 @@ internal class InvoiceService(
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
             .Include(x => x.Items)
-                .ThenInclude(x => x.Product)
+                .ThenInclude(x => x.SellProduct)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments)
                 .ThenInclude(x => x.PriceUnit)
@@ -288,7 +292,7 @@ internal class InvoiceService(
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
             .Include(x => x.Items)
-                .ThenInclude(x => x.Product)
+                .ThenInclude(x => x.SellProduct)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments)
                 .ThenInclude(x => x.PriceUnit)
@@ -310,11 +314,11 @@ internal class InvoiceService(
                 var item = await invoiceRepository
                     .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
                     .Include(x => x.Items)
-                        .ThenInclude(x => x.Product)
+                        .ThenInclude(x => x.SellProduct)
                     .AsSplitQuery()
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                var products = item.Items.Select(x => x.Product!).ToList();
+                var products = item.Items.Select(x => x.SellProduct!).ToList();
 
                 await invoiceRepository.DeleteAsync(item, cancellationToken);
 
