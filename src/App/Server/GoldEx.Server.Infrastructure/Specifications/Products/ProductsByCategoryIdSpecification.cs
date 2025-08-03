@@ -9,6 +9,6 @@ public class ProductsByCategoryIdSpecification : SpecificationBase<Product>
     public ProductsByCategoryIdSpecification(ProductCategoryId id)
     {
         AddCriteria(x => x.ProductCategoryId == id);
-        AddInclude(x => x.InvoiceItem!);
+        AddInclude(x => x.SellInvoiceItem!);
     }
 }

@@ -91,13 +91,13 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
             if (long.TryParse(filter.Search, out var number))
             {
                 AddCriteria(x =>
-                    x.InvoiceNumber == number || x.Items.Any(i => i.Product!.Barcode == number.ToString()));
+                    x.InvoiceNumber == number || x.Items.Any(i => i.SellProduct!.Barcode == number.ToString()));
             }
             else
             {
                 AddCriteria(x =>
                     x.Customer!.FullName.Contains(filter.Search) ||
-                    x.Items.Any(i => i.Product!.Name.Contains(filter.Search)));
+                    x.Items.Any(i => i.SellProduct!.Name.Contains(filter.Search)));
             }
         }
 

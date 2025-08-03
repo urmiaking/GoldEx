@@ -32,7 +32,7 @@ internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingSe
             .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
             .Include(x => x.Items)
-            .ThenInclude(x => x.Product)
+            .ThenInclude(x => x.SellProduct)
             .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments)
             .ThenInclude(x => x.PriceUnit)

@@ -65,7 +65,10 @@ public class Product : EntityBase<ProductId>
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
 
-    public InvoiceItem? InvoiceItem { get; private set; }
+    // Navigation property for sale invoice
+    public InvoiceItem? SellInvoiceItem { get; private set; }
+
+    public InvoiceItem? PurchaseInvoiceItem { get; set; }
 
     public Product SetName(string name)
     {

@@ -80,7 +80,7 @@ internal class ProductService(
             .Include(x => x.ProductCategory)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (item is not null && forCalculation is false && item.InvoiceItem is not null)
+        if (item is not null && forCalculation is false && item.SellInvoiceItem is not null)
             throw new ValidationException(new List<ValidationFailure>
             {
                 new(nameof(barcode), "این جنس قبلا فروخته شده است", barcode)

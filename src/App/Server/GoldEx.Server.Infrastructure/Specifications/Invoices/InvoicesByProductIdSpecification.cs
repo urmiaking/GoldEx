@@ -8,6 +8,6 @@ public class InvoicesByProductIdSpecification : SpecificationBase<Invoice>
 {
     public InvoicesByProductIdSpecification(ProductId productId)
     {
-        AddCriteria(x => x.Items.Any(i => i.ProductId == productId));
+        AddCriteria(x => x.Items.Any(i => i.SellProductId == productId));
     }
 }
