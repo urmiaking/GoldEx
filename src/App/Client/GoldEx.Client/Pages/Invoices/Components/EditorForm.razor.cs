@@ -514,12 +514,19 @@ public partial class EditorForm
         StateHasChanged();
     }
 
-    private async Task SelectTotalUnpaidPriceUnit(GetPriceUnitTitleResponse item)
+    private async Task SelectTotalUnpaidPriceUnit(GetPriceUnitTitleResponse? item)
     {
         _model.UnpaidPriceUnit = item;
 
         if (_model.InvoicePriceUnit is null)
             return;
+
+        if (item is null)
+        {
+            _model.UnpaidExchangeRate = null;
+            _totalUnpaidMenuOpen = false;
+            return;
+        }
 
         if (_model.InvoicePriceUnit.Id == item.Id)
         {
