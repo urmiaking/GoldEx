@@ -1,0 +1,36 @@
+﻿@using System.Globalization
+@implements IDisposable
+
+<div class="d-flex align-center">
+    <MudText>@_currentTime</MudText>
+    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="mx-2" Style="font-size: 20px;"/>
+    <MudText>@_currentDate</MudText>
+</div>
+
+@code {
+    private string? _currentDate;
+    private string? _currentTime;
+
+    private Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        SetCurrentTime();
+        _timer = new Timer(_ => InvokeAsync(SetCurrentTime), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    private void SetCurrentTime()
+    {
+        var now = DateTime.Now;
+
+        _currentDate = now.ToString("yyyy/MM/dd", CultureInfo.CurrentUICulture);
+        _currentTime = now.ToString("HH:mm:ss");
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}
