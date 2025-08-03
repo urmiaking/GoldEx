@@ -564,4 +564,13 @@ public partial class EditorForm
         _model.InvoiceType = invoiceType;
         await LoadInvoiceNumberAsync();
     }
+
+    private void OnPrint()
+    {
+        Navigation.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
+        {
+            number = _model.InvoiceNumber,
+            invoiceType = _model.InvoiceType.ToString()
+        }));
+    }
 }
