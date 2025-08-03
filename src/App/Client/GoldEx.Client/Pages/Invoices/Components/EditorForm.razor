@@ -424,6 +424,30 @@
         <MudDivider Class="my-2" />
 
         <div class="d-flex justify-content-end gap-3 mt-2">
+            
+            @if (IsEditMode)
+            {
+                <MudButton Color="Color.Success"
+                           StartIcon="@Icons.Material.Filled.Print"
+                           Disabled="@_processing"
+                           Variant="Variant.Filled"
+                           OnClick="OnPrint">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1"
+                                             Size="Size.Small"
+                                             Indeterminate="true" />
+                        <MudText Class="ms-2">
+                            در حال ذخیره
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText>چاپ فاکتور</MudText>
+                    }
+
+                </MudButton>
+            }
 
             <MudButton Color="Color.Info"
                        StartIcon="@Icons.Material.Filled.Print"
