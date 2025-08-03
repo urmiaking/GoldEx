@@ -1,12 +1,10 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
-using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
-using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;

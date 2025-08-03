@@ -4,21 +4,19 @@ using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
 using GoldEx.Shared.Settings;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
-using GoldEx.Server.Domain.PaymentMethodAggregate;
-using GoldEx.Server.Domain.ProductCategoryAggregate;
-using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
-using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
-using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Server.Extensions;
 
@@ -43,7 +41,6 @@ public static class ServiceProviderExtensions
         await PopulateDefaultSettingsAsync(serviceProvider);
         await PopulateDefaultPriceUnitsAsync(serviceProvider);
         await PopulateDefaultProductCategoriesAsync(serviceProvider);
-        await PopulateDefaultPaymentMethodsAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();
@@ -62,25 +59,6 @@ public static class ServiceProviderExtensions
             await accountService.CreateUserAsync(new AppUser("مدیر سامانه", adminUser.UserName, adminUser.Email, adminUser.PhoneNumber),
                 adminUser.Password, [BuiltinRoles.Administrators]);
         }
-    }
-
-    private static async Task PopulateDefaultPaymentMethodsAsync(IServiceProvider serviceProvider)
-    {
-        var repository = serviceProvider.GetRequiredService<IPaymentMethodRepository>();
-
-        var paymentMethodsCount = await repository.CountAsync(new PaymentMethodsWithoutSpecification());
-
-        if (paymentMethodsCount > 0)
-            return;
-
-        var defaultPaymentMethods = new List<PaymentMethod>
-        {
-            PaymentMethod.Create("نقدی"),
-            PaymentMethod.Create("کارت به کارت"),
-            PaymentMethod.Create("واریز به حساب")
-        };
-
-        await repository.CreateRangeAsync(defaultPaymentMethods);
     }
 
     private static async Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)

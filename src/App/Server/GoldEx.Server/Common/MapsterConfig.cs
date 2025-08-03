@@ -5,7 +5,6 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
-using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -198,13 +197,6 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.CaratType, src => src.CaratType)
             .Map(dest => dest.ProductCategoryTitle,
                 src => src.ProductCategory != null ? src.ProductCategory.Title : string.Empty);
-
-        #endregion
-
-        #region PaymentMethods
-
-        config.NewConfig<PaymentMethod, GetPaymentMethodResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
 
         #endregion
 
