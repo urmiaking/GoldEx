@@ -106,7 +106,7 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<InvoiceItem, GetInvoiceItemResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.Product, src => src.SellProduct);
+            .Map(dest => dest.Product, src => src.SellProduct ?? src.PurchaseProduct);
 
         config.NewConfig<InvoiceDiscount, GetInvoiceDiscountResponse>();
 
