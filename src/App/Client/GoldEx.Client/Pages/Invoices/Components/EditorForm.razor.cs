@@ -15,7 +15,6 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
