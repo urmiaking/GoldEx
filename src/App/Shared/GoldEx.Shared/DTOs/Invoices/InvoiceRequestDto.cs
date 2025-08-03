@@ -41,7 +41,7 @@ public record InvoicePaymentDto(
     DateTime PaymentDate,
     string? ReferenceNumber,
     string? Note,
-    Guid? PaymentMethodId,
+    Guid? FinancialAccountId,
     Guid? VoucherId,
     Guid PriceUnitId);
 

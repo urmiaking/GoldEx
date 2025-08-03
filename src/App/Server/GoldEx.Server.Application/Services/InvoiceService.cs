@@ -21,6 +21,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 
 namespace GoldEx.Server.Application.Services;
@@ -101,10 +102,10 @@ internal class InvoiceService(
                         x.Amount,
                         x.ExchangeRate,
                         new PriceUnitId(x.PriceUnitId),
-                        x.PaymentMethodId.HasValue ? new PaymentMethodId(x.PaymentMethodId.Value) : null,
+                        x.FinancialAccountId.HasValue ? new FinancialAccountId(x.FinancialAccountId.Value) : null,
                         x.VoucherId.HasValue ? new PaymentVoucherId(x.VoucherId.Value) : null,
-                        x.ReferenceNumber,
-                        x.Note)));
+                        referenceNumber: x.ReferenceNumber,
+                        note: x.Note)));
 
                 if (!isNewInvoice) 
                     await invoiceRepository.UpdateAsync(invoice, cancellationToken);
@@ -277,8 +278,6 @@ internal class InvoiceService(
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments)
                 .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.InvoicePayments)    
-                .ThenInclude(x => x.PaymentMethod)
             .Include(x => x.UnpaidPriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
@@ -297,10 +296,11 @@ internal class InvoiceService(
             .Include(x => x.Items)
                 .ThenInclude(x => x.SellProduct)
                     .ThenInclude(x => x!.ProductCategory)
+            .Include(x => x.Items)
+                .ThenInclude(x => x.PurchaseProduct)
+                    .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments)
                 .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.InvoicePayments)
-                .ThenInclude(x => x.PaymentMethod)
             .Include(x => x.UnpaidPriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();

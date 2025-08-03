@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -50,7 +51,7 @@ public record GetInvoicePaymentResponse(
     string? Note,
     decimal? ExchangeRate,
     Guid? VoucherId,
-    GetPaymentMethodResponse? PaymentMethod,
+    GetFinancialAccountTitleResponse? FinancialAccount,
     GetPriceUnitTitleResponse PriceUnit);
 
 public record GetInvoiceExtraCostsResponse(decimal Amount, decimal? ExchangeRate, string? Description, GetPriceUnitTitleResponse PriceUnit);

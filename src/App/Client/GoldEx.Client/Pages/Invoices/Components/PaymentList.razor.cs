@@ -1,7 +1,8 @@
-﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+﻿using GoldEx.Client.Pages.Customers.Components;
+using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.PaymentVouchers.Components;
-using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
-using GoldEx.Shared.DTOs.PaymentMethods;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -9,7 +10,6 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using Editor = GoldEx.Client.Pages.Settings.Components.PaymentMethods.Editor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -22,7 +22,7 @@ public partial class PaymentList
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
 
-    private List<GetPaymentMethodResponse> _paymentMethods = [];
+    private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
     private List<Guid> _voucherIds = [];
 
     private decimal GetTotalPaid()
@@ -34,8 +34,8 @@ public partial class PaymentList
 
     protected override async Task OnParametersSetAsync()
     {
-        if (!_paymentMethods.Any()) 
-            await LoadPaymentMethodsAsync();
+        if (!_financialAccounts.Any()) 
+            await LoadFinancialAccountsAsync();
 
         await base.OnParametersSetAsync();
     }
@@ -57,14 +57,14 @@ public partial class PaymentList
         base.OnInitialized();
     }
 
-    private async Task LoadPaymentMethodsAsync()
+    private async Task LoadFinancialAccountsAsync()
     {
-        await SendRequestAsync<IPaymentMethodService, List<GetPaymentMethodResponse>>(
-            action: (s, ct) => s.GetListAsync(ct),
+        await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(null, PriceUnit.Id, ct),
             afterSend: response =>
             {
-                _paymentMethods = response;
-                Items.First().PaymentMethod = _paymentMethods.FirstOrDefault();
+                _financialAccounts = response;
+                Items.First().FinancialAccount = _financialAccounts.FirstOrDefault();
 
                 StateHasChanged();
             });
@@ -105,9 +105,13 @@ public partial class PaymentList
 
     private async Task SelectPriceUnit(GetPriceUnitTitleResponse priceUnit, InvoicePaymentVm item)
     {
+        PriceUnit = priceUnit;
+
         item.PriceUnit = priceUnit;
         item.AmountAdornmentText = priceUnit.Title;
         item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {PriceUnit.Title}";
+
+        await LoadFinancialAccountsAsync();
 
         if (PriceUnit.Id == priceUnit.Id)
         {
@@ -160,24 +164,43 @@ public partial class PaymentList
         }
     }
 
-    private async Task OnAddPaymentMethod()
+    private async Task OnAddFinancialAccount()
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+        DialogOptions dialogOptions = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            FullScreen = false,
+            MaxWidth = MaxWidth.Small
+        };
 
-        var dialog = await DialogService.ShowAsync<Editor>("افزودن روش پرداخت جدید", dialogOptions);
+        var parameters = new DialogParameters<FinancialAccountEditor>
+        {
+            { x => x.PriceUnits, PriceUnits },
+            { x => x.SubmitIndependently, true }
+        };
+
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید",
+            parameters, dialogOptions);
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: true })
+        if (result is { Canceled: false, Data: FinancialAccountVm })
         {
-            await LoadPaymentMethodsAsync();
+            await LoadFinancialAccountsAsync();
             StateHasChanged();
         }
     }
 
     private async Task OnAddPaymentVoucher()
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
+        DialogOptions dialogOptions = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            FullScreen = false,
+            MaxWidth = MaxWidth.Medium
+        };
 
         if (CustomerId is null)
         {
