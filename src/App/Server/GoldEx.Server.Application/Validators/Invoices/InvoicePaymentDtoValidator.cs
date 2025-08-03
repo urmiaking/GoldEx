@@ -5,6 +5,7 @@ using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
+using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
@@ -17,13 +18,15 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly IFinancialAccountRepository _financialAccountRepository;
     private readonly IPaymentVoucherRepository _paymentVoucherRepository;
+    private readonly IInvoiceRepository _invoiceRepository;
     public InvoicePaymentDtoValidator(IPriceUnitRepository priceUnitRepository,
         IFinancialAccountRepository financialAccountRepository,
-        IPaymentVoucherRepository paymentVoucherRepository)
+        IPaymentVoucherRepository paymentVoucherRepository, IInvoiceRepository invoiceRepository)
     {
         _priceUnitRepository = priceUnitRepository;
         _financialAccountRepository = financialAccountRepository;
         _paymentVoucherRepository = paymentVoucherRepository;
+        _invoiceRepository = invoiceRepository;
 
         RuleFor(x => x.PriceUnitId)
             .MustAsync(BeValidPriceUnit)
@@ -34,13 +37,24 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
             .When(x => x.FinancialAccountId is not null)
             .WithMessage("حساب مالی معتبر نمی باشد");
 
-        RuleFor(x => x.VoucherId)
-            .MustAsync(BeValidVoucherId)
-            .When(x => x.VoucherId is not null)
-            .WithMessage("شناسه سند پرداخت معتبر نمی باشد");
+        When(x => x.VoucherId is not null, () =>
+        {
+            RuleFor(x => x.VoucherId)
+                .MustAsync(BeValidVoucherId)
+                .WithMessage("شناسه سند پرداخت معتبر نمی باشد")
+                .MustAsync(NotUsedInAnotherInvoice)
+                .WithMessage("این سند پرداخت در فاکتور دیگری استفاده شده است");
+        });
     }
 
-    // TODO: add a checking method to check if the voucher is already used in another invoice payment
+    private async Task<bool> NotUsedInAnotherInvoice(Guid? voucherId, CancellationToken cancellationToken = default)
+    {
+        if (voucherId is null)
+            return true;
+
+        return !await _invoiceRepository.ExistsAsync(new InvoicesByVoucherIdSpecification(new PaymentVoucherId(voucherId.Value)), cancellationToken);
+    }
+
     private async Task<bool> BeValidVoucherId(Guid? voucherId, CancellationToken cancellationToken = default)
     {
         if (voucherId is null)
