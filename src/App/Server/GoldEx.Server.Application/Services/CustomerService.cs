@@ -276,7 +276,8 @@ internal class CustomerService(
         {
             try
             {
-                var item = await repository.Get(new CustomersByIdSpecification(new CustomerId(id)))
+                var item = await repository
+                    .Get(new CustomersByIdSpecification(new CustomerId(id)))
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
                 await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);

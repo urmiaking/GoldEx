@@ -9,5 +9,6 @@ public class CustomersByIdSpecification : SpecificationBase<Customer>
     {
         AddCriteria(x => x.Id == customerId);
         AddInclude(x => x.CreditLimitPriceUnit!);
+        AddInclude(x => x.FinancialAccounts!);
     }
 }

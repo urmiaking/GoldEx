@@ -4,9 +4,9 @@ using GoldEx.Server.Domain.PaymentVoucherAggregate;
 
 namespace GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 
-public class PaymentVouchersByFinancialAccountIdSpecification : SpecificationBase<PaymentVoucher>
+public class PaymentVouchersByDestinationFinancialAccountIdSpecification : SpecificationBase<PaymentVoucher>
 {
-    public PaymentVouchersByFinancialAccountIdSpecification(FinancialAccountId financialAccountId)
+    public PaymentVouchersByDestinationFinancialAccountIdSpecification(FinancialAccountId financialAccountId)
     {
         AddCriteria(x => x.DestinationFinancialAccountId == financialAccountId);
     }

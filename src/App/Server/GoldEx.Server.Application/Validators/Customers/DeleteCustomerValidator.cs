@@ -4,6 +4,7 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
+using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
 
 namespace GoldEx.Server.Application.Validators.Customers;
@@ -13,10 +14,12 @@ internal class DeleteCustomerValidator : AbstractValidator<Customer>
 {
     private readonly ITransactionRepository _transactionRepository;
     private readonly IInvoiceRepository _invoiceRepository;
-    public DeleteCustomerValidator(ITransactionRepository transactionRepository, IInvoiceRepository invoiceRepository)
+    private readonly IPaymentVoucherRepository _paymentVoucherRepository;
+    public DeleteCustomerValidator(ITransactionRepository transactionRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository)
     {
         _transactionRepository = transactionRepository;
         _invoiceRepository = invoiceRepository;
+        _paymentVoucherRepository = paymentVoucherRepository;
 
         RuleFor(x => x)
             .MustAsync(HasNoTransactions)
@@ -35,8 +38,13 @@ internal class DeleteCustomerValidator : AbstractValidator<Customer>
     {
         if (financialAccounts is not null)
             foreach (var financialAccount in financialAccounts)
+            {
                 if (await _invoiceRepository.ExistsAsync(new InvoicesByFinancialAccountIdSpecification(financialAccount.Id), cancellationToken))
                     return false;
+
+                if (await _paymentVoucherRepository.ExistsAsync(new PaymentVouchersBySourceFinancialAccountIdSpecification(financialAccount.Id), cancellationToken))
+                    return false;
+            }
 
         return true;
     }
