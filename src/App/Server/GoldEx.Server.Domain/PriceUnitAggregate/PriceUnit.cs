@@ -36,6 +36,4 @@ public class PriceUnit : EntityBase<PriceUnitId>
     public void SetPriceId(PriceId? priceId) => PriceId = priceId;
     public void SetStatus(bool isActive) => IsActive = isActive;
     public void SetDefault(bool isDefault) => IsDefault = isDefault;
-
-    //TODO: add a utility method to get the price exchange rate!
 }
