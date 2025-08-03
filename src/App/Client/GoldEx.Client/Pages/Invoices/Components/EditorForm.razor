@@ -1,5 +1,4 @@
-﻿@using GoldEx.Client.Helpers
-@using GoldEx.Client.Pages.Invoices.ViewModels
+﻿@using GoldEx.Client.Pages.Invoices.ViewModels
 @using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
@@ -7,7 +6,7 @@
     <MudForm Model="_model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
         <MudStack Row AlignItems="AlignItems.End">
             <MudText Typo="Typo.h6" GutterBottom="true">
-                اطلاعات فاکتور
+                اطلاعات فاکتور @_model.InvoiceType.GetDisplayName()
                 @if (Id.HasValue)
                 {
                     Color color;
