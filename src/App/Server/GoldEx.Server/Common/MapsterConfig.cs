@@ -113,8 +113,9 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>()
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
-            .Map(dest => dest.VoucherId, src => 
-                src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null);
+            .Map(dest => dest.VoucherId, src =>
+                src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
+            .Map(dest => dest.FinancialAccount, src => src.SourceFinancialAccount);
 
         #endregion
 

@@ -278,6 +278,8 @@ internal class InvoiceService(
             .Include(x => x.InvoicePayments)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
+            .Include(x => x.InvoicePayments)
+                .ThenInclude(x => x.SourceFinancialAccount)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
@@ -301,7 +303,8 @@ internal class InvoiceService(
             .Include(x => x.InvoicePayments)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
-            .AsSplitQuery()
+            .Include(x => x.InvoicePayments)
+                .ThenInclude(x => x.SourceFinancialAccount).AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceResponse>(item);
