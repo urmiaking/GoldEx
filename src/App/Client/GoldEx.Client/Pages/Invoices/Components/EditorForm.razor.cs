@@ -498,6 +498,11 @@ public partial class EditorForm
                 _processing = false;
                 Navigation.NavigateTo(navigationUrl);
                 return Task.CompletedTask;
+            },
+            onFailure: () =>
+            {
+                _processing = false;
+                return Task.CompletedTask; 
             });
     }
 
