@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -22,9 +23,8 @@ public class InvoicePaymentVm
 
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
-    [Display(Name = "روش پرداخت")]
-    [Required(ErrorMessage = "وارد کردن روش پرداخت الزامی است")]
-    public GetPaymentMethodResponse? PaymentMethod { get; set; }
+    [Display(Name = "حساب مالی")]
+    public GetFinancialAccountTitleResponse? FinancialAccount { get; set; }
 
     [Display(Name = "نرخ تبدیل")]
     public decimal? ExchangeRate { get; set; }
@@ -41,14 +41,14 @@ public class InvoicePaymentVm
         if (item.PriceUnit is null)
             throw new FluentValidation.ValidationException("واحد ارزی برای پرداختی ها مشخص نشده است");
 
-        if (item.PaymentMethod is null && !item.VoucherId.HasValue)
-            throw new FluentValidation.ValidationException("روش پرداخت برای پرداختی ها مشخص نشده است");
+        if (item.FinancialAccount is null && !item.VoucherId.HasValue)
+            throw new FluentValidation.ValidationException("حساب مالی برای پرداختی ها مشخص نشده است");
 
         if (!item.PaymentDate.HasValue)
             throw new FluentValidation.ValidationException("تاریخ پرداخت مشخص نشده است");
 
         return new InvoicePaymentDto(item.Amount, item.ExchangeRate, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
-            item.PaymentMethod?.Id, item.VoucherId, item.PriceUnit.Id);
+            item.FinancialAccount?.Id, item.VoucherId, item.PriceUnit.Id);
     }
 
     public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response, GetPriceUnitTitleResponse? priceUnit)
@@ -57,7 +57,7 @@ public class InvoicePaymentVm
         {
             Amount = response.Amount,
             PriceUnit = response.PriceUnit,
-            PaymentMethod = response.PaymentMethod,
+            FinancialAccount = response.FinancialAccount,
             PaymentDate = response.PaymentDate,
             ReferenceNumber = response.ReferenceNumber,
             Note = response.Note,

@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PaymentMethodAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
@@ -15,24 +17,24 @@ namespace GoldEx.Server.Application.Validators.Invoices;
 internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
 {
     private readonly IPriceUnitRepository _priceUnitRepository;
-    private readonly IPaymentMethodRepository _paymentMethodRepository;
+    private readonly IFinancialAccountRepository _financialAccountRepository;
     private readonly IPaymentVoucherRepository _paymentVoucherRepository;
     public InvoicePaymentDtoValidator(IPriceUnitRepository priceUnitRepository,
-        IPaymentMethodRepository paymentMethodRepository,
+        IFinancialAccountRepository financialAccountRepository,
         IPaymentVoucherRepository paymentVoucherRepository)
     {
         _priceUnitRepository = priceUnitRepository;
-        _paymentMethodRepository = paymentMethodRepository;
+        _financialAccountRepository = financialAccountRepository;
         _paymentVoucherRepository = paymentVoucherRepository;
 
         RuleFor(x => x.PriceUnitId)
             .MustAsync(BeValidPriceUnit)
             .WithMessage("واحد ارزی پرداخت معتبر نمی باشد");
 
-        RuleFor(x => x.PaymentMethodId)
-            .MustAsync(BeValidPaymentMethod)
-            .When(x => x.PaymentMethodId is not null)
-            .WithMessage("روش پرداخت معتبر نمی باشد");
+        RuleFor(x => x.FinancialAccountId)
+            .MustAsync(BeValidFinancialAccount)
+            .When(x => x.FinancialAccountId is not null)
+            .WithMessage("حساب مالی معتبر نمی باشد");
 
         RuleFor(x => x.VoucherId)
             .MustAsync(BeValidVoucherId)
@@ -46,15 +48,18 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
         if (voucherId is null)
             return true;
 
-        return await _paymentVoucherRepository.ExistsAsync(new PaymentVouchersByIdSpecification(new PaymentVoucherId(voucherId.Value)), cancellationToken);
+        return await _paymentVoucherRepository.ExistsAsync(
+            new PaymentVouchersByIdSpecification(new PaymentVoucherId(voucherId.Value)),
+            cancellationToken);
     }
 
-    private async Task<bool> BeValidPaymentMethod(Guid? id, CancellationToken cancellationToken = default)
+    private async Task<bool> BeValidFinancialAccount(Guid? id, CancellationToken cancellationToken = default)
     {
         if (id is null)
             return true;
 
-        return await _paymentMethodRepository.ExistsAsync(new PaymentMethodsByIdSpecification(new PaymentMethodId(id.Value)), cancellationToken);
+        return await _financialAccountRepository.ExistsAsync(
+            new FinancialAccountsByIdSpecification(new FinancialAccountId(id.Value)), cancellationToken);
     }
 
     private async Task<bool> BeValidPriceUnit(Guid id, CancellationToken cancellationToken = default)

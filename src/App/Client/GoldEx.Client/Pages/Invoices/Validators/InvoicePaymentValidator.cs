@@ -16,7 +16,7 @@ public class InvoicePaymentValidator : AbstractValidator<InvoicePaymentVm>
 
         When(x => !x.VoucherId.HasValue, () =>
         {
-            RuleFor(p => p.PaymentMethod)
+            RuleFor(p => p.FinancialAccount)
                 .NotNull().WithMessage("روش پرداخت الزامی است");
         });
 

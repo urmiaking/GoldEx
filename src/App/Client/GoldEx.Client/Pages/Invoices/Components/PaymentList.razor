@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Client.Helpers
+@using GoldEx.Shared.DTOs.FinancialAccounts
 @using GoldEx.Shared.DTOs.PaymentMethods
 @inherits GoldExComponentBase
 
@@ -74,20 +75,20 @@
             }
             <MudTd DataLabel="روش پرداخت" Class="p-1">
                 <div class="d-flex flex-row align-center">
-                    <MudSelect @bind-Value="@context.PaymentMethod"
-                               T="GetPaymentMethodResponse?"
-                               For="@(() => context.PaymentMethod)"
-                               Label="@(context.GetDisplayName(() => context.PaymentMethod))"
+                    <MudSelect @bind-Value="@context.FinancialAccount"
+                               T="GetFinancialAccountTitleResponse?"
+                               For="@(() => context.FinancialAccount)"
+                               Label="@(context.GetDisplayName(() => context.FinancialAccount))"
                                Margin="Margin.Dense"
                                Disabled="context.Disabled"
                                Variant="Variant.Outlined">
-                        @foreach (var method in _paymentMethods)
+                        @foreach (var account in _financialAccounts)
                         {
-                            <MudSelectItem T="GetPaymentMethodResponse" Value="@method">@method.Title</MudSelectItem>
+                            <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
                         }
                     </MudSelect>
                     <MudIconButton Disabled="context.Disabled" Icon="@Icons.Material.Filled.Add" 
-                                   Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddPaymentMethod"></MudIconButton>
+                                   Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
                 </div>
             </MudTd>
             <MudTd DataLabel="یادداشت" Class="p-1">
