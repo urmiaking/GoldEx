@@ -31,19 +31,14 @@ internal class DeleteCustomerValidator : AbstractValidator<Customer>
             .WithMessage("حساب های مالی مشتری در اسناد پرداخت استفاده شده است و نمی تواند حذف شوند");
     }
 
-    private Task<bool> FinancialAccountsNotBeingUsed(IReadOnlyList<FinancialAccount>? financialAccounts, CancellationToken cancellationToken = default)
+    private async Task<bool> FinancialAccountsNotBeingUsed(IReadOnlyList<FinancialAccount>? financialAccounts, CancellationToken cancellationToken = default)
     {
-        // TODO: implement this method to check if financial accounts are used in transactions or invoices
+        if (financialAccounts is not null)
+            foreach (var financialAccount in financialAccounts)
+                if (await _invoiceRepository.ExistsAsync(new InvoicesByFinancialAccountIdSpecification(financialAccount.Id), cancellationToken))
+                    return false;
 
-        //foreach (var financialAccount in financialAccounts)
-        //{
-        //    if (await _transactionRepository.ExistsAsync(new TransactionsByFinancialAccountIdSpecification(financialAccount.Id), cancellationToken) ||
-        //        await _invoiceRepository.ExistsAsync(new InvoicesByFinancialAccountIdSpecification(financialAccount.Id), cancellationToken))
-        //    {
-        //        return false;
-        //    }
-        //}
-        return Task.FromResult(true);
+        return true;
     }
 
     private async Task<bool> HasNoTransactions(Customer customer, CancellationToken cancellationToken = default)
