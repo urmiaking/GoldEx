@@ -94,7 +94,6 @@ public partial class EditorForm
 
     private async Task LoadGramPriceAsync()
     {
-        // TODO: change it to use mesghal too
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(GoldUnitType.Gram, _model.InvoicePriceUnit?.Id,
                 _model.InvoiceType switch
@@ -558,7 +557,23 @@ public partial class EditorForm
 
     private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)
     {
-        // TODO: erase all payment vouchers if invoice type is changed to sell
+        if (invoiceType is InvoiceType.Sell)
+        {
+            var vouchers = _model.InvoicePayments.Where(x => x.VoucherId.HasValue).ToList();
+
+            if (vouchers.Any())
+            {
+                var result = await DialogService.ShowMessageBox(
+                    "هشدار",
+                    markupMessage: new MarkupString("تغییر نوع فاکتور به فروش باعث حذف تمام رسیدهای پرداختی خواهد شد. آیا مطمئن هستید؟"),
+                    yesText: "بله", cancelText: "لغو");
+                if (result is null or false)
+                    return;
+
+                foreach (var voucher in vouchers) 
+                    _model.InvoicePayments.Remove(voucher);
+            }
+        }
 
         _model.InvoiceType = invoiceType;
         await LoadInvoiceNumberAsync();
