@@ -41,6 +41,8 @@ public partial class EditorForm
     private bool _totalUnpaidMenuOpen;
 
     private string? CustomerCreditLimitAdornmentText => _model.Customer.CreditLimitPriceUnit?.Title;
+    private GetPriceUnitTitleResponse? DefaultPriceUnit =>
+        _priceUnits.FirstOrDefault(x => x.IsDefault);
 
     protected override async Task OnParametersSetAsync()
     {
@@ -334,6 +336,8 @@ public partial class EditorForm
 
         await LoadGramPriceAsync();
 
+        await LoadExchangeRateAsync();
+
         foreach (var item in _model.InvoiceItems)
         {
             decimal.TryParse(_gramPrice?.Value, out var gramPrice);
@@ -437,6 +441,32 @@ public partial class EditorForm
         }
 
         StateHasChanged();
+    }
+
+    private async Task LoadExchangeRateAsync()
+    {
+        if (DefaultPriceUnit is null)
+        {
+            AddErrorToast("ارز پیش فرض تعریف نشده است");
+            return;
+        }
+
+        if (_model.InvoicePriceUnit is null)
+        {
+            AddErrorToast("واحد ارزی فاکتور انتخاب نشده است");
+            return;
+        }
+
+        if (_model.InvoicePriceUnit.Id == DefaultPriceUnit.Id)
+        {
+            _model.ExchangeRate = null;
+            return;
+        }
+
+        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+            action: (s, ct) =>
+                s.GetExchangeRateAsync(_model.InvoicePriceUnit.Id, DefaultPriceUnit.Id, ct),
+            afterSend: response => _model.ExchangeRate = response.ExchangeRate);
     }
 
     #endregion

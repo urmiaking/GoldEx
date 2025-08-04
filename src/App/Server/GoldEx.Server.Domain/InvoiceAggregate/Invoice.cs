@@ -10,7 +10,7 @@ public readonly record struct InvoiceId(Guid Value);
 
 public class Invoice : EntityBase<InvoiceId>
 {
-    public static Invoice Create(long invoiceNumber, decimal? unpaidAmountExchangeRate, InvoiceType invoiceType, CustomerId customerId, 
+    public static Invoice Create(long invoiceNumber, decimal? unpaidAmountExchangeRate, decimal? exchangeRate, InvoiceType invoiceType, CustomerId customerId, 
         PriceUnitId priceUnitId, PriceUnitId? unpaidPriceUnitId, DateOnly invoiceDate, DateOnly? dueDate)
     {
         return new Invoice
@@ -23,7 +23,8 @@ public class Invoice : EntityBase<InvoiceId>
             PriceUnitId = priceUnitId,
             DueDate = dueDate,
             UnpaidPriceUnitId = unpaidPriceUnitId,
-            UnpaidAmountExchangeRate = unpaidAmountExchangeRate
+            UnpaidAmountExchangeRate = unpaidAmountExchangeRate,
+            ExchangeRate = exchangeRate
         };
     }
 
@@ -35,10 +36,12 @@ public class Invoice : EntityBase<InvoiceId>
     public DateOnly? DueDate { get; private set; }
     public DateOnly InvoiceDate { get; private set; }
     public InvoiceType InvoiceType { get; private set; }
+    public decimal? ExchangeRate { get; private set; }
 
     public void SetInvoiceNumber(long invoiceNumber) => InvoiceNumber = invoiceNumber;
     public void SetDueDate(DateOnly? dueDate) => DueDate = dueDate;
     public void SetInvoiceDate(DateOnly invoiceDate) => InvoiceDate = invoiceDate;
+    public void SetExchangeRate(decimal? exchangeRate) => ExchangeRate = exchangeRate;
 
     #region Customer
 

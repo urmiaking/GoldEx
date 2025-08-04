@@ -15,6 +15,7 @@ namespace GoldEx.Shared.DTOs.Invoices;
 /// <param name="PriceUnitId"></param>
 /// <param name="UnpaidAmountExchangeRate"></param>
 /// <param name="UnpaidPriceUnitId"></param>
+/// <param name="ExchangeRate"></param>
 /// <param name="Customer"></param>
 /// <param name="InvoiceItems"></param>
 /// <param name="InvoiceDiscounts"></param>
@@ -29,6 +30,7 @@ public record InvoiceRequestDto(
     Guid PriceUnitId,
     decimal? UnpaidAmountExchangeRate,
     Guid? UnpaidPriceUnitId,
+    decimal? ExchangeRate,
     CustomerRequestDto Customer,
     List<InvoiceItemDto> InvoiceItems,
     List<InvoiceDiscountDto> InvoiceDiscounts,

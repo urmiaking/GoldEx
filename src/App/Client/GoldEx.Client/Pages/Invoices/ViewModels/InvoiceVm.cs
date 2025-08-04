@@ -29,6 +29,9 @@ public class InvoiceVm
     [Display(Name = "واحد ارزی فاکتور")]
     public GetPriceUnitTitleResponse? InvoicePriceUnit { get; set; }
 
+    [Display(Name = "نرخ تبدیل")]
+    public decimal? ExchangeRate { get; set; }
+
     public GetPriceUnitTitleResponse? UnpaidPriceUnit { get; set; }
     public decimal? UnpaidExchangeRate { get; set; }
     public decimal TotalUnpaidSecondaryAmount => TotalUnpaidAmount * UnpaidExchangeRate ?? 1;
@@ -109,6 +112,7 @@ public class InvoiceVm
             model.InvoicePriceUnit.Id,
             model.UnpaidExchangeRate,
             model.UnpaidPriceUnit?.Id,
+            model.ExchangeRate,
             CustomerVm.ToRequest(model.Customer),
             model.InvoiceItems.Select(InvoiceItemVm.ToRequest).ToList(),
             model.InvoiceDiscounts.Select(InvoiceDiscountVm.ToRequest).ToList(),
@@ -134,7 +138,8 @@ public class InvoiceVm
             InvoiceItems = response.InvoiceItems.Select(InvoiceItemVm.CreateFrom).ToList(),
             InvoicePriceUnit = response.PriceUnit,
             UnpaidExchangeRate = response.UnpaidAmountExchangeRate,
-            UnpaidPriceUnit = response.UnpaidPriceUnit
+            UnpaidPriceUnit = response.UnpaidPriceUnit,
+            ExchangeRate = response.ExchangeRate
         };
     }
 }
