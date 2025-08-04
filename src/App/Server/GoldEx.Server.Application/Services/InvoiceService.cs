@@ -63,6 +63,7 @@ internal class InvoiceService(
                 {
                     invoice = Invoice.Create(request.InvoiceNumber,
                         request.UnpaidAmountExchangeRate,
+                        request.ExchangeRate,
                         request.InvoiceType,
                         new CustomerId(customerId),
                         new PriceUnitId(request.PriceUnitId),
@@ -84,6 +85,7 @@ internal class InvoiceService(
                     invoice.SetInvoiceDate(DateOnly.FromDateTime(request.InvoiceDate));
                     invoice.SetDueDate(request.DueDate.HasValue ? DateOnly.FromDateTime(request.DueDate.Value) : null);
                     invoice.SetInvoiceNumber(request.InvoiceNumber);
+                    invoice.SetExchangeRate(request.ExchangeRate);
                     invoice.SetUnpaidAmountExchangeRate(request.UnpaidAmountExchangeRate);
                     invoice.SetUnpaidPriceUnitId(request.UnpaidPriceUnitId.HasValue 
                         ? new PriceUnitId(request.UnpaidPriceUnitId.Value) 

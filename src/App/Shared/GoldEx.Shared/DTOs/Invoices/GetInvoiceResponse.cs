@@ -1,6 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
-using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
@@ -20,6 +19,7 @@ public record GetInvoiceResponse(
     decimal TotalUnpaidAmount,
     decimal TotalAmountWithDiscountsAndExtraCosts,
     decimal? UnpaidAmountExchangeRate,
+    decimal? ExchangeRate,
     GetPriceUnitTitleResponse UnpaidPriceUnit,
     GetPriceUnitTitleResponse PriceUnit,
     GetCustomerResponse Customer,
