@@ -15,8 +15,9 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
         var invoiceNumber = await Query
             .Where(x => x.InvoiceType == invoiceType)
             .OrderByDescending(x => x.InvoiceNumber)
+            .Select(x => x.InvoiceNumber)
             .FirstOrDefaultAsync(cancellationToken);
 
-        return invoiceNumber?.InvoiceNumber ?? 0;
+        return invoiceNumber;
     }
 }

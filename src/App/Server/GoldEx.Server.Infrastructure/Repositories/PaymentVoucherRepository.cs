@@ -12,10 +12,11 @@ internal class PaymentVoucherRepository(GoldExDbContext dbContext) : RepositoryB
 {
     public async Task<long> GetLastNumberAsync(CancellationToken cancellationToken = default)
     {
-        var paymentVoucher = await Query
+        var voucherNumber = await Query
             .OrderByDescending(x => x.VoucherNumber)
+            .Select(x => x.VoucherNumber)
             .FirstOrDefaultAsync(cancellationToken);
 
-        return paymentVoucher?.VoucherNumber ?? 0;
+        return voucherNumber;
     }
 }
