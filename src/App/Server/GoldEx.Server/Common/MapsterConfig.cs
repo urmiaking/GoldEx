@@ -12,6 +12,8 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
@@ -80,7 +82,11 @@ public class MapsterConfig : IRegister
         config.NewConfig<Invoice, GetInvoiceListResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
-            .Map(dest => dest.AmountUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
+            .Map(dest => dest.AmountUnit,
+                src => MapContext.Current.GetService<IPriceUnitRepository>()
+                    .Get(new PriceUnitsSetAsDefaultSpecification())
+                    .FirstOrDefault()!.Title)
+            .Map(dest => dest.TotalAmount, src => src.TotalAmount * (src.ExchangeRate ?? 1))
             .Map(dest => dest.PaymentStatus,
                 src => Math.Abs(src.TotalUnpaidAmount - 0m) < 0.01m
                     ? InvoicePaymentStatus.Paid
