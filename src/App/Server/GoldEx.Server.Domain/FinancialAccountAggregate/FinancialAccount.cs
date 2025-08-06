@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
 
@@ -8,7 +9,7 @@ namespace GoldEx.Server.Domain.FinancialAccountAggregate;
 public readonly record struct FinancialAccountId(Guid Value);
 public class FinancialAccount : EntityBase<FinancialAccountId>
 {
-    public static FinancialAccount Create(
+    public static FinancialAccount CreateCustomerAccount(
         FinancialAccountType accountType,
         PriceUnitId priceUnitId,
         CustomerId? customerId,
@@ -30,12 +31,14 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
     public static FinancialAccount CreateSystemAccount(
         FinancialAccountType accountType,
         PriceUnitId priceUnitId,
+        LedgerAccountId ledgerAccountId,
         LocalBankAccount? localAccount = null,
         InternationalBankAccount? internationalAccount = null)
     {
         return new FinancialAccount
         {
             Id = new FinancialAccountId(Guid.NewGuid()),
+            LedgerAccountId = ledgerAccountId,
             AccountType = accountType,
             PriceUnitId = priceUnitId,
             IsSystemAccount = true
@@ -51,6 +54,9 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
 
     public CustomerId? CustomerId { get; private set; }
     public Customer? Customer { get; private set; }
+
+    public LedgerAccountId? LedgerAccountId { get; private set; }
+    public LedgerAccount? LedgerAccount { get; private set; }
 
     public LocalBankAccount? LocalAccount { get; private set; }
     public InternationalBankAccount? InternationalAccount { get; private set; }
@@ -99,6 +105,15 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         LocalAccount = null;
         InternationalAccount = null;
 
+        return this;
+    }
+
+    public FinancialAccount SetLedgerAccount(LedgerAccountId? ledgerAccountId)
+    {
+        if (!IsSystemAccount && ledgerAccountId.HasValue)
+            throw new InvalidOperationException("Cannot link a customer's financial account to a ledger account.");
+
+        LedgerAccountId = ledgerAccountId;
         return this;
     }
 }

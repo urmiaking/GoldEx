@@ -17,7 +17,6 @@ using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;

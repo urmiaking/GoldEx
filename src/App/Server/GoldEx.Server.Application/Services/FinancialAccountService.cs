@@ -5,6 +5,7 @@ using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Application.Validators.FinancialAccounts;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
@@ -61,12 +62,22 @@ internal class FinancialAccountService(
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var financialAccount = request.CustomerId.HasValue
-            ? FinancialAccount.Create(request.FinancialAccountType,
+        FinancialAccount financialAccount;
+
+        if (request.CustomerId.HasValue)
+        {
+            financialAccount = FinancialAccount.CreateCustomerAccount(
+                request.FinancialAccountType,
                 new PriceUnitId(request.PriceUnitId),
-                new CustomerId(request.CustomerId.Value))
-            : FinancialAccount.CreateSystemAccount(request.FinancialAccountType,
-                new PriceUnitId(request.PriceUnitId));
+                new CustomerId(request.CustomerId.Value));
+        }
+        else
+        {
+            financialAccount = FinancialAccount.CreateSystemAccount(
+                request.FinancialAccountType,
+                new PriceUnitId(request.PriceUnitId),
+                new LedgerAccountId(request.LedgerAccountId!.Value));
+        }
 
         switch (request.FinancialAccountType)
         {
@@ -103,6 +114,11 @@ internal class FinancialAccountService(
 
         financialAccount.SetAccountType(request.FinancialAccountType);
         financialAccount.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
+
+        if (financialAccount.IsSystemAccount)
+            financialAccount.SetLedgerAccount(new LedgerAccountId(request.LedgerAccountId!.Value));
+        else
+            financialAccount.SetLedgerAccount(null);
 
         switch (request.FinancialAccountType)
         {

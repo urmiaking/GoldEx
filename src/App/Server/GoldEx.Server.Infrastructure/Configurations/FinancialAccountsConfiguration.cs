@@ -24,6 +24,11 @@ internal class FinancialAccountsConfiguration : IEntityTypeConfiguration<Financi
             .HasForeignKey(x => x.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.LedgerAccount)
+            .WithMany(x => x.FinancialAccounts)
+            .HasForeignKey(x => x.LedgerAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.OwnsOne(x => x.LocalAccount, Configure);
         builder.OwnsOne(x => x.InternationalAccount, Configure);
     }

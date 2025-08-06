@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 
@@ -16,8 +17,10 @@ public class FinancialAccountVm
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
     public int Index { get; set; }
+    public bool IsSystemAccount { get; set; }
 
     public Guid? CustomerId { get; set; }
+    public GetLedgerAccountResponse? LedgerAccount { get; set; }
 
     public LocalBankAccountVm? LocalBankAccount { get; set; }
     public InternationalBankAccountVm? InternationalBankAccount { get; set; } 
@@ -58,6 +61,8 @@ public class FinancialAccountVm
             FinancialAccountType,
             PriceUnit!.Id,
             CustomerId,
+            LedgerAccount?.Id,
+            IsSystemAccount,
             FinancialAccountType is FinancialAccountType.LocalBankAccount && LocalBankAccount != null
                 ? new LocalBankAccountRequestDto(
                     LocalBankAccount.AccountHolderName!,

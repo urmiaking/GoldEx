@@ -42,7 +42,8 @@ public partial class FinancialAccounts
     {
         var parameters = new DialogParameters<FinancialAccountEditor>
         {
-            { x => x.SubmitIndependently, true }
+            { x => x.SubmitIndependently, true },
+            { x => x.IsSystemAccount, true }
         };
 
         var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید", parameters, _dialogOptions);
@@ -61,7 +62,8 @@ public partial class FinancialAccounts
         var parameters = new DialogParameters<FinancialAccountEditor>
         {
             { x => x.Model, model },
-            { x => x.SubmitIndependently, true }
+            { x => x.SubmitIndependently, true },
+            { x => x.IsSystemAccount, true }
         };
 
         var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("ویرایش حساب مالی", parameters, _dialogOptions);

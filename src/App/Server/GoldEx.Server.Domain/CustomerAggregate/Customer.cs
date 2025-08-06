@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
@@ -39,6 +40,8 @@ public class Customer : EntityBase<CustomerId>
 
     public PriceUnitId? CreditLimitPriceUnitId { get; private set; }
     public PriceUnit? CreditLimitPriceUnit { get; private set; }
+
+    public IReadOnlyList<LedgerAccount>? LedgerAccounts { get; private set; }
 
     public IReadOnlyList<Transaction>? Transactions { get; private set; }
     public IReadOnlyList<FinancialAccount>? FinancialAccounts { get; private set; }
