@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
@@ -15,11 +17,13 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
 {
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly ICustomerRepository _customerRepository;
+    private readonly ILedgerAccountRepository _ledgerAccountRepository;
 
-    public FinancialAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository, ICustomerRepository customerRepository)
+    public FinancialAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository, ICustomerRepository customerRepository, ILedgerAccountRepository ledgerAccountRepository)
     {
         _priceUnitRepository = priceUnitRepository;
         _customerRepository = customerRepository;
+        _ledgerAccountRepository = ledgerAccountRepository;
 
         RuleFor(x => x.FinancialAccountType)
             .IsInEnum().WithMessage("نوع حساب بانکی نامعتبر است");
@@ -70,6 +74,21 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
                 .MustAsync(BeValidCustomer)
                 .WithMessage("شناسه مشتری نامعتبر است");
         });
+
+        When(x => x.IsSystemAccount, () =>
+        {
+            RuleFor(x => x.LedgerAccountId)
+                .NotEmpty().WithMessage("برای حساب‌های سیستمی، انتخاب سرفصل حسابداری الزامی است.")
+                .MustAsync(BeValidLedgerAccount).WithMessage("سرفصل حسابداری نامعتبر است");
+        });
+    }
+
+    private async Task<bool> BeValidLedgerAccount(Guid? ledgerAccountId, CancellationToken cancellationToken = default)
+    {
+        if (!ledgerAccountId.HasValue) 
+            return false;
+
+        return await _ledgerAccountRepository.ExistsAsync(new LedgerAccountsByIdSpecification(new LedgerAccountId(ledgerAccountId.Value)), cancellationToken);
     }
 
     private async Task<bool> BeValidPriceUnitId(Guid priceUnitId, CancellationToken cancellationToken = default)
@@ -79,7 +98,9 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
     
     private async Task<bool> BeValidCustomer(Guid? customerId, CancellationToken cancellationToken = default)
     {
-        if (!customerId.HasValue) return false;
+        if (!customerId.HasValue)
+            return false;
+
         return await _customerRepository.ExistsAsync(new CustomersByIdSpecification(new CustomerId(customerId.Value)), cancellationToken);
     }
 }

@@ -108,31 +108,31 @@ internal class CustomerService(
 
             List<FinancialAccount> bankAccounts = [];
 
-            if (request.BankAccounts is not null)
+            if (request.FinancialAccounts is not null)
             {
-                foreach (var bankAccountRequest in request.BankAccounts)
+                foreach (var financialAccountRequestDto in request.FinancialAccounts)
                 {
-                    var bankAccount = FinancialAccount.Create(bankAccountRequest.FinancialAccountType,
-                        new PriceUnitId(bankAccountRequest.PriceUnitId),
+                    var bankAccount = FinancialAccount.CreateCustomerAccount(financialAccountRequestDto.FinancialAccountType,
+                        new PriceUnitId(financialAccountRequestDto.PriceUnitId),
                         customer.Id);
 
                     switch (bankAccount.AccountType)
                     {
-                        case FinancialAccountType.InternationalBankAccount when bankAccountRequest.InternationalBankAccount is not null:
+                        case FinancialAccountType.InternationalBankAccount when financialAccountRequestDto.InternationalBankAccount is not null:
                             bankAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                                bankAccountRequest.InternationalBankAccount.AccountHolderName,
-                                bankAccountRequest.InternationalBankAccount.BankName,
-                                bankAccountRequest.InternationalBankAccount.SwiftBicCode,
-                                bankAccountRequest.InternationalBankAccount.IbanNumber,
-                                bankAccountRequest.InternationalBankAccount.AccountNumber));
+                                financialAccountRequestDto.InternationalBankAccount.AccountHolderName,
+                                financialAccountRequestDto.InternationalBankAccount.BankName,
+                                financialAccountRequestDto.InternationalBankAccount.SwiftBicCode,
+                                financialAccountRequestDto.InternationalBankAccount.IbanNumber,
+                                financialAccountRequestDto.InternationalBankAccount.AccountNumber));
                             break;
-                        case FinancialAccountType.LocalBankAccount when bankAccountRequest.LocalBankAccount is not null:
+                        case FinancialAccountType.LocalBankAccount when financialAccountRequestDto.LocalBankAccount is not null:
                             bankAccount.SetLocalAccount(LocalBankAccount.Create(
-                                bankAccountRequest.LocalBankAccount.AccountHolderName,
-                                bankAccountRequest.LocalBankAccount.BankName,
-                                bankAccountRequest.LocalBankAccount.CardNumber,
-                                bankAccountRequest.LocalBankAccount.ShabaNumber,
-                                bankAccountRequest.LocalBankAccount.AccountNumber));
+                                financialAccountRequestDto.LocalBankAccount.AccountHolderName,
+                                financialAccountRequestDto.LocalBankAccount.BankName,
+                                financialAccountRequestDto.LocalBankAccount.CardNumber,
+                                financialAccountRequestDto.LocalBankAccount.ShabaNumber,
+                                financialAccountRequestDto.LocalBankAccount.AccountNumber));
                             break;
                         case FinancialAccountType.Cash:
                             break;
@@ -176,20 +176,20 @@ internal class CustomerService(
                     ? new PriceUnitId(request.CreditLimitPriceUnitId.Value)
                     : null);
 
-            if (request.BankAccounts is not null)
+            if (request.FinancialAccounts is not null)
             {
                 var existingBankAccounts = customer.FinancialAccounts?.ToList() ?? [];
                 // Remove bank accounts that are not in the request
                 foreach (var existingAccount in existingBankAccounts)
                 {
-                    if (request.BankAccounts.All(x => x.Id != existingAccount.Id.Value))
+                    if (request.FinancialAccounts.All(x => x.Id != existingAccount.Id.Value))
                     {
                         await financialAccountRepository.DeleteAsync(existingAccount, cancellationToken);
                     }
                 }
 
                 // Update or add new bank accounts
-                foreach (var bankAccountRequest in request.BankAccounts)
+                foreach (var bankAccountRequest in request.FinancialAccounts)
                 {
                     var existingAccount =
                         existingBankAccounts.FirstOrDefault(x => x.Id.Value == bankAccountRequest.Id);
@@ -226,7 +226,7 @@ internal class CustomerService(
                     }
                     else
                     {
-                        var newBankAccount = FinancialAccount.Create(bankAccountRequest.FinancialAccountType,
+                        var newBankAccount = FinancialAccount.CreateCustomerAccount(bankAccountRequest.FinancialAccountType,
                             new PriceUnitId(bankAccountRequest.PriceUnitId),
                             customer.Id);
 

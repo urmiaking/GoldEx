@@ -17,6 +17,9 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Shared.Constants;
 
 namespace GoldEx.Server.Extensions;
 
@@ -41,6 +44,7 @@ public static class ServiceProviderExtensions
         await PopulateDefaultSettingsAsync(serviceProvider);
         await PopulateDefaultPriceUnitsAsync(serviceProvider);
         await PopulateDefaultProductCategoriesAsync(serviceProvider);
+        await PopulateDefaultLedgerAccountsAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();
@@ -59,6 +63,68 @@ public static class ServiceProviderExtensions
             await accountService.CreateUserAsync(new AppUser("مدیر سامانه", adminUser.UserName, adminUser.Email, adminUser.PhoneNumber),
                 adminUser.Password, [BuiltinRoles.Administrators]);
         }
+    }
+
+    private static async Task PopulateDefaultLedgerAccountsAsync(IServiceProvider serviceProvider)
+    {
+        var repository = serviceProvider.GetRequiredService<ILedgerAccountRepository>();
+
+        if (await repository.ExistsAsync(new LedgerAccountsByTypeSpecification(true)))
+            return;
+
+        var assets = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Assets, LedgerAccountType.Asset);
+        var liabilities = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Liabilities, LedgerAccountType.Liability);
+        var equity = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Equity, LedgerAccountType.Equity);
+        var revenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Revenue, LedgerAccountType.Revenue);
+        var expenses = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Expenses, LedgerAccountType.Expense);
+
+        var topLevelAccounts = new List<LedgerAccount> { assets, liabilities, equity, revenue, expenses };
+        await repository.CreateRangeAsync(topLevelAccounts);
+
+        var currentAssets = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CurrentAssets, LedgerAccountType.Asset);
+        currentAssets.SetParentAccount(assets.Id);
+
+        var accountsReceivable = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.AccountsReceivable, LedgerAccountType.Asset);
+        accountsReceivable.SetParentAccount(currentAssets.Id);
+
+        var prepayments = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.PrepaymentsToSuppliers, LedgerAccountType.Asset);
+        prepayments.SetParentAccount(currentAssets.Id);
+
+        var inventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset);
+        inventory.SetParentAccount(currentAssets.Id);
+
+        var bankAccounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset);
+        bankAccounts.SetParentAccount(currentAssets.Id);
+
+        var cashAccounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CashAccounts, LedgerAccountType.Asset);
+        cashAccounts.SetParentAccount(currentAssets.Id);
+
+        var currentLiabilities = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CurrentLiabilities, LedgerAccountType.Liability);
+        currentLiabilities.SetParentAccount(liabilities.Id);
+
+        var accountsPayable = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.AccountsPayable, LedgerAccountType.Liability);
+        accountsPayable.SetParentAccount(currentLiabilities.Id);
+
+        var salesRevenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.SalesRevenue, LedgerAccountType.Revenue);
+        salesRevenue.SetParentAccount(revenue.Id);
+
+        var exchangeGainLoss = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.ExchangeGainLoss, LedgerAccountType.Revenue);
+        exchangeGainLoss.SetParentAccount(revenue.Id);
+
+        var cogs = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CostOfGoodsSold, LedgerAccountType.Expense);
+        cogs.SetParentAccount(expenses.Id);
+
+        var operatingExpenses = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.OperatingExpenses, LedgerAccountType.Expense);
+        operatingExpenses.SetParentAccount(expenses.Id);
+
+        var subLevelAccounts = new List<LedgerAccount>
+        {
+            currentAssets, accountsReceivable, prepayments, inventory, bankAccounts, cashAccounts,
+            currentLiabilities, accountsPayable,
+            salesRevenue, exchangeGainLoss,
+            cogs, operatingExpenses
+        };
+        await repository.CreateRangeAsync(subLevelAccounts);
     }
 
     private static async Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)
@@ -99,7 +165,9 @@ public static class ServiceProviderExtensions
         if (await priceUnitRepository.ExistsAsync(new PriceUnitsSetAsDefaultSpecification()))
             return;
 
-        var defaultUnit = await priceUnitRepository.Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName())).FirstOrDefaultAsync();
+        var defaultUnit = await priceUnitRepository
+            .Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName()))
+            .FirstOrDefaultAsync();
 
         if (defaultUnit is not null)
         {

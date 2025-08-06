@@ -22,6 +22,9 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Shared.Constants;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -29,6 +32,7 @@ namespace GoldEx.Server.Application.Services;
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
     IInvoiceItemRepository invoiceItemRepository,
+    ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
     ICustomerService customerService,
     IMapper mapper,
@@ -54,6 +58,46 @@ internal class InvoiceService(
                 else
                 {
                     customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
+                }
+
+                var parentAccountTitle = request.InvoiceType == InvoiceType.Sell
+                    ? SystemLedgerAccounts.AccountsReceivable 
+                    : SystemLedgerAccounts.AccountsPayable;
+
+                var parentLedgerAccount = await ledgerAccountRepository
+                                              .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
+                                              .FirstOrDefaultAsync(cancellationToken)
+                                          ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
+
+                var existingLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountByCustomerAndParentSpecification(new CustomerId(customerId), parentLedgerAccount.Id))
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                // ReSharper disable once NotAccessedVariable : TODO: comments should be removed after refactoring transactions
+                LedgerAccountId customerLedgerAccountId;
+
+                if (existingLedgerAccount is null)
+                {
+                    var customer = await customerService.GetAsync(customerId, cancellationToken)
+                                   ?? throw new NotFoundException("Customer not found after creation.");
+
+                    var ledgerAccountType = parentLedgerAccount.AccountType;
+                    
+                    var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
+                    var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
+                        ledgerAccountTitle,
+                        new CustomerId(customer.Id),
+                        ledgerAccountType,
+                        parentLedgerAccount.Id);
+
+                    await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+                    // ReSharper disable once RedundantAssignment
+                    customerLedgerAccountId = newLedgerAccount.Id;
+                }
+                else
+                {
+                    // ReSharper disable once RedundantAssignment
+                    customerLedgerAccountId = existingLedgerAccount.Id;
                 }
 
                 Invoice invoice;

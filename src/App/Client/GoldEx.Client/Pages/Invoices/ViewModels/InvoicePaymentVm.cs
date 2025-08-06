@@ -1,8 +1,6 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;

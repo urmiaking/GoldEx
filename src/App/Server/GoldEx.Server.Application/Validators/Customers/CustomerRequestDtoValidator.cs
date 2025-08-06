@@ -16,7 +16,10 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 {
     private readonly ICustomerRepository _repository;
     private readonly IPriceUnitRepository _priceUnitRepository;
-    public CustomerRequestDtoValidator(ICustomerRepository repository, IPriceUnitRepository priceUnitRepository)
+
+    public CustomerRequestDtoValidator(ICustomerRepository repository,
+        IPriceUnitRepository priceUnitRepository,
+        ILedgerAccountRepository ledgerAccountRepository)
     {
         _repository = repository;
         _priceUnitRepository = priceUnitRepository;
@@ -54,11 +57,11 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
                 .WithMessage("در صورت وارد کردن سقف اعتبار، وارد کردن واحد آن الزامی است");
         });
 
-        When(x => x.BankAccounts is not null, () =>
+        When(x => x.FinancialAccounts is not null, () =>
         {
-            RuleForEach(x => x.BankAccounts)
-                .SetValidator(new FinancialAccountRequestDtoValidator(_priceUnitRepository, _repository))
-                .WithMessage("اطلاعات حساب بانکی نامعتبر است");
+            RuleForEach(x => x.FinancialAccounts)
+                .SetValidator(new FinancialAccountRequestDtoValidator(_priceUnitRepository, _repository, ledgerAccountRepository))
+                .WithMessage("اطلاعات حساب مالی نامعتبر است");
         });
     }
 

@@ -14,7 +14,7 @@ namespace GoldEx.Shared.DTOs.Customers;
 /// <param name="CreditLimit"></param>
 /// <param name="CreditLimitPriceUnitId"></param>
 /// <param name="CustomerType"></param>
-/// <param name="BankAccounts"></param>
+/// <param name="FinancialAccounts"></param>
 public record CustomerRequestDto(Guid? Id,
     string FullName,
     string NationalId,
@@ -23,4 +23,4 @@ public record CustomerRequestDto(Guid? Id,
     decimal? CreditLimit,
     Guid? CreditLimitPriceUnitId,
     CustomerType CustomerType,
-    List<FinancialAccountRequestDto>? BankAccounts = null);
+    List<FinancialAccountRequestDto>? FinancialAccounts = null);
