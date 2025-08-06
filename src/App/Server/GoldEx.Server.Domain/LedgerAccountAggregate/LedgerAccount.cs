@@ -20,13 +20,14 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
     public CustomerId? CustomerId { get; private set; }
     public Customer? Customer { get; private set; }
 
-    public static LedgerAccount CreateSystemAccount(string title, LedgerAccountType accountType)
+    public static LedgerAccount CreateSystemAccount(string title, LedgerAccountType accountType, LedgerAccountId? parentAccountId = null)
     {
         return new LedgerAccount
         {
             Id = new LedgerAccountId(Guid.NewGuid()),
             Title = title,
             AccountType = accountType,
+            ParentAccountId = parentAccountId,
             IsSystemAccount = true
         };
     }

@@ -14,7 +14,6 @@ using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.PaymentVouchers;
-using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -104,7 +103,7 @@ internal class PaymentVoucherService(
                            $"Customer with financial account {request.DestinationFinancialAccountId} not found.");
 
         var existingLedgerAccount = await ledgerAccountRepository
-            .Get(new LedgerAccountByCustomerAndParentSpecification(customer.Id, parentLedgerAccount.Id))
+            .Get(new LedgerAccountsByCustomerAndParentSpecification(customer.Id, parentLedgerAccount.Id))
             .FirstOrDefaultAsync(cancellationToken);
 
         // ReSharper disable once NotAccessedVariable : TODO: comments should be removed after refactoring transactions

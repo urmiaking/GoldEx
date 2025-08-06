@@ -70,7 +70,7 @@ internal class InvoiceService(
                                           ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
 
                 var existingLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountByCustomerAndParentSpecification(new CustomerId(customerId), parentLedgerAccount.Id))
+                    .Get(new LedgerAccountsByCustomerAndParentSpecification(new CustomerId(customerId), parentLedgerAccount.Id))
                     .FirstOrDefaultAsync(cancellationToken);
 
                 // ReSharper disable once NotAccessedVariable : TODO: comments should be removed after refactoring transactions

@@ -269,4 +269,18 @@ public class ApiUrls
         public static string GetPendingList(Guid customerId) =>
             BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetPendingList).FormatRoute(new { customerId });
     }
+
+    public class LedgerAccounts
+    {
+        public static string GetList(Guid? customerId) =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetList)
+                .AppendQueryString(new { customerId });
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.Get).FormatRoute(new { id });
+        public static string Create() => BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.Create);
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.Update).FormatRoute(new { id });
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.Delete).FormatRoute(new { id });
+    }
 }
