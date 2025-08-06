@@ -1,0 +1,60 @@
+﻿@inherits GoldExComponentBase
+
+<EditForm Model="Model" OnSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12" md="12" lg="12">
+                    <MudTextField @bind-Value="Model.Title"
+                                  For="@(() => Model.Title)"
+                                  Label="@(Model.GetDisplayName(() => Model.Title))"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="12" lg="12">
+                    <MudSelect T="LedgerAccountType?"  
+                               @bind-Value="Model.AccountType"  
+                               Margin="Margin.Dense"  
+                               Label="@(Model.GetDisplayName(() => Model.AccountType))"
+                               Variant="Variant.Outlined"  
+                               Disabled="@(Model.ParentAccountId.HasValue)">  
+                        <MudSelectItem T="LedgerAccountType?" Value="@((LedgerAccountType?)null)">انتخاب کنید...</MudSelectItem>  
+                        @foreach (var item in Enum.GetValues<LedgerAccountType>())  
+                        {  
+                            <MudSelectItem T="LedgerAccountType?" Value="@((LedgerAccountType?)item)">@item.GetDisplayName()</MudSelectItem>  
+                        }  
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@IsBusy"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await OnSubmit())"
+                       Variant="Variant.Filled">
+                @if (IsBusy)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>

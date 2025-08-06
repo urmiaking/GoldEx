@@ -5,6 +5,7 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -17,6 +18,7 @@ using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -33,6 +35,16 @@ public class MapsterConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
+        #region Customers
+
+        config.NewConfig<Customer, GetCustomerResponse>()
+            .PreserveReference(true)
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CreditLimitPriceUnit, src => src.CreditLimitPriceUnit)
+            .Map(dest => dest.FinancialAccounts, src => src.FinancialAccounts);
+
+        #endregion
+
         #region FinancialAccounts
 
         config.NewConfig<FinancialAccount, GetFinancialAccountResponse>()
@@ -40,7 +52,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.FinancialAccountType, src => src.AccountType)
             .Map(dest => dest.SupplierFullName, src =>
                 src.Customer != null ? src.Customer.FullName : string.Empty)
-            .Map(dest => dest.SupplierPhoneNumber, src => 
+            .Map(dest => dest.SupplierPhoneNumber, src =>
                 src.Customer != null ? src.Customer.PhoneNumber : string.Empty)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
             .Map(dest => dest.LocalBankAccount, src => src.LocalAccount)
@@ -53,26 +65,16 @@ public class MapsterConfig : IRegister
         config.NewConfig<FinancialAccount, GetFinancialAccountTitleResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Title, src =>
-                    src.PriceUnit != null
-                        ? $"{src.AccountType.GetDisplayName()} - " +
-                          $"{(src.AccountType == FinancialAccountType.Cash 
-                              ? src.PriceUnit.Title 
-                              : src.AccountType == FinancialAccountType.LocalBankAccount && src.LocalAccount != null  
-                                  ? src.LocalAccount.AccountNumber 
-                                  : src.AccountType == FinancialAccountType.InternationalBankAccount && src.InternationalAccount != null
-                                      ? src.InternationalAccount.AccountNumber 
-                                      : string.Empty)}" : string.Empty);
+                src.PriceUnit != null
+                    ? $"{src.AccountType.GetDisplayName()} - " +
+                      $"{(src.AccountType == FinancialAccountType.Cash
+                          ? src.PriceUnit.Title
+                          : src.AccountType == FinancialAccountType.LocalBankAccount && src.LocalAccount != null
+                              ? src.LocalAccount.AccountNumber
+                              : src.AccountType == FinancialAccountType.InternationalBankAccount && src.InternationalAccount != null
+                                  ? src.InternationalAccount.AccountNumber
+                                  : string.Empty)}" : string.Empty);
 
-
-        #endregion
-
-        #region Customers
-
-        config.NewConfig<Customer, GetCustomerResponse>()
-            .PreserveReference(true)
-            .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.CreditLimitPriceUnit, src => src.CreditLimitPriceUnit)
-            .Map(dest => dest.FinancialAccounts, src => src.FinancialAccounts);
 
         #endregion
 
@@ -121,6 +123,16 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.VoucherId, src =>
                 src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
             .Map(dest => dest.FinancialAccount, src => src.SourceFinancialAccount);
+
+        #endregion
+
+        #region LedgerAccounts
+
+        config.NewConfig<LedgerAccount, GetLedgerAccountResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.ParentAccount, src => src.ParentAccount)
+            .Map(dest => dest.AccountType, src => src.AccountType);
 
         #endregion
 

@@ -4,9 +4,9 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 
 namespace GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 
-public class LedgerAccountByCustomerAndParentSpecification : SpecificationBase<LedgerAccount>
+public class LedgerAccountsByCustomerAndParentSpecification : SpecificationBase<LedgerAccount>
 {
-    public LedgerAccountByCustomerAndParentSpecification(CustomerId customerId, LedgerAccountId id)
+    public LedgerAccountsByCustomerAndParentSpecification(CustomerId customerId, LedgerAccountId id)
     {
         AddCriteria(x => x.ParentAccountId == id);
         AddCriteria(x => x.CustomerId == customerId);

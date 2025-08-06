@@ -6,8 +6,16 @@ namespace GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 
 public class LedgerAccountsByCustomerIdSpecification : SpecificationBase<LedgerAccount>
 {
-    public LedgerAccountsByCustomerIdSpecification(CustomerId customerId)
+    public LedgerAccountsByCustomerIdSpecification(CustomerId? customerId)
     {
-        AddCriteria(x => x.CustomerId == customerId);
+        if (customerId.HasValue)
+        {
+            AddCriteria(x => x.CustomerId == customerId);
+        }
+        else
+        {
+            AddCriteria(x => x.IsSystemAccount);
+        }
+
     }
 }

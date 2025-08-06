@@ -83,6 +83,7 @@ public static class ClientRoutes
         public const string PriceUnits = $"{SettingsPrefix}/price-units";
         public const string ReportsList = $"{SettingsPrefix}/reports-list";
         public const string FinancialAccounts = $"{SettingsPrefix}/financial-accounts";
+        public const string LedgerAccounts = $"{SettingsPrefix}/ledger-accounts";
     }
 
     public static class Logs
