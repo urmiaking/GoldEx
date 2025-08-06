@@ -5,10 +5,14 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Validators.PaymentVouchers;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -20,6 +24,8 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class PaymentVoucherService(
     IPaymentVoucherRepository repository,
+    ILedgerAccountRepository ledgerAccountRepository,
+    ICustomerRepository customerRepository,
     IMapper mapper,
     PaymentVoucherRequestDtoValidator validator,
     DeletePaymentVoucherValidator deleteValidator) : IPaymentVoucherService
@@ -83,6 +89,47 @@ internal class PaymentVoucherService(
     public async Task CreateAsync(PaymentVoucherRequestDto request, CancellationToken cancellationToken = default)
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+        var parentAccountTitle = SystemLedgerAccounts.AccountsPayable;
+
+        var parentLedgerAccount = await ledgerAccountRepository
+                                      .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
+                                      .FirstOrDefaultAsync(cancellationToken)
+                                  ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
+
+        var customer = await customerRepository.Get(new CustomersByFinancialAccountIdSpecification(
+                        new FinancialAccountId(request.DestinationFinancialAccountId)))
+                .FirstOrDefaultAsync(cancellationToken) ??
+                       throw new NotFoundException(
+                           $"Customer with financial account {request.DestinationFinancialAccountId} not found.");
+
+        var existingLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountByCustomerAndParentSpecification(customer.Id, parentLedgerAccount.Id))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        // ReSharper disable once NotAccessedVariable : TODO: comments should be removed after refactoring transactions
+        LedgerAccountId customerLedgerAccountId;
+
+        if (existingLedgerAccount is null)
+        {
+            var ledgerAccountType = parentLedgerAccount.AccountType;
+
+            var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
+            var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
+                ledgerAccountTitle,
+                customer.Id,
+                ledgerAccountType,
+                parentLedgerAccount.Id);
+
+            await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+            // ReSharper disable once RedundantAssignment
+            customerLedgerAccountId = newLedgerAccount.Id;
+        }
+        else
+        {
+            // ReSharper disable once RedundantAssignment
+            customerLedgerAccountId = existingLedgerAccount.Id;
+        }
 
         var paymentVoucher = PaymentVoucher.Create(
             request.Amount,
