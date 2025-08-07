@@ -2,4 +2,4 @@
 
 namespace GoldEx.Shared.DTOs.PaymentVouchers;
 
-public record PaymentVoucherFilter(DateTime? Start, DateTime? End, VoucherStatus? VoucherStatus);
+public record PaymentVoucherFilter(DateTime? Start, DateTime? End, PaymentVoucherType? VoucherType);

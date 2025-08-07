@@ -1,6 +1,5 @@
 ﻿using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -15,17 +14,25 @@ public partial class PaymentVouchersList
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public Guid? CustomerId { get; set; }
 
-    public string? VoucherStatusIcon => _voucherStatus switch
+    public string? VoucherTypeIcon => _voucherType switch
     {
-        VoucherStatus.Pending => Icons.Material.Filled.Pending,
-        VoucherStatus.Applied => Icons.Material.Filled.Check,
+        PaymentVoucherType.PrepaymentToSupplier => Icons.Material.Filled.Payment,
+        PaymentVoucherType.RefundToCustomer => Icons.Material.Filled.PriceCheck,
         null => Icons.Material.Filled.ViewHeadline,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public Color VoucherTypeColor => _voucherType switch
+    {
+        PaymentVoucherType.PrepaymentToSupplier => Color.Success,
+        PaymentVoucherType.RefundToCustomer => Color.Primary,
+        null => Color.Info,
         _ => throw new ArgumentOutOfRangeException()
     };
 
     private string? _searchString;
     private DateRange _filterDateRange = new();
-    private VoucherStatus? _voucherStatus;
+    private PaymentVoucherType? _voucherType;
 
     private MudTable<PaymentVoucherListVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
@@ -40,7 +47,7 @@ public partial class PaymentVouchersList
     {
         var result = new TableData<PaymentVoucherListVm>();
 
-        var paymentVoucherFilter = new PaymentVoucherFilter(_filterDateRange.Start, _filterDateRange.End, _voucherStatus);
+        var paymentVoucherFilter = new PaymentVoucherFilter(_filterDateRange.Start, _filterDateRange.End, _voucherType);
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch
@@ -84,9 +91,9 @@ public partial class PaymentVouchersList
         await RefreshAsync();
     }
 
-    private async Task SetStatusFilterText(VoucherStatus? status)
+    private async Task SetVoucherTypeFilterText(PaymentVoucherType? status)
     {
-        _voucherStatus = status;
+        _voucherType = status;
         await RefreshAsync();
     }
 
