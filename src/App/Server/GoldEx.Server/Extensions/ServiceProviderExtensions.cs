@@ -108,6 +108,9 @@ public static class ServiceProviderExtensions
         var salesRevenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.SalesRevenue, LedgerAccountType.Revenue);
         salesRevenue.SetParentAccount(revenue.Id);
 
+        var additionalChargesRevenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.AdditionalChargesRevenue, LedgerAccountType.Revenue);
+        additionalChargesRevenue.SetParentAccount(revenue.Id);
+
         var exchangeGainLoss = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.ExchangeGainLoss, LedgerAccountType.Revenue);
         exchangeGainLoss.SetParentAccount(revenue.Id);
 
@@ -117,12 +120,18 @@ public static class ServiceProviderExtensions
         var operatingExpenses = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.OperatingExpenses, LedgerAccountType.Expense);
         operatingExpenses.SetParentAccount(expenses.Id);
 
+        var salesDiscounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.SalesDiscounts, LedgerAccountType.Expense);
+        salesDiscounts.SetParentAccount(expenses.Id);
+
+        var purchaseDiscounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.PurchaseDiscounts, LedgerAccountType.Expense);
+        purchaseDiscounts.SetParentAccount(expenses.Id);
+
         var subLevelAccounts = new List<LedgerAccount>
         {
             currentAssets, accountsReceivable, prepayments, inventory, bankAccounts, cashAccounts,
             currentLiabilities, accountsPayable,
-            salesRevenue, exchangeGainLoss,
-            cogs, operatingExpenses
+            salesRevenue, additionalChargesRevenue, exchangeGainLoss,
+            cogs, operatingExpenses, salesDiscounts, purchaseDiscounts
         };
         await repository.CreateRangeAsync(subLevelAccounts);
     }

@@ -12,18 +12,12 @@ namespace GoldEx.Server.Application.Validators.Customers;
 [ScopedService]
 internal class DeleteCustomerValidator : AbstractValidator<Customer>
 {
-    private readonly ITransactionRepository _transactionRepository;
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPaymentVoucherRepository _paymentVoucherRepository;
-    public DeleteCustomerValidator(ITransactionRepository transactionRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository)
+    public DeleteCustomerValidator(IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository)
     {
-        _transactionRepository = transactionRepository;
         _invoiceRepository = invoiceRepository;
         _paymentVoucherRepository = paymentVoucherRepository;
-
-        RuleFor(x => x)
-            .MustAsync(HasNoTransactions)
-            .WithMessage("مشتری دارای تراکنش است و نمی تواند حذف شود");
 
         RuleFor(x => x)
             .MustAsync(HasNoInvoices)
@@ -47,11 +41,6 @@ internal class DeleteCustomerValidator : AbstractValidator<Customer>
             }
 
         return true;
-    }
-
-    private async Task<bool> HasNoTransactions(Customer customer, CancellationToken cancellationToken = default)
-    {
-        return !await _transactionRepository.ExistsAsync(new TransactionsByCustomerIdSpecification(customer.Id), cancellationToken);
     }
 
     private async Task<bool> HasNoInvoices(Customer customer, CancellationToken cancellationToken = default)

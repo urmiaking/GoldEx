@@ -436,6 +436,60 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.ToTable("InvoiceItems", (string)null);
                 });
 
+            modelBuilder.Entity("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("ExchangeRate")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("PaymentVoucherId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PriceUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("SourceFinancialAccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("PaymentVoucherId")
+                        .IsUnique()
+                        .HasFilter("[PaymentVoucherId] IS NOT NULL");
+
+                    b.HasIndex("PriceUnitId");
+
+                    b.HasIndex("SourceFinancialAccountId");
+
+                    b.ToTable("InvoicePayments", (string)null);
+                });
+
             modelBuilder.Entity("GoldEx.Server.Domain.LedgerAccountAggregate.LedgerAccount", b =>
                 {
                     b.Property<Guid>("Id")
@@ -511,6 +565,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<Guid>("VoucherPriceUnitId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("VoucherType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -721,35 +778,18 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<decimal>("BaseCurrencyAmount")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("Credit")
-                        .HasPrecision(36, 10)
-                        .HasColumnType("decimal(36,10)");
-
-                    b.Property<decimal?>("CreditRate")
-                        .HasPrecision(36, 10)
-                        .HasColumnType("decimal(36,10)");
-
-                    b.Property<Guid?>("CreditUnitId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("Debit")
-                        .HasPrecision(36, 10)
-                        .HasColumnType("decimal(36,10)");
-
-                    b.Property<decimal?>("DebitRate")
-                        .HasPrecision(36, 10)
-                        .HasColumnType("decimal(36,10)");
-
-                    b.Property<Guid?>("DebitUnitId")
+                    b.Property<Guid?>("CustomerId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
@@ -757,22 +797,42 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<long>("Number")
-                        .HasColumnType("bigint");
+                    b.Property<decimal?>("ExchangeRate")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
-                    b.Property<Guid?>("PriceUnitId")
+                    b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("InvoicePaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("LedgerAccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PaymentVoucherId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PriceUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TransactionType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreditUnitId");
-
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("DebitUnitId");
+                    b.HasIndex("InvoiceId");
 
-                    b.HasIndex("Number")
-                        .IsUnique();
+                    b.HasIndex("InvoicePaymentId");
+
+                    b.HasIndex("LedgerAccountId");
+
+                    b.HasIndex("PaymentVoucherId");
 
                     b.HasIndex("PriceUnitId");
 
@@ -1070,93 +1130,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                             b1.Navigation("PriceUnit");
                         });
 
-                    b.OwnsMany("GoldEx.Server.Domain.InvoiceAggregate.InvoicePayment", "InvoicePayments", b1 =>
-                        {
-                            b1.Property<Guid>("InvoiceId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<decimal>("Amount")
-                                .HasPrecision(36, 10)
-                                .HasColumnType("decimal(36,10)");
-
-                            b1.Property<DateTime>("CreatedAt")
-                                .HasColumnType("datetime2");
-
-                            b1.Property<decimal?>("ExchangeRate")
-                                .HasPrecision(36, 10)
-                                .HasColumnType("decimal(36,10)");
-
-                            b1.Property<string>("Note")
-                                .HasMaxLength(500)
-                                .HasColumnType("nvarchar(500)");
-
-                            b1.Property<DateTime>("PaymentDate")
-                                .HasColumnType("datetime2");
-
-                            b1.Property<Guid?>("PaymentVoucherId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<Guid>("PriceUnitId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("ReferenceNumber")
-                                .HasMaxLength(100)
-                                .HasColumnType("nvarchar(100)");
-
-                            b1.Property<Guid?>("SourceFinancialAccountId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.HasKey("InvoiceId", "Id");
-
-                            b1.HasIndex("PaymentVoucherId")
-                                .IsUnique()
-                                .HasFilter("[PaymentVoucherId] IS NOT NULL");
-
-                            b1.HasIndex("PriceUnitId");
-
-                            b1.HasIndex("SourceFinancialAccountId");
-
-                            b1.ToTable("InvoicePayments", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("InvoiceId");
-
-                            b1.HasOne("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", "PaymentVoucher")
-                                .WithOne()
-                                .HasForeignKey("GoldEx.Server.Domain.InvoiceAggregate.Invoice.InvoicePayments#GoldEx.Server.Domain.InvoiceAggregate.InvoicePayment", "PaymentVoucherId")
-                                .OnDelete(DeleteBehavior.Restrict);
-
-                            b1.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "PriceUnit")
-                                .WithMany()
-                                .HasForeignKey("PriceUnitId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
-
-                            b1.HasOne("GoldEx.Server.Domain.FinancialAccountAggregate.FinancialAccount", "SourceFinancialAccount")
-                                .WithMany()
-                                .HasForeignKey("SourceFinancialAccountId")
-                                .OnDelete(DeleteBehavior.Restrict);
-
-                            b1.Navigation("PaymentVoucher");
-
-                            b1.Navigation("PriceUnit");
-
-                            b1.Navigation("SourceFinancialAccount");
-                        });
-
                     b.Navigation("Customer");
 
                     b.Navigation("Discounts");
 
                     b.Navigation("ExtraCosts");
-
-                    b.Navigation("InvoicePayments");
 
                     b.Navigation("PriceUnit");
 
@@ -1194,6 +1172,39 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("PurchaseProduct");
 
                     b.Navigation("SellProduct");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", b =>
+                {
+                    b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", "Invoice")
+                        .WithMany("InvoicePayments")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", "PaymentVoucher")
+                        .WithOne()
+                        .HasForeignKey("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", "PaymentVoucherId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "PriceUnit")
+                        .WithMany()
+                        .HasForeignKey("PriceUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GoldEx.Server.Domain.FinancialAccountAggregate.FinancialAccount", "SourceFinancialAccount")
+                        .WithMany()
+                        .HasForeignKey("SourceFinancialAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("PaymentVoucher");
+
+                    b.Navigation("PriceUnit");
+
+                    b.Navigation("SourceFinancialAccount");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.LedgerAccountAggregate.LedgerAccount", b =>
@@ -1358,32 +1369,44 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             modelBuilder.Entity("GoldEx.Server.Domain.TransactionAggregate.Transaction", b =>
                 {
-                    b.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "CreditUnit")
-                        .WithMany()
-                        .HasForeignKey("CreditUnitId")
+                    b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", null)
+                        .WithMany("Transactions")
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", "Invoice")
+                        .WithMany("Transactions")
+                        .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", "Customer")
-                        .WithMany("Transactions")
-                        .HasForeignKey("CustomerId")
+                    b.HasOne("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", "InvoicePayment")
+                        .WithMany()
+                        .HasForeignKey("InvoicePaymentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoldEx.Server.Domain.LedgerAccountAggregate.LedgerAccount", "LedgerAccount")
+                        .WithMany()
+                        .HasForeignKey("LedgerAccountId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "DebitUnit")
-                        .WithMany()
-                        .HasForeignKey("DebitUnitId")
+                    b.HasOne("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", "PaymentVoucher")
+                        .WithMany("Transactions")
+                        .HasForeignKey("PaymentVoucherId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "PriceUnit")
                         .WithMany()
                         .HasForeignKey("PriceUnitId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("CreditUnit");
+                    b.Navigation("Invoice");
 
-                    b.Navigation("Customer");
+                    b.Navigation("InvoicePayment");
 
-                    b.Navigation("DebitUnit");
+                    b.Navigation("LedgerAccount");
+
+                    b.Navigation("PaymentVoucher");
 
                     b.Navigation("PriceUnit");
                 });
@@ -1419,12 +1442,21 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             modelBuilder.Entity("GoldEx.Server.Domain.InvoiceAggregate.Invoice", b =>
                 {
+                    b.Navigation("InvoicePayments");
+
                     b.Navigation("Items");
+
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.LedgerAccountAggregate.LedgerAccount", b =>
                 {
                     b.Navigation("FinancialAccounts");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.ProductAggregate.Product", b =>

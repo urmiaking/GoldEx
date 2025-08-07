@@ -1,5 +1,4 @@
-﻿@using GoldEx.Client.Helpers
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
 <MudTable T="PaymentVoucherListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadPaymentVouchersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
@@ -34,6 +33,8 @@
                 </MudMenu>
             </MudButtonGroup>
         </MudHidden>
+        <!-- TODO: Add a filter for VoucherType -->
+
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
                 <MudButton StartIcon="@VoucherStatusIcon"></MudButton>
@@ -64,34 +65,23 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortLabel="VoucherNumber" T="PaymentVoucherListVm">شماره سند</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="VoucherType" T="PaymentVoucherListVm">نوع سند</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="PaymentVoucherListVm">تامین کننده</MudTableSortLabel></MudTh>
         <MudTh>شماره تماس</MudTh>
         <MudTh>ارزش کل</MudTh>
         <MudTh><MudTableSortLabel SortLabel="PaymentDate" T="PaymentVoucherListVm">تاریخ پرداخت</MudTableSortLabel></MudTh>
         <MudTh>پرداخت از حساب</MudTh>
-        <MudTh>وضعیت</MudTh>    
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="شماره سند">@context.VoucherNumber</MudTd>
+        <MudTd DataLabel="نوع سند">@context.VoucherType.GetDisplayName()</MudTd>
         <MudTd DataLabel="تامین کننده">@context.SupplierName</MudTd>
         <MudTd DataLabel="شماره تماس">@context.SupplierPhoneNumber</MudTd>
         <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
         <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate.ToShortDateString()</MudTd>
         <MudTd DataLabel="پرداخت از حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
-        <MudTd DataLabel="وضعیت">
-            @switch (context.VoucherStatus)
-            {
-                case VoucherStatus.Applied:
-                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled">@context.VoucherStatus.GetDisplayName()</MudChip>
-                    break;
-                case VoucherStatus.Pending:
-                    <MudChip Size="Size.Small" T="string" Color="Color.Primary" Variant="Variant.Filled">@context.VoucherStatus.GetDisplayName()</MudChip>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        </MudTd>
+       
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ سند">

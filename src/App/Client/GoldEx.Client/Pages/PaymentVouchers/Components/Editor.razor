@@ -6,9 +6,6 @@
     <MudDialog>
         <DialogContent>
             <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="0">
-                @* <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" Value="_searchString" ValueChanged="@(s=> OnSearch(s))"
-                              Placeholder="جستجوی تامین کننده ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField> *@
                 <MudAutocomplete T="CustomerVm"
                                  Value="_model.Customer"
                                  ValueChanged="OnSupplierChanged"
@@ -27,7 +24,6 @@
                                  ShowProgressIndicator="false">
                 </MudAutocomplete>
                 <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddSupplier"></MudIconButton>
-
                 <MudSpacer />
                 <MudSelect T="GetPriceUnitTitleResponse?"
                            Value="_model.PriceUnit"
@@ -53,7 +49,7 @@
             @if (_model.Customer is not null)
             {
                 <MudStack Row AlignItems="AlignItems.End" Class="mt-2">
-                    <MudText Typo="Typo.h6">مشخصات تامین کننده</MudText>
+                    <MudText Typo="Typo.h6">@(_model.VoucherType is PaymentVoucherType.PrepaymentToSupplier ? "مشخصات تامین کننده" : "مشخصات مشتری")</MudText>
                 </MudStack>
                 <MudDivider />
 
@@ -89,7 +85,7 @@
             </MudStack>
             <MudDivider />
             <MudGrid Class="mt-0">
-                <MudItem xs="12" md="3">
+                <MudItem xs="12" md="4">
                     <MudNumericField T="long"
                                      @bind-Value="_model.VoucherNumber"
                                      For="@(() => _model.VoucherNumber)"
@@ -98,7 +94,22 @@
                                      Variant="Variant.Outlined">
                     </MudNumericField>
                 </MudItem>
-                <MudItem xs="12" md="3">
+                <MudItem xs="12" md="4">
+                    <MudSelect T="PaymentVoucherType"
+                               @bind-Value="_model.VoucherType"
+                               Label="@_model.GetDisplayName(() => _model.VoucherType)"
+                               For="() => _model.VoucherType"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var item in Enum.GetValues<PaymentVoucherType>())
+                        {
+                            <MudSelectItem Value="item">
+                                <MudText>@item.GetDisplayName()</MudText>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="4">
                     <MudDatePicker @bind-Date="_model.PaymentDate"
                                    Color="Color.Secondary"
                                    Editable="true"
@@ -110,15 +121,6 @@
                                    Margin="Margin.Dense"
                                    Rounded="true"
                                    Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="3">
-                    <MudTextField T="string"
-                                  @bind-Value="_model.Description"
-                                  For="@(() => _model.Description!)"
-                                  Label="@_model.GetDisplayName(() => _model.Description)"
-                                  Margin="Margin.Dense"
-                                  Variant="Variant.Outlined">
-                    </MudTextField>
                 </MudItem>
                 <MudItem xs="12" md="3">
                     <MudNumericField T="decimal?"
@@ -135,7 +137,15 @@
                                      Variant="Variant.Outlined">
                     </MudNumericField>
                 </MudItem>
-
+                <MudItem xs="12" md="9">
+                    <MudTextField T="string"
+                                  @bind-Value="_model.Description"
+                                  For="@(() => _model.Description!)"
+                                  Label="@_model.GetDisplayName(() => _model.Description)"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined">
+                    </MudTextField>
+                </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="0">
                         <MudSelect T="GetFinancialAccountTitleResponse?"
@@ -151,7 +161,9 @@
                                 </MudSelectItem>
                             }
                         </MudSelect>
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddSourceFinancialAccount"></MudIconButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount(true)">
+                        </MudIconButton>
                     </MudStack>
                 </MudItem>
 
@@ -172,7 +184,7 @@
                             }
                         </MudSelect>
                         <MudIconButton Icon="@Icons.Material.Filled.Add" Disabled="@(_model.Customer == null)"
-                                       Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddDestinationFinancialAccount">
+                                       Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount(false)">
                         </MudIconButton>
                     </MudStack>
                 </MudItem>

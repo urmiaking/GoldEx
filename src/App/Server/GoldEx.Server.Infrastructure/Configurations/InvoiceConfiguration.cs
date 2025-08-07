@@ -38,7 +38,6 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasForeignKey(x => x.UnpaidPriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.OwnsMany(x => x.InvoicePayments, Configure);
         builder.OwnsMany(x => x.Discounts, Configure);
         builder.OwnsMany(x => x.ExtraCosts, Configure);
     }
@@ -80,39 +79,6 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasOne(x => x.PriceUnit)
             .WithMany()
             .HasForeignKey(x => x.PriceUnitId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void Configure(OwnedNavigationBuilder<Invoice, InvoicePayment> builder)
-    {
-        builder.ToTable("InvoicePayments");
-
-        builder.Property(x => x.Amount)
-            .HasPrecision(36, 10)
-            .IsRequired();
-
-        builder.Property(x => x.ExchangeRate)
-            .HasPrecision(36, 10);
-
-        builder.Property(x => x.ReferenceNumber)
-            .HasMaxLength(100);
-
-        builder.Property(x => x.Note)
-            .HasMaxLength(500);
-
-        builder.HasOne(x => x.PriceUnit)
-            .WithMany()
-            .HasForeignKey(x => x.PriceUnitId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(x => x.PaymentVoucher)
-            .WithOne()
-            .HasForeignKey<InvoicePayment>(x => x.PaymentVoucherId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(x => x.SourceFinancialAccount)
-            .WithMany()
-            .HasForeignKey(x => x.SourceFinancialAccountId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

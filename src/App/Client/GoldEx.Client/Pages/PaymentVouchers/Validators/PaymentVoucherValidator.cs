@@ -26,6 +26,9 @@ public class PaymentVoucherValidator : AbstractValidator<PaymentVoucherVm>
 
         RuleFor(x => x.DestinationFinancialAccount)
             .NotEmpty().WithMessage("لطفا حساب دریافتی را انتخاب کنید");
+
+        RuleFor(x => x.VoucherType)
+            .IsInEnum().WithMessage("لطفا نوع سند را انتخاب کنید");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

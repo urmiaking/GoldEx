@@ -45,6 +45,7 @@ public record GetInvoiceItemResponse(
     GetPriceUnitTitleResponse PriceUnit);
 
 public record GetInvoicePaymentResponse(
+    Guid Id,
     decimal Amount,
     DateTime PaymentDate,
     string? ReferenceNumber,

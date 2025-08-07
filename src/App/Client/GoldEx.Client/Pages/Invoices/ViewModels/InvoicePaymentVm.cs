@@ -7,6 +7,8 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class InvoicePaymentVm
 {
+    public Guid? Id { get; set; }
+
     [Display(Name = "تاریخ پرداخت")]
     public DateTime? PaymentDate { get; set; }
 
@@ -45,7 +47,7 @@ public class InvoicePaymentVm
         if (!item.PaymentDate.HasValue)
             throw new FluentValidation.ValidationException("تاریخ پرداخت مشخص نشده است");
 
-        return new InvoicePaymentDto(item.Amount, item.ExchangeRate, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
+        return new InvoicePaymentDto(item.Id, item.Amount, item.ExchangeRate, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
             item.FinancialAccount?.Id, item.VoucherId, item.PriceUnit.Id);
     }
 
@@ -53,6 +55,7 @@ public class InvoicePaymentVm
     {
         return new InvoicePaymentVm
         {
+            Id = response.Id,
             Amount = response.Amount,
             PriceUnit = response.PriceUnit,
             FinancialAccount = response.FinancialAccount,

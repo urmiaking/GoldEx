@@ -22,9 +22,12 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.Constants;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -32,9 +35,11 @@ namespace GoldEx.Server.Application.Services;
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
     IInvoiceItemRepository invoiceItemRepository,
+    IInvoicePaymentRepository invoicePaymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
     ICustomerService customerService,
+    IAccountingTransactionService transactionService,
     IMapper mapper,
     ILogger<InvoiceService> logger,
     InvoiceRequestDtoValidator validator) : IInvoiceService
@@ -73,9 +78,6 @@ internal class InvoiceService(
                     .Get(new LedgerAccountsByCustomerAndParentSpecification(new CustomerId(customerId), parentLedgerAccount.Id))
                     .FirstOrDefaultAsync(cancellationToken);
 
-                // ReSharper disable once NotAccessedVariable : TODO: comments should be removed after refactoring transactions
-                LedgerAccountId customerLedgerAccountId;
-
                 if (existingLedgerAccount is null)
                 {
                     var customer = await customerService.GetAsync(customerId, cancellationToken)
@@ -91,13 +93,6 @@ internal class InvoiceService(
                         parentLedgerAccount.Id);
 
                     await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
-                    // ReSharper disable once RedundantAssignment
-                    customerLedgerAccountId = newLedgerAccount.Id;
-                }
-                else
-                {
-                    // ReSharper disable once RedundantAssignment
-                    customerLedgerAccountId = existingLedgerAccount.Id;
                 }
 
                 Invoice invoice;
@@ -142,15 +137,61 @@ internal class InvoiceService(
                 invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
                     InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
-                invoice.SetInvoicePayments(request.InvoicePayments.Select(x =>
-                    InvoicePayment.Create(x.PaymentDate,
-                        x.Amount,
-                        x.ExchangeRate,
-                        new PriceUnitId(x.PriceUnitId),
-                        x.FinancialAccountId.HasValue ? new FinancialAccountId(x.FinancialAccountId.Value) : null,
-                        x.VoucherId.HasValue ? new PaymentVoucherId(x.VoucherId.Value) : null,
-                        referenceNumber: x.ReferenceNumber,
-                        note: x.Note)));
+                var existingPayments = request.Id.HasValue
+                    ? await invoicePaymentRepository.Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
+                        .ToListAsync(cancellationToken)
+                    : [];
+
+                var paymentDtos = request.InvoicePayments.ToList();
+
+                var paymentsToDelete = existingPayments
+                    .Where(ep => paymentDtos.All(dto => dto.Id != ep.Id.Value))
+                    .ToList();
+
+                if (paymentsToDelete.Any()) 
+                    await invoicePaymentRepository.DeleteRangeAsync(paymentsToDelete, cancellationToken);
+
+                var paymentsToCreate = paymentDtos
+                    .Where(dto => !dto.Id.HasValue)
+                    .Select(dto => InvoicePayment.Create(
+                        dto.PaymentDate,
+                        dto.Amount,
+                        dto.ExchangeRate,
+                        invoice.Id, 
+                        new PriceUnitId(dto.PriceUnitId),
+                        dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null,
+                        dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null,
+                        dto.ReferenceNumber,
+                        dto.Note))
+                    .ToList();
+
+                if (paymentsToCreate.Any()) 
+                    await invoicePaymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
+
+                // 4. ویرایش دسته‌ای (Bulk Update)
+                var paymentsToUpdate = new List<InvoicePayment>();
+                var paymentsToUpdateDtos = paymentDtos.Where(dto => dto.Id.HasValue);
+
+                foreach (var dto in paymentsToUpdateDtos)
+                {
+                    var existingPayment = existingPayments.FirstOrDefault(p => p.Id.Value == dto.Id!.Value)
+                        ?? throw new NotFoundException("InvoicePayment not found for update.");
+
+                    // آپدیت کردن پراپرتی‌های پرداخت موجود
+                    existingPayment.SetPaymentDate(dto.PaymentDate);
+                    existingPayment.SetAmount(dto.Amount, new PriceUnitId(dto.PriceUnitId));
+                    existingPayment.SetSourceFinancialAccountId(dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null);
+                    existingPayment.SetPaymentVoucherId(dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null);
+                    existingPayment.SetReferenceNumber(dto.ReferenceNumber);
+                    existingPayment.SetNote(dto.Note);
+
+                    paymentsToUpdate.Add(existingPayment);
+                }
+
+                if (paymentsToUpdate.Any())
+                {
+                    await invoicePaymentRepository.UpdateRangeAsync(paymentsToUpdate, cancellationToken);
+                }
 
                 if (!isNewInvoice) 
                     await invoiceRepository.UpdateAsync(invoice, cancellationToken);
@@ -267,6 +308,8 @@ internal class InvoiceService(
                     await invoiceItemRepository.DeleteAsync(itemToDelete, cancellationToken);
                 }
 
+                await transactionService.CreateTransactionsForInvoiceAsync(invoice, cancellationToken);
+
                 await dbTransaction.CommitAsync(cancellationToken);
             }
             catch (Exception e)
@@ -321,10 +364,10 @@ internal class InvoiceService(
             .Include(x => x.Items)
                 .ThenInclude(x => x.PurchaseProduct)
                     .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.InvoicePayments)
+            .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
-            .Include(x => x.InvoicePayments)
+            .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
@@ -346,11 +389,12 @@ internal class InvoiceService(
             .Include(x => x.Items)
                 .ThenInclude(x => x.PurchaseProduct)
                     .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.InvoicePayments)
+            .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
-            .Include(x => x.InvoicePayments)
-                .ThenInclude(x => x.SourceFinancialAccount).AsSplitQuery()
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.SourceFinancialAccount)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceResponse>(item);

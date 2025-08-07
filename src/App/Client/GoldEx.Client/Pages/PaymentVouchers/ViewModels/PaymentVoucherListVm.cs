@@ -35,6 +35,9 @@ public class PaymentVoucherListVm
     [Display(Name = "پرداخت از حساب")] 
     public FinancialAccountType FinancialAccountType { get; set; }
 
+    [Display(Name = "نوع سند")]
+    public PaymentVoucherType VoucherType { get; set; }
+
     public static PaymentVoucherListVm CreateFrom(GetPaymentVoucherListResponse response)
     {
         return new PaymentVoucherListVm
@@ -48,7 +51,8 @@ public class PaymentVoucherListVm
             VoucherStatus = response.VoucherStatus,
             SupplierName = response.SupplierName,
             SupplierPhoneNumber = response.SupplierPhoneNumber,
-            FinancialAccountType = response.FinancialAccountType
+            FinancialAccountType = response.FinancialAccountType,
+            VoucherType = response.VoucherType
         };
     }
 }

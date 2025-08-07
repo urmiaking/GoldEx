@@ -1,7 +1,8 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
-using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.PaymentVoucherAggregate;
 
@@ -14,6 +15,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
         string description,
         decimal? exchangeRate,
         DateOnly paymentDate,
+        PaymentVoucherType voucherType,
         FinancialAccountId sourceFinancialAccountId,
         FinancialAccountId destinationFinancialAccountId,
         PriceUnitId voucherPriceUnitId)
@@ -26,6 +28,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
             VoucherNumber = voucherNumber,
             Description = description,
             PaymentDate = paymentDate,
+            VoucherType = voucherType,
             Amount = amount,
             ExchangeRate = exchangeRate,
             VoucherPriceUnitId = voucherPriceUnitId
@@ -42,6 +45,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
     public string Description { get; private set; }
     public decimal Amount { get; private set; }
     public DateOnly PaymentDate { get; private set; }
+    public PaymentVoucherType VoucherType { get; private set; }
 
     /// <summary>
     /// The exchange rate of the amount price unit to the voucher price unit.
@@ -50,6 +54,8 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
 
     public PriceUnit? VoucherPriceUnit { get; private set; }
     public PriceUnitId VoucherPriceUnitId { get; private set; }
+
+    public IReadOnlyList<Transaction>? Transactions { get; private set; }
 
 #pragma warning disable CS8618 
     private PaymentVoucher() { }
@@ -63,4 +69,5 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
     public void SetVoucherPriceUnitId(PriceUnitId priceUnitId) => VoucherPriceUnitId = priceUnitId;
     public void SetDescription(string description) => Description = description;
     public void SetExchangeRate(decimal? exchangeRate) => ExchangeRate = exchangeRate;
+    public void SetVoucherType(PaymentVoucherType voucherType) => VoucherType = voucherType;
 }
