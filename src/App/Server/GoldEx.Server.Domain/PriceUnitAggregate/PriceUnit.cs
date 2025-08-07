@@ -17,7 +17,7 @@ public class PriceUnit : EntityBase<PriceUnitId>
             Title = title,
             PriceId = priceId,
             IsActive = true,
-            IsDefault = false
+            IsDefault = isDefault
         };
     }
 
