@@ -30,8 +30,6 @@ public partial class FinancialAccountEditor
 
     protected override void OnParametersSet()
     {
-        Model.PriceUnit ??= PriceUnits.FirstOrDefault(x => x.IsDefault);
-
         if (CustomerId.HasValue) 
             Model.CustomerId = CustomerId.Value;
 
@@ -48,6 +46,8 @@ public partial class FinancialAccountEditor
     {
         if (!PriceUnits.Any()) 
             await LoadPriceUnitsAsync();
+
+        Model.PriceUnit ??= PriceUnits.FirstOrDefault(x => x.IsDefault);
 
         await base.OnParametersSetAsync();
     }
