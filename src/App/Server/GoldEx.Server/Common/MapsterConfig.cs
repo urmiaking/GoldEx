@@ -231,8 +231,9 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.VoucherNumber, src => src.VoucherNumber)
             .Map(dest => dest.PaymentDate, src => src.PaymentDate)
-            .Map(dest => dest.Amount, src => src.Amount)
-            .Map(dest => dest.PriceUnit, src => src.VoucherPriceUnit != null ? src.VoucherPriceUnit.Title : string.Empty)
+            .Map(dest => dest.Amount, src => src.Amount * (src.ExchangeRate ?? 1))
+            .Map(dest => dest.PriceUnit, src => MapContext.Current.GetService<IPriceUnitRepository>()
+                .Get(new PriceUnitsSetAsDefaultSpecification()).FirstOrDefault()!.Title)
             .Map(dest => dest.VoucherStatus, src => VoucherStatus.Pending) // TODO: Implement status logic
             .Map(dest => dest.SupplierName,
                 src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null

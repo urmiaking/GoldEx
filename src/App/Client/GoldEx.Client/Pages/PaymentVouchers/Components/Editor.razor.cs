@@ -5,6 +5,7 @@ using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -26,6 +27,8 @@ public partial class Editor
     private List<GetFinancialAccountTitleResponse> _destinationFinancialAccounts = [];
     private List<GetCustomerResponse> _suppliers = [];
     private bool _processing;
+
+    private GetPriceUnitTitleResponse? DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault);
 
     protected override async Task OnParametersSetAsync()
     {
@@ -168,6 +171,34 @@ public partial class Editor
 
         if (_model.Customer is not null)
             await LoadDestinationFinancialAccountsAsync();
+
+        await LoadExchangeRateAsync();
+    }
+
+    private async Task LoadExchangeRateAsync()
+    {
+        if (DefaultPriceUnit is null)
+        {
+            AddErrorToast("ارز پیش فرض تعریف نشده است");
+            return;
+        }
+
+        if (_model.PriceUnit is null)
+        {
+            AddErrorToast("واحد ارزی سند انتخاب نشده است");
+            return;
+        }
+
+        if (_model.PriceUnit.Id == DefaultPriceUnit.Id)
+        {
+            _model.ExchangeRate = null;
+            return;
+        }
+
+        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+            action: (s, ct) =>
+                s.GetExchangeRateAsync(_model.PriceUnit.Id, DefaultPriceUnit.Id, ct),
+            afterSend: response => _model.ExchangeRate = response.ExchangeRate);
     }
 
     private async Task LoadFinancialAccounts(Guid? customerId, Guid? priceUnitId, bool isSourceFinancialAccount)
