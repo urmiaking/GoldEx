@@ -18,21 +18,31 @@
 
 <MudDivider Class="my-2" />
 
-<MudPaper Elevation="24">
-    <MudTreeView Items="_treeItems" Hover="true" SelectionMode="SelectionMode.SingleSelection">
-        <ItemTemplate Context="item">
-            <MudTreeViewItem Items="@item.Children" Icon="@item.Icon">
-                <BodyContent>
-                    <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%">
-                        <MudText Style="justify-self: start;">@item.Text</MudText>
-                        <div style="justify-self: end;">
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Medium" Color="Color.Success" OnClick="() => OnCreate(item.Value)" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Medium" Color="Color.Info" OnClick="() => OnEdit(item.Value)" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Medium" Color="Color.Error" OnClick="() => OnRemove(item.Value)" />
+@if (!_treeItems.Any())
+{
+    <div class="align-center d-flex flex-column gap-3 justify-content-center">
+        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+        <div>در حال بارگذاری</div>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="24">
+        <MudTreeView Items="_treeItems" Hover="true" SelectionMode="SelectionMode.SingleSelection">
+            <ItemTemplate Context="item">
+                <MudTreeViewItem Items="@item.Children" Icon="@item.Icon">
+                    <BodyContent>
+                        <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%">
+                            <MudText Style="justify-self: start;">@item.Text</MudText>
+                            <div style="justify-self: end;">
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Medium" Color="Color.Success" OnClick="() => OnCreate(item.Value)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Medium" Color="Color.Info" OnClick="() => OnEdit(item.Value)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Medium" Color="Color.Error" OnClick="() => OnRemove(item.Value)" />
+                            </div>
                         </div>
-                    </div>
-                </BodyContent>
-            </MudTreeViewItem>
-        </ItemTemplate>
-    </MudTreeView>
-</MudPaper>
+                    </BodyContent>
+                </MudTreeViewItem>
+            </ItemTemplate>
+        </MudTreeView>
+    </MudPaper>
+}

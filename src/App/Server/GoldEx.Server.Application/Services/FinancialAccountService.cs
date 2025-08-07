@@ -9,6 +9,8 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -20,6 +22,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class FinancialAccountService(
     IFinancialAccountRepository repository,
+    ILedgerAccountRepository ledgerAccountRepository,
     FinancialAccountRequestDtoValidator validator,
     DeleteFinancialAccountValidator deleteValidator,
     IMapper mapper) : IFinancialAccountService
@@ -73,10 +76,19 @@ internal class FinancialAccountService(
         }
         else
         {
+            var ledgerAccountTitle = request.FinancialAccountType == FinancialAccountType.Cash
+                ? SystemLedgerAccounts.CashAccounts
+                : SystemLedgerAccounts.Banks;
+
+            var ledgerAccount = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(ledgerAccountTitle))
+                .FirstOrDefaultAsync(cancellationToken)
+                                ?? throw new InvalidOperationException($"System ledger account '{ledgerAccountTitle}' not found.");
+
             financialAccount = FinancialAccount.CreateSystemAccount(
                 request.FinancialAccountType,
                 new PriceUnitId(request.PriceUnitId),
-                new LedgerAccountId(request.LedgerAccountId!.Value));
+                ledgerAccount.Id);
         }
 
         switch (request.FinancialAccountType)
@@ -116,7 +128,18 @@ internal class FinancialAccountService(
         financialAccount.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
 
         if (financialAccount.IsSystemAccount)
-            financialAccount.SetLedgerAccount(new LedgerAccountId(request.LedgerAccountId!.Value));
+        {
+            var ledgerAccountTitle = request.FinancialAccountType == FinancialAccountType.Cash
+                ? SystemLedgerAccounts.CashAccounts
+                : SystemLedgerAccounts.Banks;
+
+            var ledgerAccount = await ledgerAccountRepository
+                                    .Get(new LedgerAccountsByTitleSpecification(ledgerAccountTitle))
+                                    .FirstOrDefaultAsync(cancellationToken)
+                                ?? throw new InvalidOperationException($"System ledger account '{ledgerAccountTitle}' not found.");
+
+            financialAccount.SetLedgerAccount(ledgerAccount.Id);
+        }
         else
             financialAccount.SetLedgerAccount(null);
 
