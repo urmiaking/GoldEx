@@ -119,11 +119,11 @@ public partial class CustomersList
 
     private async Task OnViewTransaction(CustomerVm customerVm)
     {
-        var parameters = new DialogParameters
-        {
-            { nameof(TransactionsList.CustomerId), customerVm.Id }
-        };
-        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
+        //var parameters = new DialogParameters
+        //{
+        //    { nameof(TransactionsList.CustomerId), customerVm.Id }
+        //};
+        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", _viewTransactionDialogOptions);
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {

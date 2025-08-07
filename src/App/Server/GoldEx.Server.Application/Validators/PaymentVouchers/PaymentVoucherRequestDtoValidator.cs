@@ -24,6 +24,10 @@ internal class PaymentVoucherRequestDtoValidator : AbstractValidator<PaymentVouc
         RuleFor(x => x.VoucherNumber)
             .MustAsync(BeUniqueNumber)
             .WithMessage("شماره رسید پرداخت باید یکتا باشد");
+
+        RuleFor(x => x.VoucherType)
+            .IsInEnum()
+            .WithMessage("نوع رسید پرداخت نامعتبر است");
     }
 
     private async Task<bool> BeUniqueNumber(PaymentVoucherRequestDto request, long voucherNumber, CancellationToken cancellationToken)

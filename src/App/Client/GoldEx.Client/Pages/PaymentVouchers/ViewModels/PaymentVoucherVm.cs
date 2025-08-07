@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 
@@ -44,6 +45,9 @@ public class PaymentVoucherVm
 
     public CustomerVm? Customer { get; set; }
 
+    [Display(Name = "نوع سند")]
+    public PaymentVoucherType VoucherType { get; set; } = PaymentVoucherType.PrepaymentToSupplier;
+
     public static PaymentVoucherVm CreateFrom(GetPaymentVoucherResponse response)
     {
         return new PaymentVoucherVm
@@ -57,7 +61,8 @@ public class PaymentVoucherVm
             ExchangeRate = response.ExchangeRate,
             Customer = CustomerVm.CreateFrom(response.Customer),
             PaymentDate = response.PaymentDate,
-            PriceUnit = response.PriceUnit
+            PriceUnit = response.PriceUnit,
+            VoucherType = response.VoucherType
         };
     }
 
@@ -90,6 +95,7 @@ public class PaymentVoucherVm
             model.ExchangeRate,
             model.Description,
             DateOnly.FromDateTime(model.PaymentDate.Value), 
+            model.VoucherType,
             model.PriceUnit.Id,
             model.SourceFinancialAccount.Id,
             model.DestinationFinancialAccount.Id);

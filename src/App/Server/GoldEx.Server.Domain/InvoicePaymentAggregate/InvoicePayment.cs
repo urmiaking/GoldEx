@@ -1,16 +1,19 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 
-namespace GoldEx.Server.Domain.InvoiceAggregate;
+namespace GoldEx.Server.Domain.InvoicePaymentAggregate;
 
-public class InvoicePayment : EntityBase
+public readonly record struct InvoicePaymentId(Guid Value);
+public class InvoicePayment : EntityBase<InvoicePaymentId>
 {
     public static InvoicePayment Create(
         DateTime paymentDate,
         decimal amount,
         decimal? exchangeRate,
+        InvoiceId invoiceId,
         PriceUnitId priceUnitId,
         FinancialAccountId? sourceFinancialAccountId,
         PaymentVoucherId? paymentVoucherId,
@@ -19,8 +22,10 @@ public class InvoicePayment : EntityBase
     {
         return new InvoicePayment
         {
+            Id = new InvoicePaymentId(Guid.NewGuid()),
             PaymentDate = paymentDate,
             Amount = amount,
+            InvoiceId = invoiceId,
             PriceUnitId = priceUnitId,
             ExchangeRate = exchangeRate,
             SourceFinancialAccountId = sourceFinancialAccountId,
@@ -38,6 +43,7 @@ public class InvoicePayment : EntityBase
 
     public decimal Amount { get; private set; }
     public decimal? ExchangeRate { get; private set; }
+
     public PriceUnitId PriceUnitId { get; private set; }
     public PriceUnit? PriceUnit { get; private set; }
 
@@ -46,6 +52,9 @@ public class InvoicePayment : EntityBase
 
     public PaymentVoucherId? PaymentVoucherId { get; private set; }
     public PaymentVoucher? PaymentVoucher { get; private set; }
+
+    public InvoiceId InvoiceId { get; private set; }
+    public Invoice? Invoice { get; private set; }
 
     public void SetPaymentDate(DateTime paymentDate) => PaymentDate = paymentDate;
     public void SetReferenceNumber(string? referenceNumber) => ReferenceNumber = referenceNumber;

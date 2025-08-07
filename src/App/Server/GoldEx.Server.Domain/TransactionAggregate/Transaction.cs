@@ -1,75 +1,147 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.TransactionAggregate;
 
 public readonly record struct TransactionId(Guid Value);
 public class Transaction : EntityBase<TransactionId>
 {
-    public static Transaction Create(DateTime dateTime,
-        long number,
+    public static Transaction CreateForInvoice(
         string description,
+        decimal amount,
+        decimal? exchangeRate,
+        Guid groupId,
+        TransactionType transactionType,
+        LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
-        decimal? credit,
-        PriceUnitId? creditUnitId,
-        decimal? creditRate,
-        decimal? debit,
-        PriceUnitId? debitUnitId,
-        decimal? debitRate,
-        CustomerId customerId)
+        InvoiceId invoiceId)
     {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
+
+        if (exchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero if provided.");
+
+        if (groupId == Guid.Empty)
+            throw new ArgumentException("Group ID cannot be empty.", nameof(groupId));
+
         return new Transaction
         {
             Id = new TransactionId(Guid.NewGuid()),
-            DateTime = dateTime,
-            Number = number,
             Description = description,
+            Amount = amount,
+            GroupId = groupId,
+            TransactionType = transactionType,
+            LedgerAccountId = ledgerAccountId,
+            ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
-            Credit = credit,
-            CreditUnitId = creditUnitId,
-            CreditRate = creditRate,
-            Debit = debit,
-            DebitUnitId = debitUnitId,
-            DebitRate = debitRate,
-            CustomerId = customerId
+            InvoiceId = invoiceId,
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1)
         };
+    }
 
+    public static Transaction CreateForPaymentVoucher(
+        string description,
+        decimal amount,
+        decimal? exchangeRate,
+        Guid groupId,
+        TransactionType transactionType,
+        LedgerAccountId ledgerAccountId,
+        PriceUnitId priceUnitId,
+        PaymentVoucherId paymentVoucherId)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
+
+        if (exchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero if provided.");
+
+        if (groupId == Guid.Empty)
+            throw new ArgumentException("Group ID cannot be empty.", nameof(groupId));
+
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            Description = description,
+            Amount = amount,
+            GroupId = groupId,
+            TransactionType = transactionType,
+            LedgerAccountId = ledgerAccountId,
+            ExchangeRate = exchangeRate,
+            PriceUnitId = priceUnitId,
+            PaymentVoucherId = paymentVoucherId,
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1)
+        };
+    }
+
+    public static Transaction CreateForInvoicePayment(
+        string description,
+        decimal amount,
+        decimal? exchangeRate,
+        Guid groupId,
+        TransactionType transactionType,
+        LedgerAccountId ledgerAccountId,
+        PriceUnitId priceUnitId,
+        InvoicePaymentId invoicePaymentId)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
+
+        if (groupId == Guid.Empty)
+            throw new ArgumentException("Group ID cannot be empty.", nameof(groupId));
+
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            Description = description,
+            Amount = amount,
+            GroupId = groupId,
+            TransactionType = transactionType,
+            LedgerAccountId = ledgerAccountId,
+            ExchangeRate = exchangeRate,
+            PriceUnitId = priceUnitId,
+            InvoicePaymentId = invoicePaymentId,
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1)
+        };
     }
 
 #pragma warning disable CS8618
     private Transaction() { }
 #pragma warning restore CS8618
 
-    public DateTime DateTime { get; private set; }
-    public long Number { get; private set; }
     public string Description { get; private set; }
-    public decimal? Credit { get; private set; }
-    public decimal? CreditRate { get; private set; }
-    public decimal? Debit { get; private set; }
-    public decimal? DebitRate { get; private set; }
+    public decimal Amount { get; private set; }
+    public decimal? ExchangeRate { get; private set; }
+    public decimal BaseCurrencyAmount { get; private set; }
+    public TransactionType TransactionType { get; private set; }
+    public Guid GroupId { get; private set; }
 
-    public PriceUnitId? PriceUnitId { get; private set; }
+    public PriceUnitId PriceUnitId { get; private set; }
     public PriceUnit? PriceUnit { get; private set; }
 
-    public PriceUnitId? CreditUnitId { get; private set; }
-    public PriceUnit? CreditUnit { get; private set; }
+    public LedgerAccountId LedgerAccountId { get; private set; }
+    public LedgerAccount? LedgerAccount { get; private set; }
 
-    public PriceUnitId? DebitUnitId { get; private set; }
-    public PriceUnit? DebitUnit { get; private set; }
+    public InvoiceId? InvoiceId { get; private set; }
+    public Invoice? Invoice { get; private set; }
 
-    public Customer? Customer { get; private set; }
-    public CustomerId CustomerId { get; private set; }
+    public PaymentVoucherId? PaymentVoucherId { get; private set; }
+    public PaymentVoucher? PaymentVoucher { get; private set; }
 
-    public void SetPriceUnitId(PriceUnitId priceUnitId) => PriceUnitId = priceUnitId;
-    public void SetDateTime(DateTime date) => DateTime = date;
-    public void SetNumber(long number) => Number = number;
-    public void SetDescription(string description) => Description = description;
-    public void SetCredit(decimal? credit) => Credit = credit;
-    public void SetCreditUnit(PriceUnitId? unitTypeId) => CreditUnitId = unitTypeId;
-    public void SetCreditRate(decimal? creditRate) => CreditRate = creditRate;
-    public void SetDebit(decimal? debit) => Debit = debit;
-    public void SetDebitUnit(PriceUnitId? unitTypeId) => DebitUnitId = unitTypeId;
-    public void SetDebitRate(decimal? debitRate) => DebitRate = debitRate;
-    public void SetCustomer(CustomerId customerId) => CustomerId = customerId;
+    public InvoicePaymentId? InvoicePaymentId { get; private set; }
+    public InvoicePayment? InvoicePayment { get; private set; }
 }

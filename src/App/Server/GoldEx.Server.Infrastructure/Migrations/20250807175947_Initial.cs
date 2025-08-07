@@ -12,20 +12,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "PaymentMethods",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PaymentMethods", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Prices",
                 columns: table => new
                 {
@@ -78,7 +64,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     PhoneNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     TaxPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
                     GoldProfitPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
+                    GoldSafetyMarginPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
                     JewelryProfitPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
+                    OldGoldCarat = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
                     PriceUpdateInterval = table.Column<TimeSpan>(type: "time", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -142,6 +130,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDefault = table.Column<bool>(type: "bit", nullable: false),
                     PriceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -152,33 +141,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         name: "FK_PriceUnits_Prices_PriceId",
                         column: x => x.PriceId,
                         principalTable: "Prices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Products",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Barcode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Weight = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
-                    Wage = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
-                    ProductType = table.Column<int>(type: "int", nullable: false),
-                    CaratType = table.Column<int>(type: "int", nullable: false),
-                    WageType = table.Column<int>(type: "int", nullable: false),
-                    ProductStatus = table.Column<int>(type: "int", nullable: false),
-                    ProductCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Products", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Products_ProductCategories_ProductCategoryId",
-                        column: x => x.ProductCategoryId,
-                        principalTable: "ProductCategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -315,6 +277,108 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Barcode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Weight = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    Wage = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ProductType = table.Column<int>(type: "int", nullable: false),
+                    CaratType = table.Column<int>(type: "int", nullable: false),
+                    WageType = table.Column<int>(type: "int", nullable: true),
+                    GoldUnitType = table.Column<int>(type: "int", nullable: false),
+                    ProductCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    WagePriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_PriceUnits_WagePriceUnitId",
+                        column: x => x.WagePriceUnitId,
+                        principalTable: "PriceUnits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Products_ProductCategories_ProductCategoryId",
+                        column: x => x.ProductCategoryId,
+                        principalTable: "ProductCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Invoices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvoiceNumber = table.Column<long>(type: "bigint", nullable: false),
+                    DueDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    InvoiceDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    InvoiceType = table.Column<int>(type: "int", nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UnpaidPriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UnpaidAmountExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Invoices_PriceUnits_PriceUnitId",
+                        column: x => x.PriceUnitId,
+                        principalTable: "PriceUnits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Invoices_PriceUnits_UnpaidPriceUnitId",
+                        column: x => x.UnpaidPriceUnitId,
+                        principalTable: "PriceUnits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LedgerAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    AccountType = table.Column<int>(type: "int", nullable: false),
+                    IsSystemAccount = table.Column<bool>(type: "bit", nullable: false),
+                    ParentAccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LedgerAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LedgerAccounts_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_LedgerAccounts_LedgerAccounts_ParentAccountId",
+                        column: x => x.ParentAccountId,
+                        principalTable: "LedgerAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GemStones",
                 columns: table => new
                 {
@@ -339,67 +403,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Invoices",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    InvoiceNumber = table.Column<long>(type: "bigint", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Invoices", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Invoices_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Transactions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Number = table.Column<long>(type: "bigint", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Credit = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
-                    CreditRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
-                    Debit = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
-                    DebitRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
-                    CreditUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DebitUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Transactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Transactions_PriceUnits_CreditUnitId",
-                        column: x => x.CreditUnitId,
-                        principalTable: "PriceUnits",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Transactions_PriceUnits_DebitUnitId",
-                        column: x => x.DebitUnitId,
-                        principalTable: "PriceUnits",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "InvoiceDiscounts",
                 columns: table => new
                 {
@@ -407,8 +410,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Amount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    DiscountUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -421,8 +425,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_InvoiceDiscounts_PriceUnits_DiscountUnitId",
-                        column: x => x.DiscountUnitId,
+                        name: "FK_InvoiceDiscounts_PriceUnits_PriceUnitId",
+                        column: x => x.PriceUnitId,
                         principalTable: "PriceUnits",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -436,6 +440,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Amount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -468,8 +473,15 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SellProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PurchaseProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ItemRawAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemWageAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemProfitAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemTaxAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemFinalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -488,9 +500,105 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_InvoiceItems_Products_ProductId",
-                        column: x => x.ProductId,
+                        name: "FK_InvoiceItems_Products_PurchaseProductId",
+                        column: x => x.PurchaseProductId,
                         principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_InvoiceItems_Products_SellProductId",
+                        column: x => x.SellProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FinancialAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AccountType = table.Column<int>(type: "int", nullable: false),
+                    IsSystemAccount = table.Column<bool>(type: "bit", nullable: false),
+                    PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LedgerAccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LocalAccount_AccountHolderName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    LocalAccount_BankName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    LocalAccount_CardNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    LocalAccount_ShabaNumber = table.Column<string>(type: "nvarchar(26)", maxLength: 26, nullable: true),
+                    LocalAccount_AccountNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    InternationalAccount_AccountHolderName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    InternationalAccount_BankName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    InternationalAccount_SwiftBicCode = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: true),
+                    InternationalAccount_IbanNumber = table.Column<string>(type: "nvarchar(34)", maxLength: 34, nullable: true),
+                    InternationalAccount_AccountNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FinancialAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FinancialAccounts_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FinancialAccounts_LedgerAccounts_LedgerAccountId",
+                        column: x => x.LedgerAccountId,
+                        principalTable: "LedgerAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FinancialAccounts_PriceUnits_PriceUnitId",
+                        column: x => x.PriceUnitId,
+                        principalTable: "PriceUnits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PaymentVouchers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DestinationFinancialAccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SourceFinancialAccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VoucherNumber = table.Column<long>(type: "bigint", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    PaymentDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    VoucherType = table.Column<int>(type: "int", nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    VoucherPriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentVouchers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PaymentVouchers_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PaymentVouchers_FinancialAccounts_DestinationFinancialAccountId",
+                        column: x => x.DestinationFinancialAccountId,
+                        principalTable: "FinancialAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PaymentVouchers_FinancialAccounts_SourceFinancialAccountId",
+                        column: x => x.SourceFinancialAccountId,
+                        principalTable: "FinancialAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PaymentVouchers_PriceUnits_VoucherPriceUnitId",
+                        column: x => x.VoucherPriceUnitId,
+                        principalTable: "PriceUnits",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -499,35 +607,101 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "InvoicePayments",
                 columns: table => new
                 {
-                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReferenceNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Amount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
-                    AmountUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PaymentMethodId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SourceFinancialAccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PaymentVoucherId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InvoicePayments", x => new { x.InvoiceId, x.Id });
+                    table.PrimaryKey("PK_InvoicePayments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoicePayments_FinancialAccounts_SourceFinancialAccountId",
+                        column: x => x.SourceFinancialAccountId,
+                        principalTable: "FinancialAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_InvoicePayments_Invoices_InvoiceId",
                         column: x => x.InvoiceId,
                         principalTable: "Invoices",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_InvoicePayments_PaymentMethods_PaymentMethodId",
-                        column: x => x.PaymentMethodId,
-                        principalTable: "PaymentMethods",
+                        name: "FK_InvoicePayments_PaymentVouchers_PaymentVoucherId",
+                        column: x => x.PaymentVoucherId,
+                        principalTable: "PaymentVouchers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_InvoicePayments_PriceUnits_AmountUnitId",
-                        column: x => x.AmountUnitId,
+                        name: "FK_InvoicePayments_PriceUnits_PriceUnitId",
+                        column: x => x.PriceUnitId,
+                        principalTable: "PriceUnits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Transactions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
+                    BaseCurrencyAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    TransactionType = table.Column<int>(type: "int", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LedgerAccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PaymentVoucherId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    InvoicePaymentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Transactions_InvoicePayments_InvoicePaymentId",
+                        column: x => x.InvoicePaymentId,
+                        principalTable: "InvoicePayments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Transactions_LedgerAccounts_LedgerAccountId",
+                        column: x => x.LedgerAccountId,
+                        principalTable: "LedgerAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Transactions_PaymentVouchers_PaymentVoucherId",
+                        column: x => x.PaymentVoucherId,
+                        principalTable: "PaymentVouchers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Transactions_PriceUnits_PriceUnitId",
+                        column: x => x.PriceUnitId,
                         principalTable: "PriceUnits",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -550,14 +724,29 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_FinancialAccounts_CustomerId",
+                table: "FinancialAccounts",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FinancialAccounts_LedgerAccountId",
+                table: "FinancialAccounts",
+                column: "LedgerAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FinancialAccounts_PriceUnitId",
+                table: "FinancialAccounts",
+                column: "PriceUnitId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GemStones_ProductId",
                 table: "GemStones",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvoiceDiscounts_DiscountUnitId",
+                name: "IX_InvoiceDiscounts_PriceUnitId",
                 table: "InvoiceDiscounts",
-                column: "DiscountUnitId");
+                column: "PriceUnitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InvoiceExtraCosts_PriceUnitId",
@@ -575,19 +764,40 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 column: "PriceUnitId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvoiceItems_ProductId",
+                name: "IX_InvoiceItems_PurchaseProductId",
                 table: "InvoiceItems",
-                column: "ProductId");
+                column: "PurchaseProductId",
+                unique: true,
+                filter: "[PurchaseProductId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvoicePayments_AmountUnitId",
-                table: "InvoicePayments",
-                column: "AmountUnitId");
+                name: "IX_InvoiceItems_SellProductId",
+                table: "InvoiceItems",
+                column: "SellProductId",
+                unique: true,
+                filter: "[SellProductId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvoicePayments_PaymentMethodId",
+                name: "IX_InvoicePayments_InvoiceId",
                 table: "InvoicePayments",
-                column: "PaymentMethodId");
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_PaymentVoucherId",
+                table: "InvoicePayments",
+                column: "PaymentVoucherId",
+                unique: true,
+                filter: "[PaymentVoucherId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_PriceUnitId",
+                table: "InvoicePayments",
+                column: "PriceUnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_SourceFinancialAccountId",
+                table: "InvoicePayments",
+                column: "SourceFinancialAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_CustomerId",
@@ -595,10 +805,62 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PaymentMethods_Title",
-                table: "PaymentMethods",
+                name: "IX_Invoices_InvoiceNumber_InvoiceType",
+                table: "Invoices",
+                columns: new[] { "InvoiceNumber", "InvoiceType" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_PriceUnitId",
+                table: "Invoices",
+                column: "PriceUnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_UnpaidPriceUnitId",
+                table: "Invoices",
+                column: "UnpaidPriceUnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LedgerAccounts_CustomerId",
+                table: "LedgerAccounts",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LedgerAccounts_ParentAccountId",
+                table: "LedgerAccounts",
+                column: "ParentAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LedgerAccounts_Title",
+                table: "LedgerAccounts",
                 column: "Title",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentVouchers_CustomerId",
+                table: "PaymentVouchers",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentVouchers_DestinationFinancialAccountId",
+                table: "PaymentVouchers",
+                column: "DestinationFinancialAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentVouchers_SourceFinancialAccountId",
+                table: "PaymentVouchers",
+                column: "SourceFinancialAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentVouchers_VoucherNumber",
+                table: "PaymentVouchers",
+                column: "VoucherNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentVouchers_VoucherPriceUnitId",
+                table: "PaymentVouchers",
+                column: "VoucherPriceUnitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PriceUnits_PriceId",
@@ -630,9 +892,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 column: "ProductCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_ProductStatus",
+                name: "IX_Products_WagePriceUnitId",
                 table: "Products",
-                column: "ProductStatus");
+                column: "WagePriceUnitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -647,25 +909,34 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_CreditUnitId",
-                table: "Transactions",
-                column: "CreditUnitId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_CustomerId",
                 table: "Transactions",
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_DebitUnitId",
+                name: "IX_Transactions_InvoiceId",
                 table: "Transactions",
-                column: "DebitUnitId");
+                column: "InvoiceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_Number",
+                name: "IX_Transactions_InvoicePaymentId",
                 table: "Transactions",
-                column: "Number",
-                unique: true);
+                column: "InvoicePaymentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_LedgerAccountId",
+                table: "Transactions",
+                column: "LedgerAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_PaymentVoucherId",
+                table: "Transactions",
+                column: "PaymentVoucherId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_PriceUnitId",
+                table: "Transactions",
+                column: "PriceUnitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",
@@ -711,9 +982,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "InvoiceItems");
 
             migrationBuilder.DropTable(
-                name: "InvoicePayments");
-
-            migrationBuilder.DropTable(
                 name: "PriceHistories");
 
             migrationBuilder.DropTable(
@@ -741,10 +1009,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "Products");
 
             migrationBuilder.DropTable(
-                name: "Invoices");
-
-            migrationBuilder.DropTable(
-                name: "PaymentMethods");
+                name: "InvoicePayments");
 
             migrationBuilder.DropTable(
                 name: "Roles");
@@ -754,6 +1019,18 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductCategories");
+
+            migrationBuilder.DropTable(
+                name: "Invoices");
+
+            migrationBuilder.DropTable(
+                name: "PaymentVouchers");
+
+            migrationBuilder.DropTable(
+                name: "FinancialAccounts");
+
+            migrationBuilder.DropTable(
+                name: "LedgerAccounts");
 
             migrationBuilder.DropTable(
                 name: "Customers");

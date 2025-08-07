@@ -5,6 +5,7 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoiceItemAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
@@ -118,7 +119,12 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<InvoiceExtraCost, GetInvoiceExtraCostsResponse>();
 
+        #endregion
+
+        #region InvoicePayments
+
         config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
             .Map(dest => dest.VoucherId, src =>
                 src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
@@ -320,15 +326,6 @@ public class MapsterConfig : IRegister
         config.NewConfig<Setting, GetSettingResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.HasIcon, src => MapContext.Current.GetService<IWebHostEnvironment>().AppIconExists());
-
-        #endregion
-
-        #region Transactions
-
-        config.NewConfig<Transaction, GetTransactionResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.CreditPriceUnit, src => src.CreditUnit)
-            .Map(dest => dest.DebitPriceUnit, src => src.DebitUnit);
 
         #endregion
     }

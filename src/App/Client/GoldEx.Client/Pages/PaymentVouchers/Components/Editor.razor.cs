@@ -6,6 +6,7 @@ using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -118,15 +119,33 @@ public partial class Editor
         }
     }
 
-    private async Task OnAddSourceFinancialAccount()
+    private async Task OnAddFinancialAccount(bool isSourceAccount)
     {
         DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
-        var parameters = new DialogParameters<FinancialAccountEditor>
+        DialogParameters<FinancialAccountEditor> parameters;
+
+        if (isSourceAccount)
         {
-            { x => x.SubmitIndependently, true },
-            { x => x.PriceUnits, _priceUnits },
-        };
+            parameters = new DialogParameters<FinancialAccountEditor>
+            {
+                { x => x.SubmitIndependently, true },
+                { x => x.PriceUnits, _priceUnits },
+            };
+        }
+        else
+        {
+            if (_model.Customer is null)
+                return;
+
+            parameters = new DialogParameters<FinancialAccountEditor>
+            {
+                { x => x.SubmitIndependently, true },
+                { x => x.PriceUnits, _priceUnits },
+                { x => x.CustomerId, _model.Customer.Id },
+                { x => x.AccountHolderName, _model.Customer.FullName }
+            };
+        }
 
         var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید", parameters, dialogOptions);
 
@@ -134,7 +153,10 @@ public partial class Editor
 
         if (result is { Canceled: false, Data: FinancialAccountVm })
         {
-            await LoadSourceFinancialAccountsAsync();
+            if (isSourceAccount)
+                await LoadSourceFinancialAccountsAsync();
+            else
+                await LoadDestinationFinancialAccountsAsync();
         }
     }
 
@@ -158,7 +180,7 @@ public partial class Editor
                 {
                     _sourceFinancialAccounts = response;
 
-                    if (!Id.HasValue) 
+                    if (!Id.HasValue)
                         _model.SourceFinancialAccount = null;
                 }
                 else
@@ -174,31 +196,6 @@ public partial class Editor
 
     private async Task LoadSourceFinancialAccountsAsync() => await LoadFinancialAccounts(null, _model.PriceUnit?.Id, true);
     private async Task LoadDestinationFinancialAccountsAsync() => await LoadFinancialAccounts(_model.Customer?.Id, _model.PriceUnit?.Id, false);
-
-    private async Task OnAddDestinationFinancialAccount()
-    {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
-
-        if (_model.Customer is null)
-            return;
-
-        var parameters = new DialogParameters
-        {
-            { nameof(FinancialAccountEditor.SubmitIndependently), true },
-            { nameof(FinancialAccountEditor.PriceUnits), _priceUnits },
-            { nameof(FinancialAccountEditor.CustomerId), _model.Customer.Id },
-            { nameof(FinancialAccountEditor.AccountHolderName), _model.Customer.FullName }
-        };
-
-        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید", parameters, dialogOptions);
-
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: FinancialAccountVm })
-        {
-            await LoadDestinationFinancialAccountsAsync();
-        }
-    }
 
     private async Task<IEnumerable<CustomerVm>?> SearchSuppliers(string? supplierName, CancellationToken cancellationToken = default)
     {
@@ -221,5 +218,13 @@ public partial class Editor
 
         await LoadDestinationFinancialAccountsAsync();
         _model.DestinationFinancialAccount = null;
+    }
+
+    private async Task OnVoucherTypeChanged(PaymentVoucherType voucherType)
+    {
+        _model.VoucherType = voucherType;
+
+        await LoadSourceFinancialAccountsAsync();
+        await LoadDestinationFinancialAccountsAsync();
     }
 }

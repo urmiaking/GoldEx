@@ -10,6 +10,7 @@ public record GetPaymentVoucherListResponse(
     decimal Amount,
     string PriceUnit,
     VoucherStatus VoucherStatus,
+    PaymentVoucherType VoucherType,
     string? SupplierName,
     string? SupplierPhoneNumber,
     FinancialAccountType FinancialAccountType);

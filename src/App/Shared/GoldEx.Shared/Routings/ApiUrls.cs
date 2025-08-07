@@ -143,30 +143,30 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByName).FormatRoute(new { customerName });
     }
 
-    public class Transactions
-    {
-        public static string GetList(RequestFilter filter, TransactionFilter transactionFilter, Guid? customerId) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList)
-                .AppendQueryString(filter)
-                .AppendQueryString(transactionFilter)
-                .AppendQueryString(new { customerId });
+    //public class Transactions
+    //{
+    //    public static string GetList(RequestFilter filter, TransactionFilter transactionFilter, Guid? customerId) =>
+    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList)
+    //            .AppendQueryString(filter)
+    //            .AppendQueryString(transactionFilter)
+    //            .AppendQueryString(new { customerId });
 
-        public static string Get(Guid id) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });
+    //    public static string Get(Guid id) =>
+    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });
 
-        public static string Get(int number) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetByNumber)
-                .AppendQueryString(new { number });
+    //    public static string Get(int number) =>
+    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetByNumber)
+    //            .AppendQueryString(new { number });
 
-        public static string Set() =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Set);
+    //    public static string Set() =>
+    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Set);
 
-        public static string Delete(Guid id) =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Delete).FormatRoute(new { id });
+    //    public static string Delete(Guid id) =>
+    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Delete).FormatRoute(new { id });
 
-        public static string GetLastNumber() =>
-            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLastNumber);
-    }
+    //    public static string GetLastNumber() =>
+    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLastNumber);
+    //}
 
     public class PriceUnits
     {

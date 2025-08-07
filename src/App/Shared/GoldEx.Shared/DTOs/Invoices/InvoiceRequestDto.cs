@@ -38,6 +38,7 @@ public record InvoiceRequestDto(
     List<InvoiceExtraCostsDto> InvoiceExtraCosts);
 
 public record InvoicePaymentDto(
+    Guid? Id,
     decimal Amount,
     decimal? ExchangeRate,
     DateTime PaymentDate,
