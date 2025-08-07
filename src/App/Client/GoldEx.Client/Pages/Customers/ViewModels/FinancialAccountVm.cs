@@ -22,7 +22,10 @@ public class FinancialAccountVm
     public Guid? CustomerId { get; set; }
 
     public LocalBankAccountVm? LocalBankAccount { get; set; }
-    public InternationalBankAccountVm? InternationalBankAccount { get; set; } 
+    public InternationalBankAccountVm? InternationalBankAccount { get; set; }
+
+    [Display(Name = "سرفصل حسابداری")]
+    public GetLedgerAccountResponse? LedgerAccount { get; set; }
 
     public static FinancialAccountVm CreateFrom(GetFinancialAccountResponse response)
     {
@@ -31,6 +34,7 @@ public class FinancialAccountVm
             Id = response.Id,
             FinancialAccountType = response.FinancialAccountType,
             PriceUnit = response.PriceUnit,
+            LedgerAccount = response.LedgerAccount,
             InternationalBankAccount = response.InternationalBankAccount != null
                 ? new InternationalBankAccountVm
                 {
@@ -60,6 +64,7 @@ public class FinancialAccountVm
             FinancialAccountType,
             PriceUnit!.Id,
             CustomerId,
+            LedgerAccount?.Id,
             IsSystemAccount,
             FinancialAccountType is FinancialAccountType.LocalBankAccount && LocalBankAccount != null
                 ? new LocalBankAccountRequestDto(

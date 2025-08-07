@@ -1,5 +1,7 @@
 ﻿using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Shared.Constants;
+using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -27,6 +29,7 @@ public partial class FinancialAccountEditor
 
     private readonly FinancialAccountValidator _financialAccountValidator = new();
     private MudForm _form = default!;
+    private List<GetLedgerAccountResponse> _ledgerAccounts = [];
 
     protected override void OnParametersSet()
     {
@@ -47,9 +50,33 @@ public partial class FinancialAccountEditor
         if (!PriceUnits.Any()) 
             await LoadPriceUnitsAsync();
 
+        await LoadLedgerAccountsAsync();
+
         Model.PriceUnit ??= PriceUnits.FirstOrDefault(x => x.IsDefault);
 
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadLedgerAccountsAsync()
+    {
+        if (!Model.IsSystemAccount)
+            return;
+
+        await SendRequestAsync<ILedgerAccountService, List<GetLedgerAccountResponse>>(
+            action: (service, token) => service.GetTitlesAsync(Model.FinancialAccountType, token),
+            afterSend: response =>
+            {
+                _ledgerAccounts = response;
+                Model.LedgerAccount = _ledgerAccounts.FirstOrDefault(x => x.Title == Model.FinancialAccountType switch
+                {
+                    FinancialAccountType.LocalBankAccount => SystemLedgerAccounts.Banks,
+                    FinancialAccountType.InternationalBankAccount => SystemLedgerAccounts.Banks,
+                    FinancialAccountType.Cash => SystemLedgerAccounts.CashAccounts,
+                    _ => throw new ArgumentOutOfRangeException(nameof(Model.FinancialAccountType), Model.FinancialAccountType, null)
+                });
+
+                StateHasChanged();
+            });
     }
 
     private async Task LoadPriceUnitsAsync()
@@ -93,7 +120,7 @@ public partial class FinancialAccountEditor
         }
     }
 
-    private void OnAccountTypeChanged(FinancialAccountType type)
+    private async Task OnAccountTypeChanged(FinancialAccountType type)
     {
         Model.FinancialAccountType = type;
 
@@ -112,6 +139,8 @@ public partial class FinancialAccountEditor
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
+
+        await LoadLedgerAccountsAsync();
 
         StateHasChanged();
     }

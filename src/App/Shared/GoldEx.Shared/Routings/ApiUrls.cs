@@ -282,5 +282,9 @@ public class ApiUrls
             BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.Update).FormatRoute(new { id });
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.Delete).FormatRoute(new { id });
+
+        public static string GetTitles(FinancialAccountType? financialAccountType) =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetTitles)
+                .AppendQueryString(new { financialAccountType });
     }
 }

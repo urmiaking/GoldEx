@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.LedgerAccounts;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +18,13 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
     {
         var list = await service.GetListAsync(customerId, cancellationToken);
         return Ok(list);
+    }
+
+    [HttpGet(ApiRoutes.LedgerAccounts.GetTitles)]
+    public async Task<IActionResult> GetTitlesAsync([FromQuery] FinancialAccountType? financialAccountType, CancellationToken cancellationToken)
+    {
+        var titles = await service.GetTitlesAsync(financialAccountType, cancellationToken);
+        return Ok(titles);
     }
 
     [HttpGet(ApiRoutes.LedgerAccounts.Get)]
