@@ -5,6 +5,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -14,6 +15,18 @@ internal class LedgerAccountService(HttpClient client, JsonSerializerOptions jso
     public async Task<List<GetLedgerAccountResponse>> GetListAsync(Guid? customerId, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.LedgerAccounts.GetList(customerId), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetLedgerAccountResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<GetLedgerAccountResponse>> GetTitlesAsync(FinancialAccountType? financialAccountType, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.LedgerAccounts.GetTitles(financialAccountType), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

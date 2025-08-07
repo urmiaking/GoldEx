@@ -1,4 +1,5 @@
-﻿@using GoldEx.Shared.DTOs.PriceUnits
+﻿@using GoldEx.Shared.DTOs.LedgerAccounts
+@using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_financialAccountValidator.ValidateValue)" ValidationDelay="0">
@@ -113,6 +114,25 @@
                                       Variant="Variant.Outlined" />
                     </MudItem>
                 }
+                @if (Model.IsSystemAccount)
+                {
+                    <MudItem xs="12">
+                        <MudSelect T="GetLedgerAccountResponse?"
+                                   @bind-Value="Model.LedgerAccount"
+                                   Label="@Model.GetDisplayName(() => Model.LedgerAccount)"
+                                   For="() => Model.LedgerAccount"
+                                   Margin="Margin.Dense"
+                                   Variant="Variant.Outlined">
+                            @foreach (var item in _ledgerAccounts)
+                            {
+                                <MudSelectItem Value="item">
+                                    @item.Title
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+
             </MudGrid>
         </DialogContent>
         <DialogActions>

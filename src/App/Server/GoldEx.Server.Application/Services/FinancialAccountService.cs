@@ -76,14 +76,13 @@ internal class FinancialAccountService(
         }
         else
         {
-            var ledgerAccountTitle = request.FinancialAccountType == FinancialAccountType.Cash
-                ? SystemLedgerAccounts.CashAccounts
-                : SystemLedgerAccounts.Banks;
+            if (!request.LedgerAccountId.HasValue)
+                throw new ArgumentException("Ledger account ID is required for system accounts.", nameof(request.LedgerAccountId));
 
             var ledgerAccount = await ledgerAccountRepository
-                .Get(new LedgerAccountsByTitleSpecification(ledgerAccountTitle))
+                .Get(new LedgerAccountsByIdSpecification(new LedgerAccountId(request.LedgerAccountId.Value)))
                 .FirstOrDefaultAsync(cancellationToken)
-                                ?? throw new InvalidOperationException($"System ledger account '{ledgerAccountTitle}' not found.");
+                                ?? throw new InvalidOperationException($"System ledger account '{request.LedgerAccountId.Value}' not found.");
 
             financialAccount = FinancialAccount.CreateSystemAccount(
                 request.FinancialAccountType,
@@ -129,14 +128,13 @@ internal class FinancialAccountService(
 
         if (financialAccount.IsSystemAccount)
         {
-            var ledgerAccountTitle = request.FinancialAccountType == FinancialAccountType.Cash
-                ? SystemLedgerAccounts.CashAccounts
-                : SystemLedgerAccounts.Banks;
+            if (!request.LedgerAccountId.HasValue)
+                throw new ArgumentException("Ledger account ID is required for system accounts.", nameof(request.LedgerAccountId));
 
             var ledgerAccount = await ledgerAccountRepository
-                                    .Get(new LedgerAccountsByTitleSpecification(ledgerAccountTitle))
+                                    .Get(new LedgerAccountsByIdSpecification(new LedgerAccountId(request.LedgerAccountId.Value)))
                                     .FirstOrDefaultAsync(cancellationToken)
-                                ?? throw new InvalidOperationException($"System ledger account '{ledgerAccountTitle}' not found.");
+                                ?? throw new InvalidOperationException($"System ledger account '{request.LedgerAccountId.Value}' not found.");
 
             financialAccount.SetLedgerAccount(ledgerAccount.Id);
         }

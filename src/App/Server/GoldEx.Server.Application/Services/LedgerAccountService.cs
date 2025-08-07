@@ -7,6 +7,7 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.DTOs.LedgerAccounts;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,14 @@ internal class LedgerAccountService(
     public async Task<List<GetLedgerAccountResponse>> GetListAsync(Guid? customerId, CancellationToken cancellationToken = default)
     {
         var spec = new LedgerAccountsByCustomerIdSpecification(customerId.HasValue ? new CustomerId(customerId.Value) : null);
+        var list = await repository.Get(spec).ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetLedgerAccountResponse>>(list);
+    }
+
+    public async Task<List<GetLedgerAccountResponse>> GetTitlesAsync(FinancialAccountType? financialAccountType, CancellationToken cancellationToken = default)
+    {
+        var spec = new LedgerAccountsByFinancialAccountTypeSpecification(financialAccountType);
         var list = await repository.Get(spec).ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetLedgerAccountResponse>>(list);
