@@ -73,6 +73,10 @@ public partial class LedgerAccounts
 
     private async Task OnEdit(GetLedgerAccountResponse? selectedItem)
     {
+        AddErrorToast("ویرایش سرفصل ها در حال حاضر امکان پذیر نمی باشد");
+        return;
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (selectedItem == null)
             return;
 
@@ -97,6 +101,10 @@ public partial class LedgerAccounts
 
     private async Task OnRemove(GetLedgerAccountResponse? selectedItem)
     {
+        AddErrorToast("حذف سرفصل ها در حال حاضر امکان پذیر نمی باشد");
+        return;
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (selectedItem == null)
         {
             return;
