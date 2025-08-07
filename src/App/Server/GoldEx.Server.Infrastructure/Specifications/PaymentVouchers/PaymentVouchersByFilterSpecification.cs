@@ -5,7 +5,6 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Shared.DTOs.PaymentVouchers;
-using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 
@@ -43,19 +42,10 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
             AddCriteria(x => x.PaymentDate <= endDateOnly);
         }
 
-        // Apply status filter only if a status is provided
-        // TODO: implement this filter! we may need to add a new property to the PaymentVoucher entity to track status. CONSIDER this!!!
-        if (voucherFilter.VoucherStatus.HasValue)
+        // Apply status filter only if a VoucherType is provided
+        if (voucherFilter.VoucherType.HasValue)
         {
-            switch (voucherFilter.VoucherStatus.Value)
-            {
-                case VoucherStatus.Pending:
-                    break;
-                case VoucherStatus.Applied:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            AddCriteria(x => x.VoucherType == voucherFilter.VoucherType.Value);
         }
 
         // --- Search Filter ---
