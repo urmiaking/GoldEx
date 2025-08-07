@@ -5,7 +5,7 @@
 <MudForm Model="_model" @ref="@_form" Validation="@(_validator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="0">
+            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
                 <MudAutocomplete T="CustomerVm"
                                  Value="_model.Customer"
                                  ValueChanged="OnSupplierChanged"
@@ -25,6 +25,23 @@
                 </MudAutocomplete>
                 <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddSupplier"></MudIconButton>
                 <MudSpacer />
+                @if (_model.PriceUnit != _priceUnits.FirstOrDefault(x => x.IsDefault))
+                {
+                    <MudItem xs="6" md="3" lg="2">
+                        <MudNumericField T="decimal?"
+                                         @bind-Value="@_model.ExchangeRate"
+                                         Variant="Variant.Outlined"
+                                         Label="@_model.GetDisplayName(() => _model.ExchangeRate)"
+                                         For="() => _model.ExchangeRate"
+                                         Format="#,##0.##"
+                                         Immediate="true"
+                                         HideSpinButtons="true"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="@_priceUnits.FirstOrDefault(x => x.IsDefault)?.Title"
+                                         Margin="Margin.Dense">
+                        </MudNumericField>
+                    </MudItem>
+                }
                 <MudSelect T="GetPriceUnitTitleResponse?"
                            Value="_model.PriceUnit"
                            ValueChanged="OnPriceUnitChanged"
