@@ -74,21 +74,6 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
                 .MustAsync(BeValidCustomer)
                 .WithMessage("شناسه مشتری نامعتبر است");
         });
-
-        When(x => x.IsSystemAccount, () =>
-        {
-            RuleFor(x => x.LedgerAccountId)
-                .NotEmpty().WithMessage("برای حساب‌های سیستمی، انتخاب سرفصل حسابداری الزامی است.")
-                .MustAsync(BeValidLedgerAccount).WithMessage("سرفصل حسابداری نامعتبر است");
-        });
-    }
-
-    private async Task<bool> BeValidLedgerAccount(Guid? ledgerAccountId, CancellationToken cancellationToken = default)
-    {
-        if (!ledgerAccountId.HasValue) 
-            return false;
-
-        return await _ledgerAccountRepository.ExistsAsync(new LedgerAccountsByIdSpecification(new LedgerAccountId(ledgerAccountId.Value)), cancellationToken);
     }
 
     private async Task<bool> BeValidPriceUnitId(Guid priceUnitId, CancellationToken cancellationToken = default)

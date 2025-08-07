@@ -2,4 +2,4 @@
 
 namespace GoldEx.Shared.DTOs.LedgerAccounts;
 
-public record GetLedgerAccountResponse(Guid Id, string Title, LedgerAccountType AccountType, GetLedgerAccountResponse? ParentAccount);
+public record GetLedgerAccountResponse(Guid Id, string Title, LedgerAccountType AccountType, bool IsSystemAccount, GetLedgerAccountResponse? ParentAccount);

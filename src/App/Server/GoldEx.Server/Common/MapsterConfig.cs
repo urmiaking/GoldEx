@@ -132,6 +132,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Title, src => src.Title)
             .Map(dest => dest.ParentAccount, src => src.ParentAccount)
+            .Map(dest => dest.IsSystemAccount, src => src.IsSystemAccount)
             .Map(dest => dest.AccountType, src => src.AccountType);
 
         #endregion

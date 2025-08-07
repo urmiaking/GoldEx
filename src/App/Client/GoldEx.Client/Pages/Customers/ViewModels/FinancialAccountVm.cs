@@ -20,7 +20,6 @@ public class FinancialAccountVm
     public bool IsSystemAccount { get; set; }
 
     public Guid? CustomerId { get; set; }
-    public GetLedgerAccountResponse? LedgerAccount { get; set; }
 
     public LocalBankAccountVm? LocalBankAccount { get; set; }
     public InternationalBankAccountVm? InternationalBankAccount { get; set; } 
@@ -61,7 +60,6 @@ public class FinancialAccountVm
             FinancialAccountType,
             PriceUnit!.Id,
             CustomerId,
-            LedgerAccount?.Id,
             IsSystemAccount,
             FinancialAccountType is FinancialAccountType.LocalBankAccount && LocalBankAccount != null
                 ? new LocalBankAccountRequestDto(
