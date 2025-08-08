@@ -193,6 +193,17 @@ public partial class EditorForm
             });
     }
 
+    private void OnCustomerCleared()
+    {
+        _model.Customer = new CustomerVm { CreditLimitPriceUnit = _model.Customer.CreditLimitPriceUnit };
+    }
+
+    private void OnCustomerNationalIdAdornmentClicked()
+    {
+        _model.Customer.NationalId = StringExtensions.GenerateRandomCode(10);
+        StateHasChanged();
+    }
+
     #endregion
 
     #region Barcode
@@ -318,6 +329,17 @@ public partial class EditorForm
             _model.InvoiceItems.Add(invoiceItem);
             StateHasChanged();
         }
+    }
+
+    private Task OnAddCurrency()
+    {
+        throw new NotImplementedException();
+    }
+
+
+    private Task OnAddCoin()
+    {
+        throw new NotImplementedException();
     }
 
     #endregion
@@ -534,17 +556,6 @@ public partial class EditorForm
                 _processing = false;
                 return Task.CompletedTask; 
             });
-    }
-
-    private void OnCustomerCleared()
-    {
-        _model.Customer = new CustomerVm { CreditLimitPriceUnit = _model.Customer.CreditLimitPriceUnit };
-    }
-
-    private void OnCustomerNationalIdAdornmentClicked()
-    {
-        _model.Customer.NationalId = StringExtensions.GenerateRandomCode(10);
-        StateHasChanged();
     }
 
     private async Task SelectTotalUnpaidPriceUnit(GetPriceUnitTitleResponse? item)
