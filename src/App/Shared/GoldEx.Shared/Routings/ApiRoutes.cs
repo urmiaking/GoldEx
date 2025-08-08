@@ -162,4 +162,14 @@ public static class ApiRoutes
         public const string Delete = "{id}";
         public const string GetTitles = "titles";
     }
+
+    public class Coins
+    {
+        public const string Base = "/api/Coins";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string SetStatus = "status/{id}/{isActive}";
+    }
 }

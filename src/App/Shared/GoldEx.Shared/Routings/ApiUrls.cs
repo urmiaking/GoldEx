@@ -287,4 +287,21 @@ public class ApiUrls
             BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetTitles)
                 .AppendQueryString(new { financialAccountType });
     }
+
+    public class Coins
+    {
+        public static string GetList(bool? isActive) =>
+            BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.GetList).AppendQueryString(new { isActive });
+
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.Get).FormatRoute(new { id });
+
+        public static string Create() => BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.Update).FormatRoute(new { id });
+
+        public static string SetStatus(Guid id, bool isActive) =>
+            BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.SetStatus).FormatRoute(new { id, isActive });
+    }
 }

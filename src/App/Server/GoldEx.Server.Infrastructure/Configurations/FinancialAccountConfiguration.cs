@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GoldEx.Server.Infrastructure.Configurations;
 
-internal class FinancialAccountsConfiguration : IEntityTypeConfiguration<FinancialAccount>
+internal class FinancialAccountConfiguration : IEntityTypeConfiguration<FinancialAccount>
 {
     public void Configure(EntityTypeBuilder<FinancialAccount> builder)
     {

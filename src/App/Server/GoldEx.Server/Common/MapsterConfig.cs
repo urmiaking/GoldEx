@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Helpers;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -13,9 +14,9 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
-using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
@@ -26,7 +27,6 @@ using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
-using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using Mapster;
 
@@ -36,6 +36,14 @@ public class MapsterConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
+        #region Coins
+
+        config.NewConfig<Coin, GetCoinResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.PriceId, src => src.PriceId.HasValue ? src.PriceId.Value.Value : (Guid?)null);
+
+        #endregion
+
         #region Customers
 
         config.NewConfig<Customer, GetCustomerResponse>()

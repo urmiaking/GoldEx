@@ -5,10 +5,12 @@ using GoldEx.Sdk.Server.Application.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Coins;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
@@ -26,6 +28,7 @@ internal class PriceService(
     IPriceRepository repository,
     IPriceUnitRepository priceUnitRepository,
     ISettingRepository settingRepository,
+    ICoinRepository coinRepository,
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment) : IServerPriceService,
@@ -111,6 +114,26 @@ internal class PriceService(
 
             if (updatedPriceUnits.Any())
                 await priceUnitRepository.UpdateRangeAsync(updatedPriceUnits, cancellationToken);
+
+            var coins = await coinRepository.Get(new CoinsByStatusSpecification()).ToListAsync(cancellationToken);
+
+            if (!coins.Any())
+            {
+                foreach (var coinPrice in pricesToCreate.Where(x => x.MarketType is MarketType.Coin or MarketType.ParsianCoin))
+                {
+                    coins.Add(Coin.Create(coinPrice.Title, coinPrice.MarketType switch
+                    {
+                        MarketType.Gold => throw new InvalidOperationException(),
+                        MarketType.Currency => throw new InvalidOperationException(),
+                        MarketType.Coin => CoinType.Coin,
+                        MarketType.BubbleCoin => throw new InvalidOperationException(),
+                        MarketType.ParsianCoin => CoinType.ParsianCoin,
+                        _ => throw new ArgumentOutOfRangeException()
+                    }, coinPrice.Id));
+                }
+
+                await coinRepository.CreateRangeAsync(coins, cancellationToken);
+            }
         }
 
         if (pricesToUpdate.Any()) await repository.UpdateRangeAsync(pricesToUpdate, cancellationToken);
