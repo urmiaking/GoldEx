@@ -84,6 +84,7 @@ public static class ClientRoutes
         public const string ReportsList = $"{SettingsPrefix}/reports-list";
         public const string FinancialAccounts = $"{SettingsPrefix}/financial-accounts";
         public const string LedgerAccounts = $"{SettingsPrefix}/ledger-accounts";
+        public const string Coins = $"{SettingsPrefix}/coins";
     }
 
     public static class Logs
