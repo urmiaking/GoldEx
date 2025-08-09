@@ -1,5 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.InvoiceProductItemAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
@@ -8,7 +8,7 @@ namespace GoldEx.Server.Domain.ProductAggregate;
 
 public readonly record struct ProductId(Guid Value);
 public class Product : EntityBase<ProductId>
-{ 
+{
     public static Product Create(
         string name,
         string barcode,

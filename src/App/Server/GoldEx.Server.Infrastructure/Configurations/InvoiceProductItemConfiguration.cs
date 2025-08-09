@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.InvoiceProductItemAggregate;
+﻿using GoldEx.Server.Domain.InvoiceAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,10 +9,6 @@ public class InvoiceProductItemConfiguration : IEntityTypeConfiguration<InvoiceP
     public void Configure(EntityTypeBuilder<InvoiceProductItem> builder)
     {
         builder.ToTable("InvoiceProductItems");
-
-        builder.Property(x => x.Id)
-            .HasConversion(id => id.Value,
-                value => new InvoiceProductItemId(value));
 
         builder.Property(x => x.Quantity)
             .IsRequired();
@@ -56,31 +52,17 @@ public class InvoiceProductItemConfiguration : IEntityTypeConfiguration<InvoiceP
             .HasPrecision(36, 10)
             .IsRequired();
 
-        builder.HasOne(x => x.SellProduct)
-            .WithOne(x => x.SellInvoiceProductItem)
-            .HasForeignKey<InvoiceProductItem>(x => x.SellProductId)
+        builder.HasOne(x => x.Product)
+            .WithMany()
+            .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(x => x.PurchaseProduct)
-            .WithOne(x => x.PurchaseInvoiceProductItem)
-            .HasForeignKey<InvoiceProductItem>(x => x.PurchaseProductId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(x => x.Invoice)
-            .WithMany(x => x.ProductItems)
-            .HasForeignKey(x => x.InvoiceId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.PriceUnit)
             .WithMany()
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(x => x.PurchaseProductId)
-            .IsUnique()
-            .HasFilter("[PurchaseProductId] IS NOT NULL");
-
-        builder.HasIndex(x => x.SellProductId)
+        builder.HasIndex(x => x.ProductId)
             .IsUnique()
             .HasFilter("[SellProductId] IS NOT NULL");
     }
