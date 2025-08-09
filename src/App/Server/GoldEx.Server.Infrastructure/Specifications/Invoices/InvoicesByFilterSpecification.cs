@@ -53,13 +53,13 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
             // This is the full, translatable calculation for the total unpaid amount.
             System.Linq.Expressions.Expression<Func<Invoice, bool>> isPaidExpression = x =>
                 Math.Abs(
-                    (x.Items.Sum(i => i.TotalAmount) - x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) + x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))) - x.InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
+                    (x.ProductItems.Sum(i => i.TotalAmount) - x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) + x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))) - x.InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
                 ) < 0.01m;
 
             // The opposite expression, for checking if there is debt.
             System.Linq.Expressions.Expression<Func<Invoice, bool>> hasDebtExpression = x =>
                Math.Abs(
-                   (x.Items.Sum(i => i.TotalAmount) - x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) + x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))) - x.InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
+                   (x.ProductItems.Sum(i => i.TotalAmount) - x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) + x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))) - x.InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
                ) >= 0.01m;
 
 
@@ -91,13 +91,13 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
             if (long.TryParse(filter.Search, out var number))
             {
                 AddCriteria(x =>
-                    x.InvoiceNumber == number || x.Items.Any(i => i.SellProduct!.Barcode == number.ToString()));
+                    x.InvoiceNumber == number || x.ProductItems.Any(i => i.SellProduct!.Barcode == number.ToString()));
             }
             else
             {
                 AddCriteria(x =>
                     x.Customer!.FullName.Contains(filter.Search) ||
-                    x.Items.Any(i => i.SellProduct!.Name.Contains(filter.Search)));
+                    x.ProductItems.Any(i => i.SellProduct!.Name.Contains(filter.Search)));
             }
         }
 

@@ -7,7 +7,7 @@ using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
-public class InvoiceItemVm
+public class InvoiceProductItemVm
 {
 
     private int _quantity;
@@ -122,9 +122,9 @@ public class InvoiceItemVm
         TotalAmount = FinalAmount * Quantity;
     }
 
-    public static InvoiceItemVm CreateDefaultInstance()
+    public static InvoiceProductItemVm CreateDefaultInstance()
     {
-        return new InvoiceItemVm
+        return new InvoiceProductItemVm
         {
             Product = ProductVm.CreateDefaultInstance(),
             GramPrice = 0,
@@ -135,41 +135,41 @@ public class InvoiceItemVm
         };
     }
 
-    public InvoiceItemVm Copy(InvoiceItemVm item)
+    public InvoiceProductItemVm Copy(InvoiceProductItemVm productItem)
     {
-        return new InvoiceItemVm
+        return new InvoiceProductItemVm
         {
-            Id = item.Id,
-            Product = item.Product,
-            GramPrice = item.GramPrice,
-            ExchangeRate = item.ExchangeRate,
-            ProfitPercent = item.ProfitPercent,
-            TaxPercent = item.TaxPercent,
-            Quantity = item.Quantity,
-            PriceUnit = item.PriceUnit,
-            Index = item.Index,
-            ShowDetails = item.ShowDetails
+            Id = productItem.Id,
+            Product = productItem.Product,
+            GramPrice = productItem.GramPrice,
+            ExchangeRate = productItem.ExchangeRate,
+            ProfitPercent = productItem.ProfitPercent,
+            TaxPercent = productItem.TaxPercent,
+            Quantity = productItem.Quantity,
+            PriceUnit = productItem.PriceUnit,
+            Index = productItem.Index,
+            ShowDetails = productItem.ShowDetails
         };
     }
 
-    public static InvoiceItemDto ToRequest(InvoiceItemVm item)
+    public static InvoiceProductItemDto ToRequest(InvoiceProductItemVm productItem)
     {
-        if (item.PriceUnit is null)
-            throw new FluentValidation.ValidationException($"واحد ارزی جنس {item.Product.Name} وارد نشده است");
+        if (productItem.PriceUnit is null)
+            throw new FluentValidation.ValidationException($"واحد ارزی جنس {productItem.Product.Name} وارد نشده است");
 
-        return new InvoiceItemDto(item.Id,
-            item.GramPrice,
-            item.ProfitPercent,
-            item.TaxPercent,
-            item.ExchangeRate,
-            item.Quantity,
-            ProductVm.ToRequest(item.Product),
-            item.PriceUnit.Id);
+        return new InvoiceProductItemDto(productItem.Id,
+            productItem.GramPrice,
+            productItem.ProfitPercent,
+            productItem.TaxPercent,
+            productItem.ExchangeRate,
+            productItem.Quantity,
+            ProductVm.ToRequest(productItem.Product),
+            productItem.PriceUnit.Id);
     }
 
-    public static InvoiceItemVm CreateFrom(GetInvoiceItemResponse response)
+    public static InvoiceProductItemVm CreateFrom(GetInvoiceItemResponse response)
     {
-        return new InvoiceItemVm
+        return new InvoiceProductItemVm
         {
             ExchangeRate = response.ExchangeRate,
             GramPrice = response.GramPrice,

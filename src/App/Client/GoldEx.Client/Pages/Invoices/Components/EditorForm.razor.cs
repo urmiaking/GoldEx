@@ -243,7 +243,7 @@ public partial class EditorForm
                     }
                 }
 
-                _model.InvoiceItems.Add(new InvoiceItemVm
+                _model.InvoiceProductItems.Add(new InvoiceProductItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
                     PriceUnit = _model.InvoicePriceUnit,
@@ -270,41 +270,41 @@ public partial class EditorForm
 
     #region InvoiceItem
 
-    private async Task OnEditInvoiceItem(InvoiceItemVm invoiceItemVm)
+    private async Task OnEditInvoiceItem(InvoiceProductItemVm invoiceProductItemVm)
     {
-        var parameters = new DialogParameters<InvoiceItemEditor>
+        var parameters = new DialogParameters<InvoiceProductItemEditor>
         {
-            { x => x.Model, invoiceItemVm },
+            { x => x.Model, invoiceProductItemVm },
             { x => x.PriceUnits, _priceUnits }
         };
 
-        var dialog = await DialogService.ShowAsync<InvoiceItemEditor>("ویرایش جنس", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<InvoiceProductItemEditor>("ویرایش جنس", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: InvoiceItemVm resultItem })
+        if (result is { Canceled: false, Data: InvoiceProductItemVm resultItem })
         {
-            invoiceItemVm.Copy(resultItem);
+            invoiceProductItemVm.Copy(resultItem);
             StateHasChanged();
         }
     }
 
-    private async Task OnRemoveInvoiceItem(InvoiceItemVm invoiceItem)
+    private async Task OnRemoveInvoiceItem(InvoiceProductItemVm invoiceProductItem)
     {
         var result = await DialogService.ShowMessageBox(
             "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {invoiceItem.Product.Name} اطمینان دارید؟ <br> <br> "),
+            markupMessage: new MarkupString($"آیا برای حذف {invoiceProductItem.Product.Name} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
 
         if (result is null)
             return;
 
-        _model.RemoveInvoiceItem(invoiceItem);
+        _model.RemoveInvoiceItem(invoiceProductItem);
     }
 
     private async Task OnAddInvoiceItem()
     {
-        var model = InvoiceItemVm.CreateDefaultInstance();
+        var model = InvoiceProductItemVm.CreateDefaultInstance();
 
         decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
@@ -313,20 +313,20 @@ public partial class EditorForm
         model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
         model.PriceUnit = _model.InvoicePriceUnit;
 
-        var parameters = new DialogParameters<InvoiceItemEditor>
+        var parameters = new DialogParameters<InvoiceProductItemEditor>
         {
             { x => x.Model, model },
             { x => x.PriceUnits, _priceUnits }
         };
 
-        var dialog = await DialogService.ShowAsync<InvoiceItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<InvoiceProductItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: InvoiceItemVm invoiceItem })
+        if (result is { Canceled: false, Data: InvoiceProductItemVm invoiceItem })
         {
             invoiceItem.RecalculateAmounts();
-            _model.InvoiceItems.Add(invoiceItem);
+            _model.InvoiceProductItems.Add(invoiceItem);
             StateHasChanged();
         }
     }
@@ -360,7 +360,7 @@ public partial class EditorForm
 
         await LoadExchangeRateAsync();
 
-        foreach (var item in _model.InvoiceItems)
+        foreach (var item in _model.InvoiceProductItems)
         {
             decimal.TryParse(_gramPrice?.Value, out var gramPrice);
             item.GramPrice = gramPrice;

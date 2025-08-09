@@ -6,13 +6,11 @@ using GoldEx.Server.Application.Validators.Invoices;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
-using GoldEx.Server.Domain.InvoiceItemAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.InvoiceItems;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
@@ -23,18 +21,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Domain.InvoiceItemProductAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.Constants;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
+using GoldEx.Server.Infrastructure.Specifications.InvoiceProductItems;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
-    IInvoiceItemRepository invoiceItemRepository,
+    IInvoiceProductItemRepository invoiceProductItemRepository,
     IInvoicePaymentRepository invoicePaymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
@@ -168,7 +168,6 @@ internal class InvoiceService(
                 if (paymentsToCreate.Any()) 
                     await invoicePaymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
 
-                // 4. ویرایش دسته‌ای (Bulk Update)
                 var paymentsToUpdate = new List<InvoicePayment>();
                 var paymentsToUpdateDtos = paymentDtos.Where(dto => dto.Id.HasValue);
 
@@ -177,7 +176,6 @@ internal class InvoiceService(
                     var existingPayment = existingPayments.FirstOrDefault(p => p.Id.Value == dto.Id!.Value)
                         ?? throw new NotFoundException("InvoicePayment not found for update.");
 
-                    // آپدیت کردن پراپرتی‌های پرداخت موجود
                     existingPayment.SetPaymentDate(dto.PaymentDate);
                     existingPayment.SetAmount(dto.Amount, new PriceUnitId(dto.PriceUnitId));
                     existingPayment.SetSourceFinancialAccountId(dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null);
@@ -196,12 +194,12 @@ internal class InvoiceService(
                 if (!isNewInvoice) 
                     await invoiceRepository.UpdateAsync(invoice, cancellationToken);
 
-                var existingItems = request.Id.HasValue
-                    ? await invoiceItemRepository.Get(new InvoiceItemsByInvoiceIdSpecification(invoice.Id))
+                var existingProductItems = request.Id.HasValue
+                    ? await invoiceProductItemRepository.Get(new InvoiceProductItemsByInvoiceIdSpecification(invoice.Id))
                         .ToListAsync(cancellationToken) 
                     : [];
 
-                foreach (var itemDto in request.InvoiceItems)
+                foreach (var itemDto in request.InvoiceProductItems)
                 {
                     Product product;
 
@@ -267,8 +265,8 @@ internal class InvoiceService(
                     }
 
                     var existingItem = request.InvoiceType == InvoiceType.Sell
-                        ? existingItems.FirstOrDefault(x => x.SellProductId == product.Id)
-                        : existingItems.FirstOrDefault(x => x.PurchaseProductId == product.Id);
+                        ? existingProductItems.FirstOrDefault(x => x.SellProductId == product.Id)
+                        : existingProductItems.FirstOrDefault(x => x.PurchaseProductId == product.Id);
 
                     if (existingItem != null)
                     {
@@ -281,12 +279,12 @@ internal class InvoiceService(
 
                         existingItem.RecalculateAmounts(product);
 
-                        await invoiceItemRepository.UpdateAsync(existingItem, cancellationToken);
-                        existingItems.Remove(existingItem);
+                        await invoiceProductItemRepository.UpdateAsync(existingItem, cancellationToken);
+                        existingProductItems.Remove(existingItem);
                     }
                     else
                     {
-                        var invoiceItem = InvoiceItem.Create(
+                        var invoiceProductItem = InvoiceProductItem.Create(
                             itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
@@ -297,15 +295,15 @@ internal class InvoiceService(
                             invoice.Id,
                             itemDto.ExchangeRate);
 
-                        invoiceItem.RecalculateAmounts(product);
+                        invoiceProductItem.RecalculateAmounts(product);
 
-                        await invoiceItemRepository.CreateAsync(invoiceItem, cancellationToken);
+                        await invoiceProductItemRepository.CreateAsync(invoiceProductItem, cancellationToken);
                     }
                 }
 
-                foreach (var itemToDelete in existingItems)
+                foreach (var itemToDelete in existingProductItems)
                 {
-                    await invoiceItemRepository.DeleteAsync(itemToDelete, cancellationToken);
+                    await invoiceProductItemRepository.DeleteAsync(itemToDelete, cancellationToken);
                 }
 
                 await transactionService.CreateTransactionsForInvoiceAsync(invoice, cancellationToken);
@@ -335,7 +333,7 @@ internal class InvoiceService(
 
         var data = await invoiceRepository
             .Get(spec)
-            .Include(x => x.Items)
+            .Include(x => x.ProductItems)
                 .ThenInclude(x => x.SellProduct)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
@@ -358,10 +356,10 @@ internal class InvoiceService(
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
-            .Include(x => x.Items)
+            .Include(x => x.ProductItems)
                 .ThenInclude(x => x.SellProduct)
                     .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.Items)
+            .Include(x => x.ProductItems)
                 .ThenInclude(x => x.PurchaseProduct)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
@@ -383,10 +381,10 @@ internal class InvoiceService(
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
-            .Include(x => x.Items)
+            .Include(x => x.ProductItems)
                 .ThenInclude(x => x.SellProduct)
                     .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.Items)
+            .Include(x => x.ProductItems)
                 .ThenInclude(x => x.PurchaseProduct)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
@@ -408,12 +406,12 @@ internal class InvoiceService(
             {
                 var item = await invoiceRepository
                     .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
-                    .Include(x => x.Items)
+                    .Include(x => x.ProductItems)
                         .ThenInclude(x => x.SellProduct)
                     .AsSplitQuery()
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                var products = item.Items.Select(x => x.SellProduct!).ToList();
+                var products = item.ProductItems.Select(x => x.SellProduct!).ToList();
 
                 await invoiceRepository.DeleteAsync(item, cancellationToken);
 

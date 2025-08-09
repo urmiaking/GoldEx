@@ -12,19 +12,18 @@ using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
-public partial class InvoiceItemEditor
+public partial class InvoiceProductItemEditor
 {
     [Parameter] public Guid? Id { get; set; }
-    [Parameter] public InvoiceItemVm Model { get; set; } = InvoiceItemVm.CreateDefaultInstance();
+    [Parameter] public InvoiceProductItemVm Model { get; set; } = InvoiceProductItemVm.CreateDefaultInstance();
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private readonly InvoiceItemValidator _invoiceItemValidator = new();
+    private readonly InvoiceProductItemValidator _invoiceProductItemValidator = new();
 
     private MudForm _form = default!;
 

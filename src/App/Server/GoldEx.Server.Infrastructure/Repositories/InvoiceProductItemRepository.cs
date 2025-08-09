@@ -1,9 +1,9 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
-using GoldEx.Server.Domain.InvoiceItemAggregate;
+using GoldEx.Server.Domain.InvoiceItemProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
 namespace GoldEx.Server.Infrastructure.Repositories;
 
 [ScopedService]
-internal class InvoiceItemRepository(GoldExDbContext dbContext) : RepositoryBase<InvoiceItem>(dbContext), IInvoiceItemRepository;
+internal class InvoiceProductItemRepository(GoldExDbContext dbContext) : RepositoryBase<InvoiceProductItem>(dbContext), IInvoiceProductItemRepository;

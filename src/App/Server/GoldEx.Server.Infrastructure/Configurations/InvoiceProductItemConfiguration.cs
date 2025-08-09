@@ -1,18 +1,18 @@
-﻿using GoldEx.Server.Domain.InvoiceItemAggregate;
+﻿using GoldEx.Server.Domain.InvoiceItemProductAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GoldEx.Server.Infrastructure.Configurations;
 
-public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
+public class InvoiceProductItemConfiguration : IEntityTypeConfiguration<InvoiceProductItem>
 {
-    public void Configure(EntityTypeBuilder<InvoiceItem> builder)
+    public void Configure(EntityTypeBuilder<InvoiceProductItem> builder)
     {
-        builder.ToTable("InvoiceItems");
+        builder.ToTable("InvoiceProductItems");
 
         builder.Property(x => x.Id)
             .HasConversion(id => id.Value,
-                value => new InvoiceItemId(value));
+                value => new InvoiceProductItemId(value));
 
         builder.Property(x => x.Quantity)
             .IsRequired();
@@ -57,17 +57,17 @@ public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
             .IsRequired();
 
         builder.HasOne(x => x.SellProduct)
-            .WithOne(x => x.SellInvoiceItem)
-            .HasForeignKey<InvoiceItem>(x => x.SellProductId)
+            .WithOne(x => x.SellInvoiceProductItem)
+            .HasForeignKey<InvoiceProductItem>(x => x.SellProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.PurchaseProduct)
-            .WithOne(x => x.PurchaseInvoiceItem)
-            .HasForeignKey<InvoiceItem>(x => x.PurchaseProductId)
+            .WithOne(x => x.PurchaseInvoiceProductItem)
+            .HasForeignKey<InvoiceProductItem>(x => x.PurchaseProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Invoice)
-            .WithMany(x => x.Items)
+            .WithMany(x => x.ProductItems)
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
 

@@ -18,7 +18,7 @@ public record GetInvoiceDetailResponse(long InvoiceNumber,
     string TotalUnpaidSecondaryAmount,
     GoldUnitType GoldUnitType,
     GetCustomerResponse Customer,
-    List<GetInvoiceItemReportResponse> InvoiceItems);
+    List<GetInvoiceItemReportResponse> InvoiceItems); // TODO: rename this
 
 public record GetInvoiceItemReportResponse(
     string GramPrice,

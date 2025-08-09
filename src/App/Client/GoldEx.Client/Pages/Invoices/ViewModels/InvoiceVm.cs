@@ -36,13 +36,13 @@ public class InvoiceVm
     public decimal? UnpaidExchangeRate { get; set; }
     public decimal TotalUnpaidSecondaryAmount => TotalUnpaidAmount * UnpaidExchangeRate ?? 1;
 
-    public List<InvoiceItemVm> InvoiceItems { get; set; } = [];
+    public List<InvoiceProductItemVm> InvoiceProductItems { get; set; } = [];
     public List<InvoiceDiscountVm> InvoiceDiscounts { get; set; } = [];
     public List<InvoiceExtraCostVm> InvoiceExtraCosts { get; set; } = [];
     public List<InvoicePaymentVm> InvoicePayments { get; set; } = [];
 
     // --- Calculated properties ---
-    public decimal TotalItemsAmount => InvoiceItems.Sum(i => i.TotalAmount);
+    public decimal TotalItemsAmount => InvoiceProductItems.Sum(i => i.TotalAmount);
     public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
@@ -57,7 +57,7 @@ public class InvoiceVm
         {
             InvoiceDate = DateTime.Now,
             Customer = new CustomerVm(),
-            InvoiceItems = [],
+            InvoiceProductItems = [],
             InvoiceDiscounts = [],
             InvoiceExtraCosts = [],
             InvoicePayments = []
@@ -66,18 +66,18 @@ public class InvoiceVm
 
     public int GetLastIndexNumber()
     {
-        return InvoiceItems.Count > 0 ? InvoiceItems.Max(i => i.Index) : 0;
+        return InvoiceProductItems.Count > 0 ? InvoiceProductItems.Max(i => i.Index) : 0;
     }
 
     /// <summary>
     /// Removes a specific item from the invoice and re-calculates the indexes of remaining items.
     /// </summary>
-    /// <param name="itemToRemove">The InvoiceItemVm instance to remove.</param>
-    public void RemoveInvoiceItem(InvoiceItemVm itemToRemove)
+    /// <param name="productItemToRemove">The InvoiceItemVm instance to remove.</param>
+    public void RemoveInvoiceItem(InvoiceProductItemVm productItemToRemove)
     {
-        if (InvoiceItems.Contains(itemToRemove))
+        if (InvoiceProductItems.Contains(productItemToRemove))
         {
-            InvoiceItems.Remove(itemToRemove);
+            InvoiceProductItems.Remove(productItemToRemove);
             ReorderItemIndexes();
         }
     }
@@ -87,9 +87,9 @@ public class InvoiceVm
     /// </summary>
     private void ReorderItemIndexes()
     {
-        for (var i = 0; i < InvoiceItems.Count; i++)
+        for (var i = 0; i < InvoiceProductItems.Count; i++)
         {
-            InvoiceItems[i].Index = i + 1;
+            InvoiceProductItems[i].Index = i + 1;
         }
     }
 
@@ -101,7 +101,7 @@ public class InvoiceVm
         if (model.InvoicePriceUnit == null)
             throw new ValidationException("لطفا واحد ارزی فاکتور را وارد کنید");
 
-        if (!model.InvoiceItems.Any())
+        if (!model.InvoiceProductItems.Any())
             throw new ValidationException("فاکتور باید حداقل دارای یک آیتم باشد");
 
         return new InvoiceRequestDto(model.InvoiceId,
@@ -114,7 +114,7 @@ public class InvoiceVm
             model.UnpaidPriceUnit?.Id,
             model.ExchangeRate,
             CustomerVm.ToRequest(model.Customer),
-            model.InvoiceItems.Select(InvoiceItemVm.ToRequest).ToList(),
+            model.InvoiceProductItems.Select(InvoiceProductItemVm.ToRequest).ToList(),
             model.InvoiceDiscounts.Select(InvoiceDiscountVm.ToRequest).ToList(),
             model.InvoicePayments.Where(x => x.Amount > 0).Select(InvoicePaymentVm.ToRequest).ToList(),
             model.InvoiceExtraCosts.Select(InvoiceExtraCostVm.ToRequest).ToList());
@@ -135,7 +135,7 @@ public class InvoiceVm
                 InvoiceExtraCostVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoicePayments = response.InvoicePayments.Select(x => 
                 InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
-            InvoiceItems = response.InvoiceItems.Select(InvoiceItemVm.CreateFrom).ToList(),
+            InvoiceProductItems = response.InvoiceItems.Select(InvoiceProductItemVm.CreateFrom).ToList(),
             InvoicePriceUnit = response.PriceUnit,
             UnpaidExchangeRate = response.UnpaidAmountExchangeRate,
             UnpaidPriceUnit = response.UnpaidPriceUnit,
