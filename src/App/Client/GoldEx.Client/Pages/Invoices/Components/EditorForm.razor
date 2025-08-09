@@ -292,7 +292,7 @@
         <MudDivider Class="mb-2" />
 
         <div class="my-2">
-            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@_model.InvoiceItems" T="InvoiceItemVm" Elevation="1">
+            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@_model.InvoiceProductItems" T="InvoiceProductItemVm" Elevation="1">
                 <ColGroup>
                     <col />
                     <col />
@@ -345,7 +345,7 @@
             </MudTable>
         </div>
 
-        @if (_model.InvoiceItems.Any())
+        @if (_model.InvoiceProductItems.Any())
         {
             <MudText Class="mt-2" Typo="Typo.h6" GutterBottom="true">هزینه ها</MudText>
             <MudDivider Class="my-2" />

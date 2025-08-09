@@ -24,7 +24,7 @@ public class ProductsByFilterSpecification : SpecificationBase<Product>
         switch (productFilter.Status)
         {
             case ProductStatus.Available:
-                AddCriteria(x => x.SellInvoiceItem == null);
+                AddCriteria(x => x.SellInvoiceProductItem == null);
                 if (productFilter.Start.HasValue)
                 {
                     AddCriteria(x => x.CreatedAt >= productFilter.Start.Value);
@@ -36,18 +36,18 @@ public class ProductsByFilterSpecification : SpecificationBase<Product>
                 break;
 
             case ProductStatus.Sold:
-                AddCriteria(x => x.SellInvoiceItem!.Invoice != null);
-                AddInclude(x => x.SellInvoiceItem!.Invoice!);
+                AddCriteria(x => x.SellInvoiceProductItem!.Invoice != null);
+                AddInclude(x => x.SellInvoiceProductItem!.Invoice!);
 
                 if (productFilter.Start.HasValue)
                 {
                     var startDateOnly = DateOnly.FromDateTime(productFilter.Start.Value.Date);
-                    AddCriteria(x => x.SellInvoiceItem!.Invoice!.InvoiceDate >= startDateOnly);
+                    AddCriteria(x => x.SellInvoiceProductItem!.Invoice!.InvoiceDate >= startDateOnly);
                 }
                 if (productFilter.End.HasValue)
                 {
                     var endDateOnly = DateOnly.FromDateTime(productFilter.End.Value.Date);
-                    AddCriteria(x => x.SellInvoiceItem!.Invoice!.InvoiceDate <= endDateOnly);
+                    AddCriteria(x => x.SellInvoiceProductItem!.Invoice!.InvoiceDate <= endDateOnly);
                 }
                 break;
 

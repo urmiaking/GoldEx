@@ -45,188 +45,191 @@ internal class AccountingTransactionService(
             switch (invoice.InvoiceType)
             {
                 case InvoiceType.Sell:
-                {
-                    var customerLedger = await ledgerAccountRepository
-                                             .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                                                 invoice.CustomerId,
-                                                 SystemLedgerAccounts.AccountsReceivable))
-                                             .FirstOrDefaultAsync(cancellationToken) ??
-                                         throw new NotFoundException(
-                                             $"Customer {invoice.CustomerId.Value} ledger account not found.");
-                    var salesRevenueLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                     .SalesRevenue))
-                                                 .FirstOrDefaultAsync(cancellationToken) ??
-                                             throw new NotFoundException("Sales Revenue ledger account not found.");
-                    var discountsLedger = await ledgerAccountRepository
-                                              .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                  .SalesDiscounts))
-                                              .FirstOrDefaultAsync(cancellationToken) ??
-                                          throw new NotFoundException("Sales Discounts ledger account not found.");
-                    var extraChargesLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                     .AdditionalChargesRevenue))
+                    {
+                        var customerLedger = await ledgerAccountRepository
+                                                 .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
+                                                     invoice.CustomerId,
+                                                     SystemLedgerAccounts.AccountsReceivable))
                                                  .FirstOrDefaultAsync(cancellationToken) ??
                                              throw new NotFoundException(
-                                                 "Additional Charges Revenue ledger account not found.");
+                                                 $"Customer {invoice.CustomerId.Value} ledger account not found.");
+                        var salesRevenueLedger = await ledgerAccountRepository
+                                                     .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
+                                                         .SalesRevenue))
+                                                     .FirstOrDefaultAsync(cancellationToken) ??
+                                                 throw new NotFoundException("Sales Revenue ledger account not found.");
+                        var discountsLedger = await ledgerAccountRepository
+                                                  .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
+                                                      .SalesDiscounts))
+                                                  .FirstOrDefaultAsync(cancellationToken) ??
+                                              throw new NotFoundException("Sales Discounts ledger account not found.");
+                        var extraChargesLedger = await ledgerAccountRepository
+                                                     .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
+                                                         .AdditionalChargesRevenue))
+                                                     .FirstOrDefaultAsync(cancellationToken) ??
+                                                 throw new NotFoundException(
+                                                     "Additional Charges Revenue ledger account not found.");
 
-                    transactions.Add(Transaction.CreateForInvoice(
-                        TransactionDescriptionBuilder.ForSaleReceivable(invoice, invoice.Customer),
-                        invoice.TotalAmountWithDiscountsAndExtraCosts,
-                        invoice.ExchangeRate,
-                        invoiceGroupId,
-                        TransactionType.Debit,
-                        customerLedger.Id,
-                        invoice.PriceUnitId,
-                        invoice.Id));
-
-                    if (invoice.TotalDiscountAmount > 0)
                         transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForSaleDiscount(invoice, invoice.Discounts.Select(x => x.Description)),
-                            invoice.TotalDiscountAmount,
+                            TransactionDescriptionBuilder.ForSaleReceivable(invoice, invoice.Customer),
+                            invoice.TotalAmountWithDiscountsAndExtraCosts,
                             invoice.ExchangeRate,
                             invoiceGroupId,
                             TransactionType.Debit,
-                            discountsLedger.Id,
+                            customerLedger.Id,
                             invoice.PriceUnitId,
                             invoice.Id));
 
-                    if (invoice.TotalAmount > 0)
-                        transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForSaleRevenue(invoice),
-                            invoice.TotalAmount,
-                            invoice.ExchangeRate,
-                            invoiceGroupId,
-                            TransactionType.Credit,
-                            salesRevenueLedger.Id,
-                            invoice.PriceUnitId,
-                            invoice.Id));
+                        if (invoice.TotalDiscountAmount > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForSaleDiscount(invoice, invoice.Discounts.Select(x => x.Description)),
+                                invoice.TotalDiscountAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Debit,
+                                discountsLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id));
 
-                    if (invoice.TotalExtraCostAmount > 0)
-                        transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForSaleExtraCharges(invoice),
-                            invoice.TotalExtraCostAmount,
-                            invoice.ExchangeRate,
-                            invoiceGroupId,
-                            TransactionType.Credit,
-                            extraChargesLedger.Id,
-                            invoice.PriceUnitId,
-                            invoice.Id));
+                        if (invoice.TotalAmount > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForSaleRevenue(invoice),
+                                invoice.TotalAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Credit,
+                                salesRevenueLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id));
 
-                    decimal totalCostOfGoods = 0;
+                        if (invoice.TotalExtraCostAmount > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForSaleExtraCharges(invoice),
+                                invoice.TotalExtraCostAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Credit,
+                                extraChargesLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id));
 
-                    foreach (var invoiceItem in invoice.Items)
-                    {
-                        if (!invoiceItem.SellProductId.HasValue)
-                            continue;
+                        decimal totalCostOfGoods = 0;
 
-                        var purchaseInvoice = await invoiceRepository
-                                                  .Get(new InvoicesByProductIdSpecification(invoiceItem.SellProductId
-                                                      .Value))
-                                                  .FirstOrDefaultAsync(cancellationToken) ??
-                                              throw new NotFoundException(
-                                                  $"Purchase invoice for product {invoiceItem.SellProductId.Value} not found.");
+                        if (invoice.ProductItems is not null)
+                        {
+                            foreach (var invoiceProductItem in invoice.ProductItems)
+                            {
+                                if (!invoiceProductItem.SellProductId.HasValue)
+                                    continue;
 
-                        totalCostOfGoods += purchaseInvoice.TotalAmount * (purchaseInvoice.ExchangeRate ?? 1);
+                                var purchaseInvoice = await invoiceRepository
+                                                          .Get(new InvoicesByProductIdSpecification(invoiceProductItem.SellProductId
+                                                              .Value))
+                                                          .FirstOrDefaultAsync(cancellationToken) ??
+                                                      throw new NotFoundException(
+                                                          $"Purchase invoice for product {invoiceProductItem.SellProductId.Value} not found.");
+
+                                totalCostOfGoods += purchaseInvoice.TotalAmount * (purchaseInvoice.ExchangeRate ?? 1);
+                            }
+                        }
+
+                        var cogsAmount = totalCostOfGoods;
+                        if (cogsAmount > 0)
+                        {
+                            var cogsGroupId = Guid.NewGuid();
+                            var cogsLedger = await ledgerAccountRepository
+                                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
+                                                     .CostOfGoodsSold))
+                                                 .FirstOrDefaultAsync(cancellationToken) ??
+                                             throw new NotFoundException("Cost of Goods Sold ledger account not found.");
+                            var inventoryLedger = await ledgerAccountRepository
+                                                      .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
+                                                          .Inventory))
+                                                      .FirstOrDefaultAsync(cancellationToken) ??
+                                                  throw new NotFoundException("Inventory ledger account not found.");
+
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForCostOfGoodsSold(invoice),
+                                totalCostOfGoods,
+                                null,
+                                cogsGroupId,
+                                TransactionType.Debit,
+                                cogsLedger.Id,
+                                basePriceUnit.Id,
+                                invoice.Id));
+
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForInventoryExit(invoice),
+                                totalCostOfGoods,
+                                null,
+                                cogsGroupId,
+                                TransactionType.Credit,
+                                inventoryLedger.Id,
+                                basePriceUnit.Id,
+                                invoice.Id));
+                        }
+
+                        break;
                     }
 
-                    var cogsAmount = totalCostOfGoods;
-                    if (cogsAmount > 0)
+                case InvoiceType.Purchase:
                     {
-                        var cogsGroupId = Guid.NewGuid();
-                        var cogsLedger = await ledgerAccountRepository
-                                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                 .CostOfGoodsSold))
-                                             .FirstOrDefaultAsync(cancellationToken) ??
-                                         throw new NotFoundException("Cost of Goods Sold ledger account not found.");
+                        var supplierLedger = await ledgerAccountRepository
+                                                 .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
+                                                     invoice.CustomerId,
+                                                     SystemLedgerAccounts.AccountsPayable))
+                                                 .FirstOrDefaultAsync(cancellationToken) ??
+                                             throw new NotFoundException(
+                                                 $"Supplier {invoice.CustomerId.Value} ledger account not found.");
+
                         var inventoryLedger = await ledgerAccountRepository
-                                                  .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                      .Inventory))
+                                                  .Get(new LedgerAccountsByTitleSpecification(
+                                                      SystemLedgerAccounts.Inventory))
                                                   .FirstOrDefaultAsync(cancellationToken) ??
                                               throw new NotFoundException("Inventory ledger account not found.");
 
-                        transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForCostOfGoodsSold(invoice),
-                            totalCostOfGoods,
-                            null,
-                            cogsGroupId,
-                            TransactionType.Debit,
-                            cogsLedger.Id,
-                            basePriceUnit.Id,
-                            invoice.Id));
+                        var discountsLedger = await ledgerAccountRepository
+                                                  .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
+                                                      .PurchaseDiscounts))
+                                                  .FirstOrDefaultAsync(cancellationToken) ??
+                                              throw new NotFoundException("Purchase Discounts ledger account not found.");
+
+                        var totalInventoryValue = invoice.TotalAmount + invoice.TotalExtraCostAmount;
+
+                        if (totalInventoryValue > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForPurchaseInventoryEntry(invoice),
+                                totalInventoryValue,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Debit,
+                                inventoryLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id));
 
                         transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForInventoryExit(invoice),
-                            totalCostOfGoods,
-                            null,
-                            cogsGroupId,
+                            TransactionDescriptionBuilder.ForPurchasePayable(invoice, invoice.Customer),
+                            invoice.TotalAmountWithDiscountsAndExtraCosts,
+                            invoice.ExchangeRate,
+                            invoiceGroupId,
                             TransactionType.Credit,
-                            inventoryLedger.Id,
-                            basePriceUnit.Id,
+                            supplierLedger.Id,
+                            invoice.PriceUnitId,
                             invoice.Id));
+
+                        if (invoice.TotalDiscountAmount > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForPurchaseDiscount(invoice, invoice.Customer, invoice.Discounts.Select(x => x.Description)),
+                                invoice.TotalDiscountAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Credit,
+                                discountsLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id));
+
+                        break;
                     }
-
-                    break;
-                }
-
-                case InvoiceType.Purchase:
-                {
-                    var supplierLedger = await ledgerAccountRepository
-                                             .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                                                 invoice.CustomerId,
-                                                 SystemLedgerAccounts.AccountsPayable))
-                                             .FirstOrDefaultAsync(cancellationToken) ??
-                                         throw new NotFoundException(
-                                             $"Supplier {invoice.CustomerId.Value} ledger account not found.");
-
-                    var inventoryLedger = await ledgerAccountRepository
-                                              .Get(new LedgerAccountsByTitleSpecification(
-                                                  SystemLedgerAccounts.Inventory))
-                                              .FirstOrDefaultAsync(cancellationToken) ??
-                                          throw new NotFoundException("Inventory ledger account not found.");
-
-                    var discountsLedger = await ledgerAccountRepository
-                                              .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                  .PurchaseDiscounts))
-                                              .FirstOrDefaultAsync(cancellationToken) ??
-                                          throw new NotFoundException("Purchase Discounts ledger account not found.");
-
-                    var totalInventoryValue = invoice.TotalAmount + invoice.TotalExtraCostAmount;
-
-                    if (totalInventoryValue > 0)
-                        transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForPurchaseInventoryEntry(invoice),
-                            totalInventoryValue,
-                            invoice.ExchangeRate,
-                            invoiceGroupId,
-                            TransactionType.Debit,
-                            inventoryLedger.Id,
-                            invoice.PriceUnitId,
-                            invoice.Id));
-
-                    transactions.Add(Transaction.CreateForInvoice(
-                        TransactionDescriptionBuilder.ForPurchasePayable(invoice, invoice.Customer),
-                        invoice.TotalAmountWithDiscountsAndExtraCosts,
-                        invoice.ExchangeRate,
-                        invoiceGroupId,
-                        TransactionType.Credit,
-                        supplierLedger.Id,
-                        invoice.PriceUnitId,
-                        invoice.Id));
-
-                    if (invoice.TotalDiscountAmount > 0)
-                        transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForPurchaseDiscount(invoice, invoice.Customer, invoice.Discounts.Select(x => x.Description)),
-                            invoice.TotalDiscountAmount,
-                            invoice.ExchangeRate,
-                            invoiceGroupId,
-                            TransactionType.Credit,
-                            discountsLedger.Id,
-                            invoice.PriceUnitId,
-                            invoice.Id));
-
-                    break;
-                }
                 default:
                     throw new ArgumentOutOfRangeException();
             }

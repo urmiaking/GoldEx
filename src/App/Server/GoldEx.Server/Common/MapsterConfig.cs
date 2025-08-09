@@ -5,7 +5,7 @@ using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
-using GoldEx.Server.Domain.InvoiceItemAggregate;
+using GoldEx.Server.Domain.InvoiceItemProductAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
@@ -107,7 +107,7 @@ public class MapsterConfig : IRegister
         config.NewConfig<Invoice, GetInvoiceResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Customer, src => src.Customer)
-            .Map(dest => dest.InvoiceItems, src => src.Items)
+            .Map(dest => dest.InvoiceItems, src => src.ProductItems)
             .Map(dest => dest.InvoiceDiscounts, src => src.Discounts)
             .Map(dest => dest.InvoiceExtraCosts, src => src.ExtraCosts)
             .Map(dest => dest.InvoicePayments, src => src.InvoicePayments)
@@ -119,7 +119,7 @@ public class MapsterConfig : IRegister
                     : (DateTime?)null)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit);
 
-        config.NewConfig<InvoiceItem, GetInvoiceItemResponse>()
+        config.NewConfig<InvoiceProductItem, GetInvoiceItemResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Product, src => src.SellProduct ?? src.PurchaseProduct);
 
@@ -155,27 +155,27 @@ public class MapsterConfig : IRegister
 
         config.NewConfig<Invoice, GetInvoiceDetailResponse>()
     .Map(dest => dest.Customer, src => src.Customer)
-    .Map(dest => dest.InvoiceItems, src => src.Items)
+    .Map(dest => dest.InvoiceItems, src => src.ProductItems)
 
     // Check that the first item itself is not null before using it.
     .Map(dest => dest.TaxPercent,
-        src => (src.Items.FirstOrDefault() != null)
-            ? $"{src.Items.First().TaxPercent.ToCurrencyFormat(null)}%"
+        src => (src.ProductItems.FirstOrDefault() != null)
+            ? $"{src.ProductItems.First().TaxPercent.ToCurrencyFormat(null)}%"
             : null)
 
     .Map(dest => dest.ProfitPercent,
-        src => (src.Items.FirstOrDefault() != null)
-            ? $"{src.Items.First().ProfitPercent.ToCurrencyFormat(null)}%"
+        src => (src.ProductItems.FirstOrDefault() != null)
+            ? $"{src.ProductItems.First().ProfitPercent.ToCurrencyFormat(null)}%"
             : null)
 
     .Map(dest => dest.DailyGramPrice,
-        src => (src.Items.FirstOrDefault() != null)
-            ? $"{src.Items.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"
+        src => (src.ProductItems.FirstOrDefault() != null)
+            ? $"{src.ProductItems.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"
             : null)
 
     .Map(dest => dest.GoldUnitType,
-        src => (src.Items.FirstOrDefault() != null)
-            ? src.Items.First().SellProduct == null ? GoldUnitType.Gram : src.Items.First().SellProduct!.GoldUnitType
+        src => (src.ProductItems.FirstOrDefault() != null)
+            ? src.ProductItems.First().SellProduct == null ? GoldUnitType.Gram : src.ProductItems.First().SellProduct!.GoldUnitType
             : GoldUnitType.Gram)
 
     // The rest of the mappings were already safe against this issue.
@@ -202,7 +202,7 @@ public class MapsterConfig : IRegister
             ? new DateTime(src.DueDate.Value, TimeOnly.MinValue)
             : (DateTime?)null);
 
-        config.NewConfig<InvoiceItem, GetInvoiceItemReportResponse>()
+        config.NewConfig<InvoiceProductItem, GetInvoiceItemReportResponse>()
             .Map(dest => dest.Product, src => src.SellProduct)
             .Map(dest => dest.ItemRawAmount, src => $"{src.ItemRawAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
             .Map(dest => dest.ItemWageAmount, src => $"{src.ItemWageAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}")
@@ -242,7 +242,7 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.Amount, src => src.Amount * (src.ExchangeRate ?? 1))
             .Map(dest => dest.PriceUnit, src => MapContext.Current.GetService<IPriceUnitRepository>()
                 .Get(new PriceUnitsSetAsDefaultSpecification()).FirstOrDefault()!.Title)
-            .Map(dest => dest.VoucherStatus, src => VoucherStatus.Pending) // TODO: Implement status logic
+            .Map(dest => dest.VoucherStatus, src => VoucherStatus.Pending) // TODO: Remove this!
             .Map(dest => dest.SupplierName,
                 src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
                     ? src.DestinationFinancialAccount.Customer.FullName
@@ -313,9 +313,9 @@ public class MapsterConfig : IRegister
             .Map(dest => dest.ProductCategoryTitle, src => src.ProductCategory != null ? src.ProductCategory.Title : null)
             .Map(dest => dest.WagePriceUnitId, src => src.WagePriceUnitId.HasValue ? src.WagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.WagePriceUnitTitle, src => src.WagePriceUnit != null ? src.WagePriceUnit.Title : null)
-            .Map(dest => dest.InvoiceId, src => src.SellInvoiceItem != null ? src.SellInvoiceItem.InvoiceId.Value : (Guid?)null)
-            .Map(dest => dest.DateTime, src => src.SellInvoiceItem != null && src.SellInvoiceItem.Invoice != null
-                ? src.SellInvoiceItem.Invoice.InvoiceDate.ToDateTime(new TimeOnly(0, 0, 0))
+            .Map(dest => dest.InvoiceId, src => src.SellInvoiceProductItem != null ? src.SellInvoiceProductItem.InvoiceId.Value : (Guid?)null)
+            .Map(dest => dest.DateTime, src => src.SellInvoiceProductItem != null && src.SellInvoiceProductItem.Invoice != null
+                ? src.SellInvoiceProductItem.Invoice.InvoiceDate.ToDateTime(new TimeOnly(0, 0, 0))
                 : src.CreatedAt)
             .Map(dest => dest.GemStones, src => src.GemStones);
 

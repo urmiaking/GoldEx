@@ -1,5 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.InvoiceItemAggregate;
+using GoldEx.Server.Domain.InvoiceItemProductAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
@@ -66,9 +66,9 @@ public class Product : EntityBase<ProductId>
     public IReadOnlyList<GemStone> GemStones => _stones;
 
     // Navigation property for sale invoice
-    public InvoiceItem? SellInvoiceItem { get; private set; }
+    public InvoiceProductItem? SellInvoiceProductItem { get; private set; }
 
-    public InvoiceItem? PurchaseInvoiceItem { get; set; }
+    public InvoiceProductItem? PurchaseInvoiceProductItem { get; set; }
 
     public Product SetName(string name)
     {

@@ -5,12 +5,12 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 
-namespace GoldEx.Server.Domain.InvoiceItemAggregate;
+namespace GoldEx.Server.Domain.InvoiceItemProductAggregate;
 
-public readonly record struct InvoiceItemId(Guid Value);
-public class InvoiceItem : EntityBase< InvoiceItemId>
+public readonly record struct InvoiceProductItemId(Guid Value);
+public class InvoiceProductItem : EntityBase< InvoiceProductItemId>
 {
-    public static InvoiceItem Create(
+    public static InvoiceProductItem Create(
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
@@ -33,9 +33,9 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
         if (exchangeRate is < 0)
             throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero.");
 
-        return new InvoiceItem
+        return new InvoiceProductItem
         {
-            Id = new InvoiceItemId(Guid.NewGuid()),
+            Id = new InvoiceProductItemId(Guid.NewGuid()),
             GramPrice = gramPrice,
             ProfitPercent = profitPercent,
             TaxPercent = taxPercent,
@@ -55,7 +55,7 @@ public class InvoiceItem : EntityBase< InvoiceItemId>
         };
     }
 
-    private InvoiceItem() { }
+    private InvoiceProductItem() { }
 
     #region Properties
 

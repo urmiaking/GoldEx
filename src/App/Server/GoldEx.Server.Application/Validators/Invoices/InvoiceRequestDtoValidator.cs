@@ -49,7 +49,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")
             .SetValidator(customerValidator);
 
-        RuleFor(x => x.InvoiceItems)
+        RuleFor(x => x.InvoiceProductItems)
             
             .NotEmpty().WithMessage("فاکتور باید حداقل دارای یک آیتم باشد");
 
@@ -57,8 +57,8 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .MustAsync(BeValidPriceUnit)
             .WithMessage("واحد ارزی فاکتور معتبر نمی باشد");
 
-        RuleForEach(x => x.InvoiceItems)
-            .SetValidator(new InvoiceItemDtoValidator(
+        RuleForEach(x => x.InvoiceProductItems)
+            .SetValidator(new InvoiceProductItemDtoValidator(
                 productCategoryRepository,
                 productRepository,
                 priceUnitRepository))
@@ -75,28 +75,28 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository, financialAccountRepository, paymentVoucherRepository, _invoiceRepository));
     }
 
-    private async Task<bool> ProductAvailable(InvoiceRequestDto invoiceDto, InvoiceItemDto invoiceItem, CancellationToken cancellationToken = default)
+    private async Task<bool> ProductAvailable(InvoiceRequestDto invoiceDto, InvoiceProductItemDto invoiceProductItem, CancellationToken cancellationToken = default)
     {
-        if (!invoiceItem.Product.Id.HasValue)
+        if (!invoiceProductItem.Product.Id.HasValue)
             return true;
 
-        var productId = new ProductId(invoiceItem.Product.Id.Value);
+        var productId = new ProductId(invoiceProductItem.Product.Id.Value);
 
         var product = await _productRepository
             .Get(new ProductsByIdSpecification(productId))
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (product?.SellInvoiceItem is null)
+        if (product?.SellInvoiceProductItem is null)
             return true;
 
         if (invoiceDto.Id.HasValue)
         {
             var existingInvoice = await _invoiceRepository
                 .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceDto.Id.Value)))
-                .Include(x => x.Items)
+                .Include(x => x.ProductItems)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingInvoice != null && existingInvoice.Items.Any(item => item.SellProductId == productId))
+            if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.SellProductId == productId))
                 return true;
         }
 

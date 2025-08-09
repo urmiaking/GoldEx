@@ -1,12 +1,17 @@
 ﻿using FluentValidation;
-using GoldEx.Client.Pages.Invoices.ViewModels;
-using GoldEx.Client.Pages.Products.Validators;
+using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Application.Validators.Products;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Shared.DTOs.Invoices;
 
-namespace GoldEx.Client.Pages.Invoices.Validators;
+namespace GoldEx.Server.Application.Validators.Invoices;
 
-public class InvoiceItemValidator : AbstractValidator<InvoiceItemVm>
+[ScopedService]
+internal class InvoiceProductItemDtoValidator : AbstractValidator<InvoiceProductItemDto>
 {
-    public InvoiceItemValidator()
+    public InvoiceProductItemDtoValidator(IProductCategoryRepository categoryRepository,
+        IProductRepository productRepository,
+        IPriceUnitRepository priceUnitRepository)
     {
         RuleFor(i => i.Quantity)
             .GreaterThan(0).WithMessage("تعداد باید بزرگتر از صفر باشد");
@@ -22,13 +27,6 @@ public class InvoiceItemValidator : AbstractValidator<InvoiceItemVm>
 
         RuleFor(i => i.Product)
             .NotNull().WithMessage("اطلاعات محصول برای آیتم فاکتور الزامی است")
-            .SetValidator(new ProductValidator());
+            .SetValidator(new ProductRequestDtoValidator(productRepository, categoryRepository, priceUnitRepository));
     }
-
-    public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
-    {
-        var result = await ValidateAsync(ValidationContext<InvoiceItemVm>.CreateWithOptions((InvoiceItemVm)model,
-            x => x.IncludeProperties(propertyName)));
-        return result.IsValid ? Array.Empty<string>() : result.Errors.Select(e => e.ErrorMessage);
-    };
 }
