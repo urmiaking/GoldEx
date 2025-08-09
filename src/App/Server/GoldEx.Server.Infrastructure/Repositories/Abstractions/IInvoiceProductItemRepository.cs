@@ -1,5 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Repositories;
-using GoldEx.Server.Domain.InvoiceItemProductAggregate;
+using GoldEx.Server.Domain.InvoiceProductItemAggregate;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 

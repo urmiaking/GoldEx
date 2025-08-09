@@ -5,7 +5,7 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 
-namespace GoldEx.Server.Domain.InvoiceItemProductAggregate;
+namespace GoldEx.Server.Domain.InvoiceProductItemAggregate;
 
 public readonly record struct InvoiceProductItemId(Guid Value);
 public class InvoiceProductItem : EntityBase< InvoiceProductItemId>

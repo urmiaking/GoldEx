@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.InvoiceItemProductAggregate;
+﻿using GoldEx.Server.Domain.InvoiceProductItemAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
