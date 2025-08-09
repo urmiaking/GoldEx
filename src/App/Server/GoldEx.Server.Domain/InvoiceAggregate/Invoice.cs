@@ -1,7 +1,7 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
-using GoldEx.Server.Domain.InvoiceItemProductAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.InvoiceProductItemAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;

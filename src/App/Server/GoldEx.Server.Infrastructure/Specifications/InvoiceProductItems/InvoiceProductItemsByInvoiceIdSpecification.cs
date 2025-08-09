@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.InvoiceAggregate;
-using GoldEx.Server.Domain.InvoiceItemProductAggregate;
+using GoldEx.Server.Domain.InvoiceProductItemAggregate;
 
 namespace GoldEx.Server.Infrastructure.Specifications.InvoiceProductItems;
 
