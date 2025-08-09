@@ -1,14 +1,10 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.InvoiceAggregate;
-using GoldEx.Server.Domain.PriceUnitAggregate;
+﻿using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
-using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 
-namespace GoldEx.Server.Domain.InvoiceProductItemAggregate;
+namespace GoldEx.Server.Domain.InvoiceAggregate;
 
-public readonly record struct InvoiceProductItemId(Guid Value);
-public class InvoiceProductItem : EntityBase< InvoiceProductItemId>
+public class InvoiceProductItem : InvoiceItemBase
 {
     public static InvoiceProductItem Create(
         decimal gramPrice,
@@ -16,7 +12,6 @@ public class InvoiceProductItem : EntityBase< InvoiceProductItemId>
         decimal taxPercent,
         int quantity,
         ProductId productId,
-        InvoiceType invoiceType,
         PriceUnitId priceUnitId,
         InvoiceId invoiceId,
         decimal? exchangeRate = null)
@@ -35,13 +30,11 @@ public class InvoiceProductItem : EntityBase< InvoiceProductItemId>
 
         return new InvoiceProductItem
         {
-            Id = new InvoiceProductItemId(Guid.NewGuid()),
             GramPrice = gramPrice,
             ProfitPercent = profitPercent,
             TaxPercent = taxPercent,
             Quantity = quantity,
-            PurchaseProductId = invoiceType == InvoiceType.Purchase ? productId : null,
-            SellProductId = invoiceType == InvoiceType.Sell ? productId : null,
+            ProductId = productId,
             PriceUnitId = priceUnitId,
             ExchangeRate = exchangeRate,
             InvoiceId = invoiceId,
@@ -70,11 +63,8 @@ public class InvoiceProductItem : EntityBase< InvoiceProductItemId>
     public PriceUnitId PriceUnitId { get; set; }
     public PriceUnit? PriceUnit { get; set; }
 
-    public ProductId? SellProductId { get; private set; }
-    public Product? SellProduct { get; private set; }
-
-    public ProductId? PurchaseProductId { get; private set; }
-    public Product? PurchaseProduct { get; private set; }
+    public ProductId? ProductId { get; private set; }
+    public Product? Product { get; private set; }
 
     public InvoiceId InvoiceId { get; private set; }
     public Invoice? Invoice { get; private set; }
@@ -100,9 +90,7 @@ public class InvoiceProductItem : EntityBase< InvoiceProductItemId>
     {
         ArgumentNullException.ThrowIfNull(product);
 
-        var productId = SellProductId ?? PurchaseProductId;
-
-        if (product.Id != productId)
+        if (product.Id != ProductId)
             throw new ArgumentException("The provided product does not match the item's ProductId.", nameof(product));
 
         ItemRawAmount = CalculatorHelper.CalculateRawPrice(product.Weight, GramPrice, product.CaratType, product.ProductType);

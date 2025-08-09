@@ -25,7 +25,6 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.Constants;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
-using GoldEx.Server.Domain.InvoiceProductItemAggregate;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.InvoiceProductItems;
 
@@ -34,7 +33,6 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
-    IInvoiceProductItemRepository invoiceProductItemRepository,
     IInvoicePaymentRepository invoicePaymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
@@ -264,9 +262,7 @@ internal class InvoiceService(
                         product = existingProduct;
                     }
 
-                    var existingItem = request.InvoiceType == InvoiceType.Sell
-                        ? existingProductItems.FirstOrDefault(x => x.SellProductId == product.Id)
-                        : existingProductItems.FirstOrDefault(x => x.PurchaseProductId == product.Id);
+                    var existingItem = existingProductItems.FirstOrDefault(x => x.ProductId == product.Id);
 
                     if (existingItem != null)
                     {
@@ -290,7 +286,6 @@ internal class InvoiceService(
                             itemDto.TaxPercent,
                             itemDto.Quantity,
                             product.Id,
-                            request.InvoiceType,
                             new PriceUnitId(itemDto.PriceUnit),
                             invoice.Id,
                             itemDto.ExchangeRate);
@@ -333,8 +328,8 @@ internal class InvoiceService(
 
         var data = await invoiceRepository
             .Get(spec)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SellProduct)
+            .Include(x => x.Items)
+                .ThenInclude(x => x.Product)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
@@ -356,11 +351,8 @@ internal class InvoiceService(
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SellProduct)
-                    .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.PurchaseProduct)
+            .Include(x => x.Items!)
+                .ThenInclude(x => x.Product)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
@@ -379,13 +371,10 @@ internal class InvoiceService(
         var item = await invoiceRepository
             .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
             .Include(x => x.Customer!)
-                .ThenInclude(x => x.CreditLimitPriceUnit)
+                .ThenInclude(x => x.CreditLimitPriceUnit!)
             .Include(x => x.PriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SellProduct)
-                    .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.PurchaseProduct)
+            .Include(x => x.Items!)
+                .ThenInclude(x => x.Product)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
@@ -406,12 +395,12 @@ internal class InvoiceService(
             {
                 var item = await invoiceRepository
                     .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
-                    .Include(x => x.ProductItems)
-                        .ThenInclude(x => x.SellProduct)
+                    .Include(x => x.Items!)
+                        .ThenInclude(x => x.Product)
                     .AsSplitQuery()
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                var products = item.ProductItems.Select(x => x.SellProduct!).ToList();
+                var products = item.Items.Select(x => x.Product!).ToList();
 
                 await invoiceRepository.DeleteAsync(item, cancellationToken);
 

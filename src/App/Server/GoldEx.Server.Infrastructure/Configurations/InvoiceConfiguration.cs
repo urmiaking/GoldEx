@@ -40,6 +40,70 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.OwnsMany(x => x.Discounts, Configure);
         builder.OwnsMany(x => x.ExtraCosts, Configure);
+        builder.OwnsMany(x => x.Items, Configure);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceItemBase> builder)
+    {
+        builder.ToTable("InvoiceProductItems");
+
+        builder.HasDiscriminator<string>("ItemType")
+            .HasValue<InvoiceProductItem>("Product")
+            .HasValue<InvoiceCoinItem>("Coin")
+            .HasValue<InvoiceCurrencyItem>("Currency");
+
+        builder.Property<decimal>(nameof(InvoiceProductItem.GramPrice))
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property<decimal>(nameof(InvoiceProductItem.TaxPercent))
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property<decimal>(nameof(InvoiceProductItem.ProfitPercent))
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property(nameof(InvoiceProductItem.ExchangeRate))
+            .HasPrecision(36, 10);
+
+        builder.Property(x => x.ItemRawAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemWageAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemProfitAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemTaxAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemFinalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.TotalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.HasOne(x => x.Product)
+            .WithMany()
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.PriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.PriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.ProductId)
+            .IsUnique()
+            .HasFilter("[SellProductId] IS NOT NULL");
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceExtraCost> builder)

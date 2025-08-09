@@ -1,7 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
-using GoldEx.Server.Domain.InvoiceProductItemAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
@@ -60,7 +59,8 @@ public class Invoice : EntityBase<InvoiceId>
 
     #region InvoiceItems
 
-    public IReadOnlyList<InvoiceProductItem>? ProductItems { get; private set; }
+    private readonly List<InvoiceItemBase> _items = [];
+    public IReadOnlyList<InvoiceItemBase> Items => _items;
 
     #endregion
 
@@ -143,15 +143,15 @@ public class Invoice : EntityBase<InvoiceId>
 
     #region Calculations
 
-    public decimal TotalTaxAmount => ProductItems?.Sum(item => item.ItemTaxAmount) ?? 0;
+    public decimal TotalTaxAmount => Items.Sum(item => item.ItemTaxAmount);
 
-    public decimal TotalAmount => ProductItems?.Sum(item => item.TotalAmount) ?? 0;
+    public decimal TotalAmount => Items.Sum(item => item.TotalAmount);
 
-    public decimal TotalWageAmount => ProductItems?.Sum(item => item.ItemWageAmount) ?? 0;
+    public decimal TotalWageAmount => Items.Sum(item => item.ItemWageAmount);
 
-    public decimal TotalProfitAmount => ProductItems?.Sum(item => item.ItemProfitAmount) ?? 0;
+    public decimal TotalProfitAmount => Items.Sum(item => item.ItemProfitAmount);
 
-    public decimal TotalRawAmount => ProductItems?.Sum(item => item.ItemRawAmount) ?? 0;
+    public decimal TotalRawAmount => Items.Sum(item => item.ItemRawAmount);
 
     public decimal TotalPaidAmount => InvoicePayments?.Sum(payment => payment.Amount * (payment.ExchangeRate ?? 1)) ?? 0;
 

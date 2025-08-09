@@ -115,19 +115,19 @@ internal class AccountingTransactionService(
 
                         decimal totalCostOfGoods = 0;
 
-                        if (invoice.ProductItems is not null)
+                        if (invoice.Items is not null)
                         {
-                            foreach (var invoiceProductItem in invoice.ProductItems)
+                            foreach (var invoiceProductItem in invoice.Items)
                             {
-                                if (!invoiceProductItem.SellProductId.HasValue)
+                                if (!invoiceProductItem.ProductId.HasValue)
                                     continue;
 
                                 var purchaseInvoice = await invoiceRepository
-                                                          .Get(new InvoicesByProductIdSpecification(invoiceProductItem.SellProductId
+                                                          .Get(new InvoicesByProductIdSpecification(invoiceProductItem.ProductId
                                                               .Value))
                                                           .FirstOrDefaultAsync(cancellationToken) ??
                                                       throw new NotFoundException(
-                                                          $"Purchase invoice for product {invoiceProductItem.SellProductId.Value} not found.");
+                                                          $"Purchase invoice for product {invoiceProductItem.ProductId.Value} not found.");
 
                                 totalCostOfGoods += purchaseInvoice.TotalAmount * (purchaseInvoice.ExchangeRate ?? 1);
                             }
