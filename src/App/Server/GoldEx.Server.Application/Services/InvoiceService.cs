@@ -284,10 +284,7 @@ internal class InvoiceService(
                             itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
-                            itemDto.Quantity,
                             product.Id,
-                            new PriceUnitId(itemDto.PriceUnit),
-                            invoice.Id,
                             itemDto.ExchangeRate);
 
                         invoiceProductItem.RecalculateAmounts(product);
