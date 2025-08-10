@@ -9,7 +9,6 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class InvoiceProductItemVm
 {
-
     private int _quantity;
     private decimal _gramPrice;
     private decimal _profitPercent;
@@ -114,10 +113,10 @@ public class InvoiceProductItemVm
     /// </summary>
     public void RecalculateAmounts()
     {
-        RawAmount = CalculatorHelper.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.CaratType, Product.ProductType);
-        WageAmount = CalculatorHelper.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, ExchangeRate);
-        ProfitAmount = CalculatorHelper.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
-        TaxAmount = CalculatorHelper.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
+        RawAmount = CalculatorHelper.Product.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.CaratType, Product.ProductType);
+        WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, ExchangeRate);
+        ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
+        TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
         FinalAmount = RawAmount + WageAmount + ProfitAmount + TaxAmount;
         TotalAmount = FinalAmount * Quantity;
     }

@@ -10,9 +10,6 @@ public class InvoiceProductItemConfiguration : IEntityTypeConfiguration<InvoiceP
     {
         builder.ToTable("InvoiceProductItems");
 
-        builder.Property(x => x.Quantity)
-            .IsRequired();
-
         builder.Property(x => x.GramPrice)
             .HasPrecision(36, 10)
             .IsRequired();
@@ -45,10 +42,6 @@ public class InvoiceProductItemConfiguration : IEntityTypeConfiguration<InvoiceP
             .IsRequired();
 
         builder.Property(x => x.ItemFinalAmount)
-            .HasPrecision(36, 10)
-            .IsRequired();
-
-        builder.Property(x => x.TotalAmount)
             .HasPrecision(36, 10)
             .IsRequired();
 

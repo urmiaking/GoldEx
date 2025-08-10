@@ -1,23 +1,19 @@
-﻿using GoldEx.Server.Domain.PriceUnitAggregate;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
-public class InvoiceProductItem : InvoiceItemBase
+public class InvoiceProductItem : EntityBase
 {
     public static InvoiceProductItem Create(
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
-        int quantity,
-        ProductId productId,
-        PriceUnitId priceUnitId,
-        InvoiceId invoiceId,
-        decimal? exchangeRate = null)
+        ProductId productId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
 
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
@@ -25,30 +21,24 @@ public class InvoiceProductItem : InvoiceItemBase
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
 
-        if (exchangeRate is < 0)
-            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero.");
-
         return new InvoiceProductItem
         {
             GramPrice = gramPrice,
             ProfitPercent = profitPercent,
             TaxPercent = taxPercent,
-            Quantity = quantity,
             ProductId = productId,
-            PriceUnitId = priceUnitId,
-            ExchangeRate = exchangeRate,
-            InvoiceId = invoiceId,
             // Stored calculated values are initialized to 0
             ItemRawAmount = 0,
             ItemWageAmount = 0,
             ItemProfitAmount = 0,
             ItemTaxAmount = 0,
-            ItemFinalAmount = 0,
-            TotalAmount = 0
+            ItemFinalAmount = 0
         };
     }
 
+#pragma warning disable CS8618 
     private InvoiceProductItem() { }
+#pragma warning restore CS8618
 
     #region Properties
 
@@ -58,16 +48,14 @@ public class InvoiceProductItem : InvoiceItemBase
     public decimal GramPrice { get; private set; }
     public decimal? ExchangeRate { get; private set; }
 
-    public int Quantity { get; private set; }
-
     public PriceUnitId PriceUnitId { get; set; }
     public PriceUnit? PriceUnit { get; set; }
 
-    public ProductId? ProductId { get; private set; }
+    public ProductId ProductId { get; private set; }
     public Product? Product { get; private set; }
 
     public InvoiceId InvoiceId { get; private set; }
-    public Invoice? Invoice { get; private set; }
+    public Invoice Invoice { get; private set; }
 
     #endregion
 
@@ -78,7 +66,6 @@ public class InvoiceProductItem : InvoiceItemBase
     public decimal ItemProfitAmount { get; private set; }
     public decimal ItemTaxAmount { get; private set; }
     public decimal ItemFinalAmount { get; private set; }
-    public decimal TotalAmount { get; private set; }
 
     /// <summary>
     /// Calculates all financial amounts for the invoice item and updates its state.
@@ -93,63 +80,18 @@ public class InvoiceProductItem : InvoiceItemBase
         if (product.Id != ProductId)
             throw new ArgumentException("The provided product does not match the item's ProductId.", nameof(product));
 
-        ItemRawAmount = CalculatorHelper.CalculateRawPrice(product.Weight, GramPrice, product.CaratType, product.ProductType);
-        ItemWageAmount = CalculatorHelper.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, ExchangeRate);
-        ItemProfitAmount = CalculatorHelper.CalculateProfit(ItemRawAmount, ItemWageAmount, product.ProductType, ProfitPercent);
-        ItemTaxAmount = CalculatorHelper.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, product.ProductType);
+        ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight, GramPrice, product.CaratType, product.ProductType);
+        ItemWageAmount = CalculatorHelper.Product.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, ExchangeRate);
+        ItemProfitAmount = CalculatorHelper.Product.CalculateProfit(ItemRawAmount, ItemWageAmount, product.ProductType, ProfitPercent);
+        ItemTaxAmount = CalculatorHelper.Product.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, product.ProductType);
 
-        ItemFinalAmount = CalculatorHelper.CalculateFinalPrice(
+        ItemFinalAmount = CalculatorHelper.Product.CalculateFinalPrice(
             ItemRawAmount,
             ItemWageAmount,
             ItemProfitAmount,
             ItemTaxAmount,
             null,
             product.ProductType);
-
-        TotalAmount = ItemFinalAmount * Quantity;
-    }
-
-    #endregion
-
-    #region Methods
-
-    public void SetGramPrice(decimal gramPrice)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
-        GramPrice = gramPrice;
-    }
-
-    public void SetQuantity(int quantity)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
-        Quantity = quantity;
-    }
-
-    public void SetProfitPercent(decimal profitPercent)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
-        ProfitPercent = profitPercent;
-    }
-
-    public void SetTaxPercent(decimal taxPercent)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
-        TaxPercent = taxPercent;
-    }
-
-    public void SetExchangeRate(decimal? exchangeRate)
-    {
-        if (exchangeRate is < 0)
-            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero.");
-
-        ExchangeRate = exchangeRate;
-    }
-
-    public void SetPriceUnitId(PriceUnitId priceUnitId)
-    {
-        PriceUnitId = priceUnitId;
     }
 
     #endregion
