@@ -155,5 +155,10 @@ public class CalculatorHelper
         {
             return unitPrice * (profitPercent / 100m);
         }
+
+        public static decimal CalculateTax(decimal unitPrice, decimal taxPercent)
+        {
+            return unitPrice * (taxPercent / 100m);
+        }
     }
 }

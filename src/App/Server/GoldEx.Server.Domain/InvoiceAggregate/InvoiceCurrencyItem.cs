@@ -9,6 +9,7 @@ public class InvoiceCurrencyItem : EntityBase
     public static InvoiceCurrencyItem Create(PriceUnitId currencyId,
         decimal unitPrice,
         int amount,
+        decimal taxPercent,
         decimal profitPercent)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0, nameof(unitPrice));
@@ -17,17 +18,24 @@ public class InvoiceCurrencyItem : EntityBase
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
 
+        var profitAmount = CalculatorHelper.Currency.CalculateProfit(unitPrice, profitPercent);
+        var taxAmount = CalculatorHelper.Currency.CalculateTax(unitPrice, taxPercent);
+        var finalAmount = unitPrice + profitAmount + taxAmount;
+        var totalAmount = finalAmount * amount;
+
         return new InvoiceCurrencyItem
         {
             CurrencyId = currencyId,
             UnitPrice = unitPrice,
             Amount = amount,
             ProfitPercent = profitPercent,
+            TaxPercent = taxPercent,
 
             ItemRawAmount = unitPrice,
-            ItemProfitAmount = CalculatorHelper.Currency.CalculateProfit(unitPrice, profitPercent),
-            ItemFinalAmount = unitPrice + CalculatorHelper.Currency.CalculateProfit(unitPrice, profitPercent),
-            TotalAmount = (unitPrice + CalculatorHelper.Currency.CalculateProfit(unitPrice, profitPercent)) * amount
+            ItemProfitAmount = profitAmount,
+            ItemTaxAmount = taxAmount,
+            ItemFinalAmount = finalAmount,
+            TotalAmount = totalAmount
         };
     }
 
@@ -37,6 +45,7 @@ public class InvoiceCurrencyItem : EntityBase
     public decimal UnitPrice { get; private set; }
     public int Amount { get; private set; }
     public decimal ProfitPercent { get; private set; }
+    public decimal TaxPercent { get; private set; }
 
     public InvoiceId InvoiceId { get; private set; }
     public Invoice Invoice { get; private set; }
@@ -51,6 +60,7 @@ public class InvoiceCurrencyItem : EntityBase
     public decimal ItemProfitAmount { get; private set; }
     public decimal ItemFinalAmount { get; private set; }
     public decimal TotalAmount { get; private set; }
+    public decimal ItemTaxAmount { get; private set; }
 
     #endregion
 }

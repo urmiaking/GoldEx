@@ -2,6 +2,7 @@
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
@@ -87,6 +88,25 @@ public class Invoice : EntityBase<InvoiceId>
 
             _products.Add(productItem);
         }
+    }
+
+    public void AddProductItem(InvoiceProductItem productItem)
+    {
+        if (_products.Any(x => x.ProductId == productItem.ProductId))
+            throw new InvalidOperationException(
+                $"The product with ID {productItem.ProductId.Value} is already present in the ProductItems list");
+
+        _products.Add(productItem);
+    }
+
+    public void RemoveProductItem(ProductId productId)
+    {
+        var item = _products.FirstOrDefault(x => x.ProductId == productId);
+
+        if (item == null)
+            throw new InvalidOperationException($"The product with ID {productId.Value} does not exist in the ProductItems list");
+
+        _products.Remove(item);
     }
 
     public void SetCoinItems(IEnumerable<InvoiceCoinItem> coinItems)
@@ -205,7 +225,8 @@ public class Invoice : EntityBase<InvoiceId>
 
     public decimal TotalAmount => 
         ProductItems.Sum(item => item.ItemFinalAmount) +
-        CoinItems.Sum(item => item.TotalAmount);
+        CoinItems.Sum(item => item.TotalAmount) +
+        CurrencyItems.Sum(item => item.ItemFinalAmount);
 
     public decimal TotalWageAmount => 
         ProductItems.Sum(item => item.ItemWageAmount);
@@ -215,7 +236,10 @@ public class Invoice : EntityBase<InvoiceId>
         CoinItems.Sum(item => item.ItemProfitAmount) +
         CurrencyItems.Sum(item => item.ItemProfitAmount);
 
-    public decimal TotalRawAmount => ProductItems.Sum(item => item.ItemRawAmount) + CoinItems.Sum(item => item.ItemRawAmount);
+    public decimal TotalRawAmount => 
+        ProductItems.Sum(item => item.ItemRawAmount) +
+        CoinItems.Sum(item => item.ItemRawAmount) +
+        CurrencyItems.Sum(item => item.ItemRawAmount);
 
     public decimal TotalPaidAmount => InvoicePayments?.Sum(payment => payment.Amount * (payment.ExchangeRate ?? 1)) ?? 0;
 

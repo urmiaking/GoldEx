@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.Data;
+﻿using System.Linq.Expressions;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.CustomerAggregate;
@@ -51,17 +52,26 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         if (invoiceFilter.Status.HasValue)
         {
             // This is the full, translatable calculation for the total unpaid amount.
-            System.Linq.Expressions.Expression<Func<Invoice, bool>> isPaidExpression = x =>
+            Expression<Func<Invoice, bool>> isPaidExpression = x =>
                 Math.Abs(
-                    (x.Items.Sum(i => i.TotalAmount) - x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) + x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))) - x.InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
+                    x.ProductItems.Sum(i => i.ItemFinalAmount) +
+                    x.CoinItems.Sum(c => c.TotalAmount) +
+                    x.CurrencyItems.Sum(c => c.TotalAmount) -
+                    x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) +
+                    x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1)) -
+                    x.InvoicePayments!.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
                 ) < 0.01m;
 
             // The opposite expression, for checking if there is debt.
-            System.Linq.Expressions.Expression<Func<Invoice, bool>> hasDebtExpression = x =>
-               Math.Abs(
-                   (x.Items.Sum(i => i.TotalAmount) - x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) + x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))) - x.InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
-               ) >= 0.01m;
-
+            Expression<Func<Invoice, bool>> hasDebtExpression = x =>
+                Math.Abs(
+                    x.ProductItems.Sum(i => i.ItemFinalAmount) +
+                    x.CoinItems.Sum(c => c.TotalAmount) +
+                    x.CurrencyItems.Sum(c => c.TotalAmount) -
+                    x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) +
+                    x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1)) -
+                    x.InvoicePayments!.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
+                ) >= 0.01m;
 
             switch (invoiceFilter.Status.Value)
             {
@@ -71,13 +81,11 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
 
                 case InvoicePaymentStatus.Overdue:
                     var today = DateOnly.FromDateTime(DateTime.Today);
-                    // Combine the "has debt" logic with the due date check
                     AddCriteria(hasDebtExpression.And(x => x.DueDate.HasValue && x.DueDate.Value < today));
                     break;
 
                 case InvoicePaymentStatus.HasDebt:
                     var todayForDebt = DateOnly.FromDateTime(DateTime.Today);
-                    // Combine the "has debt" logic with the "not overdue" check
                     AddCriteria(hasDebtExpression.And(x => !x.DueDate.HasValue || x.DueDate.Value >= todayForDebt));
                     break;
                 default:
@@ -91,13 +99,13 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
             if (long.TryParse(filter.Search, out var number))
             {
                 AddCriteria(x =>
-                    x.InvoiceNumber == number || x.Items.Any(i => i.Product!.Barcode == number.ToString()));
+                    x.InvoiceNumber == number || x.ProductItems.Any(i => i.Product!.Barcode == number.ToString()));
             }
             else
             {
                 AddCriteria(x =>
                     x.Customer!.FullName.Contains(filter.Search) ||
-                    x.Items.Any(i => i.Product!.Name.Contains(filter.Search)));
+                    x.ProductItems.Any(i => i.Product!.Name.Contains(filter.Search)));
             }
         }
 
@@ -113,13 +121,11 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
     }
 }
 
-// You will need a simple helper class for the .And() method used above.
-// Place this in a utility file in your project.
 public static class PredicateBuilder
 {
-    public static System.Linq.Expressions.Expression<Func<T, bool>> And<T>(this System.Linq.Expressions.Expression<Func<T, bool>> left, System.Linq.Expressions.Expression<Func<T, bool>> right)
+    public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
     {
-        var invokedExpr = System.Linq.Expressions.Expression.Invoke(right, left.Parameters);
-        return System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(System.Linq.Expressions.Expression.AndAlso(left.Body, invokedExpr), left.Parameters);
+        var invokedExpr = Expression.Invoke(right, left.Parameters);
+        return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left.Body, invokedExpr), left.Parameters);
     }
 }

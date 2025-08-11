@@ -36,7 +36,6 @@ public class InvoiceCoinItem : EntityBase
 
     public decimal UnitPrice { get; private set; }
     public int Quantity { get; private set; }
-    public decimal? ExchangeRate { get; private set; }
     public decimal ProfitPercent { get; private set; }
 
     private InvoiceCoinItem() { }

@@ -114,7 +114,8 @@ public static class ApiRoutes
     public class Invoices
     {
         public const string Base = "/api/Invoices";
-        public const string Set = "";
+        public const string Create = "";
+        public const string Update = "{id}";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string Delete = "{id}";

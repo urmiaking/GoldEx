@@ -196,8 +196,6 @@ public class ApiUrls
 
     public class Invoices
     {
-        public static string Set() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Set);
-
         public static string GetList(RequestFilter filter, InvoiceFilter invoiceFilter, Guid? customerId) =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetList)
                 .AppendQueryString(filter)
@@ -219,6 +217,10 @@ public class ApiUrls
 
         public static string GetLastNumber(InvoiceType invoiceType) =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetLastNumber).FormatRoute(new { invoiceType });
+
+        public static string Create() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Create);
+
+        public static string Update(Guid id) => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Update).FormatRoute(new { id });
     }
 
     public class Reports

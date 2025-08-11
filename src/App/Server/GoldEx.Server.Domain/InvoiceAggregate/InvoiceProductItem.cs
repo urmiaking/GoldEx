@@ -1,5 +1,4 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Helpers;
 
@@ -44,12 +43,7 @@ public class InvoiceProductItem : EntityBase
 
     public decimal ProfitPercent { get; private set; }
     public decimal TaxPercent { get; private set; }
-
     public decimal GramPrice { get; private set; }
-    public decimal? ExchangeRate { get; private set; }
-
-    public PriceUnitId PriceUnitId { get; set; }
-    public PriceUnit? PriceUnit { get; set; }
 
     public ProductId ProductId { get; private set; }
     public Product? Product { get; private set; }
@@ -81,7 +75,7 @@ public class InvoiceProductItem : EntityBase
             throw new ArgumentException("The provided product does not match the item's ProductId.", nameof(product));
 
         ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight, GramPrice, product.CaratType, product.ProductType);
-        ItemWageAmount = CalculatorHelper.Product.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, ExchangeRate);
+        ItemWageAmount = CalculatorHelper.Product.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, Invoice.ExchangeRate);
         ItemProfitAmount = CalculatorHelper.Product.CalculateProfit(ItemRawAmount, ItemWageAmount, product.ProductType, ProfitPercent);
         ItemTaxAmount = CalculatorHelper.Product.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, product.ProductType);
 
