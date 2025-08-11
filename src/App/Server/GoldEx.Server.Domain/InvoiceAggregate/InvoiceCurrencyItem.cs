@@ -8,7 +8,7 @@ public class InvoiceCurrencyItem : EntityBase
 {
     public static InvoiceCurrencyItem Create(PriceUnitId currencyId,
         decimal unitPrice,
-        int amount,
+        decimal amount,
         decimal taxPercent,
         decimal profitPercent)
     {
@@ -43,7 +43,7 @@ public class InvoiceCurrencyItem : EntityBase
     public PriceUnit? Currency { get; private set; }
 
     public decimal UnitPrice { get; private set; }
-    public int Amount { get; private set; }
+    public decimal Amount { get; private set; }
     public decimal ProfitPercent { get; private set; }
     public decimal TaxPercent { get; private set; }
 

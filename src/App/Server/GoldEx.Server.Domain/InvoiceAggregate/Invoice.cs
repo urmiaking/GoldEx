@@ -99,15 +99,7 @@ public class Invoice : EntityBase<InvoiceId>
         _products.Add(productItem);
     }
 
-    public void RemoveProductItem(ProductId productId)
-    {
-        var item = _products.FirstOrDefault(x => x.ProductId == productId);
-
-        if (item == null)
-            throw new InvalidOperationException($"The product with ID {productId.Value} does not exist in the ProductItems list");
-
-        _products.Remove(item);
-    }
+    public void ClearProductItems() => _products.Clear();
 
     public void SetCoinItems(IEnumerable<InvoiceCoinItem> coinItems)
     {
