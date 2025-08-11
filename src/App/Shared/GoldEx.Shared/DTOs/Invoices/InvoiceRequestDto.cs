@@ -18,6 +18,8 @@ namespace GoldEx.Shared.DTOs.Invoices;
 /// <param name="ExchangeRate"></param>
 /// <param name="Customer"></param>
 /// <param name="InvoiceProductItems"></param>
+/// <param name="InvoiceCoinItems"></param>
+/// <param name="InvoiceCurrencyItems"></param>
 /// <param name="InvoiceDiscounts"></param>
 /// <param name="InvoicePayments"></param>
 /// <param name="InvoiceExtraCosts"></param>
@@ -33,6 +35,8 @@ public record InvoiceRequestDto(
     decimal? ExchangeRate,
     CustomerRequestDto Customer,
     List<InvoiceProductItemDto> InvoiceProductItems,
+    List<InvoiceCoinItemDto> InvoiceCoinItems,
+    List<InvoiceCurrencyItemDto> InvoiceCurrencyItems,
     List<InvoiceDiscountDto> InvoiceDiscounts,
     List<InvoicePaymentDto> InvoicePayments,
     List<InvoiceExtraCostsDto> InvoiceExtraCosts);
@@ -49,7 +53,6 @@ public record InvoicePaymentDto(
     Guid PriceUnitId);
 
 public record InvoiceProductItemDto(
-    Guid? Id,
     decimal GramPrice,
     decimal ProfitPercent,
     decimal TaxPercent,
@@ -57,6 +60,19 @@ public record InvoiceProductItemDto(
     int Quantity,
     ProductRequestDto Product,
     Guid PriceUnit);
+
+public record InvoiceCoinItemDto(
+    decimal UnitPrice,
+    int Quantity,
+    decimal ProfitPercent,
+    Guid CoinId);
+
+public record InvoiceCurrencyItemDto(
+    decimal UnitPrice,
+    decimal Amount,
+    decimal ProfitPercent,
+    decimal TaxPercent,
+    Guid CurrencyId);
 
 public record InvoiceExtraCostsDto(decimal Amount, decimal? ExchangeRate, string? Description, Guid PriceUnitId);
 

@@ -24,7 +24,7 @@ internal class AccountingTransactionService(
     IFinancialAccountRepository financialAccountRepository,
     ILedgerAccountRepository ledgerAccountRepository) : IAccountingTransactionService
 {
-    public async Task CreateTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken)
+    public async Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken)
     {
         await repository.RemoveByInvoiceIdAsync(invoice.Id, cancellationToken);
         await repository.RemoveByInvoicePaymentIdsAsync(invoice.InvoicePayments?.Select(x => x.Id).ToList(), cancellationToken);
@@ -115,22 +115,16 @@ internal class AccountingTransactionService(
 
                         decimal totalCostOfGoods = 0;
 
-                        if (invoice.Items is not null)
+                        foreach (var invoiceProductItem in invoice.ProductItems)
                         {
-                            foreach (var invoiceProductItem in invoice.Items)
-                            {
-                                if (!invoiceProductItem.ProductId.HasValue)
-                                    continue;
 
-                                var purchaseInvoice = await invoiceRepository
-                                                          .Get(new InvoicesByProductIdSpecification(invoiceProductItem.ProductId
-                                                              .Value))
-                                                          .FirstOrDefaultAsync(cancellationToken) ??
-                                                      throw new NotFoundException(
-                                                          $"Purchase invoice for product {invoiceProductItem.ProductId.Value} not found.");
+                            var purchaseInvoice = await invoiceRepository
+                                                      .Get(new InvoicesByProductIdSpecification(invoiceProductItem.ProductId))
+                                                      .FirstOrDefaultAsync(cancellationToken) ??
+                                                  throw new NotFoundException(
+                                                      $"Purchase invoice for product {invoiceProductItem.ProductId.Value} not found.");
 
-                                totalCostOfGoods += purchaseInvoice.TotalAmount * (purchaseInvoice.ExchangeRate ?? 1);
-                            }
+                            totalCostOfGoods += purchaseInvoice.TotalAmount * (purchaseInvoice.ExchangeRate ?? 1);
                         }
 
                         var cogsAmount = totalCostOfGoods;
