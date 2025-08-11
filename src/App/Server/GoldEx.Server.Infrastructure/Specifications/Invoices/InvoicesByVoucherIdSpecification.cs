@@ -8,6 +8,7 @@ public class InvoicesByVoucherIdSpecification : SpecificationBase<Invoice>
 {
     public InvoicesByVoucherIdSpecification(PaymentVoucherId paymentVoucherId)
     {
-        AddCriteria(x => x.InvoicePayments.Any(ip => ip.PaymentVoucherId == paymentVoucherId));
+        AddInclude(x => x.InvoicePayments!);
+        AddCriteria(x => x.InvoicePayments!.Any(ip => ip.PaymentVoucherId == paymentVoucherId));
     }
 }

@@ -93,10 +93,9 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         {
             var existingInvoice = await _invoiceRepository
                 .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceDto.Id.Value)))
-                .Include(x => x.Items)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingInvoice != null && existingInvoice.Items.Any(item => item.ProductId == productId))
+            if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.ProductId == productId))
                 return true;
         }
 

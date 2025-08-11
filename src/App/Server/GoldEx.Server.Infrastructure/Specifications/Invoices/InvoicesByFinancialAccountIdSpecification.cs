@@ -8,6 +8,7 @@ public class InvoicesByFinancialAccountIdSpecification : SpecificationBase<Invoi
 {
     public InvoicesByFinancialAccountIdSpecification(FinancialAccountId financialAccountId)
     {
-        AddCriteria(x => x.InvoicePayments.Any(ip => ip.SourceFinancialAccountId == financialAccountId));
+        AddInclude(x => x.InvoicePayments!);
+        AddCriteria(x => x.InvoicePayments!.Any(ip => ip.SourceFinancialAccountId == financialAccountId));
     }
 }

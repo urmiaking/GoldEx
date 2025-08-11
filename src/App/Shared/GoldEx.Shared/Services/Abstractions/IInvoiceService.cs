@@ -6,7 +6,8 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IInvoiceService
 {
-    Task SetAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default);
+    Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Guid id, InvoiceRequestDto requestDto, CancellationToken cancellationToken = default);
     Task<PagedList<GetInvoiceListResponse>> GetListAsync(RequestFilter filter, InvoiceFilter invoiceFilter, 
         Guid? customerId, CancellationToken cancellationToken = default);
     Task<GetInvoiceResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
