@@ -24,12 +24,18 @@ public class InvoiceValidator : AbstractValidator<InvoiceVm>
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")
             .SetValidator(new CustomerValidator());
 
-        RuleFor(x => x.InvoiceProductItems)
+        RuleFor(x => x.ProductItems)
             .NotNull()
             .NotEmpty().WithMessage("فاکتور باید حداقل دارای یک آیتم باشد");
 
-        RuleForEach(x => x.InvoiceProductItems)
+        RuleForEach(x => x.ProductItems)
             .SetValidator(new InvoiceProductItemValidator());
+
+        RuleForEach(x => x.CoinItems)
+            .SetValidator(new InvoiceCoinItemValidator());
+
+        RuleForEach(x => x.CurrencyItems)
+            .SetValidator(new InvoiceCurrencyItemValidator());
 
         RuleForEach(x => x.InvoiceDiscounts)
             .SetValidator(new InvoiceDiscountValidator());

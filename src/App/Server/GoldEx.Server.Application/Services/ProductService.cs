@@ -80,7 +80,7 @@ internal class ProductService(
             .Include(x => x.ProductCategory)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (item is not null && forCalculation is false && item.SellInvoiceProductItem is not null)
+        if (item is not null && forCalculation is false) // TODO: refactor this logic due to sell product nav prop has been deleted
             throw new ValidationException(new List<ValidationFailure>
             {
                 new(nameof(barcode), "این جنس قبلا فروخته شده است", barcode)

@@ -16,10 +16,10 @@ using MudBlazor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
-public partial class InvoiceProductItemEditor
+public partial class ProductItemEditor
 {
     [Parameter] public Guid? Id { get; set; }
-    [Parameter] public InvoiceProductItemVm Model { get; set; } = InvoiceProductItemVm.CreateDefaultInstance();
+    [Parameter] public ProductItemVm Model { get; set; } = ProductItemVm.CreateDefaultInstance();
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 

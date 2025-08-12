@@ -7,7 +7,7 @@ using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
-public class InvoiceProductItemVm
+public class ProductItemVm
 {
     private int _quantity;
     private decimal _gramPrice;
@@ -119,9 +119,9 @@ public class InvoiceProductItemVm
         TotalAmount = FinalAmount * Quantity;
     }
 
-    public static InvoiceProductItemVm CreateDefaultInstance()
+    public static ProductItemVm CreateDefaultInstance()
     {
-        return new InvoiceProductItemVm
+        return new ProductItemVm
         {
             Product = ProductVm.CreateDefaultInstance(),
             GramPrice = 0,
@@ -132,9 +132,9 @@ public class InvoiceProductItemVm
         };
     }
 
-    public InvoiceProductItemVm Copy(InvoiceProductItemVm productItem)
+    public ProductItemVm Copy(ProductItemVm productItem)
     {
-        return new InvoiceProductItemVm
+        return new ProductItemVm
         {
             Product = productItem.Product,
             GramPrice = productItem.GramPrice,
@@ -148,7 +148,7 @@ public class InvoiceProductItemVm
         };
     }
 
-    public static InvoiceProductItemDto ToRequest(InvoiceProductItemVm productItem)
+    public static InvoiceProductItemDto ToRequest(ProductItemVm productItem)
     {
         if (productItem.PriceUnit is null)
             throw new FluentValidation.ValidationException($"واحد ارزی جنس {productItem.Product.Name} وارد نشده است");
@@ -163,9 +163,9 @@ public class InvoiceProductItemVm
             productItem.PriceUnit.Id);
     }
 
-    public static InvoiceProductItemVm CreateFrom(GetInvoiceProductItemResponse response)
+    public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response)
     {
-        return new InvoiceProductItemVm
+        return new ProductItemVm
         {
             ExchangeRate = response.ExchangeRate,
             GramPrice = response.GramPrice,

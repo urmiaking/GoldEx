@@ -4,7 +4,7 @@ using GoldEx.Client.Pages.Products.Validators;
 
 namespace GoldEx.Client.Pages.Invoices.Validators;
 
-public class InvoiceProductItemValidator : AbstractValidator<InvoiceProductItemVm>
+public class InvoiceProductItemValidator : AbstractValidator<ProductItemVm>
 {
     public InvoiceProductItemValidator()
     {
@@ -27,7 +27,7 @@ public class InvoiceProductItemValidator : AbstractValidator<InvoiceProductItemV
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
     {
-        var result = await ValidateAsync(ValidationContext<InvoiceProductItemVm>.CreateWithOptions((InvoiceProductItemVm)model,
+        var result = await ValidateAsync(ValidationContext<ProductItemVm>.CreateWithOptions((ProductItemVm)model,
             x => x.IncludeProperties(propertyName)));
         return result.IsValid ? Array.Empty<string>() : result.Errors.Select(e => e.ErrorMessage);
     };

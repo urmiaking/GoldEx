@@ -96,8 +96,9 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .Get(new ProductsByIdSpecification(productId))
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (product?.SellInvoiceProductItem is null)
-            return true;
+        //if (product?.SellInvoiceProductItem is null)
+        //    return true;
+        // TODO: refactor this logic due to sell product nav prop has been deleted
 
         if (invoiceDto.Id.HasValue)
         {
