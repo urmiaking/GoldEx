@@ -272,7 +272,7 @@ internal static class ServiceCollectionExtensions
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceReportResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetPriceUnitTitleResponse));
-        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceItemResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceProductItemResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetSettingResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceDiscountResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoicePaymentResponse));

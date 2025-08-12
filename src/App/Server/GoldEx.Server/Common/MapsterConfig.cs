@@ -106,7 +106,7 @@ public class MapsterConfig : IRegister
         config.NewConfig<Invoice, GetInvoiceResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Customer, src => src.Customer)
-            .Map(dest => dest.InvoiceItems, src => src.Items)
+            .Map(dest => dest.InvoiceProductItems, src => src.Items)
             .Map(dest => dest.InvoiceDiscounts, src => src.Discounts)
             .Map(dest => dest.InvoiceExtraCosts, src => src.ExtraCosts)
             .Map(dest => dest.InvoicePayments, src => src.InvoicePayments)
@@ -118,7 +118,7 @@ public class MapsterConfig : IRegister
                     : (DateTime?)null)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit);
 
-        config.NewConfig<InvoiceProductItem, GetInvoiceItemResponse>()
+        config.NewConfig<InvoiceProductItem, GetInvoiceProductItemResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Product, src => src.Product ?? src.PurchaseProduct);
 
