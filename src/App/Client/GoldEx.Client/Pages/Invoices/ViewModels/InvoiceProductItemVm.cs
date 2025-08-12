@@ -163,7 +163,7 @@ public class InvoiceProductItemVm
             productItem.PriceUnit.Id);
     }
 
-    public static InvoiceProductItemVm CreateFrom(GetInvoiceItemResponse response)
+    public static InvoiceProductItemVm CreateFrom(GetInvoiceProductItemResponse response)
     {
         return new InvoiceProductItemVm
         {

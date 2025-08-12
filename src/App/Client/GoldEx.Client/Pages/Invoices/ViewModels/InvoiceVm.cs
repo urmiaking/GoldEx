@@ -135,7 +135,7 @@ public class InvoiceVm
                 InvoiceExtraCostVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoicePayments = response.InvoicePayments.Select(x => 
                 InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
-            InvoiceProductItems = response.InvoiceItems.Select(InvoiceProductItemVm.CreateFrom).ToList(),
+            InvoiceProductItems = response.InvoiceProductItems.Select(InvoiceProductItemVm.CreateFrom).ToList(),
             InvoicePriceUnit = response.PriceUnit,
             UnpaidExchangeRate = response.UnpaidAmountExchangeRate,
             UnpaidPriceUnit = response.UnpaidPriceUnit,

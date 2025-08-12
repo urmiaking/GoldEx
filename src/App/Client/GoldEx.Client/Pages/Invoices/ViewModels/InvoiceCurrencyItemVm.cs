@@ -1,20 +1,20 @@
-﻿using GoldEx.Client.Pages.Products.ViewModels;
-using GoldEx.Client.Pages.Settings.ViewModels;
+﻿using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class InvoiceCurrencyItemVm
 {
-    private int _amount;
+    private decimal _amount;
     private decimal _unitPrice;
     private decimal _taxPercent;
     private decimal _profitPercent;
 
     [Display(Name = "حجم")]
-    public int Amount
+    public decimal Amount
     {
         get => _amount;
         set
@@ -58,7 +58,7 @@ public class InvoiceCurrencyItemVm
     }
 
     [Display(Name = "نوع ارز")]
-    public PriceUnitVm? Currency { get; set; }
+    public GetPriceUnitTitleResponse? Currency { get; set; }
 
     // --- Display properties ---
     public bool ShowDetails { get; set; }
@@ -86,18 +86,21 @@ public class InvoiceCurrencyItemVm
 
     public static InvoiceCurrencyItemDto ToRequest(InvoiceCurrencyItemVm currencyItem)
     {
-        return new InvoiceCurrencyItemDto(currencyItem.UnitPrice, currencyItem.Amount, currencyItem.ProfitPercent, currencyItem.TaxPercent, currencyItem.Currency);
+        if (currencyItem.Currency is null)
+            throw new FluentValidation.ValidationException("ارز وارد نشده است");
+
+        return new InvoiceCurrencyItemDto(currencyItem.UnitPrice, currencyItem.Amount, currencyItem.ProfitPercent, currencyItem.TaxPercent, currencyItem.Currency.Id);
     }
 
-    public static InvoiceCurrencyItemDto CreateFrom(InvoiceCurrencyItemDto response)
+    public static InvoiceCurrencyItemVm CreateFrom(GetInvoiceCurrencyItemResponse response)
     {
-        return new InvoiceCurrencyItemDto
+        return new InvoiceCurrencyItemVm
         {
             UnitPrice = response.UnitPrice,
             ProfitPercent = response.ProfitPercent,
             TaxPercent = response.TaxPercent,
             Amount = response.Amount,
-            CurrencyId = ProductVm.CreateFrom(response.)
+            Currency = response.Currency
         };
     }
 }
