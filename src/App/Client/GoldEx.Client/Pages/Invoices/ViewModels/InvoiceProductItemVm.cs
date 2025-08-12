@@ -16,8 +16,6 @@ public class InvoiceProductItemVm
     private decimal? _exchangeRate;
     private ProductVm _product = ProductVm.CreateDefaultInstance();
 
-    public Guid? Id { get; set; }
-
     [Display(Name = "تعداد")]
     public int Quantity
     {
@@ -138,7 +136,6 @@ public class InvoiceProductItemVm
     {
         return new InvoiceProductItemVm
         {
-            Id = productItem.Id,
             Product = productItem.Product,
             GramPrice = productItem.GramPrice,
             ExchangeRate = productItem.ExchangeRate,
@@ -156,7 +153,7 @@ public class InvoiceProductItemVm
         if (productItem.PriceUnit is null)
             throw new FluentValidation.ValidationException($"واحد ارزی جنس {productItem.Product.Name} وارد نشده است");
 
-        return new InvoiceProductItemDto(productItem.Id,
+        return new InvoiceProductItemDto(
             productItem.GramPrice,
             productItem.ProfitPercent,
             productItem.TaxPercent,
@@ -175,7 +172,6 @@ public class InvoiceProductItemVm
             ProfitPercent = response.ProfitPercent,
             TaxPercent = response.TaxPercent,
             Quantity = response.Quantity,
-            Id = response.Id,
             PriceUnit = response.PriceUnit,
             Product = ProductVm.CreateFrom(response.Product)
         };

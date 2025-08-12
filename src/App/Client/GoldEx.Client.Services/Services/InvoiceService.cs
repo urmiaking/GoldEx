@@ -21,9 +21,9 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
 
-    public async Task UpdateAsync(Guid id, InvoiceRequestDto requestDto, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        using var response = await client.PutAsJsonAsync(ApiUrls.Invoices.Update(id), requestDto, jsonOptions, cancellationToken);
+        using var response = await client.PutAsJsonAsync(ApiUrls.Invoices.Update(id), request, jsonOptions, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
