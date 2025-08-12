@@ -34,6 +34,9 @@ public class InvoiceCoinItem : EntityBase
     public CoinId CoinId { get; private set; }
     public Coin? Coin { get; private set; }
 
+    public InvoiceId InvoiceId { get; private set; }
+    public Invoice? Invoice { get; private set; }
+
     public decimal UnitPrice { get; private set; }
     public int Quantity { get; private set; }
     public decimal ProfitPercent { get; private set; }

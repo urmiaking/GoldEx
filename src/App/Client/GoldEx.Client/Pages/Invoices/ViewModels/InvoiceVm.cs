@@ -36,19 +36,25 @@ public class InvoiceVm
     public decimal? UnpaidExchangeRate { get; set; }
     public decimal TotalUnpaidSecondaryAmount => TotalUnpaidAmount * UnpaidExchangeRate ?? 1;
 
-    public List<InvoiceProductItemVm> InvoiceProductItems { get; set; } = [];
+    public List<ProductItemVm> ProductItems { get; set; } = [];
+    public List<CoinItemVm> CoinItems { get; set; } = [];
+    public List<CurrencyItemVm> CurrencyItems { get; set; } = [];
+
     public List<InvoiceDiscountVm> InvoiceDiscounts { get; set; } = [];
     public List<InvoiceExtraCostVm> InvoiceExtraCosts { get; set; } = [];
     public List<InvoicePaymentVm> InvoicePayments { get; set; } = [];
 
     // --- Calculated properties ---
-    public decimal TotalItemsAmount => InvoiceProductItems.Sum(i => i.TotalAmount);
+    public decimal TotalItemsAmount => 
+        ProductItems.Sum(i => i.TotalAmount) +
+        CoinItems.Sum(i => i.TotalAmount) +
+        CurrencyItems.Sum(i => i.TotalAmount);
     public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
     public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount;
-    public bool IsPaid => TotalUnpaidAmount <= 0; // Used with MudChip to indicate payment status
+    public bool IsPaid => TotalUnpaidAmount <= 0;
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.Now && !IsPaid;
 
     public static InvoiceVm CreateDefaultInstance()
@@ -56,28 +62,24 @@ public class InvoiceVm
         return new InvoiceVm
         {
             InvoiceDate = DateTime.Now,
-            Customer = new CustomerVm(),
-            InvoiceProductItems = [],
-            InvoiceDiscounts = [],
-            InvoiceExtraCosts = [],
-            InvoicePayments = []
+            Customer = new CustomerVm()
         };
     }
 
     public int GetLastIndexNumber()
     {
-        return InvoiceProductItems.Count > 0 ? InvoiceProductItems.Max(i => i.Index) : 0;
+        return ProductItems.Count > 0 ? ProductItems.Max(i => i.Index) : 0;
     }
 
     /// <summary>
     /// Removes a specific item from the invoice and re-calculates the indexes of remaining items.
     /// </summary>
     /// <param name="productItemToRemove">The InvoiceItemVm instance to remove.</param>
-    public void RemoveInvoiceItem(InvoiceProductItemVm productItemToRemove)
+    public void RemoveInvoiceItem(ProductItemVm productItemToRemove)
     {
-        if (InvoiceProductItems.Contains(productItemToRemove))
+        if (ProductItems.Contains(productItemToRemove))
         {
-            InvoiceProductItems.Remove(productItemToRemove);
+            ProductItems.Remove(productItemToRemove);
             ReorderItemIndexes();
         }
     }
@@ -87,9 +89,9 @@ public class InvoiceVm
     /// </summary>
     private void ReorderItemIndexes()
     {
-        for (var i = 0; i < InvoiceProductItems.Count; i++)
+        for (var i = 0; i < ProductItems.Count; i++)
         {
-            InvoiceProductItems[i].Index = i + 1;
+            ProductItems[i].Index = i + 1;
         }
     }
 
@@ -101,7 +103,7 @@ public class InvoiceVm
         if (model.InvoicePriceUnit == null)
             throw new ValidationException("لطفا واحد ارزی فاکتور را وارد کنید");
 
-        if (!model.InvoiceProductItems.Any())
+        if (!model.ProductItems.Any() || !model.CoinItems.Any() || !model.CurrencyItems.Any())
             throw new ValidationException("فاکتور باید حداقل دارای یک آیتم باشد");
 
         return new InvoiceRequestDto(model.InvoiceId,
@@ -114,7 +116,9 @@ public class InvoiceVm
             model.UnpaidPriceUnit?.Id,
             model.ExchangeRate,
             CustomerVm.ToRequest(model.Customer),
-            model.InvoiceProductItems.Select(InvoiceProductItemVm.ToRequest).ToList(),
+            model.ProductItems.Select(ProductItemVm.ToRequest).ToList(),
+            model.CoinItems.Select(CoinItemVm.ToRequest).ToList(),
+            model.CurrencyItems.Select(CurrencyItemVm.ToRequest).ToList(),
             model.InvoiceDiscounts.Select(InvoiceDiscountVm.ToRequest).ToList(),
             model.InvoicePayments.Where(x => x.Amount > 0).Select(InvoicePaymentVm.ToRequest).ToList(),
             model.InvoiceExtraCosts.Select(InvoiceExtraCostVm.ToRequest).ToList());
@@ -135,7 +139,9 @@ public class InvoiceVm
                 InvoiceExtraCostVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoicePayments = response.InvoicePayments.Select(x => 
                 InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
-            InvoiceProductItems = response.InvoiceProductItems.Select(InvoiceProductItemVm.CreateFrom).ToList(),
+            ProductItems = response.InvoiceProductItems.Select(ProductItemVm.CreateFrom).ToList(),
+            CoinItems = response.InvoiceCoinItems.Select(CoinItemVm.CreateFrom).ToList(),
+            CurrencyItems = response.InvoiceCurrencyItems.Select(CurrencyItemVm.CreateFrom).ToList(),
             InvoicePriceUnit = response.PriceUnit,
             UnpaidExchangeRate = response.UnpaidAmountExchangeRate,
             UnpaidPriceUnit = response.UnpaidPriceUnit,

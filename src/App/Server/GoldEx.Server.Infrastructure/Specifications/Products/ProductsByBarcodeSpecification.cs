@@ -10,6 +10,5 @@ public class ProductsByBarcodeSpecification : SpecificationBase<Product>
         AddCriteria(x => x.Barcode == barcode);
 
         AddInclude(x => x.WagePriceUnit!);
-        AddInclude(x => x.SellInvoiceProductItem!);
     }
 }

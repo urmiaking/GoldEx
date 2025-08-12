@@ -285,14 +285,14 @@
             </MudTooltip>
             <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Info" Text="افزودن طلا و جواهر">
                 <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
-                               Variant="Variant.Filled" Color="Color.Info" OnClick="OnAddInvoiceItem"></MudIconButton>
+                               Variant="Variant.Filled" Color="Color.Info" OnClick="OnAddProductItem"></MudIconButton>
             </MudTooltip>
         </MudStack>
 
         <MudDivider Class="mb-2" />
 
         <div class="my-2">
-            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@_model.InvoiceProductItems" T="InvoiceProductItemVm" Elevation="1">
+            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@_model.ProductItems" T="ProductItemVm" Elevation="1">
                 <ColGroup>
                     <col />
                     <col />
@@ -345,7 +345,7 @@
             </MudTable>
         </div>
 
-        @if (_model.InvoiceProductItems.Any())
+        @if (_model.ProductItems.Any())
         {
             <MudText Class="mt-2" Typo="Typo.h6" GutterBottom="true">هزینه ها</MudText>
             <MudDivider Class="my-2" />

@@ -1,0 +1,90 @@
+﻿using GoldEx.Shared.DTOs.Coins;
+using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Helpers;
+using System.ComponentModel.DataAnnotations;
+
+namespace GoldEx.Client.Pages.Invoices.ViewModels;
+
+public class CoinItemVm
+{
+    private int _quantity;
+    private decimal _unitPrice;
+    private decimal _profitPercent;
+
+    [Display(Name = "تعداد")]
+    public int Quantity
+    {
+        get => _quantity;
+        set
+        {
+            _quantity = value;
+            RecalculateAmounts();
+        }
+    }
+
+    [Display(Name = "قیمت واحد")]
+    public decimal UnitPrice
+    {
+        get => _unitPrice;
+        set
+        {
+            _unitPrice = value;
+            RecalculateAmounts();
+        }
+    }
+
+    [Display(Name = "سود")]
+    public decimal ProfitPercent
+    {
+        get => _profitPercent;
+        set
+        {
+            _profitPercent = value;
+            RecalculateAmounts();
+        }
+    }
+
+    [Display(Name = "نوع سکه")]
+    public GetCoinResponse? Coin { get; set; }
+
+    // --- Display properties ---
+    public bool ShowDetails { get; set; }
+    public int Index { get; set; } = 1;
+
+    // --- Calculated Properties ---
+    public decimal RawAmount { get; set; }
+    public decimal ProfitAmount { get; set; }
+    public decimal FinalAmount { get; set; }
+    public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// This method performs the client-side calculation and updates the display properties.
+    /// It's called whenever an input property changes.
+    /// </summary>
+    public void RecalculateAmounts()
+    {
+        RawAmount = UnitPrice;
+        ProfitAmount = CalculatorHelper.Coin.CalculateProfit(UnitPrice, ProfitPercent);
+        FinalAmount = RawAmount + ProfitAmount;
+        TotalAmount = FinalAmount * Quantity;
+    }
+
+    public static InvoiceCoinItemDto ToRequest(CoinItemVm coinItem)
+    {
+        if (coinItem.Coin is null)
+            throw new FluentValidation.ValidationException("سکه انتخاب نشده است");
+
+        return new InvoiceCoinItemDto(coinItem.UnitPrice, coinItem.Quantity, coinItem.ProfitPercent, coinItem.Coin.Id);
+    }
+
+    public static CoinItemVm CreateFrom(GetInvoiceCoinItemResponse response)
+    {
+        return new CoinItemVm
+        {
+            UnitPrice = response.UnitPrice,
+            ProfitPercent = response.ProfitPercent,
+            Quantity = response.Quantity,
+            Coin = response.Coin
+        };
+    }
+}

@@ -49,6 +49,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
     {
         builder.ToTable("InvoiceCurrencyItems");
 
+        builder.WithOwner(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId);
+
         builder.Property(x => x.TaxPercent)
             .HasPrecision(9, 6)
             .IsRequired();
@@ -83,6 +86,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
     {
         builder.ToTable("InvoiceCoinItems");
 
+        builder.WithOwner(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId);
+
         builder.Property(x => x.ProfitPercent)
             .HasPrecision(9, 6)
             .IsRequired();
@@ -108,6 +114,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceProductItem> builder)
     {
         builder.ToTable("InvoiceProductItems");
+
+        builder.WithOwner(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId);
 
         builder.Property(x => x.GramPrice)
             .HasPrecision(36, 10)

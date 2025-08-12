@@ -1,12 +1,11 @@
-﻿using GoldEx.Client.Pages.Settings.ViewModels;
-using GoldEx.Shared.DTOs.Invoices;
+﻿using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
-public class InvoiceCurrencyItemVm
+public class CurrencyItemVm
 {
     private decimal _amount;
     private decimal _unitPrice;
@@ -84,7 +83,7 @@ public class InvoiceCurrencyItemVm
         TotalAmount = FinalAmount * Amount;
     }
 
-    public static InvoiceCurrencyItemDto ToRequest(InvoiceCurrencyItemVm currencyItem)
+    public static InvoiceCurrencyItemDto ToRequest(CurrencyItemVm currencyItem)
     {
         if (currencyItem.Currency is null)
             throw new FluentValidation.ValidationException("ارز وارد نشده است");
@@ -92,9 +91,9 @@ public class InvoiceCurrencyItemVm
         return new InvoiceCurrencyItemDto(currencyItem.UnitPrice, currencyItem.Amount, currencyItem.ProfitPercent, currencyItem.TaxPercent, currencyItem.Currency.Id);
     }
 
-    public static InvoiceCurrencyItemVm CreateFrom(GetInvoiceCurrencyItemResponse response)
+    public static CurrencyItemVm CreateFrom(GetInvoiceCurrencyItemResponse response)
     {
-        return new InvoiceCurrencyItemVm
+        return new CurrencyItemVm
         {
             UnitPrice = response.UnitPrice,
             ProfitPercent = response.ProfitPercent,
