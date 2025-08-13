@@ -52,6 +52,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.WithOwner(x => x.Invoice)
             .HasForeignKey(x => x.InvoiceId);
 
+        builder.HasKey(x => new { x.Id, x.InvoiceId });
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new InvoiceCurrencyItemId(value));
+
         builder.Property(x => x.TaxPercent)
             .HasPrecision(9, 6)
             .IsRequired();
@@ -76,6 +82,18 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
+        builder.Property(x => x.TotalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.UnitPrice)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.Amount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
         builder.HasOne(x => x.Currency)
             .WithMany()
             .HasForeignKey(x => x.CurrencyId)
@@ -88,6 +106,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.WithOwner(x => x.Invoice)
             .HasForeignKey(x => x.InvoiceId);
+
+        builder.HasKey(x => new { x.Id, x.InvoiceId });
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new InvoiceCoinItemId(value));
 
         builder.Property(x => x.ProfitPercent)
             .HasPrecision(9, 6)
@@ -105,6 +129,14 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
+        builder.Property(x => x.TotalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.UnitPrice)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
         builder.HasOne(x => x.Coin)
             .WithMany()
             .HasForeignKey(x => x.CoinId)
@@ -117,6 +149,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.WithOwner(x => x.Invoice)
             .HasForeignKey(x => x.InvoiceId);
+
+        builder.HasKey(x => new { x.Id, x.InvoiceId });
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new InvoiceProductItemId(value));
 
         builder.Property(x => x.GramPrice)
             .HasPrecision(36, 10)
