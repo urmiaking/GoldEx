@@ -4,7 +4,8 @@ using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
-public class InvoiceCoinItem : EntityBase
+public readonly record struct InvoiceCoinItemId(Guid Value);
+public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
 {
     public static InvoiceCoinItem Create(CoinId coinId,
         decimal unitPrice,
@@ -19,6 +20,7 @@ public class InvoiceCoinItem : EntityBase
 
         return new InvoiceCoinItem
         {
+            Id = new InvoiceCoinItemId(Guid.NewGuid()),
             CoinId = coinId,
             UnitPrice = unitPrice,
             Quantity = quantity,

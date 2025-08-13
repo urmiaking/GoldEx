@@ -4,7 +4,8 @@ using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
-public class InvoiceProductItem : EntityBase
+public readonly record struct InvoiceProductItemId(Guid Value);
+public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
 {
     public static InvoiceProductItem Create(
         decimal gramPrice,
@@ -22,6 +23,7 @@ public class InvoiceProductItem : EntityBase
 
         return new InvoiceProductItem
         {
+            Id = new InvoiceProductItemId(Guid.NewGuid()),
             GramPrice = gramPrice,
             ProfitPercent = profitPercent,
             TaxPercent = taxPercent,
