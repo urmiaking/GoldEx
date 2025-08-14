@@ -21,6 +21,7 @@ public partial class ProductItemEditor
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public ProductItemVm Model { get; set; } = ProductItemVm.CreateDefaultInstance();
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
+    [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly ProductItemValidator _productItemValidator = new();
@@ -46,8 +47,8 @@ public partial class ProductItemEditor
     private string? WageExchangeRateLabel => Model.Product.WageType switch
     {
         WageType.Percent => null,
-        WageType.Fixed when Model.PriceUnit?.Id != Model.Product.WagePriceUnitId =>
-            $"نرخ تبدیل {Model.Product.WagePriceUnitTitle} به {Model.PriceUnit?.Title}",
+        WageType.Fixed when PriceUnit.Id != Model.Product.WagePriceUnitId =>
+            $"نرخ تبدیل {Model.Product.WagePriceUnitTitle} به {PriceUnit.Title}",
         null => null,
         _ => throw new ArgumentOutOfRangeException()
     };
@@ -96,7 +97,7 @@ public partial class ProductItemEditor
     private async Task LoadGramPriceAsync()
     {
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
-            action: (s, ct) => s.GetAsync(Model.Product.GoldUnitType, Model.PriceUnit?.Id, true, ct),
+            action: (s, ct) => s.GetAsync(Model.Product.GoldUnitType, PriceUnit.Id, true, ct),
             afterSend: response =>
             {
                 decimal.TryParse(response?.Value, out var gramPriceValue);
@@ -196,7 +197,7 @@ public partial class ProductItemEditor
                 }
                 else
                 {
-                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == Model.PriceUnit?.Id));
+                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == PriceUnit.Id));
                 }
                 break;
             case null:
@@ -244,12 +245,9 @@ public partial class ProductItemEditor
         Model.Product.WagePriceUnitId = priceUnit.Id;
         Model.Product.WagePriceUnitTitle = priceUnit.Title;
 
-        if (Model.PriceUnit is null)
-            return;
-
-        if (Model.PriceUnit.Id != Model.Product.WagePriceUnitId)
+        if (PriceUnit.Id != Model.Product.WagePriceUnitId)
             await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-                action: (s, ct) => s.GetExchangeRateAsync(Model.Product.WagePriceUnitId.Value, Model.PriceUnit.Id, ct),
+                action: (s, ct) => s.GetExchangeRateAsync(Model.Product.WagePriceUnitId.Value, PriceUnit.Id, ct),
                 afterSend: response =>
                 {
                     if (response.ExchangeRate.HasValue) 

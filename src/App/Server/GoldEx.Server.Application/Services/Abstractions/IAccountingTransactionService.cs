@@ -7,4 +7,5 @@ public interface IAccountingTransactionService
 {
     Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken);
     Task CreateTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken);
+    Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken);
 }

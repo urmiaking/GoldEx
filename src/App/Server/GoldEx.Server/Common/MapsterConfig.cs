@@ -120,11 +120,14 @@ public class MapsterConfig : IRegister
                     : (DateTime?)null)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit);
 
-        config.NewConfig<InvoiceProductItem, GetInvoiceProductItemResponse>();
+        config.NewConfig<InvoiceProductItem, GetInvoiceProductItemResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
 
-        config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemResponse>();
+        config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
 
-        config.NewConfig<InvoiceCurrencyItem, GetInvoiceCurrencyItemResponse>();
+        config.NewConfig<InvoiceCurrencyItem, GetInvoiceCurrencyItemResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
 
         config.NewConfig<InvoiceDiscount, GetInvoiceDiscountResponse>();
 

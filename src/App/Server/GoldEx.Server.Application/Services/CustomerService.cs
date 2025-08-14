@@ -36,6 +36,7 @@ internal class CustomerService(
 
         var data = await repository
             .Get(new CustomersByFilterSpecification(filter, customerFilter))
+            .AsNoTracking()
             .Include(x => x.FinancialAccounts!)
                 .ThenInclude(x => x.PriceUnit)
             .ToListAsync(cancellationToken);
@@ -58,6 +59,7 @@ internal class CustomerService(
 
         var items = await repository
             .Get(new CustomersByNameSpecification(customerName))
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetCustomerResponse>>(items);
@@ -76,6 +78,7 @@ internal class CustomerService(
     {
         var item = await repository
             .Get(new CustomersByNationalIdSpecification(nationalId))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is not null ? mapper.Map<GetCustomerResponse>(item) : null;
@@ -85,6 +88,7 @@ internal class CustomerService(
     {
         var item = await repository
             .Get(new CustomersByPhoneNumberSpecification(phoneNumber))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is not null ? mapper.Map<GetCustomerResponse>(item) : null;

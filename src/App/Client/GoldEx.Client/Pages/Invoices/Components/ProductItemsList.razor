@@ -35,7 +35,6 @@
             <col />
             <col />
             <col />
-            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
@@ -43,7 +42,6 @@
             <MudTh>عنوان</MudTh>
             <MudTh>عیار</MudTh>
             <MudTh>وزن</MudTh>
-            <MudTh>تعداد</MudTh>
             <MudTh>ارزش کل</MudTh>
             <MudTh>عملیات</MudTh>
         </HeaderContent>
@@ -53,7 +51,6 @@
             <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
             <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
             <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
-            <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">

@@ -7,6 +7,8 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class CurrencyItemVm
 {
+    public Guid? Id { get; set; }
+
     private decimal _amount;
     private decimal _unitPrice;
     private decimal _taxPercent;
@@ -88,13 +90,19 @@ public class CurrencyItemVm
         if (currencyItem.Currency is null)
             throw new FluentValidation.ValidationException("ارز وارد نشده است");
 
-        return new InvoiceCurrencyItemDto(currencyItem.UnitPrice, currencyItem.Amount, currencyItem.ProfitPercent, currencyItem.TaxPercent, currencyItem.Currency.Id);
+        return new InvoiceCurrencyItemDto(currencyItem.Id,
+            currencyItem.UnitPrice,
+            currencyItem.Amount,
+            currencyItem.ProfitPercent,
+            currencyItem.TaxPercent,
+            currencyItem.Currency.Id);
     }
 
     public static CurrencyItemVm CreateFrom(GetInvoiceCurrencyItemResponse response)
     {
         return new CurrencyItemVm
         {
+            Id = response.Id,
             UnitPrice = response.UnitPrice,
             ProfitPercent = response.ProfitPercent,
             TaxPercent = response.TaxPercent,

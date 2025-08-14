@@ -32,21 +32,21 @@ public record GetInvoiceResponse(
     List<GetInvoiceExtraCostsResponse> InvoiceExtraCosts);
 
 public record GetInvoiceProductItemResponse(
+    Guid Id,
     decimal GramPrice,
     decimal ProfitPercent,
     decimal TaxPercent,
     decimal? ExchangeRate,
-    int Quantity,
     decimal ItemRawAmount,
     decimal ItemWageAmount,
     decimal ItemProfitAmount,
     decimal ItemTaxAmount,
     decimal ItemFinalAmount,
     decimal TotalAmount,
-    GetProductResponse Product,
-    GetPriceUnitTitleResponse PriceUnit);
+    GetProductResponse Product);
 
 public record GetInvoiceCurrencyItemResponse(
+    Guid Id,
     decimal UnitPrice,
     decimal Amount,
     decimal TaxPercent,
@@ -54,6 +54,7 @@ public record GetInvoiceCurrencyItemResponse(
     GetPriceUnitTitleResponse Currency);
 
 public record GetInvoiceCoinItemResponse(
+    Guid Id,
     decimal UnitPrice,
     int Quantity,
     decimal ProfitPercent,

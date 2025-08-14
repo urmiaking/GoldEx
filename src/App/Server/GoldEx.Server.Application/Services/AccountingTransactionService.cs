@@ -415,4 +415,10 @@ internal class AccountingTransactionService(
 
         await repository.CreateRangeAsync(transactions, cancellationToken);
     }
+
+    public async Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken)
+    {
+        await repository.RemoveByInvoiceIdAsync(invoice.Id, cancellationToken);
+        await repository.RemoveByInvoicePaymentIdsAsync(invoice.InvoicePayments?.Select(x => x.Id).ToList(), cancellationToken);
+    }
 }

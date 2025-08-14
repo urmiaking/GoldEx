@@ -9,23 +9,13 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class ProductItemVm
 {
-    private int _quantity;
+    public Guid? Id { get; set; }
+
     private decimal _gramPrice;
     private decimal _profitPercent;
     private decimal _taxPercent;
     private decimal? _exchangeRate;
     private ProductVm _product = ProductVm.CreateDefaultInstance();
-
-    [Display(Name = "تعداد")]
-    public int Quantity
-    {
-        get => _quantity;
-        set
-        {
-            _quantity = value;
-            RecalculateAmounts();
-        }
-    }
 
     [Display(Name = "نرخ هر گرم طلا")]
     public decimal GramPrice
@@ -91,8 +81,6 @@ public class ProductItemVm
         RecalculateAmounts();
     }
 
-    public GetPriceUnitTitleResponse? PriceUnit { get; set; }
-
     // --- Display properties ---
     public bool ShowDetails { get; set; }
     public int Index { get; set; } = 1;
@@ -116,7 +104,7 @@ public class ProductItemVm
         ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
         TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
         FinalAmount = RawAmount + WageAmount + ProfitAmount + TaxAmount;
-        TotalAmount = FinalAmount * Quantity;
+        TotalAmount = FinalAmount;
     }
 
     public static ProductItemVm CreateDefaultInstance()
@@ -127,8 +115,7 @@ public class ProductItemVm
             GramPrice = 0,
             ExchangeRate = null,
             ProfitPercent = 0,
-            TaxPercent = 0,
-            Quantity = 1
+            TaxPercent = 0
         };
     }
 
@@ -140,36 +127,29 @@ public class ProductItemVm
         ExchangeRate = other.ExchangeRate;
         ProfitPercent = other.ProfitPercent;
         TaxPercent = other.TaxPercent;
-        Quantity = other.Quantity;
-        PriceUnit = other.PriceUnit;
         ShowDetails = other.ShowDetails;
     }
 
     public static InvoiceProductItemDto ToRequest(ProductItemVm productItem)
     {
-        if (productItem.PriceUnit is null)
-            throw new FluentValidation.ValidationException($"واحد ارزی جنس {productItem.Product.Name} وارد نشده است");
-
         return new InvoiceProductItemDto(
+            productItem.Id,
             productItem.GramPrice,
             productItem.ProfitPercent,
             productItem.TaxPercent,
             productItem.ExchangeRate,
-            productItem.Quantity,
-            ProductVm.ToRequest(productItem.Product),
-            productItem.PriceUnit.Id);
+            ProductVm.ToRequest(productItem.Product));
     }
 
     public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response)
     {
         return new ProductItemVm
         {
+            Id = response.Id,
             ExchangeRate = response.ExchangeRate,
             GramPrice = response.GramPrice,
             ProfitPercent = response.ProfitPercent,
             TaxPercent = response.TaxPercent,
-            Quantity = response.Quantity,
-            PriceUnit = response.PriceUnit,
             Product = ProductVm.CreateFrom(response.Product)
         };
     }

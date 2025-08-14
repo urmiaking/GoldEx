@@ -7,38 +7,44 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceCurrencyItemId(Guid Value);
 public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
 {
+    private InvoiceCurrencyItem(InvoiceCurrencyItemId id, PriceUnitId currencyId, decimal unitPrice, decimal amount,
+        decimal taxPercent, decimal profitPercent)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0, nameof(unitPrice));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(amount, 0, nameof(amount));
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+
+        Id = id;
+        CurrencyId = currencyId;
+        UnitPrice = unitPrice;
+        Amount = amount;
+        ProfitPercent = profitPercent;
+        TaxPercent = taxPercent;
+        ItemRawAmount = unitPrice;
+        ItemProfitAmount = CalculatorHelper.Currency.CalculateProfit(unitPrice, amount, profitPercent);
+        ItemTaxAmount = CalculatorHelper.Currency.CalculateTax(unitPrice, amount, taxPercent);
+        ItemFinalAmount = unitPrice + ItemProfitAmount + ItemTaxAmount;
+        TotalAmount = ItemFinalAmount * amount;
+    }
+
     public static InvoiceCurrencyItem Create(PriceUnitId currencyId,
         decimal unitPrice,
         decimal amount,
         decimal taxPercent,
         decimal profitPercent)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0, nameof(unitPrice));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(amount, 0, nameof(amount));
+        return new InvoiceCurrencyItem(new InvoiceCurrencyItemId(Guid.NewGuid()), currencyId, unitPrice, amount, taxPercent, profitPercent);
+    }
 
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
-
-        var profitAmount = CalculatorHelper.Currency.CalculateProfit(unitPrice, amount, profitPercent);
-        var taxAmount = CalculatorHelper.Currency.CalculateTax(unitPrice, amount, taxPercent);
-        var finalAmount = unitPrice + profitAmount + taxAmount;
-        var totalAmount = finalAmount * amount;
-
-        return new InvoiceCurrencyItem
-        {
-            Id = new InvoiceCurrencyItemId(Guid.NewGuid()),
-            CurrencyId = currencyId,
-            UnitPrice = unitPrice,
-            Amount = amount,
-            ProfitPercent = profitPercent,
-            TaxPercent = taxPercent,
-
-            ItemRawAmount = unitPrice,
-            ItemProfitAmount = profitAmount,
-            ItemTaxAmount = taxAmount,
-            ItemFinalAmount = finalAmount,
-            TotalAmount = totalAmount
-        };
+    public static InvoiceCurrencyItem Create(InvoiceCurrencyItemId id,
+        PriceUnitId currencyId,
+        decimal unitPrice,
+        decimal amount,
+        decimal taxPercent,
+        decimal profitPercent)
+    {
+        return new InvoiceCurrencyItem(id, currencyId, unitPrice, amount, taxPercent, profitPercent);
     }
 
     public PriceUnitId CurrencyId { get; private set; }
@@ -50,7 +56,7 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
     public decimal TaxPercent { get; private set; }
 
     public InvoiceId InvoiceId { get; private set; }
-    public Invoice Invoice { get; private set; }
+    public Invoice Invoice { get; private set; } = null!;
 
 #pragma warning disable CS8618 
     private InvoiceCurrencyItem() { }

@@ -22,7 +22,9 @@ internal class ProductCategoryService(
 {
     public async Task<List<GetProductCategoryResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
-        var items = await repository.Get(new ProductCategoriesDefaultSpecification())
+        var items = await repository
+            .Get(new ProductCategoriesDefaultSpecification())
+            .AsNoTracking()
             .ToListAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<List<GetProductCategoryResponse>>(items);
@@ -30,7 +32,9 @@ internal class ProductCategoryService(
 
     public async Task<GetProductCategoryResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new ProductCategoriesByIdSpecification(new ProductCategoryId(id)))
+        var item = await repository
+            .Get(new ProductCategoriesByIdSpecification(new ProductCategoryId(id)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetProductCategoryResponse>(item);

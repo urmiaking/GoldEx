@@ -164,21 +164,32 @@ internal class PriceService(
 
     public async Task<List<GetPriceResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new PricesDefaultSpecification()).ToListAsync(cancellationToken);
+        var item = await repository
+            .Get(new PricesDefaultSpecification())
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
     public async Task<List<GetPriceTitleResponse>> GetTitlesAsync(MarketType[] marketTypes,
         CancellationToken cancellationToken = default)
     {
-        var items = await repository.Get(new PricesByMarketTypesSpecification(marketTypes))
+        var items = await repository
+            .Get(new PricesByMarketTypesSpecification(marketTypes))
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
+
         return mapper.Map<List<GetPriceTitleResponse>>(items);
     }
 
     public async Task<List<GetPriceResponse>> GetListAsync(MarketType marketType, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new PricesByMarketTypeSpecification(marketType)).ToListAsync(cancellationToken);
+        var item = await repository
+            .Get(new PricesByMarketTypeSpecification(marketType))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
@@ -194,6 +205,7 @@ internal class PriceService(
 
         var baseItem = await repository
             .Get(new PricesByUnitTypeSpecification(unit))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (baseItem?.PriceHistory is null)
@@ -213,6 +225,7 @@ internal class PriceService(
         {
             var conversionUnit = await priceUnitRepository
                 .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)))
+                .AsNoTracking()
                 .Include(pu => pu.Price)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -254,6 +267,7 @@ internal class PriceService(
     {
         var item = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId)))
+            .AsNoTracking()
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -265,11 +279,13 @@ internal class PriceService(
     {
         var primaryPriceUnit = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(primaryPriceUnitId)))
+            .AsNoTracking()
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
         var secondaryPriceUnit = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(secondaryPriceUnitId)))
+            .AsNoTracking()
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -310,7 +326,10 @@ internal class PriceService(
 
     public async Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default)
     {
-        var items = await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken);
+        var items = await repository
+            .Get(new PricesWithoutSpecification())
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
         var priceSettings = items
             .GroupBy(p => p.MarketType)
