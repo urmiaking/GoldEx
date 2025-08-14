@@ -49,6 +49,15 @@ public class InvoiceVm
         ProductItems.Sum(i => i.TotalAmount) +
         CoinItems.Sum(i => i.TotalAmount) +
         CurrencyItems.Sum(i => i.TotalAmount);
+    public decimal TotalItemsRawAmount => ProductItems.Sum(i => i.RawAmount) +
+                                          CoinItems.Sum(i => i.RawAmount) +
+                                          CurrencyItems.Sum(i => i.RawAmount);
+    public decimal TotalItemsWageAmount => ProductItems.Sum(i => i.WageAmount);
+    public decimal TotalItemsProfitAmount => ProductItems.Sum(i => i.ProfitAmount) +
+                                             CoinItems.Sum(i => i.ProfitAmount) +
+                                             CurrencyItems.Sum(i => i.ProfitAmount);
+    public decimal TotalItemsTaxAmount => ProductItems.Sum(i => i.TaxAmount) +
+                                          CurrencyItems.Sum(i => i.TaxAmount);
     public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
