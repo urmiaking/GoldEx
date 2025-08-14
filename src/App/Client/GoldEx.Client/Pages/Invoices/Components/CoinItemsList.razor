@@ -1,0 +1,60 @@
+﻿@inherits GoldExComponentBase
+
+<MudPaper Elevation="@Elevation" Class="@Class">
+    <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
+        <MudText Typo="Typo.h6">لیست سکه ها</MudText>
+        <MudSpacer />
+        
+        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Primary" Text="افزودن سکه">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
+                           Variant="Variant.Filled" Color="Color.Primary" OnClick="OnAddItem"></MudIconButton>
+        </MudTooltip>
+    </MudStack>
+
+    <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@Items" T="CoinItemVm">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh>ردیف</MudTh>
+            <MudTh>عنوان</MudTh>
+            <MudTh>تعداد</MudTh>
+            <MudTh>نرخ واحد</MudTh>
+            <MudTh>سود</MudTh>
+            <MudTh>ارزش کل</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ردیف">@context.Index</MudTd>
+            <MudTd DataLabel="عنوان">@context.Coin.Title</MudTd>
+            <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
+            <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="سود">@context.ProfitAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="ویرایش">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Primary" OnClick="() => OnEditItem.InvokeAsync(context)"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="حذف">
+                        <MudIconButton OnClick="@(_ => OnRemoveItem.InvokeAsync(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">هیچ سکه ای ثبت نشده است</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText Typo="Typo.body2">در حال بارگذاری</MudText>
+        </LoadingContent>
+    </MudTable>
+</MudPaper>

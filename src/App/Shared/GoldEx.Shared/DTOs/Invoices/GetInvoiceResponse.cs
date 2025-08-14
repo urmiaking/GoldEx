@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.DTOs.Customers;
+﻿using GoldEx.Shared.DTOs.Coins;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -23,26 +24,41 @@ public record GetInvoiceResponse(
     GetPriceUnitTitleResponse UnpaidPriceUnit,
     GetPriceUnitTitleResponse PriceUnit,
     GetCustomerResponse Customer,
-    List<GetInvoiceItemResponse> InvoiceItems,
+    List<GetInvoiceProductItemResponse> InvoiceProductItems,
+    List<GetInvoiceCoinItemResponse> InvoiceCoinItems,
+    List<GetInvoiceCurrencyItemResponse> InvoiceCurrencyItems,
     List<GetInvoiceDiscountResponse> InvoiceDiscounts,
     List<GetInvoicePaymentResponse> InvoicePayments,
     List<GetInvoiceExtraCostsResponse> InvoiceExtraCosts);
 
-public record GetInvoiceItemResponse(
-    Guid? Id,
+public record GetInvoiceProductItemResponse(
+    Guid Id,
     decimal GramPrice,
     decimal ProfitPercent,
     decimal TaxPercent,
     decimal? ExchangeRate,
-    int Quantity,
     decimal ItemRawAmount,
     decimal ItemWageAmount,
     decimal ItemProfitAmount,
     decimal ItemTaxAmount,
     decimal ItemFinalAmount,
     decimal TotalAmount,
-    GetProductResponse Product,
-    GetPriceUnitTitleResponse PriceUnit);
+    GetProductResponse Product);
+
+public record GetInvoiceCurrencyItemResponse(
+    Guid Id,
+    decimal UnitPrice,
+    decimal Amount,
+    decimal TaxPercent,
+    decimal ProfitPercent,
+    GetPriceUnitTitleResponse Currency);
+
+public record GetInvoiceCoinItemResponse(
+    Guid Id,
+    decimal UnitPrice,
+    int Quantity,
+    decimal ProfitPercent,
+    GetCoinResponse Coin);
 
 public record GetInvoicePaymentResponse(
     Guid Id,

@@ -184,6 +184,7 @@ public partial class PaymentList
         var parameters = new DialogParameters<FinancialAccountEditor>
         {
             { x => x.PriceUnits, PriceUnits },
+            { x => x.IsSystemAccount, true },
             { x => x.SubmitIndependently, true }
         };
 

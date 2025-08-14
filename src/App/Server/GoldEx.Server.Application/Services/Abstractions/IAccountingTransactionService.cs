@@ -5,6 +5,7 @@ namespace GoldEx.Server.Application.Services.Abstractions;
 
 public interface IAccountingTransactionService
 {
-    Task CreateTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken);
+    Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken);
     Task CreateTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken);
+    Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken);
 }

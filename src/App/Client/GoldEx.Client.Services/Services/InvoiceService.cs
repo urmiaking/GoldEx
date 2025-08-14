@@ -13,9 +13,17 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptions) : IInvoiceService
 {
-    public async Task SetAsync(InvoiceRequestDto request, CancellationToken cancellationToken)
+    public async Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        using var response = await client.PostAsJsonAsync(ApiUrls.Invoices.Set(), request, jsonOptions, cancellationToken);
+        using var response = await client.PostAsJsonAsync(ApiUrls.Invoices.Create(), request, jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PutAsJsonAsync(ApiUrls.Invoices.Update(id), request, jsonOptions, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

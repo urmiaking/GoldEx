@@ -14,18 +14,25 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class InvoicesController(IInvoiceService service) : ApiControllerBase
 {
-    [HttpPost(ApiRoutes.Invoices.Set)]
-    public async Task<IActionResult> SetAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    [HttpPost(ApiRoutes.Invoices.Create)]
+    public async Task<IActionResult> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        await service.SetAsync(request, cancellationToken);
+        await service.CreateAsync(request, cancellationToken);
         return Created();
+    }
+
+    [HttpPut(ApiRoutes.Invoices.Update)]
+    public async Task<IActionResult> UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    {
+        await service.UpdateAsync(id, request, cancellationToken);
+        return NoContent();
     }
 
     [HttpDelete(ApiRoutes.Invoices.Delete)]
     public async Task<IActionResult> DeleteAsync(Guid id, [FromQuery] bool deleteProducts, CancellationToken cancellationToken = default)
     {
         await service.DeleteAsync(id, deleteProducts, cancellationToken);
-        return Ok();
+        return NoContent();
     }
 
     [HttpGet(ApiRoutes.Invoices.GetList)]

@@ -24,7 +24,7 @@ internal class LedgerAccountService(
     public async Task<List<GetLedgerAccountResponse>> GetListAsync(Guid? customerId, CancellationToken cancellationToken = default)
     {
         var spec = new LedgerAccountsByCustomerIdSpecification(customerId.HasValue ? new CustomerId(customerId.Value) : null);
-        var list = await repository.Get(spec).ToListAsync(cancellationToken);
+        var list = await repository.Get(spec).AsNoTracking().ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetLedgerAccountResponse>>(list);
     }
@@ -32,7 +32,7 @@ internal class LedgerAccountService(
     public async Task<List<GetLedgerAccountResponse>> GetTitlesAsync(FinancialAccountType? financialAccountType, CancellationToken cancellationToken = default)
     {
         var spec = new LedgerAccountsByFinancialAccountTypeSpecification(financialAccountType);
-        var list = await repository.Get(spec).ToListAsync(cancellationToken);
+        var list = await repository.Get(spec).AsNoTracking().ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetLedgerAccountResponse>>(list);
     }
@@ -41,6 +41,7 @@ internal class LedgerAccountService(
     {
         var item = await repository
             .Get(new LedgerAccountsByIdSpecification(new LedgerAccountId(id)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetLedgerAccountResponse>(item);

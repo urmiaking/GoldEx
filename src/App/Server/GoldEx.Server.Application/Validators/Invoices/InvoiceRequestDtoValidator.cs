@@ -22,7 +22,8 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
     public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
         IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository,
-        IFinancialAccountRepository financialAccountRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository)
+        IFinancialAccountRepository financialAccountRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository,
+        ICoinRepository coinRepository)
     {
         _priceUnitRepository = priceUnitRepository;
         _productRepository = productRepository;
@@ -57,6 +58,12 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .MustAsync(BeValidPriceUnit)
             .WithMessage("واحد ارزی فاکتور معتبر نمی باشد");
 
+        RuleForEach(x => x.InvoicePayments)
+            .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository,
+                financialAccountRepository,
+                paymentVoucherRepository,
+                _invoiceRepository));
+
         RuleForEach(x => x.InvoiceProductItems)
             .SetValidator(new InvoiceProductItemDtoValidator(
                 productCategoryRepository,
@@ -71,8 +78,11 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         RuleForEach(x => x.InvoiceExtraCosts)
             .SetValidator(new InvoiceExtraCostDtoValidator(priceUnitRepository));
 
-        RuleForEach(x => x.InvoicePayments)
-            .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository, financialAccountRepository, paymentVoucherRepository, _invoiceRepository));
+        RuleForEach(x => x.InvoiceCoinItems)
+            .SetValidator(new InvoiceCoinItemDtoValidator(coinRepository));
+
+        RuleForEach(x => x.InvoiceCurrencyItems)
+            .SetValidator(new InvoiceCurrencyItemDtoValidator(priceUnitRepository));
     }
 
     private async Task<bool> ProductAvailable(InvoiceRequestDto invoiceDto, InvoiceProductItemDto invoiceProductItem, CancellationToken cancellationToken = default)
@@ -86,17 +96,17 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .Get(new ProductsByIdSpecification(productId))
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (product?.SellInvoiceProductItem is null)
-            return true;
+        //if (product?.SellInvoiceProductItem is null)
+        //    return true;
+        // TODO: refactor this logic due to sell product nav prop has been deleted
 
         if (invoiceDto.Id.HasValue)
         {
             var existingInvoice = await _invoiceRepository
                 .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceDto.Id.Value)))
-                .Include(x => x.ProductItems)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.SellProductId == productId))
+            if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.ProductId == productId))
                 return true;
         }
 

@@ -1,6 +1,4 @@
-﻿using System.Data;
-using DevExpress.CodeParser.Diagnostics;
-using FluentValidation;
+﻿using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -22,6 +20,7 @@ using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -50,6 +49,7 @@ internal class PaymentVoucherService(
 
         var data = await repository
             .Get(spec)
+            .AsNoTracking()
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
@@ -67,7 +67,9 @@ internal class PaymentVoucherService(
     public async Task<List<GetPaymentVoucherResponse>> GetPendingListAsync(Guid customerId,
         CancellationToken cancellationToken = default)
     {
-        var list = await repository.Get(new PaymentVouchersByCustomerIdSpecification(new CustomerId(customerId)))
+        var list = await repository
+            .Get(new PaymentVouchersByCustomerIdSpecification(new CustomerId(customerId)))
+            .AsNoTracking()
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
@@ -78,6 +80,7 @@ internal class PaymentVoucherService(
     {
         var item = await repository
             .Get(new PaymentVouchersByIdSpecification(new PaymentVoucherId(id)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetPaymentVoucherResponse>(item);
@@ -87,6 +90,7 @@ internal class PaymentVoucherService(
     {
         var item = await repository
             .Get(new PaymentVouchersByNumberSpecification(voucherNumber))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetPaymentVoucherResponse>(item);
