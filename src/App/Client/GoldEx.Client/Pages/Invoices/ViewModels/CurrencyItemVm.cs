@@ -77,8 +77,8 @@ public class CurrencyItemVm
     public void RecalculateAmounts()
     {
         RawAmount = UnitPrice;
-        ProfitAmount = CalculatorHelper.Currency.CalculateProfit(UnitPrice, ProfitPercent);
-        TaxAmount = CalculatorHelper.Currency.CalculateTax(UnitPrice, TaxPercent);
+        ProfitAmount = CalculatorHelper.Currency.CalculateProfit(UnitPrice, Amount, ProfitPercent);
+        TaxAmount = CalculatorHelper.Currency.CalculateTax(UnitPrice, Amount, TaxPercent);
         FinalAmount = RawAmount + ProfitAmount + TaxAmount;
         TotalAmount = FinalAmount * Amount;
     }
@@ -101,5 +101,16 @@ public class CurrencyItemVm
             Amount = response.Amount,
             Currency = response.Currency
         };
+    }
+
+    public void UpdateFrom(CurrencyItemVm coinItem)
+    {
+        Index = coinItem.Index;
+        UnitPrice = coinItem.UnitPrice;
+        ProfitPercent = coinItem.ProfitPercent;
+        Amount = coinItem.Amount;
+        Currency = coinItem.Currency;
+        TaxPercent = coinItem.TaxPercent;
+        ShowDetails = coinItem.ShowDetails;
     }
 }

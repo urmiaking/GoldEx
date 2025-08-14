@@ -18,11 +18,17 @@
             <col />
             <col />
             <col />
+            <col />
+            <col />
+            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
             <MudTh>عنوان</MudTh>
             <MudTh>حجم</MudTh>
+            <MudTh>نرخ واحد</MudTh>
+            <MudTh>سود</MudTh>
+            <MudTh>مالیات</MudTh>
             <MudTh>ارزش کل</MudTh>
             <MudTh>عملیات</MudTh>
         </HeaderContent>
@@ -30,6 +36,9 @@
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
             <MudTd DataLabel="عنوان">@context.Currency.Title</MudTd>
             <MudTd DataLabel="حجم">@context.Amount.ToCurrencyFormat()</MudTd>
+            <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="سود">@context.ProfitAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="مالیات">@context.TaxAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">

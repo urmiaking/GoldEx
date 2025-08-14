@@ -11,7 +11,7 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class CoinItemEditor
 {
-    [Parameter] public CoinItemVm Model { get; set; } = new();
+    [Parameter] public CoinItemVm Model { get; set; } = new() { Quantity = 1 };
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
 
