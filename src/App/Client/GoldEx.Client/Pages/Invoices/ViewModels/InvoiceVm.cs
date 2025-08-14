@@ -75,12 +75,30 @@ public class InvoiceVm
     /// Removes a specific item from the invoice and re-calculates the indexes of remaining items.
     /// </summary>
     /// <param name="productItemToRemove">The InvoiceItemVm instance to remove.</param>
-    public void RemoveInvoiceItem(ProductItemVm productItemToRemove)
+    public void RemoveProductItem(ProductItemVm productItemToRemove)
     {
         if (ProductItems.Contains(productItemToRemove))
         {
             ProductItems.Remove(productItemToRemove);
             ReorderItemIndexes();
+        }
+    }
+
+    public void RemoveCoinItem(CoinItemVm coinItem)
+    {
+        if (CoinItems.Contains(coinItem))
+        {
+            CoinItems.Remove(coinItem);
+            ReorderItemIndexes(); // TODO: this method belongs to product items! adjust it for coin items
+        }
+    }
+
+    public void RemoveCurrencyItem(CurrencyItemVm currencyItem)
+    {
+        if (CurrencyItems.Contains(currencyItem))
+        {
+            CurrencyItems.Remove(currencyItem);
+            ReorderItemIndexes(); // TODO: this method belongs to product items! adjust it for currency items
         }
     }
 

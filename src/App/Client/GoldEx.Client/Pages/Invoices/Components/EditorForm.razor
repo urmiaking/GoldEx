@@ -1,5 +1,4 @@
-﻿@using GoldEx.Client.Pages.Invoices.ViewModels
-@using GoldEx.Shared.DTOs.PriceUnits
+﻿@using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudCard Class="p-4" Elevation="24">
@@ -35,7 +34,6 @@
                         <MudChip T="string" Color="@color" Variant="Variant.Filled" Size="Size.Small">@text</MudChip>
                     }
                 </MudText>
-
             </MudItem>
             <MudSpacer />
             @if (_model.InvoicePriceUnit != _priceUnits.FirstOrDefault(x => x.IsDefault))
@@ -259,90 +257,42 @@
         <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
             <MudText Typo="Typo.h6">اقلام فاکتور</MudText>
             <MudSpacer />
-            @if (_model.InvoiceType is InvoiceType.Sell)
-            {
-                <MudPaper Elevation="0">
-                    <MudTextField Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.QrCode"
-                                  Clearable="true"
-                                  Label="بارکد جنس"
-                                  Margin="Margin.Dense"
-                                  Immediate="true"
-                                  OnClearButtonClick="OnBarcodeCleared"
-                                  T="string"
-                                  Value="_barcode"
-                                  ValueChanged="OnBarcodeChanged"
-                                  Variant="Variant.Outlined"></MudTextField>
-                </MudPaper>
-            }
-            <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Success" Text="افزودن ارز">
-                <MudIconButton Icon="@Icons.Material.Filled.Payment" Size="Size.Small"
-                               Variant="Variant.Filled" Color="Color.Success" OnClick="OnAddCurrency"></MudIconButton>
-            </MudTooltip>
-            <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Primary" Text="افزودن سکه">
-                <MudIconButton Icon="@Icons.Material.Filled.MonetizationOn" Size="Size.Small"
-                               Variant="Variant.Filled" Color="Color.Primary" OnClick="OnAddCoin"></MudIconButton>
-            </MudTooltip>
-            <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Info" Text="افزودن طلا و جواهر">
-                <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
-                               Variant="Variant.Filled" Color="Color.Info" OnClick="OnAddProductItem"></MudIconButton>
-            </MudTooltip>
         </MudStack>
 
         <MudDivider Class="mb-2" />
 
         <div class="my-2">
-            <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@_model.ProductItems" T="ProductItemVm" Elevation="1">
-                <ColGroup>
-                    <col />
-                    <col />
-                    <col />
-                    <col />
-                    <col />
-                    <col />
-                </ColGroup>
-                <HeaderContent>
-                    <MudTh>ردیف</MudTh>
-                    <MudTh>نوع جنس</MudTh>
-                    <MudTh>عنوان</MudTh>
-                    <MudTh>عیار</MudTh>
-                    <MudTh>وزن</MudTh>
-                    <MudTh>تعداد</MudTh>
-                    <MudTh>ارزش کل</MudTh>
-                    <MudTh>عملیات</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="ردیف">@context.Index</MudTd>
-                    <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
-                    <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
-                    <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
-                    <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
-                    <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
-                    <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudTd>
-                    <MudTd DataLabel="عملیات">
-                        <div class="d-flex gap-2">
-                            <MudTooltip Text="چاپ بارکد">
-                                <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
-                                               Color="@Color.Success"></MudIconButton>
-                            </MudTooltip>
-                            <MudTooltip Text="ویرایش جنس">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                               Color="Color.Primary" OnClick="() => OnEditInvoiceItem(context)"></MudIconButton>
-                            </MudTooltip>
-                            <MudTooltip Text="حذف جنس">
-                                <MudIconButton OnClick="@(_ => OnRemoveInvoiceItem(context))" ClickPropagation="true"
-                                               Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                            </MudTooltip>
-                        </div>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
-                    <MudText Typo="Typo.body2">هیچ جنسی ثبت نشده است</MudText>
-                </NoRecordsContent>
-                <LoadingContent>
-                    <MudText Typo="Typo.body2">در حال بارگذاری</MudText>
-                </LoadingContent>
-            </MudTable>
+            <MudTabs Elevation="2" Rounded="true" Centered="true">
+                <MudTabPanel Text="طلا و جواهر" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
+                    <ProductItemsList Items="@_model.ProductItems"
+                                      PriceUnit="@_model.InvoicePriceUnit"
+                                      OnEditItem="OnEditProductItem"
+                                      OnRemoveItem="OnRemoveProductItem"
+                                      Class="mt-2 pa-4"
+                                      Elevation="2"
+                                      InvoiceType="_model.InvoiceType"
+                                      OnAddItem="OnAddProductItem"
+                                      OnBarcodeChanged="OnBarcodeChanged" />
+                </MudTabPanel>
+                <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
+                    <CoinItemsList Items="@_model.CoinItems"
+                                   PriceUnit="@_model.InvoicePriceUnit"
+                                   OnEditItem="OnEditCoinItem"
+                                   OnRemoveItem="OnRemoveCoinItem"
+                                   Class="mt-2 pa-4"
+                                   Elevation="2"
+                                   OnAddItem="OnAddCoinItem" />
+                </MudTabPanel>
+                <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Success">
+                    <CurrencyItemsList Items="@_model.CurrencyItems"
+                                       PriceUnit="@_model.InvoicePriceUnit"
+                                       OnEditItem="OnEditCurrencyItem"
+                                       OnRemoveItem="OnRemoveCurrencyItem"
+                                       Class="mt-2 pa-4"
+                                       Elevation="2"
+                                       OnAddItem="OnAddCurrencyItem" />
+                </MudTabPanel>
+            </MudTabs>
         </div>
 
         @if (_model.ProductItems.Any())
