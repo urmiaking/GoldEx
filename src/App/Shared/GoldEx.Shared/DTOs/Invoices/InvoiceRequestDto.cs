@@ -53,21 +53,22 @@ public record InvoicePaymentDto(
     Guid PriceUnitId);
 
 public record InvoiceProductItemDto(
+    Guid? Id,
     decimal GramPrice,
     decimal ProfitPercent,
     decimal TaxPercent,
     decimal? ExchangeRate,
-    int Quantity,
-    ProductRequestDto Product,
-    Guid PriceUnit);
+    ProductRequestDto Product);
 
 public record InvoiceCoinItemDto(
+    Guid? Id,
     decimal UnitPrice,
     int Quantity,
     decimal ProfitPercent,
     Guid CoinId);
 
 public record InvoiceCurrencyItemDto(
+    Guid? Id,
     decimal UnitPrice,
     decimal Amount,
     decimal ProfitPercent,

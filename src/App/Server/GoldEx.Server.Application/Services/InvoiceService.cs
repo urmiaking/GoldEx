@@ -311,9 +311,6 @@ internal class InvoiceService(
                 invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
                     InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
-                invoice.SetCoinItems(request.InvoiceCoinItems.Select(x =>
-                    InvoiceCoinItem.Create(new CoinId(x.CoinId), x.UnitPrice, x.Quantity, x.ProfitPercent)));
-
                 invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
                     InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
 
@@ -397,6 +394,8 @@ internal class InvoiceService(
 
                 #region InvoicePayments (Update invoice payments)
 
+                await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
+
                 var existingPayments = await invoicePaymentRepository
                     .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
                     .ToListAsync(cancellationToken);
@@ -448,6 +447,7 @@ internal class InvoiceService(
 
         var data = await invoiceRepository
             .Get(spec)
+            .AsNoTracking()
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
             .AsSplitQuery()
@@ -468,6 +468,7 @@ internal class InvoiceService(
     {
         var item = await invoiceRepository
             .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+            .AsNoTracking()
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
@@ -479,6 +480,14 @@ internal class InvoiceService(
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.Coin)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.Currency)
+            .Include(x => x.Discounts)
+                .ThenInclude(x => x.PriceUnit)
+            .Include(x => x.ExtraCosts)
+                .ThenInclude(x => x.PriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
@@ -490,6 +499,7 @@ internal class InvoiceService(
     {
         var item = await invoiceRepository
             .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
+            .AsNoTracking()
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit!)
             .Include(x => x.PriceUnit)
@@ -501,6 +511,14 @@ internal class InvoiceService(
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.Coin)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.Currency)
+            .Include(x => x.Discounts)
+                .ThenInclude(x => x.PriceUnit)
+            .Include(x => x.ExtraCosts)
+                .ThenInclude(x => x.PriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 

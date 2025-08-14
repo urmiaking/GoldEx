@@ -8,9 +8,6 @@ public class ProductItemValidator : AbstractValidator<ProductItemVm>
 {
     public ProductItemValidator()
     {
-        RuleFor(i => i.Quantity)
-            .GreaterThan(0).WithMessage("تعداد باید بزرگتر از صفر باشد");
-
         RuleFor(i => i.GramPrice)
             .GreaterThan(0).WithMessage("نرخ گرم باید بزرگتر از صفر باشد");
 

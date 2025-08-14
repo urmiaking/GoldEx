@@ -7,34 +7,67 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceProductItemId(Guid Value);
 public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
 {
+    private InvoiceProductItem(InvoiceProductItemId id, decimal gramPrice, decimal profitPercent, decimal taxPercent, ProductId productId)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
+
+        Id = id;
+        GramPrice = gramPrice;
+        ProfitPercent = profitPercent;
+        TaxPercent = taxPercent;
+        ProductId = productId;
+
+        // Stored calculated values are initialized to 0
+        ItemRawAmount = 0;
+        ItemWageAmount = 0;
+        ItemProfitAmount = 0;
+        ItemTaxAmount = 0;
+        ItemFinalAmount = 0;
+    }
+
     public static InvoiceProductItem Create(
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
         ProductId productId)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
+        return new InvoiceProductItem(new InvoiceProductItemId(Guid.NewGuid()), gramPrice, profitPercent, taxPercent, productId);
+    }
 
+    public static InvoiceProductItem Create(
+        InvoiceProductItemId id,
+        decimal gramPrice,
+        decimal profitPercent,
+        decimal taxPercent,
+        ProductId productId)
+    {
+        return new InvoiceProductItem(id, gramPrice, profitPercent, taxPercent, productId);
+    }
+
+    public void Update(InvoiceProductItemId id, decimal gramPrice, decimal profitPercent, decimal taxPercent,
+        ProductId productId)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
-
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
 
-        return new InvoiceProductItem
-        {
-            Id = new InvoiceProductItemId(Guid.NewGuid()),
-            GramPrice = gramPrice,
-            ProfitPercent = profitPercent,
-            TaxPercent = taxPercent,
-            ProductId = productId,
-            // Stored calculated values are initialized to 0
-            ItemRawAmount = 0,
-            ItemWageAmount = 0,
-            ItemProfitAmount = 0,
-            ItemTaxAmount = 0,
-            ItemFinalAmount = 0
-        };
+        Id = id;
+        GramPrice = gramPrice;
+        ProfitPercent = profitPercent;
+        TaxPercent = taxPercent;
+        ProductId = productId;
+        // Reset calculated amounts
+        ItemRawAmount = 0;
+        ItemWageAmount = 0;
+        ItemProfitAmount = 0;
+        ItemTaxAmount = 0;
+        ItemFinalAmount = 0;
     }
 
 #pragma warning disable CS8618 
@@ -51,7 +84,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     public Product? Product { get; private set; }
 
     public InvoiceId InvoiceId { get; private set; }
-    public Invoice Invoice { get; private set; }
+    public Invoice Invoice { get; private set; } = null!;
 
     #endregion
 

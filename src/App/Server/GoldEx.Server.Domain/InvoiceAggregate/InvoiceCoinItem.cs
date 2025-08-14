@@ -7,30 +7,36 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceCoinItemId(Guid Value);
 public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
 {
-    public static InvoiceCoinItem Create(CoinId coinId,
-        decimal unitPrice,
-        int quantity,
-        decimal profitPercent)
+    private InvoiceCoinItem(InvoiceCoinItemId id, CoinId coinId, decimal unitPrice, int quantity, decimal profitPercent)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0, nameof(unitPrice));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
-
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
 
-        return new InvoiceCoinItem
-        {
-            Id = new InvoiceCoinItemId(Guid.NewGuid()),
-            CoinId = coinId,
-            UnitPrice = unitPrice,
-            Quantity = quantity,
-            ProfitPercent = profitPercent,
+        var itemProfitAmount = CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent);
+        var itemFinalAmount = unitPrice + itemProfitAmount;
 
-            ItemRawAmount = unitPrice,
-            ItemProfitAmount = CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent),
-            ItemFinalAmount = unitPrice + CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent),
-            TotalAmount = (unitPrice + CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent)) * quantity
-        };
+        Id = id;
+        CoinId = coinId;
+        UnitPrice = unitPrice;
+        Quantity = quantity;
+        ProfitPercent = profitPercent;
+
+        ItemRawAmount = unitPrice;
+        ItemProfitAmount = itemProfitAmount;
+        ItemFinalAmount = itemFinalAmount;
+        TotalAmount = itemFinalAmount * quantity;
+    }
+
+    public static InvoiceCoinItem Create(CoinId coinId, decimal unitPrice, int quantity, decimal profitPercent)
+    {
+        return new InvoiceCoinItem(new InvoiceCoinItemId(Guid.NewGuid()), coinId, unitPrice, quantity, profitPercent);
+    }
+
+    public static InvoiceCoinItem Create(InvoiceCoinItemId id, CoinId coinId, decimal unitPrice, int quantity, decimal profitPercent)
+    {
+        return new InvoiceCoinItem(id, coinId, unitPrice, quantity, profitPercent);
     }
 
     public CoinId CoinId { get; private set; }

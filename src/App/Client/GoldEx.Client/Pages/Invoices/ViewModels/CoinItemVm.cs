@@ -7,6 +7,8 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class CoinItemVm
 {
+    public Guid? Id { get; set; }
+
     private int _quantity;
     private decimal _unitPrice;
     private decimal _profitPercent;
@@ -74,13 +76,18 @@ public class CoinItemVm
         if (coinItem.Coin is null)
             throw new FluentValidation.ValidationException("سکه انتخاب نشده است");
 
-        return new InvoiceCoinItemDto(coinItem.UnitPrice, coinItem.Quantity, coinItem.ProfitPercent, coinItem.Coin.Id);
+        return new InvoiceCoinItemDto(coinItem.Id,
+            coinItem.UnitPrice,
+            coinItem.Quantity,
+            coinItem.ProfitPercent,
+            coinItem.Coin.Id);
     }
 
     public static CoinItemVm CreateFrom(GetInvoiceCoinItemResponse response)
     {
         return new CoinItemVm
         {
+            Id = response.Id,
             UnitPrice = response.UnitPrice,
             ProfitPercent = response.ProfitPercent,
             Quantity = response.Quantity,

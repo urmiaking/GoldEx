@@ -246,14 +246,12 @@ public partial class EditorForm
                 _model.ProductItems.Add(new ProductItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
-                    PriceUnit = _model.InvoicePriceUnit,
                     GramPrice = gramPrice,
                     ExchangeRate = exchangeRate,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold
                         ? _setting?.GoldProfitPercent ?? 7
                         : _setting?.JewelryProfitPercent ?? 20,
-                    Quantity = 1,
                     Index = _model.GetLastProductIndexNumber() + 1
                 });
 
@@ -279,12 +277,12 @@ public partial class EditorForm
         model.GramPrice = gramPrice;
         model.TaxPercent = _setting?.TaxPercent ?? 9;
         model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
-        model.PriceUnit = _model.InvoicePriceUnit;
 
         var parameters = new DialogParameters<ProductItemEditor>
         {
             { x => x.Model, model },
-            { x => x.PriceUnits, _priceUnits }
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
         var dialog = await DialogService.ShowAsync<ProductItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
@@ -460,8 +458,6 @@ public partial class EditorForm
         {
             decimal.TryParse(_gramPrice?.Value, out var gramPrice);
             item.GramPrice = gramPrice;
-
-            item.PriceUnit = priceUnit;
 
             if (item.Product.WagePriceUnitId.HasValue && _model.InvoicePriceUnit.Id != item.Product.WagePriceUnitId)
             {

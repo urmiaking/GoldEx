@@ -13,6 +13,7 @@ internal class PaymentVoucherRepository(GoldExDbContext dbContext) : RepositoryB
     public async Task<long> GetLastNumberAsync(CancellationToken cancellationToken = default)
     {
         var voucherNumber = await Query
+            .AsNoTracking()
             .OrderByDescending(x => x.VoucherNumber)
             .Select(x => x.VoucherNumber)
             .FirstOrDefaultAsync(cancellationToken);

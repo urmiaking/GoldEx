@@ -13,7 +13,6 @@ using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
@@ -27,7 +26,10 @@ internal class CoinService(ICoinRepository repository,
 {
     public async Task<List<GetCoinResponse>> GetListAsync(bool? isActive, CancellationToken cancellationToken = default)
     {
-        var items = await repository.Get(new CoinsByStatusSpecification(isActive)).ToListAsync(cancellationToken);
+        var items = await repository
+            .Get(new CoinsByStatusSpecification(isActive))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetCoinResponse>>(items);
     }
@@ -36,6 +38,7 @@ internal class CoinService(ICoinRepository repository,
     {
         var item = await repository
             .Get(new CoinsByIdSpecification(new CoinId(id)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetCoinResponse>(item);
@@ -45,6 +48,7 @@ internal class CoinService(ICoinRepository repository,
     {
         var coin = await repository
             .Get(new CoinsByIdSpecification(new CoinId(coinId)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         if (coin.PriceId is null)
@@ -62,6 +66,7 @@ internal class CoinService(ICoinRepository repository,
 
         var conversionUnit = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)))
+            .AsNoTracking()
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 

@@ -6,7 +6,7 @@
         <DialogContent>
             <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
                 <MudNumericField Adornment="Adornment.End"
-                                 AdornmentText="@Model.PriceUnit?.Title"
+                                 AdornmentText="@PriceUnit.Title"
                                  @bind-Value="Model.GramPrice"
                                  For="@(() => Model.GramPrice)"
                                  Format="#,##0.##"
@@ -193,9 +193,9 @@
                             </ChildContent>
                         </MudMenu>
                     </MudItem>
-
                 }
-                @if (Model.Product.WageType is WageType.Fixed && Model.PriceUnit?.Id != Model.Product.WagePriceUnitId)
+
+                @if (Model.Product.WageType is WageType.Fixed && PriceUnit.Id != Model.Product.WagePriceUnitId)
                 {
                     <MudItem xs="12" md="4">
                         <MudNumericField For="@(() => Model.ExchangeRate)"
@@ -235,18 +235,6 @@
                                      AdornmentText="درصد"
                                      HideSpinButtons="true"
                                      @bind-Value="Model.TaxPercent"
-                                     Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudNumericField For="@(() => Model.Quantity)"
-                                     Format="G29"
-                                     Immediate="true"
-                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
-                                     Margin="Margin.Dense"
-                                     T="int"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="عدد"
-                                     @bind-Value="Model.Quantity"
                                      Variant="Variant.Outlined" />
                 </MudItem>
                 @if (Model.Product.ProductType is ProductType.Jewelry)
