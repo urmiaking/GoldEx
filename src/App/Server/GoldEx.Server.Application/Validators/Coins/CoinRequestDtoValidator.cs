@@ -21,10 +21,6 @@ internal class CoinRequestDtoValidator : AbstractValidator<CoinRequestDto>
             .MaximumLength(100)
             .WithMessage("عنوان سکه باید کمتر از 100 کاراکتر باشد");
 
-        RuleFor(x => x.CoinType)
-            .IsInEnum()
-            .WithMessage("نوع سکه معتبر نمی باشد");
-
         RuleFor(x => x.PriceId)
             .MustAsync(BeValidPrice)
             .WithMessage("شناسه قیمت وابسته نامعتبر است");

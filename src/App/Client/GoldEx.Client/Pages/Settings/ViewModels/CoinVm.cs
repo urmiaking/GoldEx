@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.Coins;
+﻿using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Prices;
-using GoldEx.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Settings.ViewModels;
 
@@ -16,9 +15,6 @@ public class CoinVm
     [Display(Name = "وضعیت")]
     public bool IsActive { get; set; }
 
-    [Display(Name = "نوع سکه")]
-    public CoinType CoinType { get; set; }
-
     [Display(Name = "قیمت وابسته")]
     public Guid? PriceId { get; set; }
 
@@ -30,11 +26,10 @@ public class CoinVm
         {
             Id = response.Id,
             Title = response.Title,
-            CoinType = response.CoinType,
             IsActive = response.IsActive,
             PriceId = response.PriceId
         };
     }
 
-    public static CoinRequestDto ToRequest(CoinVm item) => new(item.Id, item.Title ?? string.Empty, item.CoinType, item.PriceId);
+    public static CoinRequestDto ToRequest(CoinVm item) => new(item.Id, item.Title ?? string.Empty, item.PriceId);
 }

@@ -21,12 +21,10 @@
           SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="24" Height="350px">
     <HeaderContent>
         <MudTh>عنوان</MudTh>
-        <MudTh>نوع</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="عنوان">@context.Title</MudTd>
-        <MudTd DataLabel="نوع">@context.CoinType.GetDisplayName()</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="ویرایش">

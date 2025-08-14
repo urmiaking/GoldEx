@@ -119,18 +119,8 @@ internal class PriceService(
 
             if (!coins.Any())
             {
-                foreach (var coinPrice in pricesToCreate.Where(x => x.MarketType is MarketType.Coin or MarketType.ParsianCoin))
-                {
-                    coins.Add(Coin.Create(coinPrice.Title, coinPrice.MarketType switch
-                    {
-                        MarketType.Gold => throw new InvalidOperationException(),
-                        MarketType.Currency => throw new InvalidOperationException(),
-                        MarketType.Coin => CoinType.Coin,
-                        MarketType.BubbleCoin => throw new InvalidOperationException(),
-                        MarketType.ParsianCoin => CoinType.ParsianCoin,
-                        _ => throw new ArgumentOutOfRangeException()
-                    }, coinPrice.Id));
-                }
+                coins.AddRange(pricesToCreate.Where(x => x.MarketType is MarketType.Coin)
+                    .Select(coinPrice => Coin.Create(coinPrice.Title, coinPrice.Id)));
 
                 await coinRepository.CreateRangeAsync(coins, cancellationToken);
             }
