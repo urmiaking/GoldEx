@@ -38,7 +38,7 @@ internal class CoinService(ICoinRepository repository,
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var coin = Coin.Create(request.Title, request.CoinType, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+        var coin = Coin.Create(request.Title, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
 
         await repository.CreateAsync(coin, cancellationToken);
     }
@@ -52,7 +52,6 @@ internal class CoinService(ICoinRepository repository,
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         coin.SetTitle(request.Title);
-        coin.SetType(request.CoinType);
         coin.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
 
         await repository.UpdateAsync(coin, cancellationToken);

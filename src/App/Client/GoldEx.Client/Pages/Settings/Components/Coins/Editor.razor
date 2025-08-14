@@ -7,27 +7,14 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="8" lg="6">
+                <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.Title"
                                   For="@(() => Model.Title)"
                                   Label="@(Model.GetDisplayName(() => Model.Title))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="8" lg="6">
-                    <MudSelect For="() => Model.CoinType"
-                               Margin="Margin.Dense"
-                               Label="@(Model.GetDisplayName(() => Model.CoinType))"
-                               T="CoinType"
-                               @bind-Value="Model.CoinType"
-                               Variant="Variant.Outlined">
-                        @foreach (var coinType in Enum.GetValues<CoinType>())
-                        {
-                            <MudSelectItem Value="coinType">@coinType.GetDisplayName()</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="12" lg="12">
+                <MudItem xs="12" md="6" lg="6">
                     <MudSelect T="GetPriceTitleResponse?"
                                Value="Model.Price"
                                ValueChanged="OnPriceChanged"
