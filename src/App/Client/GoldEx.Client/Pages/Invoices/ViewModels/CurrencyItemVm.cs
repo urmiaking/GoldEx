@@ -57,7 +57,7 @@ public class CurrencyItemVm
     }
 
     [Display(Name = "نوع ارز")]
-    public GetPriceUnitTitleResponse? Currency { get; set; }
+    public GetPriceUnitTitleResponse Currency { get; set; } = default!;
 
     // --- Display properties ---
     public bool ShowDetails { get; set; }

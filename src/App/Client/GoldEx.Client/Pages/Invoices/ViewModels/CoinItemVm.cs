@@ -1,7 +1,7 @@
 ﻿using GoldEx.Shared.DTOs.Coins;
-using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -45,7 +45,7 @@ public class CoinItemVm
     }
 
     [Display(Name = "نوع سکه")]
-    public GetCoinResponse? Coin { get; set; }
+    public GetCoinResponse Coin { get; set; } = default!;
 
     // --- Display properties ---
     public bool ShowDetails { get; set; }

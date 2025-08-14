@@ -54,16 +54,6 @@ public partial class EditorForm
         await base.OnParametersSetAsync();
     }
 
-    private async Task LoadCustomerAsync()
-    {
-        if (CustomerId.HasValue)
-        {
-            await SendRequestAsync<ICustomerService, GetCustomerResponse>(
-                action: (s, ct) => s.GetAsync(CustomerId.Value, ct),
-                afterSend: response => _model.Customer = CustomerVm.CreateFrom(response));
-        }
-    }
-
     #region Load Initial Data
 
     private async Task LoadInvoiceAsync()
@@ -133,6 +123,16 @@ public partial class EditorForm
                     StateHasChanged();
                 }
             });
+    }
+
+    private async Task LoadCustomerAsync()
+    {
+        if (CustomerId.HasValue)
+        {
+            await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+                action: (s, ct) => s.GetAsync(CustomerId.Value, ct),
+                afterSend: response => _model.Customer = CustomerVm.CreateFrom(response));
+        }
     }
 
     #endregion
@@ -268,39 +268,7 @@ public partial class EditorForm
 
     #endregion
 
-    #region InvoiceItem
-
-    private async Task OnEditInvoiceItem(ProductItemVm productItemVm)
-    {
-        var parameters = new DialogParameters<ProductItemEditor>
-        {
-            { x => x.Model, productItemVm },
-            { x => x.PriceUnits, _priceUnits }
-        };
-
-        var dialog = await DialogService.ShowAsync<ProductItemEditor>("ویرایش جنس", parameters, _dialogOptions);
-
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: ProductItemVm resultItem })
-        {
-            productItemVm.Copy(resultItem);
-            StateHasChanged();
-        }
-    }
-
-    private async Task OnRemoveInvoiceItem(ProductItemVm productItem)
-    {
-        var result = await DialogService.ShowMessageBox(
-            "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {productItem.Product.Name} اطمینان دارید؟ <br> <br> "),
-            yesText: "بله", cancelText: "لغو");
-
-        if (result is null)
-            return;
-
-        _model.RemoveInvoiceItem(productItem);
-    }
+    #region ProductItem
 
     private async Task OnAddProductItem()
     {
@@ -320,7 +288,7 @@ public partial class EditorForm
         };
 
         var dialog = await DialogService.ShowAsync<ProductItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
-            
+
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: ProductItemVm productItem })
@@ -331,7 +299,96 @@ public partial class EditorForm
         }
     }
 
-    private async Task OnAddCurrency()
+    private async Task OnEditProductItem(ProductItemVm productItemVm)
+    {
+        var parameters = new DialogParameters<ProductItemEditor>
+        {
+            { x => x.Model, productItemVm },
+            { x => x.PriceUnits, _priceUnits }
+        };
+
+        var dialog = await DialogService.ShowAsync<ProductItemEditor>("ویرایش جنس", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: ProductItemVm resultItem })
+        {
+            productItemVm.Copy(resultItem);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnRemoveProductItem(ProductItemVm productItem)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            markupMessage: new MarkupString($"آیا برای حذف {productItem.Product.Name} اطمینان دارید؟ <br> <br> "),
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is null)
+            return;
+
+        _model.RemoveProductItem(productItem);
+    }
+
+    #endregion
+
+    #region CoinItem
+
+    private async Task OnAddCoinItem()
+    {
+        var parameters = new DialogParameters<CoinItemEditor>
+        {
+            //{ x => x.Model, model },
+            //{ x => x.PriceUnits, _priceUnits }
+        };
+
+        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: CoinItemVm coinItem })
+        {
+            coinItem.RecalculateAmounts();
+            _model.CoinItems.Add(coinItem);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnEditCoinItem(CoinItemVm coinItemVm)
+    {
+        var parameters = new DialogParameters<CoinItemEditor>
+        {
+            //{ x => x.Model, coinItemVm },
+            //{ x => x.PriceUnits, _priceUnits }
+        };
+        var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: CoinItemVm resultItem })
+        {
+            //coinItemVm.Copy(resultItem);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnRemoveCoinItem(CoinItemVm coinItem)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            markupMessage: new MarkupString($"آیا برای حذف {coinItem.Coin.Title} اطمینان دارید؟ <br> <br> "),
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is null)
+            return;
+
+        _model.RemoveCoinItem(coinItem);
+    }
+
+    #endregion
+
+    #region CurrencyItem
+
+    private async Task OnAddCurrencyItem()
     {
         var parameters = new DialogParameters<CurrencyItemEditor>
         {
@@ -351,25 +408,33 @@ public partial class EditorForm
         }
     }
 
-
-    private async Task OnAddCoin()
+    private async Task OnEditCurrencyItem(CurrencyItemVm currencyItemVm)
     {
-        var parameters = new DialogParameters<CoinItemEditor>
+        var parameters = new DialogParameters<CurrencyItemEditor>
         {
-            //{ x => x.Model, model },
+            //{ x => x.Model, currencyItemVm },
             //{ x => x.PriceUnits, _priceUnits }
         };
-
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
-
+        var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("ویرایش ارز", parameters, _dialogOptions);
         var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: CoinItemVm coinItem })
+        if (result is { Canceled: false, Data: CurrencyItemVm resultItem })
         {
-            coinItem.RecalculateAmounts();
-            _model.CoinItems.Add(coinItem);
+            //currencyItemVm.Copy(resultItem);
             StateHasChanged();
         }
+    }
+
+    private async Task OnRemoveCurrencyItem(CurrencyItemVm currencyItem)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            markupMessage: new MarkupString($"آیا برای حذف {currencyItem.Currency?.Title} اطمینان دارید؟ <br> <br> "),
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is null)
+            return;
+
+        _model.RemoveCurrencyItem(currencyItem);
     }
 
     #endregion
@@ -521,32 +586,6 @@ public partial class EditorForm
             afterSend: response => _model.ExchangeRate = response.ExchangeRate);
     }
 
-    #endregion
-
-    #region MenuToggle
-
-    private void OnDiscountMenuToggled()
-    {
-        _discountMenuOpen = !_discountMenuOpen;
-    }
-
-    private void OnExtraCostsMenuToggled()
-    {
-        _extraCostsMenuOpen = !_extraCostsMenuOpen;
-    }
-
-    private void OnPaymentsMenuToggled()
-    {
-        _paymentsMenuOpen = !_paymentsMenuOpen;
-    }
-
-    private void OnTotalUnpaidMenuToggled()
-    {
-        _totalUnpaidMenuOpen = !_totalUnpaidMenuOpen;
-    }
-
-    #endregion
-
     private async Task SubmitAsync(string navigationUrl)
     {
         if (_processing)
@@ -584,7 +623,7 @@ public partial class EditorForm
             onFailure: () =>
             {
                 _processing = false;
-                return Task.CompletedTask; 
+                return Task.CompletedTask;
             });
     }
 
@@ -646,7 +685,7 @@ public partial class EditorForm
                 if (result is null or false)
                     return;
 
-                foreach (var voucher in vouchers) 
+                foreach (var voucher in vouchers)
                     _model.InvoicePayments.Remove(voucher);
             }
         }
@@ -663,4 +702,30 @@ public partial class EditorForm
             invoiceType = _model.InvoiceType.ToString()
         }));
     }
+
+    #endregion
+
+    #region MenuToggle
+
+    private void OnDiscountMenuToggled()
+    {
+        _discountMenuOpen = !_discountMenuOpen;
+    }
+
+    private void OnExtraCostsMenuToggled()
+    {
+        _extraCostsMenuOpen = !_extraCostsMenuOpen;
+    }
+
+    private void OnPaymentsMenuToggled()
+    {
+        _paymentsMenuOpen = !_paymentsMenuOpen;
+    }
+
+    private void OnTotalUnpaidMenuToggled()
+    {
+        _totalUnpaidMenuOpen = !_totalUnpaidMenuOpen;
+    }
+
+    #endregion
 }
