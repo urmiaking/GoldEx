@@ -87,4 +87,14 @@ public class CoinItemVm
             Coin = response.Coin
         };
     }
+
+    public void UpdateFrom(CoinItemVm coinItem)
+    {
+        Index = coinItem.Index;
+        UnitPrice = coinItem.UnitPrice;
+        ProfitPercent = coinItem.ProfitPercent;
+        Quantity = coinItem.Quantity;
+        Coin = coinItem.Coin;
+        ShowDetails = coinItem.ShowDetails;
+    }
 }

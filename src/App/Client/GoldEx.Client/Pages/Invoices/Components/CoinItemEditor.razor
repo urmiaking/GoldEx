@@ -1,5 +1,77 @@
-﻿<h3>CoinItemEditor</h3>
+﻿@using GoldEx.Shared.DTOs.Coins
+@inherits GoldExComponentBase
 
-@code {
-    
-}
+<MudForm Model="Model" @ref="@_form" Validation="@(_coinItemValidator.ValidateValue)" ValidationDelay="0">
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12" lg="4">
+                    <MudSelect T="GetCoinResponse?"
+                               Value="Model.Coin"
+                               ValueChanged="OnCoinChanged"
+                               Label="@Model.GetDisplayName(() => Model.Coin)"
+                               For="() => Model.Coin"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        <MudSelectItem T="GetCoinResponse?" Value="null">انتخاب کنید...</MudSelectItem>
+                        @foreach (var item in _coins)
+                        {
+                            <MudSelectItem Value="item">@item.Title</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" lg="4">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="Model.UnitPrice"
+                                     Label="@Model.GetDisplayName(() => Model.UnitPrice)"
+                                     For="() => Model.UnitPrice"
+                                     Format="#,##0.##"
+                                     Immediate="true"
+                                     HideSpinButtons="true"
+                                     Margin="Margin.Dense"
+                                     Variant="Variant.Outlined"
+                                     InputMode="InputMode.numeric"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="@PriceUnit?.Title"/>
+                </MudItem>
+                <MudItem xs="12" lg="4">
+                    <MudNumericField T="int"
+                                     @bind-Value="Model.Quantity"
+                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
+                                     For="() => Model.Quantity"
+                                     Immediate="true"
+                                     Margin="Margin.Dense"
+                                     Variant="Variant.Outlined"
+                                     InputMode="InputMode.numeric" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@_isProcessing"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (_isProcessing)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>

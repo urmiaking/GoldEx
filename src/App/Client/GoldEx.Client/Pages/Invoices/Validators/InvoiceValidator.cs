@@ -29,13 +29,13 @@ public class InvoiceValidator : AbstractValidator<InvoiceVm>
             .NotEmpty().WithMessage("فاکتور باید حداقل دارای یک آیتم باشد");
 
         RuleForEach(x => x.ProductItems)
-            .SetValidator(new InvoiceProductItemValidator());
+            .SetValidator(new ProductItemValidator());
 
         RuleForEach(x => x.CoinItems)
-            .SetValidator(new InvoiceCoinItemValidator());
+            .SetValidator(new CoinItemValidator());
 
         RuleForEach(x => x.CurrencyItems)
-            .SetValidator(new InvoiceCurrencyItemValidator());
+            .SetValidator(new CurrencyItemValidator());
 
         RuleForEach(x => x.InvoiceDiscounts)
             .SetValidator(new InvoiceDiscountValidator());

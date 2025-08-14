@@ -27,6 +27,14 @@ public class CoinsController(ICoinService service) : ApiControllerBase
         return Ok(item);
     }
 
+    [HttpGet(ApiRoutes.Coins.GetPrice)]
+    public async Task<IActionResult> GetPriceAsync(Guid coinId, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        var price = await service.GetPriceAsync(coinId, priceUnitId, cancellationToken);
+        return price is null ? NotFound() : Ok(price);
+    }
+
     [HttpPost(ApiRoutes.Coins.Create)]
     public async Task<IActionResult> CreateAsync(CoinRequestDto request, CancellationToken cancellationToken = default)
     {

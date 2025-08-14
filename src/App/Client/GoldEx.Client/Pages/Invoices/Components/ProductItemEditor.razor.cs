@@ -23,17 +23,17 @@ public partial class ProductItemEditor
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private readonly InvoiceProductItemValidator _invoiceProductItemValidator = new();
+    private readonly ProductItemValidator _productItemValidator = new();
 
     private MudForm _form = default!;
 
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private List<GetProductResponse> _products = [];
+    private GetSettingResponse? _settings;
 
     private bool _weightFieldMenuOpen;
     private bool _wageFieldMenuOpen;
     private bool _isProcessing;
-    private GetSettingResponse? _settings;
 
     private string? WageFieldAdornmentText => Model.Product.WageType switch
     {

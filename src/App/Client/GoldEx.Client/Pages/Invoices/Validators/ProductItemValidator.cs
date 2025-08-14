@@ -4,9 +4,9 @@ using GoldEx.Client.Pages.Products.Validators;
 
 namespace GoldEx.Client.Pages.Invoices.Validators;
 
-public class InvoiceProductItemValidator : AbstractValidator<ProductItemVm>
+public class ProductItemValidator : AbstractValidator<ProductItemVm>
 {
-    public InvoiceProductItemValidator()
+    public ProductItemValidator()
     {
         RuleFor(i => i.Quantity)
             .GreaterThan(0).WithMessage("تعداد باید بزرگتر از صفر باشد");
