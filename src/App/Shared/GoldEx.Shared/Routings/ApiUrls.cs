@@ -305,5 +305,8 @@ public class ApiUrls
 
         public static string SetStatus(Guid id, bool isActive) =>
             BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.SetStatus).FormatRoute(new { id, isActive });
+
+        public static string GetPrice(Guid coinId, Guid? priceUnitId) =>
+            BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.GetPrice).FormatRoute(new { coinId, priceUnitId });
     }
 }

@@ -3,9 +3,9 @@ using GoldEx.Client.Pages.Invoices.ViewModels;
 
 namespace GoldEx.Client.Pages.Invoices.Validators;
 
-public class InvoiceCurrencyItemValidator : AbstractValidator<CurrencyItemVm>
+public class CurrencyItemValidator : AbstractValidator<CurrencyItemVm>
 {
-    public InvoiceCurrencyItemValidator()
+    public CurrencyItemValidator()
     {
         RuleFor(c => c.Currency)
             .NotNull().WithMessage("نوع ارز الزامی است");

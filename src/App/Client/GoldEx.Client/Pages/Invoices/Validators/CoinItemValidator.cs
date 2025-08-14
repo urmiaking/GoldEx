@@ -3,9 +3,9 @@ using GoldEx.Client.Pages.Invoices.ViewModels;
 
 namespace GoldEx.Client.Pages.Invoices.Validators;
 
-public class InvoiceCoinItemValidator : AbstractValidator<CoinItemVm>
+public class CoinItemValidator : AbstractValidator<CoinItemVm>
 {
-    public InvoiceCoinItemValidator()
+    public CoinItemValidator()
     {
         RuleFor(c => c.Coin)
             .NotNull().WithMessage("نوع سکه الزامی است");

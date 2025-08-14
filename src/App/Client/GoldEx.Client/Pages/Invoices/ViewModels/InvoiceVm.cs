@@ -66,9 +66,46 @@ public class InvoiceVm
         };
     }
 
-    public int GetLastIndexNumber()
+    public int GetLastProductIndexNumber()
     {
         return ProductItems.Count > 0 ? ProductItems.Max(i => i.Index) : 0;
+    }
+
+    public int GetLastCoinIndexNumber()
+    {
+        return CoinItems.Count > 0 ? CoinItems.Max(i => i.Index) : 0;
+    }
+
+    public int GetLastCurrencyIndexNumber()
+    {
+        return CurrencyItems.Count > 0 ? CurrencyItems.Max(i => i.Index) : 0;
+    }
+
+    public void AddProductItem(ProductItemVm productItem)
+    {
+        if (!ProductItems.Contains(productItem))
+        {
+            productItem.Index = GetLastProductIndexNumber() + 1;
+            ProductItems.Add(productItem);
+        }
+    }
+
+    public void AddCoinItem(CoinItemVm coinItem)
+    {
+        if (!CoinItems.Contains(coinItem))
+        {
+            coinItem.Index = GetLastCoinIndexNumber() + 1;
+            CoinItems.Add(coinItem);
+        }
+    }
+
+    public void AddCurrencyItem(CurrencyItemVm currencyItem)
+    {
+        if (!CurrencyItems.Contains(currencyItem))
+        {
+            currencyItem.Index = GetLastCurrencyIndexNumber() + 1;
+            CurrencyItems.Add(currencyItem);
+        }
     }
 
     /// <summary>
@@ -89,7 +126,7 @@ public class InvoiceVm
         if (CoinItems.Contains(coinItem))
         {
             CoinItems.Remove(coinItem);
-            ReorderItemIndexes(); // TODO: this method belongs to product items! adjust it for coin items
+            ReorderItemIndexes();
         }
     }
 
@@ -98,7 +135,7 @@ public class InvoiceVm
         if (CurrencyItems.Contains(currencyItem))
         {
             CurrencyItems.Remove(currencyItem);
-            ReorderItemIndexes(); // TODO: this method belongs to product items! adjust it for currency items
+            ReorderItemIndexes();
         }
     }
 
@@ -110,6 +147,16 @@ public class InvoiceVm
         for (var i = 0; i < ProductItems.Count; i++)
         {
             ProductItems[i].Index = i + 1;
+        }
+
+        for (var i = 0; i < CoinItems.Count; i++)
+        {
+            CoinItems[i].Index = i + 1;
+        }
+
+        for (var i = 0; i < CurrencyItems.Count; i++)
+        {
+            CurrencyItems[i].Index = i + 1;
         }
     }
 

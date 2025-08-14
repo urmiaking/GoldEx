@@ -254,7 +254,7 @@ public partial class EditorForm
                         ? _setting?.GoldProfitPercent ?? 7
                         : _setting?.JewelryProfitPercent ?? 20,
                     Quantity = 1,
-                    Index = _model.GetLastIndexNumber() + 1
+                    Index = _model.GetLastProductIndexNumber() + 1
                 });
 
                 OnBarcodeCleared();
@@ -294,7 +294,7 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: ProductItemVm productItem })
         {
             productItem.RecalculateAmounts();
-            _model.ProductItems.Add(productItem);
+            _model.AddProductItem(productItem);
             StateHasChanged();
         }
     }
@@ -313,7 +313,7 @@ public partial class EditorForm
 
         if (result is { Canceled: false, Data: ProductItemVm resultItem })
         {
-            productItemVm.Copy(resultItem);
+            productItemVm.UpdateFrom(resultItem);
             StateHasChanged();
         }
     }
@@ -339,18 +339,17 @@ public partial class EditorForm
     {
         var parameters = new DialogParameters<CoinItemEditor>
         {
-            //{ x => x.Model, model },
-            //{ x => x.PriceUnits, _priceUnits }
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
 
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: CoinItemVm coinItem })
         {
             coinItem.RecalculateAmounts();
-            _model.CoinItems.Add(coinItem);
+            _model.AddCoinItem(coinItem);
             StateHasChanged();
         }
     }
@@ -359,14 +358,17 @@ public partial class EditorForm
     {
         var parameters = new DialogParameters<CoinItemEditor>
         {
-            //{ x => x.Model, coinItemVm },
-            //{ x => x.PriceUnits, _priceUnits }
+            { x => x.Model, coinItemVm },
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions);
+
+        var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+
         var result = await dialog.Result;
-        if (result is { Canceled: false, Data: CoinItemVm resultItem })
+
+        if (result is { Canceled: false, Data: CoinItemVm coinItem })
         {
-            //coinItemVm.Copy(resultItem);
+            coinItemVm.UpdateFrom(coinItem);
             StateHasChanged();
         }
     }
@@ -419,7 +421,7 @@ public partial class EditorForm
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: CurrencyItemVm resultItem })
         {
-            //currencyItemVm.Copy(resultItem);
+            _model.AddCurrencyItem(resultItem);
             StateHasChanged();
         }
     }

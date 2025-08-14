@@ -132,20 +132,17 @@ public class ProductItemVm
         };
     }
 
-    public ProductItemVm Copy(ProductItemVm productItem)
+    public void UpdateFrom(ProductItemVm other)
     {
-        return new ProductItemVm
-        {
-            Product = productItem.Product,
-            GramPrice = productItem.GramPrice,
-            ExchangeRate = productItem.ExchangeRate,
-            ProfitPercent = productItem.ProfitPercent,
-            TaxPercent = productItem.TaxPercent,
-            Quantity = productItem.Quantity,
-            PriceUnit = productItem.PriceUnit,
-            Index = productItem.Index,
-            ShowDetails = productItem.ShowDetails
-        };
+        Index = other.Index;
+        Product = other.Product;
+        GramPrice = other.GramPrice;
+        ExchangeRate = other.ExchangeRate;
+        ProfitPercent = other.ProfitPercent;
+        TaxPercent = other.TaxPercent;
+        Quantity = other.Quantity;
+        PriceUnit = other.PriceUnit;
+        ShowDetails = other.ShowDetails;
     }
 
     public static InvoiceProductItemDto ToRequest(ProductItemVm productItem)
