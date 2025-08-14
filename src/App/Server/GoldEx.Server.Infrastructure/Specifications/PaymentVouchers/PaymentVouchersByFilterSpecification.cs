@@ -71,7 +71,7 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
         }
         else
         {
-            ApplySorting(nameof(Invoice.InvoiceDate), SortDirection.Descending);
+            ApplySorting(nameof(PaymentVoucher.CreatedAt), SortDirection.Descending);
         }
     }
 }

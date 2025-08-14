@@ -4,13 +4,10 @@ using GoldEx.Client.Pages.Products.Validators;
 
 namespace GoldEx.Client.Pages.Invoices.Validators;
 
-public class InvoiceProductItemValidator : AbstractValidator<InvoiceProductItemVm>
+public class ProductItemValidator : AbstractValidator<ProductItemVm>
 {
-    public InvoiceProductItemValidator()
+    public ProductItemValidator()
     {
-        RuleFor(i => i.Quantity)
-            .GreaterThan(0).WithMessage("تعداد باید بزرگتر از صفر باشد");
-
         RuleFor(i => i.GramPrice)
             .GreaterThan(0).WithMessage("نرخ گرم باید بزرگتر از صفر باشد");
 
@@ -27,7 +24,7 @@ public class InvoiceProductItemValidator : AbstractValidator<InvoiceProductItemV
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
     {
-        var result = await ValidateAsync(ValidationContext<InvoiceProductItemVm>.CreateWithOptions((InvoiceProductItemVm)model,
+        var result = await ValidateAsync(ValidationContext<ProductItemVm>.CreateWithOptions((ProductItemVm)model,
             x => x.IncludeProperties(propertyName)));
         return result.IsValid ? Array.Empty<string>() : result.Errors.Select(e => e.ErrorMessage);
     };

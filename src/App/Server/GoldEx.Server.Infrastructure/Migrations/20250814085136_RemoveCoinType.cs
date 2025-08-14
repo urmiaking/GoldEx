@@ -5,10 +5,18 @@
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCoinType : Migration
+    public partial class RemoveCoinType : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "CoinType",
+                table: "Coins");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
                 name: "CoinType",
@@ -16,14 +24,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 type: "int",
                 nullable: false,
                 defaultValue: 0);
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "CoinType",
-                table: "Coins");
         }
     }
 }

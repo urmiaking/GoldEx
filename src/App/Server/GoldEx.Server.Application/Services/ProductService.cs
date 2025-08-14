@@ -34,6 +34,7 @@ internal class ProductService(
 
         var data = await repository
             .Get(spec)
+            .AsNoTracking()
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
@@ -55,6 +56,7 @@ internal class ProductService(
 
         var products = await repository
             .Get(new ProductsByNameSpecification(name))
+            .AsNoTracking()
             .Include(x => x.ProductCategory)
             .Include(x => x.WagePriceUnit)
             .GroupBy(x => x.Name)
@@ -67,7 +69,9 @@ internal class ProductService(
 
     public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))
+        var item = await repository
+            .Get(new ProductsByIdSpecification(new ProductId(id)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetProductResponse>(item);
@@ -77,10 +81,11 @@ internal class ProductService(
     {
         var item = await repository
             .Get(new ProductsByBarcodeSpecification(barcode))
+            .AsNoTracking()
             .Include(x => x.ProductCategory)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (item is not null && forCalculation is false && item.SellInvoiceProductItem is not null)
+        if (item is not null && forCalculation is false) // TODO: refactor this logic due to sell product nav prop has been deleted
             throw new ValidationException(new List<ValidationFailure>
             {
                 new(nameof(barcode), "این جنس قبلا فروخته شده است", barcode)

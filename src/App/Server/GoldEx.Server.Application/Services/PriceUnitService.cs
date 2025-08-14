@@ -29,6 +29,7 @@ internal class PriceUnitService(
     {
         var item = await repository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(id)))
+            .AsNoTracking()
             .Include(x => x.Price)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
@@ -39,6 +40,7 @@ internal class PriceUnitService(
     {
         var item = await repository
             .Get(new PriceUnitsSetAsDefaultSpecification())
+            .AsNoTracking()
             .Include(x => x.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -49,6 +51,7 @@ internal class PriceUnitService(
     {
         var items = await repository
             .Get(new PriceUnitsDefaultSpecification())
+            .AsNoTracking()
             .Include(x => x.Price)
             .ToListAsync(cancellationToken);
 
@@ -59,6 +62,7 @@ internal class PriceUnitService(
     {
         var items = await repository
             .Get(new PriceUnitsWithoutSpecification())
+            .AsNoTracking()
             .Include(x => x.Price)
             .ToListAsync(cancellationToken);
 
@@ -69,6 +73,7 @@ internal class PriceUnitService(
     {
         var items = await repository
             .Get(new PriceUnitsDefaultSpecification())
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetPriceUnitTitleResponse>>(items);

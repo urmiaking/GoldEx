@@ -2,17 +2,24 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.Invoices;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Products;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -20,21 +27,12 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using GoldEx.Server.Application.Services.Abstractions;
-using GoldEx.Server.Domain.LedgerAccountAggregate;
-using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
-using GoldEx.Shared.Constants;
-using GoldEx.Server.Domain.InvoicePaymentAggregate;
-using GoldEx.Server.Domain.InvoiceProductItemAggregate;
-using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
-using GoldEx.Server.Infrastructure.Specifications.InvoiceProductItems;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
-    IInvoiceProductItemRepository invoiceProductItemRepository,
     IInvoicePaymentRepository invoicePaymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
@@ -44,14 +42,15 @@ internal class InvoiceService(
     ILogger<InvoiceService> logger,
     InvoiceRequestDtoValidator validator) : IInvoiceService
 {
-    public async Task SetAsync(InvoiceRequestDto request, CancellationToken cancellationToken)
+    public async Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted,
-            cancellationToken);
+        await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         {
             try
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+                #region Customer (Create or update customer)
 
                 Guid customerId;
 
@@ -65,8 +64,12 @@ internal class InvoiceService(
                     customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
                 }
 
+                #endregion
+
+                #region LedgerAccount (Create ledger account if not exists)
+
                 var parentAccountTitle = request.InvoiceType == InvoiceType.Sell
-                    ? SystemLedgerAccounts.AccountsReceivable 
+                    ? SystemLedgerAccounts.AccountsReceivable
                     : SystemLedgerAccounts.AccountsPayable;
 
                 var parentLedgerAccount = await ledgerAccountRepository
@@ -83,125 +86,51 @@ internal class InvoiceService(
                     var customer = await customerService.GetAsync(customerId, cancellationToken)
                                    ?? throw new NotFoundException("Customer not found after creation.");
 
-                    var ledgerAccountType = parentLedgerAccount.AccountType;
-                    
                     var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
                     var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
                         ledgerAccountTitle,
                         new CustomerId(customer.Id),
-                        ledgerAccountType,
+                        parentLedgerAccount.AccountType,
                         parentLedgerAccount.Id);
 
                     await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
                 }
 
-                Invoice invoice;
-                var isNewInvoice = !request.Id.HasValue;
+                #endregion
 
-                if (isNewInvoice)
-                {
-                    invoice = Invoice.Create(request.InvoiceNumber,
-                        request.UnpaidAmountExchangeRate,
-                        request.ExchangeRate,
-                        request.InvoiceType,
-                        new CustomerId(customerId),
-                        new PriceUnitId(request.PriceUnitId),
-                        request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
-                        DateOnly.FromDateTime(request.InvoiceDate),
-                        request.DueDate.HasValue
-                            ? DateOnly.FromDateTime(request.DueDate.Value)
-                            : null);
+                #region Invoice (Create new invoice instance and populating owned entities)    
 
-                    await invoiceRepository.CreateAsync(invoice, cancellationToken);
-                }
-                else
-                {
-                    invoice = await invoiceRepository.Get(new InvoicesByIdSpecification(new InvoiceId(request.Id!.Value)))
-                        .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-                    invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
-                    invoice.SetCustomerId(new CustomerId(customerId));
-                    invoice.SetInvoiceDate(DateOnly.FromDateTime(request.InvoiceDate));
-                    invoice.SetDueDate(request.DueDate.HasValue ? DateOnly.FromDateTime(request.DueDate.Value) : null);
-                    invoice.SetInvoiceNumber(request.InvoiceNumber);
-                    invoice.SetExchangeRate(request.ExchangeRate);
-                    invoice.SetUnpaidAmountExchangeRate(request.UnpaidAmountExchangeRate);
-                    invoice.SetUnpaidPriceUnitId(request.UnpaidPriceUnitId.HasValue 
-                        ? new PriceUnitId(request.UnpaidPriceUnitId.Value) 
+                var invoice = Invoice.Create(request.InvoiceNumber,
+                    request.UnpaidAmountExchangeRate,
+                    request.ExchangeRate,
+                    request.InvoiceType,
+                    new CustomerId(customerId),
+                    new PriceUnitId(request.PriceUnitId),
+                    request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
+                    DateOnly.FromDateTime(request.InvoiceDate),
+                    request.DueDate.HasValue
+                        ? DateOnly.FromDateTime(request.DueDate.Value)
                         : null);
-                }
-
-                invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
-                    InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
                 invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
                     InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
-                var existingPayments = request.Id.HasValue
-                    ? await invoicePaymentRepository.Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
-                        .ToListAsync(cancellationToken)
-                    : [];
+                invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
+                    InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
-                var paymentDtos = request.InvoicePayments.ToList();
+                invoice.SetCoinItems(request.InvoiceCoinItems.Select(x =>
+                    InvoiceCoinItem.Create(new CoinId(x.CoinId), x.UnitPrice, x.Quantity, x.ProfitPercent)));
 
-                var paymentsToDelete = existingPayments
-                    .Where(ep => paymentDtos.All(dto => dto.Id != ep.Id.Value))
-                    .ToList();
+                invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
+                    InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
 
-                if (paymentsToDelete.Any()) 
-                    await invoicePaymentRepository.DeleteRangeAsync(paymentsToDelete, cancellationToken);
+                #endregion
 
-                var paymentsToCreate = paymentDtos
-                    .Where(dto => !dto.Id.HasValue)
-                    .Select(dto => InvoicePayment.Create(
-                        dto.PaymentDate,
-                        dto.Amount,
-                        dto.ExchangeRate,
-                        invoice.Id, 
-                        new PriceUnitId(dto.PriceUnitId),
-                        dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null,
-                        dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null,
-                        dto.ReferenceNumber,
-                        dto.Note))
-                    .ToList();
-
-                if (paymentsToCreate.Any()) 
-                    await invoicePaymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
-
-                var paymentsToUpdate = new List<InvoicePayment>();
-                var paymentsToUpdateDtos = paymentDtos.Where(dto => dto.Id.HasValue);
-
-                foreach (var dto in paymentsToUpdateDtos)
-                {
-                    var existingPayment = existingPayments.FirstOrDefault(p => p.Id.Value == dto.Id!.Value)
-                        ?? throw new NotFoundException("InvoicePayment not found for update.");
-
-                    existingPayment.SetPaymentDate(dto.PaymentDate);
-                    existingPayment.SetAmount(dto.Amount, new PriceUnitId(dto.PriceUnitId));
-                    existingPayment.SetSourceFinancialAccountId(dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null);
-                    existingPayment.SetPaymentVoucherId(dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null);
-                    existingPayment.SetReferenceNumber(dto.ReferenceNumber);
-                    existingPayment.SetNote(dto.Note);
-
-                    paymentsToUpdate.Add(existingPayment);
-                }
-
-                if (paymentsToUpdate.Any())
-                {
-                    await invoicePaymentRepository.UpdateRangeAsync(paymentsToUpdate, cancellationToken);
-                }
-
-                if (!isNewInvoice) 
-                    await invoiceRepository.UpdateAsync(invoice, cancellationToken);
-
-                var existingProductItems = request.Id.HasValue
-                    ? await invoiceProductItemRepository.Get(new InvoiceProductItemsByInvoiceIdSpecification(invoice.Id))
-                        .ToListAsync(cancellationToken) 
-                    : [];
+                #region Product (Create or update products)
 
                 foreach (var itemDto in request.InvoiceProductItems)
                 {
-                    Product product;
+                    ProductId productId;
 
                     if (!itemDto.Product.Id.HasValue)
                     {
@@ -220,9 +149,9 @@ internal class InvoiceService(
                                 ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
                                 : null);
 
-                        await productRepository.CreateAsync(newProduct, cancellationToken);
+                        productId = newProduct.Id;
 
-                        product = newProduct;
+                        await productRepository.CreateAsync(newProduct, cancellationToken);
                     }
                     else
                     {
@@ -259,54 +188,239 @@ internal class InvoiceService(
                         else
                             existingProduct.ClearGemStones();
 
-                        await productRepository.UpdateAsync(existingProduct, cancellationToken);
+                        productId = existingProduct.Id;
 
-                        product = existingProduct;
+                        await productRepository.UpdateAsync(existingProduct, cancellationToken);
                     }
 
-                    var existingItem = request.InvoiceType == InvoiceType.Sell
-                        ? existingProductItems.FirstOrDefault(x => x.SellProductId == product.Id)
-                        : existingProductItems.FirstOrDefault(x => x.PurchaseProductId == product.Id);
+                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice, itemDto.ProfitPercent, itemDto.TaxPercent, productId));
+                }
 
-                    if (existingItem != null)
+                #endregion
+
+                await invoiceRepository.CreateAsync(invoice, cancellationToken);
+
+                #region InvoicePayments (Create invoice payments)
+
+                var paymentsToCreate = request.InvoicePayments
+                    .Select(dto => InvoicePayment.Create(
+                        dto.PaymentDate,
+                        dto.Amount,
+                        dto.ExchangeRate,
+                        invoice.Id,
+                        new PriceUnitId(dto.PriceUnitId),
+                        dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null,
+                        dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null,
+                        dto.ReferenceNumber,
+                        dto.Note))
+                    .ToList();
+
+                if (paymentsToCreate.Any())
+                    await invoicePaymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
+
+                #endregion
+
+                await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
+    }
+
+    public async Task UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    {
+        await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                #region Customer (Create or update customer)
+
+                Guid customerId;
+
+                if (request.Customer.Id.HasValue)
+                {
+                    await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
+                    customerId = request.Customer.Id.Value;
+                }
+                else
+                {
+                    customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
+                }
+
+                #endregion
+
+                #region LedgerAccount (Create ledger account if not exists)
+
+                var parentAccountTitle = request.InvoiceType == InvoiceType.Sell
+                    ? SystemLedgerAccounts.AccountsReceivable
+                    : SystemLedgerAccounts.AccountsPayable;
+
+                var parentLedgerAccount = await ledgerAccountRepository
+                                              .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
+                                              .FirstOrDefaultAsync(cancellationToken)
+                                          ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
+
+                var existingLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByCustomerAndParentSpecification(new CustomerId(customerId), parentLedgerAccount.Id))
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (existingLedgerAccount is null)
+                {
+                    var customer = await customerService.GetAsync(customerId, cancellationToken)
+                                   ?? throw new NotFoundException("Customer not found after creation.");
+
+                    var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
+                    var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
+                        ledgerAccountTitle,
+                        new CustomerId(customer.Id),
+                        parentLedgerAccount.AccountType,
+                        parentLedgerAccount.Id);
+
+                    await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+                }
+
+                #endregion
+
+                #region Invoice (Update existing invoice)
+
+                var invoice = await invoiceRepository
+                    .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+                    .Include(x => x.InvoicePayments)
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
+                invoice.SetCustomerId(new CustomerId(customerId));
+                invoice.SetInvoiceDate(DateOnly.FromDateTime(request.InvoiceDate));
+                invoice.SetDueDate(request.DueDate.HasValue ? DateOnly.FromDateTime(request.DueDate.Value) : null);
+                invoice.SetInvoiceNumber(request.InvoiceNumber);
+                invoice.SetExchangeRate(request.ExchangeRate);
+                invoice.SetUnpaidAmountExchangeRate(request.UnpaidAmountExchangeRate);
+                invoice.SetUnpaidPriceUnitId(request.UnpaidPriceUnitId.HasValue
+                    ? new PriceUnitId(request.UnpaidPriceUnitId.Value)
+                    : null);
+
+                invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
+                    InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
+
+                invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
+                    InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
+
+                invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
+                    InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
+
+                #endregion
+
+                #region Product (Create or update products)
+
+                invoice.ClearProductItems();
+
+                foreach (var itemDto in request.InvoiceProductItems)
+                {
+                    ProductId productId;
+
+                    if (!itemDto.Product.Id.HasValue)
                     {
-                        existingItem.SetGramPrice(itemDto.GramPrice);
-                        existingItem.SetQuantity(itemDto.Quantity);
-                        existingItem.SetProfitPercent(itemDto.ProfitPercent);
-                        existingItem.SetTaxPercent(itemDto.TaxPercent);
-                        existingItem.SetExchangeRate(itemDto.ExchangeRate);
-                        existingItem.SetPriceUnitId(new PriceUnitId(itemDto.PriceUnit));
+                        var newProduct = Product.Create(itemDto.Product.Name,
+                            itemDto.Product.Barcode,
+                            itemDto.Product.Weight,
+                            itemDto.Product.Wage,
+                            itemDto.Product.ProductType,
+                            itemDto.Product.CaratType,
+                            itemDto.Product.GoldUnitType,
+                            itemDto.Product.WageType,
+                            itemDto.Product.WagePriceUnitId.HasValue
+                                ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
+                                : null,
+                            itemDto.Product.ProductCategoryId.HasValue
+                                ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
+                                : null);
 
-                        existingItem.RecalculateAmounts(product);
+                        productId = newProduct.Id;
 
-                        await invoiceProductItemRepository.UpdateAsync(existingItem, cancellationToken);
-                        existingProductItems.Remove(existingItem);
+                        await productRepository.CreateAsync(newProduct, cancellationToken);
                     }
                     else
                     {
-                        var invoiceProductItem = InvoiceProductItem.Create(
-                            itemDto.GramPrice,
-                            itemDto.ProfitPercent,
-                            itemDto.TaxPercent,
-                            itemDto.Quantity,
-                            product.Id,
-                            request.InvoiceType,
-                            new PriceUnitId(itemDto.PriceUnit),
-                            invoice.Id,
-                            itemDto.ExchangeRate);
+                        var existingProduct = await productRepository
+                            .Get(new ProductsByIdSpecification(new ProductId(itemDto.Product.Id.Value)))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                        invoiceProductItem.RecalculateAmounts(product);
+                        existingProduct.SetName(itemDto.Product.Name);
+                        existingProduct.SetBarcode(itemDto.Product.Barcode);
+                        existingProduct.SetWeight(itemDto.Product.Weight);
+                        existingProduct.SetCaratType(itemDto.Product.CaratType);
+                        existingProduct.SetGoldUnitType(itemDto.Product.GoldUnitType);
+                        existingProduct.SetProductType(itemDto.Product.ProductType);
+                        existingProduct.SetWage(itemDto.Product.Wage);
+                        existingProduct.SetWageType(itemDto.Product.WageType);
+                        existingProduct.SetProductCategory(
+                            itemDto.Product.ProductCategoryId.HasValue
+                                ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
+                                : null);
+                        existingProduct.SetWagePriceUnitId(
+                            itemDto.Product.WagePriceUnitId.HasValue
+                                ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
+                                : null);
+                        if (itemDto.Product.ProductType == ProductType.Jewelry)
+                        {
+                            existingProduct.SetGemStones(itemDto.Product.GemStones?.Select(s => GemStone.Create(s.Code,
+                                s.Type,
+                                s.Color,
+                                s.Cut,
+                                s.Carat,
+                                s.Purity,
+                                existingProduct.Id)));
+                        }
+                        else
+                            existingProduct.ClearGemStones();
 
-                        await invoiceProductItemRepository.CreateAsync(invoiceProductItem, cancellationToken);
+                        productId = existingProduct.Id;
+
+                        await productRepository.UpdateAsync(existingProduct, cancellationToken);
                     }
+
+                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice, itemDto.ProfitPercent, itemDto.TaxPercent, productId));
                 }
 
-                foreach (var itemToDelete in existingProductItems)
-                {
-                    await invoiceProductItemRepository.DeleteAsync(itemToDelete, cancellationToken);
-                }
+                #endregion
 
-                await transactionService.CreateTransactionsForInvoiceAsync(invoice, cancellationToken);
+                await invoiceRepository.UpdateAsync(invoice, cancellationToken);
+
+                #region InvoicePayments (Update invoice payments)
+
+                await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
+
+                var existingPayments = await invoicePaymentRepository
+                    .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
+                    .ToListAsync(cancellationToken);
+
+                await invoicePaymentRepository.DeleteRangeAsync(existingPayments, cancellationToken);
+
+                var paymentsToCreate = request.InvoicePayments
+                    .Select(dto => InvoicePayment.Create(
+                        dto.PaymentDate,
+                        dto.Amount,
+                        dto.ExchangeRate,
+                        invoice.Id,
+                        new PriceUnitId(dto.PriceUnitId),
+                        dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null,
+                        dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null,
+                        dto.ReferenceNumber,
+                        dto.Note))
+                    .ToList();
+
+                if (paymentsToCreate.Any())
+                    await invoicePaymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
+
+                #endregion
+
+                await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }
@@ -333,8 +447,9 @@ internal class InvoiceService(
 
         var data = await invoiceRepository
             .Get(spec)
+            .AsNoTracking()
             .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SellProduct)
+                .ThenInclude(x => x.Product)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
@@ -353,20 +468,26 @@ internal class InvoiceService(
     {
         var item = await invoiceRepository
             .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+            .AsNoTracking()
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.PriceUnit)
             .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SellProduct)
-                    .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.PurchaseProduct)
+                .ThenInclude(x => x.Product)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.Coin)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.Currency)
+            .Include(x => x.Discounts)
+                .ThenInclude(x => x.PriceUnit)
+            .Include(x => x.ExtraCosts)
+                .ThenInclude(x => x.PriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
@@ -378,20 +499,26 @@ internal class InvoiceService(
     {
         var item = await invoiceRepository
             .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
+            .AsNoTracking()
             .Include(x => x.Customer!)
-                .ThenInclude(x => x.CreditLimitPriceUnit)
+                .ThenInclude(x => x.CreditLimitPriceUnit!)
             .Include(x => x.PriceUnit)
             .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SellProduct)
-                    .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.PurchaseProduct)
+                .ThenInclude(x => x.Product)
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.Coin)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.Currency)
+            .Include(x => x.Discounts)
+                .ThenInclude(x => x.PriceUnit)
+            .Include(x => x.ExtraCosts)
+                .ThenInclude(x => x.PriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
@@ -407,15 +534,15 @@ internal class InvoiceService(
                 var item = await invoiceRepository
                     .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
                     .Include(x => x.ProductItems)
-                        .ThenInclude(x => x.SellProduct)
+                        .ThenInclude(x => x.Product)
                     .AsSplitQuery()
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                var products = item.ProductItems.Select(x => x.SellProduct!).ToList();
+                var products = item.ProductItems.Select(x => x.Product!).ToList();
 
                 await invoiceRepository.DeleteAsync(item, cancellationToken);
 
-                if (deleteProducts) 
+                if (deleteProducts)
                     await productRepository.DeleteRangeAsync(products, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);

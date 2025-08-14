@@ -40,6 +40,158 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.OwnsMany(x => x.Discounts, Configure);
         builder.OwnsMany(x => x.ExtraCosts, Configure);
+        builder.OwnsMany(x => x.ProductItems, Configure);
+        builder.OwnsMany(x => x.CoinItems, Configure);
+        builder.OwnsMany(x => x.CurrencyItems, Configure);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceCurrencyItem> builder)
+    {
+        builder.ToTable("InvoiceCurrencyItems");
+
+        builder.WithOwner(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId);
+
+        builder.HasKey(x => new { x.Id, x.InvoiceId });
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new InvoiceCurrencyItemId(value));
+
+        builder.Property(x => x.TaxPercent)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property(x => x.ProfitPercent)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property(x => x.ItemRawAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemProfitAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemTaxAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemFinalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.TotalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.UnitPrice)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.Amount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceCoinItem> builder)
+    {
+        builder.ToTable("InvoiceCoinItems");
+
+        builder.WithOwner(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId);
+
+        builder.HasKey(x => new { x.Id, x.InvoiceId });
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new InvoiceCoinItemId(value));
+
+        builder.Property(x => x.ProfitPercent)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property(x => x.ItemRawAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemProfitAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemFinalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.TotalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.UnitPrice)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.HasOne(x => x.Coin)
+            .WithMany()
+            .HasForeignKey(x => x.CoinId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceProductItem> builder)
+    {
+        builder.ToTable("InvoiceProductItems");
+
+        builder.WithOwner(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId);
+
+        builder.HasKey(x => new { x.Id, x.InvoiceId });
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new InvoiceProductItemId(value));
+
+        builder.Property(x => x.GramPrice)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.TaxPercent)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property(x => x.ProfitPercent)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property(x => x.ItemRawAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemWageAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemProfitAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemTaxAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemFinalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.HasOne(x => x.Product)
+            .WithMany()
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceExtraCost> builder)

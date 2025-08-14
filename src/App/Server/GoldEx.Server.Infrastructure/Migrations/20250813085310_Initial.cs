@@ -102,6 +102,28 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Coins",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CoinType = table.Column<int>(type: "int", nullable: false),
+                    PriceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Coins", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Coins_Prices_PriceId",
+                        column: x => x.PriceId,
+                        principalTable: "Prices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PriceHistories",
                 columns: table => new
                 {
@@ -403,6 +425,74 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InvoiceCoinItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CoinId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    ProfitPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
+                    ItemRawAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemProfitAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemFinalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceCoinItems", x => new { x.Id, x.InvoiceId });
+                    table.ForeignKey(
+                        name: "FK_InvoiceCoinItems_Coins_CoinId",
+                        column: x => x.CoinId,
+                        principalTable: "Coins",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_InvoiceCoinItems_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InvoiceCurrencyItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CurrencyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ProfitPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
+                    TaxPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
+                    ItemRawAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemProfitAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemFinalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    ItemTaxAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceCurrencyItems", x => new { x.Id, x.InvoiceId });
+                    table.ForeignKey(
+                        name: "FK_InvoiceCurrencyItems_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InvoiceCurrencyItems_PriceUnits_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "PriceUnits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InvoiceDiscounts",
                 columns: table => new
                 {
@@ -463,51 +553,34 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InvoiceItems",
+                name: "InvoiceProductItems",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProfitPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
                     TaxPercent = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: false),
                     GramPrice = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
-                    ExchangeRate = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: true),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    PriceUnitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SellProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    PurchaseProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ItemRawAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     ItemWageAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     ItemProfitAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     ItemTaxAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     ItemFinalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(36,10)", precision: 36, scale: 10, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InvoiceItems", x => x.Id);
+                    table.PrimaryKey("PK_InvoiceProductItems", x => new { x.Id, x.InvoiceId });
                     table.ForeignKey(
-                        name: "FK_InvoiceItems_Invoices_InvoiceId",
+                        name: "FK_InvoiceProductItems_Invoices_InvoiceId",
                         column: x => x.InvoiceId,
                         principalTable: "Invoices",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_InvoiceItems_PriceUnits_PriceUnitId",
-                        column: x => x.PriceUnitId,
-                        principalTable: "PriceUnits",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_InvoiceItems_Products_PurchaseProductId",
-                        column: x => x.PurchaseProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_InvoiceItems_Products_SellProductId",
-                        column: x => x.SellProductId,
+                        name: "FK_InvoiceProductItems_Products_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -708,6 +781,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Coins_PriceId",
+                table: "Coins",
+                column: "PriceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Customers_CreditLimitPriceUnitId",
                 table: "Customers",
                 column: "CreditLimitPriceUnitId");
@@ -744,6 +822,26 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvoiceCoinItems_CoinId",
+                table: "InvoiceCoinItems",
+                column: "CoinId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceCoinItems_InvoiceId",
+                table: "InvoiceCoinItems",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceCurrencyItems_CurrencyId",
+                table: "InvoiceCurrencyItems",
+                column: "CurrencyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceCurrencyItems_InvoiceId",
+                table: "InvoiceCurrencyItems",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InvoiceDiscounts_PriceUnitId",
                 table: "InvoiceDiscounts",
                 column: "PriceUnitId");
@@ -752,30 +850,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "IX_InvoiceExtraCosts_PriceUnitId",
                 table: "InvoiceExtraCosts",
                 column: "PriceUnitId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InvoiceItems_InvoiceId",
-                table: "InvoiceItems",
-                column: "InvoiceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InvoiceItems_PriceUnitId",
-                table: "InvoiceItems",
-                column: "PriceUnitId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InvoiceItems_PurchaseProductId",
-                table: "InvoiceItems",
-                column: "PurchaseProductId",
-                unique: true,
-                filter: "[PurchaseProductId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InvoiceItems_SellProductId",
-                table: "InvoiceItems",
-                column: "SellProductId",
-                unique: true,
-                filter: "[SellProductId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InvoicePayments_InvoiceId",
@@ -798,6 +872,16 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "IX_InvoicePayments_SourceFinancialAccountId",
                 table: "InvoicePayments",
                 column: "SourceFinancialAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceProductItems_InvoiceId",
+                table: "InvoiceProductItems",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceProductItems_ProductId",
+                table: "InvoiceProductItems",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_CustomerId",
@@ -973,13 +1057,19 @@ namespace GoldEx.Server.Infrastructure.Migrations
                 name: "GemStones");
 
             migrationBuilder.DropTable(
+                name: "InvoiceCoinItems");
+
+            migrationBuilder.DropTable(
+                name: "InvoiceCurrencyItems");
+
+            migrationBuilder.DropTable(
                 name: "InvoiceDiscounts");
 
             migrationBuilder.DropTable(
                 name: "InvoiceExtraCosts");
 
             migrationBuilder.DropTable(
-                name: "InvoiceItems");
+                name: "InvoiceProductItems");
 
             migrationBuilder.DropTable(
                 name: "PriceHistories");
@@ -1004,6 +1094,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Coins");
 
             migrationBuilder.DropTable(
                 name: "Products");

@@ -11,7 +11,5 @@ public class CoinsByStatusSpecification : SpecificationBase<Coin>
         {
             AddCriteria(x => x.IsActive == isActive.Value);
         }
-
-        ApplyOrderBy(x => x.CoinType);
     }
 }

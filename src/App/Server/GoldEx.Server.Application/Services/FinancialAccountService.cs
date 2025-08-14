@@ -10,7 +10,6 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
-using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -31,6 +30,7 @@ internal class FinancialAccountService(
     {
         var list = await repository
             .Get(new FinancialAccountsDefaultSpecification(true))
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetFinancialAccountResponse>>(list);
@@ -46,6 +46,7 @@ internal class FinancialAccountService(
 
         var list = await repository
             .Get(specification)
+            .AsNoTracking()
             .Include(x => x.PriceUnit)
             .ToListAsync(cancellationToken);
 
@@ -56,6 +57,7 @@ internal class FinancialAccountService(
     {
         var item = await repository
             .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(id)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetFinancialAccountResponse>(item);
