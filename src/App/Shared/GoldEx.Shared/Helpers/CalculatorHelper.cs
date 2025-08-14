@@ -151,14 +151,14 @@ public class CalculatorHelper
 
     public static class Currency
     {
-        public static decimal CalculateProfit(decimal unitPrice, decimal profitPercent)
+        public static decimal CalculateProfit(decimal unitPrice, decimal amount, decimal profitPercent)
         {
-            return unitPrice * (profitPercent / 100m);
+            return unitPrice * amount * (profitPercent / 100m);
         }
 
-        public static decimal CalculateTax(decimal unitPrice, decimal taxPercent)
+        public static decimal CalculateTax(decimal unitPrice, decimal amount, decimal taxPercent)
         {
-            return unitPrice * (taxPercent / 100m);
+            return unitPrice * amount * (taxPercent / 100m);
         }
     }
 }

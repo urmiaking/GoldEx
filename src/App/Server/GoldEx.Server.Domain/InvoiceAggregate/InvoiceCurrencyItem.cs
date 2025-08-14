@@ -19,8 +19,8 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
 
-        var profitAmount = CalculatorHelper.Currency.CalculateProfit(unitPrice, profitPercent);
-        var taxAmount = CalculatorHelper.Currency.CalculateTax(unitPrice, taxPercent);
+        var profitAmount = CalculatorHelper.Currency.CalculateProfit(unitPrice, amount, profitPercent);
+        var taxAmount = CalculatorHelper.Currency.CalculateTax(unitPrice, amount, taxPercent);
         var finalAmount = unitPrice + profitAmount + taxAmount;
         var totalAmount = finalAmount * amount;
 

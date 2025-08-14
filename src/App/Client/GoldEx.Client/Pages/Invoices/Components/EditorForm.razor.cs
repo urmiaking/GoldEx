@@ -342,7 +342,7 @@ public partial class EditorForm
             { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -362,7 +362,7 @@ public partial class EditorForm
             { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
-        var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions);
 
         var result = await dialog.Result;
 
@@ -394,8 +394,7 @@ public partial class EditorForm
     {
         var parameters = new DialogParameters<CurrencyItemEditor>
         {
-            //{ x => x.Model, model },
-            //{ x => x.PriceUnits, _priceUnits }
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
         var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("افزودن ارز جدید", parameters, _dialogOptions);
@@ -405,7 +404,7 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: CurrencyItemVm currencyItem })
         {
             currencyItem.RecalculateAmounts();
-            _model.CurrencyItems.Add(currencyItem);
+            _model.AddCurrencyItem(currencyItem);
             StateHasChanged();
         }
     }
@@ -414,14 +413,14 @@ public partial class EditorForm
     {
         var parameters = new DialogParameters<CurrencyItemEditor>
         {
-            //{ x => x.Model, currencyItemVm },
-            //{ x => x.PriceUnits, _priceUnits }
+            { x => x.Model, currencyItemVm },
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
         var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("ویرایش ارز", parameters, _dialogOptions);
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: CurrencyItemVm resultItem })
         {
-            _model.AddCurrencyItem(resultItem);
+            currencyItemVm.UpdateFrom(resultItem);
             StateHasChanged();
         }
     }
