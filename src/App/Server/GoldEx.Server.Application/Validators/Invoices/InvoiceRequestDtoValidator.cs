@@ -50,9 +50,9 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")
             .SetValidator(customerValidator);
 
-        RuleFor(x => x.InvoiceProductItems)
-            
-            .NotEmpty().WithMessage("فاکتور باید حداقل دارای یک آیتم باشد");
+        RuleFor(x => x)
+            .Must(x => x.InvoiceCoinItems.Any() || x.InvoiceCurrencyItems.Any() || x.InvoiceProductItems.Any())
+            .WithMessage("حداقل یکی از آیتم های فاکتور باید شامل جنس، ارز یا سکه باشد");
 
         RuleFor(x => x.PriceUnitId)
             .MustAsync(BeValidPriceUnit)
