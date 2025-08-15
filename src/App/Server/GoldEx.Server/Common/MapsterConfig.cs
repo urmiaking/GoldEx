@@ -14,6 +14,7 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Customers;
@@ -255,10 +256,20 @@ public class MapsterConfig : IRegister
                 src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
                     ? src.DestinationFinancialAccount.Customer.FullName
                     : string.Empty)
-            .Map(dest => dest.SupplierPhoneNumber, src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
+            .Map(dest => dest.SupplierPhoneNumber,
+                src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
                 ? src.DestinationFinancialAccount.Customer.PhoneNumber
                 : string.Empty)
-            .Map(dest => dest.FinancialAccountType, src => src.SourceFinancialAccount != null ? src.SourceFinancialAccount.AccountType : FinancialAccountType.Cash);
+            .Map(dest => dest.FinancialAccountType,
+                src => src.SourceFinancialAccount != null
+                    ? src.SourceFinancialAccount.AccountType
+                    : FinancialAccountType.Cash)
+            .Map(dest => dest.InvoiceId,
+                src => MapContext.Current.GetService<IInvoiceRepository>()
+                    .Get(new InvoicesByVoucherIdSpecification(src.Id))
+                    .FirstOrDefault() != null ? MapContext.Current.GetService<IInvoiceRepository>()
+                    .Get(new InvoicesByVoucherIdSpecification(src.Id))
+                    .First().Id.Value : (Guid?) null);
 
         config.NewConfig<PaymentVoucher, GetPaymentVoucherResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)

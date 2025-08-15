@@ -2,7 +2,6 @@
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.CustomerAggregate;
-using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 

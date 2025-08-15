@@ -1,6 +1,4 @@
-﻿@using GoldEx.Client.Helpers
-@using GoldEx.Client.Pages.Invoices.ViewModels
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
 <MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
@@ -62,7 +60,7 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره فاکتور</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">نام مشتری</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
         <MudTh>ارزش کل</MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceDate" T="InvoiceListVm">تاریخ فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="DueDate" T="InvoiceListVm">تاریخ سررسید</MudTableSortLabel></MudTh>
@@ -71,7 +69,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
-        <MudTd DataLabel="نام مشتری">@context.CustomerFullName</MudTd>
+        <MudTd DataLabel="طرف حساب">@context.CustomerFullName</MudTd>
         <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.AmountUnit)</MudTd>
         <MudTd DataLabel="تاریخ فاکتور">@context.InvoiceDate.ToShortDateString()</MudTd>
         <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
