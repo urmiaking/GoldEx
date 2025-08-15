@@ -1,7 +1,9 @@
 ﻿using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -146,5 +148,10 @@ public partial class PaymentVouchersList
                 action: (s, ct) => s.DeleteAsync(model.Id, ct),
                 afterSend: RefreshAsync);
         }
+    }
+
+    private void OnViewInvoice(PaymentVoucherListVm context)
+    {
+        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = context.InvoiceId }));
     }
 }

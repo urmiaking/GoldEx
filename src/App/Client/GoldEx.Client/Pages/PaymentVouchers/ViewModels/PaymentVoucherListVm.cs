@@ -38,6 +38,8 @@ public class PaymentVoucherListVm
     [Display(Name = "نوع سند")]
     public PaymentVoucherType VoucherType { get; set; }
 
+    public Guid? InvoiceId { get; set; }
+
     public static PaymentVoucherListVm CreateFrom(GetPaymentVoucherListResponse response)
     {
         return new PaymentVoucherListVm
@@ -52,7 +54,8 @@ public class PaymentVoucherListVm
             SupplierName = response.SupplierName,
             SupplierPhoneNumber = response.SupplierPhoneNumber,
             FinancialAccountType = response.FinancialAccountType,
-            VoucherType = response.VoucherType
+            VoucherType = response.VoucherType,
+            InvoiceId = response.InvoiceId
         };
     }
 }

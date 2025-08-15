@@ -13,4 +13,5 @@ public record GetPaymentVoucherListResponse(
     PaymentVoucherType VoucherType,
     string? SupplierName,
     string? SupplierPhoneNumber,
-    FinancialAccountType FinancialAccountType);
+    FinancialAccountType FinancialAccountType,
+    Guid? InvoiceId);

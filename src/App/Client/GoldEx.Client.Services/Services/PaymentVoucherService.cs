@@ -6,7 +6,6 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
-using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Services.Services;
 

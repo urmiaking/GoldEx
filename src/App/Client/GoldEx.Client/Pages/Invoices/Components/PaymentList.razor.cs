@@ -44,6 +44,8 @@ public partial class PaymentList
         if (!_financialAccounts.Any()) 
             await LoadFinancialAccountsAsync();
 
+        SynchronizeFinancialAccounts();
+
         await base.OnParametersSetAsync();
     }
 
@@ -64,17 +66,26 @@ public partial class PaymentList
         base.OnInitialized();
     }
 
+    private void SynchronizeFinancialAccounts()
+    {
+        if (!_financialAccounts.Any()) return;
+
+        foreach (var item in Items.Where(i => i.FinancialAccount != null))
+        {
+            var fullAccount = _financialAccounts.FirstOrDefault(acc => acc.Id == item.FinancialAccount?.Id);
+
+            if (fullAccount != null) 
+                item.FinancialAccount = fullAccount;
+        }
+
+        StateHasChanged();
+    }
+
     private async Task LoadFinancialAccountsAsync()
     {
         await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(null, PriceUnit.Id, ct),
-            afterSend: response =>
-            {
-                _financialAccounts = response;
-                Items.First().FinancialAccount = _financialAccounts.FirstOrDefault();
-
-                StateHasChanged();
-            });
+            afterSend: response => _financialAccounts = response);
     }
 
     private void AddItem()
