@@ -195,6 +195,8 @@ internal class PaymentVoucherService(
 
         await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
 
+        await transactionService.ClearTransactionsForPaymentVoucherAsync(item, cancellationToken);
+
         await repository.DeleteAsync(item, cancellationToken);
     }
 

@@ -29,6 +29,11 @@ public class ProductValidator : AbstractValidator<ProductVm>
         RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
 
         RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
+
+        RuleFor(x => x.CategoryVm)
+            .NotEmpty()
+            .When(x => x.ProductType is ProductType.Gold or ProductType.Jewelry)
+            .WithMessage("لطفا دسته بندی را انتخاب کنید");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

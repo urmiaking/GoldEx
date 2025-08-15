@@ -102,7 +102,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     /// totals has been changed.
     /// </summary>
     /// <param name="product">The fully loaded Product entity, required for calculation.</param>
-    public void RecalculateAmounts(Product product)
+    public InvoiceProductItem RecalculateAmounts(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
 
@@ -121,6 +121,19 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             ItemTaxAmount,
             null,
             product.ProductType);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the Product for this invoice item and recalculates all amounts. This method should be called before calling RecalculateAmounts.
+    /// </summary>
+    /// <param name="invoice"></param>
+    /// <returns></returns>
+    public InvoiceProductItem SetInvoice(Invoice invoice)
+    {
+        Invoice = invoice;
+        return this;
     }
 
     #endregion
