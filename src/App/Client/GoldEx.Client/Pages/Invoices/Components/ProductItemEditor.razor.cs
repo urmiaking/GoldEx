@@ -55,7 +55,7 @@ public partial class ProductItemEditor
 
     protected override void OnParametersSet()
     {
-        if (Id is null)
+        if (string.IsNullOrEmpty(Model.Product.Barcode))
             GenerateBarcode();
 
         if (!Model.Product.WagePriceUnitId.HasValue && Model.Product.WageType is WageType.Fixed)

@@ -302,7 +302,8 @@ public partial class EditorForm
         var parameters = new DialogParameters<ProductItemEditor>
         {
             { x => x.Model, productItemVm },
-            { x => x.PriceUnits, _priceUnits }
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
         };
 
         var dialog = await DialogService.ShowAsync<ProductItemEditor>("ویرایش جنس", parameters, _dialogOptions);

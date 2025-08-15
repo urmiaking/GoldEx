@@ -24,7 +24,7 @@ internal class AccountingTransactionService(
     IFinancialAccountRepository financialAccountRepository,
     ILedgerAccountRepository ledgerAccountRepository) : IAccountingTransactionService
 {
-    public async Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken)
+    public async Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
         await repository.RemoveByInvoiceIdAsync(invoice.Id, cancellationToken);
         await repository.RemoveByInvoicePaymentIdsAsync(invoice.InvoicePayments?.Select(x => x.Id).ToList(), cancellationToken);
@@ -347,7 +347,7 @@ internal class AccountingTransactionService(
         await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 
-    public async Task CreateTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken)
+    public async Task CreateTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default)
     {
         await repository.RemoveByPaymentVoucherIdAsync(voucher.Id, cancellationToken);
 
@@ -416,7 +416,12 @@ internal class AccountingTransactionService(
         await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 
-    public async Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken)
+    public Task ClearTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default)
+    {
+        return repository.RemoveByPaymentVoucherIdAsync(voucher.Id, cancellationToken);
+    }
+
+    public async Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
         await repository.RemoveByInvoiceIdAsync(invoice.Id, cancellationToken);
         await repository.RemoveByInvoicePaymentIdsAsync(invoice.InvoicePayments?.Select(x => x.Id).ToList(), cancellationToken);

@@ -1,9 +1,8 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using GoldEx.Client.Pages.Products.ViewModels;
+﻿using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Helpers;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 

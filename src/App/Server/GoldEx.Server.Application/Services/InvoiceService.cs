@@ -33,7 +33,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
-    IInvoicePaymentRepository invoicePaymentRepository,
+    IInvoicePaymentRepository paymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
     ICustomerService customerService,
@@ -130,7 +130,7 @@ internal class InvoiceService(
 
                 foreach (var itemDto in request.InvoiceProductItems)
                 {
-                    ProductId productId;
+                    Product? product;
 
                     if (!itemDto.Product.Id.HasValue)
                     {
@@ -149,7 +149,7 @@ internal class InvoiceService(
                                 ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
                                 : null);
 
-                        productId = newProduct.Id;
+                        product = newProduct;
 
                         await productRepository.CreateAsync(newProduct, cancellationToken);
                     }
@@ -188,12 +188,17 @@ internal class InvoiceService(
                         else
                             existingProduct.ClearGemStones();
 
-                        productId = existingProduct.Id;
+                        product = existingProduct;
 
                         await productRepository.UpdateAsync(existingProduct, cancellationToken);
                     }
 
-                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice, itemDto.ProfitPercent, itemDto.TaxPercent, productId));
+                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
+                            itemDto.ProfitPercent,
+                            itemDto.TaxPercent,
+                            product.Id)
+                        .SetInvoice(invoice)
+                        .RecalculateAmounts(product));
                 }
 
                 #endregion
@@ -216,7 +221,7 @@ internal class InvoiceService(
                     .ToList();
 
                 if (paymentsToCreate.Any())
-                    await invoicePaymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
+                    await paymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
 
                 #endregion
 
@@ -311,6 +316,9 @@ internal class InvoiceService(
                 invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
                     InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
+                invoice.SetCoinItems(request.InvoiceCoinItems.Select(x =>
+                    InvoiceCoinItem.Create(new CoinId(x.CoinId), x.UnitPrice, x.Quantity, x.ProfitPercent)));
+
                 invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
                     InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
 
@@ -322,7 +330,7 @@ internal class InvoiceService(
 
                 foreach (var itemDto in request.InvoiceProductItems)
                 {
-                    ProductId productId;
+                    Product product;
 
                     if (!itemDto.Product.Id.HasValue)
                     {
@@ -341,7 +349,7 @@ internal class InvoiceService(
                                 ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
                                 : null);
 
-                        productId = newProduct.Id;
+                        product = newProduct;
 
                         await productRepository.CreateAsync(newProduct, cancellationToken);
                     }
@@ -380,12 +388,17 @@ internal class InvoiceService(
                         else
                             existingProduct.ClearGemStones();
 
-                        productId = existingProduct.Id;
+                        product = existingProduct;
 
                         await productRepository.UpdateAsync(existingProduct, cancellationToken);
                     }
 
-                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice, itemDto.ProfitPercent, itemDto.TaxPercent, productId));
+                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
+                            itemDto.ProfitPercent,
+                            itemDto.TaxPercent,
+                            product.Id)
+                        .SetInvoice(invoice)
+                        .RecalculateAmounts(product));
                 }
 
                 #endregion
@@ -396,11 +409,11 @@ internal class InvoiceService(
 
                 await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
 
-                var existingPayments = await invoicePaymentRepository
+                var existingPayments = await paymentRepository
                     .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
                     .ToListAsync(cancellationToken);
 
-                await invoicePaymentRepository.DeleteRangeAsync(existingPayments, cancellationToken);
+                await paymentRepository.DeleteRangeAsync(existingPayments, cancellationToken);
 
                 var paymentsToCreate = request.InvoicePayments
                     .Select(dto => InvoicePayment.Create(
@@ -416,7 +429,7 @@ internal class InvoiceService(
                     .ToList();
 
                 if (paymentsToCreate.Any())
-                    await invoicePaymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
+                    await paymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
 
                 #endregion
 
@@ -450,6 +463,7 @@ internal class InvoiceService(
             .AsNoTracking()
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
+            .Include(x => x.InvoicePayments)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
@@ -535,15 +549,26 @@ internal class InvoiceService(
                     .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
                     .Include(x => x.ProductItems)
                         .ThenInclude(x => x.Product)
+                    .Include(x => x.InvoicePayments)
                     .AsSplitQuery()
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                var products = item.ProductItems.Select(x => x.Product!).ToList();
+                await transactionService.ClearTransactionsForInvoiceAsync(item, cancellationToken);
+
+                var payments = await paymentRepository
+                    .Get(new InvoicePaymentsByInvoiceIdSpecification(item.Id))
+                    .ToListAsync(cancellationToken);
+
+                if (payments.Any())
+                    await paymentRepository.DeleteRangeAsync(payments, cancellationToken);
 
                 await invoiceRepository.DeleteAsync(item, cancellationToken);
 
                 if (deleteProducts)
+                {
+                    var products = item.ProductItems.Select(x => x.Product!).ToList();
                     await productRepository.DeleteRangeAsync(products, cancellationToken);
+                }
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }
