@@ -27,6 +27,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using Product = GoldEx.Server.Domain.ProductAggregate.Product;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -38,9 +39,11 @@ internal class InvoiceService(
     IProductRepository productRepository,
     ICustomerService customerService,
     IAccountingTransactionService transactionService,
+    IServerInventoryStockService inventoryStockService,
     IMapper mapper,
     ILogger<InvoiceService> logger,
-    InvoiceRequestDtoValidator validator) : IInvoiceService
+    InvoiceRequestDtoValidator validator,
+    DeleteInvoiceValidator deleteValidator) : IInvoiceService
 {
     public async Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
@@ -49,6 +52,13 @@ internal class InvoiceService(
             try
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+                var warehouseActionType = request.InvoiceType switch
+                {
+                    InvoiceType.Purchase => WarehouseActionType.In,
+                    InvoiceType.Sell => WarehouseActionType.Out,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
 
                 #region Customer (Create or update customer)
 
@@ -225,6 +235,8 @@ internal class InvoiceService(
 
                 #endregion
 
+                await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
+
                 await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
@@ -244,6 +256,15 @@ internal class InvoiceService(
         {
             try
             {
+                await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+                var warehouseActionType = request.InvoiceType switch
+                {
+                    InvoiceType.Purchase => WarehouseActionType.In,
+                    InvoiceType.Sell => WarehouseActionType.Out,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
                 #region Customer (Create or update customer)
 
                 Guid customerId;
@@ -433,6 +454,8 @@ internal class InvoiceService(
 
                 #endregion
 
+                await inventoryStockService.UpdateInvoiceInventoryAsync(invoice, cancellationToken);
+
                 await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
@@ -553,7 +576,11 @@ internal class InvoiceService(
                     .AsSplitQuery()
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
+                await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
+
                 await transactionService.ClearTransactionsForInvoiceAsync(item, cancellationToken);
+
+                await inventoryStockService.RemoveInventoryByInvoiceIdAsync(item.Id, null, cancellationToken);
 
                 var payments = await paymentRepository
                     .Get(new InvoicePaymentsByInvoiceIdSpecification(item.Id))
@@ -564,6 +591,7 @@ internal class InvoiceService(
 
                 await invoiceRepository.DeleteAsync(item, cancellationToken);
 
+                // TODO: this logic should be reviewed
                 if (deleteProducts)
                 {
                     var products = item.ProductItems.Select(x => x.Product!).ToList();

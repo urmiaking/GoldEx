@@ -32,7 +32,6 @@ public partial class EditorForm
     private GetPriceResponse? _gramPrice;
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private string? _barcode;
     private bool _isCustomerCreditLimitMenuOpen;
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
@@ -210,14 +209,6 @@ public partial class EditorForm
 
     private async Task OnBarcodeChanged(string barcode)
     {
-        _barcode = barcode;
-
-        if (string.IsNullOrWhiteSpace(barcode))
-        {
-            OnBarcodeCleared();
-            return;
-        }
-
         await SendRequestAsync<IProductService, GetProductResponse?>(
             action: async (s, ct) => await s.GetAsync(barcode, false, ct),
             async response =>
@@ -254,14 +245,7 @@ public partial class EditorForm
                         : _setting?.JewelryProfitPercent ?? 20,
                     Index = _model.GetLastProductIndexNumber() + 1
                 });
-
-                OnBarcodeCleared();
             });
-    }
-
-    private void OnBarcodeCleared()
-    {
-        _barcode = null;
     }
 
     #endregion

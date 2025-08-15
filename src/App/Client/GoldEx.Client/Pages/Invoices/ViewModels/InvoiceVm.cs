@@ -219,7 +219,8 @@ public class InvoiceVm
             InvoicePriceUnit = response.PriceUnit,
             UnpaidExchangeRate = response.UnpaidAmountExchangeRate,
             UnpaidPriceUnit = response.UnpaidPriceUnit,
-            ExchangeRate = response.ExchangeRate
+            ExchangeRate = response.ExchangeRate,
+            InvoiceType = response.InvoiceType
         };
     }
 }

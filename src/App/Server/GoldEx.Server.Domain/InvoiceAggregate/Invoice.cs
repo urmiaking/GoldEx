@@ -217,7 +217,7 @@ public class Invoice : EntityBase<InvoiceId>
     public decimal TotalAmount => 
         ProductItems.Sum(item => item.ItemFinalAmount) +
         CoinItems.Sum(item => item.TotalAmount) +
-        CurrencyItems.Sum(item => item.ItemFinalAmount);
+        CurrencyItems.Sum(item => item.TotalAmount);
 
     public decimal TotalWageAmount => 
         ProductItems.Sum(item => item.ItemWageAmount);

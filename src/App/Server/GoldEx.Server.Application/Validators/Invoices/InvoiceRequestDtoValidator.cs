@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Validators.Customers;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -19,15 +20,17 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly IProductRepository _productRepository;
+    private readonly IInventoryStockRepository _inventoryStockRepository;
 
     public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
         IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository,
         IFinancialAccountRepository financialAccountRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository,
-        ICoinRepository coinRepository)
+        ICoinRepository coinRepository, IInventoryStockRepository inventoryStockRepository)
     {
         _priceUnitRepository = priceUnitRepository;
         _productRepository = productRepository;
         _invoiceRepository = invoiceRepository;
+        _inventoryStockRepository = inventoryStockRepository;
 
         RuleFor(x => x.InvoiceNumber)
             .GreaterThan(0)
@@ -58,6 +61,13 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .MustAsync(BeValidPriceUnit)
             .WithMessage("واحد ارزی فاکتور معتبر نمی باشد");
 
+        When(x => x.Id.HasValue, () =>
+        {
+            RuleFor(x => x)
+                .MustAsync(NotResultInNegativeInventory)
+                .WithMessage("موجودی یک یا چند کالا برای انجام این تغییرات کافی نیست.");
+        });
+
         RuleForEach(x => x.InvoicePayments)
             .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository,
                 financialAccountRepository,
@@ -83,6 +93,89 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         RuleForEach(x => x.InvoiceCurrencyItems)
             .SetValidator(new InvoiceCurrencyItemDtoValidator(priceUnitRepository));
+    }
+
+    private async Task<bool> NotResultInNegativeInventory(InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    {
+        if (!request.Id.HasValue)
+            return true;
+
+        var originalInvoice = await _invoiceRepository
+            .Get(new InvoicesByIdSpecification(new InvoiceId(request.Id.Value)))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (originalInvoice is null)
+            return true;
+
+        var productChanges = new Dictionary<ProductId, decimal>();
+        var coinChanges = new Dictionary<CoinId, decimal>();
+        var currencyChanges = new Dictionary<PriceUnitId, decimal>();
+
+        foreach (var oldItem in originalInvoice.ProductItems)
+        {
+            productChanges[oldItem.ProductId] = productChanges.GetValueOrDefault(oldItem.ProductId, 0m) - 1;
+        }
+        foreach (var oldItem in originalInvoice.CoinItems)
+        {
+            coinChanges[oldItem.CoinId] = coinChanges.GetValueOrDefault(oldItem.CoinId, 0m) - oldItem.Quantity;
+        }
+        foreach (var oldItem in originalInvoice.CurrencyItems)
+        {
+            currencyChanges[oldItem.CurrencyId] = currencyChanges.GetValueOrDefault(oldItem.CurrencyId, 0m) - oldItem.Amount;
+        }
+
+        foreach (var newItem in request.InvoiceProductItems)
+        {
+            var productId = new ProductId(newItem.Product.Id!.Value);
+            productChanges[productId] = productChanges.GetValueOrDefault(productId, 0m) + 1;
+        }
+        foreach (var newItem in request.InvoiceCoinItems)
+        {
+            var coinId = new CoinId(newItem.CoinId);
+            coinChanges[coinId] = coinChanges.GetValueOrDefault(coinId, 0m) + newItem.Quantity;
+        }
+        foreach (var newItem in request.InvoiceCurrencyItems)
+        {
+            var currencyId = new PriceUnitId(newItem.CurrencyId);
+            currencyChanges[currencyId] = currencyChanges.GetValueOrDefault(currencyId, 0m) + newItem.Amount;
+        }
+
+        var allProductIds = productChanges.Keys.ToList();
+        var allCoinIds = coinChanges.Keys.ToList();
+        var allCurrencyIds = currencyChanges.Keys.ToList();
+
+        var productQuantities = await _inventoryStockRepository.GetQuantitiesAsync(allProductIds, cancellationToken);
+        var coinQuantities = await _inventoryStockRepository.GetQuantitiesAsync(allCoinIds, cancellationToken);
+        var currencyQuantities = await _inventoryStockRepository.GetQuantitiesAsync(allCurrencyIds, cancellationToken);
+
+        foreach (var (productId, netChange) in productChanges)
+        {
+            var currentStock = productQuantities.GetValueOrDefault(productId, 0m);
+            if (currentStock + netChange < 0)
+            {
+                return false;
+            }
+        }
+
+        foreach (var (coinId, netChange) in coinChanges)
+        {
+            var currentStock = coinQuantities.GetValueOrDefault(coinId, 0m);
+            if (currentStock + netChange < 0)
+            {
+                return false;
+            }
+        }
+
+        foreach (var (currencyId, netChange) in currencyChanges)
+        {
+            var currentStock = currencyQuantities.GetValueOrDefault(currencyId, 0m);
+            if (currentStock + netChange < 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private async Task<bool> ProductAvailable(InvoiceRequestDto invoiceDto, InvoiceProductItemDto invoiceProductItem, CancellationToken cancellationToken = default)
