@@ -174,4 +174,10 @@ public static class ApiRoutes
         public const string SetStatus = "status/{id}/{isActive}";
         public const string GetPrice = "price/{coinId}/{priceUnitId?}";
     }
+
+    public class InventoryStocks
+    {
+        public const string Base = "/api/InventoryStocks";
+        public const string GetList = "";
+    }
 }

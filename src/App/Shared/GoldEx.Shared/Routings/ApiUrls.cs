@@ -309,4 +309,12 @@ public class ApiUrls
         public static string GetPrice(Guid coinId, Guid? priceUnitId) =>
             BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.GetPrice).FormatRoute(new { coinId, priceUnitId });
     }
+
+    public class InventoryStocks
+    {
+        public static string GetList(RequestFilter filter, InventoryFilter inventoryFilter) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(inventoryFilter);
+    }
 }

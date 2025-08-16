@@ -22,11 +22,11 @@ public partial class ProductsList
     private string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<ProductVm> _table = new ();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small};
-    private ProductStatus _productStatus = ProductStatus.Available;
+    private ItemStatus _itemStatus = ItemStatus.Available;
     private DateRange _filterDateRange = new();
 
-    private string DateRangeFilterLabel => _productStatus == ProductStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
-    private string ProductStatusIcon => _productStatus == ProductStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
+    private string DateRangeFilterLabel => _itemStatus == ItemStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
+    private string ProductStatusIcon => _itemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
 
     private async Task RefreshAsync()
     {
@@ -38,7 +38,7 @@ public partial class ProductsList
     {
         var result = new TableData<ProductVm>();
 
-        var productFilter = new ProductFilter(_productStatus, _filterDateRange.Start, _filterDateRange.End);
+        var productFilter = new ProductFilter(_itemStatus, _filterDateRange.Start, _filterDateRange.End);
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch
@@ -147,9 +147,9 @@ public partial class ProductsList
         await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
     }
 
-    private async Task SetStatusFilterText(ProductStatus filterType)
+    private async Task SetStatusFilterText(ItemStatus filterType)
     {
-        _productStatus = filterType;
+        _itemStatus = filterType;
         await RefreshAsync();
     }
 
@@ -166,6 +166,6 @@ public partial class ProductsList
 
     private string GetTooltipText(ProductVm item)
     {
-        return item.InvoiceId.HasValue ? $"تاریخ فروش: {item.DateTime.ToShortDateString()}" : $"تاریخ ثبت: {item.DateTime}";
+        return "TODO";
     }
 }

@@ -2,7 +2,7 @@
 
 namespace GoldEx.Shared.Enums;
 
-public enum ProductStatus
+public enum ItemStatus
 {
     [Display(Name = "موجود")]
     Available = 0,

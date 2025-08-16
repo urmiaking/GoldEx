@@ -50,6 +50,20 @@ public class PriceUnitVm
         };
     }
 
+    public static PriceUnitVm CreateFromTitleResponse(GetPriceUnitTitleResponse response)
+    {
+        return new PriceUnitVm
+        {
+            Id = response.Id,
+            Title = response.Title,
+            IsActive = true,
+            HasIcon = response.HasIcon,
+            IsDefault = response.IsDefault,
+            PriceId = null,
+            PriceVm = null
+        };
+    }
+
     public static CreatePriceUnitRequest ToCreateRequest(PriceUnitVm item, byte[]? iconContent)
     {
         return new CreatePriceUnitRequest(item.Title, iconContent, item.PriceId);

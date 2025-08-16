@@ -56,7 +56,7 @@ public partial class CustomersList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await _table.ReloadServerData();
+        await RefreshAsync();
     }
         
     private void PageChanged(int i)

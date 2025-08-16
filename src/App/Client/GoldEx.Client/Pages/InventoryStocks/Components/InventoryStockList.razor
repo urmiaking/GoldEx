@@ -1,0 +1,175 @@
+﻿@inherits GoldExComponentBase
+
+<MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+    <ToolBarContent>
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"
+        Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
+            Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+            PlaceholderStart="از" PlaceholderEnd="تا" Label="@DateRangeFilterLabel" Clearable="true" />
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@ItemTypeIcon">@_itemType.GetDisplayName()</MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse"
+                    OnClick="() => SetItemTypeFilterText(ItemType.Product)">
+                        @ItemType.Product.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket"
+                    OnClick="() => SetItemTypeFilterText(ItemType.Coin)">
+                        @ItemType.Coin.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket"
+                    OnClick="() => SetItemTypeFilterText(ItemType.Currency)">
+                        @ItemType.Coin.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton StartIcon="@ItemStatusIcon"></MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse"
+                    OnClick="() => SetStatusFilterText(ItemStatus.Available)">
+                        @ItemStatus.Available.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket"
+                    OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
+                        @ItemStatus.Sold.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@ItemStatusIcon">@_actionType.GetDisplayName()</MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse"
+                    OnClick="() => SetStatusFilterText(ItemStatus.Available)">
+                        @ItemStatus.Available.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket"
+                    OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
+                        @ItemStatus.Sold.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton StartIcon="@ItemStatusIcon"></MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse"
+                    OnClick="() => SetStatusFilterText(ItemStatus.Available)">
+                        @ItemStatus.Available.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket"
+                    OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
+                        @ItemStatus.Sold.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+    </ToolBarContent>
+    <HeaderContent>
+        @switch (_itemType)
+        {
+            case ItemType.Product:
+                <MudTh><MudTableSortLabel SortLabel="Product.Barcode" T="InventoryStockVm">بارکد</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.ProductType" T="InventoryStockVm">نوع جنس</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.Name" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.Wage" T="InventoryStockVm">اجرت ساخت</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.Carat" T="InventoryStockVm">عیار</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.ProductCategory.Title" T="InventoryStockVm">دسته</MudTableSortLabel></MudTh>
+                break;
+            case ItemType.Coin:
+                <MudTh><MudTableSortLabel SortLabel="Coin.Title" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
+                break;
+            case ItemType.Currency:
+                <MudTh><MudTableSortLabel SortLabel="Currency.Title" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        <MudTh><MudTableSortLabel SortLabel="Amount" T="InventoryStockVm">تعداد</MudTableSortLabel></MudTh>
+
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        @switch (_itemType)
+        {
+            case ItemType.Product when context.Product is not null:
+                <MudTd DataLabel="بارکد">@context.Product.Barcode</MudTd> <!-- TODO: DateTime tooltip removed from this -->
+                <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
+                <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
+                <MudTd DataLabel="وزن">@(context.Product.Weight?.ToString("G29")) @context.Product.GoldUnitType.GetDisplayName()</MudTd>
+                <MudTd DataLabel="اجرت">
+                    @(context.Product.WageType switch
+                    {
+                        WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
+                        WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                        _ => "ندارد"
+                    })
+                </MudTd>
+                <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
+                <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
+                break;
+            case ItemType.Coin when context.Coin is not null:
+                <MudTd DataLabel="عنوان">@(context.Coin.Title)</MudTd>
+                break;
+            case ItemType.Currency when context.Currency is not null:
+                <MudTd DataLabel="عنوان">@(context.Currency.Title)</MudTd>
+                break;
+        }
+        <MudTd DataLabel="تعداد">@context.Amount.ToString("G29")</MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                @switch (_itemType)
+                {
+                    case ItemType.Product when context.Product is not null:
+                        <MudTooltip Text="چاپ بارکد">
+                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                           OnClick="_ => OnPrintBarcode(context.Product)"
+                                           Color="@Color.Success"></MudIconButton>
+                        </MudTooltip>
+                        break;
+                    case ItemType.Coin:
+                        break;
+                    case ItemType.Currency:
+                        break;
+                }
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ جنسی در انبار یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <div class="d-flex flex-column align-center">
+            <MudPagination SelectedChanged="PageChanged"
+                           Color="Color.Primary"
+                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
+                           Class="pa-4"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+        </div>
+    </PagerContent>
+</MudTable>
+
+<script src="/js/libs/jsbarcode.all.min.js"></script>
+<script src="/js/print.js?v=@_jsVersion"></script>

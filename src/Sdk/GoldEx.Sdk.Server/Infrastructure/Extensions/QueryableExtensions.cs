@@ -12,7 +12,7 @@ public static class QueryableExtensions
         return tracking ? source.AsTracking() : source.AsNoTracking();
     }
 
-    public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string sortLabel, SortDirection sortDirection,
+    public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string? sortLabel, SortDirection sortDirection,
         string defaultSortProperty = "CreatedAt") where T : class
     {
         if (string.IsNullOrEmpty(sortLabel))
