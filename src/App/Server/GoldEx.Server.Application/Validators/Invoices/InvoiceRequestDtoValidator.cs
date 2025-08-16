@@ -193,17 +193,17 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         //    return true;
         // TODO: refactor this logic due to sell product nav prop has been deleted
 
-        if (invoiceDto.Id.HasValue)
-        {
-            var existingInvoice = await _invoiceRepository
-                .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceDto.Id.Value)))
-                .FirstOrDefaultAsync(cancellationToken);
+        //if (invoiceDto.Id.HasValue)
+        //{
+        //    var existingInvoice = await _invoiceRepository
+        //        .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceDto.Id.Value)))
+        //        .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.ProductId == productId))
-                return true;
-        }
+        //    if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.ProductId == productId))
+        //        return true;
+        //}
 
-        return false;
+        return true;
     }
 
     private async Task<bool> BeValidPriceUnit(Guid id, CancellationToken cancellationToken = default)

@@ -17,7 +17,6 @@ public static class QueryableExtensions
     {
         if (string.IsNullOrEmpty(sortLabel))
         {
-            // Handle empty sort label gracefully, e.g., return query as is or sort by default.
             return ApplyDefaultSort(query, sortDirection, defaultSortProperty);
         }
 
@@ -33,52 +32,65 @@ public static class QueryableExtensions
                 var property = propertyType.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
                 if (property == null)
                 {
-                    // Property not found in the current type. Fallback to default sorting.
+                    // Property not found, fallback to default sorting.
                     return ApplyDefaultSort(query, sortDirection, defaultSortProperty);
                 }
-
                 propertyExpression = Expression.MakeMemberAccess(propertyExpression, property);
                 propertyType = property.PropertyType;
             }
 
-
             var orderByExpression = Expression.Lambda(propertyExpression, parameter);
-
             var methodName = sortDirection == SortDirection.Ascending ? "OrderBy" : "OrderByDescending";
-
             var orderByMethod = typeof(Queryable).GetMethods()
                 .Single(m => m.Name == methodName && m.GetParameters().Length == 2)
                 .MakeGenericMethod(typeof(T), propertyType);
 
-            return (IQueryable<T>)orderByMethod.Invoke(null, [query, orderByExpression])!;
-
+            return (IQueryable<T>)orderByMethod.Invoke(null, new object[] { query, orderByExpression })!;
         }
         catch (Exception)
         {
-            //Exception while building expression (e.g., type mismatch). Fallback to default sorting
+            // Exception while building expression, fallback to default sorting.
             return ApplyDefaultSort(query, sortDirection, defaultSortProperty);
         }
     }
 
+    // This is the method with the key change.
     private static IQueryable<T> ApplyDefaultSort<T>(this IQueryable<T> query, SortDirection sortDirection, string defaultSortProperty) where T : class
     {
-        var defaultProperty = typeof(T).GetProperty(defaultSortProperty, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-        if (defaultProperty == null)
-        {
-            return query; // If no default property, return the original query.
-        }
-
+        // *** START OF FIX ***
+        // This helper now also supports nested properties, just like the main method.
+        var propertyPaths = defaultSortProperty.Split('.');
         var parameter = Expression.Parameter(typeof(T), "x");
-        var defaultPropertyAccess = Expression.MakeMemberAccess(parameter, defaultProperty);
-        var defaultOrderByExpression = Expression.Lambda(defaultPropertyAccess, parameter);
+        Expression propertyExpression = parameter;
+        var propertyType = typeof(T);
 
-        var methodName = sortDirection == SortDirection.Ascending ? "OrderBy" : "OrderByDescending";
+        try
+        {
+            foreach (var propertyName in propertyPaths)
+            {
+                var property = propertyType.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                if (property == null)
+                {
+                    // If even the default property path is invalid, we can't sort.
+                    return query;
+                }
+                propertyExpression = Expression.MakeMemberAccess(propertyExpression, property);
+                propertyType = property.PropertyType;
+            }
 
-        var defaultOrderByMethod = typeof(Queryable)
-            .GetMethods()
-            .Single(m => m.Name == methodName && m.GetParameters().Length == 2)
-            .MakeGenericMethod(typeof(T), defaultProperty.PropertyType);
+            var defaultOrderByExpression = Expression.Lambda(propertyExpression, parameter);
+            var methodName = sortDirection == SortDirection.Ascending ? "OrderBy" : "OrderByDescending";
+            var defaultOrderByMethod = typeof(Queryable).GetMethods()
+                .Single(m => m.Name == methodName && m.GetParameters().Length == 2)
+                .MakeGenericMethod(typeof(T), propertyType);
 
-        return (IQueryable<T>)defaultOrderByMethod.Invoke(null, [query, defaultOrderByExpression])!;
+            return (IQueryable<T>)defaultOrderByMethod.Invoke(null, new object[] { query, defaultOrderByExpression })!;
+        }
+        catch (Exception)
+        {
+            // If building the default sort expression fails for any reason, return the original query.
+            return query;
+        }
+        // *** END OF FIX ***
     }
 }
