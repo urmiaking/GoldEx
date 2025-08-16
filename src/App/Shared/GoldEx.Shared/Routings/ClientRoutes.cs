@@ -124,4 +124,10 @@ public static class ClientRoutes
         private const string PaymentVouchersPrefix = "/payment-vouchers";
         public const string Index = $"{PaymentVouchersPrefix}";
     }
+
+    public static class InventoryStocks
+    {
+        private const string InventoryStocksPrefix = "/inventory-stocks";
+        public const string Index = $"{InventoryStocksPrefix}";
+    }
 }

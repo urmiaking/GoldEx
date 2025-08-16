@@ -134,7 +134,6 @@ public class ProductVm : INotifyPropertyChanged
     public string? WagePriceUnitTitle { get; set; }
     public ProductCategoryVm? CategoryVm { get; set; }
     public List<GemStoneVm>? Stones { get; set; }
-    public Guid? InvoiceId { get; set; }
     public DateTime DateTime { get; set; }
     public GoldUnitType GoldUnitType { get; set; }
 
@@ -162,7 +161,6 @@ public class ProductVm : INotifyPropertyChanged
             ProductCategoryTitle = item.ProductCategoryTitle,
             WagePriceUnitId = item.WagePriceUnitId,
             WagePriceUnitTitle = item.WagePriceUnitTitle,
-            InvoiceId = item.InvoiceId,
             DateTime = item.DateTime,
             GoldUnitType = item.GoldUnitType,
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm

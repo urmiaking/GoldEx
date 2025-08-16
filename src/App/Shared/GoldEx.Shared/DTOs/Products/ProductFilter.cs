@@ -2,4 +2,4 @@
 
 namespace GoldEx.Shared.DTOs.Products;
 
-public record ProductFilter(ProductStatus Status, DateTime? Start, DateTime? End);
+public record ProductFilter(ItemStatus Status, DateTime? Start, DateTime? End);

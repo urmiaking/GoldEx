@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
@@ -7,14 +8,19 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class InventoryStockService(IInventoryStockRepository repository) : IServerInventoryStockService
+internal class InventoryStockService(IInventoryStockRepository repository, IMapper mapper) : IServerInventoryStockService, IInventoryStockService
 {
+    #region Server Service
+
     public async Task SetForProductAsync(ProductId productId, int quantity, WarehouseActionType actionType, InvoiceId? invoiceId,
        CancellationToken cancellationToken = default)
     {
@@ -164,4 +170,24 @@ internal class InventoryStockService(IInventoryStockRepository repository) : ISe
             await repository.CreateRangeAsync(newStockItems, cancellationToken);
         }
     }
+
+    #endregion
+
+    #region Shared Service
+
+    public async Task<PagedList<GetInventoryStockResponse>> GetListAsync(RequestFilter filter, InventoryFilter inventoryFilter, 
+        CancellationToken cancellationToken = default)
+    {
+        var summary = await repository.GetInventorySummaryAsync(filter, inventoryFilter, cancellationToken);
+
+        return new PagedList<GetInventoryStockResponse>
+        {
+            Data = mapper.Map<List<GetInventoryStockResponse>>(summary.Data),
+            Total = summary.Total,
+            Skip = filter.Skip ?? 0,
+            Take = filter.Take ?? 100
+        };
+    }
+
+    #endregion
 }
