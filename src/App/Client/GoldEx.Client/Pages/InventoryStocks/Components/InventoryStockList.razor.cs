@@ -32,10 +32,25 @@ public partial class InventoryStockList
     private string ItemStatusIcon => _itemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
     public string? ItemTypeIcon => _itemType switch
     {
-        ItemType.Product => Icons.Material.Filled.Inventory,
-        ItemType.Coin => Icons.Material.Filled.Money,
+        ItemType.Product => Icons.Material.Filled.Diamond,
+        ItemType.Coin => Icons.Material.Filled.MonetizationOn,
         ItemType.Currency => Icons.Material.Filled.AttachMoney,
         _ => null
+    };
+
+    public Color ItemTypeColor => _itemType switch
+    {
+        ItemType.Product => Color.Info,
+        ItemType.Coin => Color.Secondary,
+        ItemType.Currency => Color.Tertiary,
+        _ => Color.Default
+    };
+
+    public Color ItemStatusColor => _itemStatus switch
+    {
+        ItemStatus.Available => Color.Success,
+        ItemStatus.Sold => Color.Error,
+        _ => Color.Default
     };
 
     private async Task<TableData<InventoryStockVm>> LoadInventoryAsync(TableState state, CancellationToken cancellationToken = default)

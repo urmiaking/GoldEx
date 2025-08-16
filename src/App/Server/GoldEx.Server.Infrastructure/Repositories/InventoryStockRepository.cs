@@ -100,8 +100,7 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
             .ToDictionaryAsync(result => result.Id, result => result.TotalQuantity, cancellationToken);
     }
 
-    public async Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter, InventoryFilter inventoryFilter,
-        CancellationToken cancellationToken = default)
+    public async Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter, InventoryFilter inventoryFilter, CancellationToken cancellationToken = default)
     {
         var baseQuery = Query
             .Where(x => !inventoryFilter.Start.HasValue || x.CreatedAt >= inventoryFilter.Start.Value)
@@ -110,67 +109,128 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
         switch (inventoryFilter.ItemType)
         {
             case ItemType.Product:
-                var productQuery = baseQuery
-                    .Where(x => x.ProductId != null)
-                    .GroupBy(x => x.Product)
-                    .Select(g => new { Item = g.Key, Quantity = g.Sum(s =>
-                        s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount) });
+                {
+                    var aggregationQuery = baseQuery
+                        .Where(x => x.ProductId != null)
+                        .GroupBy(x => x.ProductId!.Value)
+                        .Select(g => new
+                        {
+                            ProductId = g.Key,
+                            CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
+                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0)
+                        });
 
-                if (!string.IsNullOrEmpty(filter.Search))
-                    productQuery = productQuery.Where(x => x.Item!.Name.Contains(filter.Search) || x.Item!.Barcode.Contains(filter.Search));
+                    var filteredAggregationQuery = inventoryFilter.ActionType == WarehouseActionType.In
+                        ? aggregationQuery.Where(x => x.CurrentQuantity > 0)
+                        : aggregationQuery.Where(x => x.SoldQuantity > 0);
 
-                var productTotal = await productQuery.CountAsync(cancellationToken);
-                var productSorted = productQuery.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending, 
-                    "Product.CreatedAt");
+                    var aggregatedResults = await filteredAggregationQuery.ToListAsync(cancellationToken);
 
-                var productData = await productSorted
-                    .Skip(filter.Skip ?? 0).Take(filter.Take ?? 100)
-                    .Select(x => new InventorySummaryData { Product = x.Item, CurrentQuantity = x.Quantity })
-                    .ToListAsync(cancellationToken);
+                    if (!aggregatedResults.Any())
+                    {
+                        return ([], 0);
+                    }
 
-                return (productData, productTotal);
+                    var productIds = aggregatedResults.Select(x => x.ProductId).ToList();
+                    var products = await dbContext.Set<Product>()
+                        .AsNoTracking()
+                        .AsSplitQuery()
+                        .Include(p => p.ProductCategory)
+                        .Where(p => productIds.Contains(p.Id))
+                        .ToDictionaryAsync(p => p.Id, p => p, cancellationToken); 
 
+                    var combinedData = aggregatedResults.Select(agg => new
+                    {
+                        Item = products.GetValueOrDefault(agg.ProductId),
+                        agg.CurrentQuantity,
+                        agg.SoldQuantity
+                    }).Where(x => x.Item != null)
+                      .AsQueryable();
+
+                    if (!string.IsNullOrEmpty(filter.Search))
+                        combinedData = combinedData.Where(x => x.Item!.Name.Contains(filter.Search) || x.Item!.Barcode.Contains(filter.Search));
+
+                    var total = combinedData.Count();
+                    var sortedData = combinedData.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending, "Item.CreatedAt");
+                    var pagedData = sortedData.Skip(filter.Skip ?? 0).Take(filter.Take ?? 100).ToList();
+
+                    var finalData = pagedData.Select(x => new InventorySummaryData
+                    {
+                        Product = x.Item,
+                        CurrentQuantity = x.CurrentQuantity,
+                        SoldQuantity = x.SoldQuantity
+                    }).ToList();
+
+                    return (finalData, total);
+                }
             case ItemType.Coin:
-                var coinQuery = baseQuery
-                    .Where(x => x.CoinId != null)
-                    .GroupBy(x => x.Coin)
-                    .Select(g => new { Item = g.Key, Quantity = g.Sum(s =>
-                        s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount) });
+                {
+                    var aggQuery = baseQuery
+                        .AsNoTracking()
+                        .Where(x => x.CoinId != null)
+                        .GroupBy(x => x.Coin)
+                        .Select(g => new
+                        {
+                            Item = g.Key,
+                            CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
+                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0)
+                        });
 
-                if (!string.IsNullOrEmpty(filter.Search))
-                    coinQuery = coinQuery.Where(x => x.Item!.Title.Contains(filter.Search));
+                    var filteredAggQuery = inventoryFilter.ActionType == WarehouseActionType.In
+                        ? aggQuery.Where(x => x.CurrentQuantity > 0)
+                        : aggQuery.Where(x => x.SoldQuantity > 0);
 
-                var coinTotal = await coinQuery.CountAsync(cancellationToken);
-                var coinSorted = coinQuery.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending,
-                    "Coin.Title");
-                var coinData = await coinSorted
-                    .Skip(filter.Skip ?? 0).Take(filter.Take ?? 100)
-                    .Select(x => new InventorySummaryData { Coin = x.Item, CurrentQuantity = x.Quantity })
-                    .ToListAsync(cancellationToken);
-                return (coinData, coinTotal);
+                    if (!string.IsNullOrEmpty(filter.Search))
+                        filteredAggQuery = filteredAggQuery.Where(x => x.Item!.Title.Contains(filter.Search));
+
+                    var total = await filteredAggQuery.CountAsync(cancellationToken);
+                    var sorted = filteredAggQuery.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending, "Item.Title");
+                    var data = await sorted.Skip(filter.Skip ?? 0).Take(filter.Take ?? 100)
+                        .Select(x => new InventorySummaryData
+                        {
+                            Coin = x.Item,
+                            CurrentQuantity = x.CurrentQuantity,
+                            SoldQuantity = x.SoldQuantity
+                        })
+                        .ToListAsync(cancellationToken);
+                    return (data, total);
+                }
 
             case ItemType.Currency:
-                var currencyQuery = baseQuery
-                    .Where(x => x.CurrencyId != null)
-                    .GroupBy(x => x.Currency)
-                    .Select(g => new { Item = g.Key, Quantity = g.Sum(s =>
-                        s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount) });
+                {
+                    var aggQuery = baseQuery
+                        .AsNoTracking()
+                        .Where(x => x.CurrencyId != null)
+                        .GroupBy(x => x.Currency)
+                        .Select(g => new
+                        {
+                            Item = g.Key,
+                            CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
+                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0)
+                        });
 
-                if (!string.IsNullOrEmpty(filter.Search))
-                    currencyQuery = currencyQuery.Where(x => x.Item!.Title.Contains(filter.Search));
+                    var filteredAggQuery = inventoryFilter.ActionType == WarehouseActionType.In
+                        ? aggQuery.Where(x => x.CurrentQuantity > 0)
+                        : aggQuery.Where(x => x.SoldQuantity > 0);
 
-                var currencyTotal = await currencyQuery.CountAsync(cancellationToken);
-                var currencySorted = currencyQuery.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending,
-                    "Currency.Title");
-                var currencyData = await currencySorted
-                    .Skip(filter.Skip ?? 0).Take(filter.Take ?? 100)
-                    .Select(x => new InventorySummaryData { Currency = x.Item, CurrentQuantity = x.Quantity })
-                    .ToListAsync(cancellationToken);
-                return (currencyData, currencyTotal);
+                    if (!string.IsNullOrEmpty(filter.Search))
+                        filteredAggQuery = filteredAggQuery.Where(x => x.Item!.Title.Contains(filter.Search));
+
+                    var total = await filteredAggQuery.CountAsync(cancellationToken);
+                    var sorted = filteredAggQuery.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending, "Item.Title");
+                    var data = await sorted.Skip(filter.Skip ?? 0).Take(filter.Take ?? 100)
+                        .Select(x => new InventorySummaryData
+                        {
+                            Currency = x.Item,
+                            CurrentQuantity = x.CurrentQuantity,
+                            SoldQuantity = x.SoldQuantity
+                        })
+                        .ToListAsync(cancellationToken);
+                    return (data, total);
+                }
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(inventoryFilter.ItemType), "Invalid item type for inventory summary.");
         }
-
     }
 }

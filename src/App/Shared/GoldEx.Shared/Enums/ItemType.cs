@@ -4,7 +4,7 @@ namespace GoldEx.Shared.Enums;
 
 public enum ItemType
 {
-    [Display(Name = "مصنوعات طلا")]
+    [Display(Name = "طلا و جواهر")]
     Product = 1,
 
     [Display(Name = "سکه")]

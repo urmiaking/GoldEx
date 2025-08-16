@@ -6,7 +6,8 @@ namespace GoldEx.Client.Pages.InventoryStocks.ViewModels;
 
 public class InventoryStockVm
 {
-    public decimal Amount { get; set; }
+    public decimal CurrentAmount { get; set; }
+    public decimal SoldAmount { get; set; }
 
     public ProductVm? Product { get; set; }
     public CoinVm? Coin { get; set; }
@@ -16,7 +17,8 @@ public class InventoryStockVm
     {
         return new InventoryStockVm
         {
-            Amount = response.Amount,
+            CurrentAmount = response.CurrentAmount,
+            SoldAmount = response.SoldAmount,
             Product = response.Product != null ? ProductVm.CreateFrom(response.Product) : null,
             Coin = response.Coin != null ? CoinVm.CreateFrom(response.Coin) : null,
             Currency = response.Currency != null ? PriceUnitVm.CreateFromTitleResponse(response.Currency) : null 
