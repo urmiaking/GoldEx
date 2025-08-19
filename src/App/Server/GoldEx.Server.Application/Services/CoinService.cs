@@ -1,19 +1,26 @@
-﻿using FluentValidation;
+﻿using System.Data;
+using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.Coins;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Coins;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -21,7 +28,9 @@ namespace GoldEx.Server.Application.Services;
 internal class CoinService(ICoinRepository repository,
     IPriceRepository priceRepository,
     IPriceUnitRepository priceUnitRepository,
+    ILedgerAccountRepository ledgerAccountRepository,
     IMapper mapper,
+    ILogger<CoinService> logger,
     CoinRequestDtoValidator validator) : ICoinService
 {
     public async Task<List<GetCoinResponse>> GetListAsync(bool? isActive, CancellationToken cancellationToken = default)
@@ -95,25 +104,86 @@ internal class CoinService(ICoinRepository repository,
 
     public async Task CreateAsync(CoinRequestDto request, CancellationToken cancellationToken = default)
     {
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var coin = Coin.Create(request.Title, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                var coinLedgerAccount = await ledgerAccountRepository
+                                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
+                                            .FirstOrDefaultAsync(cancellationToken) ??
+                                        throw new NotFoundException($"{nameof(SystemLedgerAccounts.CoinInventory)} account not found");
 
-        await repository.CreateAsync(coin, cancellationToken);
+                var requestedCoinLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(request.Title)))
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                LedgerAccountId ledgerAccountId;
+
+                if (requestedCoinLedgerAccount is not null)
+                {
+                    ledgerAccountId = requestedCoinLedgerAccount.Id;
+                }
+                else
+                {
+                    var newCoinLedgerAccount = LedgerAccount.CreateSystemAccount(
+                        LedgerAccountTitleBuilder.ForCoinAccount(request.Title),
+                        LedgerAccountType.Asset,
+                        coinLedgerAccount.Id);
+
+                    await ledgerAccountRepository.CreateAsync(newCoinLedgerAccount, cancellationToken);
+
+                    ledgerAccountId = newCoinLedgerAccount.Id;
+                }
+
+                var coin = Coin.Create(request.Title, ledgerAccountId, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+
+                await repository.CreateAsync(coin, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 
     public async Task UpdateAsync(Guid id, CoinRequestDto request, CancellationToken cancellationToken = default)
     {
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var coin = await repository
-            .Get(new CoinsByIdSpecification(new CoinId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+                var coin = await repository
+                    .Get(new CoinsByIdSpecification(new CoinId(id)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        coin.SetTitle(request.Title);
-        coin.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                coin.SetTitle(request.Title);
+                coin.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
 
-        await repository.UpdateAsync(coin, cancellationToken);
+                await repository.UpdateAsync(coin, cancellationToken);
+
+                var priceUnitLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByIdSpecification(coin.LedgerAccountId))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                priceUnitLedgerAccount.SetTitle(LedgerAccountTitleBuilder.ForCurrencyAccount(coin.Title));
+
+                await ledgerAccountRepository.UpdateAsync(priceUnitLedgerAccount, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 
     public async Task SetStatusAsync(Guid id, bool isActive, CancellationToken cancellationToken = default)

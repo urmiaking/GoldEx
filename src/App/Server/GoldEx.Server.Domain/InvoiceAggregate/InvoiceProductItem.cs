@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Helpers;
 
@@ -7,7 +8,15 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceProductItemId(Guid Value);
 public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
 {
-    private InvoiceProductItem(InvoiceProductItemId id, decimal gramPrice, decimal profitPercent, decimal taxPercent, ProductId productId)
+    private InvoiceProductItem(InvoiceProductItemId id,
+        decimal gramPrice,
+        decimal profitPercent,
+        decimal taxPercent,
+        ProductId productId,
+        decimal? costPrice,
+        decimal? costPriceExchangeRate,
+        PriceUnitId? costPriceUnitId,
+        bool isInstantProduct)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
@@ -20,6 +29,10 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ProfitPercent = profitPercent;
         TaxPercent = taxPercent;
         ProductId = productId;
+        CostPrice = costPrice;
+        CostPriceExchangeRate = costPriceExchangeRate;
+        CostPriceUnitId = costPriceUnitId;
+        IsInstantProduct = isInstantProduct;
 
         // Stored calculated values are initialized to 0
         ItemRawAmount = 0;
@@ -33,9 +46,21 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
-        ProductId productId)
+        ProductId productId,
+        decimal? costPrice,
+        decimal? costPriceExchangeRate,
+        PriceUnitId? costPriceUnitId,
+        bool isInstantProduct)
     {
-        return new InvoiceProductItem(new InvoiceProductItemId(Guid.NewGuid()), gramPrice, profitPercent, taxPercent, productId);
+        return new InvoiceProductItem(new InvoiceProductItemId(Guid.NewGuid()),
+            gramPrice,
+            profitPercent,
+            taxPercent,
+            productId,
+            costPrice,
+            costPriceExchangeRate,
+            costPriceUnitId,
+            isInstantProduct);
     }
 
     public static InvoiceProductItem Create(
@@ -43,12 +68,25 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
-        ProductId productId)
+        ProductId productId,
+        decimal? costPrice,
+        decimal? costPriceExchangeRate,
+        PriceUnitId? costPriceUnitId,
+        bool isInstantProduct)
     {
-        return new InvoiceProductItem(id, gramPrice, profitPercent, taxPercent, productId);
+        return new InvoiceProductItem(id,
+            gramPrice,
+            profitPercent,
+            taxPercent,
+            productId,
+            costPrice,
+            costPriceExchangeRate,
+            costPriceUnitId,
+            isInstantProduct);
     }
 
     public void Update(InvoiceProductItemId id, decimal gramPrice, decimal profitPercent, decimal taxPercent,
+        PriceUnitId? costPriceUnitId, decimal? costPrice, decimal? costPriceExchangeRate, bool isInstantProduct,
         ProductId productId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
@@ -62,6 +100,10 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ProfitPercent = profitPercent;
         TaxPercent = taxPercent;
         ProductId = productId;
+        CostPrice = costPrice;
+        CostPriceExchangeRate = costPriceExchangeRate;
+        CostPriceUnitId = costPriceUnitId;
+        IsInstantProduct = isInstantProduct;
         // Reset calculated amounts
         ItemRawAmount = 0;
         ItemWageAmount = 0;
@@ -79,6 +121,12 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     public decimal ProfitPercent { get; private set; }
     public decimal TaxPercent { get; private set; }
     public decimal GramPrice { get; private set; }
+    public decimal? CostPrice { get; private set; }
+    public decimal? CostPriceExchangeRate { get; private set; }
+    public bool IsInstantProduct { get; private set; }
+
+    public PriceUnitId? CostPriceUnitId { get; private set; }
+    public PriceUnit? CostPriceUnit { get; private set; }
 
     public ProductId ProductId { get; private set; }
     public Product? Product { get; private set; }

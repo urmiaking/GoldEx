@@ -3,11 +3,9 @@ using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.Services.Abstractions;
-using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
@@ -20,6 +18,7 @@ using System.Security.Claims;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.Constants;
+using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Server.Extensions;
 
@@ -42,9 +41,9 @@ public static class ServiceProviderExtensions
     private static async Task EnsureDatabasePopulated(IServiceProvider serviceProvider)
     {
         await PopulateDefaultSettingsAsync(serviceProvider);
+        await PopulateDefaultLedgerAccountsAsync(serviceProvider);
         await PopulateDefaultPriceUnitsAsync(serviceProvider);
         await PopulateDefaultProductCategoriesAsync(serviceProvider);
-        await PopulateDefaultLedgerAccountsAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();
@@ -93,6 +92,9 @@ public static class ServiceProviderExtensions
         var inventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset);
         inventory.SetParentAccount(currentAssets.Id);
 
+        var coinInventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset);
+        coinInventory.SetParentAccount(currentAssets.Id);
+
         var bankAccounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset);
         bankAccounts.SetParentAccount(currentAssets.Id);
 
@@ -104,6 +106,9 @@ public static class ServiceProviderExtensions
 
         var accountsPayable = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.AccountsPayable, LedgerAccountType.Liability);
         accountsPayable.SetParentAccount(currentLiabilities.Id);
+
+        var openingBalanceEquity = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.OpeningBalanceEquity, LedgerAccountType.Equity);
+        openingBalanceEquity.SetParentAccount(equity.Id);
 
         var salesRevenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.SalesRevenue, LedgerAccountType.Revenue);
         salesRevenue.SetParentAccount(revenue.Id);
@@ -128,8 +133,9 @@ public static class ServiceProviderExtensions
 
         var subLevelAccounts = new List<LedgerAccount>
         {
-            currentAssets, accountsReceivable, prepayments, inventory, bankAccounts, cashAccounts,
+            currentAssets, accountsReceivable, prepayments, inventory, bankAccounts, cashAccounts, coinInventory,
             currentLiabilities, accountsPayable,
+            openingBalanceEquity,
             salesRevenue, additionalChargesRevenue, exchangeGainLoss,
             cogs, operatingExpenses, salesDiscounts, purchaseDiscounts
         };
@@ -159,35 +165,22 @@ public static class ServiceProviderExtensions
 
     private static async Task PopulateDefaultPriceUnitsAsync(IServiceProvider serviceProvider)
     {
-        var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
+        var priceUnitService = serviceProvider.GetRequiredService<IPriceUnitService>();
 
-        if (!await priceUnitRepository.ExistsAsync(new PriceUnitsWithoutSpecification()))
+        var priceUnits = await priceUnitService.GetAllAsync();
+
+        if (!priceUnits.Any())
+            foreach (var unitType in Enum.GetValues<UnitType>()) 
+                await priceUnitService.CreateAsync(new CreatePriceUnitRequest(unitType.GetDisplayName(), null, null));
+
+        var defaultPriceUnit = priceUnits.FirstOrDefault(x => x.IsDefault);
+
+        if (defaultPriceUnit is null)
         {
-            var unitTypes = Enum.GetValues<UnitType>()
-                .Select(x => PriceUnit.Create(x.GetDisplayName(), x == UnitType.IRR))
-                .ToList();
+            var irrUnit = priceUnits.FirstOrDefault(x => x.Title == UnitType.IRR.GetDisplayName());
 
-            await priceUnitRepository.CreateRangeAsync(unitTypes);
-            return;
-        }
-
-        if (await priceUnitRepository.ExistsAsync(new PriceUnitsSetAsDefaultSpecification()))
-            return;
-
-        var defaultUnit = await priceUnitRepository
-            .Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName()))
-            .FirstOrDefaultAsync();
-
-        if (defaultUnit is not null)
-        {
-            defaultUnit.SetDefault(true);
-            defaultUnit.SetStatus(true);
-            await priceUnitRepository.UpdateAsync(defaultUnit);
-        }
-        else
-        {
-            defaultUnit = PriceUnit.Create(UnitType.IRR.GetDisplayName(), true);
-            await priceUnitRepository.CreateAsync(defaultUnit);
+            if (irrUnit is not null) 
+                await priceUnitService.SetAsDefaultAsync(irrUnit.Id);
         }
     }
 

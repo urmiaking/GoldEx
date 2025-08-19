@@ -34,8 +34,8 @@ public partial class ProductItemEditor
 
     private bool _weightFieldMenuOpen;
     private bool _wageFieldMenuOpen;
+    private bool _costPriceMenuOpen;
     private bool _isProcessing;
-
     private string? WageFieldAdornmentText => Model.Product.WageType switch
     {
         WageType.Percent => "درصد",
@@ -52,6 +52,11 @@ public partial class ProductItemEditor
         null => null,
         _ => throw new ArgumentOutOfRangeException()
     };
+
+    public string CostPriceAdornmentText => Model.CostPriceUnitTitle ?? PriceUnit.Title;
+    public string? CostExchangeRateLabel => Model.CostPriceUnitId.HasValue && PriceUnit.Id != Model.CostPriceUnitId
+        ? $"نرخ تبدیل {Model.CostPriceUnitTitle} به {PriceUnit.Title}"
+        : null;
 
     protected override void OnParametersSet()
     {
@@ -240,6 +245,8 @@ public partial class ProductItemEditor
             _wageFieldMenuOpen = !_wageFieldMenuOpen;
     }
 
+    private void OnCostPriceAdornmentClicked() => _costPriceMenuOpen = !_costPriceMenuOpen;
+
     private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
     {
         Model.Product.WagePriceUnitId = priceUnit.Id;
@@ -250,8 +257,25 @@ public partial class ProductItemEditor
                 action: (s, ct) => s.GetExchangeRateAsync(Model.Product.WagePriceUnitId.Value, PriceUnit.Id, ct),
                 afterSend: response =>
                 {
-                    if (response.ExchangeRate.HasValue) 
+                    if (response.ExchangeRate.HasValue)
                         Model.ExchangeRate = response.ExchangeRate.Value;
+                });
+
+        StateHasChanged();
+    }
+
+    private async Task SelectCostPriceUnit(GetPriceUnitTitleResponse priceUnit)
+    {
+        Model.CostPriceUnitId = priceUnit.Id;
+        Model.CostPriceUnitTitle = priceUnit.Title;
+
+        if (PriceUnit.Id != Model.CostPriceUnitId)
+            await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                action: (s, ct) => s.GetExchangeRateAsync(Model.CostPriceUnitId.Value, PriceUnit.Id, ct),
+                afterSend: response =>
+                {
+                    if (response.ExchangeRate.HasValue)
+                        Model.CostPriceExchangeRate = response.ExchangeRate.Value;
                 });
 
         StateHasChanged();

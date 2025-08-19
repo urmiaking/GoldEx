@@ -2,8 +2,12 @@
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
@@ -26,15 +30,12 @@ internal class AccountingTransactionService(
 {
     public async Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
-        await repository.RemoveByInvoiceIdAsync(invoice.Id, cancellationToken);
-        await repository.RemoveByInvoicePaymentIdsAsync(invoice.InvoicePayments?.Select(x => x.Id).ToList(), cancellationToken);
-
         if (invoice is { TotalAmountWithDiscountsAndExtraCosts: 0, TotalPaidAmount: 0 }) return;
 
         if (invoice.Customer is null)
             throw new ArgumentException("Invoice must have a customer associated with it.", nameof(invoice));
 
-        var basePriceUnit = await priceUnitRepository.Get(new PriceUnitsDefaultSpecification())
+        var basePriceUnit = await priceUnitRepository.Get(new PriceUnitsSetAsDefaultSpecification())
                                 .FirstOrDefaultAsync(cancellationToken) ??
                             throw new NotFoundException("Default price unit not found.");
 
@@ -161,6 +162,13 @@ internal class AccountingTransactionService(
                                 inventoryLedger.Id,
                                 basePriceUnit.Id,
                                 invoice.Id));
+                        }
+
+                        foreach (var instantProduct in invoice.ProductItems.Where(x => x.IsInstantProduct))
+                        {
+                            await CreateTransactionForManualEntryAsync(instantProduct.Product, null, null,
+                                instantProduct.CostPrice!.Value, instantProduct.CostPriceExchangeRate, invoice.Id,
+                                cancellationToken);
                         }
 
                         break;
@@ -425,5 +433,101 @@ internal class AccountingTransactionService(
     {
         await repository.RemoveByInvoiceIdAsync(invoice.Id, cancellationToken);
         await repository.RemoveByInvoicePaymentIdsAsync(invoice.InvoicePayments?.Select(x => x.Id).ToList(), cancellationToken);
+    }
+
+    public async Task CreateTransactionForManualEntryAsync(Product? product, Coin? coin, PriceUnit? currency,
+        decimal costPrice, decimal? costPriceExchangeRate, InvoiceId triggeringInvoiceId,
+        CancellationToken cancellationToken = default)
+    {
+        if (costPrice < 0)
+            throw new ArgumentOutOfRangeException(nameof(costPrice), "Cost price must be greater than or equal to zero.");
+
+        if (costPriceExchangeRate <= 0)
+            throw new ArgumentOutOfRangeException(nameof(costPriceExchangeRate),
+                "Cost price exchange rate must be greater than zero if provided.");
+
+        if (product is not null && (coin is not null || currency is not null))
+            throw new ArgumentException("If product is provided, coin and currency must be null.");
+
+        if (coin is not null && (product is not null || currency is not null))
+            throw new ArgumentException("If coin is provided, product and currency must be null.");
+
+        if (currency is not null && (product is not null || coin is not null))
+            throw new ArgumentException("If currency is provided, product and coin must be null.");
+
+        var transactions = new List<Transaction>();
+
+        var groupId = Guid.NewGuid();
+
+        var description = product != null
+            ? TransactionDescriptionBuilder.ForManualProductEntry(product.Name,
+                product.Barcode)
+            : coin != null
+                ? TransactionDescriptionBuilder.ForManualCoinEntry(coin.Title)
+                : currency != null
+                    ? TransactionDescriptionBuilder.ForManualCurrencyEntry(currency.Title)
+                    : throw new ArgumentException("At least one of product, coin, or currency must be provided.",
+                        nameof(product));
+
+        var basePriceUnit = await priceUnitRepository.Get(new PriceUnitsSetAsDefaultSpecification())
+                                .FirstOrDefaultAsync(cancellationToken) ??
+                            throw new NotFoundException("Default price unit not found.");
+
+        var openingBalanceLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Opening Balance Equity ledger account not found.");
+
+        LedgerAccountId debitLedgerAccountId;
+
+        if (product is not null)
+        {
+            var inventoryLedgerAccount = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
+
+            debitLedgerAccountId = inventoryLedgerAccount.Id;
+        }
+        else if (coin is not null)
+        {
+            var coinLedgerAccount = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Coin '{coin.Title}' ledger account not found.");
+
+            debitLedgerAccountId = coinLedgerAccount.Id;
+        }
+        else if (currency is not null)
+        {
+            var currencyLedgerAccount = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCurrencyAccount(currency.Title)))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Currency '{currency.Title}' ledger account not found.");
+
+            debitLedgerAccountId = currencyLedgerAccount.Id;
+        }
+        else
+        {
+            throw new ArgumentException("At least one of product, coin, or currency must be provided.", nameof(product));
+        }
+
+        transactions.Add(Transaction.CreateForManualEntry(
+            description,
+            costPrice,
+            costPriceExchangeRate,
+            groupId,
+            TransactionType.Debit,
+            debitLedgerAccountId,
+            basePriceUnit.Id,
+            triggeringInvoiceId));
+
+        transactions.Add(Transaction.CreateForManualEntry(
+            description,
+            costPrice,
+            costPriceExchangeRate,
+            groupId,
+            TransactionType.Credit,
+            openingBalanceLedgerAccount.Id,
+            basePriceUnit.Id,
+            triggeringInvoiceId));
+
+        await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 }

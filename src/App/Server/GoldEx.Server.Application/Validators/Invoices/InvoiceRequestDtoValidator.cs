@@ -126,8 +126,11 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         foreach (var newItem in request.InvoiceProductItems)
         {
-            var productId = new ProductId(newItem.Product.Id!.Value);
-            productChanges[productId] = productChanges.GetValueOrDefault(productId, 0m) + 1;
+            if (newItem.Product.Id.HasValue)
+            {
+                var productId = new ProductId(newItem.Product.Id.Value);
+                productChanges[productId] = productChanges.GetValueOrDefault(productId, 0m) + 1;
+            }
         }
         foreach (var newItem in request.InvoiceCoinItems)
         {

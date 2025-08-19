@@ -22,5 +22,10 @@ internal class CoinConfiguration : IEntityTypeConfiguration<Coin>
             .WithMany()
             .HasForeignKey(x => x.PriceId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.LedgerAccount)
+            .WithMany()
+            .HasForeignKey(x => x.LedgerAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

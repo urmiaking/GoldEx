@@ -14,6 +14,7 @@ using GoldEx.Server.Infrastructure.Specifications.Coins;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
+using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -28,7 +29,7 @@ internal class PriceService(
     IPriceRepository repository,
     IPriceUnitRepository priceUnitRepository,
     ISettingRepository settingRepository,
-    ICoinRepository coinRepository,
+    ICoinService coinService,
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment) : IServerPriceService,
@@ -115,14 +116,14 @@ internal class PriceService(
             if (updatedPriceUnits.Any())
                 await priceUnitRepository.UpdateRangeAsync(updatedPriceUnits, cancellationToken);
 
-            var coins = await coinRepository.Get(new CoinsByStatusSpecification()).ToListAsync(cancellationToken);
+            var coins = await coinService.GetListAsync(null, cancellationToken);
 
             if (!coins.Any())
             {
-                coins.AddRange(pricesToCreate.Where(x => x.MarketType is MarketType.Coin)
-                    .Select(coinPrice => Coin.Create(coinPrice.Title, coinPrice.Id)));
+                var coinPrices = pricesToCreate.Where(x => x.MarketType is MarketType.Coin).ToList();
 
-                await coinRepository.CreateRangeAsync(coins, cancellationToken);
+                foreach (var coinPrice in coinPrices) 
+                    await coinService.CreateAsync(new CoinRequestDto(null, coinPrice.Title, coinPrice.Id.Value), cancellationToken);
             }
         }
 

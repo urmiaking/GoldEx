@@ -119,6 +119,37 @@ public class Transaction : EntityBase<TransactionId>
         };
     }
 
+    public static Transaction CreateForManualEntry(string description,
+        decimal amount,
+        decimal? exchangeRate,
+        Guid groupId,
+        TransactionType transactionType,
+        LedgerAccountId ledgerAccountId,
+        PriceUnitId priceUnitId, 
+        InvoiceId invoiceId)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+        if (amount < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than or equal to zero.");
+        if (exchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero if provided.");
+        
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            Description = description,
+            Amount = amount,
+            GroupId = groupId,
+            TransactionType = transactionType,
+            LedgerAccountId = ledgerAccountId,
+            ExchangeRate = exchangeRate,
+            PriceUnitId = priceUnitId,
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1),
+            InvoiceId = invoiceId
+        };
+    }
+
 #pragma warning disable CS8618
     private Transaction() { }
 #pragma warning restore CS8618

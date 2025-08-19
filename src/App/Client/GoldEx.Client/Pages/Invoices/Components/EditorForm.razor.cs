@@ -261,6 +261,9 @@ public partial class EditorForm
         model.GramPrice = gramPrice;
         model.TaxPercent = _setting?.TaxPercent ?? 9;
         model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
+        model.IsInstantProduct = _model.InvoiceType is InvoiceType.Sell;
+        model.CostPriceUnitId = _model.InvoiceType is InvoiceType.Sell ? _model.InvoicePriceUnit?.Id : null;
+        model.CostPriceUnitTitle = _model.InvoiceType is InvoiceType.Sell ? _model.InvoicePriceUnit?.Title : null;
 
         var parameters = new DialogParameters<ProductItemEditor>
         {

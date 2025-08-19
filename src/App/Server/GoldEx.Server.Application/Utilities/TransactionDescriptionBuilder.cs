@@ -4,6 +4,7 @@ using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
 
 namespace GoldEx.Server.Application.Utilities;
 
@@ -145,6 +146,25 @@ public static class TransactionDescriptionBuilder
     public static string ForPrepaymentCashExit(PaymentVoucher voucher, FinancialAccount sourceAccount)
     {
         return $"خروج وجه از حساب '{sourceAccount.AccountType.GetDisplayName()}' بابت پیش پرداخت شماره {voucher.VoucherNumber}";
+    }
+
+    #endregion
+
+    #region Manual Entry Descriptions (شرح‌های ورود دستی)
+
+    public static string ForManualProductEntry(string productName, string barcode)
+    {
+        return $"ثبت ورود دستی محصول '{productName}' در سیستم با شماره سریال {barcode}";
+    }
+
+    public static string ForManualCoinEntry(string coinName)
+    {
+        return $"ثبت ورود دستی سکه '{coinName}' در سیستم";
+    }
+
+    public static string ForManualCurrencyEntry(string currencyName)
+    {
+        return $"ثبت ورود دستی ارز '{currencyName}' در سیستم";
     }
 
     #endregion
