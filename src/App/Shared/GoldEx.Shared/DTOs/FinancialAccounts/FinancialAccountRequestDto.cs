@@ -7,7 +7,6 @@ public record FinancialAccountRequestDto(
     FinancialAccountType FinancialAccountType,
     Guid PriceUnitId,
     Guid? CustomerId,
-    Guid? LedgerAccountId,
     bool IsSystemAccount,
     LocalBankAccountRequestDto? LocalBankAccount,
     InternationalBankAccountRequestDto? InternationalBankAccount);

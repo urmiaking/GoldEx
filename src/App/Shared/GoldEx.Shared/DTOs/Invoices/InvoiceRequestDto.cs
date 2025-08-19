@@ -58,6 +58,10 @@ public record InvoiceProductItemDto(
     decimal ProfitPercent,
     decimal TaxPercent,
     decimal? ExchangeRate,
+    decimal? CostPrice,
+    decimal? CostPriceExchangeRate,
+    Guid? CostPriceUnitId,
+    bool IsInstantProduct,
     ProductRequestDto Product);
 
 public record InvoiceCoinItemDto(

@@ -1,5 +1,4 @@
-﻿@using GoldEx.Shared.DTOs.LedgerAccounts
-@using GoldEx.Shared.DTOs.PriceUnits
+﻿@using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_financialAccountValidator.ValidateValue)" ValidationDelay="0">
@@ -9,7 +8,8 @@
                 <MudItem xs="12">
                     <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                         <MudText>نوع حساب:</MudText>
-                        <MudRadioGroup T="FinancialAccountType" Required="true" For="() => Model.FinancialAccountType" Value="Model.FinancialAccountType" ValueChanged="OnAccountTypeChanged">
+                        <MudRadioGroup T="FinancialAccountType" Required="true" For="() => Model.FinancialAccountType" Value="Model.FinancialAccountType" 
+                                       ValueChanged="OnAccountTypeChanged">
                             <MudRadio Value="@(FinancialAccountType.LocalBankAccount)">@FinancialAccountType.LocalBankAccount.GetDisplayName()</MudRadio>
                             <MudRadio Value="@(FinancialAccountType.InternationalBankAccount)">@FinancialAccountType.InternationalBankAccount.GetDisplayName()</MudRadio>
                             <MudRadio Value="@(FinancialAccountType.Cash)">@FinancialAccountType.Cash.GetDisplayName()</MudRadio>
@@ -112,24 +112,6 @@
                                       Label="@(Model.GetDisplayName(() => Model.InternationalBankAccount.IbanNumber))"
                                       Margin="Margin.Dense"
                                       Variant="Variant.Outlined" />
-                    </MudItem>
-                }
-                @if (Model.IsSystemAccount)
-                {
-                    <MudItem xs="12">
-                        <MudSelect T="GetLedgerAccountResponse?"
-                                   @bind-Value="Model.LedgerAccount"
-                                   Label="@Model.GetDisplayName(() => Model.LedgerAccount)"
-                                   For="() => Model.LedgerAccount"
-                                   Margin="Margin.Dense"
-                                   Variant="Variant.Outlined">
-                            @foreach (var item in _ledgerAccounts)
-                            {
-                                <MudSelectItem Value="item">
-                                    @item.Title
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
                     </MudItem>
                 }
 

@@ -10,7 +10,7 @@ public class LedgerAccountsByFinancialAccountTypeSpecification : SpecificationBa
     public LedgerAccountsByFinancialAccountTypeSpecification(FinancialAccountType? financialAccountType)
     {
         AddInclude(x => x.ParentAccount!);
-
+        // TODO: this has to be fixed
         if (financialAccountType != null)
         {
             switch (financialAccountType.Value)

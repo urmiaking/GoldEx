@@ -60,6 +60,20 @@ public class ProductItemVm
         }
     }
 
+    [Display(Name = "نرخ خرید جنس")]
+    public decimal? CostPrice { get; set; }
+
+    [Display(Name = "واحد ارزی نرخ خرید جنس")]
+    public Guid? CostPriceUnitId { get; set; }
+
+    [Display(Name = "واحد ارزی نرخ خرید جنس")]
+    public string? CostPriceUnitTitle { get; set; }
+
+    [Display(Name = "نرخ تبدیل واحد ارزش جنس")]
+    public decimal? CostPriceExchangeRate { get; set; }
+
+    public bool IsInstantProduct { get; set; }
+
     public ProductVm Product
     {
         get => _product;
@@ -126,6 +140,11 @@ public class ProductItemVm
         ExchangeRate = other.ExchangeRate;
         ProfitPercent = other.ProfitPercent;
         TaxPercent = other.TaxPercent;
+        CostPrice = other.CostPrice;
+        CostPriceExchangeRate = other.CostPriceExchangeRate;
+        CostPriceUnitId = other.CostPriceUnitId;
+        CostPriceUnitTitle = other.CostPriceUnitTitle;
+        IsInstantProduct = other.IsInstantProduct;
         ShowDetails = other.ShowDetails;
     }
 
@@ -137,6 +156,10 @@ public class ProductItemVm
             productItem.ProfitPercent,
             productItem.TaxPercent,
             productItem.ExchangeRate,
+            productItem.CostPrice,
+            productItem.CostPriceExchangeRate,
+            productItem.CostPriceUnitId,
+            productItem.IsInstantProduct,
             ProductVm.ToRequest(productItem.Product));
     }
 
@@ -149,6 +172,11 @@ public class ProductItemVm
             GramPrice = response.GramPrice,
             ProfitPercent = response.ProfitPercent,
             TaxPercent = response.TaxPercent,
+            CostPrice = response.CostPrice,
+            CostPriceExchangeRate = response.CostPriceExchangeRate,
+            CostPriceUnitId = response.CostPriceUnitId,
+            CostPriceUnitTitle = response.CostPriceUnitTitle,
+            IsInstantProduct = response.IsInstantProduct,
             Product = ProductVm.CreateFrom(response.Product)
         };
     }

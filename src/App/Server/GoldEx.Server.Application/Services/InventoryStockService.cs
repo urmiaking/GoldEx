@@ -41,7 +41,7 @@ internal class InventoryStockService(IInventoryStockRepository repository, IMapp
         else
         {
             // TODO: after implementing warehousing, this method should be changed
-            await repository.CreateAsync(InventoryStock.CreateProduct(productId, quantity, actionType, invoiceId), cancellationToken);
+            await repository.CreateAsync(InventoryStock.CreateProduct(productId, quantity, actionType), cancellationToken);
         }
 
     }
@@ -109,7 +109,7 @@ internal class InventoryStockService(IInventoryStockRepository repository, IMapp
             .ToListAsync(cancellationToken);
 
         if (oldStockItems.Any())
-        {
+        {   
             await repository.DeleteRangeAsync(oldStockItems, cancellationToken);
         }
 
@@ -153,6 +153,16 @@ internal class InventoryStockService(IInventoryStockRepository repository, IMapp
                 warehouseActionType,
                 invoice.Id))
             .ToList();
+
+        if (invoice.ProductItems.Any(x => x.IsInstantProduct))
+        {
+            newStockItems.AddRange(invoice.ProductItems
+                .Where(x => x.IsInstantProduct)
+                .Select(productItem => InventoryStock.CreateProduct(productItem.ProductId,
+                    1,
+                    WarehouseActionType.In,
+                    invoice.Id)));
+        }
 
         newStockItems.AddRange(invoice.CoinItems.Select(coinItem => InventoryStock.CreateCoin(coinItem.CoinId,
             coinItem.Quantity,

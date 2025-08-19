@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250819191527_AddCostPrice")]
+    partial class AddCostPrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1339,9 +1342,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                             b1.Property<decimal>("GramPrice")
                                 .HasPrecision(36, 10)
                                 .HasColumnType("decimal(36,10)");
-
-                            b1.Property<bool>("IsInstantProduct")
-                                .HasColumnType("bit");
 
                             b1.Property<decimal>("ItemFinalAmount")
                                 .HasPrecision(36, 10)

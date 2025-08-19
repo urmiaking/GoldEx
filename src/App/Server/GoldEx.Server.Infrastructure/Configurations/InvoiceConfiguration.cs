@@ -168,6 +168,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(9, 6)
             .IsRequired();
 
+        builder.Property(x => x.CostPrice)
+            .HasPrecision(36, 10);
+
+        builder.Property(x => x.CostPriceExchangeRate)
+            .HasPrecision(36, 10);
+
         builder.Property(x => x.ItemRawAmount)
             .HasPrecision(36, 10)
             .IsRequired();
@@ -191,6 +197,11 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasOne(x => x.Product)
             .WithMany()
             .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.CostPriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.CostPriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 

@@ -27,6 +27,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using FluentValidation.Results;
 using Product = GoldEx.Server.Domain.ProductAggregate.Product;
 
 namespace GoldEx.Server.Application.Services;
@@ -52,13 +53,6 @@ internal class InvoiceService(
             try
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-                var warehouseActionType = request.InvoiceType switch
-                {
-                    InvoiceType.Purchase => WarehouseActionType.In,
-                    InvoiceType.Sell => WarehouseActionType.Out,
-                    _ => throw new ArgumentOutOfRangeException()
-                };
 
                 #region Customer (Create or update customer)
 
@@ -162,6 +156,19 @@ internal class InvoiceService(
                         product = newProduct;
 
                         await productRepository.CreateAsync(newProduct, cancellationToken);
+
+                        if (request.InvoiceType is InvoiceType.Sell)
+                        {
+                            if (!itemDto.CostPrice.HasValue)
+                            {
+                                throw new ValidationException("خطای اعتبارسنجی",
+                                    new List<ValidationFailure>
+                                    {
+                                        new(nameof(itemDto.CostPrice),
+                                            "وارد کردن نرخ خرید الزامی است")
+                                    });
+                            }
+                        }
                     }
                     else
                     {
@@ -206,7 +213,11 @@ internal class InvoiceService(
                     invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
-                            product.Id)
+                            product.Id,
+                            itemDto.CostPrice,
+                            itemDto.CostPriceExchangeRate,
+                            itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
+                            itemDto.IsInstantProduct)
                         .SetInvoice(invoice)
                         .RecalculateAmounts(product));
                 }
@@ -236,7 +247,6 @@ internal class InvoiceService(
                 #endregion
 
                 await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
-
                 await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
@@ -257,13 +267,6 @@ internal class InvoiceService(
             try
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-                var warehouseActionType = request.InvoiceType switch
-                {
-                    InvoiceType.Purchase => WarehouseActionType.In,
-                    InvoiceType.Sell => WarehouseActionType.Out,
-                    _ => throw new ArgumentOutOfRangeException()
-                };
 
                 #region Customer (Create or update customer)
 
@@ -343,6 +346,9 @@ internal class InvoiceService(
                 invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
                     InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
 
+                await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
+                await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, null, cancellationToken);
+
                 #endregion
 
                 #region Product (Create or update products)
@@ -373,6 +379,19 @@ internal class InvoiceService(
                         product = newProduct;
 
                         await productRepository.CreateAsync(newProduct, cancellationToken);
+
+                        if (request.InvoiceType is InvoiceType.Sell)
+                        {
+                            if (!itemDto.CostPrice.HasValue)
+                            {
+                                throw new ValidationException("خطای اعتبارسنجی",
+                                    new List<ValidationFailure>
+                                    {
+                                        new(nameof(itemDto.CostPrice),
+                                            "وارد کردن نرخ خرید الزامی است")
+                                    });
+                            }
+                        }
                     }
                     else
                     {
@@ -417,7 +436,11 @@ internal class InvoiceService(
                     invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
-                            product.Id)
+                            product.Id,
+                            itemDto.CostPrice,
+                            itemDto.CostPriceExchangeRate,
+                            itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
+                            itemDto.IsInstantProduct)
                         .SetInvoice(invoice)
                         .RecalculateAmounts(product));
                 }
@@ -427,8 +450,6 @@ internal class InvoiceService(
                 await invoiceRepository.UpdateAsync(invoice, cancellationToken);
 
                 #region InvoicePayments (Update invoice payments)
-
-                await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
 
                 var existingPayments = await paymentRepository
                     .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
@@ -454,7 +475,7 @@ internal class InvoiceService(
 
                 #endregion
 
-                await inventoryStockService.UpdateInvoiceInventoryAsync(invoice, cancellationToken);
+                await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
 
                 await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
 
@@ -512,6 +533,8 @@ internal class InvoiceService(
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
                     .ThenInclude(x => x!.ProductCategory)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.CostPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
@@ -545,6 +568,8 @@ internal class InvoiceService(
                     .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.CostPriceUnit)
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount)

@@ -45,7 +45,11 @@ public class InvoicesMappingConfig : IRegister
             .Map(dest => dest.PriceUnit, src => src.PriceUnit);
 
         config.NewConfig<InvoiceProductItem, GetInvoiceProductItemResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CostPriceUnitId,
+                src => src.CostPriceUnitId.HasValue ? src.CostPriceUnitId.Value.Value : (Guid?)null)
+            .Map(dest => dest.CostPriceUnitTitle,
+                src => src.CostPriceUnit != null ? src.CostPriceUnit.Title : string.Empty);
 
         config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);

@@ -59,6 +59,7 @@
         </MudHidden>
     </ToolBarContent>
     <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="InvoiceType" T="InvoiceListVm">نوع فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
         <MudTh>ارزش کل</MudTh>
@@ -68,6 +69,7 @@
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
+        <MudTd DataLabel="نوع فاکتور">@context.InvoiceType.GetDisplayName()</MudTd>
         <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
         <MudTd DataLabel="طرف حساب">@context.CustomerFullName</MudTd>
         <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.AmountUnit)</MudTd>
