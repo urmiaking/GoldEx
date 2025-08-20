@@ -8,6 +8,8 @@ public class LedgerAccountsByCustomerIdSpecification : SpecificationBase<LedgerA
 {
     public LedgerAccountsByCustomerIdSpecification(CustomerId? customerId)
     {
+        AddInclude(x => x.ParentAccount!.ParentAccount!.ParentAccount!);
+
         if (customerId.HasValue)
         {
             AddCriteria(x => x.CustomerId == customerId);
