@@ -188,23 +188,22 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         var productId = new ProductId(invoiceProductItem.Product.Id.Value);
 
-        var product = await _productRepository
-            .Get(new ProductsByIdSpecification(productId))
-            .FirstOrDefaultAsync(cancellationToken);
+        if (invoiceDto.Id.HasValue)
+        {
+            var existingInvoice = await _invoiceRepository
+                .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceDto.Id.Value)))
+                .FirstOrDefaultAsync(cancellationToken);
 
-        //if (product?.SellInvoiceProductItem is null)
-        //    return true;
-        // TODO: refactor this logic due to sell product nav prop has been deleted
+            if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.ProductId == productId))
+                return true;
+        }
+        else
+        {
+            var quantity = await _inventoryStockRepository.GetQuantityAsync(productId, cancellationToken);
 
-        //if (invoiceDto.Id.HasValue)
-        //{
-        //    var existingInvoice = await _invoiceRepository
-        //        .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceDto.Id.Value)))
-        //        .FirstOrDefaultAsync(cancellationToken);
-
-        //    if (existingInvoice != null && existingInvoice.ProductItems.Any(item => item.ProductId == productId))
-        //        return true;
-        //}
+            if (quantity <= 0)
+                return false;
+        }
 
         return true;
     }

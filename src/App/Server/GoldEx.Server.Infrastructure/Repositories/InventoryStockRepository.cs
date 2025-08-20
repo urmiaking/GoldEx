@@ -117,7 +117,8 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         {
                             ProductId = g.Key,
                             CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
-                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0)
+                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0),
+                            DateTime = g.First().CreatedAt
                         });
 
                     var filteredAggregationQuery = inventoryFilter.ActionType == WarehouseActionType.In
@@ -143,7 +144,8 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                     {
                         Item = products.GetValueOrDefault(agg.ProductId),
                         agg.CurrentQuantity,
-                        agg.SoldQuantity
+                        agg.SoldQuantity,
+                        agg.DateTime
                     }).Where(x => x.Item != null)
                       .AsQueryable();
 
@@ -158,7 +160,8 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                     {
                         Product = x.Item,
                         CurrentQuantity = x.CurrentQuantity,
-                        SoldQuantity = x.SoldQuantity
+                        SoldQuantity = x.SoldQuantity,
+                        DateTime = x.DateTime
                     }).ToList();
 
                     return (finalData, total);
@@ -173,7 +176,8 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         {
                             Item = g.Key,
                             CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
-                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0)
+                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0),
+                            DateTime = g.First().CreatedAt
                         });
 
                     var filteredAggQuery = inventoryFilter.ActionType == WarehouseActionType.In
@@ -190,7 +194,8 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         {
                             Coin = x.Item,
                             CurrentQuantity = x.CurrentQuantity,
-                            SoldQuantity = x.SoldQuantity
+                            SoldQuantity = x.SoldQuantity,
+                            DateTime = x.DateTime
                         })
                         .ToListAsync(cancellationToken);
                     return (data, total);
@@ -201,12 +206,13 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                     var aggQuery = baseQuery
                         .AsNoTracking()
                         .Where(x => x.CurrencyId != null)
-                        .GroupBy(x => x.Currency)
+                        .GroupBy(x => x.Currency!)
                         .Select(g => new
                         {
                             Item = g.Key,
                             CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
-                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0)
+                            SoldQuantity = g.Sum(s => s.ActionType == WarehouseActionType.Out ? s.ChangeAmount : 0),
+                            DateTime = g.Key.CreatedAt
                         });
 
                     var filteredAggQuery = inventoryFilter.ActionType == WarehouseActionType.In
@@ -223,7 +229,8 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         {
                             Currency = x.Item,
                             CurrentQuantity = x.CurrentQuantity,
-                            SoldQuantity = x.SoldQuantity
+                            SoldQuantity = x.SoldQuantity,
+                            DateTime = x.DateTime
                         })
                         .ToListAsync(cancellationToken);
                     return (data, total);

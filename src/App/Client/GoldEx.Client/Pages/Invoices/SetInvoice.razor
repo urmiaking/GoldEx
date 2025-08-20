@@ -2,7 +2,6 @@
 
 @attribute [Route(ClientRoutes.Invoices.SetInvoice)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-<!-- TODO: Add Policy -->
 
 <PageTitle>@(IdValue.HasValue ? "ویرایش فاکتور" : "فاکتور جدید")</PageTitle>
 

@@ -29,9 +29,9 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     }
 
     [HttpDelete(ApiRoutes.Invoices.Delete)]
-    public async Task<IActionResult> DeleteAsync(Guid id, [FromQuery] bool deleteProducts, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await service.DeleteAsync(id, deleteProducts, cancellationToken);
+        await service.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 

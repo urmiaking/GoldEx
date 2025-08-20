@@ -14,6 +14,7 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(amount, 0, nameof(amount));
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
 
         Id = id;
         CurrencyId = currencyId;

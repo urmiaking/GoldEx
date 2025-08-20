@@ -587,50 +587,47 @@ internal class InvoiceService(
         return mapper.Map<GetInvoiceResponse>(item);
     }
 
-    public async Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        try
         {
-            try
-            {
-                var item = await invoiceRepository
-                    .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
-                    .Include(x => x.ProductItems)
-                        .ThenInclude(x => x.Product)
-                    .Include(x => x.InvoicePayments)
-                    .AsSplitQuery()
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+            var item = await invoiceRepository
+                .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+                .Include(x => x.ProductItems)
+                    .ThenInclude(x => x.Product)
+                .Include(x => x.InvoicePayments)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
+            await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
+            await transactionService.ClearTransactionsForInvoiceAsync(item, cancellationToken);
+            await inventoryStockService.RemoveInventoryByInvoiceIdAsync(item.Id, null, cancellationToken);
 
-                await transactionService.ClearTransactionsForInvoiceAsync(item, cancellationToken);
+            var payments = await paymentRepository
+                .Get(new InvoicePaymentsByInvoiceIdSpecification(item.Id))
+                .ToListAsync(cancellationToken);
 
-                await inventoryStockService.RemoveInventoryByInvoiceIdAsync(item.Id, null, cancellationToken);
+            if (payments.Count > 0)
+                await paymentRepository.DeleteRangeAsync(payments, cancellationToken);
 
-                var payments = await paymentRepository
-                    .Get(new InvoicePaymentsByInvoiceIdSpecification(item.Id))
-                    .ToListAsync(cancellationToken);
+            await invoiceRepository.DeleteAsync(item, cancellationToken);
 
-                if (payments.Any())
-                    await paymentRepository.DeleteRangeAsync(payments, cancellationToken);
+            var productsToDelete = item.InvoiceType == InvoiceType.Sell
+                ? item.ProductItems.Where(x => x.IsInstantProduct).Select(x => x.Product!)
+                : item.ProductItems.Select(x => x.Product!);
 
-                await invoiceRepository.DeleteAsync(item, cancellationToken);
+            var productList = productsToDelete.ToList();
+            if (productList.Count > 0)
+                await productRepository.DeleteRangeAsync(productList, cancellationToken);
 
-                // TODO: this logic should be reviewed
-                if (deleteProducts)
-                {
-                    var products = item.ProductItems.Select(x => x.Product!).ToList();
-                    await productRepository.DeleteRangeAsync(products, cancellationToken);
-                }
-
-                await dbTransaction.CommitAsync(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, e.Message);
-                await dbTransaction.RollbackAsync(cancellationToken);
-                throw;
-            }
+            await dbTransaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+            await dbTransaction.RollbackAsync(cancellationToken);
+            throw;
         }
     }
 

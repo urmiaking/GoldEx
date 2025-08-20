@@ -11,4 +11,5 @@ public record InventorySummaryData
     public PriceUnit? Currency { get; init; }
     public required decimal CurrentQuantity { get; init; }
     public required decimal SoldQuantity { get; init; }
+    public DateTime DateTime { get; set; }
 }

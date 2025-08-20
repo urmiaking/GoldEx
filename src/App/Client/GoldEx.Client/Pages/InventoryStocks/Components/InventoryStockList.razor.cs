@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Helpers;
+﻿using System.Globalization;
+using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
@@ -146,5 +147,10 @@ public partial class InventoryStockList
     private void OnViewInvoice(Guid? invoiceId)
     {
         Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
+    }
+
+    private string GetTooltipText(InventoryStockVm context)
+    {
+        return context.DateTime.ToString(CultureInfo.CurrentCulture);
     }
 }

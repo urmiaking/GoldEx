@@ -166,6 +166,6 @@ public partial class ProductsList
 
     private string GetTooltipText(ProductVm item)
     {
-        return "TODO";
+        return "DELETED";
     }
 }
