@@ -9,7 +9,7 @@ namespace GoldEx.Client.Pages.Settings.Components.Coins;
 
 public partial class Editor
 {
-    [Parameter] public CoinVm Model { get; set; } = default!;
+    [Parameter] public CoinVm Model { get; set; } = new();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private IEnumerable<GetPriceTitleResponse> _prices = [];
@@ -30,7 +30,7 @@ public partial class Editor
     private async Task LoadPricesAsync()
     {
         await SendRequestAsync<IPriceService, List<GetPriceTitleResponse>>(
-            action: (s, ct) => s.GetTitlesAsync([MarketType.Coin, MarketType.ParsianCoin], ct),
+            action: (s, ct) => s.GetTitlesAsync([MarketType.Coin], ct),
             afterSend: response => _prices = response);
     }
 
@@ -55,5 +55,6 @@ public partial class Editor
     private void OnPriceChanged(GetPriceTitleResponse? price)
     {
         Model.PriceId = price?.Id;
+        Model.Price = price;
     }
 }
