@@ -39,6 +39,7 @@ internal class CustomerService(
             .AsNoTracking()
             .Include(x => x.FinancialAccounts!)
                 .ThenInclude(x => x.PriceUnit)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         var totalCount = await repository.CountAsync(new CustomersByFilterSpecification(filter, customerFilter), cancellationToken);
@@ -182,9 +183,9 @@ internal class CustomerService(
 
             if (request.FinancialAccounts is not null)
             {
-                var existingBankAccounts = customer.FinancialAccounts?.ToList() ?? [];
-                // Remove bank accounts that are not in the request
-                foreach (var existingAccount in existingBankAccounts)
+                var existingFinancialAccounts = customer.FinancialAccounts?.ToList() ?? [];
+                // Remove financial accounts that are not in the request
+                foreach (var existingAccount in existingFinancialAccounts)
                 {
                     if (request.FinancialAccounts.All(x => x.Id != existingAccount.Id.Value))
                     {
@@ -192,11 +193,11 @@ internal class CustomerService(
                     }
                 }
 
-                // Update or add new bank accounts
+                // Update or add new financial accounts
                 foreach (var bankAccountRequest in request.FinancialAccounts)
                 {
                     var existingAccount =
-                        existingBankAccounts.FirstOrDefault(x => x.Id.Value == bankAccountRequest.Id);
+                        existingFinancialAccounts.FirstOrDefault(x => x.Id.Value == bankAccountRequest.Id);
                     if (existingAccount is not null)
                     {
                         existingAccount.SetAccountType(bankAccountRequest.FinancialAccountType);

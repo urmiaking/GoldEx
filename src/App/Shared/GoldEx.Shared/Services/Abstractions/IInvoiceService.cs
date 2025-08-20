@@ -12,6 +12,6 @@ public interface IInvoiceService
         Guid? customerId, CancellationToken cancellationToken = default);
     Task<GetInvoiceResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetInvoiceResponse> GetAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default);
-    Task DeleteAsync(Guid id, bool deleteProducts, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetInvoiceNumberResponse> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default);
 }

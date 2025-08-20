@@ -1,6 +1,5 @@
 ﻿@attribute [Route(ClientRoutes.Invoices.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-<!-- TODO: Add Policy -->
 @inherits GoldExComponentBase
 
 <PageTitle>فاکتورها</PageTitle>

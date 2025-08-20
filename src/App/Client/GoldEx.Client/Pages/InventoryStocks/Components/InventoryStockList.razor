@@ -86,7 +86,9 @@
         @switch (_itemType)
         {
             case ItemType.Product when context.Product is not null:
-                <MudTd DataLabel="بارکد">@context.Product.Barcode</MudTd> <!-- TODO: DateTime tooltip removed from this -->
+                <MudTooltip Text="@GetTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                    <MudTd DataLabel="بارکد">@context.Product.Barcode</MudTd>
+                </MudTooltip>
                 <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
                 <MudTd DataLabel="وزن">@(context.Product.Weight?.ToString("G29")) @context.Product.GoldUnitType.GetDisplayName()</MudTd>

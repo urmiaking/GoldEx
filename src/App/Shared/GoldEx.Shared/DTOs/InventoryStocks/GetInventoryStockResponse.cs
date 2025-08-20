@@ -7,6 +7,7 @@ namespace GoldEx.Shared.DTOs.InventoryStocks;
 public record GetInventoryStockResponse(
     decimal CurrentAmount,
     decimal SoldAmount,
+    DateTime DateTime,
     GetProductResponse? Product,
     GetCoinResponse? Coin,
     GetPriceUnitTitleResponse? Currency);
