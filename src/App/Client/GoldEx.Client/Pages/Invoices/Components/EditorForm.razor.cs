@@ -657,6 +657,20 @@ public partial class EditorForm
 
     private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)
     {
+        if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
+        {
+            var result = await DialogService.ShowMessageBox(
+                "هشدار",
+                markupMessage: new MarkupString("تغییر نوع فاکتور باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
+                yesText: "بله", cancelText: "لغو");
+            if (result is null or false)
+                return;
+
+            _model.ProductItems.Clear();
+            _model.CoinItems.Clear();
+            _model.CurrencyItems.Clear();
+        }
+
         if (invoiceType is InvoiceType.Sell)
         {
             var vouchers = _model.InvoicePayments.Where(x => x.VoucherId.HasValue).ToList();
