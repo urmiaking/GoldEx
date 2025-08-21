@@ -76,19 +76,8 @@ public class Invoice : EntityBase<InvoiceId>
     private readonly List<InvoiceCurrencyItem> _currencies = [];
     public IReadOnlyList<InvoiceCurrencyItem> CurrencyItems => _currencies;
 
-    public void SetProductItems(IEnumerable<InvoiceProductItem> productItems)
-    {
-        _products.Clear();
-
-        foreach (var productItem in productItems)
-        {
-            if (_products.Any(x => x.ProductId == productItem.ProductId))
-                throw new InvalidOperationException(
-                    $"The product with ID {productItem.ProductId.Value} is already present in the ProductItems list");
-
-            _products.Add(productItem);
-        }
-    }
+    private readonly List<InvoiceTradeIn> _tradeIns = [];
+    public IReadOnlyList<InvoiceTradeIn> TradeIns => _tradeIns;
 
     public void AddProductItem(InvoiceProductItem productItem)
     {
@@ -128,6 +117,24 @@ public class Invoice : EntityBase<InvoiceId>
             _currencies.Add(currencyItem);
         }
     }
+
+    public void AddTradeIn(string description,
+        decimal weight,
+        decimal gramPrice,
+        int fineness,
+        bool isSellable,
+        ProductId? resultingProductId)
+    {
+        _tradeIns.Add(InvoiceTradeIn.Create(description,
+            weight,
+            gramPrice,
+            fineness,
+            isSellable,
+            resultingProductId,
+            this));
+    }
+
+    public void ClearTradeIns() => _tradeIns.Clear();
 
     #endregion
 

@@ -131,7 +131,7 @@ public partial class Editor
                 Model.Wage = null;
                 Model.WageType = null;
                 break;
-            case ProductType.OldGold:
+            case ProductType.UsedGold:
                 throw new InvalidOperationException();
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);

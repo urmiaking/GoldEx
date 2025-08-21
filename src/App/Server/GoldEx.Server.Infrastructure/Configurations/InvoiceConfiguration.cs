@@ -43,6 +43,35 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.OwnsMany(x => x.ProductItems, Configure);
         builder.OwnsMany(x => x.CoinItems, Configure);
         builder.OwnsMany(x => x.CurrencyItems, Configure);
+        builder.OwnsMany(x => x.TradeIns, Configure);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceTradeIn> builder)
+    {
+        builder.ToTable("InvoiceTradeIns");
+
+        builder.WithOwner(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId);
+
+        builder.Property(x => x.Description)
+            .HasMaxLength(100);
+
+        builder.Property(x => x.ItemFinalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.Weight)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.GramPrice)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.HasOne(x => x.ResultingProduct)
+            .WithMany()
+            .HasForeignKey(x => x.ResultingProductId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceCurrencyItem> builder)

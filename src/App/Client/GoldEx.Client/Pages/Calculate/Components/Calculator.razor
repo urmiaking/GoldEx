@@ -76,7 +76,7 @@
                         <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
                         <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
                         <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
-                        <MudRadio Value="ProductType.OldGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
+                        <MudRadio Value="ProductType.UsedGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
                     </MudRadioGroup>
                 }
             </div>
@@ -148,7 +148,7 @@
                     }
                     else
                     {
-                        @if (_model.ProductType != ProductType.OldGold)
+                        @if (_model.ProductType != ProductType.UsedGold)
                         {
                             <MudSelect Adornment="Adornment.End"
                                        For="() => _model.CaratType"
@@ -338,7 +338,7 @@
                                 @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
                                 {
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.OldGold ? $"× (750 / {_model.OldGoldCarat})" : "")</MudText>
+                                        <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? $"× (750 / {_model.OldGoldCarat})" : "")</MudText>
                                         <MudText>@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                     </div>
                                 }

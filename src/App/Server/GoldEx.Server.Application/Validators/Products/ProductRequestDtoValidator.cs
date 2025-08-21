@@ -40,7 +40,7 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
             .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
 
         RuleFor(x => x)
-            .Must(x => x.ProductType is not ProductType.OldGold)
+            .Must(x => x.ProductType is not ProductType.UsedGold)
             .WithMessage("نوع جنس نمی تواند طلای کهنه باشد. لطفا نوع دیگری انتخاب کنید");
 
         RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
