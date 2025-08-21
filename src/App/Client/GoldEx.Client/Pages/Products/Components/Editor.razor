@@ -14,7 +14,7 @@
                                Value="Model.ProductType"
                                ValueChanged="OnProductTypeChanged"
                                Variant="Variant.Outlined">
-                        @foreach (var productType in Enum.GetValues<ProductType>().Where(x => x != ProductType.OldGold))
+                        @foreach (var productType in Enum.GetValues<ProductType>().Where(x => x != ProductType.UsedGold))
                         {
                             <MudSelectItem T="ProductType"
                                            Value="productType">

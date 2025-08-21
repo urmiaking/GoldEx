@@ -154,7 +154,7 @@ public partial class ProductItemEditor
                 Model.ProfitPercent = 0;
                 Model.TaxPercent = 0;
                 break;
-            case ProductType.OldGold:
+            case ProductType.UsedGold:
                 throw new InvalidOperationException();
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);

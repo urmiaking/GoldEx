@@ -17,7 +17,7 @@ public class CalculatorHelper
         /// <returns>قیمت خام طلا</returns>
         public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, CaratType caratType, ProductType productType, int? oldGoldCarat = null)
         {
-            if (productType == ProductType.OldGold && oldGoldCarat.HasValue)
+            if (productType == ProductType.UsedGold && oldGoldCarat.HasValue)
             {
                 return weight * oldGoldCarat.Value / 750 * gramPrice;
             }
@@ -70,7 +70,7 @@ public class CalculatorHelper
         /// <returns>سود فروشنده</returns>
         public static decimal CalculateProfit(decimal rawPrice, decimal wage, ProductType productType, decimal profitPercent)
         {
-            if (productType is ProductType.OldGold or ProductType.MoltenGold)
+            if (productType is ProductType.UsedGold or ProductType.MoltenGold)
                 return 0;
 
             return (rawPrice + wage) * (profitPercent / 100);
@@ -86,7 +86,7 @@ public class CalculatorHelper
         /// <returns>مالیات بر ارزش افزوده</returns>
         public static decimal CalculateTax(decimal wage, decimal profit, decimal taxPercent, ProductType productType)
         {
-            if (productType is ProductType.OldGold or ProductType.MoltenGold)
+            if (productType is ProductType.UsedGold or ProductType.MoltenGold)
                 return 0;
 
             return (wage + profit) * (taxPercent / 100);
@@ -104,7 +104,7 @@ public class CalculatorHelper
         /// <returns>قیمت نهایی</returns>
         public static decimal CalculateFinalPrice(decimal rawPrice, decimal wage, decimal profit, decimal tax, decimal? additionalPrices, ProductType productType)
         {
-            if (productType == ProductType.OldGold)
+            if (productType == ProductType.UsedGold)
             {
                 return rawPrice + (additionalPrices ?? 0);
             }
@@ -134,7 +134,6 @@ public class CalculatorHelper
         }
     }
 
-
     public static class Coin
     {
         /// <summary>
@@ -159,6 +158,18 @@ public class CalculatorHelper
         public static decimal CalculateTax(decimal unitPrice, decimal amount, decimal taxPercent)
         {
             return unitPrice * amount * (taxPercent / 100m);
+        }
+    }
+
+    public static class UsedGolds
+    {
+        public static decimal Calculate(decimal weight, int fineness, decimal gramPrice, decimal? exchangeRate)
+        {
+            if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
+                throw new ArgumentOutOfRangeException(
+                    $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
+
+            return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1));
         }
     }
 }

@@ -289,7 +289,7 @@ public partial class Calculator
             case ProductType.MoltenGold:
                 _applySafetyMargin = true;
                 break;
-            case ProductType.OldGold:
+            case ProductType.UsedGold:
                 _applySafetyMargin = false;
                 _model.OldGoldCarat = (int?)_settings?.OldGoldCarat ?? 735;
                 _model.Wage = null;

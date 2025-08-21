@@ -26,8 +26,8 @@ public class InventoryStocksByItemTypeSpecification : SpecificationBase<Inventor
 
     public InventoryStocksByItemTypeSpecification(ProductType productType)
     {
-        if (productType is ProductType.OldGold)
-            throw new InvalidOperationException($"{ProductType.OldGold.ToString()} is not used for database operations but for UI purposes");
+        if (productType is ProductType.UsedGold)
+            throw new InvalidOperationException($"{ProductType.UsedGold.ToString()} is not used for database operations but for UI purposes");
 
         AddInclude(x => x.Product!);
 
