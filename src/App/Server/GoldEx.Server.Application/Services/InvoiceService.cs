@@ -340,7 +340,9 @@ internal class InvoiceService(
 
                 #region UsedProducts
 
-                foreach (var invoiceUsedProduct in invoice.UsedProducts)
+                var usedProductsToDelete = invoice.UsedProducts.ToList();
+
+                foreach (var invoiceUsedProduct in usedProductsToDelete)
                 {
                     if (invoiceUsedProduct.ProductId.HasValue)
                     {
