@@ -50,10 +50,13 @@ public class InvoiceVm
     public decimal TotalItemsAmount => 
         ProductItems.Sum(i => i.TotalAmount) +
         CoinItems.Sum(i => i.TotalAmount) +
-        CurrencyItems.Sum(i => i.TotalAmount);
+        CurrencyItems.Sum(i => i.TotalAmount) +
+        (InvoiceType is InvoiceType.Purchase ? TotalUsedProductsAmount : 0);
+
     public decimal TotalItemsRawAmount => ProductItems.Sum(i => i.RawAmount) +
                                           CoinItems.Sum(i => i.RawAmount) +
-                                          CurrencyItems.Sum(i => i.RawAmount);
+                                          CurrencyItems.Sum(i => i.RawAmount) +
+                                          (InvoiceType is InvoiceType.Purchase ? TotalUsedProductsAmount : 0);
     public decimal TotalItemsWageAmount => ProductItems.Sum(i => i.WageAmount);
     public decimal TotalItemsProfitAmount => ProductItems.Sum(i => i.ProfitAmount) +
                                              CoinItems.Sum(i => i.ProfitAmount) +
@@ -64,7 +67,8 @@ public class InvoiceVm
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
-    public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount;
+    public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
+    public decimal TotalUsedProductsAmount => UsedProducts.Sum(x => x.ItemFinalAmount);
     public bool IsPaid => TotalUnpaidAmount <= 0;
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.Now && !IsPaid;
 
