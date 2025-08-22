@@ -33,6 +33,7 @@ public class InvoicesMappingConfig : IRegister
             .Map(dest => dest.InvoiceProductItems, src => src.ProductItems)
             .Map(dest => dest.InvoiceCoinItems, src => src.CoinItems)
             .Map(dest => dest.InvoiceCurrencyItems, src => src.CurrencyItems)
+            .Map(dest => dest.InvoiceUsedProducts, src => src.UsedProducts)
             .Map(dest => dest.InvoiceDiscounts, src => src.Discounts)
             .Map(dest => dest.InvoiceExtraCosts, src => src.ExtraCosts)
             .Map(dest => dest.InvoicePayments, src => src.InvoicePayments)
