@@ -433,6 +433,15 @@
                 <MudItem xs="6" md="3">
                     <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalUnpaidAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title) @(_model.UnpaidExchangeRate.HasValue ? $"({_model.TotalUnpaidSecondaryAmount.ToCurrencyFormat(_model.UnpaidPriceUnit?.Title)})" : string.Empty)</MudText>
                 </MudItem>
+                @if (_model.InvoiceType is InvoiceType.Sell && _model.UsedProducts.Any())
+                {
+                    <MudItem xs="6" md="3">
+                        <MudText Typo="Typo.body2">طلای دست دوم خریداری شده</MudText>
+                    </MudItem>
+                    <MudItem xs="6" md="3">
+                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                    </MudItem>
+                }
             </MudGrid>
         }
 
