@@ -18,6 +18,7 @@ public record GetInvoiceResponse(
     decimal TotalDiscountAmount,
     decimal TotalExtraCostAmount,
     decimal TotalUnpaidAmount,
+    decimal TotalUsedProductsAmount,
     decimal TotalAmountWithDiscountsAndExtraCosts,
     decimal? UnpaidAmountExchangeRate,
     decimal? ExchangeRate,
@@ -29,7 +30,19 @@ public record GetInvoiceResponse(
     List<GetInvoiceCurrencyItemResponse> InvoiceCurrencyItems,
     List<GetInvoiceDiscountResponse> InvoiceDiscounts,
     List<GetInvoicePaymentResponse> InvoicePayments,
-    List<GetInvoiceExtraCostsResponse> InvoiceExtraCosts);
+    List<GetInvoiceExtraCostsResponse> InvoiceExtraCosts,
+    List<GetInvoiceUsedProductResponse> InvoiceUsedProducts);
+
+public record GetInvoiceUsedProductResponse(
+    string Description,
+    decimal Weight,
+    decimal Fineness,
+    decimal GramPrice,
+    decimal? ExtraCostsAmount,
+    bool IsSellable,
+    decimal ItemAmount,
+    ProductType ProductType,
+    GoldUnitType UnitType);
 
 public record GetInvoiceProductItemResponse(
     Guid Id,

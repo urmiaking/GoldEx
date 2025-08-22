@@ -17,7 +17,10 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class InventoryStockService(IInventoryStockRepository repository, IMapper mapper) : IServerInventoryStockService, IInventoryStockService
+internal class InventoryStockService(
+    IInventoryStockRepository repository,
+    IMapper mapper) : IServerInventoryStockService,
+    IInventoryStockService
 {
     #region Server Service
 

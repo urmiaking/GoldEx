@@ -138,6 +138,8 @@ public class Invoice : EntityBase<InvoiceId>
         decimal? extraCostsAmount,
         decimal fineness,
         bool isSellable,
+        ProductType productType,
+        GoldUnitType unitType,
         ProductId? productId)
     {
         if (_usedProducts.Any(x => x.ProductId == productId))
@@ -150,6 +152,8 @@ public class Invoice : EntityBase<InvoiceId>
             extraCostsAmount,
             fineness,
             isSellable,
+            productType,
+            unitType,
             productId,
             this));
     }
@@ -243,10 +247,11 @@ public class Invoice : EntityBase<InvoiceId>
         ProductItems.Sum(item => item.ItemTaxAmount) +
         CurrencyItems.Sum(item => item.ItemTaxAmount);
 
-    public decimal TotalAmount => 
+    public decimal TotalAmount =>
         ProductItems.Sum(item => item.ItemFinalAmount) +
         CoinItems.Sum(item => item.TotalAmount) +
-        CurrencyItems.Sum(item => item.TotalAmount);
+        CurrencyItems.Sum(item => item.TotalAmount) +
+        UsedProducts.Sum(item => item.ItemFinalAmount);
 
     public decimal TotalWageAmount => 
         ProductItems.Sum(item => item.ItemWageAmount);
@@ -259,7 +264,8 @@ public class Invoice : EntityBase<InvoiceId>
     public decimal TotalRawAmount => 
         ProductItems.Sum(item => item.ItemRawAmount) +
         CoinItems.Sum(item => item.ItemRawAmount) +
-        CurrencyItems.Sum(item => item.ItemRawAmount);
+        CurrencyItems.Sum(item => item.ItemRawAmount) +
+        (InvoiceType is InvoiceType.Purchase ? TotalUsedProductsAmount : 0);
 
     public decimal TotalPaidAmount => InvoicePayments?.Sum(payment => payment.Amount * (payment.ExchangeRate ?? 1)) ?? 0;
 
@@ -269,7 +275,9 @@ public class Invoice : EntityBase<InvoiceId>
 
     public decimal TotalAmountWithDiscountsAndExtraCosts => TotalAmount - TotalDiscountAmount + TotalExtraCostAmount;
 
-    public decimal TotalUnpaidAmount => TotalAmountWithDiscountsAndExtraCosts - TotalPaidAmount;
+    public decimal TotalUnpaidAmount => TotalAmountWithDiscountsAndExtraCosts - TotalPaidAmount - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
+
+    public decimal TotalUsedProductsAmount => UsedProducts.Sum(usedProduct => usedProduct.ItemFinalAmount);
 
     #endregion
 }

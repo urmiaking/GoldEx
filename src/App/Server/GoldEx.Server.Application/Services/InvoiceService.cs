@@ -73,33 +73,15 @@ internal class InvoiceService(
 
                 #region LedgerAccount (Create ledger account if not exists)
 
-                var parentAccountTitle = request.InvoiceType == InvoiceType.Sell
-                    ? SystemLedgerAccounts.AccountsReceivable
-                    : SystemLedgerAccounts.AccountsPayable;
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
+                    request.Customer.FullName,
+                    SystemLedgerAccounts.AccountsReceivable,
+                    cancellationToken = default);
 
-                var parentLedgerAccount = await ledgerAccountRepository
-                                              .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
-                                              .FirstOrDefaultAsync(cancellationToken)
-                                          ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
-
-                var existingLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerAndParentSpecification(new CustomerId(customerId), parentLedgerAccount.Id))
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (existingLedgerAccount is null)
-                {
-                    var customer = await customerService.GetAsync(customerId, cancellationToken)
-                                   ?? throw new NotFoundException("Customer not found after creation.");
-
-                    var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
-                    var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
-                        ledgerAccountTitle,
-                        new CustomerId(customer.Id),
-                        parentLedgerAccount.AccountType,
-                        parentLedgerAccount.Id);
-
-                    await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
-                }
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
+                    request.Customer.FullName,
+                    SystemLedgerAccounts.AccountsPayable,
+                    cancellationToken = default);
 
                 #endregion
 
@@ -140,7 +122,7 @@ internal class InvoiceService(
                             0,
                             usedGold.ProductType,
                             usedGold.Fineness,
-                            usedGold.GoldUnitType,
+                            usedGold.UnitType,
                             null,
                             null,
                             null);
@@ -150,7 +132,7 @@ internal class InvoiceService(
                     }
 
                     invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice,
-                        usedGold.ExtraCostsAmount, usedGold.Fineness, usedGold.IsSellable, productId);
+                        usedGold.ExtraCostsAmount, usedGold.Fineness, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
                 }
 
                 #endregion
@@ -311,33 +293,15 @@ internal class InvoiceService(
 
                 #region LedgerAccount (Create ledger account if not exists)
 
-                var parentAccountTitle = request.InvoiceType == InvoiceType.Sell
-                    ? SystemLedgerAccounts.AccountsReceivable
-                    : SystemLedgerAccounts.AccountsPayable;
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
+                    request.Customer.FullName,
+                    SystemLedgerAccounts.AccountsReceivable,
+                    cancellationToken = default);
 
-                var parentLedgerAccount = await ledgerAccountRepository
-                                              .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
-                                              .FirstOrDefaultAsync(cancellationToken)
-                                          ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
-
-                var existingLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerAndParentSpecification(new CustomerId(customerId), parentLedgerAccount.Id))
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (existingLedgerAccount is null)
-                {
-                    var customer = await customerService.GetAsync(customerId, cancellationToken)
-                                   ?? throw new NotFoundException("Customer not found after creation.");
-
-                    var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
-                    var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
-                        ledgerAccountTitle,
-                        new CustomerId(customer.Id),
-                        parentLedgerAccount.AccountType,
-                        parentLedgerAccount.Id);
-
-                    await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
-                }
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
+                    request.Customer.FullName,
+                    SystemLedgerAccounts.AccountsPayable,
+                    cancellationToken = default);
 
                 #endregion
 
@@ -373,6 +337,48 @@ internal class InvoiceService(
 
                 await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
                 await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, null, cancellationToken);
+
+                #region UsedProducts
+
+                foreach (var invoiceUsedProduct in invoice.UsedProducts)
+                {
+                    if (invoiceUsedProduct.ProductId.HasValue)
+                    {
+                        var product = await productRepository
+                            .Get(new ProductsByIdSpecification(invoiceUsedProduct.ProductId.Value))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                        await productRepository.DeleteAsync(product, cancellationToken);
+                    }
+                }
+
+                invoice.ClearUsedProducts();
+
+                foreach (var usedGold in request.InvoiceUsedProducts)
+                {
+                    ProductId? productId = null;
+                    if (usedGold.IsSellable)
+                    {
+                        var product = Product.Create(usedGold.Description,
+                            StringExtensions.GenerateRandomBarcode(),
+                            usedGold.Weight,
+                            0,
+                            usedGold.ProductType,
+                            usedGold.Fineness,
+                            usedGold.UnitType,
+                            null,
+                            null,
+                            null);
+
+                        await productRepository.CreateAsync(product, cancellationToken);
+                        productId = product.Id;
+                    }
+
+                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice,
+                        usedGold.ExtraCostsAmount, usedGold.Fineness, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
+                }
+
+                #endregion
 
                 #endregion
 

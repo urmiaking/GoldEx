@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
@@ -12,6 +13,8 @@ public class InvoiceUsedProduct : EntityBase
         decimal? extraCostsAmount,
         decimal fineness,
         bool isSellable,
+        ProductType productType,
+        GoldUnitType unitType,
         ProductId? productId,
         Invoice invoice)
     {
@@ -22,6 +25,10 @@ public class InvoiceUsedProduct : EntityBase
         if (!isSellable && productId.HasValue)
             throw new ArgumentException("If the trade-in is not sellable, product ID should not be provided.",
                 nameof(isSellable));
+
+        if (productType != ProductType.Jewelry && productType != ProductType.Gold)
+            throw new ArgumentException(
+                "Product ID can only be provided for Jewelry or Gold product types.", nameof(productId));
 
         var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, fineness, gramPrice, invoice.ExchangeRate);
 
@@ -34,6 +41,8 @@ public class InvoiceUsedProduct : EntityBase
             IsSellable = isSellable,
             ProductId = productId,
             Invoice = invoice,
+            ProductType = productType,
+            UnitType = unitType,
             ItemAmount = itemAmount,
             ExtraCostsAmount = extraCostsAmount,
             ItemFinalAmount = itemAmount + (extraCostsAmount ?? 0)
@@ -45,6 +54,8 @@ public class InvoiceUsedProduct : EntityBase
     public decimal Weight { get; private set; }
     public decimal GramPrice { get; private set; }
     public bool IsSellable { get; private set; }
+    public ProductType ProductType { get; private set; }
+    public GoldUnitType UnitType { get; private set; }
 
     public ProductId? ProductId { get; private set; }
     public Product? Product { get; private set; }

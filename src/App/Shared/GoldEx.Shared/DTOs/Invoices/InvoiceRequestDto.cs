@@ -50,7 +50,7 @@ public record InvoiceUsedProductDto(
     decimal Fineness,
     bool IsSellable,
     ProductType ProductType,
-    GoldUnitType GoldUnitType);
+    GoldUnitType UnitType);
 
 public record InvoicePaymentDto(
     Guid? Id,

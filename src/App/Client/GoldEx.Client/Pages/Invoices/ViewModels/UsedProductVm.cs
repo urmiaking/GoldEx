@@ -127,21 +127,19 @@ public class UsedProductVm
             productItem.UnitType);
     }
 
-    //public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response)
-    //{
-    //    return new ProductItemVm
-    //    {
-    //        Id = response.Id,
-    //        ExchangeRate = response.ExchangeRate,
-    //        GramPrice = response.GramPrice,
-    //        ProfitPercent = response.ProfitPercent,
-    //        TaxPercent = response.TaxPercent,
-    //        CostPrice = response.CostPrice,
-    //        CostPriceExchangeRate = response.CostPriceExchangeRate,
-    //        CostPriceUnitId = response.CostPriceUnitId,
-    //        CostPriceUnitTitle = response.CostPriceUnitTitle,
-    //        IsInstantProduct = response.IsInstantProduct,
-    //        Product = ProductVm.CreateFrom(response.Product)
-    //    };
-    //}
+    public static UsedProductVm CreateFrom(GetInvoiceUsedProductResponse response)
+    {
+        return new UsedProductVm
+        {
+            GramPrice = response.GramPrice,
+            Fineness = response.Fineness,
+            Weight = response.Weight,
+            Description = response.Description,
+            ExtraCostsAmount = response.ExtraCostsAmount,
+            IsSellable = response.IsSellable,
+            ItemAmount = response.ItemAmount,
+            ProductType = response.ProductType,
+            UnitType = response.UnitType
+        };
+    }
 }

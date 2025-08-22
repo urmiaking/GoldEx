@@ -73,8 +73,8 @@ public static class ServiceCollectionExtensions
 
     internal static IServiceCollection AddFluentValidation(this IServiceCollection services)
     {
-        ValidatorOptions.Global.DisplayNameResolver = (_, member, _) =>
-            member.GetCustomAttribute<DisplayAttribute>()?.GetName();
+        //ValidatorOptions.Global.DisplayNameResolver = (_, member, _) =>
+        //    member.GetCustomAttribute<DisplayAttribute>()?.GetName();
 
         return services;
     }
