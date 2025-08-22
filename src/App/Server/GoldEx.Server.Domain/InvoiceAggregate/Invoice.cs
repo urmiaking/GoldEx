@@ -67,17 +67,10 @@ public class Invoice : EntityBase<InvoiceId>
 
     #region InvoiceItems
 
+    #region ProductItems
+
     private readonly List<InvoiceProductItem> _products = [];
     public IReadOnlyList<InvoiceProductItem> ProductItems => _products;
-
-    private readonly List<InvoiceCoinItem> _coins = [];
-    public IReadOnlyList<InvoiceCoinItem> CoinItems => _coins;
-
-    private readonly List<InvoiceCurrencyItem> _currencies = [];
-    public IReadOnlyList<InvoiceCurrencyItem> CurrencyItems => _currencies;
-
-    private readonly List<InvoiceTradeIn> _tradeIns = [];
-    public IReadOnlyList<InvoiceTradeIn> TradeIns => _tradeIns;
 
     public void AddProductItem(InvoiceProductItem productItem)
     {
@@ -89,6 +82,13 @@ public class Invoice : EntityBase<InvoiceId>
     }
 
     public void ClearProductItems() => _products.Clear();
+
+    #endregion
+
+    #region CoinItems
+
+    private readonly List<InvoiceCoinItem> _coins = [];
+    public IReadOnlyList<InvoiceCoinItem> CoinItems => _coins;
 
     public void SetCoinItems(IEnumerable<InvoiceCoinItem> coinItems)
     {
@@ -104,6 +104,13 @@ public class Invoice : EntityBase<InvoiceId>
         }
     }
 
+    #endregion
+
+    #region Currencies
+
+    private readonly List<InvoiceCurrencyItem> _currencies = [];
+    public IReadOnlyList<InvoiceCurrencyItem> CurrencyItems => _currencies;
+
     public void SetCurrencyItems(IEnumerable<InvoiceCurrencyItem> currencyItems)
     {
         _currencies.Clear();
@@ -118,23 +125,38 @@ public class Invoice : EntityBase<InvoiceId>
         }
     }
 
-    public void AddTradeIn(string description,
+    #endregion
+
+    #region UsedProducts
+
+    private readonly List<InvoiceUsedProduct> _usedProducts = [];
+    public IReadOnlyList<InvoiceUsedProduct> UsedProducts => _usedProducts;
+
+    public void AddUsedProduct(string description,
         decimal weight,
         decimal gramPrice,
-        int fineness,
+        decimal? extraCostsAmount,
+        decimal fineness,
         bool isSellable,
-        ProductId? resultingProductId)
+        ProductId? productId)
     {
-        _tradeIns.Add(InvoiceTradeIn.Create(description,
+        if (_usedProducts.Any(x => x.ProductId == productId))
+            throw new InvalidOperationException(
+                $"The used product with ID {productId?.Value} is already present in the UsedProducts list");
+
+        _usedProducts.Add(InvoiceUsedProduct.Create(description,
             weight,
             gramPrice,
+            extraCostsAmount,
             fineness,
             isSellable,
-            resultingProductId,
+            productId,
             this));
     }
 
-    public void ClearTradeIns() => _tradeIns.Clear();
+    public void ClearUsedProducts() => _usedProducts.Clear();
+
+    #endregion
 
     #endregion
 

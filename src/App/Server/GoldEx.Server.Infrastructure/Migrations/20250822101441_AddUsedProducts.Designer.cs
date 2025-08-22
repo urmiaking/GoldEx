@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250822101441_AddUsedProducts")]
+    partial class AddUsedProducts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1425,13 +1428,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasMaxLength(100)
                                 .HasColumnType("nvarchar(100)");
 
-                            b1.Property<decimal?>("ExtraCostsAmount")
-                                .HasPrecision(36, 10)
-                                .HasColumnType("decimal(36,10)");
+                            b1.Property<decimal>("ExtraCostsAmount")
+                                .HasColumnType("decimal(18,2)");
 
                             b1.Property<decimal>("Fineness")
-                                .HasPrecision(9, 6)
-                                .HasColumnType("decimal(9,6)");
+                                .HasColumnType("decimal(18,2)");
 
                             b1.Property<decimal>("GramPrice")
                                 .HasPrecision(36, 10)
@@ -1441,8 +1442,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasColumnType("bit");
 
                             b1.Property<decimal>("ItemAmount")
-                                .HasPrecision(36, 10)
-                                .HasColumnType("decimal(36,10)");
+                                .HasColumnType("decimal(18,2)");
 
                             b1.Property<decimal>("ItemFinalAmount")
                                 .HasPrecision(36, 10)

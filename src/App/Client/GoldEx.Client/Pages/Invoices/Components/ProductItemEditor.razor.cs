@@ -18,7 +18,6 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class ProductItemEditor
 {
-    [Parameter] public Guid? Id { get; set; }
     [Parameter] public ProductItemVm Model { get; set; } = ProductItemVm.CreateDefaultInstance();
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;

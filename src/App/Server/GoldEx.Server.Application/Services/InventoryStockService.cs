@@ -175,6 +175,13 @@ internal class InventoryStockService(IInventoryStockRepository repository, IMapp
             warehouseActionType,
             invoice.Id)));
 
+        newStockItems.AddRange(invoice.UsedProducts
+            .Where(usedProduct => usedProduct is { IsSellable: true, ProductId: not null })
+            .Select(usedProduct => InventoryStock.CreateProduct(usedProduct.ProductId!.Value,
+                1,
+                WarehouseActionType.In,
+                invoice.Id)));
+
         if (newStockItems.Any())
         {
             await repository.CreateRangeAsync(newStockItems, cancellationToken);

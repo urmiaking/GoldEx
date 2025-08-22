@@ -84,7 +84,7 @@
                 _ => "ندارد"
             })
         </MudTd>
-        <MudTd DataLabel="عیار">@context.CaratType.GetDisplayName()</MudTd>
+        <MudTd DataLabel="عیار">@context.Fineness.ToString("G29")</MudTd>
         <MudTd DataLabel="دسته">@(context.ProductCategoryTitle ?? "-")</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">

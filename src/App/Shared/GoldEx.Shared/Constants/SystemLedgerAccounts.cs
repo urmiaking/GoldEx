@@ -8,6 +8,7 @@ public static class SystemLedgerAccounts
     public static string AccountsReceivable => "حساب‌های دریافتنی";
     public static string PrepaymentsToSuppliers => "پیش‌پرداخت به تامین‌کنندگان";
     public static string Inventory => "موجودی کالا";
+    public static string UsedProductInventory => "موجودی کالای آب کردنی (مواد اولیه)";
     public static string CoinInventory => "موجودی سکه";
     public static string Banks => "بانک‌ها";
     public static string CashAccounts => "صندوق‌ها";

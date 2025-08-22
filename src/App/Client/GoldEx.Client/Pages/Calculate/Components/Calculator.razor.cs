@@ -133,7 +133,6 @@ public partial class Calculator
 
                 _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 _model.TaxPercent = _settings?.TaxPercent ?? 9;
-                _model.OldGoldCarat = (int?)_settings?.OldGoldCarat ?? 735;
             });
     }
 
@@ -171,7 +170,7 @@ public partial class Calculator
 
             if (_from.IsValid)
             {
-                _rawPrice = CalculatorHelper.Product.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.CaratType, _model.ProductType, _model.OldGoldCarat);
+                _rawPrice = CalculatorHelper.Product.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.Fineness, _model.ProductType);
                 _wage = CalculatorHelper.Product.CalculateWage(_rawPrice.Value, _model.Weight, _model.Wage, _model.WageType, _model.ExchangeRate);
                 _profit = CalculatorHelper.Product.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
                 _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType);
@@ -280,18 +279,21 @@ public partial class Calculator
         {
             case ProductType.Jewelry:
                 _model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
+                _model.Fineness = 750m;
                 _applySafetyMargin = true;
                 break;
             case ProductType.Gold:
                 _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+                _model.Fineness = 750m;
                 _applySafetyMargin = true;
                 break;
             case ProductType.MoltenGold:
+                _model.Fineness = 750m;
                 _applySafetyMargin = true;
                 break;
             case ProductType.UsedGold:
                 _applySafetyMargin = false;
-                _model.OldGoldCarat = (int?)_settings?.OldGoldCarat ?? 735;
+                _model.Fineness = (int?)_settings?.UsedGoldFineness ?? 735;
                 _model.Wage = null;
                 _model.WageType = null;
                 _model.ProfitPercent = 0;
@@ -303,9 +305,9 @@ public partial class Calculator
         await Calculate();
     }
 
-    private async void OnCaratTypeChanged(CaratType caratType)
+    private async void OnFinenessChanged(decimal fineness)
     {
-        _model.CaratType = caratType;
+        _model.Fineness = fineness;
 
         await Calculate();
     }
@@ -334,13 +336,6 @@ public partial class Calculator
     private async void OnExtraCostChanges(decimal? additionalPrices)
     {
         _model.ExtraCosts = additionalPrices;
-
-        await Calculate();
-    }
-
-    private async Task OnOldGoldCaratChanged(int? carat)
-    {
-        _model.OldGoldCarat = carat;
 
         await Calculate();
     }
@@ -414,13 +409,12 @@ public partial class Calculator
     private async void ResetModel()
     {
         _model.Weight = 0;
-        _model.CaratType = CaratType.Eighteen;
+        _model.Fineness = 750m;
         _model.ProductType = ProductType.Gold;
         _model.Wage = 0;
         _model.WageType = null;
         _model.ExtraCosts = null;
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
-        _model.OldGoldCarat = null;
 
         _applySafetyMargin = true;
         await LoadGramPriceAsync();

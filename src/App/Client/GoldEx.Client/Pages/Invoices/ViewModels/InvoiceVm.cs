@@ -39,6 +39,8 @@ public class InvoiceVm
     public List<ProductItemVm> ProductItems { get; set; } = [];
     public List<CoinItemVm> CoinItems { get; set; } = [];
     public List<CurrencyItemVm> CurrencyItems { get; set; } = [];
+    public List<UsedProductVm> UsedProducts { get; set; } = [];
+
 
     public List<InvoiceDiscountVm> InvoiceDiscounts { get; set; } = [];
     public List<InvoiceExtraCostVm> InvoiceExtraCosts { get; set; } = [];
@@ -90,6 +92,11 @@ public class InvoiceVm
         return CurrencyItems.Count > 0 ? CurrencyItems.Max(i => i.Index) : 0;
     }
 
+    public int GetLastUsedProductIndexNumber()
+    {
+        return UsedProducts.Count > 0 ? UsedProducts.Max(i => i.Index) : 0;
+    }
+
     public void AddProductItem(ProductItemVm productItem)
     {
         if (!ProductItems.Contains(productItem))
@@ -114,6 +121,15 @@ public class InvoiceVm
         {
             currencyItem.Index = GetLastCurrencyIndexNumber() + 1;
             CurrencyItems.Add(currencyItem);
+        }
+    }
+
+    public void AddUsedProduct(UsedProductVm usedProduct)
+    {
+        if (!UsedProducts.Contains(usedProduct))
+        {
+            usedProduct.Index = GetLastUsedProductIndexNumber() + 1;
+            UsedProducts.Add(usedProduct);
         }
     }
 
@@ -148,6 +164,15 @@ public class InvoiceVm
         }
     }
 
+    public void RemoveUsedProduct(UsedProductVm usedProduct)
+    {
+        if (UsedProducts.Contains(usedProduct))
+        {
+            UsedProducts.Remove(usedProduct);
+            ReorderItemIndexes();
+        }
+    }
+
     /// <summary>
     /// Helper method to ensure all item indexes are sequential (1, 2, 3, ...).
     /// </summary>
@@ -166,6 +191,11 @@ public class InvoiceVm
         for (var i = 0; i < CurrencyItems.Count; i++)
         {
             CurrencyItems[i].Index = i + 1;
+        }
+
+        for (var i = 0; i < UsedProducts.Count; i++)
+        {
+            UsedProducts[i].Index = i + 1;
         }
     }
 
@@ -195,7 +225,8 @@ public class InvoiceVm
             model.CurrencyItems.Select(CurrencyItemVm.ToRequest).ToList(),
             model.InvoiceDiscounts.Select(InvoiceDiscountVm.ToRequest).ToList(),
             model.InvoicePayments.Where(x => x.Amount > 0).Select(InvoicePaymentVm.ToRequest).ToList(),
-            model.InvoiceExtraCosts.Select(InvoiceExtraCostVm.ToRequest).ToList());
+            model.InvoiceExtraCosts.Select(InvoiceExtraCostVm.ToRequest).ToList(),
+            model.UsedProducts.Select(UsedProductVm.ToRequest).ToList());
     }
 
     public static InvoiceVm CreateFrom(GetInvoiceResponse response)

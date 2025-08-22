@@ -126,20 +126,15 @@
                     </MudMenu>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudSelect @bind-Value="Model.Product.CaratType"
-                               For="() => Model.Product.CaratType"
-                               Label="@Model.Product.GetDisplayName(() => Model.Product.CaratType)"
-                               Margin="Margin.Dense"
-                               T="CaratType"
-                               Variant="Variant.Outlined">
-                        @foreach (var caratType in Enum.GetValues<CaratType>())
-                        {
-                            <MudSelectItem T="CaratType"
-                                           Value="caratType">
-                                @caratType.GetDisplayName()
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
+                    <MudNumericField For="@(() => Model.Product.Fineness)"
+                                     Format="G29"
+                                     Immediate="true"
+                                     Label="@Model.GetDisplayName(() => Model.Product.Fineness)"
+                                     Margin="Margin.Dense"
+                                     T="decimal"
+                                     @bind-Value="Model.Product.Fineness"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4">
                     <MudSelect For="() => Model.Product.WageType"

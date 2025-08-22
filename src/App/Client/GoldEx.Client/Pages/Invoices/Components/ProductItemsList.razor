@@ -26,7 +26,7 @@
         </MudTooltip>
     </MudStack>
 
-    <MudTable ApplyButtonPosition="TableApplyButtonPosition.End" Dense="true" Hover="true" Items="@Items" T="ProductItemVm">
+    <MudTable Dense="true" Hover="true" Items="@Items" T="ProductItemVm">
         <ColGroup>
             <col />
             <col />
@@ -49,7 +49,7 @@
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
             <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
             <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
-            <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
+            <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
             <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
             <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">

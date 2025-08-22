@@ -43,12 +43,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.OwnsMany(x => x.ProductItems, Configure);
         builder.OwnsMany(x => x.CoinItems, Configure);
         builder.OwnsMany(x => x.CurrencyItems, Configure);
-        builder.OwnsMany(x => x.TradeIns, Configure);
+        builder.OwnsMany(x => x.UsedProducts, Configure);
     }
 
-    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceTradeIn> builder)
+    private void Configure(OwnedNavigationBuilder<Invoice, InvoiceUsedProduct> builder)
     {
-        builder.ToTable("InvoiceTradeIns");
+        builder.ToTable("InvoiceUsedProducts");
 
         builder.WithOwner(x => x.Invoice)
             .HasForeignKey(x => x.InvoiceId);
@@ -68,9 +68,20 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
-        builder.HasOne(x => x.ResultingProduct)
+        builder.Property(x => x.ExtraCostsAmount)
+            .HasPrecision(36, 10);
+
+        builder.Property(x => x.Fineness)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.Property(x => x.ItemAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.HasOne(x => x.Product)
             .WithMany()
-            .HasForeignKey(x => x.ResultingProductId)
+            .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 

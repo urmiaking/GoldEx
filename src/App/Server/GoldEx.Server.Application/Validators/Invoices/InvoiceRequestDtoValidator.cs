@@ -8,7 +8,6 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
-using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +18,6 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPriceUnitRepository _priceUnitRepository;
-    private readonly IProductRepository _productRepository;
     private readonly IInventoryStockRepository _inventoryStockRepository;
 
     public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
@@ -28,7 +26,6 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         ICoinRepository coinRepository, IInventoryStockRepository inventoryStockRepository)
     {
         _priceUnitRepository = priceUnitRepository;
-        _productRepository = productRepository;
         _invoiceRepository = invoiceRepository;
         _inventoryStockRepository = inventoryStockRepository;
 
@@ -71,8 +68,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         RuleForEach(x => x.InvoicePayments)
             .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository,
                 financialAccountRepository,
-                paymentVoucherRepository,
-                _invoiceRepository));
+                paymentVoucherRepository));
 
         RuleForEach(x => x.InvoiceProductItems)
             .SetValidator(new InvoiceProductItemDtoValidator(
