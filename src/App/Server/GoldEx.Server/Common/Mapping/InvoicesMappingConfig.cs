@@ -61,6 +61,8 @@ public class InvoicesMappingConfig : IRegister
 
         config.NewConfig<InvoiceExtraCost, GetInvoiceExtraCostsResponse>();
 
+        config.NewConfig<InvoiceUsedProduct, GetInvoiceUsedProductResponse>();
+
         config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)

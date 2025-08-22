@@ -1,12 +1,14 @@
 ﻿using FluentValidation;
-using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Client.Pages.Invoices.Validators;
+namespace GoldEx.Server.Application.Validators.Invoices;
 
-public class UsedProductValidator : AbstractValidator<UsedProductVm>
+[ScopedService]
+internal class InvoiceUsedProductDtoValidator : AbstractValidator<InvoiceUsedProductDto>
 {
-    public UsedProductValidator()
+    public InvoiceUsedProductDtoValidator()
     {
         RuleFor(x => x.Description)
             .NotEmpty().WithMessage("لطفا عنوان/توضیحات را وارد کنید")
@@ -28,11 +30,4 @@ public class UsedProductValidator : AbstractValidator<UsedProductVm>
             .Must(x => x is ProductType.Gold or ProductType.Jewelry)
             .WithMessage("نوع محصول باید طلا یا جواهر باشد.");
     }
-
-    public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
-    {
-        var result = await ValidateAsync(ValidationContext<UsedProductVm>.CreateWithOptions((UsedProductVm)model,
-            x => x.IncludeProperties(propertyName)));
-        return result.IsValid ? Array.Empty<string>() : result.Errors.Select(e => e.ErrorMessage);
-    };
 }

@@ -211,8 +211,14 @@ public class InvoiceVm
         if (model.InvoicePriceUnit == null)
             throw new ValidationException("لطفا واحد ارزی فاکتور را وارد کنید");
 
-        if (!model.ProductItems.Any() && !model.CoinItems.Any() && !model.CurrencyItems.Any())
-            throw new ValidationException("فاکتور باید حداقل دارای یک آیتم باشد");
+        var hasNewItems = model.ProductItems.Any() || model.CoinItems.Any() || model.CurrencyItems.Any();
+        var hasUsedItems = model.UsedProducts.Any();
+
+        if (!hasNewItems && !hasUsedItems)
+            throw new ValidationException("فاکتور باید حداقل دارای یک آیتم باشد.");
+
+        if (model.InvoiceType == InvoiceType.Sell && hasUsedItems && !hasNewItems)
+            throw new ValidationException("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک کالای نو، سکه یا ارز باشد.");
 
         return new InvoiceRequestDto(model.InvoiceId,
             model.InvoiceNumber,
@@ -248,6 +254,7 @@ public class InvoiceVm
                 InvoiceExtraCostVm.CreateFrom(x, response.PriceUnit)).ToList(),
             InvoicePayments = response.InvoicePayments.Select(x => 
                 InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
+            UsedProducts = response.InvoiceUsedProducts.Select(UsedProductVm.CreateFrom).ToList(),
             ProductItems = response.InvoiceProductItems.Select(ProductItemVm.CreateFrom).ToList(),
             CoinItems = response.InvoiceCoinItems.Select(CoinItemVm.CreateFrom).ToList(),
             CurrencyItems = response.InvoiceCurrencyItems.Select(CurrencyItemVm.CreateFrom).ToList(),

@@ -9,6 +9,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
@@ -51,8 +52,22 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .SetValidator(customerValidator);
 
         RuleFor(x => x)
-            .Must(x => x.InvoiceCoinItems.Any() || x.InvoiceCurrencyItems.Any() || x.InvoiceProductItems.Any())
-            .WithMessage("حداقل یکی از آیتم های فاکتور باید شامل جنس، ارز یا سکه باشد");
+            .Must(invoice =>
+                invoice.InvoiceProductItems.Any() ||
+                invoice.InvoiceCurrencyItems.Any() ||
+                invoice.InvoiceCoinItems.Any() ||
+                invoice.InvoiceUsedProducts.Any())
+            .WithMessage("فاکتور باید حداقل دارای یک آیتم (کالا، ارز، سکه یا جنس دست دوم) باشد.");
+
+        RuleFor(x => x)
+            .Must(invoice =>
+                invoice.InvoiceProductItems.Any() ||
+                invoice.InvoiceCurrencyItems.Any() ||
+                invoice.InvoiceCoinItems.Any())
+            .When(invoice =>
+                invoice.InvoiceType == InvoiceType.Sell &&
+                invoice.InvoiceUsedProducts.Any())
+            .WithMessage("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک آیتم دیگر باشد.");
 
         RuleFor(x => x.PriceUnitId)
             .MustAsync(BeValidPriceUnit)
@@ -98,6 +113,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         var originalInvoice = await _invoiceRepository
             .Get(new InvoicesByIdSpecification(new InvoiceId(request.Id.Value)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (originalInvoice is null)
