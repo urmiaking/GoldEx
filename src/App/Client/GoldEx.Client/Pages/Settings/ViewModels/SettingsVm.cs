@@ -78,7 +78,7 @@ public class SettingsVm
             JewelryProfitPercent = response.JewelryProfitPercent,
             PriceUpdateInterval = response.PriceUpdateInterval,
             GoldSafetyMarginPercent = response.GoldSafetyMarginPercent,
-            OldGoldCarat = response.OldGoldCarat,
+            OldGoldCarat = response.UsedGoldFineness,
             HasIcon = response.HasIcon
         };
     }

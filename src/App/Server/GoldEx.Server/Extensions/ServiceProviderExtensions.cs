@@ -92,6 +92,9 @@ public static class ServiceProviderExtensions
         var inventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset);
         inventory.SetParentAccount(currentAssets.Id);
 
+        var usedProductInventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset);
+        usedProductInventory.SetParentAccount(currentAssets.Id);
+
         var coinInventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset);
         coinInventory.SetParentAccount(currentAssets.Id);
 
@@ -133,7 +136,7 @@ public static class ServiceProviderExtensions
 
         var subLevelAccounts = new List<LedgerAccount>
         {
-            currentAssets, accountsReceivable, prepayments, inventory, bankAccounts, cashAccounts, coinInventory,
+            currentAssets, accountsReceivable, prepayments, inventory, bankAccounts, cashAccounts, coinInventory, usedProductInventory,
             currentLiabilities, accountsPayable,
             openingBalanceEquity,
             salesRevenue, additionalChargesRevenue, exchangeGainLoss,

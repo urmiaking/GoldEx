@@ -56,7 +56,9 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
 
         RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
 
-        RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
+        RuleFor(x => x.Fineness)
+            .InclusiveBetween(0, 1000)
+            .WithMessage("عیار باید بین 0 تا 1000 باشد");
 
         RuleFor(x => x.ProductCategoryId)
             .NotEmpty()

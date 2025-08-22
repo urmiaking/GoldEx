@@ -1,5 +1,4 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
@@ -15,7 +14,7 @@ public class Product : EntityBase<ProductId>
         decimal weight,
         decimal wage,
         ProductType productType,
-        CaratType caratType,
+        decimal fineness,
         GoldUnitType goldUnitType,
         WageType? wageType,
         PriceUnitId? wagePriceUnitId,
@@ -35,7 +34,7 @@ public class Product : EntityBase<ProductId>
             Weight = weight,
             Wage = wage,
             ProductType = productType,
-            CaratType = caratType,
+            Fineness = fineness,
             GoldUnitType = goldUnitType,
             WageType = wageType,
             WagePriceUnitId = wagePriceUnitId,
@@ -52,7 +51,7 @@ public class Product : EntityBase<ProductId>
     public decimal Weight { get; private set; }
     public decimal Wage { get; private set; }
     public ProductType ProductType { get; private set; }
-    public CaratType CaratType { get; private set; }
+    public decimal Fineness { get; private set; }
     public WageType? WageType { get; private set; }
     public GoldUnitType GoldUnitType { get; private set; }
 
@@ -95,9 +94,9 @@ public class Product : EntityBase<ProductId>
         return this;
     }
 
-    public Product SetCaratType(CaratType caratType)
+    public Product SetFineness(decimal fineness)
     {
-        CaratType = caratType;
+        Fineness = fineness;
         return this;
     }
 

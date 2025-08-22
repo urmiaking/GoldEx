@@ -104,7 +104,7 @@ internal class ProductService(
             request.Weight,
             request.Wage,
             request.ProductType,
-            request.CaratType,
+            request.Fineness,
             request.GoldUnitType,
             request.WageType,
             request.WagePriceUnitId.HasValue ? new PriceUnitId(request.WagePriceUnitId.Value) : null,
@@ -137,7 +137,7 @@ internal class ProductService(
         item.SetWage(request.Wage);
         item.SetWageType(request.WageType);
         item.SetProductType(request.ProductType);
-        item.SetCaratType(request.CaratType);
+        item.SetFineness(request.Fineness);
         item.SetGoldUnitType(request.GoldUnitType);
 
         if (request.ProductCategoryId.HasValue)

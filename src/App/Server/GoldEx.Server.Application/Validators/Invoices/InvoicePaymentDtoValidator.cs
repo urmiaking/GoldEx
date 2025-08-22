@@ -5,11 +5,9 @@ using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
-using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
-using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
 
@@ -19,15 +17,14 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly IFinancialAccountRepository _financialAccountRepository;
     private readonly IPaymentVoucherRepository _paymentVoucherRepository;
-    private readonly IInvoiceRepository _invoiceRepository;
+
     public InvoicePaymentDtoValidator(IPriceUnitRepository priceUnitRepository,
         IFinancialAccountRepository financialAccountRepository,
-        IPaymentVoucherRepository paymentVoucherRepository, IInvoiceRepository invoiceRepository)
+        IPaymentVoucherRepository paymentVoucherRepository)
     {
         _priceUnitRepository = priceUnitRepository;
         _financialAccountRepository = financialAccountRepository;
         _paymentVoucherRepository = paymentVoucherRepository;
-        _invoiceRepository = invoiceRepository;
 
         RuleFor(x => x.PriceUnitId)
             .MustAsync(BeValidPriceUnit)

@@ -1,4 +1,6 @@
-﻿using Blazored.LocalStorage;
+﻿using System.ComponentModel.DataAnnotations;
+using Blazored.LocalStorage;
+using FluentValidation;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Common.Authorization;
@@ -11,6 +13,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace GoldEx.Client.Extensions;
@@ -64,6 +67,14 @@ public static class ServiceCollectionExtensions
     internal static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.DiscoverServices();
+
+        return services;
+    }
+
+    internal static IServiceCollection AddFluentValidation(this IServiceCollection services)
+    {
+        ValidatorOptions.Global.DisplayNameResolver = (_, member, _) =>
+            member.GetCustomAttribute<DisplayAttribute>()?.GetName();
 
         return services;
     }

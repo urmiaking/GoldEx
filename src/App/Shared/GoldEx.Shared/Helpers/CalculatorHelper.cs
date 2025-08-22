@@ -11,19 +11,18 @@ public class CalculatorHelper
         /// </summary>
         /// <param name="weight">وزن بر حسب گرم</param>
         /// <param name="gramPrice">نرخ گرم بر اساس ریال</param>
-        /// <param name="caratType">عیار</param>
+        /// <param name="fineness">عیار</param>
         /// <param name="productType">نوع محصول</param>
-        /// <param name="oldGoldCarat"></param>
         /// <returns>قیمت خام طلا</returns>
-        public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, CaratType caratType, ProductType productType, int? oldGoldCarat = null)
+        public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, decimal fineness, ProductType productType)
         {
-            if (productType == ProductType.UsedGold && oldGoldCarat.HasValue)
+            if (productType == ProductType.UsedGold)
             {
-                return weight * oldGoldCarat.Value / 750 * gramPrice;
+                return weight * fineness / 750m * gramPrice;
             }
 
             var gramPrice24 = gramPrice / 0.75m;
-            var caratRatio = GetCaratRatio(caratType);
+            var caratRatio = GetFinenessRatio(fineness);
             return weight * gramPrice24 * caratRatio;
         }
 
@@ -115,23 +114,9 @@ public class CalculatorHelper
         /// <summary>
         /// دریافت نسبت عیار بر اساس نوع عیار.
         /// </summary>
-        /// <param name="caratType">نوع عیار</param>
+        /// <param name="fineness">نوع عیار</param>
         /// <returns>نسبت عیار</returns>
-        private static decimal GetCaratRatio(CaratType caratType)
-        {
-            return caratType switch
-            {
-                CaratType.Eighteen => 750m / 1000m
-                ,
-                CaratType.TwentyOne => 21m / 24m
-                ,
-                CaratType.TwentyTwo => 22m / 24m
-                ,
-                CaratType.TwentyFour => 1.0m
-                ,
-                _ => throw new ArgumentOutOfRangeException(nameof(caratType), $"Carat type '{caratType}' is not supported.")
-            };
-        }
+        private static decimal GetFinenessRatio(decimal fineness) => fineness / 1000m;
     }
 
     public static class Coin
@@ -161,9 +146,9 @@ public class CalculatorHelper
         }
     }
 
-    public static class UsedGolds
+    public static class UsedProduct
     {
-        public static decimal Calculate(decimal weight, int fineness, decimal gramPrice, decimal? exchangeRate)
+        public static decimal Calculate(decimal weight, decimal fineness, decimal gramPrice, decimal? exchangeRate)
         {
             if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
                 throw new ArgumentOutOfRangeException(

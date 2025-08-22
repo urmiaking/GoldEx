@@ -30,6 +30,9 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasPrecision(36, 10)
             .IsRequired();
 
+        builder.Property(x => x.Fineness)
+            .HasPrecision(9, 6);
+
         builder.HasOne(x => x.ProductCategory)
             .WithMany(x => x.Products)
             .HasForeignKey(x => x.ProductCategoryId)

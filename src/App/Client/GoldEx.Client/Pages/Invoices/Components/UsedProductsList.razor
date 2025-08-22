@@ -2,18 +2,16 @@
 
 <MudPaper Elevation="@Elevation" Class="@Class">
     <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
-        <MudText Typo="Typo.h6">لیست ارزها</MudText>
+        <MudText Typo="Typo.h6">لیست طلا جواهرات دست دوم</MudText>
         <MudSpacer />
-
-        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Success" Text="افزودن ارز">
+        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Error" Text="افزودن جنس دست دوم">
             <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
-                           Variant="Variant.Filled" Color="Color.Success" OnClick="OnAddItem"></MudIconButton>
+                           Variant="Variant.Filled" Color="Color.Error" OnClick="OnAddItem"></MudIconButton>
         </MudTooltip>
     </MudStack>
 
-    <MudTable Dense="true" Hover="true" Items="@Items" T="CurrencyItemVm">
+    <MudTable Dense="true" Hover="true" Items="@Items" T="UsedProductVm">
         <ColGroup>
-            <col />
             <col />
             <col />
             <col />
@@ -24,29 +22,31 @@
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
+            <MudTh>نوع جنس</MudTh>
             <MudTh>عنوان</MudTh>
-            <MudTh>حجم</MudTh>
-            <MudTh>نرخ واحد</MudTh>
-            <MudTh>سود</MudTh>
-            <MudTh>مالیات</MudTh>
+            <MudTh>عیار</MudTh>
+            <MudTh>وزن</MudTh>
+            <MudTh>ارزش کالا</MudTh>
+            <MudTh>مخارج جانبی</MudTh>
             <MudTh>ارزش کل</MudTh>
             <MudTh>عملیات</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
-            <MudTd DataLabel="عنوان">@context.Currency.Title</MudTd>
-            <MudTd DataLabel="حجم">@context.Amount.ToCurrencyFormat()</MudTd>
-            <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
-            <MudTd DataLabel="سود">@context.ProfitAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
-            <MudTd DataLabel="مالیات">@context.TaxAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
-            <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="نوع جنس">@context.ProductType.GetDisplayName()</MudTd>
+            <MudTd DataLabel="عنوان">@context.Description</MudTd>
+            <MudTd DataLabel="عیار">@context.Fineness?.ToString("G29")</MudTd>
+            <MudTd DataLabel="وزن">@context.Weight?.ToString("G29") @context.UnitType.GetDisplayName()</MudTd>
+            <MudTd DataLabel="ارزش کالا">@context.ItemAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="مخارج جانبی">@context.ExtraCostsAmount?.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="ارزش کل">@context.ItemFinalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">
-                    <MudTooltip Text="ویرایش">
+                    <MudTooltip Text="ویرایش جنس">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
                                        Color="Color.Primary" OnClick="() => OnEditItem.InvokeAsync(context)"></MudIconButton>
                     </MudTooltip>
-                    <MudTooltip Text="حذف">
+                    <MudTooltip Text="حذف جنس">
                         <MudIconButton OnClick="@(_ => OnRemoveItem.InvokeAsync(context))" ClickPropagation="true"
                                        Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                     </MudTooltip>
@@ -54,7 +54,7 @@
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
-            <MudText Typo="Typo.body2">هیچ ارزی ثبت نشده است</MudText>
+            <MudText Typo="Typo.body2">هیچ جنسی ثبت نشده است</MudText>
         </NoRecordsContent>
         <LoadingContent>
             <MudText Typo="Typo.body2">در حال بارگذاری</MudText>

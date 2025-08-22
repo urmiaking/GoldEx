@@ -10,7 +10,7 @@ public record GetProductResponse(
     decimal? Wage,
     ProductType ProductType,
     WageType? WageType,
-    CaratType CaratType,
+    decimal Fineness,
     Guid? ProductCategoryId,
     string? ProductCategoryTitle,
     Guid? WagePriceUnitId,

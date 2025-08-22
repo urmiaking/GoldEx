@@ -16,7 +16,7 @@ public class ProductVm : INotifyPropertyChanged
     private decimal? _wage;
     private WageType? _wageType;
     private ProductType _productType;
-    private CaratType _caratType;
+    private decimal _fineness;
     private string? _name;
     private string _barcode = default!;
 
@@ -108,14 +108,14 @@ public class ProductVm : INotifyPropertyChanged
     }
 
     [Display(Name = "عیار")]
-    public CaratType CaratType
+    public decimal Fineness
     {
-        get => _caratType;
+        get => _fineness;
         set
         {
-            if (_caratType != value)
+            if (_fineness != value)
             {
-                _caratType = value;
+                _fineness = value;
                 OnPropertyChanged();
             }
         }
@@ -138,7 +138,7 @@ public class ProductVm : INotifyPropertyChanged
     public GoldUnitType GoldUnitType { get; set; }
 
     internal static ProductVm CreateDefaultInstance() => new()
-    { CaratType = CaratType.Eighteen, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
+    { Fineness = 750m, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
@@ -156,7 +156,7 @@ public class ProductVm : INotifyPropertyChanged
             Wage = item.Wage,
             WageType = item.WageType,
             ProductType = item.ProductType,
-            CaratType = item.CaratType,
+            Fineness = item.Fineness,
             ProductCategoryId = item.ProductCategoryId,
             ProductCategoryTitle = item.ProductCategoryTitle,
             WagePriceUnitId = item.WagePriceUnitId,
@@ -191,7 +191,7 @@ public class ProductVm : INotifyPropertyChanged
             item.Wage ?? 0,
             item.WageType,
             item.ProductType,
-            item.CaratType,
+            item.Fineness,
             item.GoldUnitType,
             item.ProductCategoryId,
             item.WagePriceUnitId,
@@ -215,7 +215,7 @@ public class ProductVm : INotifyPropertyChanged
             Wage = item.Wage,
             WageType = item.WageType,
             ProductType = item.ProductType,
-            CaratType = item.CaratType,
+            Fineness = item.Fineness,
             ProductCategoryId = item.ProductCategoryId,
             ProductCategoryTitle = item.ProductCategoryTitle,
             WagePriceUnitId = item.WagePriceUnitId,

@@ -39,7 +39,18 @@ public record InvoiceRequestDto(
     List<InvoiceCurrencyItemDto> InvoiceCurrencyItems,
     List<InvoiceDiscountDto> InvoiceDiscounts,
     List<InvoicePaymentDto> InvoicePayments,
-    List<InvoiceExtraCostsDto> InvoiceExtraCosts);
+    List<InvoiceExtraCostsDto> InvoiceExtraCosts,
+    List<InvoiceUsedProductDto> InvoiceUsedProducts);
+
+public record InvoiceUsedProductDto(
+    string Description,
+    decimal Weight,
+    decimal GramPrice,
+    decimal? ExtraCostsAmount,
+    decimal Fineness,
+    bool IsSellable,
+    ProductType ProductType,
+    GoldUnitType GoldUnitType);
 
 public record InvoicePaymentDto(
     Guid? Id,

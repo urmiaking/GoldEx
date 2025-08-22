@@ -31,7 +31,7 @@ public class CalculatorVm
     public decimal? ExchangeRate { get; set; }
 
     [Display(Name = "عیار")]
-    public CaratType CaratType { get; set; } = CaratType.Eighteen;
+    public decimal Fineness { get; set; } = 750m;
 
     [Display(Name = "مالیات")]
     public decimal TaxPercent { get; set; } = 9;
@@ -45,9 +45,6 @@ public class CalculatorVm
     [Display(Name = "واحد ارزی اجرت")]
     public GetPriceUnitTitleResponse? WagePriceUnit { get; set; }
 
-    [Display(Name = "عیار طلای کهنه")]
-    public int? OldGoldCarat { get; set; }
-
     [Display(Name = "واحد سنجش طلا")]
     public GoldUnitType GoldUnitType { get; set; } = GoldUnitType.Gram;
 
@@ -57,7 +54,7 @@ public class CalculatorVm
         model.ProductType = response.ProductType;
         model.Wage = response.Wage;
         model.WageType = response.WageType;
-        model.CaratType = response.CaratType;
+        model.Fineness = response.Fineness;
         model.WagePriceUnit = wagePriceUnit;
         model.GoldUnitType = response.GoldUnitType;
 

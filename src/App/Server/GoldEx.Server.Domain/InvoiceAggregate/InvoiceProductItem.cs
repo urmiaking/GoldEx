@@ -157,7 +157,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         if (product.Id != ProductId)
             throw new ArgumentException("The provided product does not match the item's ProductId.", nameof(product));
 
-        ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight, GramPrice, product.CaratType, product.ProductType);
+        ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight, GramPrice, product.Fineness, product.ProductType);
         ItemWageAmount = CalculatorHelper.Product.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, Invoice.ExchangeRate);
         ItemProfitAmount = CalculatorHelper.Product.CalculateProfit(ItemRawAmount, ItemWageAmount, product.ProductType, ProfitPercent);
         ItemTaxAmount = CalculatorHelper.Product.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, product.ProductType);

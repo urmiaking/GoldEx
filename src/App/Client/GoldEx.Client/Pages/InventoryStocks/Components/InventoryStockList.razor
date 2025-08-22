@@ -64,7 +64,7 @@
                 <MudTh><MudTableSortLabel SortLabel="Product.Name" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Wage" T="InventoryStockVm">اجرت ساخت</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Product.Carat" T="InventoryStockVm">عیار</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.Fineness" T="InventoryStockVm">عیار</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.ProductCategory.Title" T="InventoryStockVm">دسته</MudTableSortLabel></MudTh>
                 break;
             case ItemType.Coin:
@@ -100,7 +100,7 @@
                         _ => "ندارد"
                     })
                 </MudTd>
-                <MudTd DataLabel="عیار">@context.Product.CaratType.GetDisplayName()</MudTd>
+                <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
                 <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
                 break;
             case ItemType.Coin when context.Coin is not null:

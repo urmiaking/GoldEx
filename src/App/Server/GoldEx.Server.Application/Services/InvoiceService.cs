@@ -28,6 +28,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using FluentValidation.Results;
+using GoldEx.Sdk.Common.Extensions;
 using Product = GoldEx.Server.Domain.ProductAggregate.Product;
 
 namespace GoldEx.Server.Application.Services;
@@ -128,6 +129,30 @@ internal class InvoiceService(
                 invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
                     InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
 
+                foreach (var usedGold in request.InvoiceUsedProducts)
+                {
+                    ProductId? productId = null;
+                    if (usedGold.IsSellable)
+                    {
+                        var product = Product.Create(usedGold.Description,
+                            StringExtensions.GenerateRandomBarcode(),
+                            usedGold.Weight,
+                            0,
+                            usedGold.ProductType,
+                            usedGold.Fineness,
+                            usedGold.GoldUnitType,
+                            null,
+                            null,
+                            null);
+
+                        await productRepository.CreateAsync(product, cancellationToken);
+                        productId = product.Id;
+                    }
+
+                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice,
+                        usedGold.ExtraCostsAmount, usedGold.Fineness, usedGold.IsSellable, productId);
+                }
+
                 #endregion
 
                 #region Product (Create or update products)
@@ -143,7 +168,7 @@ internal class InvoiceService(
                             itemDto.Product.Weight,
                             itemDto.Product.Wage,
                             itemDto.Product.ProductType,
-                            itemDto.Product.CaratType,
+                            itemDto.Product.Fineness,
                             itemDto.Product.GoldUnitType,
                             itemDto.Product.WageType,
                             itemDto.Product.WagePriceUnitId.HasValue
@@ -179,7 +204,7 @@ internal class InvoiceService(
                         existingProduct.SetName(itemDto.Product.Name);
                         existingProduct.SetBarcode(itemDto.Product.Barcode);
                         existingProduct.SetWeight(itemDto.Product.Weight);
-                        existingProduct.SetCaratType(itemDto.Product.CaratType);
+                        existingProduct.SetFineness(itemDto.Product.Fineness);
                         existingProduct.SetGoldUnitType(itemDto.Product.GoldUnitType);
                         existingProduct.SetProductType(itemDto.Product.ProductType);
                         existingProduct.SetWage(itemDto.Product.Wage);
@@ -366,7 +391,7 @@ internal class InvoiceService(
                             itemDto.Product.Weight,
                             itemDto.Product.Wage,
                             itemDto.Product.ProductType,
-                            itemDto.Product.CaratType,
+                            itemDto.Product.Fineness,
                             itemDto.Product.GoldUnitType,
                             itemDto.Product.WageType,
                             itemDto.Product.WagePriceUnitId.HasValue
@@ -402,7 +427,7 @@ internal class InvoiceService(
                         existingProduct.SetName(itemDto.Product.Name);
                         existingProduct.SetBarcode(itemDto.Product.Barcode);
                         existingProduct.SetWeight(itemDto.Product.Weight);
-                        existingProduct.SetCaratType(itemDto.Product.CaratType);
+                        existingProduct.SetFineness(itemDto.Product.Fineness);
                         existingProduct.SetGoldUnitType(itemDto.Product.GoldUnitType);
                         existingProduct.SetProductType(itemDto.Product.ProductType);
                         existingProduct.SetWage(itemDto.Product.Wage);

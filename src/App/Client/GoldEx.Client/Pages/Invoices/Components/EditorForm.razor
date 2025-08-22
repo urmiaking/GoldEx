@@ -292,10 +292,19 @@
                                        Elevation="2"
                                        OnAddItem="OnAddCurrencyItem" />
                 </MudTabPanel>
+                <MudTabPanel Text="طلای دست دوم" Icon="@Icons.Material.Filled.Recycling" IconColor="Color.Error">
+                    <UsedProductsList Items="@_model.UsedProducts"
+                                      PriceUnit="@_model.InvoicePriceUnit"
+                                      OnEditItem="OnEditUsedProduct"
+                                      OnRemoveItem="OnRemoveUsedProduct"
+                                      Class="mt-2 pa-4"
+                                      Elevation="2"
+                                      OnAddItem="OnAddUsedProduct" />
+                </MudTabPanel>
             </MudTabs>
         </div>
 
-        @if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
+        @if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any() || _model.UsedProducts.Any())
         {
             <MudText Class="mt-2" Typo="Typo.h6" GutterBottom="true">هزینه ها</MudText>
             <MudDivider Class="my-2" />

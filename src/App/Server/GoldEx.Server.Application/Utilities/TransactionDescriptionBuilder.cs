@@ -168,4 +168,13 @@ public static class TransactionDescriptionBuilder
     }
 
     #endregion
+
+    #region Used Product Descriptions (شرح های خرید طلای دست دوم)
+
+    public static string ForUsedProductPurchase(InvoiceUsedProduct usedProduct, Customer customer)
+    {
+        return $"خرید طلای کارکرده '{usedProduct.Description}' از {customer.FullName} در فاکتور شماره {usedProduct.Invoice.InvoiceNumber}";
+    }
+
+    #endregion
 }

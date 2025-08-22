@@ -415,13 +415,75 @@ public partial class EditorForm
     {
         var result = await DialogService.ShowMessageBox(
             "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {currencyItem.Currency?.Title} اطمینان دارید؟ <br> <br> "),
+            markupMessage: new MarkupString($"آیا برای حذف {currencyItem.Currency.Title} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
 
         if (result is null)
             return;
 
         _model.RemoveCurrencyItem(currencyItem);
+    }
+
+    #endregion
+
+    #region UsedProducts
+
+    private async Task OnEditUsedProduct(UsedProductVm usedProduct)
+    {
+        var parameters = new DialogParameters<UsedProductEditor>
+        {
+            { x => x.Model, usedProduct },
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
+        };
+
+        var dialog = await DialogService.ShowAsync<UsedProductEditor>("ویرایش جنس", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: UsedProductVm resultItem })
+        {
+            usedProduct.UpdateFrom(resultItem);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnRemoveUsedProduct(UsedProductVm usedProduct)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            markupMessage: new MarkupString($"آیا برای حذف {usedProduct.Description} اطمینان دارید؟ <br> <br> "),
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is null)
+            return;
+
+        _model.RemoveUsedProduct(usedProduct);
+    }
+
+    private async Task OnAddUsedProduct()
+    {
+        var model = new UsedProductVm();
+
+        decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+
+        model.GramPrice = gramPrice;
+
+        var parameters = new DialogParameters<UsedProductEditor>
+        {
+            { x => x.Model, model },
+            { x => x.PriceUnit, _model.InvoicePriceUnit }
+        };
+
+        var dialog = await DialogService.ShowAsync<UsedProductEditor>("افزودن جنس جدید", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: UsedProductVm usedProduct })
+        {
+            usedProduct.RecalculateAmounts();
+            _model.AddUsedProduct(usedProduct);
+            StateHasChanged();
+        }
     }
 
     #endregion
