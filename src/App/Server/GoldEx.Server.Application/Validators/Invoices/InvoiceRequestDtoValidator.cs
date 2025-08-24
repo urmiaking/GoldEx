@@ -104,6 +104,11 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         RuleForEach(x => x.InvoiceCurrencyItems)
             .SetValidator(new InvoiceCurrencyItemDtoValidator(priceUnitRepository));
+
+        When(x => x.Id.HasValue, () =>
+        {
+
+        });
     }
 
     private async Task<bool> NotResultInNegativeInventory(InvoiceRequestDto request, CancellationToken cancellationToken = default)
