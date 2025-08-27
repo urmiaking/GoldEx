@@ -66,7 +66,7 @@ public class CoinItemVm
     public void RecalculateAmounts()
     {
         RawAmount = UnitPrice;
-        ProfitAmount = CalculatorHelper.Coin.CalculateProfit(UnitPrice, ProfitPercent);
+        ProfitAmount = CalculatorHelper.Coin.CalculateProfit(UnitPrice, ProfitPercent, Quantity);
         FinalAmount = RawAmount + ProfitAmount;
         TotalAmount = FinalAmount * Quantity;
     }

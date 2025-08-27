@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
@@ -12,6 +13,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
+        int quantity,
         ProductId productId,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
@@ -23,6 +25,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
 
         Id = id;
         GramPrice = gramPrice;
@@ -33,6 +36,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         CostPriceExchangeRate = costPriceExchangeRate;
         CostPriceUnitId = costPriceUnitId;
         IsInstantProduct = isInstantProduct;
+        Quantity = quantity;
 
         // Stored calculated values are initialized to 0
         ItemRawAmount = 0;
@@ -46,6 +50,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
+        int quantity,
         ProductId productId,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
@@ -56,6 +61,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             gramPrice,
             profitPercent,
             taxPercent,
+            quantity,
             productId,
             costPrice,
             costPriceExchangeRate,
@@ -63,29 +69,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             isInstantProduct);
     }
 
-    public static InvoiceProductItem Create(
-        InvoiceProductItemId id,
-        decimal gramPrice,
-        decimal profitPercent,
-        decimal taxPercent,
-        ProductId productId,
-        decimal? costPrice,
-        decimal? costPriceExchangeRate,
-        PriceUnitId? costPriceUnitId,
-        bool isInstantProduct)
-    {
-        return new InvoiceProductItem(id,
-            gramPrice,
-            profitPercent,
-            taxPercent,
-            productId,
-            costPrice,
-            costPriceExchangeRate,
-            costPriceUnitId,
-            isInstantProduct);
-    }
-
-    public void Update(InvoiceProductItemId id, decimal gramPrice, decimal profitPercent, decimal taxPercent,
+    public void Update(InvoiceProductItemId id, decimal gramPrice, decimal profitPercent, decimal taxPercent, int quantity,
         PriceUnitId? costPriceUnitId, decimal? costPrice, decimal? costPriceExchangeRate, bool isInstantProduct,
         ProductId productId)
     {
@@ -94,12 +78,14 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
 
         Id = id;
         GramPrice = gramPrice;
         ProfitPercent = profitPercent;
         TaxPercent = taxPercent;
         ProductId = productId;
+        Quantity = quantity;
         CostPrice = costPrice;
         CostPriceExchangeRate = costPriceExchangeRate;
         CostPriceUnitId = costPriceUnitId;
@@ -124,6 +110,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     public decimal? CostPrice { get; private set; }
     public decimal? CostPriceExchangeRate { get; private set; }
     public bool IsInstantProduct { get; private set; }
+    public int Quantity { get; private set; }
 
     public PriceUnitId? CostPriceUnitId { get; private set; }
     public PriceUnit? CostPriceUnit { get; private set; }
@@ -150,25 +137,37 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     /// totals has been changed.
     /// </summary>
     /// <param name="product">The fully loaded Product entity, required for calculation.</param>
-    public InvoiceProductItem RecalculateAmounts(Product product)
+    /// <param name="invoiceType">invoice type</param>
+    public InvoiceProductItem RecalculateAmounts(Product product, InvoiceType invoiceType)
     {
         ArgumentNullException.ThrowIfNull(product);
 
         if (product.Id != ProductId)
             throw new ArgumentException("The provided product does not match the item's ProductId.", nameof(product));
 
-        ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight, GramPrice, product.Fineness, product.ProductType);
-        ItemWageAmount = CalculatorHelper.Product.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, Invoice.ExchangeRate);
-        ItemProfitAmount = CalculatorHelper.Product.CalculateProfit(ItemRawAmount, ItemWageAmount, product.ProductType, ProfitPercent);
-        ItemTaxAmount = CalculatorHelper.Product.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, product.ProductType);
+        if (invoiceType is InvoiceType.Purchase)
+        {
+            ItemRawAmount = (CostPrice ?? 0) * Quantity;
+            ItemWageAmount = 0;
+            ItemProfitAmount = 0;
+            ItemTaxAmount = 0;
+            ItemFinalAmount = ItemRawAmount;
+        }
+        else
+        {
+            ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight, GramPrice, product.Fineness, Quantity, product.ProductType);
+            ItemWageAmount = CalculatorHelper.Product.CalculateWage(ItemRawAmount, product.Weight, product.Wage, product.WageType, Invoice.ExchangeRate);
+            ItemProfitAmount = CalculatorHelper.Product.CalculateProfit(ItemRawAmount, ItemWageAmount, product.ProductType, ProfitPercent);
+            ItemTaxAmount = CalculatorHelper.Product.CalculateTax(ItemWageAmount, ItemProfitAmount, TaxPercent, product.ProductType);
 
-        ItemFinalAmount = CalculatorHelper.Product.CalculateFinalPrice(
-            ItemRawAmount,
-            ItemWageAmount,
-            ItemProfitAmount,
-            ItemTaxAmount,
-            null,
-            product.ProductType);
+            ItemFinalAmount = CalculatorHelper.Product.CalculateFinalPrice(
+                ItemRawAmount,
+                ItemWageAmount,
+                ItemProfitAmount,
+                ItemTaxAmount,
+                null,
+                product.ProductType);
+        }
 
         return this;
     }

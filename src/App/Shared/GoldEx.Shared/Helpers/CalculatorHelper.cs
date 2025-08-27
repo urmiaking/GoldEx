@@ -12,9 +12,10 @@ public class CalculatorHelper
         /// <param name="weight">وزن بر حسب گرم</param>
         /// <param name="gramPrice">نرخ گرم بر اساس ریال</param>
         /// <param name="fineness">عیار</param>
+        /// <param name="quantity">تعداد</param>
         /// <param name="productType">نوع محصول</param>
         /// <returns>قیمت خام طلا</returns>
-        public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, decimal fineness, ProductType productType)
+        public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, decimal fineness, int quantity, ProductType productType)
         {
             if (productType == ProductType.UsedGold)
             {
@@ -23,7 +24,7 @@ public class CalculatorHelper
 
             var gramPrice24 = gramPrice / 0.75m;
             var caratRatio = GetFinenessRatio(fineness);
-            return weight * gramPrice24 * caratRatio;
+            return weight * caratRatio * gramPrice24 * quantity;
         }
 
         /// <summary>
@@ -126,10 +127,11 @@ public class CalculatorHelper
         /// </summary>
         /// <param name="unitPrice">قیمت واحد</param>
         /// <param name="profitPercent">درصد سود</param>
+        /// <param name="quantity"></param>
         /// <returns></returns>
-        public static decimal CalculateProfit(decimal unitPrice, decimal profitPercent)
+        public static decimal CalculateProfit(decimal unitPrice, decimal profitPercent, int quantity)
         {
-            return unitPrice * (profitPercent / 100m);
+            return unitPrice * (profitPercent / 100m) * quantity;
         }
 }
 
@@ -148,13 +150,13 @@ public class CalculatorHelper
 
     public static class UsedProduct
     {
-        public static decimal Calculate(decimal weight, decimal fineness, decimal gramPrice, decimal? exchangeRate)
+        public static decimal Calculate(decimal weight, decimal fineness, decimal gramPrice, int quantity, decimal? exchangeRate)
         {
             if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
                 throw new ArgumentOutOfRangeException(
                     $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
 
-            return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1));
+            return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1)) * quantity;
         }
     }
 }

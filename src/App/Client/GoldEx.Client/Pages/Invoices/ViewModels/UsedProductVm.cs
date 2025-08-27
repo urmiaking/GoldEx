@@ -1,8 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using GoldEx.Client.Pages.Products.ViewModels;
-using GoldEx.Shared.DTOs.Invoices;
+﻿using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -72,17 +71,21 @@ public class UsedProductVm
     [Display(Name = "هزینه های جانبی")]
     public decimal? ExtraCostsAmount { get; set; }
 
-    [Display(Name = "مبلغ نهایی")]
-    public decimal ItemFinalAmount => ItemAmount + (ExtraCostsAmount ?? 0);
-
     [Display(Name = "مبلغ کالا")]
     public decimal ItemAmount { get; set; }
+
+    [Display(Name = "ارزش کل")]
+    public decimal ItemFinalAmount => ItemAmount + (ExtraCostsAmount ?? 0);
 
     [Display(Name = "نوع کالا")]
     public ProductType ProductType { get; set; } = ProductType.Gold;
 
     [Display(Name = "نوع واحد طلا")]
     public GoldUnitType UnitType { get; set; }
+
+    [Display(Name = "تعداد")]
+    [Range(1, int.MaxValue, ErrorMessage = "{0} باید حداقل {1} باشد.")]
+    public int Quantity { get; set; } = 1;
 
     public int Index { get; set; } = 1;
 
@@ -98,7 +101,7 @@ public class UsedProductVm
             return;
         }
 
-        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness.Value, GramPrice, ExchangeRate);
+        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness.Value, GramPrice, Quantity, ExchangeRate) + (ExtraCostsAmount ?? 0);
     }
 
     public void UpdateFrom(UsedProductVm other)
@@ -107,6 +110,7 @@ public class UsedProductVm
         GramPrice = other.GramPrice;
         ExchangeRate = other.ExchangeRate;
         Fineness = other.Fineness;
+        Quantity = other.Quantity;
         Weight = other.Weight;
         Description = other.Description;
         IsSellable = other.IsSellable;
@@ -122,6 +126,7 @@ public class UsedProductVm
             productItem.GramPrice,
             productItem.ExtraCostsAmount ?? 0,
             productItem.Fineness ?? 0,
+            productItem.Quantity,
             productItem.IsSellable,
             productItem.ProductType,
             productItem.UnitType);
@@ -137,6 +142,7 @@ public class UsedProductVm
             Description = response.Description,
             ExtraCostsAmount = response.ExtraCostsAmount,
             IsSellable = response.IsSellable,
+            Quantity = response.Quantity,
             ItemAmount = response.ItemAmount,
             ProductType = response.ProductType,
             UnitType = response.UnitType

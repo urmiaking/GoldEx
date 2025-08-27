@@ -170,7 +170,7 @@ public partial class Calculator
 
             if (_from.IsValid)
             {
-                _rawPrice = CalculatorHelper.Product.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.Fineness, _model.ProductType);
+                _rawPrice = CalculatorHelper.Product.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.Fineness, 1, _model.ProductType);
                 _wage = CalculatorHelper.Product.CalculateWage(_rawPrice.Value, _model.Weight, _model.Wage, _model.WageType, _model.ExchangeRate);
                 _profit = CalculatorHelper.Product.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
                 _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType);

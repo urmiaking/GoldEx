@@ -33,7 +33,7 @@ public record InvoiceRequestDto(
     decimal? UnpaidAmountExchangeRate,
     Guid? UnpaidPriceUnitId,
     decimal? ExchangeRate,
-    CustomerRequestDto Customer,
+    Guid CustomerId,
     List<InvoiceProductItemDto> InvoiceProductItems,
     List<InvoiceCoinItemDto> InvoiceCoinItems,
     List<InvoiceCurrencyItemDto> InvoiceCurrencyItems,
@@ -48,6 +48,7 @@ public record InvoiceUsedProductDto(
     decimal GramPrice,
     decimal? ExtraCostsAmount,
     decimal Fineness,
+    int Quantity,
     bool IsSellable,
     ProductType ProductType,
     GoldUnitType UnitType);
@@ -73,6 +74,7 @@ public record InvoiceProductItemDto(
     decimal? CostPriceExchangeRate,
     Guid? CostPriceUnitId,
     bool IsInstantProduct,
+    int Quantity,
     ProductRequestDto Product);
 
 public record InvoiceCoinItemDto(

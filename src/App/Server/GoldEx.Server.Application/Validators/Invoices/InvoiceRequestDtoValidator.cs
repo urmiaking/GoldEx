@@ -47,9 +47,8 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         RuleFor(x => x.InvoiceType)
             .IsInEnum().WithMessage("نوع فاکتور معتبر نمی باشد");
 
-        RuleFor(x => x.Customer)
-            .NotNull().WithMessage("اطلاعات مشتری الزامی است")
-            .SetValidator(customerValidator);
+        RuleFor(x => x.CustomerId)
+            .NotNull().WithMessage("طرف حساب انتخاب نشده است");
 
         RuleFor(x => x)
             .Must(invoice =>
@@ -105,10 +104,17 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         RuleForEach(x => x.InvoiceCurrencyItems)
             .SetValidator(new InvoiceCurrencyItemDtoValidator(priceUnitRepository));
 
-        When(x => x.Id.HasValue, () =>
+        When(x => !x.Id.HasValue, () =>
         {
-
+            RuleForEach(x => x.InvoiceProductItems)
+                .Must(NewProductsHaveCostPrice)
+                .WithMessage("وارد کردن نرخ خرید جنس الزامی است.");
         });
+    }
+
+    private bool NewProductsHaveCostPrice(InvoiceProductItemDto invoiceProductItem)
+    {
+        return invoiceProductItem.Product.Id.HasValue || invoiceProductItem.CostPrice.HasValue;
     }
 
     private async Task<bool> NotResultInNegativeInventory(InvoiceRequestDto request, CancellationToken cancellationToken = default)

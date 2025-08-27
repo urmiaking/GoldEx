@@ -152,7 +152,7 @@ internal class InventoryStockService(
 
         var newStockItems = invoice.ProductItems.Select(productItem => InventoryStock.CreateProduct(
                 productItem.ProductId,
-                1,
+                productItem.Quantity,
                 warehouseActionType,
                 invoice.Id))
             .ToList();
@@ -181,7 +181,7 @@ internal class InventoryStockService(
         newStockItems.AddRange(invoice.UsedProducts
             .Where(usedProduct => usedProduct is { IsSellable: true, ProductId: not null })
             .Select(usedProduct => InventoryStock.CreateProduct(usedProduct.ProductId!.Value,
-                1,
+                usedProduct.Quantity,
                 WarehouseActionType.In,
                 invoice.Id)));
 

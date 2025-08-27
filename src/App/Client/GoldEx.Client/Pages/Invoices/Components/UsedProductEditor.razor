@@ -82,6 +82,15 @@
                                      Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6">
+                    <MudNumericField For="@(() => Model.Quantity)"
+                                     Immediate="true"
+                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
+                                     Margin="Margin.Dense"
+                                     T="int"
+                                     @bind-Value="Model.Quantity"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
                     <MudNumericField For="@(() => Model.ExtraCostsAmount)"
                                      Format="#,##0.##"
                                      Immediate="true"
@@ -96,7 +105,7 @@
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudCheckBox T="bool" Label="@Model.GetDisplayName(() => Model.IsSellable)"
-                                 LabelPlacement="Placement.Left" Color="Color.Primary"
+                                 LabelPlacement="Placement.Right" Color="Color.Primary"
                                  @bind-Value="Model.IsSellable" />
                 </MudItem>
             </MudGrid>
