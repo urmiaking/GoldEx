@@ -56,10 +56,6 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.Description)
             .HasMaxLength(100);
 
-        builder.Property(x => x.ItemFinalAmount)
-            .HasPrecision(36, 10)
-            .IsRequired();
-
         builder.Property(x => x.Weight)
             .HasPrecision(36, 10)
             .IsRequired();
@@ -76,6 +72,10 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .IsRequired();
 
         builder.Property(x => x.ItemAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.ItemFinalAmount)
             .HasPrecision(36, 10)
             .IsRequired();
 
@@ -122,10 +122,6 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
-        builder.Property(x => x.TotalAmount)
-            .HasPrecision(36, 10)
-            .IsRequired();
-
         builder.Property(x => x.UnitPrice)
             .HasPrecision(36, 10)
             .IsRequired();
@@ -166,10 +162,6 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .IsRequired();
 
         builder.Property(x => x.ItemFinalAmount)
-            .HasPrecision(36, 10)
-            .IsRequired();
-
-        builder.Property(x => x.TotalAmount)
             .HasPrecision(36, 10)
             .IsRequired();
 

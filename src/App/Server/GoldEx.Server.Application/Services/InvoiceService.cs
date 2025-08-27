@@ -53,31 +53,13 @@ internal class InvoiceService(
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-                #region Customer (Create or update customer)
-
-                Guid customerId;
-
-                if (request.Customer.Id.HasValue)
-                {
-                    await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
-                    customerId = request.Customer.Id.Value;
-                }
-                else
-                {
-                    customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
-                }
-
-                #endregion
-
                 #region LedgerAccount (Create ledger account if not exists)
 
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
-                    request.Customer.FullName,
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
                     SystemLedgerAccounts.AccountsReceivable,
                     cancellationToken = default);
 
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
-                    request.Customer.FullName,
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
                     SystemLedgerAccounts.AccountsPayable,
                     cancellationToken = default);
 
@@ -89,7 +71,7 @@ internal class InvoiceService(
                     request.UnpaidAmountExchangeRate,
                     request.ExchangeRate,
                     request.InvoiceType,
-                    new CustomerId(customerId),
+                    new CustomerId(request.CustomerId),
                     new PriceUnitId(request.PriceUnitId),
                     request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
                     DateOnly.FromDateTime(request.InvoiceDate),
@@ -129,8 +111,8 @@ internal class InvoiceService(
                         productId = product.Id;
                     }
 
-                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice,
-                        usedGold.ExtraCostsAmount, usedGold.Fineness, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
+                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice, usedGold.ExtraCostsAmount, 
+                        usedGold.Fineness, usedGold.Quantity, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
                 }
 
                 #endregion
@@ -161,70 +143,25 @@ internal class InvoiceService(
                         product = newProduct;
 
                         await productRepository.CreateAsync(newProduct, cancellationToken);
-
-                        if (request.InvoiceType is InvoiceType.Sell)
-                        {
-                            if (!itemDto.CostPrice.HasValue)
-                            {
-                                throw new ValidationException("خطای اعتبارسنجی",
-                                    new List<ValidationFailure>
-                                    {
-                                        new(nameof(itemDto.CostPrice),
-                                            "وارد کردن نرخ خرید الزامی است")
-                                    });
-                            }
-                        }
                     }
                     else
                     {
-                        var existingProduct = await productRepository
+                        product = await productRepository
                             .Get(new ProductsByIdSpecification(new ProductId(itemDto.Product.Id.Value)))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-                        existingProduct.SetName(itemDto.Product.Name);
-                        existingProduct.SetBarcode(itemDto.Product.Barcode);
-                        existingProduct.SetWeight(itemDto.Product.Weight);
-                        existingProduct.SetFineness(itemDto.Product.Fineness);
-                        existingProduct.SetGoldUnitType(itemDto.Product.GoldUnitType);
-                        existingProduct.SetProductType(itemDto.Product.ProductType);
-                        existingProduct.SetWage(itemDto.Product.Wage);
-                        existingProduct.SetWageType(itemDto.Product.WageType);
-                        existingProduct.SetProductCategory(
-                            itemDto.Product.ProductCategoryId.HasValue
-                                ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
-                                : null);
-                        existingProduct.SetWagePriceUnitId(
-                            itemDto.Product.WagePriceUnitId.HasValue
-                                ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
-                                : null);
-                        if (itemDto.Product.ProductType == ProductType.Jewelry)
-                        {
-                            existingProduct.SetGemStones(itemDto.Product.GemStones?.Select(s => GemStone.Create(s.Code,
-                                s.Type,
-                                s.Color,
-                                s.Cut,
-                                s.Carat,
-                                s.Purity,
-                                existingProduct.Id)));
-                        }
-                        else
-                            existingProduct.ClearGemStones();
-
-                        product = existingProduct;
-
-                        await productRepository.UpdateAsync(existingProduct, cancellationToken);
                     }
 
                     invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
+                            itemDto.Quantity,
                             product.Id,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
                             itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
                             itemDto.IsInstantProduct)
                         .SetInvoice(invoice)
-                        .RecalculateAmounts(product));
+                        .RecalculateAmounts(product, invoice.InvoiceType));
                 }
 
                 #endregion
@@ -251,6 +188,9 @@ internal class InvoiceService(
 
                 #endregion
 
+                await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, ItemType.Coin,
+                    cancellationToken);
+
                 await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
                 await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
 
@@ -273,31 +213,13 @@ internal class InvoiceService(
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-                #region Customer (Create or update customer)
-
-                Guid customerId;
-
-                if (request.Customer.Id.HasValue)
-                {
-                    await customerService.UpdateAsync(request.Customer.Id.Value, request.Customer, cancellationToken);
-                    customerId = request.Customer.Id.Value;
-                }
-                else
-                {
-                    customerId = await customerService.CreateAsync(request.Customer, cancellationToken);
-                }
-
-                #endregion
-
                 #region LedgerAccount (Create ledger account if not exists)
 
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
-                    request.Customer.FullName,
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
                     SystemLedgerAccounts.AccountsReceivable,
                     cancellationToken = default);
 
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(customerId),
-                    request.Customer.FullName,
+                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
                     SystemLedgerAccounts.AccountsPayable,
                     cancellationToken = default);
 
@@ -311,7 +233,7 @@ internal class InvoiceService(
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
                 invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
-                invoice.SetCustomerId(new CustomerId(customerId));
+                invoice.SetCustomerId(new CustomerId(request.CustomerId));
                 invoice.SetInvoiceDate(DateOnly.FromDateTime(request.InvoiceDate));
                 invoice.SetDueDate(request.DueDate.HasValue ? DateOnly.FromDateTime(request.DueDate.Value) : null);
                 invoice.SetInvoiceNumber(request.InvoiceNumber);
@@ -374,8 +296,8 @@ internal class InvoiceService(
                         productId = product.Id;
                     }
 
-                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice,
-                        usedGold.ExtraCostsAmount, usedGold.Fineness, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
+                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice, usedGold.ExtraCostsAmount, 
+                        usedGold.Fineness, usedGold.Quantity, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
                 }
 
                 #endregion
@@ -426,54 +348,22 @@ internal class InvoiceService(
                     }
                     else
                     {
-                        var existingProduct = await productRepository
+                        product = await productRepository
                             .Get(new ProductsByIdSpecification(new ProductId(itemDto.Product.Id.Value)))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-                        existingProduct.SetName(itemDto.Product.Name);
-                        existingProduct.SetBarcode(itemDto.Product.Barcode);
-                        existingProduct.SetWeight(itemDto.Product.Weight);
-                        existingProduct.SetFineness(itemDto.Product.Fineness);
-                        existingProduct.SetGoldUnitType(itemDto.Product.GoldUnitType);
-                        existingProduct.SetProductType(itemDto.Product.ProductType);
-                        existingProduct.SetWage(itemDto.Product.Wage);
-                        existingProduct.SetWageType(itemDto.Product.WageType);
-                        existingProduct.SetProductCategory(
-                            itemDto.Product.ProductCategoryId.HasValue
-                                ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
-                                : null);
-                        existingProduct.SetWagePriceUnitId(
-                            itemDto.Product.WagePriceUnitId.HasValue
-                                ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
-                                : null);
-                        if (itemDto.Product.ProductType == ProductType.Jewelry)
-                        {
-                            existingProduct.SetGemStones(itemDto.Product.GemStones?.Select(s => GemStone.Create(s.Code,
-                                s.Type,
-                                s.Color,
-                                s.Cut,
-                                s.Carat,
-                                s.Purity,
-                                existingProduct.Id)));
-                        }
-                        else
-                            existingProduct.ClearGemStones();
-
-                        product = existingProduct;
-
-                        await productRepository.UpdateAsync(existingProduct, cancellationToken);
                     }
 
                     invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
+                            itemDto.Quantity,
                             product.Id,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
                             itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
                             itemDto.IsInstantProduct)
                         .SetInvoice(invoice)
-                        .RecalculateAmounts(product));
+                        .RecalculateAmounts(product, invoice.InvoiceType));
                 }
 
                 #endregion

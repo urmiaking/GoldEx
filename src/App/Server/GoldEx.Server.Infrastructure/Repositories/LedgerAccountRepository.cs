@@ -3,14 +3,18 @@ using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Infrastructure.Repositories;
 
 [ScopedService]
-internal class LedgerAccountRepository(GoldExDbContext dbContext) : RepositoryBase<LedgerAccount>(dbContext), ILedgerAccountRepository
+internal class LedgerAccountRepository(
+    GoldExDbContext dbContext,
+    ICustomerRepository customerRepository) : RepositoryBase<LedgerAccount>(dbContext),
+    ILedgerAccountRepository
 {
-    public async Task CreateForCustomerAsync(CustomerId customerId, string customerFullName, string parentAccountTitle,
+    public async Task CreateForCustomerAsync(CustomerId customerId, string parentAccountTitle,
         CancellationToken cancellationToken = default)
     {
         var parentAccount = await Query.Where(x => x.Title == parentAccountTitle)
@@ -24,7 +28,13 @@ internal class LedgerAccountRepository(GoldExDbContext dbContext) : RepositoryBa
         if (existingLedgerAccount != null)
             return;
 
-        var ledgerAccountTitle = $"{parentAccount.Title} - {customerFullName}";
+        var customer = await customerRepository
+                           .Get(new CustomersByIdSpecification(customerId))
+                           .AsNoTracking()
+                           .FirstOrDefaultAsync(cancellationToken) 
+                       ?? throw new InvalidOperationException($"Customer with ID '{customerId.Value}' not found.");
+
+        var ledgerAccountTitle = $"{parentAccount.Title} - {customer.FullName}";
 
         var ledgerAccount = LedgerAccount.CreateCustomerAccount(ledgerAccountTitle, customerId, parentAccount.AccountType, parentAccount.Id);
         await CreateAsync(ledgerAccount, cancellationToken);

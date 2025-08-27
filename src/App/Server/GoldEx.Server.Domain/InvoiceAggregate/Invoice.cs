@@ -137,6 +137,7 @@ public class Invoice : EntityBase<InvoiceId>
         decimal gramPrice,
         decimal? extraCostsAmount,
         decimal fineness,
+        int quantity,
         bool isSellable,
         ProductType productType,
         GoldUnitType unitType,
@@ -151,6 +152,7 @@ public class Invoice : EntityBase<InvoiceId>
             gramPrice,
             extraCostsAmount,
             fineness,
+            quantity,
             isSellable,
             productType,
             unitType,
@@ -249,8 +251,8 @@ public class Invoice : EntityBase<InvoiceId>
 
     public decimal TotalAmount =>
         ProductItems.Sum(item => item.ItemFinalAmount) +
-        CoinItems.Sum(item => item.TotalAmount) +
-        CurrencyItems.Sum(item => item.TotalAmount) +
+        CoinItems.Sum(item => item.ItemFinalAmount) +
+        CurrencyItems.Sum(item => item.ItemFinalAmount) +
         UsedProducts.Sum(item => item.ItemFinalAmount);
 
     public decimal TotalWageAmount => 

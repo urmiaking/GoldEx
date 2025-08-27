@@ -3,6 +3,7 @@ using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -60,7 +61,7 @@ public class ProductItemVm
         }
     }
 
-    [Display(Name = "نرخ خرید جنس")]
+    [Display(Name = "نرخ خرید هر واحد جنس")]
     public decimal? CostPrice { get; set; }
 
     [Display(Name = "واحد ارزی نرخ خرید جنس")]
@@ -73,6 +74,11 @@ public class ProductItemVm
     public decimal? CostPriceExchangeRate { get; set; }
 
     public bool IsInstantProduct { get; set; }
+
+    public InvoiceType InvoiceType { get; set; }
+
+    [Display(Name = "تعداد")]
+    public int Quantity { get; set; } = 1;
 
     public ProductVm Product
     {
@@ -104,20 +110,31 @@ public class ProductItemVm
     public decimal ProfitAmount { get; set; }
     public decimal TaxAmount { get; set; }
     public decimal FinalAmount { get; set; }
-    public decimal TotalAmount { get; set; }
 
     /// <summary>
     /// This method performs the client-side calculation and updates the display properties.
     /// It's called whenever an input property changes.
     /// </summary>
-    public void RecalculateAmounts()
+    public ProductItemVm RecalculateAmounts()
     {
-        RawAmount = CalculatorHelper.Product.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.Fineness, Product.ProductType);
-        WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, ExchangeRate);
-        ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
-        TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
-        FinalAmount = RawAmount + WageAmount + ProfitAmount + TaxAmount;
-        TotalAmount = FinalAmount;
+        if (InvoiceType is InvoiceType.Purchase)
+        {
+            RawAmount = (CostPrice * Quantity) ?? 0;
+            WageAmount = 0;
+            ProfitAmount = 0;
+            TaxAmount = 0;
+            FinalAmount = RawAmount;
+        }
+        else
+        {
+            RawAmount = CalculatorHelper.Product.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.Fineness, Quantity, Product.ProductType);
+            WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, ExchangeRate);
+            ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
+            TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
+            FinalAmount = CalculatorHelper.Product.CalculateFinalPrice(RawAmount, WageAmount, ProfitAmount, TaxAmount, 0, Product.ProductType);
+        }
+
+        return this;
     }
 
     public static ProductItemVm CreateDefaultInstance()
@@ -128,7 +145,8 @@ public class ProductItemVm
             GramPrice = 0,
             ExchangeRate = null,
             ProfitPercent = 0,
-            TaxPercent = 0
+            TaxPercent = 0,
+            Quantity = 1
         };
     }
 
@@ -146,6 +164,8 @@ public class ProductItemVm
         CostPriceUnitTitle = other.CostPriceUnitTitle;
         IsInstantProduct = other.IsInstantProduct;
         ShowDetails = other.ShowDetails;
+        InvoiceType = other.InvoiceType;
+        Quantity = other.Quantity;
     }
 
     public static InvoiceProductItemDto ToRequest(ProductItemVm productItem)
@@ -160,10 +180,11 @@ public class ProductItemVm
             productItem.CostPriceExchangeRate,
             productItem.CostPriceUnitId,
             productItem.IsInstantProduct,
+            productItem.Quantity,
             ProductVm.ToRequest(productItem.Product));
     }
 
-    public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response)
+    public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response, InvoiceType invoiceType)
     {
         return new ProductItemVm
         {
@@ -177,7 +198,9 @@ public class ProductItemVm
             CostPriceUnitId = response.CostPriceUnitId,
             CostPriceUnitTitle = response.CostPriceUnitTitle,
             IsInstantProduct = response.IsInstantProduct,
-            Product = ProductVm.CreateFrom(response.Product)
+            Product = ProductVm.CreateFrom(response.Product),
+            Quantity = response.Quantity,
+            InvoiceType = invoiceType
         };
     }
 }

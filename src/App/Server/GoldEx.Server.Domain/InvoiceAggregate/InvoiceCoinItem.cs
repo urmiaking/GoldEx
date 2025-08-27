@@ -14,8 +14,8 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
 
-        var itemProfitAmount = CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent);
-        var itemFinalAmount = unitPrice + itemProfitAmount;
+        var itemProfitAmount = CalculatorHelper.Coin.CalculateProfit(unitPrice, profitPercent, quantity);
+        var itemFinalAmount = (unitPrice * quantity) + itemProfitAmount;
 
         Id = id;
         CoinId = coinId;
@@ -26,7 +26,6 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
         ItemRawAmount = unitPrice;
         ItemProfitAmount = itemProfitAmount;
         ItemFinalAmount = itemFinalAmount;
-        TotalAmount = itemFinalAmount * quantity;
     }
 
     public static InvoiceCoinItem Create(CoinId coinId, decimal unitPrice, int quantity, decimal profitPercent)
@@ -56,7 +55,6 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
     public decimal ItemRawAmount { get; private set; }
     public decimal ItemProfitAmount { get; private set; }
     public decimal ItemFinalAmount { get; private set; }
-    public decimal TotalAmount { get; private set; }
 
     #endregion
 }

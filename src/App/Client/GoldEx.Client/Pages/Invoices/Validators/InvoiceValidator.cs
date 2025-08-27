@@ -39,7 +39,7 @@ public class InvoiceValidator : AbstractValidator<InvoiceVm>
                 invoice.UsedProducts.Any())
             .WithMessage("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک آیتم دیگر باشد.");
 
-        RuleFor(x => x.Customer)
+        RuleFor(x => x.Customer!)
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")
             .SetValidator(new CustomerValidator());
 

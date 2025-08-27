@@ -35,11 +35,13 @@
             <col />
             <col />
             <col />
+            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
             <MudTh>نوع جنس</MudTh>
             <MudTh>عنوان</MudTh>
+            <MudTh>تعداد</MudTh>
             <MudTh>عیار</MudTh>
             <MudTh>وزن</MudTh>
             <MudTh>ارزش کل</MudTh>
@@ -49,13 +51,15 @@
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
             <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
             <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
+            <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
             <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
-            <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="ارزش کل">@context.FinalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">
                     <MudTooltip Text="چاپ بارکد">
                         <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                       OnClick="@(_ => OnPrintBarcode.InvokeAsync(context))"
                                        Color="@Color.Success"></MudIconButton>
                     </MudTooltip>
                     <MudTooltip Text="ویرایش جنس">

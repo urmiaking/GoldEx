@@ -25,8 +25,7 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
         ItemRawAmount = unitPrice;
         ItemProfitAmount = CalculatorHelper.Currency.CalculateProfit(unitPrice, amount, profitPercent);
         ItemTaxAmount = CalculatorHelper.Currency.CalculateTax(unitPrice, amount, taxPercent);
-        ItemFinalAmount = unitPrice + ItemProfitAmount + ItemTaxAmount;
-        TotalAmount = ItemFinalAmount * amount;
+        ItemFinalAmount = (unitPrice * amount) + ItemProfitAmount + ItemTaxAmount;
     }
 
     public static InvoiceCurrencyItem Create(PriceUnitId currencyId,
@@ -68,7 +67,6 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
     public decimal ItemRawAmount { get; private set; }
     public decimal ItemProfitAmount { get; private set; }
     public decimal ItemFinalAmount { get; private set; }
-    public decimal TotalAmount { get; private set; }
     public decimal ItemTaxAmount { get; private set; }
 
     #endregion

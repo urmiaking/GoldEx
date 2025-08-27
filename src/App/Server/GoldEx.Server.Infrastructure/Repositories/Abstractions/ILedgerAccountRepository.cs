@@ -9,6 +9,6 @@ public interface ILedgerAccountRepository : IRepository<LedgerAccount>,
     IUpdateRepository<LedgerAccount>,
     IDeleteRepository<LedgerAccount>
 {
-    Task CreateForCustomerAsync(CustomerId customerId, string customerFullName, string parentAccountTitle,
+    Task CreateForCustomerAsync(CustomerId customerId, string parentAccountTitle,
         CancellationToken cancellationToken = default);
 }

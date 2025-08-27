@@ -10,6 +10,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
@@ -23,6 +24,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class AccountingTransactionService(
     ITransactionRepository repository,
+    ICustomerRepository customerRepository,
     IInvoiceRepository invoiceRepository,
     IPriceUnitRepository priceUnitRepository,
     IFinancialAccountRepository financialAccountRepository,
@@ -32,10 +34,11 @@ internal class AccountingTransactionService(
     {
         if (invoice is { TotalAmountWithDiscountsAndExtraCosts: 0, TotalPaidAmount: 0 }) return;
 
-        if (invoice.Customer is null)
-            throw new ArgumentException("Invoice must have a customer associated with it.", nameof(invoice));
+        var customer = await customerRepository.Get(new CustomersByIdSpecification(invoice.CustomerId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Customer {invoice.CustomerId.Value} not found.");
 
-        var basePriceUnit = await priceUnitRepository.Get(new PriceUnitsSetAsDefaultSpecification())
+        var basePriceUnit = await priceUnitRepository
+                                .Get(new PriceUnitsSetAsDefaultSpecification())
                                 .FirstOrDefaultAsync(cancellationToken) ??
                             throw new NotFoundException("Default price unit not found.");
 
@@ -72,7 +75,7 @@ internal class AccountingTransactionService(
                                                      "Additional Charges Revenue ledger account not found.");
 
                         transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForSaleReceivable(invoice, invoice.Customer),
+                            TransactionDescriptionBuilder.ForSaleReceivable(invoice, customer),
                             invoice.TotalAmountWithDiscountsAndExtraCosts,
                             invoice.ExchangeRate,
                             invoiceGroupId,
@@ -212,7 +215,7 @@ internal class AccountingTransactionService(
                                 invoice.Id));
 
                         transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForPurchasePayable(invoice, invoice.Customer),
+                            TransactionDescriptionBuilder.ForPurchasePayable(invoice, customer),
                             invoice.TotalAmountWithDiscountsAndExtraCosts,
                             invoice.ExchangeRate,
                             invoiceGroupId,
@@ -223,7 +226,7 @@ internal class AccountingTransactionService(
 
                         if (invoice.TotalDiscountAmount > 0)
                             transactions.Add(Transaction.CreateForInvoice(
-                                TransactionDescriptionBuilder.ForPurchaseDiscount(invoice, invoice.Customer,
+                                TransactionDescriptionBuilder.ForPurchaseDiscount(invoice, customer,
                                     invoice.Discounts.Select(x => x.Description)),
                                 invoice.TotalDiscountAmount,
                                 invoice.ExchangeRate,
@@ -591,8 +594,11 @@ internal class AccountingTransactionService(
     {
         LedgerAccountId debitLedgerAccountId;
 
-        if (usedProduct.Invoice.Customer is null)
-            throw new ArgumentException("Used product invoice must have a customer associated with it.", nameof(usedProduct));
+        var customer = await customerRepository
+            .Get(new CustomersByIdSpecification(usedProduct.Invoice.CustomerId))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken) 
+                       ?? throw new NotFoundException($"Customer {usedProduct.Invoice.CustomerId.Value} not found.");
 
         if (usedProduct.IsSellable)
         {
@@ -622,7 +628,7 @@ internal class AccountingTransactionService(
         // --- Step 3: Create the Debit and Credit Transactions ---
         var transactions = new List<Transaction>();
         var groupId = Guid.NewGuid();
-        var description = TransactionDescriptionBuilder.ForUsedProductPurchase(usedProduct, usedProduct.Invoice.Customer);
+        var description = TransactionDescriptionBuilder.ForUsedProductPurchase(usedProduct, customer);
 
         transactions.Add(Transaction.CreateForInvoice(
             description,

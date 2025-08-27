@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -14,6 +15,7 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
@@ -22,6 +24,7 @@ public partial class EditorForm
 {
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
+    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private bool IsEditMode => Id.HasValue;
 
@@ -32,14 +35,14 @@ public partial class EditorForm
     private GetPriceResponse? _gramPrice;
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private bool _isCustomerCreditLimitMenuOpen;
+    private List<GetCustomerResponse> _customers = [];
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
     private bool _paymentsMenuOpen;
     private bool _processing;
     private bool _totalUnpaidMenuOpen;
+    private string _jsVersion = new Random().Next(1, 1000).ToString();
 
-    private string? CustomerCreditLimitAdornmentText => _model.Customer.CreditLimitPriceUnit?.Title;
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
 
@@ -64,7 +67,6 @@ public partial class EditorForm
                 afterSend: response =>
                 {
                     _model = InvoiceVm.CreateFrom(response);
-                    OnCustomerCreditLimitChanged(_model.Customer.CreditLimit);
                 });
         }
         else
@@ -117,7 +119,6 @@ public partial class EditorForm
                 if (_model.InvoicePriceUnit is null)
                 {
                     _model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsDefault);
-                    _model.Customer.CreditLimitPriceUnit = response.FirstOrDefault(x => x.IsDefault);
 
                     StateHasChanged();
                 }
@@ -138,69 +139,39 @@ public partial class EditorForm
 
     #region Customer
 
-    private void OnCustomerCreditLimitChanged(decimal? creditLimit)
+    private async Task<IEnumerable<CustomerVm>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)
     {
-        _model.Customer.CreditLimit = creditLimit;
-    }
+        if (string.IsNullOrEmpty(customerName))
+            return null;
 
-    private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? priceUnit)
-    {
-        _model.Customer.CreditLimitPriceUnit = priceUnit;
-    }
-
-    private void SelectCustomerCreditLimitUnit(GetPriceUnitTitleResponse selectedUnit)
-    {
-        OnCreditLimitUnitChanged(selectedUnit);
-        _model.Customer.CreditLimitMenuOpen = false;
-    }
-
-    private async Task OnCustomerNationalIdChanged(string nationalId)
-    {
-        _model.Customer.NationalId = nationalId;
-
-        if (string.IsNullOrEmpty(nationalId))
-            return;
-
-        await SendRequestAsync<ICustomerService, GetCustomerResponse?>(
-            action: (s, ct) => s.GetAsync(nationalId, ct),
+        await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
+            action: (s, ct) => s.GetByNameAsync(customerName, ct),
             afterSend: response =>
             {
-                if (response is null)
-                    return;
-
-                _model.Customer = CustomerVm.CreateFrom(response);
-                OnCustomerCreditLimitChanged(response.CreditLimit);
+                _customers = response;
             });
+
+        return _customers.Select(CustomerVm.CreateFrom);
     }
 
-    private async Task OnCustomerPhoneNumberChanged(string phoneNumber)
+    private async Task OnAddCustomer()
     {
-        _model.Customer.PhoneNumber = phoneNumber;
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
-        if (string.IsNullOrEmpty(phoneNumber))
-            return;
+        var parameters = new DialogParameters<Customers.Components.Editor>
+        {
+            { x => x.ReturnModel, true }
+        };
 
-        await SendRequestAsync<ICustomerService, GetCustomerResponse?>(
-            action: (s, ct) => s.GetByPhoneNumberAsync(phoneNumber, ct),
-            afterSend: response =>
-            {
-                if (response is null)
-                    return;
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
 
-                _model.Customer = CustomerVm.CreateFrom(response);
-                OnCustomerCreditLimitChanged(response.CreditLimit);
-            });
-    }
+        var result = await dialog.Result;
 
-    private void OnCustomerCleared()
-    {
-        _model.Customer = new CustomerVm { CreditLimitPriceUnit = _model.Customer.CreditLimitPriceUnit };
-    }
-
-    private void OnCustomerNationalIdAdornmentClicked()
-    {
-        _model.Customer.NationalId = StringExtensions.GenerateRandomCode(10);
-        StateHasChanged();
+        if (result is { Canceled: false, Data: CustomerVm customerVm })
+        {
+            _model.Customer = customerVm;
+            StateHasChanged();
+        }
     }
 
     #endregion
@@ -239,6 +210,7 @@ public partial class EditorForm
                     Product = ProductVm.CreateFrom(response),
                     GramPrice = gramPrice,
                     ExchangeRate = exchangeRate,
+                    InvoiceType = InvoiceType.Sell,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold
                         ? _setting?.GoldProfitPercent ?? 7
@@ -246,6 +218,24 @@ public partial class EditorForm
                     Index = _model.GetLastProductIndexNumber() + 1
                 });
             });
+    }
+
+    private async Task OnPrintBarcode(ProductItemVm productItem)
+    {
+        var labelData = new
+        {
+            text = productItem.Product.Barcode,
+            name = productItem.Product.Name,
+            weight = "وزن: " + productItem.Product.Weight?.ToString("G29") + "g",
+            wage = "اجرت: " + productItem.Product.WageType switch
+            {
+                WageType.Fixed => $"{productItem.Product.Wage?.ToCurrencyFormat(productItem.Product.WagePriceUnitTitle)}",
+                WageType.Percent => productItem.Product.Wage?.ToString("G29") + "%",
+                _ => "ندارد"
+            }
+        };
+
+        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
     }
 
     #endregion
@@ -259,11 +249,12 @@ public partial class EditorForm
         decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
         model.GramPrice = gramPrice;
-        model.TaxPercent = _setting?.TaxPercent ?? 9;
-        model.ProfitPercent = _setting?.GoldProfitPercent ?? 7;
+        model.TaxPercent = _model.InvoiceType is InvoiceType.Sell ? _setting?.TaxPercent ?? 9 : 0;
+        model.ProfitPercent = _model.InvoiceType is InvoiceType.Sell ? _setting?.GoldProfitPercent ?? 7 : 0;
         model.IsInstantProduct = _model.InvoiceType is InvoiceType.Sell;
-        model.CostPriceUnitId = _model.InvoiceType is InvoiceType.Sell ? _model.InvoicePriceUnit?.Id : null;
-        model.CostPriceUnitTitle = _model.InvoiceType is InvoiceType.Sell ? _model.InvoicePriceUnit?.Title : null;
+        model.InvoiceType = _model.InvoiceType;
+        model.CostPriceUnitId = _model.InvoicePriceUnit?.Id;
+        model.CostPriceUnitTitle = _model.InvoicePriceUnit?.Title;
 
         var parameters = new DialogParameters<ProductItemEditor>
         {

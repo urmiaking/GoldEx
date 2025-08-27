@@ -7,7 +7,6 @@ using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -110,7 +109,7 @@ public partial class Editor
             { x => x.ReturnModel, true }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن تامین کننده جدید", parameters, dialogOptions);
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
 
         var result = await dialog.Result;
 
@@ -249,13 +248,5 @@ public partial class Editor
 
         await LoadDestinationFinancialAccountsAsync();
         _model.DestinationFinancialAccount = null;
-    }
-
-    private async Task OnVoucherTypeChanged(PaymentVoucherType voucherType)
-    {
-        _model.VoucherType = voucherType;
-
-        await LoadSourceFinancialAccountsAsync();
-        await LoadDestinationFinancialAccountsAsync();
     }
 }

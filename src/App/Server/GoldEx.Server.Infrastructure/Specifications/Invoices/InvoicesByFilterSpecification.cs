@@ -54,8 +54,8 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
             Expression<Func<Invoice, decimal>> unpaidAmountExpression = x =>
                 (
                     x.ProductItems.Sum(i => i.ItemFinalAmount) +
-                    x.CoinItems.Sum(c => c.TotalAmount) +
-                    x.CurrencyItems.Sum(c => c.TotalAmount) +
+                    x.CoinItems.Sum(c => c.ItemFinalAmount) +
+                    x.CurrencyItems.Sum(c => c.ItemFinalAmount) +
                     x.UsedProducts.Sum(up => up.ItemFinalAmount) -
                     x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) +
                     x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))

@@ -24,7 +24,7 @@ public class InvoiceVm
     [Display(Name = "نوع فاکتور")]
     public InvoiceType InvoiceType { get; set; }
 
-    public CustomerVm Customer { get; set; } = new();
+    public CustomerVm? Customer { get; set; } = new();
 
     [Display(Name = "واحد ارزی فاکتور")]
     public GetPriceUnitTitleResponse? InvoicePriceUnit { get; set; }
@@ -35,6 +35,7 @@ public class InvoiceVm
     public GetPriceUnitTitleResponse? UnpaidPriceUnit { get; set; }
     public decimal? UnpaidExchangeRate { get; set; }
     public decimal TotalUnpaidSecondaryAmount => TotalUnpaidAmount * UnpaidExchangeRate ?? 1;
+
 
     public List<ProductItemVm> ProductItems { get; set; } = [];
     public List<CoinItemVm> CoinItems { get; set; } = [];
@@ -48,7 +49,7 @@ public class InvoiceVm
 
     // --- Calculated properties ---
     public decimal TotalItemsAmount => 
-        ProductItems.Sum(i => i.TotalAmount) +
+        ProductItems.Sum(i => i.FinalAmount) +
         CoinItems.Sum(i => i.TotalAmount) +
         CurrencyItems.Sum(i => i.TotalAmount) +
         (InvoiceType is InvoiceType.Purchase ? TotalUsedProductsAmount : 0);
@@ -68,7 +69,7 @@ public class InvoiceVm
     public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
     public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
-    public decimal TotalUsedProductsAmount => UsedProducts.Sum(x => x.ItemFinalAmount);
+    public decimal TotalUsedProductsAmount => UsedProducts.Sum(x => x.ItemAmount);
     public bool IsPaid => TotalUnpaidAmount <= 0;
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.Now && !IsPaid;
 
@@ -77,7 +78,7 @@ public class InvoiceVm
         return new InvoiceVm
         {
             InvoiceDate = DateTime.Now,
-            Customer = new CustomerVm()
+            Customer = null
         };
     }
 
@@ -220,6 +221,9 @@ public class InvoiceVm
         if (model.InvoiceType == InvoiceType.Sell && hasUsedItems && !hasNewItems)
             throw new ValidationException("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک کالای نو، سکه یا ارز باشد.");
 
+        if (model.Customer is null || !model.Customer.Id.HasValue)
+            throw new ValidationException("لطفا طرف حساب را انتخاب کنید");
+
         return new InvoiceRequestDto(model.InvoiceId,
             model.InvoiceNumber,
             model.InvoiceDate.Value,
@@ -229,7 +233,7 @@ public class InvoiceVm
             model.UnpaidExchangeRate,
             model.UnpaidPriceUnit?.Id,
             model.ExchangeRate,
-            CustomerVm.ToRequest(model.Customer),
+            model.Customer.Id.Value,
             model.ProductItems.Select(ProductItemVm.ToRequest).ToList(),
             model.CoinItems.Select(CoinItemVm.ToRequest).ToList(),
             model.CurrencyItems.Select(CurrencyItemVm.ToRequest).ToList(),
@@ -255,7 +259,8 @@ public class InvoiceVm
             InvoicePayments = response.InvoicePayments.Select(x => 
                 InvoicePaymentVm.CreateFrom(x, response.PriceUnit)).ToList(),
             UsedProducts = response.InvoiceUsedProducts.Select(UsedProductVm.CreateFrom).ToList(),
-            ProductItems = response.InvoiceProductItems.Select(ProductItemVm.CreateFrom).ToList(),
+            ProductItems = response.InvoiceProductItems.Select(x => 
+                ProductItemVm.CreateFrom(x, response.InvoiceType).RecalculateAmounts()).ToList(),
             CoinItems = response.InvoiceCoinItems.Select(CoinItemVm.CreateFrom).ToList(),
             CurrencyItems = response.InvoiceCurrencyItems.Select(CurrencyItemVm.CreateFrom).ToList(),
             InvoicePriceUnit = response.PriceUnit,

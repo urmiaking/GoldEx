@@ -126,6 +126,16 @@
                     </MudMenu>
                 </MudItem>
                 <MudItem xs="12" md="4">
+                    <MudNumericField For="@(() => Model.Quantity)"
+                                     Immediate="true"
+                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
+                                     Margin="Margin.Dense"
+                                     T="int"
+                                     @bind-Value="Model.Quantity"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
                     <MudNumericField For="@(() => Model.Product.Fineness)"
                                      Format="G29"
                                      Immediate="true"
@@ -207,85 +217,87 @@
                                          Variant="Variant.Outlined" />
                     </MudItem>
                 }
-                <MudItem xs="12" md="4">
-                    <MudNumericField For="@(() => Model.ProfitPercent)"
-                                     Format="G29"
-                                     Immediate="true"
-                                     Label="@Model.GetDisplayName(() => Model.ProfitPercent)"
-                                     Margin="Margin.Dense"
-                                     T="decimal"
-                                     @bind-Value="Model.ProfitPercent"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="درصد"
-                                     HideSpinButtons="true"
-                                     Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudNumericField For="@(() => Model.TaxPercent)"
-                                     Format="G29"
-                                     Immediate="true"
-                                     Label="@Model.GetDisplayName(() => Model.TaxPercent)"
-                                     Margin="Margin.Dense"
-                                     T="decimal"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="درصد"
-                                     HideSpinButtons="true"
-                                     @bind-Value="Model.TaxPercent"
-                                     Variant="Variant.Outlined" />
-                </MudItem>
-                @if (Model.IsInstantProduct)
+                
+                @if (Model.InvoiceType is InvoiceType.Sell)
                 {
                     <MudItem xs="12" md="4">
-                        <MudMenu @bind-Open="_costPriceMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                            <ActivatorContent>
-                                <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@CostPriceAdornmentText"
-                                                 For="() => Model.CostPrice"
-                                                 Format="#,##0.##"
-                                                 HideSpinButtons="true"
-                                                 Immediate="true"
-                                                 Margin="Margin.Dense"
-                                                 Label="@(Model.GetDisplayName(() => Model.CostPrice))"
-                                                 T="decimal?"
-                                                 @bind-Value="Model.CostPrice"
-                                                 Variant="Variant.Outlined"
-                                                 OnAdornmentClick="OnCostPriceAdornmentClicked"></MudNumericField>
-                            </ActivatorContent>
-                            <ChildContent>
-                                @foreach (var item in PriceUnits)
-                                {
-                                    <MudMenuItem OnClick="() => SelectCostPriceUnit(item)">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            @if (item.HasIcon)
-                                            {
-                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                </MudAvatar>
-                                            }
-                                            @item.Title
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                            </ChildContent>
-                        </MudMenu>
+                        <MudNumericField For="@(() => Model.ProfitPercent)"
+                                         Format="G29"
+                                         Immediate="true"
+                                         Label="@Model.GetDisplayName(() => Model.ProfitPercent)"
+                                         Margin="Margin.Dense"
+                                         T="decimal"
+                                         @bind-Value="Model.ProfitPercent"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="درصد"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined" />
                     </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField For="@(() => Model.TaxPercent)"
+                                         Format="G29"
+                                         Immediate="true"
+                                         Label="@Model.GetDisplayName(() => Model.TaxPercent)"
+                                         Margin="Margin.Dense"
+                                         T="decimal"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="درصد"
+                                         HideSpinButtons="true"
+                                         @bind-Value="Model.TaxPercent"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                }
 
-                    @if (Model.CostPriceUnitId.HasValue && PriceUnit.Id != Model.CostPriceUnitId)
-                    {
-                        <MudItem xs="12" md="4">
-                            <MudNumericField For="@(() => Model.CostPriceExchangeRate)"
-                                             Format="#,##0.########"
-                                             Immediate="true"
-                                             Label="@CostExchangeRateLabel"
-                                             Margin="Margin.Dense"
-                                             T="decimal?"
-                                             @bind-Value="Model.CostPriceExchangeRate"
-                                             Adornment="Adornment.End"
-                                             AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
+                <MudItem xs="12" md="4">
+                    <MudMenu @bind-Open="_costPriceMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@CostPriceAdornmentText"
+                                             For="() => Model.CostPrice"
+                                             Format="#,##0.##"
                                              HideSpinButtons="true"
-                                             Variant="Variant.Outlined" />
-                        </MudItem>
-                    }
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(Model.GetDisplayName(() => Model.CostPrice))"
+                                             T="decimal?"
+                                             @bind-Value="Model.CostPrice"
+                                             Variant="Variant.Outlined"
+                                             OnAdornmentClick="OnCostPriceAdornmentClicked"></MudNumericField>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in PriceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectCostPriceUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
+
+                @if (Model.CostPriceUnitId.HasValue && PriceUnit.Id != Model.CostPriceUnitId)
+                {
+                    <MudItem xs="12" md="4">
+                        <MudNumericField For="@(() => Model.CostPriceExchangeRate)"
+                                         Format="#,##0.########"
+                                         Immediate="true"
+                                         Label="@CostExchangeRateLabel"
+                                         Margin="Margin.Dense"
+                                         T="decimal?"
+                                         @bind-Value="Model.CostPriceExchangeRate"
+                                         Adornment="Adornment.End"
+                                         AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
                 }
 
                 @if (Model.Product.ProductType is ProductType.Jewelry)
