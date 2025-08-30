@@ -24,7 +24,6 @@ public partial class EditorForm
 {
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
-    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private bool IsEditMode => Id.HasValue;
 
@@ -41,7 +40,6 @@ public partial class EditorForm
     private bool _paymentsMenuOpen;
     private bool _processing;
     private bool _totalUnpaidMenuOpen;
-    private string _jsVersion = new Random().Next(1, 1000).ToString();
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -180,6 +178,9 @@ public partial class EditorForm
 
     private async Task OnBarcodeChanged(string barcode)
     {
+        if (string.IsNullOrWhiteSpace(barcode))
+            return;
+
         await SendRequestAsync<IProductService, GetProductResponse?>(
             action: async (s, ct) => await s.GetAsync(barcode, false, ct),
             async response =>
@@ -218,24 +219,6 @@ public partial class EditorForm
                     Index = _model.GetLastProductIndexNumber() + 1
                 });
             });
-    }
-
-    private async Task OnPrintBarcode(ProductItemVm productItem)
-    {
-        var labelData = new
-        {
-            text = productItem.Product.Barcode,
-            name = productItem.Product.Name,
-            weight = "وزن: " + productItem.Product.Weight?.ToString("G29") + "g",
-            wage = "اجرت: " + productItem.Product.WageType switch
-            {
-                WageType.Fixed => $"{productItem.Product.Wage?.ToCurrencyFormat(productItem.Product.WagePriceUnitTitle)}",
-                WageType.Percent => productItem.Product.Wage?.ToString("G29") + "%",
-                _ => "ندارد"
-            }
-        };
-
-        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
     }
 
     #endregion
@@ -571,11 +554,6 @@ public partial class EditorForm
             {
                 item.ExchangeRate = null;
             }
-        }
-
-        if (_model.Customer.Id == null)
-        {
-            _model.Customer.CreditLimitPriceUnit = priceUnit;
         }
 
         if (_model is { UnpaidExchangeRate: not null, UnpaidPriceUnit: not null })

@@ -18,7 +18,7 @@ public class ProductVm : INotifyPropertyChanged
     private ProductType _productType;
     private decimal _fineness;
     private string? _name;
-    private string _barcode = default!;
+    private string? _barcode;
 
     [Display(Name = "نام جنس")]
     [Required(ErrorMessage = "لطفا نام را وارد کنید")]
@@ -36,8 +36,7 @@ public class ProductVm : INotifyPropertyChanged
     }
 
     [Display(Name = "بارکد/سریال")]
-    [Required(ErrorMessage = "بارکد/سریال جنس الزامی است")]
-    public string Barcode
+    public string? Barcode
     {
         get => _barcode;
         set

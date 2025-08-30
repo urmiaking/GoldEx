@@ -53,6 +53,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.WithOwner(x => x.Invoice)
             .HasForeignKey(x => x.InvoiceId);
 
+        builder.HasKey(x => new { x.Id, x.InvoiceId });
+
+        builder.Property(x => x.Id)
+            .HasConversion(id => id.Value,
+                value => new InvoiceUsedProductId(value));
+
         builder.Property(x => x.Description)
             .HasMaxLength(100);
 

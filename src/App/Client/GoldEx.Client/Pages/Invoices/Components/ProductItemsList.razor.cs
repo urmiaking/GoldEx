@@ -26,9 +26,6 @@ public partial class ProductItemsList
     public EventCallback OnAddItem { get; set; }
 
     [Parameter]
-    public EventCallback<ProductItemVm> OnPrintBarcode { get; set; }
-
-    [Parameter]
     public EventCallback<ProductItemVm> OnEditItem { get; set; }
 
     [Parameter]

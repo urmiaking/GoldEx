@@ -1,9 +1,7 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.Invoices;
 using GoldEx.Server.Domain.CoinAggregate;
@@ -16,6 +14,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.Products;
@@ -27,6 +26,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using FluentValidation.Results;
 using Product = GoldEx.Server.Domain.ProductAggregate.Product;
 
 namespace GoldEx.Server.Application.Services;
@@ -37,7 +37,7 @@ internal class InvoiceService(
     IInvoicePaymentRepository paymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
-    ICustomerService customerService,
+    IBarcodeService barcodeService,
     IAccountingTransactionService transactionService,
     IServerInventoryStockService inventoryStockService,
     IMapper mapper,
@@ -57,15 +57,15 @@ internal class InvoiceService(
 
                 await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
                     SystemLedgerAccounts.AccountsReceivable,
-                    cancellationToken = default);
+                    cancellationToken);
 
                 await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
                     SystemLedgerAccounts.AccountsPayable,
-                    cancellationToken = default);
+                    cancellationToken);
 
                 #endregion
 
-                #region Invoice (Create new invoice instance and populating owned entities)    
+                #region Invoice (Create new invoice instance)    
 
                 var invoice = Invoice.Create(request.InvoiceNumber,
                     request.UnpaidAmountExchangeRate,
@@ -85,11 +85,42 @@ internal class InvoiceService(
                 invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
                     InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
-                invoice.SetCoinItems(request.InvoiceCoinItems.Select(x =>
-                    InvoiceCoinItem.Create(new CoinId(x.CoinId), x.UnitPrice, x.Quantity, x.ProfitPercent)));
+                #endregion
 
-                invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
-                    InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
+                #region InvoiceItems
+
+                #region Coins
+
+                foreach (var coinItemDto in request.InvoiceCoinItems)
+                {
+                    invoice.AddCoinItem(coinItemDto.Id.HasValue
+                            ? new InvoiceCoinItemId(coinItemDto.Id.Value)
+                            : null,
+                        new CoinId(coinItemDto.CoinId),
+                        coinItemDto.UnitPrice,
+                        coinItemDto.Quantity,
+                        coinItemDto.ProfitPercent);
+                }
+
+                #endregion
+
+                #region CurrencyItems
+
+                foreach (var currencyItemDto in request.InvoiceCurrencyItems)
+                {
+                    invoice.AddCurrencyItem(currencyItemDto.Id.HasValue
+                            ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
+                            : null,
+                        new PriceUnitId(currencyItemDto.CurrencyId),
+                        currencyItemDto.UnitPrice,
+                        currencyItemDto.Amount,
+                        currencyItemDto.TaxPercent,
+                        currencyItemDto.ProfitPercent);
+                }
+
+                #endregion
+
+                #region UsedGolds
 
                 foreach (var usedGold in request.InvoiceUsedProducts)
                 {
@@ -97,7 +128,6 @@ internal class InvoiceService(
                     if (usedGold.IsSellable)
                     {
                         var product = Product.Create(usedGold.Description,
-                            StringExtensions.GenerateRandomBarcode(),
                             usedGold.Weight,
                             0,
                             usedGold.ProductType,
@@ -107,26 +137,61 @@ internal class InvoiceService(
                             null,
                             null);
 
+                        var barcode = await barcodeService.GenerateProductBarcodeAsync(product, cancellationToken);
+
+                        product.SetBarcode(barcode);
+
                         await productRepository.CreateAsync(product, cancellationToken);
                         productId = product.Id;
                     }
 
-                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice, usedGold.ExtraCostsAmount, 
-                        usedGold.Fineness, usedGold.Quantity, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
+                    invoice.AddUsedProduct(usedGold.Id.HasValue
+                            ? new InvoiceUsedProductId(usedGold.Id.Value)
+                            : null,
+                        usedGold.Description,
+                        usedGold.Weight,
+                        usedGold.GramPrice,
+                        usedGold.ExtraCostsAmount,
+                        usedGold.Fineness,
+                        usedGold.Quantity,
+                        usedGold.IsSellable,
+                        usedGold.ProductType,
+                        usedGold.UnitType,
+                        productId);
                 }
 
                 #endregion
 
-                #region Product (Create or update products)
+                #region Product
 
                 foreach (var itemDto in request.InvoiceProductItems)
                 {
-                    Product? product;
+                    Product product;
 
-                    if (!itemDto.Product.Id.HasValue)
+                    // Step 1: Check if a product with the same attributes already exists
+                    var productsWithSameName = await productRepository
+                        .Get(new ProductsByNameSpecification(itemDto.Product.Name))
+                        .ToListAsync(cancellationToken);
+
+                    var identicalProduct = productsWithSameName.FirstOrDefault(x =>
+                        x.WageType == itemDto.Product.WageType &&
+                        x.Wage == itemDto.Product.Wage &&
+                        x.Fineness == itemDto.Product.Fineness &&
+                        x.ProductCategoryId == (itemDto.Product.ProductCategoryId.HasValue
+                            ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
+                            : null) &&
+                        x.Weight == itemDto.Product.Weight);
+
+                    if (identicalProduct != null)
                     {
-                        var newProduct = Product.Create(itemDto.Product.Name,
-                            itemDto.Product.Barcode,
+                        // Found identical by attributes, use it
+                        product = identicalProduct;
+                    }
+                    else
+                    {
+                        // Step 2: Actually create a new product
+                        var newProduct = Product.Create(
+                            itemDto.Product.Name,
                             itemDto.Product.Weight,
                             itemDto.Product.Wage,
                             itemDto.Product.ProductType,
@@ -140,29 +205,37 @@ internal class InvoiceService(
                                 ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
                                 : null);
 
-                        product = newProduct;
+                        if (string.IsNullOrEmpty(itemDto.Product.Barcode))
+                        {
+                            // Generate barcode and assign
+                            var barcode = await barcodeService.GenerateProductBarcodeAsync(newProduct, cancellationToken);
+                            newProduct.SetBarcode(barcode);
+                        }
+                        else
+                        {
+                            await barcodeService.ValidateBarcodeUniquenessAsync(itemDto.Product.Barcode, cancellationToken);
+                            newProduct.SetBarcode(itemDto.Product.Barcode);
+                        }
 
                         await productRepository.CreateAsync(newProduct, cancellationToken);
-                    }
-                    else
-                    {
-                        product = await productRepository
-                            .Get(new ProductsByIdSpecification(new ProductId(itemDto.Product.Id.Value)))
-                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+                        product = newProduct;
                     }
 
-                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
-                            itemDto.ProfitPercent,
-                            itemDto.TaxPercent,
-                            itemDto.Quantity,
-                            product.Id,
-                            itemDto.CostPrice,
-                            itemDto.CostPriceExchangeRate,
-                            itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
-                            itemDto.IsInstantProduct)
-                        .SetInvoice(invoice)
-                        .RecalculateAmounts(product, invoice.InvoiceType));
+                    // Add product to invoice
+                    invoice.AddProductItem(
+                        itemDto.Id.HasValue ? new InvoiceProductItemId(itemDto.Id.Value) : null,
+                        itemDto.GramPrice,
+                        itemDto.ProfitPercent,
+                        itemDto.TaxPercent,
+                        itemDto.Quantity,
+                        itemDto.CostPrice,
+                        itemDto.CostPriceExchangeRate,
+                        itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
+                        itemDto.IsInstantProduct,
+                        product);
                 }
+
+                #endregion
 
                 #endregion
 
@@ -187,9 +260,6 @@ internal class InvoiceService(
                     await paymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
 
                 #endregion
-
-                await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, ItemType.Coin,
-                    cancellationToken);
 
                 await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
                 await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
@@ -216,12 +286,10 @@ internal class InvoiceService(
                 #region LedgerAccount (Create ledger account if not exists)
 
                 await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
-                    SystemLedgerAccounts.AccountsReceivable,
-                    cancellationToken = default);
+                    SystemLedgerAccounts.AccountsReceivable, cancellationToken);
 
                 await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
-                    SystemLedgerAccounts.AccountsPayable,
-                    cancellationToken = default);
+                    SystemLedgerAccounts.AccountsPayable, cancellationToken);
 
                 #endregion
 
@@ -249,40 +317,92 @@ internal class InvoiceService(
                 invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
                     InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
-                invoice.SetCoinItems(request.InvoiceCoinItems.Select(x =>
-                    InvoiceCoinItem.Create(new CoinId(x.CoinId), x.UnitPrice, x.Quantity, x.ProfitPercent)));
-
-                invoice.SetCurrencyItems(request.InvoiceCurrencyItems.Select(x =>
-                    InvoiceCurrencyItem.Create(new PriceUnitId(x.CurrencyId), x.UnitPrice, x.Amount, x.TaxPercent, x.ProfitPercent)));
-
                 await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
                 await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, null, cancellationToken);
 
+                #region InvoiceItems
+
+                #region Coins
+
+                invoice.ClearCoinItems();
+
+                foreach (var coinItemDto in request.InvoiceCoinItems)
+                {
+                    invoice.AddCoinItem(coinItemDto.Id.HasValue
+                            ? new InvoiceCoinItemId(coinItemDto.Id.Value)
+                            : null,
+                        new CoinId(coinItemDto.CoinId),
+                        coinItemDto.UnitPrice,
+                        coinItemDto.Quantity,
+                        coinItemDto.ProfitPercent);
+                }
+
+                #endregion
+
+                #region Currencies
+
+                invoice.ClearCurrencyItems();
+
+                foreach (var currencyItemDto in request.InvoiceCurrencyItems)
+                {
+                    invoice.AddCurrencyItem(currencyItemDto.Id.HasValue
+                            ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
+                            : null,
+                        new PriceUnitId(currencyItemDto.CurrencyId),
+                        currencyItemDto.UnitPrice,
+                        currencyItemDto.Amount,
+                        currencyItemDto.TaxPercent,
+                        currencyItemDto.ProfitPercent);
+                }
+
+                #endregion
+
                 #region UsedProducts
 
-                var usedProductsToDelete = invoice.UsedProducts.ToList();
+                // STEP 1: BATCH DELETE
+                var productIdsToDelete = invoice.UsedProducts
+                    .Where(up => up.ProductId.HasValue)
+                    .Select(up => up.ProductId!.Value)
+                    .ToList();
 
-                foreach (var invoiceUsedProduct in usedProductsToDelete)
+                if (productIdsToDelete.Any())
                 {
-                    if (invoiceUsedProduct.ProductId.HasValue)
-                    {
-                        var product = await productRepository
-                            .Get(new ProductsByIdSpecification(invoiceUsedProduct.ProductId.Value))
-                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+                    // One query to get them, one query to delete them
+                    var productsToDelete = await productRepository
+                        .Get(new ProductsByIdsSpecification(productIdsToDelete))
+                        .ToListAsync(cancellationToken);
 
-                        await productRepository.DeleteAsync(product, cancellationToken);
+                    try
+                    {
+                        if (productsToDelete.Any())
+                            await productRepository.DeleteRangeAsync(productsToDelete, cancellationToken);
+                    }
+                    catch (DbUpdateException e)
+                    {
+                        // This exception likely means that the product is referenced in other records (e.g., invoices).
+                        logger.LogError(e, e.Message);
+                        // a ui message in persian to inform the user to remove them manually before updating the invoice.
+                        throw new ValidationException(new List<ValidationFailure>
+                        {
+                            new("UsedProducts",
+                                "برخی از اجناس استفاده شده در این فاکتور در فاکتور دیگری استفاده شده‌اند و نمی‌توان آنها را ویرایش کرد. " +
+                                "لطفاً ابتدا این اجناس را از فاکتورهای دیگر حذف کنید و سپس دوباره تلاش کنید.")
+                        });
                     }
                 }
 
                 invoice.ClearUsedProducts();
 
+                // STEP 2: BATCH CREATE (Same logic as in the CreateAsync optimization)
+                // This logic can be extracted into a shared private method if desired.
+                var newProductsToCreate = new List<Product>();
+                var usedProductsWithNewProduct = new List<(InvoiceUsedProductDto Dto, Product NewProduct)>();
+
                 foreach (var usedGold in request.InvoiceUsedProducts)
                 {
-                    ProductId? productId = null;
                     if (usedGold.IsSellable)
                     {
                         var product = Product.Create(usedGold.Description,
-                            StringExtensions.GenerateRandomBarcode(),
                             usedGold.Weight,
                             0,
                             usedGold.ProductType,
@@ -292,19 +412,53 @@ internal class InvoiceService(
                             null,
                             null);
 
-                        await productRepository.CreateAsync(product, cancellationToken);
-                        productId = product.Id;
-                    }
+                        var barcode = await barcodeService.GenerateProductBarcodeAsync(product, cancellationToken);
+                        product.SetBarcode(barcode);
 
-                    invoice.AddUsedProduct(usedGold.Description, usedGold.Weight, usedGold.GramPrice, usedGold.ExtraCostsAmount, 
-                        usedGold.Fineness, usedGold.Quantity, usedGold.IsSellable, usedGold.ProductType, usedGold.UnitType, productId);
+                        newProductsToCreate.Add(product);
+                        usedProductsWithNewProduct.Add((usedGold, product));
+                    }
+                    else
+                    {
+                        invoice.AddUsedProduct(usedGold.Id.HasValue
+                                ? new InvoiceUsedProductId(usedGold.Id.Value)
+                                : null,
+                            usedGold.Description,
+                            usedGold.Weight,
+                            usedGold.GramPrice,
+                            usedGold.ExtraCostsAmount,
+                            usedGold.Fineness,
+                            usedGold.Quantity,
+                            false,
+                            usedGold.ProductType,
+                            usedGold.UnitType,
+                            null);
+                    }
                 }
 
-                #endregion
+                if (newProductsToCreate.Any()) 
+                    await productRepository.CreateRangeAsync(newProductsToCreate, cancellationToken);
+
+                foreach (var (dto, newProduct) in usedProductsWithNewProduct) 
+                    invoice.AddUsedProduct(dto.Id.HasValue
+                            ? new InvoiceUsedProductId(dto.Id.Value)
+                            : null,
+                        dto.Description,
+                        dto.Weight,
+                        dto.GramPrice,
+                        dto.ExtraCostsAmount,
+                        dto.Fineness,
+                        dto.Quantity,
+                        true,
+                        dto.ProductType,
+                        dto.UnitType,
+                        newProduct.Id);
 
                 #endregion
 
-                #region Product (Create or update products)
+                #endregion
+
+                #region Products
 
                 invoice.ClearProductItems();
 
@@ -312,59 +466,83 @@ internal class InvoiceService(
                 {
                     Product product;
 
-                    if (!itemDto.Product.Id.HasValue)
+                    // Step 1: Try to find an identical product in the DB
+                    var identicalProduct = itemDto.Product.Id.HasValue
+                        ? await productRepository
+                            .Get(new ProductsByIdSpecification(new ProductId(itemDto.Product.Id.Value)))
+                            .FirstOrDefaultAsync(cancellationToken)
+                        : null;
+
+                    if (identicalProduct != null)
                     {
-                        var newProduct = Product.Create(itemDto.Product.Name,
-                            itemDto.Product.Barcode,
-                            itemDto.Product.Weight,
-                            itemDto.Product.Wage,
-                            itemDto.Product.ProductType,
-                            itemDto.Product.Fineness,
-                            itemDto.Product.GoldUnitType,
-                            itemDto.Product.WageType,
-                            itemDto.Product.WagePriceUnitId.HasValue
-                                ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
-                                : null,
-                            itemDto.Product.ProductCategoryId.HasValue
-                                ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
-                                : null);
-
-                        product = newProduct;
-
-                        await productRepository.CreateAsync(newProduct, cancellationToken);
-
-                        if (request.InvoiceType is InvoiceType.Sell)
-                        {
-                            if (!itemDto.CostPrice.HasValue)
-                            {
-                                throw new ValidationException("خطای اعتبارسنجی",
-                                    new List<ValidationFailure>
-                                    {
-                                        new(nameof(itemDto.CostPrice),
-                                            "وارد کردن نرخ خرید الزامی است")
-                                    });
-                            }
-                        }
+                        // Found in DB, use it
+                        product = identicalProduct;
                     }
                     else
                     {
-                        product = await productRepository
-                            .Get(new ProductsByIdSpecification(new ProductId(itemDto.Product.Id.Value)))
-                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+                        // Step 2: Check if a product with the same attributes already exists
+                        var productsWithSameName = await productRepository
+                            .Get(new ProductsByNameSpecification(itemDto.Product.Name))
+                            .ToListAsync(cancellationToken);
+
+                        identicalProduct = productsWithSameName.FirstOrDefault(x =>
+                            x.WageType == itemDto.Product.WageType &&
+                            x.Wage == itemDto.Product.Wage &&
+                            x.Fineness == itemDto.Product.Fineness &&
+                            x.ProductCategoryId == (itemDto.Product.ProductCategoryId.HasValue
+                                ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
+                                : null) &&
+                            x.Weight == itemDto.Product.Weight);
+
+                        if (identicalProduct != null)
+                        {
+                            // Found identical by attributes, use it
+                            product = identicalProduct;
+                        }
+                        else
+                        {
+                            // Step 3: Actually create a new product
+                            var newProduct = Product.Create(
+                                itemDto.Product.Name,
+                                itemDto.Product.Weight,
+                                itemDto.Product.Wage,
+                                itemDto.Product.ProductType,
+                                itemDto.Product.Fineness,
+                                itemDto.Product.GoldUnitType,
+                                itemDto.Product.WageType,
+                                itemDto.Product.WagePriceUnitId.HasValue
+                                    ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
+                                    : null,
+                                itemDto.Product.ProductCategoryId.HasValue
+                                    ? new ProductCategoryId(itemDto.Product.ProductCategoryId.Value)
+                                    : null);
+
+                            // Generate barcode and assign
+                            var barcode = await barcodeService.GenerateProductBarcodeAsync(newProduct, cancellationToken);
+                            newProduct = newProduct.SetBarcode(barcode);
+
+                            await productRepository.CreateAsync(newProduct, cancellationToken);
+                            product = newProduct;
+                        }
                     }
 
-                    invoice.AddProductItem(InvoiceProductItem.Create(itemDto.GramPrice,
+                    // Add product to invoice
+                    invoice.AddProductItem(
+                        itemDto.Id.HasValue ? new InvoiceProductItemId(itemDto.Id.Value) : null,
+                            itemDto.GramPrice,
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
                             itemDto.Quantity,
-                            product.Id,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
                             itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
-                            itemDto.IsInstantProduct)
-                        .SetInvoice(invoice)
-                        .RecalculateAmounts(product, invoice.InvoiceType));
+                            itemDto.IsInstantProduct,
+                        product);
                 }
+
+                // TODO: test!
+
+                #endregion
 
                 #endregion
 

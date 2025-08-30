@@ -5,9 +5,11 @@ using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
-public class InvoiceUsedProduct : EntityBase
+public readonly record struct InvoiceUsedProductId(Guid Value);
+public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
 {
-    internal static InvoiceUsedProduct Create(string description,
+    private InvoiceUsedProduct(InvoiceUsedProductId id,
+        string description,
         decimal weight,
         decimal gramPrice,
         decimal? extraCostsAmount,
@@ -34,22 +36,47 @@ public class InvoiceUsedProduct : EntityBase
 
         var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, fineness, gramPrice, quantity, invoice.ExchangeRate);
 
-        return new InvoiceUsedProduct
-        {
-            Description = description,
-            Fineness = fineness,
-            Weight = weight,
-            GramPrice = gramPrice,
-            IsSellable = isSellable,
-            Quantity = quantity,
-            ProductId = productId,
-            Invoice = invoice,
-            ProductType = productType,
-            UnitType = unitType,
-            ItemAmount = itemAmount,
-            ItemFinalAmount = itemAmount + (extraCostsAmount ?? 0),
-            ExtraCostsAmount = extraCostsAmount
-        };
+        Id = id;
+        Description = description;
+        Fineness = fineness;
+        Weight = weight;
+        GramPrice = gramPrice;
+        IsSellable = isSellable;
+        Quantity = quantity;
+        ProductId = productId;
+        Invoice = invoice;
+        ProductType = productType;
+        UnitType = unitType;
+        ItemAmount = itemAmount;
+        ItemFinalAmount = itemAmount + (extraCostsAmount ?? 0);
+        ExtraCostsAmount = extraCostsAmount;
+    }
+
+    internal static InvoiceUsedProduct Create(InvoiceUsedProductId? id,
+        string description,
+        decimal weight,
+        decimal gramPrice,
+        decimal? extraCostsAmount,
+        decimal fineness,
+        int quantity,
+        bool isSellable,
+        ProductType productType,
+        GoldUnitType unitType,
+        ProductId? productId,
+        Invoice invoice)
+    {
+        return new InvoiceUsedProduct(id ?? new InvoiceUsedProductId(Guid.NewGuid()),
+            description,
+            weight,
+            gramPrice,
+            extraCostsAmount,
+            fineness,
+            quantity,
+            isSellable,
+            productType,
+            unitType,
+            productId,
+            invoice);
     }
 
     public string Description { get; private set; }

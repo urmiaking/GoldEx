@@ -1403,14 +1403,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.OwnsMany("GoldEx.Server.Domain.InvoiceAggregate.InvoiceUsedProduct", "UsedProducts", b1 =>
                         {
-                            b1.Property<Guid>("InvoiceId")
+                            b1.Property<Guid>("Id")
                                 .HasColumnType("uniqueidentifier");
 
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+                            b1.Property<Guid>("InvoiceId")
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<DateTime>("CreatedAt")
                                 .HasColumnType("datetime2");
@@ -1459,7 +1456,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasPrecision(36, 10)
                                 .HasColumnType("decimal(36,10)");
 
-                            b1.HasKey("InvoiceId", "Id");
+                            b1.HasKey("Id", "InvoiceId");
+
+                            b1.HasIndex("InvoiceId");
 
                             b1.HasIndex("ProductId");
 

@@ -34,6 +34,7 @@ public record GetInvoiceResponse(
     List<GetInvoiceUsedProductResponse> InvoiceUsedProducts);
 
 public record GetInvoiceUsedProductResponse(
+    Guid Id,
     string Description,
     decimal Weight,
     decimal Fineness,

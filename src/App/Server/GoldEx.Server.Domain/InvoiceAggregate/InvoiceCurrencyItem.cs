@@ -28,23 +28,14 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
         ItemFinalAmount = (unitPrice * amount) + ItemProfitAmount + ItemTaxAmount;
     }
 
-    public static InvoiceCurrencyItem Create(PriceUnitId currencyId,
-        decimal unitPrice,
-        decimal amount,
-        decimal taxPercent,
-        decimal profitPercent)
-    {
-        return new InvoiceCurrencyItem(new InvoiceCurrencyItemId(Guid.NewGuid()), currencyId, unitPrice, amount, taxPercent, profitPercent);
-    }
-
-    public static InvoiceCurrencyItem Create(InvoiceCurrencyItemId id,
+    internal static InvoiceCurrencyItem Create(InvoiceCurrencyItemId? id,
         PriceUnitId currencyId,
         decimal unitPrice,
         decimal amount,
         decimal taxPercent,
         decimal profitPercent)
     {
-        return new InvoiceCurrencyItem(id, currencyId, unitPrice, amount, taxPercent, profitPercent);
+        return new InvoiceCurrencyItem(id ?? new InvoiceCurrencyItemId(Guid.NewGuid()), currencyId, unitPrice, amount, taxPercent, profitPercent);
     }
 
     public PriceUnitId CurrencyId { get; private set; }

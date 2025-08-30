@@ -11,14 +11,6 @@ public class ProductValidator : AbstractValidator<ProductVm>
         RuleFor(x => x.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن را وارد کنید");
 
-        When(product => product.ProductType is ProductType.Gold or ProductType.Jewelry, () =>
-        {
-            RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
-            RuleFor(product => product.WageType)
-                .NotNull()
-                .WithMessage("لطفا نوع اجرت را وارد کنید");
-        });
-
         When(product => product.WageType is WageType.Percent, () =>
         {
             RuleFor(product => product.Wage)
@@ -31,11 +23,6 @@ public class ProductValidator : AbstractValidator<ProductVm>
         RuleFor(x => x.Fineness)
             .InclusiveBetween(0, 1000)
             .WithMessage("عیار باید بین 0 تا 1000 باشد");
-
-        RuleFor(x => x.CategoryVm)
-            .NotEmpty()
-            .When(x => x.ProductType is ProductType.Gold or ProductType.Jewelry)
-            .WithMessage("لطفا دسته بندی را انتخاب کنید");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

@@ -20,7 +20,7 @@ namespace GoldEx.Shared.DTOs.Products;
 public record ProductRequestDto(
     Guid? Id,
     string Name,
-    string Barcode,
+    string? Barcode,
     decimal Weight,
     decimal Wage,
     WageType? WageType,

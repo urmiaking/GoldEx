@@ -98,9 +98,10 @@ internal class ProductService(
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
+        //TODO: barcode removed from create method!
+
         var item = Product.Create(
             request.Name,
-            request.Barcode,
             request.Weight,
             request.Wage,
             request.ProductType,

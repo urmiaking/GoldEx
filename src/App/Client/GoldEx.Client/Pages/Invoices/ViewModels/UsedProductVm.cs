@@ -12,6 +12,8 @@ public class UsedProductVm
     private decimal? _weight;
     private decimal? _exchangeRate;
 
+    public Guid? Id { get; set; }
+
     [Display(Name = "نرخ هر گرم طلا")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public decimal GramPrice
@@ -106,6 +108,7 @@ public class UsedProductVm
 
     public void UpdateFrom(UsedProductVm other)
     {
+        Id = other.Id;
         Index = other.Index;
         GramPrice = other.GramPrice;
         ExchangeRate = other.ExchangeRate;
@@ -121,7 +124,8 @@ public class UsedProductVm
 
     public static InvoiceUsedProductDto ToRequest(UsedProductVm productItem)
     {
-        return new InvoiceUsedProductDto(productItem.Description ?? string.Empty,
+        return new InvoiceUsedProductDto(productItem.Id,
+            productItem.Description ?? string.Empty,
             productItem.Weight ?? 0,
             productItem.GramPrice,
             productItem.ExtraCostsAmount ?? 0,
@@ -136,6 +140,7 @@ public class UsedProductVm
     {
         return new UsedProductVm
         {
+            Id = response.Id,
             GramPrice = response.GramPrice,
             Fineness = response.Fineness,
             Weight = response.Weight,
