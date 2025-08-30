@@ -28,14 +28,9 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
         ItemFinalAmount = itemFinalAmount;
     }
 
-    public static InvoiceCoinItem Create(CoinId coinId, decimal unitPrice, int quantity, decimal profitPercent)
+    internal static InvoiceCoinItem Create(InvoiceCoinItemId? id, CoinId coinId, decimal unitPrice, int quantity, decimal profitPercent)
     {
-        return new InvoiceCoinItem(new InvoiceCoinItemId(Guid.NewGuid()), coinId, unitPrice, quantity, profitPercent);
-    }
-
-    public static InvoiceCoinItem Create(InvoiceCoinItemId id, CoinId coinId, decimal unitPrice, int quantity, decimal profitPercent)
-    {
-        return new InvoiceCoinItem(id, coinId, unitPrice, quantity, profitPercent);
+        return new InvoiceCoinItem(id ?? new InvoiceCoinItemId(Guid.NewGuid()), coinId, unitPrice, quantity, profitPercent);
     }
 
     public CoinId CoinId { get; private set; }

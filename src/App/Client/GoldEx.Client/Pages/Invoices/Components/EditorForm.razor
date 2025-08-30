@@ -173,7 +173,7 @@
         {
             <MudGrid Class="mt-0 mb-2">
                 <MudItem xs="12" md="3">
-                    <MudText>نام و نام خانوادگی: @_model.Customer.FullName @_model.Customer.Id</MudText>
+                    <MudText>نام و نام خانوادگی: @_model.Customer.FullName</MudText>
                 </MudItem>
                 <MudItem xs="12" md="3">
                     <MudText>شماره تماس: @_model.Customer.PhoneNumber</MudText>
@@ -211,8 +211,7 @@
                                       Elevation="2"
                                       InvoiceType="_model.InvoiceType"
                                       OnAddItem="OnAddProductItem"
-                                      OnBarcodeChanged="OnBarcodeChanged"
-                                      OnPrintBarcode="OnPrintBarcode" />
+                                      OnBarcodeChanged="OnBarcodeChanged" />
                 </MudTabPanel>
                 <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
                     <CoinItemsList Items="@_model.CoinItems"
@@ -321,7 +320,7 @@
                     <MudText Typo="Typo.body2">جمع پرداختی</MudText>
                     <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                         <div class="d-flex flex-column">
-                            <PaymentList Items="_model.InvoicePayments" PriceUnit="_model.InvoicePriceUnit" InvoiceType="_model.InvoiceType" CustomerId="_model.Customer.Id"
+                            <PaymentList Items="_model.InvoicePayments" PriceUnit="_model.InvoicePriceUnit" InvoiceType="_model.InvoiceType" CustomerId="_model.Customer?.Id"
                                          PriceUnits="_priceUnits" TotalInvoiceAmount="@_model.TotalInvoiceAmount" />
                             <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
                                        Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">بستن</MudButton>
@@ -456,6 +455,3 @@
         </div>
     </MudForm>
 </MudCard>
-
-<script src="/js/libs/jsbarcode.all.min.js"></script>
-<script src="/js/print.js?v=@_jsVersion"></script>

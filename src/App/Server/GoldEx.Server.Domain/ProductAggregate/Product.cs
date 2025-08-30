@@ -10,7 +10,6 @@ public class Product : EntityBase<ProductId>
 {
     public static Product Create(
         string name,
-        string barcode,
         decimal weight,
         decimal wage,
         ProductType productType,
@@ -30,7 +29,6 @@ public class Product : EntityBase<ProductId>
         {
             Id = new ProductId(Guid.NewGuid()),
             Name = name,
-            Barcode = barcode,
             Weight = weight,
             Wage = wage,
             ProductType = productType,

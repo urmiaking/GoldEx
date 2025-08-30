@@ -43,6 +43,7 @@ public record InvoiceRequestDto(
     List<InvoiceUsedProductDto> InvoiceUsedProducts);
 
 public record InvoiceUsedProductDto(
+    Guid? Id,
     string Description,
     decimal Weight,
     decimal GramPrice,

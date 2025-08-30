@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -16,8 +17,8 @@ public class Invoice : EntityBase<InvoiceId>
         decimal? unpaidAmountExchangeRate,
         decimal? exchangeRate,
         InvoiceType invoiceType,
-        CustomerId customerId, 
-        PriceUnitId priceUnitId, 
+        CustomerId customerId,
+        PriceUnitId priceUnitId,
         PriceUnitId? unpaidPriceUnitId,
         DateOnly invoiceDate,
         DateOnly? dueDate)
@@ -47,10 +48,29 @@ public class Invoice : EntityBase<InvoiceId>
     public InvoiceType InvoiceType { get; private set; }
     public decimal? ExchangeRate { get; private set; }
 
-    public void SetInvoiceNumber(long invoiceNumber) => InvoiceNumber = invoiceNumber;
-    public void SetDueDate(DateOnly? dueDate) => DueDate = dueDate;
-    public void SetInvoiceDate(DateOnly invoiceDate) => InvoiceDate = invoiceDate;
-    public void SetExchangeRate(decimal? exchangeRate) => ExchangeRate = exchangeRate;
+    public void SetInvoiceNumber(long invoiceNumber)
+    {
+        if (InvoiceNumber != invoiceNumber)
+            InvoiceNumber = invoiceNumber;
+    }
+
+    public void SetDueDate(DateOnly? dueDate)
+    {
+        if (DueDate != dueDate)
+            DueDate = dueDate;
+    }
+
+    public void SetInvoiceDate(DateOnly invoiceDate)
+    {
+        if (InvoiceDate != invoiceDate)
+            InvoiceDate = invoiceDate;
+    }
+
+    public void SetExchangeRate(decimal? exchangeRate)
+    {
+        if (ExchangeRate != exchangeRate)
+            ExchangeRate = exchangeRate;
+    }
 
     #region Customer
 
@@ -59,7 +79,9 @@ public class Invoice : EntityBase<InvoiceId>
 
     public Invoice SetCustomerId(CustomerId customerId)
     {
-        CustomerId = customerId;
+        if (CustomerId != customerId)
+            CustomerId = customerId;
+
         return this;
     }
 
@@ -72,13 +94,29 @@ public class Invoice : EntityBase<InvoiceId>
     private readonly List<InvoiceProductItem> _products = [];
     public IReadOnlyList<InvoiceProductItem> ProductItems => _products;
 
-    public void AddProductItem(InvoiceProductItem productItem)
+    public void AddProductItem(InvoiceProductItemId? id,
+        decimal gramPrice,
+        decimal profitPercent,
+        decimal taxPercent,
+        int quantity,
+        decimal? costPrice,
+        decimal? costPriceExchangeRate,
+        PriceUnitId? costPriceUnitId,
+        bool isInstantProduct,
+        Product product)
     {
-        if (_products.Any(x => x.ProductId == productItem.ProductId))
-            throw new InvalidOperationException(
-                $"The product with ID {productItem.ProductId.Value} is already present in the ProductItems list");
-
-        _products.Add(productItem);
+        _products.Add(InvoiceProductItem.Create(id,
+            gramPrice,
+            profitPercent,
+            taxPercent,
+            quantity,
+            product.Id,
+            costPrice,
+            costPriceExchangeRate,
+            costPriceUnitId,
+            isInstantProduct)
+            .SetInvoice(this)
+            .RecalculateAmounts(product, InvoiceType));
     }
 
     public void ClearProductItems() => _products.Clear();
@@ -90,19 +128,16 @@ public class Invoice : EntityBase<InvoiceId>
     private readonly List<InvoiceCoinItem> _coins = [];
     public IReadOnlyList<InvoiceCoinItem> CoinItems => _coins;
 
-    public void SetCoinItems(IEnumerable<InvoiceCoinItem> coinItems)
+    public void AddCoinItem(InvoiceCoinItemId? id,
+        CoinId coinId,
+        decimal unitPrice,
+        int quantity,
+        decimal profitPercent)
     {
-        _coins.Clear();
-
-        foreach (var coinItem in coinItems)
-        {
-            if (_coins.Any(x => x.CoinId == coinItem.CoinId))
-                throw new InvalidOperationException(
-                    $"The coin with ID {coinItem.CoinId.Value} is already present in the CoinItems list");
-
-            _coins.Add(coinItem);
-        }
+        _coins.Add(InvoiceCoinItem.Create(id, coinId, unitPrice, quantity, profitPercent));
     }
+
+    public void ClearCoinItems() => _coins.Clear();
 
     #endregion
 
@@ -111,19 +146,17 @@ public class Invoice : EntityBase<InvoiceId>
     private readonly List<InvoiceCurrencyItem> _currencies = [];
     public IReadOnlyList<InvoiceCurrencyItem> CurrencyItems => _currencies;
 
-    public void SetCurrencyItems(IEnumerable<InvoiceCurrencyItem> currencyItems)
+    public void AddCurrencyItem(InvoiceCurrencyItemId? id,
+        PriceUnitId currencyId,
+        decimal unitPrice,
+        decimal amount,
+        decimal taxPercent,
+        decimal profitPercent)
     {
-        _currencies.Clear();
-
-        foreach (var currencyItem in currencyItems)
-        {
-            if (_currencies.Any(x => x.CurrencyId == currencyItem.CurrencyId))
-                throw new InvalidOperationException(
-                    $"The Currency with ID {currencyItem.CurrencyId.Value} is already present in the CurrencyItems list");
-
-            _currencies.Add(currencyItem);
-        }
+        _currencies.Add(InvoiceCurrencyItem.Create(id, currencyId, unitPrice, amount, taxPercent, profitPercent));
     }
+
+    public void ClearCurrencyItems() => _currencies.Clear();
 
     #endregion
 
@@ -132,7 +165,8 @@ public class Invoice : EntityBase<InvoiceId>
     private readonly List<InvoiceUsedProduct> _usedProducts = [];
     public IReadOnlyList<InvoiceUsedProduct> UsedProducts => _usedProducts;
 
-    public void AddUsedProduct(string description,
+    public void AddUsedProduct(InvoiceUsedProductId? id,
+        string description,
         decimal weight,
         decimal gramPrice,
         decimal? extraCostsAmount,
@@ -147,7 +181,8 @@ public class Invoice : EntityBase<InvoiceId>
             throw new InvalidOperationException(
                 $"The used product with ID {productId?.Value} is already present in the UsedProducts list");
 
-        _usedProducts.Add(InvoiceUsedProduct.Create(description,
+        _usedProducts.Add(InvoiceUsedProduct.Create(id,
+            description,
             weight,
             gramPrice,
             extraCostsAmount,
@@ -217,7 +252,8 @@ public class Invoice : EntityBase<InvoiceId>
 
     public void SetPriceUnitId(PriceUnitId priceUnitId)
     {
-        PriceUnitId = priceUnitId;
+        if (PriceUnitId != priceUnitId) 
+            PriceUnitId = priceUnitId;
     }
 
     public PriceUnit? UnpaidPriceUnit { get; private set; }
@@ -225,14 +261,16 @@ public class Invoice : EntityBase<InvoiceId>
 
     public void SetUnpaidPriceUnitId(PriceUnitId? priceUnitId)
     {
-        UnpaidPriceUnitId = priceUnitId;
+        if (UnpaidPriceUnitId != priceUnitId)
+            UnpaidPriceUnitId = priceUnitId;
     }
 
     public decimal? UnpaidAmountExchangeRate { get; set; }
 
     public void SetUnpaidAmountExchangeRate(decimal? exchangeRate)
     {
-        UnpaidAmountExchangeRate = exchangeRate;
+        if (UnpaidAmountExchangeRate != exchangeRate)
+            UnpaidAmountExchangeRate = exchangeRate;
     }
 
     #endregion
@@ -255,7 +293,7 @@ public class Invoice : EntityBase<InvoiceId>
         CurrencyItems.Sum(item => item.ItemFinalAmount) +
         UsedProducts.Sum(item => item.ItemFinalAmount);
 
-    public decimal TotalWageAmount => 
+    public decimal TotalWageAmount =>
         ProductItems.Sum(item => item.ItemWageAmount);
 
     public decimal TotalProfitAmount =>
@@ -263,7 +301,7 @@ public class Invoice : EntityBase<InvoiceId>
         CoinItems.Sum(item => item.ItemProfitAmount) +
         CurrencyItems.Sum(item => item.ItemProfitAmount);
 
-    public decimal TotalRawAmount => 
+    public decimal TotalRawAmount =>
         ProductItems.Sum(item => item.ItemRawAmount) +
         CoinItems.Sum(item => item.ItemRawAmount) +
         CurrencyItems.Sum(item => item.ItemRawAmount) +

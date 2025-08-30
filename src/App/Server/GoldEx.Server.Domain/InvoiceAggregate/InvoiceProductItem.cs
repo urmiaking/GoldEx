@@ -46,7 +46,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ItemFinalAmount = 0;
     }
 
-    public static InvoiceProductItem Create(
+    internal static InvoiceProductItem Create(InvoiceProductItemId? id,
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
@@ -57,7 +57,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         PriceUnitId? costPriceUnitId,
         bool isInstantProduct)
     {
-        return new InvoiceProductItem(new InvoiceProductItemId(Guid.NewGuid()),
+        return new InvoiceProductItem(id ?? new InvoiceProductItemId(Guid.NewGuid()),
             gramPrice,
             profitPercent,
             taxPercent,
@@ -67,35 +67,6 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             costPriceExchangeRate,
             costPriceUnitId,
             isInstantProduct);
-    }
-
-    public void Update(InvoiceProductItemId id, decimal gramPrice, decimal profitPercent, decimal taxPercent, int quantity,
-        PriceUnitId? costPriceUnitId, decimal? costPrice, decimal? costPriceExchangeRate, bool isInstantProduct,
-        ProductId productId)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
-
-        Id = id;
-        GramPrice = gramPrice;
-        ProfitPercent = profitPercent;
-        TaxPercent = taxPercent;
-        ProductId = productId;
-        Quantity = quantity;
-        CostPrice = costPrice;
-        CostPriceExchangeRate = costPriceExchangeRate;
-        CostPriceUnitId = costPriceUnitId;
-        IsInstantProduct = isInstantProduct;
-        // Reset calculated amounts
-        ItemRawAmount = 0;
-        ItemWageAmount = 0;
-        ItemProfitAmount = 0;
-        ItemTaxAmount = 0;
-        ItemFinalAmount = 0;
     }
 
 #pragma warning disable CS8618 

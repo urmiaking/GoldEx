@@ -136,7 +136,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         foreach (var oldItem in originalInvoice.ProductItems)
         {
-            productChanges[oldItem.ProductId] = productChanges.GetValueOrDefault(oldItem.ProductId, 0m) - 1;
+            productChanges[oldItem.ProductId] = productChanges.GetValueOrDefault(oldItem.ProductId, 0m) - oldItem.Quantity;
         }
         foreach (var oldItem in originalInvoice.CoinItems)
         {
@@ -152,7 +152,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             if (newItem.Product.Id.HasValue)
             {
                 var productId = new ProductId(newItem.Product.Id.Value);
-                productChanges[productId] = productChanges.GetValueOrDefault(productId, 0m) + 1;
+                productChanges[productId] = productChanges.GetValueOrDefault(productId, 0m) + newItem.Quantity;
             }
         }
         foreach (var newItem in request.InvoiceCoinItems)
