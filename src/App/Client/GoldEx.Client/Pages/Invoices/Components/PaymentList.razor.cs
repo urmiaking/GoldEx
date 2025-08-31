@@ -123,8 +123,6 @@ public partial class PaymentList
 
     private async Task SelectPriceUnit(GetPriceUnitTitleResponse priceUnit, InvoicePaymentVm item)
     {
-        PriceUnit = priceUnit;
-
         item.PriceUnit = priceUnit;
         item.AmountAdornmentText = priceUnit.Title;
         item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {PriceUnit.Title}";
