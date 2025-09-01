@@ -22,7 +22,9 @@ public class SignalPriceFetcher(
 
             if (!response.IsSuccessStatusCode)
                 throw new BadHttpRequestException("bad request");
-                    
+
+            var temp = await response.Content.ReadAsStringAsync(cancellationToken);
+
             var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
 
             return SignalApiResponseMapper.MapPrices(content);
