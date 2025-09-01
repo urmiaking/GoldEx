@@ -639,6 +639,7 @@ internal class InvoiceService(
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount)
+                    .ThenInclude(x => x.PriceUnit)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)

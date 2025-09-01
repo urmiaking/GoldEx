@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
 using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
@@ -70,6 +71,9 @@ public class InvoicesMappingConfig : IRegister
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
             .Map(dest => dest.VoucherId, src =>
                 src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
-            .Map(dest => dest.FinancialAccount, src => src.SourceFinancialAccount);
+            .Map(dest => dest.FinancialAccount, src => src.SourceFinancialAccount)
+            .Map(dest => dest.FinancialAccounts,
+                src => MapContext.Current.GetService<IFinancialAccountService>()
+                    .GetTitlesAsync(null, src.PriceUnitId.Value, CancellationToken.None).GetAwaiter().GetResult());
     }
 }

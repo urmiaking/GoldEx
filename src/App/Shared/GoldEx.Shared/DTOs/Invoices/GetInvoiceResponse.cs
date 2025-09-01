@@ -90,7 +90,8 @@ public record GetInvoicePaymentResponse(
     decimal? ExchangeRate,
     Guid? VoucherId,
     GetFinancialAccountTitleResponse? FinancialAccount,
-    GetPriceUnitTitleResponse PriceUnit);
+    GetPriceUnitTitleResponse PriceUnit,
+    List<GetFinancialAccountTitleResponse> FinancialAccounts);
 
 public record GetInvoiceExtraCostsResponse(decimal Amount, decimal? ExchangeRate, string? Description, GetPriceUnitTitleResponse PriceUnit);
 

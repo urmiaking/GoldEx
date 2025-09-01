@@ -22,7 +22,6 @@ public partial class PaymentList
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
 
-    private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
     private List<Guid> _voucherIds = [];
 
     private decimal GetTotalPaid()
@@ -39,16 +38,6 @@ public partial class PaymentList
         _ => throw new ArgumentOutOfRangeException()
     };
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (!_financialAccounts.Any()) 
-            await LoadFinancialAccountsAsync();
-
-        SynchronizeFinancialAccounts();
-
-        await base.OnParametersSetAsync();
-    }
-
     protected override void OnParametersSet()
     {
         _voucherIds = Items.Where(x => x.VoucherId.HasValue)
@@ -58,46 +47,35 @@ public partial class PaymentList
         base.OnParametersSet();
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (!Items.Any())
-            AddItem();
+            await AddItem();
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
-    private void SynchronizeFinancialAccounts()
-    {
-        if (!_financialAccounts.Any()) return;
-
-        foreach (var item in Items.Where(i => i.FinancialAccount != null))
-        {
-            var fullAccount = _financialAccounts.FirstOrDefault(acc => acc.Id == item.FinancialAccount?.Id);
-
-            if (fullAccount != null) 
-                item.FinancialAccount = fullAccount;
-        }
-
-        StateHasChanged();
-    }
-
-    private async Task LoadFinancialAccountsAsync()
+    private async Task LoadFinancialAccountsAsync(InvoicePaymentVm item)
     {
         await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
-            action: (s, ct) => s.GetTitlesAsync(null, PriceUnit.Id, ct),
-            afterSend: response => _financialAccounts = response);
+            action: (s, ct) => s.GetTitlesAsync(null, item.PriceUnit?.Id ?? PriceUnit.Id, ct),
+            afterSend: response => item.FinancialAccounts = response);
     }
 
-    private void AddItem()
+    private async Task AddItem()
     {
-        Items.Add(new InvoicePaymentVm
+        var item = new InvoicePaymentVm
         {
             Amount = 0m,
             Note = string.Empty,
             PaymentDate = DateTime.Now,
             PriceUnit = PriceUnit,
             AmountAdornmentText = PriceUnit.Title
-        });
+        };
+
+        Items.Add(item);
+
+        await LoadFinancialAccountsAsync(item);
     }
 
     private void RemoveItem(InvoicePaymentVm item)
@@ -127,7 +105,7 @@ public partial class PaymentList
         item.AmountAdornmentText = priceUnit.Title;
         item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {PriceUnit.Title}";
 
-        await LoadFinancialAccountsAsync();
+        await LoadFinancialAccountsAsync(item);
 
         if (PriceUnit.Id == priceUnit.Id)
         {
@@ -180,7 +158,7 @@ public partial class PaymentList
         }
     }
 
-    private async Task OnAddFinancialAccount()
+    private async Task OnAddFinancialAccount(InvoicePaymentVm item)
     {
         DialogOptions dialogOptions = new()
         {
@@ -204,7 +182,7 @@ public partial class PaymentList
 
         if (result is { Canceled: false, Data: FinancialAccountVm })
         {
-            await LoadFinancialAccountsAsync();
+            await LoadFinancialAccountsAsync(item);
             StateHasChanged();
         }
     }
