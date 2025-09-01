@@ -26,6 +26,8 @@ public class InvoicePaymentVm
     [Display(Name = "حساب مالی")]
     public GetFinancialAccountTitleResponse? FinancialAccount { get; set; }
 
+    public List<GetFinancialAccountTitleResponse> FinancialAccounts { get; set; } = [];
+
     [Display(Name = "نرخ تبدیل")]
     public decimal? ExchangeRate { get; set; }
 
@@ -66,7 +68,8 @@ public class InvoicePaymentVm
             AmountAdornmentText = response.PriceUnit.Title,
             ExchangeRateLabel = $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}",
             VoucherId = response.VoucherId,
-            Disabled = response.VoucherId.HasValue
+            Disabled = response.VoucherId.HasValue,
+            FinancialAccounts = response.FinancialAccounts
         };
     }
 }

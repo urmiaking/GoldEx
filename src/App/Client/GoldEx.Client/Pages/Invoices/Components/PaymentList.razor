@@ -79,14 +79,15 @@
                                Label="@FinancialAccountLabelText"
                                Margin="Margin.Dense"
                                Disabled="context.Disabled"
-                               Variant="Variant.Outlined">
-                        @foreach (var account in _financialAccounts)
+                               Variant="Variant.Outlined"
+                               ToStringFunc="@(acc => acc?.Title)">
+                        @foreach (var account in context.FinancialAccounts)
                         {
                             <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
                         }
                     </MudSelect>
                     <MudIconButton Disabled="context.Disabled" Icon="@Icons.Material.Filled.Add" 
-                                   Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
+                                   Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount(context)"></MudIconButton>
                 </div>
             </MudTd>
             <MudTd DataLabel="یادداشت" Class="p-1">
