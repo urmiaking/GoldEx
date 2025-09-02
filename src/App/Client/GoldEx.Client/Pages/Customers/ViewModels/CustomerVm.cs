@@ -4,6 +4,7 @@ using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using Microsoft.EntityFrameworkCore;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 
 namespace GoldEx.Client.Pages.Customers.ViewModels;
 

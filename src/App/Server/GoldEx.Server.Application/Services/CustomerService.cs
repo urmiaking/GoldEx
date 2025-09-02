@@ -121,7 +121,10 @@ internal class CustomerService(
                 {
                     foreach (var financialAccountRequestDto in request.FinancialAccounts)
                     {
-                        var bankAccount = FinancialAccount.CreateCustomerAccount(financialAccountRequestDto.FinancialAccountType,
+                        var bankAccount = FinancialAccount.CreateCustomerAccount(
+                            financialAccountRequestDto.HolderName,
+                            financialAccountRequestDto.BrokerName,
+                            financialAccountRequestDto.FinancialAccountType,
                             new PriceUnitId(financialAccountRequestDto.PriceUnitId),
                             customer.Id);
 
@@ -129,16 +132,12 @@ internal class CustomerService(
                         {
                             case FinancialAccountType.InternationalBankAccount when financialAccountRequestDto.InternationalBankAccount is not null:
                                 bankAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                                    financialAccountRequestDto.InternationalBankAccount.AccountHolderName,
-                                    financialAccountRequestDto.InternationalBankAccount.BankName,
                                     financialAccountRequestDto.InternationalBankAccount.SwiftBicCode,
                                     financialAccountRequestDto.InternationalBankAccount.IbanNumber,
                                     financialAccountRequestDto.InternationalBankAccount.AccountNumber));
                                 break;
                             case FinancialAccountType.LocalBankAccount when financialAccountRequestDto.LocalBankAccount is not null:
                                 bankAccount.SetLocalAccount(LocalBankAccount.Create(
-                                    financialAccountRequestDto.LocalBankAccount.AccountHolderName,
-                                    financialAccountRequestDto.LocalBankAccount.BankName,
                                     financialAccountRequestDto.LocalBankAccount.CardNumber,
                                     financialAccountRequestDto.LocalBankAccount.ShabaNumber,
                                     financialAccountRequestDto.LocalBankAccount.AccountNumber));
@@ -213,22 +212,20 @@ internal class CustomerService(
                         if (existingAccount is not null)
                         {
                             existingAccount.SetAccountType(bankAccountRequest.FinancialAccountType);
+                            existingAccount.SetBrokerName(bankAccountRequest.BrokerName);
+                            existingAccount.SetHolderName(bankAccountRequest.HolderName);
                             existingAccount.SetPriceUnitId(new PriceUnitId(bankAccountRequest.PriceUnitId));
 
                             switch (existingAccount.AccountType)
                             {
                                 case FinancialAccountType.InternationalBankAccount when bankAccountRequest.InternationalBankAccount is not null:
                                     existingAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                                        bankAccountRequest.InternationalBankAccount.AccountHolderName,
-                                        bankAccountRequest.InternationalBankAccount.BankName,
                                         bankAccountRequest.InternationalBankAccount.SwiftBicCode,
                                         bankAccountRequest.InternationalBankAccount.IbanNumber,
                                         bankAccountRequest.InternationalBankAccount.AccountNumber));
                                     break;
                                 case FinancialAccountType.LocalBankAccount when bankAccountRequest.LocalBankAccount is not null:
                                     existingAccount.SetLocalAccount(LocalBankAccount.Create(
-                                        bankAccountRequest.LocalBankAccount.AccountHolderName,
-                                        bankAccountRequest.LocalBankAccount.BankName,
                                         bankAccountRequest.LocalBankAccount.CardNumber,
                                         bankAccountRequest.LocalBankAccount.ShabaNumber,
                                         bankAccountRequest.LocalBankAccount.AccountNumber));
@@ -243,7 +240,10 @@ internal class CustomerService(
                         }
                         else
                         {
-                            var newBankAccount = FinancialAccount.CreateCustomerAccount(bankAccountRequest.FinancialAccountType,
+                            var newBankAccount = FinancialAccount.CreateCustomerAccount(
+                                bankAccountRequest.HolderName,
+                                bankAccountRequest.BrokerName,
+                                bankAccountRequest.FinancialAccountType,
                                 new PriceUnitId(bankAccountRequest.PriceUnitId),
                                 customer.Id);
 
@@ -252,8 +252,6 @@ internal class CustomerService(
                                 case FinancialAccountType.InternationalBankAccount when
                                     bankAccountRequest.InternationalBankAccount is not null:
                                     newBankAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                                        bankAccountRequest.InternationalBankAccount.AccountHolderName,
-                                        bankAccountRequest.InternationalBankAccount.BankName,
                                         bankAccountRequest.InternationalBankAccount.SwiftBicCode,
                                         bankAccountRequest.InternationalBankAccount.IbanNumber,
                                         bankAccountRequest.InternationalBankAccount.AccountNumber));
@@ -261,8 +259,6 @@ internal class CustomerService(
                                 case FinancialAccountType.LocalBankAccount when
                                     bankAccountRequest.LocalBankAccount is not null:
                                     newBankAccount.SetLocalAccount(LocalBankAccount.Create(
-                                        bankAccountRequest.LocalBankAccount.AccountHolderName,
-                                        bankAccountRequest.LocalBankAccount.BankName,
                                         bankAccountRequest.LocalBankAccount.CardNumber,
                                         bankAccountRequest.LocalBankAccount.ShabaNumber,
                                         bankAccountRequest.LocalBankAccount.AccountNumber));

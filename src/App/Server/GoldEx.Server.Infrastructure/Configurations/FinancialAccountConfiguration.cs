@@ -14,6 +14,12 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
             .HasConversion(id => id.Value,
                 value => new FinancialAccountId(value));
 
+        builder.Property(x => x.HolderName)
+            .HasMaxLength(100);
+
+        builder.Property(x => x.BrokerName)
+            .HasMaxLength(100);
+
         builder.HasOne(x => x.PriceUnit)
             .WithMany()
             .HasForeignKey(x => x.PriceUnitId)
@@ -31,18 +37,11 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
 
         builder.OwnsOne(x => x.LocalAccount, Configure);
         builder.OwnsOne(x => x.InternationalAccount, Configure);
+        builder.OwnsOne(x => x.CashAccount);
     }
 
     private void Configure(OwnedNavigationBuilder<FinancialAccount, InternationalBankAccount> builder)
     {
-        builder.Property(x => x.AccountHolderName)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.BankName)
-            .HasMaxLength(100)
-            .IsRequired();
-
         builder.Property(x => x.SwiftBicCode)
             .HasMaxLength(11)
             .IsRequired();
@@ -58,14 +57,6 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
 
     private void Configure(OwnedNavigationBuilder<FinancialAccount, LocalBankAccount> builder)
     {
-        builder.Property(x => x.AccountHolderName)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.BankName)
-            .HasMaxLength(100)
-            .IsRequired();
-
         builder.Property(x => x.CardNumber)
             .HasMaxLength(20)
             .IsRequired();

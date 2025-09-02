@@ -10,43 +10,72 @@ public readonly record struct FinancialAccountId(Guid Value);
 public class FinancialAccount : EntityBase<FinancialAccountId>
 {
     public static FinancialAccount CreateCustomerAccount(
+        string? holderName,
+        string? brokerName,
         FinancialAccountType accountType,
         PriceUnitId priceUnitId,
         CustomerId? customerId,
         LocalBankAccount? localAccount = null,
-        InternationalBankAccount? internationalAccount = null)
+        InternationalBankAccount? internationalAccount = null,
+        CashAccount? cashAccount = null)
     {
+        if (cashAccount?.AccountType is CashAccountType.DepositsWithOwners)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(holderName, nameof(holderName));
+            ArgumentException.ThrowIfNullOrEmpty(brokerName, nameof(brokerName));
+        }
+
         return new FinancialAccount
         {
             Id = new FinancialAccountId(Guid.NewGuid()),
             AccountType = accountType,
             PriceUnitId = priceUnitId,
             CustomerId = customerId,
+            HolderName = holderName,
+            BrokerName = brokerName,
             IsSystemAccount = false,
             LocalAccount = localAccount,
-            InternationalAccount = internationalAccount
+            InternationalAccount = internationalAccount,
+            CashAccount = cashAccount
         };
     }
 
     public static FinancialAccount CreateSystemAccount(
+        string? holderName,
+        string? brokerName,
         FinancialAccountType accountType,
         PriceUnitId priceUnitId,
         LedgerAccountId ledgerAccountId,
         LocalBankAccount? localAccount = null,
-        InternationalBankAccount? internationalAccount = null)
+        InternationalBankAccount? internationalAccount = null,
+        CashAccount? cashAccount = null)
     {
+        if (cashAccount?.AccountType is CashAccountType.DepositsWithOwners)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(holderName, nameof(holderName));
+            ArgumentException.ThrowIfNullOrEmpty(brokerName, nameof(brokerName));
+        }
+
         return new FinancialAccount
         {
             Id = new FinancialAccountId(Guid.NewGuid()),
             LedgerAccountId = ledgerAccountId,
             AccountType = accountType,
+            HolderName = holderName,
+            BrokerName = brokerName,
             PriceUnitId = priceUnitId,
-            IsSystemAccount = true
+            IsSystemAccount = true,
+            LocalAccount = localAccount,
+            InternationalAccount = internationalAccount,
+            CashAccount = cashAccount
         };
     }
 
     public FinancialAccountType AccountType { get; private set; }
-    
+
+    public string? HolderName { get; private set; }
+    public string? BrokerName { get; private set; }
+
     public bool IsSystemAccount { get; private set; }
 
     public PriceUnitId PriceUnitId { get; private set; }
@@ -60,6 +89,7 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
 
     public LocalBankAccount? LocalAccount { get; private set; }
     public InternationalBankAccount? InternationalAccount { get; private set; }
+    public CashAccount? CashAccount { get; private set; }
 
 #pragma warning disable CS8618
     private FinancialAccount() { }
@@ -68,6 +98,18 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
     public FinancialAccount SetAccountType(FinancialAccountType accountType)
     {
         AccountType = accountType;
+        return this;
+    }
+
+    public FinancialAccount SetHolderName(string? holderName)
+    {
+        HolderName = holderName;
+        return this;
+    }
+
+    public FinancialAccount SetBrokerName(string? brokerName)
+    {
+        BrokerName = brokerName;
         return this;
     }
 
@@ -84,6 +126,8 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
 
         LocalAccount = localAccount;
         InternationalAccount = null;
+        CashAccount = null;
+
         return this;
     }
 
@@ -94,14 +138,17 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
 
         InternationalAccount = internationalAccount;
         LocalAccount = null;
+        CashAccount = null;
+
         return this;
     }
 
-    public FinancialAccount SetCashAccount()
+    public FinancialAccount SetCashAccount(CashAccount? cashAccount)
     {
         if (AccountType != FinancialAccountType.Cash)
             throw new InvalidOperationException("Cannot set cash account for non-cash account type.");
 
+        CashAccount = cashAccount;
         LocalAccount = null;
         InternationalAccount = null;
 

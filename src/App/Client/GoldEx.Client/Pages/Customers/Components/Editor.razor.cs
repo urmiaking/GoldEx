@@ -1,5 +1,7 @@
 ﻿using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PriceUnits;

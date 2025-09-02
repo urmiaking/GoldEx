@@ -13,10 +13,6 @@ public class FinancialAccountsMappingConfig : IRegister
         config.NewConfig<FinancialAccount, GetFinancialAccountResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.FinancialAccountType, src => src.AccountType)
-            .Map(dest => dest.SupplierFullName, src =>
-                src.Customer != null ? src.Customer.FullName : string.Empty)
-            .Map(dest => dest.SupplierPhoneNumber, src =>
-                src.Customer != null ? src.Customer.PhoneNumber : string.Empty)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit)
             .Map(dest => dest.LocalBankAccount, src => src.LocalAccount)
             .Map(dest => dest.InternationalBankAccount, src =>
@@ -31,7 +27,11 @@ public class FinancialAccountsMappingConfig : IRegister
                 src.PriceUnit != null
                     ? $"{src.AccountType.GetDisplayName()} - " +
                       $"{(src.AccountType == FinancialAccountType.Cash
-                          ? src.PriceUnit.Title
+                          ? src.CashAccount != null 
+                              ? src.CashAccount.AccountType == CashAccountType.Internal 
+                                  ? $"{src.CashAccount.AccountType.GetDisplayName()} - {src.PriceUnit.Title}" 
+                                  : $"{src.CashAccount.AccountType.GetDisplayName()} - {src.PriceUnit.Title} - {src.BrokerName}"
+                              : string.Empty
                           : src.AccountType == FinancialAccountType.LocalBankAccount && src.LocalAccount != null
                               ? src.LocalAccount.AccountNumber
                               : src.AccountType == FinancialAccountType.InternationalBankAccount && src.InternationalAccount != null

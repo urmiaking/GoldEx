@@ -1,4 +1,5 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Pages.FinancialAccounts.ViewModels
+@inherits GoldExComponentBase
 
 @attribute [Route(ClientRoutes.Settings.FinancialAccounts)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]

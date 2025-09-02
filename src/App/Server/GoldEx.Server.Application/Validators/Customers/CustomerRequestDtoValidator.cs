@@ -60,7 +60,7 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
         When(x => x.FinancialAccounts is not null, () =>
         {
             RuleForEach(x => x.FinancialAccounts)
-                .SetValidator(new FinancialAccountRequestDtoValidator(_priceUnitRepository, _repository, ledgerAccountRepository))
+                .SetValidator(new FinancialAccountRequestDtoValidator(_priceUnitRepository, _repository))
                 .WithMessage("اطلاعات حساب مالی نامعتبر است");
         });
     }
