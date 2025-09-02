@@ -85,6 +85,8 @@ internal class FinancialAccountService(
                 if (request is { CustomerId: not null, IsSystemAccount: false })
                 {
                     financialAccount = FinancialAccount.CreateCustomerAccount(
+                        request.HolderName,
+                        request.BrokerName,
                         request.FinancialAccountType,
                         new PriceUnitId(request.PriceUnitId),
                         new CustomerId(request.CustomerId.Value));
@@ -94,6 +96,8 @@ internal class FinancialAccountService(
                     var ledgerAccountId = await GetOrCreateSystemLedgerAccountAsync(request, cancellationToken);
 
                     financialAccount = FinancialAccount.CreateSystemAccount(
+                        request.HolderName,
+                        request.BrokerName,
                         request.FinancialAccountType,
                         new PriceUnitId(request.PriceUnitId),
                         ledgerAccountId);
@@ -102,20 +106,19 @@ internal class FinancialAccountService(
                 switch (request.FinancialAccountType)
                 {
                     case FinancialAccountType.LocalBankAccount when request.LocalBankAccount is not null:
-                        financialAccount.SetLocalAccount(LocalBankAccount.Create(request.LocalBankAccount.AccountHolderName,
-                            request.LocalBankAccount.BankName,
+                        financialAccount.SetLocalAccount(LocalBankAccount.Create(
                             request.LocalBankAccount.CardNumber,
                             request.LocalBankAccount.ShabaNumber,
                             request.LocalBankAccount.AccountNumber));
                         break;
                     case FinancialAccountType.InternationalBankAccount when request.InternationalBankAccount is not null:
-                        financialAccount.SetInternationalAccount(InternationalBankAccount.Create(request.InternationalBankAccount.AccountHolderName,
-                            request.InternationalBankAccount.BankName,
+                        financialAccount.SetInternationalAccount(InternationalBankAccount.Create(
                             request.InternationalBankAccount.SwiftBicCode,
                             request.InternationalBankAccount.IbanNumber,
                             request.InternationalBankAccount.AccountNumber));
                         break;
-                    case FinancialAccountType.Cash:
+                    case FinancialAccountType.Cash when request.CashAccount is not null:
+                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.AccountType));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -146,6 +149,8 @@ internal class FinancialAccountService(
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
                 financialAccount.SetAccountType(request.FinancialAccountType);
+                financialAccount.SetHolderName(request.HolderName);
+                financialAccount.SetBrokerName(request.BrokerName);
                 financialAccount.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
 
                 if (financialAccount.IsSystemAccount)
@@ -168,7 +173,7 @@ internal class FinancialAccountService(
 
                             ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(
                                 request.FinancialAccountType,
-                                request.LocalBankAccount?.BankName ?? request.InternationalBankAccount?.BankName,
+                                request.BrokerName,
                                 request.LocalBankAccount?.AccountNumber ?? request.InternationalBankAccount?.AccountNumber, null));
 
                             ledgerAccount.SetParentAccount(banksLedgerAccount.Id);
@@ -191,6 +196,8 @@ internal class FinancialAccountService(
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+                    // TODO: need to be reviewed
+                    financialAccount.SetLedgerAccount(ledgerAccount.Id);
 
                     await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
                 }
@@ -200,21 +207,19 @@ internal class FinancialAccountService(
                 switch (request.FinancialAccountType)
                 {
                     case FinancialAccountType.LocalBankAccount when request.LocalBankAccount is not null:
-                        financialAccount.SetLocalAccount(LocalBankAccount.Create(request.LocalBankAccount.AccountHolderName,
-                            request.LocalBankAccount.BankName,
+                        financialAccount.SetLocalAccount(LocalBankAccount.Create(
                             request.LocalBankAccount.CardNumber,
                             request.LocalBankAccount.ShabaNumber,
                             request.LocalBankAccount.AccountNumber));
                         break;
                     case FinancialAccountType.InternationalBankAccount when request.InternationalBankAccount is not null:
-                        financialAccount.SetInternationalAccount(InternationalBankAccount.Create(request.InternationalBankAccount.AccountHolderName,
-                            request.InternationalBankAccount.BankName,
+                        financialAccount.SetInternationalAccount(InternationalBankAccount.Create(
                             request.InternationalBankAccount.SwiftBicCode,
                             request.InternationalBankAccount.IbanNumber,
                             request.InternationalBankAccount.AccountNumber));
                         break;
-                    case FinancialAccountType.Cash:
-                        financialAccount.SetCashAccount();
+                    case FinancialAccountType.Cash when request.CashAccount is not null:
+                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.AccountType));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -247,14 +252,12 @@ internal class FinancialAccountService(
                 await deleteValidator.ValidateAndThrowAsync(financialAccount, cancellationToken);
                 await repository.DeleteAsync(financialAccount, cancellationToken);
 
-                if (financialAccount.IsSystemAccount)
+                if (financialAccount is { IsSystemAccount: true, AccountType: not FinancialAccountType.Cash })
                 {
-                    var priceUnit = financialAccount.PriceUnit;
-
                     var ledgerAccountTitle = LedgerAccountTitleBuilder.ForFinancialAccount(
                         financialAccount.AccountType,
-                        financialAccount.LocalAccount?.BankName ?? financialAccount.InternationalAccount?.BankName,
-                        financialAccount.LocalAccount?.AccountNumber ?? financialAccount.InternationalAccount?.AccountNumber, priceUnit?.Title);
+                        financialAccount.BrokerName,
+                        financialAccount.LocalAccount?.AccountNumber ?? financialAccount.InternationalAccount?.AccountNumber, financialAccount.PriceUnit?.Title);
 
                     var ledgerAccount = await ledgerAccountRepository
                         .Get(new LedgerAccountsByTitleSpecification(ledgerAccountTitle))
@@ -291,7 +294,7 @@ internal class FinancialAccountService(
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.Banks)}' not found.");
                 ledgerAccountTitle = LedgerAccountTitleBuilder.ForFinancialAccount(
                     request.FinancialAccountType,
-                    request.LocalBankAccount?.BankName ?? request.InternationalBankAccount?.BankName,
+                    request.BrokerName,
                     request.LocalBankAccount?.AccountNumber ?? request.InternationalBankAccount?.AccountNumber, null);
                 break;
             case FinancialAccountType.Cash:

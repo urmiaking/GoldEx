@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
-using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Client.Pages.Customers.Validators;
+namespace GoldEx.Client.Pages.FinancialAccounts.Validators;
 
 public class FinancialAccountValidator : AbstractValidator<FinancialAccountVm>
 {
@@ -11,20 +11,21 @@ public class FinancialAccountValidator : AbstractValidator<FinancialAccountVm>
         RuleFor(x => x.PriceUnit)
             .NotEmpty().WithMessage("واحد ارزی نباید خالی باشد.");
 
+        RuleFor(x => x.HolderName)
+            .NotEmpty().WithMessage("نام صاحب حساب نباید خالی باشد.")
+            .MaximumLength(100).WithMessage("نام صاحب حساب نباید بیشتر از 100 کاراکتر باشد.");
+
+        RuleFor(x => x.BrokerName)
+            .NotEmpty().WithMessage("نام بانک/کارگزار نباید خالی باشد.")
+            .MaximumLength(100).WithMessage("نام بانک/کارگزار نباید بیشتر از 100 کاراکتر باشد.");
+
         RuleFor(x => x.FinancialAccountType)
-            .IsInEnum().WithMessage("نوع حساب بانکی نامعتبر است.");
+            .IsInEnum().WithMessage("نوع حساب نامعتبر است.");
 
         When(x => x.FinancialAccountType is FinancialAccountType.LocalBankAccount && x.LocalBankAccount is not null, () =>
         {
-            RuleFor(x => x.LocalBankAccount!.AccountHolderName)
-                .NotEmpty().WithMessage("نام صاحب حساب نباید خالی باشد.")
-                .MaximumLength(100).WithMessage("نام صاحب حساب نباید بیشتر از 100 کاراکتر باشد.");
-
-            RuleFor(x => x.LocalBankAccount!.BankName)
-                .NotEmpty().WithMessage("نام بانک نباید خالی باشد.")
-                .MaximumLength(100).WithMessage("نام بانک نباید بیشتر از 100 کاراکتر باشد.");
-
             RuleFor(x => x.LocalBankAccount!.AccountNumber)
+                .NotEmpty().WithMessage("شماره حساب نباید خالی باشد")
                 .MaximumLength(20).WithMessage("شماره حساب نباید بیشتر از 20 کاراکتر باشد.");
             RuleFor(x => x.LocalBankAccount!.CardNumber)
                 .MaximumLength(20).WithMessage("شماره کارت نباید بیشتر از 20 کاراکتر باشد.");
@@ -34,15 +35,8 @@ public class FinancialAccountValidator : AbstractValidator<FinancialAccountVm>
 
         When(x => x.FinancialAccountType is FinancialAccountType.InternationalBankAccount && x.InternationalBankAccount is not null, () =>
         {
-            RuleFor(x => x.InternationalBankAccount!.AccountHolderName)
-                .NotEmpty().WithMessage("نام صاحب حساب نباید خالی باشد.")
-                .MaximumLength(100).WithMessage("نام صاحب حساب نباید بیشتر از 100 کاراکتر باشد.");
-
-            RuleFor(x => x.InternationalBankAccount!.BankName)
-                .NotEmpty().WithMessage("نام بانک نباید خالی باشد.")
-                .MaximumLength(100).WithMessage("نام بانک نباید بیشتر از 100 کاراکتر باشد.");
-
             RuleFor(x => x.InternationalBankAccount!.AccountNumber)
+                .NotEmpty().WithMessage("شماره حساب نباید خالی باشد")
                 .MaximumLength(20).WithMessage("شماره حساب نباید بیشتر از 20 کاراکتر باشد.");
             RuleFor(x => x.InternationalBankAccount!.SwiftBicCode)
                 .MaximumLength(11).WithMessage("کد سوئیفت نباید بیشتر از 11 کاراکتر باشد.");

@@ -33,7 +33,7 @@ public class Customer : EntityBase<CustomerId>
 
     public string FullName { get; private set; }
     public string NationalId { get; private set; }
-    public string? PhoneNumber { get; private set; }
+    public string?  PhoneNumber { get; private set; }
     public string? Address { get; private set; }
     public decimal? CreditLimit { get; private set; }
     public CustomerType CustomerType { get; private set; }

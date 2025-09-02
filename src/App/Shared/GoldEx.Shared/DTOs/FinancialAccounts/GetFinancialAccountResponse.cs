@@ -6,8 +6,9 @@ namespace GoldEx.Shared.DTOs.FinancialAccounts;
 public record GetFinancialAccountResponse(
     Guid Id,
     FinancialAccountType FinancialAccountType,
-    string SupplierFullName,
-    string SupplierPhoneNumber,
+    string? BrokerName,
+    string? HolderName,
     GetPriceUnitTitleResponse PriceUnit,
     GetLocalBankAccountResponse? LocalBankAccount,
-    GetInternationalBankAccountResponse? InternationalBankAccount);
+    GetInternationalBankAccountResponse? InternationalBankAccount,
+    GetCashAccountResponse? CashAccount);

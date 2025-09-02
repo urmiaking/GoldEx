@@ -1,5 +1,7 @@
 ﻿using GoldEx.Client.Pages.Customers.Components;
 using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.PaymentVouchers.Validators;
 using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 using GoldEx.Shared.DTOs.Customers;

@@ -1,15 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace GoldEx.Client.Pages.Customers.ViewModels;
+namespace GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 
 public class LocalBankAccountVm
 {
-    [Display(Name = "نام صاحب حساب")]
-    public string? AccountHolderName { get; set; }
-
-    [Display(Name = "نام بانک")]
-    public string? BankName { get; set; }
-
     [Display(Name = "شماره کارت")]
     public string? CardNumber { get; set; }
 

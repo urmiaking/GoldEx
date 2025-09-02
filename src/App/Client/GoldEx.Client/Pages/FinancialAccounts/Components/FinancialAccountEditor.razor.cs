@@ -1,5 +1,5 @@
-﻿using GoldEx.Client.Pages.Customers.Validators;
-using GoldEx.Client.Pages.Customers.ViewModels;
+﻿using GoldEx.Client.Pages.FinancialAccounts.Validators;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
@@ -7,7 +7,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.Customers.Components;
+namespace GoldEx.Client.Pages.FinancialAccounts.Components;
 
 public partial class FinancialAccountEditor
 {
@@ -35,8 +35,8 @@ public partial class FinancialAccountEditor
         if (CustomerId.HasValue) 
             Model.CustomerId = CustomerId.Value;
 
-        if (Model.LocalBankAccount != null && !string.IsNullOrEmpty(AccountHolderName))
-            Model.LocalBankAccount.AccountHolderName = AccountHolderName;
+        if (!string.IsNullOrEmpty(AccountHolderName))
+            Model.HolderName = AccountHolderName;
 
         if (IsSystemAccount) 
             Model.IsSystemAccount = true;
@@ -104,12 +104,17 @@ public partial class FinancialAccountEditor
             case FinancialAccountType.LocalBankAccount:
                 Model.LocalBankAccount = new LocalBankAccountVm();
                 Model.InternationalBankAccount = null;
+                Model.CashAccount = null;
                 break;
             case FinancialAccountType.InternationalBankAccount:
                 Model.InternationalBankAccount = new InternationalBankAccountVm();
                 Model.LocalBankAccount = null;
+                Model.CashAccount = null;
                 break;
             case FinancialAccountType.Cash:
+                Model.CashAccount = new CashAccountVm();
+                Model.InternationalBankAccount = null;
+                Model.LocalBankAccount = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);

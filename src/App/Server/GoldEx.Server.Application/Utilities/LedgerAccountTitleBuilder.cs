@@ -15,7 +15,7 @@ public static class LedgerAccountTitleBuilder
         return $"{SystemLedgerAccounts.CoinInventory} - {coinTitle}";
     }
 
-    public static string ForFinancialAccount(FinancialAccountType accountType, string? bankName, string? accountNumber, string? priceUnitTitle)
+    public static string ForFinancialAccount(FinancialAccountType accountType, string? brokerName, string? accountNumber, string? priceUnitTitle)
     {
         return accountType switch
         {
@@ -23,13 +23,13 @@ public static class LedgerAccountTitleBuilder
                 "Price unit title must be provided for cash accounts.", nameof(priceUnitTitle)),
 
             FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount when
-                string.IsNullOrEmpty(bankName) || string.IsNullOrEmpty(accountNumber) => throw new ArgumentException(
-                    "Bank name and account number must both be provided for bank accounts.", nameof(accountType)),
+                string.IsNullOrEmpty(brokerName) || string.IsNullOrEmpty(accountNumber) => throw new ArgumentException(
+                    "Broker name and account number must both be provided for bank accounts.", nameof(accountType)),
 
             _ => accountType switch
             {
                 FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount =>
-                    $"{SystemLedgerAccounts.Banks} - {bankName} ({accountNumber})",
+                    $"{SystemLedgerAccounts.Banks} - {brokerName} ({accountNumber})",
                 FinancialAccountType.Cash => ForCurrencyAccount(priceUnitTitle!),
                 _ => throw new ArgumentOutOfRangeException(nameof(accountType), "Unknown financial account type")
             }

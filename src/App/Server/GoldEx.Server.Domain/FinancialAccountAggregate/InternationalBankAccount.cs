@@ -1,27 +1,24 @@
-﻿namespace GoldEx.Server.Domain.FinancialAccountAggregate;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
 
-public class InternationalBankAccount
+namespace GoldEx.Server.Domain.FinancialAccountAggregate;
+
+public class InternationalBankAccount : EntityBase
 {
     public static InternationalBankAccount Create(
-        string accountHolderName,
-        string bankName,
-        string swiftBicCode,
-        string ibanNumber,
+        string? swiftBicCode,
+        string? ibanNumber,
         string accountNumber)
     {
         return new InternationalBankAccount
         {
-            AccountHolderName = accountHolderName,
-            BankName = bankName,
             SwiftBicCode = swiftBicCode,
             IbanNumber = ibanNumber,
             AccountNumber = accountNumber
         };
     }
-    public string AccountHolderName { get; private set; }
-    public string BankName { get; private set; }
-    public string SwiftBicCode { get; private set; }
-    public string IbanNumber { get; private set; }
+    
+    public string? SwiftBicCode { get; private set; }
+    public string? IbanNumber { get; private set; }
     public string AccountNumber { get; private set; }
 
 #pragma warning disable CS8618
