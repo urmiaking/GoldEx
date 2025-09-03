@@ -30,7 +30,9 @@ public static class LedgerAccountTitleBuilder
             {
                 FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount =>
                     $"{SystemLedgerAccounts.Banks} - {brokerName} ({accountNumber})",
-                FinancialAccountType.Cash => ForCurrencyAccount(priceUnitTitle!),
+                FinancialAccountType.Cash when string.IsNullOrEmpty(brokerName)
+                    => ForCurrencyAccount(priceUnitTitle!),
+                FinancialAccountType.Cash => $"{SystemLedgerAccounts.DepositsWithOthers} - {brokerName} ({priceUnitTitle})",
                 _ => throw new ArgumentOutOfRangeException(nameof(accountType), "Unknown financial account type")
             }
         };

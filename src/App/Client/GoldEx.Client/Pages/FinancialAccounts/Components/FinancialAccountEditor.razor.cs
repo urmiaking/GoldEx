@@ -122,4 +122,18 @@ public partial class FinancialAccountEditor
 
         StateHasChanged();
     }
+
+    private void OnCashAccountTypeChanged(CashAccountType cashAccountType)
+    {
+        if (Model.CashAccount != null)
+            Model.CashAccount.AccountType = cashAccountType;
+
+        if (cashAccountType is CashAccountType.Internal)
+        {
+            Model.HolderName = null;
+            Model.BrokerName = null;
+        }
+
+        StateHasChanged();
+    }
 }

@@ -8,5 +8,5 @@ public enum CashAccountType
     Internal = 0,
 
     [Display(Name = "سپرده نزد دیگران")]
-    DepositsWithOwners = 1
+    DepositsWithOthers = 1
 }

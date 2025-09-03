@@ -19,7 +19,7 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         InternationalBankAccount? internationalAccount = null,
         CashAccount? cashAccount = null)
     {
-        if (cashAccount?.AccountType is CashAccountType.DepositsWithOwners)
+        if (cashAccount?.AccountType is CashAccountType.DepositsWithOthers)
         {
             ArgumentException.ThrowIfNullOrEmpty(holderName, nameof(holderName));
             ArgumentException.ThrowIfNullOrEmpty(brokerName, nameof(brokerName));
@@ -50,7 +50,7 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         InternationalBankAccount? internationalAccount = null,
         CashAccount? cashAccount = null)
     {
-        if (cashAccount?.AccountType is CashAccountType.DepositsWithOwners)
+        if (cashAccount?.AccountType is CashAccountType.DepositsWithOthers)
         {
             ArgumentException.ThrowIfNullOrEmpty(holderName, nameof(holderName));
             ArgumentException.ThrowIfNullOrEmpty(brokerName, nameof(brokerName));
