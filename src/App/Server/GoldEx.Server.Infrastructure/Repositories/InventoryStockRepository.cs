@@ -9,6 +9,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -239,5 +240,41 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
             default:
                 throw new ArgumentOutOfRangeException(nameof(inventoryFilter.ItemType), "Invalid item type for inventory summary.");
         }
+    }
+
+    public async Task<List<Product>> GetAvailableProductsForCalculatorAsync(
+        CalculatorFilterRequest filter,
+        CancellationToken cancellationToken = default)
+    {
+        var stockLevels = await Query
+            .AsNoTracking()
+            .Where(s => s.ProductId.HasValue)
+            .GroupBy(s => s.ProductId!.Value)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+            })
+            .Where(s => s.CurrentQuantity > 0)
+            .ToDictionaryAsync(k => k.ProductId, v => v.CurrentQuantity, cancellationToken);
+
+        if (!stockLevels.Any())
+        {
+            return [];
+        }
+
+        var availableProductIds = stockLevels.Keys.ToList();
+
+        return await dbContext.Set<Product>()
+            .AsNoTracking()
+            .Where(p => availableProductIds.Contains(p.Id))
+            .Where(p => p.ProductType == filter.ProductType)
+            .Where(p => !filter.ProductCategoryId.HasValue || (p.ProductCategoryId.HasValue && p.ProductCategoryId.Value.Value == filter.ProductCategoryId.Value))
+            .Where(p => !filter.Fineness.HasValue || p.Fineness == filter.Fineness.Value)
+            .Where(p => !filter.MinWeight.HasValue || p.Weight >= filter.MinWeight.Value)
+            .Where(p => !filter.MaxWeight.HasValue || p.Weight <= filter.MaxWeight.Value)
+            .Where(p => !filter.MaxWage.HasValue || (p.WageType == WageType.Percent && p.Wage <= filter.MaxWage.Value))
+            .Include(p => p.ProductCategory)
+            .ToListAsync(cancellationToken);
     }
 }

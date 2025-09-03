@@ -179,5 +179,6 @@ public static class ApiRoutes
     {
         public const string Base = "/api/InventoryStocks";
         public const string GetList = "";
+        public const string GetAvailableProducts = "available";
     }
 }

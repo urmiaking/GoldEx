@@ -8,6 +8,7 @@ using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.DTOs.InventoryStocks;
 
 namespace GoldEx.Shared.Routings;
 
@@ -315,5 +316,9 @@ public class ApiUrls
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetList)
                 .AppendQueryString(filter)
                 .AppendQueryString(inventoryFilter);
+
+        public static string GetAvailableProducts(CalculatorFilterRequest filter) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableProducts)
+                .AppendQueryString(filter);
     }
 }

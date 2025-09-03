@@ -9,7 +9,9 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +21,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class InventoryStockService(
     IInventoryStockRepository repository,
+    IProductRepository productRepository,
     IMapper mapper) : IServerInventoryStockService,
     IInventoryStockService
 {
@@ -207,6 +210,39 @@ internal class InventoryStockService(
             Skip = filter.Skip ?? 0,
             Take = filter.Take ?? 100
         };
+    }
+
+    public async Task<List<GetInventoryStockResponse>> GetAvailableProductsAsync(CalculatorFilterRequest filter,
+        CancellationToken cancellationToken = default)
+    {
+        var candidateProducts = await repository.GetAvailableProductsForCalculatorAsync(filter, cancellationToken);
+
+        var results = new List<GetInventoryStockResponse>();
+
+        foreach (var item in candidateProducts)
+        {
+            var rawPrice = CalculatorHelper.Product.CalculateRawPrice(item.Weight, filter.GramPrice, item.Fineness, 1, item.ProductType);
+            var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.Weight, item.Wage, item.WageType, null);
+            var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, item.ProductType, filter.ProfitPercent);
+            var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, filter.TaxPercent, item.ProductType);
+
+            var finalPrice = rawPrice + wageAmount + profitAmount + taxAmount;
+
+            if ((!filter.MinPrice.HasValue || finalPrice >= filter.MinPrice.Value) &&
+                (!filter.MaxPrice.HasValue || finalPrice <= filter.MaxPrice.Value))
+            {
+                results.Add(new GetInventoryStockResponse(
+                    CurrentAmount: 1,
+                    SoldAmount: 0,
+                    DateTime.Now,
+                    mapper.Map<GetProductResponse>(item),
+                    null,
+                    null
+                ));
+            }
+        }
+
+        return results;
     }
 
     #endregion

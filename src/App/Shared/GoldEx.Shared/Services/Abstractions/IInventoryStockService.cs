@@ -8,4 +8,6 @@ public interface IInventoryStockService
 {
     Task<PagedList<GetInventoryStockResponse>> GetListAsync(RequestFilter filter, InventoryFilter inventoryFilter,
         CancellationToken cancellationToken = default);
+
+    Task<List<GetInventoryStockResponse>> GetAvailableProductsAsync(CalculatorFilterRequest filter, CancellationToken cancellationToken = default);
 }
