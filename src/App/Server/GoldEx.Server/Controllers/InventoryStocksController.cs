@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -20,4 +21,13 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
         var list = await service.GetListAsync(filter, inventoryFilter, cancellationToken);
         return Ok(list);
     }
+
+    [HttpGet(ApiRoutes.InventoryStocks.GetAvailableProducts)]
+    public async Task<IActionResult> GetAvailableProductsAsync([FromQuery] CalculatorFilterRequest filter, CancellationToken cancellationToken = default)
+    {
+        var list = await service.GetAvailableProductsAsync(filter, cancellationToken);
+        return Ok(list);
+    }
+
+
 }

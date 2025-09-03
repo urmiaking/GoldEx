@@ -5,6 +5,7 @@ using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Models;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -22,5 +23,9 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
     Task<Dictionary<PriceUnitId, decimal>> GetQuantitiesAsync(IEnumerable<PriceUnitId> currencyIds, CancellationToken cancellationToken = default);
 
     Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter, InventoryFilter inventoryFilter, 
+        CancellationToken cancellationToken = default);
+
+    Task<List<Product>> GetAvailableProductsForCalculatorAsync(
+        CalculatorFilterRequest filter,
         CancellationToken cancellationToken = default);
 }
