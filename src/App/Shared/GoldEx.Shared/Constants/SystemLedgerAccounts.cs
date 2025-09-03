@@ -12,6 +12,8 @@ public static class SystemLedgerAccounts
     public static string CoinInventory => "موجودی سکه";
     public static string Banks => "بانک‌ها";
     public static string CashAccounts => "صندوق‌ها";
+    public static string InternalCashAccounts => "صندوق‌های داخلی";
+    public static string DepositsWithOthers => "سپرده نزد دیگران";
     #endregion
 
     #region Liabilities (بدهی‌ها)

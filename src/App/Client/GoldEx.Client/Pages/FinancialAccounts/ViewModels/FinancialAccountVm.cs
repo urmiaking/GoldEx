@@ -2,6 +2,7 @@
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Sdk.Common.Extensions;
 
 namespace GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 
@@ -55,6 +56,12 @@ public class FinancialAccountVm
                     ShabaNumber = response.LocalBankAccount.ShabaNumber,
                     AccountNumber = response.LocalBankAccount.AccountNumber
                 }
+                : null,
+            CashAccount = response.CashAccount != null
+                ? new CashAccountVm
+                {
+                    AccountType = response.CashAccount.AccountType
+                }
                 : null
         };
     }
@@ -83,5 +90,30 @@ public class FinancialAccountVm
             FinancialAccountType is FinancialAccountType.Cash && CashAccount != null 
                 ? new CashAccountRequestDto(CashAccount.AccountType) 
                 : null);
+    }
+
+    public string GetAccountTypeText()
+    {
+        return FinancialAccountType switch
+        {
+            FinancialAccountType.LocalBankAccount =>
+                $"{FinancialAccountType.LocalBankAccount.GetDisplayName()} - {BrokerName} - {HolderName} - {LocalBankAccount?.AccountNumber}",
+
+            FinancialAccountType.InternationalBankAccount =>
+                $"{FinancialAccountType.InternationalBankAccount.GetDisplayName()} - {BrokerName} - {HolderName} - {InternationalBankAccount?.AccountNumber}",
+
+            FinancialAccountType.Cash => CashAccount?.AccountType switch
+            {
+                CashAccountType.DepositsWithOthers =>
+                    $"{CashAccount?.AccountType.GetDisplayName()} - {BrokerName} - {HolderName}",
+
+                CashAccountType.Internal =>
+                    $"{CashAccount?.AccountType.GetDisplayName()}",
+
+                _ => $"{FinancialAccountType.Cash.GetDisplayName()}"
+            },
+
+            _ => "نامشخص"
+        };
     }
 }

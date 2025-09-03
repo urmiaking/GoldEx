@@ -109,9 +109,10 @@
                         <MudItem xs="12">
                             <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                 <MudText>نوع حساب نقدی:</MudText>
-                                <MudRadioGroup T="CashAccountType" Required="true" For="() => Model.CashAccount.AccountType" @bind-Value="Model.CashAccount.AccountType">
+                                <MudRadioGroup T="CashAccountType" Required="true" For="() => Model.CashAccount.AccountType"
+                                               Value="Model.CashAccount.AccountType" ValueChanged="OnCashAccountTypeChanged">
                                     <MudRadio Value="@(CashAccountType.Internal)">@CashAccountType.Internal.GetDisplayName()</MudRadio>
-                                    <MudRadio Value="@(CashAccountType.DepositsWithOwners)">@CashAccountType.DepositsWithOwners.GetDisplayName()</MudRadio>
+                                    <MudRadio Value="@(CashAccountType.DepositsWithOthers)">@CashAccountType.DepositsWithOthers.GetDisplayName()</MudRadio>
                                 </MudRadioGroup>
                             </MudStack>
                         </MudItem>

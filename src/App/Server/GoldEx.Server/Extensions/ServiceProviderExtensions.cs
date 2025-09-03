@@ -68,81 +68,59 @@ public static class ServiceProviderExtensions
     {
         var repository = serviceProvider.GetRequiredService<ILedgerAccountRepository>();
 
-        if (await repository.ExistsAsync(new LedgerAccountsByTypeSpecification(true)))
-            return;
-
-        var assets = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Assets, LedgerAccountType.Asset);
-        var liabilities = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Liabilities, LedgerAccountType.Liability);
-        var equity = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Equity, LedgerAccountType.Equity);
-        var revenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Revenue, LedgerAccountType.Revenue);
-        var expenses = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Expenses, LedgerAccountType.Expense);
-
-        var topLevelAccounts = new List<LedgerAccount> { assets, liabilities, equity, revenue, expenses };
-        await repository.CreateRangeAsync(topLevelAccounts);
-
-        var currentAssets = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CurrentAssets, LedgerAccountType.Asset);
-        currentAssets.SetParentAccount(assets.Id);
-
-        var accountsReceivable = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.AccountsReceivable, LedgerAccountType.Asset);
-        accountsReceivable.SetParentAccount(currentAssets.Id);
-
-        var prepayments = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.PrepaymentsToSuppliers, LedgerAccountType.Asset);
-        prepayments.SetParentAccount(currentAssets.Id);
-
-        var inventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset);
-        inventory.SetParentAccount(currentAssets.Id);
-
-        var usedProductInventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset);
-        usedProductInventory.SetParentAccount(currentAssets.Id);
-
-        var coinInventory = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset);
-        coinInventory.SetParentAccount(currentAssets.Id);
-
-        var bankAccounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset);
-        bankAccounts.SetParentAccount(currentAssets.Id);
-
-        var cashAccounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CashAccounts, LedgerAccountType.Asset);
-        cashAccounts.SetParentAccount(currentAssets.Id);
-
-        var currentLiabilities = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CurrentLiabilities, LedgerAccountType.Liability);
-        currentLiabilities.SetParentAccount(liabilities.Id);
-
-        var accountsPayable = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.AccountsPayable, LedgerAccountType.Liability);
-        accountsPayable.SetParentAccount(currentLiabilities.Id);
-
-        var openingBalanceEquity = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.OpeningBalanceEquity, LedgerAccountType.Equity);
-        openingBalanceEquity.SetParentAccount(equity.Id);
-
-        var salesRevenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.SalesRevenue, LedgerAccountType.Revenue);
-        salesRevenue.SetParentAccount(revenue.Id);
-
-        var additionalChargesRevenue = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.AdditionalChargesRevenue, LedgerAccountType.Revenue);
-        additionalChargesRevenue.SetParentAccount(revenue.Id);
-
-        var exchangeGainLoss = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.ExchangeGainLoss, LedgerAccountType.Revenue);
-        exchangeGainLoss.SetParentAccount(revenue.Id);
-
-        var cogs = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.CostOfGoodsSold, LedgerAccountType.Expense);
-        cogs.SetParentAccount(expenses.Id);
-
-        var operatingExpenses = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.OperatingExpenses, LedgerAccountType.Expense);
-        operatingExpenses.SetParentAccount(expenses.Id);
-
-        var salesDiscounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.SalesDiscounts, LedgerAccountType.Expense);
-        salesDiscounts.SetParentAccount(expenses.Id);
-
-        var purchaseDiscounts = LedgerAccount.CreateSystemAccount(SystemLedgerAccounts.PurchaseDiscounts, LedgerAccountType.Expense);
-        purchaseDiscounts.SetParentAccount(expenses.Id);
-
-        var subLevelAccounts = new List<LedgerAccount>
+        // متد کمکی برای جلوگیری از تکرار کد
+        async Task<LedgerAccount> GetOrCreateAccount(string title, LedgerAccountType type, LedgerAccount? parent = null)
         {
-            currentAssets, accountsReceivable, prepayments, inventory, bankAccounts, cashAccounts, coinInventory, usedProductInventory,
-            currentLiabilities, accountsPayable,
-            openingBalanceEquity,
-            salesRevenue, additionalChargesRevenue, exchangeGainLoss,
-            cogs, operatingExpenses, salesDiscounts, purchaseDiscounts
-        };
-        await repository.CreateRangeAsync(subLevelAccounts);
+            var existingAccount = await repository
+                .Get(new LedgerAccountsByTitleSpecification(title))
+                .FirstOrDefaultAsync();
+
+            if (existingAccount is not null)
+            {
+                return existingAccount;
+            }
+
+            var newAccount = LedgerAccount.CreateSystemAccount(title, type, parent?.Id);
+            await repository.CreateAsync(newAccount);
+            return newAccount;
+        }
+
+        // --- ایجاد سلسله مراتبی سرفصل‌ها ---
+
+        // سطح ۱ (اصلی)
+        var assets = await GetOrCreateAccount(SystemLedgerAccounts.Assets, LedgerAccountType.Asset);
+        var liabilities = await GetOrCreateAccount(SystemLedgerAccounts.Liabilities, LedgerAccountType.Liability);
+        var equity = await GetOrCreateAccount(SystemLedgerAccounts.Equity, LedgerAccountType.Equity);
+        var revenue = await GetOrCreateAccount(SystemLedgerAccounts.Revenue, LedgerAccountType.Revenue);
+        var expenses = await GetOrCreateAccount(SystemLedgerAccounts.Expenses, LedgerAccountType.Expense);
+
+        // سطح ۲ (زیرمجموعه‌ها)
+        var currentAssets = await GetOrCreateAccount(SystemLedgerAccounts.CurrentAssets, LedgerAccountType.Asset, assets);
+        var currentLiabilities = await GetOrCreateAccount(SystemLedgerAccounts.CurrentLiabilities, LedgerAccountType.Liability, liabilities);
+        var operatingExpenses = await GetOrCreateAccount(SystemLedgerAccounts.OperatingExpenses, LedgerAccountType.Expense, expenses);
+        var openingBalanceEquity = await GetOrCreateAccount(SystemLedgerAccounts.OpeningBalanceEquity, LedgerAccountType.Equity, equity);
+
+        // سطح ۳ (زیرمجموعه‌های نهایی)
+        await GetOrCreateAccount(SystemLedgerAccounts.AccountsReceivable, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.PrepaymentsToSuppliers, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.DepositsWithOthers, LedgerAccountType.Asset, currentAssets);
+
+        var cashAccounts = await GetOrCreateAccount(SystemLedgerAccounts.CashAccounts, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.InternalCashAccounts, LedgerAccountType.Asset, cashAccounts);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.AccountsPayable, LedgerAccountType.Liability, currentLiabilities);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.SalesRevenue, LedgerAccountType.Revenue, revenue);
+        await GetOrCreateAccount(SystemLedgerAccounts.AdditionalChargesRevenue, LedgerAccountType.Revenue, revenue);
+        await GetOrCreateAccount(SystemLedgerAccounts.ExchangeGainLoss, LedgerAccountType.Revenue, revenue);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.CostOfGoodsSold, LedgerAccountType.Expense, expenses);
+        await GetOrCreateAccount(SystemLedgerAccounts.SalesDiscounts, LedgerAccountType.Expense, expenses);
+        await GetOrCreateAccount(SystemLedgerAccounts.PurchaseDiscounts, LedgerAccountType.Expense, expenses);
     }
 
     private static async Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)

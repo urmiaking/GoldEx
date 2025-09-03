@@ -28,7 +28,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ردیف">@context.Index</MudTd>
-        <MudTd DataLabel="نوع حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+        <MudTd DataLabel="نوع حساب">@context.GetAccountTypeText()</MudTd>
         <MudTd DataLabel="واحد ارزی">@context.PriceUnit?.Title</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
