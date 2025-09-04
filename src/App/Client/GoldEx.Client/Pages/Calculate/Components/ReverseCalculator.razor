@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Client.Pages.Settings.ViewModels
+@using GoldEx.Shared.DTOs.InventoryStocks
 @using GoldEx.Shared.DTOs.PriceUnits
 @using GoldEx.Shared.DTOs.ProductCategories
 @inherits GoldExComponentBase
@@ -7,27 +8,27 @@
     <MudGrid Justify="Justify.SpaceBetween">
         <MudItem xs="12" sm="6" md="4">
             <MudNumericField Adornment="Adornment.End"
-                             AdornmentText="@_model.PriceUnit?.Title"
-                             For="() => _model.GramPrice"
-                             Format="#,##0.##"
-                             HideSpinButtons="true"
-                             Immediate="true"
-                             Margin="Margin.Dense"
-                             Label="@($"نرخ {_model.UnitType.GetDisplayName()}")"
-                             T="decimal"
-                             @bind-Value="@_model.GramPrice"
-                             Variant="Variant.Outlined"></MudNumericField>
+            AdornmentText="@_model.PriceUnit?.Title"
+            For="() => _model.GramPrice"
+            Format="#,##0.##"
+            HideSpinButtons="true"
+            Immediate="true"
+            Margin="Margin.Dense"
+            Label="@($"نرخ {_model.UnitType.GetDisplayName()}")"
+            T="decimal"
+            @bind-Value="@_model.GramPrice"
+            Variant="Variant.Outlined"></MudNumericField>
         </MudItem>
         <AuthorizeView>
             <Authorized>
                 <MudItem xs="12" sm="6" md="4">
                     <MudSelect T="GetPriceUnitTitleResponse?"
-                               Value="_model.PriceUnit"
-                               ValueChanged="OnPriceUnitChanged"
-                               Label="@_model.GetDisplayName(() => _model.PriceUnit)"
-                               For="() => _model.PriceUnit"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined">
+                    Value="_model.PriceUnit"
+                    ValueChanged="OnPriceUnitChanged"
+                    Label="@_model.GetDisplayName(() => _model.PriceUnit)"
+                    For="() => _model.PriceUnit"
+                    Margin="Margin.Dense"
+                    Variant="Variant.Outlined">
                         @foreach (var item in _priceUnits)
                         {
                             <MudSelectItem Value="item">
@@ -47,9 +48,9 @@
 
     <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
         <MudRadioGroup For="() => _model.ProductType"
-                       T="ProductType"
-                       Value="_model.ProductType"
-                       ValueChanged="OnProductTypeChanged">
+        T="ProductType"
+        Value="_model.ProductType"
+        ValueChanged="OnProductTypeChanged">
             <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
             <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
             <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
@@ -63,28 +64,28 @@
 
                 <MudText Typo="Typo.subtitle2" Class="mt-2">محدوده قیمت</MudText>
                 <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.MinPrice)"
-                                 For="() => _model.MinPrice"
-                                 @bind-Value="_model.MinPrice"
-                                 Immediate="true"
-                                 Format="#,##0.##"
-                                 Variant="Variant.Outlined"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true"
-                                 Adornment="Adornment.End"
-                                 AdornmentText="@_model.PriceUnit?.Title" />
+                Label="@_model.GetDisplayName(() => _model.MinPrice)"
+                For="() => _model.MinPrice"
+                @bind-Value="_model.MinPrice"
+                Immediate="true"
+                Format="#,##0.##"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                HideSpinButtons="true"
+                Adornment="Adornment.End"
+                AdornmentText="@_model.PriceUnit?.Title" />
 
                 <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.MaxPrice)"
-                                 For="() => _model.MaxPrice"
-                                 @bind-Value="_model.MaxPrice"
-                                 Variant="Variant.Outlined"
-                                 Immediate="true"
-                                 Format="#,##0.##"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true"
-                                 Adornment="Adornment.End"
-                                 AdornmentText="@_model.PriceUnit?.Title" />
+                Label="@_model.GetDisplayName(() => _model.MaxPrice)"
+                For="() => _model.MaxPrice"
+                @bind-Value="_model.MaxPrice"
+                Variant="Variant.Outlined"
+                Immediate="true"
+                Format="#,##0.##"
+                Margin="Margin.Dense"
+                HideSpinButtons="true"
+                Adornment="Adornment.End"
+                AdornmentText="@_model.PriceUnit?.Title" />
 
                 <MudDivider Class="my-4" />
 
@@ -94,16 +95,16 @@
                         <MudMenu @bind-Open="_minWeightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                             <ActivatorContent>
                                 <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@_model.UnitType.GetDisplayName()"
-                                                 For="() => _model.MinWeight"
-                                                 Format="G29"
-                                                 HideSpinButtons="true"
-                                                 Margin="Margin.Dense"
-                                                 Label="@(_model.GetDisplayName(() => _model.MinWeight))"
-                                                 T="decimal?"
-                                                 @bind-Value="_model.MinWeight"
-                                                 Variant="Variant.Outlined"
-                                                 OnAdornmentClick="() => _minWeightFieldMenuOpen = !_minWeightFieldMenuOpen"></MudNumericField>
+                                AdornmentText="@_model.UnitType.GetDisplayName()"
+                                For="() => _model.MinWeight"
+                                Format="G29"
+                                HideSpinButtons="true"
+                                Margin="Margin.Dense"
+                                Label="@(_model.GetDisplayName(() => _model.MinWeight))"
+                                T="decimal?"
+                                @bind-Value="_model.MinWeight"
+                                Variant="Variant.Outlined"
+                                OnAdornmentClick="() => _minWeightFieldMenuOpen = !_minWeightFieldMenuOpen"></MudNumericField>
                             </ActivatorContent>
                             <ChildContent>
                                 @foreach (var item in Enum.GetValues<GoldUnitType>())
@@ -121,16 +122,16 @@
                         <MudMenu @bind-Open="_maxWeightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                             <ActivatorContent>
                                 <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@_model.UnitType.GetDisplayName()"
-                                                 For="() => _model.MaxWeight"
-                                                 Format="G29"
-                                                 HideSpinButtons="true"
-                                                 Margin="Margin.Dense"
-                                                 Label="@(_model.GetDisplayName(() => _model.MaxWeight))"
-                                                 T="decimal?"
-                                                 @bind-Value="_model.MaxWeight"
-                                                 Variant="Variant.Outlined"
-                                                 OnAdornmentClick="() => _maxWeightFieldMenuOpen = !_maxWeightFieldMenuOpen"></MudNumericField>
+                                AdornmentText="@_model.UnitType.GetDisplayName()"
+                                For="() => _model.MaxWeight"
+                                Format="G29"
+                                HideSpinButtons="true"
+                                Margin="Margin.Dense"
+                                Label="@(_model.GetDisplayName(() => _model.MaxWeight))"
+                                T="decimal?"
+                                @bind-Value="_model.MaxWeight"
+                                Variant="Variant.Outlined"
+                                OnAdornmentClick="() => _maxWeightFieldMenuOpen = !_maxWeightFieldMenuOpen"></MudNumericField>
                             </ActivatorContent>
                             <ChildContent>
                                 @foreach (var item in Enum.GetValues<GoldUnitType>())
@@ -145,27 +146,27 @@
                         </MudMenu>
                     </MudItem>
                 </MudGrid>
-                
+
                 <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.Fineness)"
-                                 For="() => _model.Fineness"
-                                 @bind-Value="_model.Fineness"
-                                 Variant="Variant.Outlined"
-                                 Immediate="true"
-                                 Min="0"
-                                 Max="1000"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true" />
+                Label="@_model.GetDisplayName(() => _model.Fineness)"
+                For="() => _model.Fineness"
+                @bind-Value="_model.Fineness"
+                Variant="Variant.Outlined"
+                Immediate="true"
+                Min="0"
+                Max="1000"
+                Margin="Margin.Dense"
+                HideSpinButtons="true" />
                 @if (_model.ProductType is not ProductType.MoltenGold)
                 {
                     <MudSelect T="GetProductCategoryResponse?"
-                               @bind-Value="_model.ProductCategory"
-                               Clearable="true"
-                               OnClearButtonClick="() => OnProductCategoryCleared()"
-                               Label="@_model.GetDisplayName(() => _model.ProductCategory)"
-                               For="() => _model.ProductCategory"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined">
+                    @bind-Value="_model.ProductCategory"
+                    Clearable="true"
+                    OnClearButtonClick="() => OnProductCategoryCleared()"
+                    Label="@_model.GetDisplayName(() => _model.ProductCategory)"
+                    For="() => _model.ProductCategory"
+                    Margin="Margin.Dense"
+                    Variant="Variant.Outlined">
                         @foreach (var item in _productCategories)
                         {
                             <MudSelectItem Value="item">@item.Title</MudSelectItem>
@@ -177,17 +178,20 @@
 
                 <MudText Typo="Typo.subtitle2">پارامترهای فروش</MudText>
 
-                <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.MaxWage)"
-                                 For="() => _model.MaxWage"
-                                 @bind-Value="_model.MaxWage"
-                                 Variant="Variant.Outlined"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true"
-                                 Adornment="Adornment.End"
-                                 Min="0"
-                                 Max="100"
-                                 AdornmentText="درصد" />
+                @if (_model.ProductType is ProductType.Gold or ProductType.Jewelry)
+                {
+                    <MudNumericField T="decimal?"
+                                     Label="@_model.GetDisplayName(() => _model.MaxWage)"
+                                     For="() => _model.MaxWage"
+                                     @bind-Value="_model.MaxWage"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.End"
+                                     Min="0"
+                                     Max="100"
+                                     AdornmentText="درصد" />
+                }
 
                 <MudNumericField T="decimal"
                                  Label="@_model.GetDisplayName(() => _model.ProfitPercent)"
@@ -211,15 +215,15 @@
             <MudText Typo="Typo.h6" GutterBottom="true">نتایج جستجو</MudText>
 
             <MudTable Items="_results" Hover="true" Dense="true" Striped="true" Loading="@_isSearching">
-                <HeaderContent>
-                    <MudTh>کد</MudTh>
-                    <MudTh>عنوان</MudTh>
-                    <MudTh>دسته</MudTh>
-                    <MudTh>وزن</MudTh>
-                    <MudTh>عیار</MudTh>
-                    <MudTh>اجرت</MudTh>
-                    <MudTh>قیمت نهایی</MudTh>
-                    <MudTh>عملیات</MudTh>
+                <HeaderContent>  
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Barcode ?? string.Empty)">کد</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Name ?? string.Empty)">عنوان</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.ProductCategoryTitle ?? string.Empty)">دسته</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Weight ?? 0)">وزن</MudTableSortLabel></MudTh>  
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Fineness ?? 0)">عیار</MudTableSortLabel></MudTh>  
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Wage ?? 0)">اجرت</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => CalculateFinalPrice(x.Product))">قیمت نهایی</MudTableSortLabel></MudTh>  
+                    <MudTh>عملیات</MudTh>  
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="کد">@context.Product?.Barcode</MudTd>

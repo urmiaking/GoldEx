@@ -19,6 +19,9 @@ public partial class ReverseCalculator
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
 
+    private Timer? _timer;
+    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
+
     private GetSettingResponse? _settings;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private ReverseCalculatorVm _model = new();
@@ -37,6 +40,7 @@ public partial class ReverseCalculator
             await LoadPriceUnitsAsync();
             await LoadSettingsAsync();
             await LoadCategoriesAsync();
+            await StartTimer();
         }
         finally
         {
@@ -147,6 +151,7 @@ public partial class ReverseCalculator
                 _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 break;
             case ProductType.MoltenGold:
+                _model.ProfitPercent = _settings?.MoltenGoldCommissionPercent ?? 1.5m;
                 break;
             case ProductType.UsedGold:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
@@ -220,4 +225,32 @@ public partial class ReverseCalculator
     {
         Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" }).AppendQueryString(new { barcode = product?.Barcode }));
     }
+
+    #region Timer
+
+    private Task StartTimer()
+    {
+        _timer = new Timer(
+            TimerCallback,
+            null,
+            TimeSpan.FromSeconds(0),
+            _updateInterval
+        );
+
+        return Task.CompletedTask;
+    }
+
+    private async void TimerCallback(object? state)
+    {
+        await LoadGramPriceAsync();
+        StateHasChanged();
+    }
+
+    public override void Dispose()
+    {
+        _timer?.Dispose();
+        base.Dispose();
+    }
+
+    #endregion
 }
