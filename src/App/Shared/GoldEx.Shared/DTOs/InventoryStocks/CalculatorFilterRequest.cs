@@ -3,6 +3,7 @@
 namespace GoldEx.Shared.DTOs.InventoryStocks;
 
 public record CalculatorFilterRequest(
+    string? Name,
     decimal GramPrice,
     decimal TaxPercent,
     decimal ProfitPercent,

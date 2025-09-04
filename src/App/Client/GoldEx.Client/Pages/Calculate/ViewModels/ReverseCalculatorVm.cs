@@ -8,6 +8,9 @@ namespace GoldEx.Client.Pages.Calculate.ViewModels;
 
 public class ReverseCalculatorVm
 {
+    [Display(Name = "نام محصول")]
+    public string? Name { get; set; }
+
     [Display(Name = "واحد ارزی")]
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
@@ -49,6 +52,7 @@ public class ReverseCalculatorVm
 
     public void SetNull()
     {
+        Name = null;
         ProductCategory = null;
         ProductType = ProductType.Gold;
         MinWeight = null;
@@ -64,7 +68,8 @@ public class ReverseCalculatorVm
 
     public CalculatorFilterRequest ToFilterRequest()
     {
-        return new CalculatorFilterRequest(GramPrice,
+        return new CalculatorFilterRequest(Name,
+            GramPrice,
             TaxPercent,
             ProfitPercent,
             Fineness,
