@@ -212,19 +212,31 @@
 
             <MudTable Items="_results" Hover="true" Dense="true" Striped="true" Loading="@_isSearching">
                 <HeaderContent>
-                    <MudTh>نام محصول</MudTh>
+                    <MudTh>کد</MudTh>
+                    <MudTh>عنوان</MudTh>
+                    <MudTh>دسته</MudTh>
                     <MudTh>وزن</MudTh>
                     <MudTh>عیار</MudTh>
                     <MudTh>اجرت</MudTh>
                     <MudTh>قیمت نهایی</MudTh>
+                    <MudTh>عملیات</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="نام محصول">@context.Product?.Name</MudTd>
+                    <MudTd DataLabel="کد">@context.Product?.Barcode</MudTd>
+                    <MudTd DataLabel="عنوان">@context.Product?.Name</MudTd>
+                    <MudTd DataLabel="دسته">@context.Product?.ProductCategoryTitle</MudTd>
                     <MudTd DataLabel="وزن">@context.Product?.Weight.ToWeightFormat(_model.UnitType)</MudTd>
                     <MudTd DataLabel="عیار">@context.Product?.Fineness.ToString("G29")</MudTd>
                     <MudTd DataLabel="اجرت">@context.Product?.Wage?.ToString("G29") درصد</MudTd>
                     <MudTd DataLabel="قیمت نهایی">
                         <strong>@CalculateFinalPrice(context.Product).ToCurrencyFormat(_model.PriceUnit?.Title)</strong>
+                    </MudTd>
+                    <MudTd DataLabel="عملیات">
+                        <MudTooltip Text="فروش">
+                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.ShoppingBasket"
+                                           OnClick="_ => OnSellProduct(context.Product)"
+                                           Color="@Color.Success"></MudIconButton>
+                        </MudTooltip>
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>

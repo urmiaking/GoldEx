@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -7,6 +8,7 @@ using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 
@@ -130,7 +132,7 @@ public partial class ReverseCalculator
 
     private async Task Search()
     {
-        
+
     }
 
     private void OnProductTypeChanged(ProductType productType)
@@ -212,5 +214,10 @@ public partial class ReverseCalculator
         await LoadGramPriceAsync();
 
         StateHasChanged();
+    }
+
+    private void OnSellProduct(GetProductResponse? product)
+    {
+        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" }).AppendQueryString(new { barcode = product?.Barcode }));
     }
 }
