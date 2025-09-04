@@ -106,40 +106,36 @@ internal class PaymentVoucherService(
 
                 #region Ledger Account
 
-                var parentAccountTitle = request.VoucherType switch
-                {
-                    PaymentVoucherType.PrepaymentToSupplier => SystemLedgerAccounts.AccountsPayable,
-                    PaymentVoucherType.RefundToCustomer => SystemLedgerAccounts.AccountsReceivable,
-                    _ => throw new InvalidOperationException("Unsupported voucher type.")
-                };
-
-                var parentLedgerAccount = await ledgerAccountRepository
-                                              .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
-                                              .FirstOrDefaultAsync(cancellationToken)
-                                          ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
-
-                var customer = await customerRepository.Get(new CustomersByFinancialAccountIdSpecification(
-                                       new FinancialAccountId(request.DestinationFinancialAccountId)))
+                var customer = await customerRepository.Get(new CustomersByIdSpecification(new CustomerId(request.CustomerId)))
                                    .FirstOrDefaultAsync(cancellationToken) ??
-                               throw new NotFoundException(
-                                   $"Customer with financial account {request.DestinationFinancialAccountId} not found.");
+                               throw new NotFoundException($"Customer with id {request.CustomerId} not found.");
 
-                var existingLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerAndParentSpecification(customer.Id, parentLedgerAccount.Id))
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (existingLedgerAccount is null)
+                if (request.VoucherType is PaymentVoucherType.PrepaymentToSupplier or PaymentVoucherType.RefundToCustomer)
                 {
-                    var ledgerAccountType = parentLedgerAccount.AccountType;
+                    var parentAccountTitle = request.VoucherType == PaymentVoucherType.PrepaymentToSupplier
+                        ? SystemLedgerAccounts.AccountsPayable
+                        : SystemLedgerAccounts.AccountsReceivable;
 
-                    var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
-                    var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
-                        ledgerAccountTitle,
-                        customer.Id,
-                        ledgerAccountType,
-                        parentLedgerAccount.Id);
+                    var parentLedgerAccount = await ledgerAccountRepository
+                                                  .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
+                                                  .FirstOrDefaultAsync(cancellationToken)
+                                              ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
 
-                    await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+                    var existingLedgerAccount = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByCustomerAndParentSpecification(customer.Id, parentLedgerAccount.Id))
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    if (existingLedgerAccount is null)
+                    {
+                        var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName} - {customer.NationalId}";
+                        var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
+                            ledgerAccountTitle,
+                            customer.Id,
+                            parentLedgerAccount.AccountType,
+                            parentLedgerAccount.Id);
+
+                        await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+                    }
                 }
 
                 #endregion
@@ -151,8 +147,9 @@ internal class PaymentVoucherService(
                     request.ExchangeRate,
                     request.PaymentDate,
                     request.VoucherType,
+                    new CustomerId(request.CustomerId),
                     new FinancialAccountId(request.SourceFinancialAccountId),
-                    new FinancialAccountId(request.DestinationFinancialAccountId),
+                    request.DestinationFinancialAccountId.HasValue ? new FinancialAccountId(request.DestinationFinancialAccountId.Value) : null,
                     new PriceUnitId(request.VoucherPriceUnitId)
                 );
 
@@ -173,75 +170,108 @@ internal class PaymentVoucherService(
 
     public async Task UpdateAsync(Guid id, PaymentVoucherRequestDto request, CancellationToken cancellationToken = default)
     {
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-        #region Ledger Account
-
-        var parentAccountTitle = request.VoucherType switch
+        // ۱. شروع تراکنش دیتابیس برای تضمین یکپارچگی
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         {
-            PaymentVoucherType.PrepaymentToSupplier => SystemLedgerAccounts.AccountsPayable,
-            PaymentVoucherType.RefundToCustomer => SystemLedgerAccounts.AccountsReceivable,
-            _ => throw new InvalidOperationException("Unsupported voucher type.")
-        };
+            try
+            {
+                await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var parentLedgerAccount = await ledgerAccountRepository
-                                      .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
-                                      .FirstOrDefaultAsync(cancellationToken)
-                                  ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
+                var paymentVoucher = await repository
+                    .Get(new PaymentVouchersByIdSpecification(new PaymentVoucherId(id)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Payment voucher not found.");
 
-        var customer = await customerRepository.Get(new CustomersByFinancialAccountIdSpecification(
-                               new FinancialAccountId(request.DestinationFinancialAccountId)))
-                           .FirstOrDefaultAsync(cancellationToken) ??
-                       throw new NotFoundException(
-                           $"Customer with financial account {request.DestinationFinancialAccountId} not found.");
+                #region Ledger Account
 
-        var existingLedgerAccount = await ledgerAccountRepository
-            .Get(new LedgerAccountsByCustomerAndParentSpecification(customer.Id, parentLedgerAccount.Id))
-            .FirstOrDefaultAsync(cancellationToken);
+                var customer = await customerRepository.Get(new CustomersByIdSpecification(new CustomerId(request.CustomerId)))
+                                   .FirstOrDefaultAsync(cancellationToken) ??
+                               throw new NotFoundException($"Customer with id {request.CustomerId} not found.");
 
-        if (existingLedgerAccount is null)
-        {
-            var ledgerAccountType = parentLedgerAccount.AccountType;
+                if (request.VoucherType is PaymentVoucherType.PrepaymentToSupplier or PaymentVoucherType.RefundToCustomer)
+                {
+                    var parentAccountTitle = request.VoucherType == PaymentVoucherType.PrepaymentToSupplier
+                        ? SystemLedgerAccounts.AccountsPayable
+                        : SystemLedgerAccounts.AccountsReceivable;
 
-            var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName}";
-            var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
-                ledgerAccountTitle,
-                customer.Id,
-                ledgerAccountType,
-                parentLedgerAccount.Id);
+                    var parentLedgerAccount = await ledgerAccountRepository
+                                                  .Get(new LedgerAccountsByTitleSpecification(parentAccountTitle))
+                                                  .FirstOrDefaultAsync(cancellationToken)
+                                              ?? throw new InvalidOperationException($"System ledger account '{parentAccountTitle}' not found.");
 
-            await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+                    var existingLedgerAccount = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByCustomerAndParentSpecification(customer.Id, parentLedgerAccount.Id))
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    if (existingLedgerAccount is null)
+                    {
+                        var ledgerAccountTitle = $"{parentLedgerAccount.Title} - {customer.FullName} - {customer.NationalId}";
+                        var newLedgerAccount = LedgerAccount.CreateCustomerAccount(
+                            ledgerAccountTitle,
+                            customer.Id,
+                            parentLedgerAccount.AccountType,
+                            parentLedgerAccount.Id);
+
+                        await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+                    }
+                }
+
+                #endregion
+
+                paymentVoucher.SetAmount(request.Amount);
+                paymentVoucher.SetCustomerId(new CustomerId(request.CustomerId));
+                paymentVoucher.SetVoucherNumber(request.VoucherNumber);
+                paymentVoucher.SetDescription(request.Description);
+                paymentVoucher.SetPaymentDate(request.PaymentDate);
+                paymentVoucher.SetVoucherType(request.VoucherType);
+                paymentVoucher.SetSourceFinancialAccountId(new FinancialAccountId(request.SourceFinancialAccountId));
+                paymentVoucher.SetDestinationFinancialAccountId(request.DestinationFinancialAccountId.HasValue
+                    ? new FinancialAccountId(request.DestinationFinancialAccountId.Value)
+                    : null);
+                paymentVoucher.SetVoucherPriceUnitId(new PriceUnitId(request.VoucherPriceUnitId));
+                paymentVoucher.SetExchangeRate(request.ExchangeRate);
+
+                await repository.UpdateAsync(paymentVoucher, cancellationToken);
+
+                await transactionService.CreateTransactionsForPaymentVoucherAsync(paymentVoucher, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
-
-        #endregion
-
-        var item = await repository
-            .Get(new PaymentVouchersByIdSpecification(new PaymentVoucherId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-        item.SetAmount(request.Amount);
-        item.SetVoucherNumber(request.VoucherNumber);
-        item.SetDescription(request.Description);
-        item.SetPaymentDate(request.PaymentDate);
-        item.SetSourceFinancialAccountId(new FinancialAccountId(request.SourceFinancialAccountId));
-        item.SetDestinationFinancialAccountId(new FinancialAccountId(request.DestinationFinancialAccountId));
-        item.SetVoucherPriceUnitId(new PriceUnitId(request.VoucherPriceUnitId));
-        item.SetExchangeRate(request.ExchangeRate);
-
-        await repository.UpdateAsync(item, cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await repository
-            .Get(new PaymentVouchersByIdSpecification(new PaymentVoucherId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                var item = await repository
+                    .Get(new PaymentVouchersByIdSpecification(new PaymentVoucherId(id)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
+                await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
 
-        await transactionService.ClearTransactionsForPaymentVoucherAsync(item, cancellationToken);
+                await transactionService.ClearTransactionsForPaymentVoucherAsync(item, cancellationToken);
 
-        await repository.DeleteAsync(item, cancellationToken);
+                await repository.DeleteAsync(item, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
+
+       
     }
 
     public async Task<GetVoucherNumberResponse> GetLastNumberAsync(CancellationToken cancellationToken = default)

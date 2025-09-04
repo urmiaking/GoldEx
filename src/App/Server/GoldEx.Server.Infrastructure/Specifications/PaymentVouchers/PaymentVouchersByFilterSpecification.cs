@@ -19,14 +19,14 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
         // --- Includes ---
         AddInclude(x => x.SourceFinancialAccount!.PriceUnit!);
         AddInclude(x => x.DestinationFinancialAccount!.PriceUnit!);
-        AddInclude(x => x.DestinationFinancialAccount!.Customer!);
+        AddInclude(x => x.Customer!);
         AddInclude(x => x.VoucherPriceUnit!);
 
         // --- Main Filtering Logic ---
         // Apply customer filter if provided
         if (customerId.HasValue)
         {
-            AddCriteria(x => x.DestinationFinancialAccount!.CustomerId == customerId.Value);
+            AddCriteria(x => x.CustomerId == customerId.Value);
         }
 
         // Apply date range filter on InvoiceDate
@@ -58,7 +58,7 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
             else
             {
                 AddCriteria(x =>
-                    x.DestinationFinancialAccount!.Customer!.FullName.Contains(filter.Search) ||
+                    x.Customer!.FullName.Contains(filter.Search) ||
                     x.Description.Contains(filter.Search));
             }
         }

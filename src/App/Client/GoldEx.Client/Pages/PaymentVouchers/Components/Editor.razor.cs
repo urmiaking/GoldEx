@@ -46,9 +46,16 @@ public partial class Editor
 
     private async Task LoadVoucherNumberAsync()
     {
+        Console.WriteLine("Executing load number method...");
         await SendRequestAsync<IPaymentVoucherService, GetVoucherNumberResponse>(
             action: (s, ct) => s.GetLastNumberAsync(ct),
-            afterSend: response => _model.VoucherNumber = response.VoucherNumber + 1);
+            afterSend: response =>
+            {
+                Console.WriteLine($"Received {response.VoucherNumber} from api");
+                _model.VoucherNumber = response.VoucherNumber + 1;
+                Console.WriteLine($"voucher number is {_model.VoucherNumber}");
+            },
+            createScope: true);
     }
 
     private async Task LoadPriceUnitsAsync()
@@ -100,6 +107,8 @@ public partial class Editor
                 MudDialog.Close(DialogResult.Ok(true));
                 return Task.CompletedTask;
             });
+
+        _processing = false;
     }
 
     private async Task OnAddSupplier()

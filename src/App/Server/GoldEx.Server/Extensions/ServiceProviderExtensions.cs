@@ -108,6 +108,7 @@ public static class ServiceProviderExtensions
         await GetOrCreateAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.DepositsWithOthers, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.LoansToOthers, LedgerAccountType.Asset, currentAssets);
 
         var cashAccounts = await GetOrCreateAccount(SystemLedgerAccounts.CashAccounts, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.InternalCashAccounts, LedgerAccountType.Asset, cashAccounts);
@@ -121,6 +122,9 @@ public static class ServiceProviderExtensions
         await GetOrCreateAccount(SystemLedgerAccounts.CostOfGoodsSold, LedgerAccountType.Expense, expenses);
         await GetOrCreateAccount(SystemLedgerAccounts.SalesDiscounts, LedgerAccountType.Expense, expenses);
         await GetOrCreateAccount(SystemLedgerAccounts.PurchaseDiscounts, LedgerAccountType.Expense, expenses);
+        await GetOrCreateAccount(SystemLedgerAccounts.ServiceExpenses, LedgerAccountType.Expense, operatingExpenses);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.OwnerDraw, LedgerAccountType.Equity, equity);
     }
 
     private static async Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)

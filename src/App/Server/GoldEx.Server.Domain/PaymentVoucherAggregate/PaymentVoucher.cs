@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
@@ -16,14 +17,16 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
         decimal? exchangeRate,
         DateOnly paymentDate,
         PaymentVoucherType voucherType,
+        CustomerId customerId,
         FinancialAccountId sourceFinancialAccountId,
-        FinancialAccountId destinationFinancialAccountId,
+        FinancialAccountId? destinationFinancialAccountId,
         PriceUnitId voucherPriceUnitId)
     {
         return new PaymentVoucher
         {
             Id = new PaymentVoucherId(Guid.NewGuid()),
             SourceFinancialAccountId = sourceFinancialAccountId,
+            CustomerId = customerId,
             DestinationFinancialAccountId = destinationFinancialAccountId,
             VoucherNumber = voucherNumber,
             Description = description,
@@ -35,8 +38,11 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
         };
     }
 
+    public CustomerId CustomerId { get; private set; }
+    public Customer? Customer { get; private set; }
+
     public FinancialAccount? DestinationFinancialAccount { get; private set; }
-    public FinancialAccountId DestinationFinancialAccountId { get; private set; }
+    public FinancialAccountId? DestinationFinancialAccountId { get; private set; }
 
     public FinancialAccount? SourceFinancialAccount { get; private set; }
     public FinancialAccountId SourceFinancialAccountId { get; private set; }
@@ -62,7 +68,8 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
 #pragma warning restore CS8618
 
     public void SetSourceFinancialAccountId(FinancialAccountId financialAccountId) => SourceFinancialAccountId = financialAccountId;
-    public void SetDestinationFinancialAccountId(FinancialAccountId financialAccountId) => DestinationFinancialAccountId = financialAccountId;
+    public void SetDestinationFinancialAccountId(FinancialAccountId? financialAccountId) => DestinationFinancialAccountId = financialAccountId;
+    public void SetCustomerId(CustomerId customerId) => CustomerId = customerId;
     public void SetPaymentDate(DateOnly paymentDate) => PaymentDate = paymentDate;
     public void SetVoucherNumber(long voucherNumber) => VoucherNumber = voucherNumber;
     public void SetAmount(decimal amount) => Amount = amount;

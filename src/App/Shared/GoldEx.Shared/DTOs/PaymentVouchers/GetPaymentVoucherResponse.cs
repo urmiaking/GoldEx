@@ -16,4 +16,4 @@ public record GetPaymentVoucherResponse(
     GetCustomerResponse Customer,
     GetPriceUnitTitleResponse PriceUnit,
     GetFinancialAccountTitleResponse SourceFinancialAccount,
-    GetFinancialAccountTitleResponse DestinationFinancialAccount);
+    GetFinancialAccountTitleResponse? DestinationFinancialAccount);
