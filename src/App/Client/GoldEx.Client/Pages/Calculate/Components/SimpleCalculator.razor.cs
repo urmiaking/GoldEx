@@ -450,15 +450,24 @@ public partial class SimpleCalculator
 
     private async void TimerCallback(object? state)
     {
-        await LoadGramPriceAsync();
-        await Calculate();
-        StateHasChanged();
+        if (IsDisposed)
+            return;
+
+        await InvokeAsync(async () =>
+        {
+            if (IsDisposed) return;
+
+            await LoadGramPriceAsync();
+            await Calculate();
+        });
     }
 
-    public override void Dispose()
+    // Your local dispose logic now calls the base implementation
+    public override async ValueTask DisposeAsync()
     {
-        _timer?.Dispose();
-        base.Dispose();
+        if (_timer is not null) await _timer.DisposeAsync();
+
+        await base.DisposeAsync();
     }
 
     #endregion

@@ -242,14 +242,24 @@ public partial class ReverseCalculator
 
     private async void TimerCallback(object? state)
     {
-        await LoadGramPriceAsync();
-        StateHasChanged();
+        if (IsDisposed)
+            return;
+
+        await InvokeAsync(async () =>
+        {
+            if (IsDisposed) return; 
+
+            await LoadGramPriceAsync();
+            StateHasChanged();
+        });
     }
 
-    public override void Dispose()
+    public override async ValueTask DisposeAsync()
     {
-        _timer?.Dispose();
-        base.Dispose();
+        if (_timer is not null) 
+            await _timer.DisposeAsync();
+
+        await base.DisposeAsync();
     }
 
     #endregion
