@@ -269,6 +269,7 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
         return await dbContext.Set<Product>()
             .AsNoTracking()
             .Where(p => availableProductIds.Contains(p.Id))
+            .Where(p => string.IsNullOrEmpty(filter.Name) || p.Name.Contains(filter.Name))
             .Where(p => p.ProductType == filter.ProductType)
             .Where(p => !filter.ProductCategoryId.HasValue || (p.ProductCategoryId.HasValue && p.ProductCategoryId.Value == new ProductCategoryId(filter.ProductCategoryId.Value)))
             .Where(p => !filter.Fineness.HasValue || p.Fineness == filter.Fineness.Value)
