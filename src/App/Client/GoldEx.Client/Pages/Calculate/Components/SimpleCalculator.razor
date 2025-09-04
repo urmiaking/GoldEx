@@ -48,7 +48,7 @@
                                         <MudAvatar Size="Size.Small">
                                             <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
                                         </MudAvatar>
-                                        <MudText Class="d-none d-md-inline">@item.Title</MudText>
+                                        <MudText>@item.Title</MudText>
                                     </MudStack>
                                 </MudSelectItem>
                             }
@@ -250,7 +250,10 @@
                         }
                     </MudItem>
                 }
-
+            }
+            
+            @if (_model.ProductType != ProductType.UsedGold)
+            {
                 <MudItem xs="12" sm="6">
                     @if (_isInitialLoading || _isBarcodeProcessing)
                     {
@@ -318,7 +321,7 @@
                             @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? $"× (750 / {_model.Fineness:G29})" : "")</MudText>
+                                    <MudText>قیمت طلا: وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? $"× (750 / {_model.Fineness:G29})" : "")</MudText>
                                     <MudText>@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                                 </div>
                             }
@@ -331,15 +334,25 @@
                             }
                             @if (_profit.HasValue && _profit.Value is not 0)
                             {
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>سود فروش طلا: (قیمت طلا + اجرت ساخت) @_model.ProfitPercent.ToCurrencyFormat()%</MudText>
-                                    <MudText>@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
-                                </div>
+                                if (_model.ProductType is ProductType.MoltenGold)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <MudText>کارمزد فروش طلای آب شده: @_model.ProfitPercent.ToCurrencyFormat()% (قیمت طلا) </MudText>
+                                        <MudText>@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <MudText>سود فروش طلا: @_model.ProfitPercent.ToCurrencyFormat()% (قیمت طلا + اجرت ساخت) </MudText>
+                                        <MudText>@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                                    </div>
+                                }
                             }
                             @if (_tax.HasValue && _tax.Value is not 0)
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <MudText>مالیات: (سود فروش طلا + اجرت ساخت) @_model.TaxPercent.ToCurrencyFormat()%</MudText>
+                                    <MudText>مالیات: @_model.TaxPercent.ToCurrencyFormat()% (سود فروش طلا + اجرت ساخت) </MudText>
                                     <MudText>@_tax.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                                 </div>
                             }

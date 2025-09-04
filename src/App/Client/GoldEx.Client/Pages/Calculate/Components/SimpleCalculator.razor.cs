@@ -289,6 +289,9 @@ public partial class SimpleCalculator
                 break;
             case ProductType.MoltenGold:
                 _model.Fineness = 750m;
+                _model.ProfitPercent = _settings?.MoltenGoldCommissionPercent ?? 1.5m;
+                _model.WageType = null;
+                _model.Wage = null;
                 _applySafetyMargin = true;
                 break;
             case ProductType.UsedGold:
