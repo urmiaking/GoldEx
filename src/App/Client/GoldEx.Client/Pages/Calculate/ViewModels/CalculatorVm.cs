@@ -48,6 +48,8 @@ public class CalculatorVm
     [Display(Name = "واحد سنجش طلا")]
     public GoldUnitType GoldUnitType { get; set; } = GoldUnitType.Gram;
 
+    public decimal WeightAs750 => (Fineness / 750m) * Weight;
+
     public static CalculatorVm CreateFrom(GetProductResponse response, CalculatorVm model, GetPriceUnitTitleResponse? wagePriceUnit)
     {
         model.Weight = response.Weight;
