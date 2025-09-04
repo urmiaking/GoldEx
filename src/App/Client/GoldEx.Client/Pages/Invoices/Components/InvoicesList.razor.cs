@@ -83,7 +83,8 @@ public partial class InvoicesList
                     TotalItems = response.Total,
                     Items = items
                 };
-            }
+            },
+            cancelPrevious: true
         );
 
         return result;

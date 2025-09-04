@@ -81,7 +81,8 @@ public partial class InventoryStockList
                     Items = items
                 };
             },
-            createScope: true
+            createScope: true,
+            cancelPrevious: true
         );
 
         return result;

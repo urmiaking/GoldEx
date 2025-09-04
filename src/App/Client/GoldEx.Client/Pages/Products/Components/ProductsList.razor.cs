@@ -59,7 +59,8 @@ public partial class ProductsList
                     TotalItems = response.Total,
                     Items = items
                 };
-            }
+            },
+            cancelPrevious: true
         );
 
         return result;
