@@ -1,0 +1,29 @@
+﻿@using MudBlazor
+
+@if (IsLoading)
+{
+    <MudSkeleton Class="@(Rounded ? "rounded-5" : "")"
+    Style="@($"height: {Height};")"
+    SkeletonType="SkeletonType.Rectangle"
+    Width="100%"
+    Animation="Animation.Wave" />
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+
+    /// <summary>
+    /// Sets the height of the skeleton loader. Use CSS units (e.g., "56px").
+    /// </summary>
+    [Parameter] public string Height { get; set; } = "56px";
+
+    /// <summary>
+    /// Determines if the skeleton loader should have rounded corners.
+    /// </summary>
+    [Parameter] public bool Rounded { get; set; } = true;
+}
