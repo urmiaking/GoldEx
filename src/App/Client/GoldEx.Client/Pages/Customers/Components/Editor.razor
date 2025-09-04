@@ -4,14 +4,18 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12">
-                    <div class="d-flex justify-content-between align-center">
-                        <MudText>نوع مشتری:</MudText>
-                        <MudRadioGroup T="CustomerType" Required="true" For="() => Model.CustomerType" @bind-Value="Model.CustomerType">
-                            <MudRadio Value="@(CustomerType.Individual)">حقیقی</MudRadio>
-                            <MudRadio Value="@(CustomerType.Legal)">حقوقی</MudRadio>
-                        </MudRadioGroup>
-                    </div>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudSelect T="CustomerType"
+                               @bind-Value="Model.CustomerType"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined"
+                               For="@(() => Model.CustomerType)"
+                               Label="@(Model.GetDisplayName(() => Model.CustomerType))">
+                        @foreach (var type in Enum.GetValues<CustomerType>())
+                        {
+                            <MudSelectItem T="CustomerType" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.FullName"
@@ -68,10 +72,10 @@
                         </ChildContent>
                     </MudMenu>
                 </MudItem>
-                <MudItem xs="12">
+                <MudItem xs="12" lg="6">
                     <MudTextField @bind-Value="Model.Address"
                                   For="@(() => Model.Address)"
-                                  AutoGrow Lines="3"
+                                  AutoGrow
                                   Label="@(Model.GetDisplayName(() => Model.Address))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
@@ -80,7 +84,7 @@
                     <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
                         <MudText Typo="Typo.h6" GutterBottom="true">حساب های مالی</MudText>
-                        <MudSpacer/>
+                        <MudSpacer />
                         <MudHidden Breakpoint="Breakpoint.SmAndDown">
                             <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="OnAddBankAccount" Size="Size.Small"
                                        Variant="Variant.Filled">ثبت حساب مالی جدید</MudButton>
