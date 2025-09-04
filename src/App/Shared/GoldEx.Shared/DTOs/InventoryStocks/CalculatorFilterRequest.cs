@@ -13,5 +13,6 @@ public record CalculatorFilterRequest(
     decimal? MinPrice,
     decimal? MaxPrice,
     Guid? ProductCategoryId,
-    ProductType ProductType
+    ProductType ProductType,
+    GoldUnitType UnitType
 );

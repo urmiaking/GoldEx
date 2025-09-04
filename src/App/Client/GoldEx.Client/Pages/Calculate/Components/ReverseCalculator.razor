@@ -1,78 +1,59 @@
-﻿@using GoldEx.Shared.DTOs.PriceUnits
+﻿@using GoldEx.Client.Pages.Settings.ViewModels
+@using GoldEx.Shared.DTOs.PriceUnits
+@using GoldEx.Shared.DTOs.ProductCategories
 @inherits GoldExComponentBase
 
 <MudCard Elevation="@Elevation" Class="pa-4">
-    <MudGrid Class="mt-3" Justify="Justify.SpaceBetween">
+    <MudGrid Justify="Justify.SpaceBetween">
         <MudItem xs="12" sm="6" md="4">
-            @if (_isInitialLoading)
-            {
-                <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-            }
-            else
-            {
-                <MudNumericField Adornment="Adornment.End"
-                                 AdornmentText="@_model.PriceUnit?.Title"
-                                 For="() => _model.GramPrice"
-                                 Format="#,##0.##"
-                                 HideSpinButtons="true"
-                                 Immediate="true"
-                                 Margin="Margin.Dense"
-                                 Label="@($"نرخ {_model.UnitType.GetDisplayName()}")"
-                                 T="decimal"
-                                 @bind-Value="@_model.GramPrice"
-                                 Variant="Variant.Outlined"></MudNumericField>
-            }
+            <MudNumericField Adornment="Adornment.End"
+                             AdornmentText="@_model.PriceUnit?.Title"
+                             For="() => _model.GramPrice"
+                             Format="#,##0.##"
+                             HideSpinButtons="true"
+                             Immediate="true"
+                             Margin="Margin.Dense"
+                             Label="@($"نرخ {_model.UnitType.GetDisplayName()}")"
+                             T="decimal"
+                             @bind-Value="@_model.GramPrice"
+                             Variant="Variant.Outlined"></MudNumericField>
         </MudItem>
         <AuthorizeView>
             <Authorized>
                 <MudItem xs="12" sm="6" md="4">
-                    @if (_isInitialLoading)
-                    {
-                        <MudSkeleton Class="rounded-5" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="56px" Animation="Animation.Wave" />
-                    }
-                    else
-                    {
-                        <MudSelect T="GetPriceUnitTitleResponse?"
-                                   Value="_model.PriceUnit"
-                                   ValueChanged="OnPriceUnitChanged"
-                                   Label="@_model.GetDisplayName(() => _model.PriceUnit)"
-                                   For="() => _model.PriceUnit"
-                                   Margin="Margin.Dense"
-                                   Variant="Variant.Outlined">
-                            @foreach (var item in _priceUnits)
-                            {
-                                <MudSelectItem Value="item">
-                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                        <MudAvatar Size="Size.Small">
-                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
-                                        </MudAvatar>
-                                        <MudText Class="d-none d-md-inline">@item.Title</MudText>
-                                    </MudStack>
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
+                    <MudSelect T="GetPriceUnitTitleResponse?"
+                               Value="_model.PriceUnit"
+                               ValueChanged="OnPriceUnitChanged"
+                               Label="@_model.GetDisplayName(() => _model.PriceUnit)"
+                               For="() => _model.PriceUnit"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var item in _priceUnits)
+                        {
+                            <MudSelectItem Value="item">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                    </MudAvatar>
+                                    <MudText Class="d-none d-md-inline">@item.Title</MudText>
+                                </MudStack>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
             </Authorized>
         </AuthorizeView>
     </MudGrid>
 
     <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
-        @if (_isInitialLoading)
-        {
-            <MudSkeleton Class="rounded-5 mb-2" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="30px" Animation="Animation.Wave" />
-        }
-        else
-        {
-            <MudRadioGroup For="() => _model.ProductType"
-                           T="ProductType"
-                           Value="_model.ProductType"
-                           ValueChanged="OnProductTypeChanged">
-                <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
-                <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
-                <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
-            </MudRadioGroup>
-        }
+        <MudRadioGroup For="() => _model.ProductType"
+                       T="ProductType"
+                       Value="_model.ProductType"
+                       ValueChanged="OnProductTypeChanged">
+            <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
+            <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
+            <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
+        </MudRadioGroup>
     </div>
 
     <MudGrid Spacing="3">
@@ -108,34 +89,90 @@
                 <MudDivider Class="my-4" />
 
                 <MudText Typo="Typo.subtitle2">مشخصات فیزیکی</MudText>
-                <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.MinWeight)"
-                                 For="() => _model.MinWeight"
-                                 @bind-Value="_model.MinWeight"
-                                 Variant="Variant.Outlined"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true"
-                                 Adornment="Adornment.End"
-                                 AdornmentText="@_model.UnitType.GetDisplayName()" />
-                <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.MaxWeight)"
-                                 For="() => _model.MaxWeight"
-                                 @bind-Value="_model.MaxWeight"
-                                 Variant="Variant.Outlined"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true"
-                                 Adornment="Adornment.End"
-                                 AdornmentText="@_model.UnitType.GetDisplayName()" />
+                <MudGrid Spacing="0">
+                    <MudItem xs="12" md="6">
+                        <MudMenu @bind-Open="_minWeightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                            <ActivatorContent>
+                                <MudNumericField Adornment="Adornment.End"
+                                                 AdornmentText="@_model.UnitType.GetDisplayName()"
+                                                 For="() => _model.MinWeight"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 Margin="Margin.Dense"
+                                                 Label="@(_model.GetDisplayName(() => _model.MinWeight))"
+                                                 T="decimal?"
+                                                 @bind-Value="_model.MinWeight"
+                                                 Variant="Variant.Outlined"
+                                                 OnAdornmentClick="() => _minWeightFieldMenuOpen = !_minWeightFieldMenuOpen"></MudNumericField>
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in Enum.GetValues<GoldUnitType>())
+                                {
+                                    <MudMenuItem OnClick="() => SelectUnitType(item)">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            @item.GetDisplayName()
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudMenu @bind-Open="_maxWeightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                            <ActivatorContent>
+                                <MudNumericField Adornment="Adornment.End"
+                                                 AdornmentText="@_model.UnitType.GetDisplayName()"
+                                                 For="() => _model.MaxWeight"
+                                                 Format="G29"
+                                                 HideSpinButtons="true"
+                                                 Margin="Margin.Dense"
+                                                 Label="@(_model.GetDisplayName(() => _model.MaxWeight))"
+                                                 T="decimal?"
+                                                 @bind-Value="_model.MaxWeight"
+                                                 Variant="Variant.Outlined"
+                                                 OnAdornmentClick="() => _maxWeightFieldMenuOpen = !_maxWeightFieldMenuOpen"></MudNumericField>
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in Enum.GetValues<GoldUnitType>())
+                                {
+                                    <MudMenuItem OnClick="() => SelectUnitType(item)">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            @item.GetDisplayName()
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </MudItem>
+                </MudGrid>
+                
                 <MudNumericField T="decimal?"
                                  Label="@_model.GetDisplayName(() => _model.Fineness)"
                                  For="() => _model.Fineness"
                                  @bind-Value="_model.Fineness"
                                  Variant="Variant.Outlined"
+                                 Immediate="true"
                                  Min="0"
                                  Max="1000"
                                  Margin="Margin.Dense"
                                  HideSpinButtons="true" />
-                
+                @if (_model.ProductType is not ProductType.MoltenGold)
+                {
+                    <MudSelect T="GetProductCategoryResponse?"
+                               @bind-Value="_model.ProductCategory"
+                               Clearable="true"
+                               OnClearButtonClick="() => OnProductCategoryCleared()"
+                               Label="@_model.GetDisplayName(() => _model.ProductCategory)"
+                               For="() => _model.ProductCategory"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var item in _productCategories)
+                        {
+                            <MudSelectItem Value="item">@item.Title</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+
                 <MudDivider Class="my-4" />
 
                 <MudText Typo="Typo.subtitle2">پارامترهای فروش</MudText>
@@ -151,7 +188,7 @@
                                  Min="0"
                                  Max="100"
                                  AdornmentText="درصد" />
-                
+
                 <MudNumericField T="decimal"
                                  Label="@_model.GetDisplayName(() => _model.ProfitPercent)"
                                  For="() => _model.ProfitPercent"

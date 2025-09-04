@@ -21,7 +21,6 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class InventoryStockService(
     IInventoryStockRepository repository,
-    IProductRepository productRepository,
     IMapper mapper) : IServerInventoryStockService,
     IInventoryStockService
 {
