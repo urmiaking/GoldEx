@@ -145,7 +145,13 @@
         </MudGrid>
 
         <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
-        <MudText Typo="Typo.h6" GutterBottom="true">مشخصات طرف حساب @if(_model.Customer != null) { <span class="d-none d-sm-inline">(@_model.Customer.CustomerType.GetDisplayName())</span> }</MudText>
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                مشخصات طرف حساب
+                @if (_model.Customer != null)
+                {
+                    <span class="d-none d-sm-inline">(@_model.Customer.CustomerType.GetDisplayName())</span>
+                }
+            </MudText>
             <MudSpacer />
 
             <MudAutocomplete T="CustomerVm"
@@ -155,7 +161,7 @@
                              Placeholder="جستجوی طرف حساب..."
                              ToStringFunc="@(customer => $"{customer?.FullName} - {customer?.CustomerType.GetDisplayName()}")"
                              Margin="Margin.Dense"
-                             Adornment="Adornment.Start" 
+                             Adornment="Adornment.Start"
                              AdornmentIcon="@Icons.Material.Filled.Search"
                              Variant="Variant.Outlined"
                              SearchFunc="@SearchCustomers"
@@ -166,9 +172,9 @@
             </MudAutocomplete>
             <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer"></MudIconButton>
         </MudStack>
-        
+
         <MudDivider Class="mb-2" />
-        
+
         @if (_model.Customer is not null)
         {
             <MudGrid Class="mt-0 mb-2">

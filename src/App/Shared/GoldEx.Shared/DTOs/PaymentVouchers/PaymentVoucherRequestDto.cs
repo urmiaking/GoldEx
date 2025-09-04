@@ -10,6 +10,7 @@ public record PaymentVoucherRequestDto(
     string Description,
     DateOnly PaymentDate,
     PaymentVoucherType VoucherType,
+    Guid CustomerId,
     Guid VoucherPriceUnitId,
     Guid SourceFinancialAccountId,
-    Guid DestinationFinancialAccountId);
+    Guid? DestinationFinancialAccountId);

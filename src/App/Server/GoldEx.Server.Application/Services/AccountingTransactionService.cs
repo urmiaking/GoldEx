@@ -411,58 +411,95 @@ internal class AccountingTransactionService(
             throw new NotFoundException(
                 $"Financial account {sourceFinancialAccount.Id.Value} does not have a linked ledger account.");
 
-        var sourceLedgerAccount = await ledgerAccountRepository
-                                      .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount.LedgerAccountId
-                                          .Value))
+        var creditLedgerAccount = await ledgerAccountRepository
+                                      .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount.LedgerAccountId.Value))
                                       .FirstOrDefaultAsync(cancellationToken) ??
                                   throw new NotFoundException(
                                       $"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
 
-        if (voucher.DestinationFinancialAccount is null)
-            throw new ArgumentException("Payment voucher must have a destination financial account associated with it.",
-                nameof(voucher));
-
-        if (voucher.DestinationFinancialAccount.Customer is null)
+        if (voucher.Customer is null)
             throw new ArgumentException(
-                "Payment voucher must have a customer associated with its destination financial account.",
+                "Payment voucher must have a customer ",
                 nameof(voucher));
 
-        var destinationLedgerAccount = voucher.VoucherType switch
-        {
-            PaymentVoucherType.PrepaymentToSupplier =>
-                await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                        voucher.DestinationFinancialAccount.Customer.Id, SystemLedgerAccounts.AccountsPayable))
-                    .FirstOrDefaultAsync(cancellationToken) ??
-                throw new NotFoundException("Supplier's payable account not found."),
-            PaymentVoucherType.RefundToCustomer =>
-                await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                        voucher.DestinationFinancialAccount.Customer.Id, SystemLedgerAccounts.AccountsReceivable))
-                    .FirstOrDefaultAsync(cancellationToken) ??
-                throw new NotFoundException("Customer's receivable account not found."),
-            _ => throw new ArgumentOutOfRangeException(nameof(voucher.VoucherType))
-        };
+        LedgerAccount debitLedgerAccount;
+        string description;
 
-        // بدهکار کردن حساب پیش‌پرداخت (یک دارایی/طلب برای شما ایجاد می‌شود)
+        switch (voucher.VoucherType)
+        {
+            case PaymentVoucherType.PrepaymentToSupplier:
+            {
+                // برای پیش‌پرداخت، حساب پرداختنی تامین‌کننده بدهکار می‌شود
+                debitLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(voucher.CustomerId, SystemLedgerAccounts.AccountsPayable))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Supplier's payable account not found.");
+
+                description = TransactionDescriptionBuilder.ForPrepaymentToCustomer(voucher, voucher.Customer);
+                break;
+            }
+
+            case PaymentVoucherType.RefundToCustomer:
+            {
+                // برای بازپرداخت، حساب دریافتنی مشتری بدهکار می‌شود
+                debitLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(voucher.CustomerId, SystemLedgerAccounts.AccountsReceivable))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Customer's receivable account not found.");
+
+                description = TransactionDescriptionBuilder.ForRefundToCustomer(voucher, voucher.Customer);
+                break;
+            }
+
+            case PaymentVoucherType.ServiceFeePayment:
+            {
+                debitLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.ServiceExpenses)) // سرفصل جدید: "هزینه خدمات"
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Service Expenses account not found.");
+
+                description = TransactionDescriptionBuilder.ForServiceFeePayment(voucher, voucher.Customer);
+                break;
+            }
+            case PaymentVoucherType.PartnerLoan:
+                {
+                    debitLedgerAccount = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.LoansToOthers)) 
+                        .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("LoansToOthers account not found.");
+
+                    description = TransactionDescriptionBuilder.ForPartnerLoan(voucher, voucher.Customer);
+                    break;
+                }
+            case PaymentVoucherType.OwnerDraw:
+            {
+                // حساب برداشت مالک بدهکار می‌شود
+                debitLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OwnerDraw)) // سرفصل جدید: "برداشت مالک"
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Owner Draw account not found.");
+
+                description = TransactionDescriptionBuilder.ForOwnerDraw(voucher, voucher.Customer);
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(voucher.VoucherType));
+        }
+
+        // بدهکار کردن حساب مقصد پرداخت (حساب پرداختنی مشتری یا هزینه خدمات یا برداشت مالک)
         transactions.Add(Transaction.CreateForPaymentVoucher(
-            TransactionDescriptionBuilder.ForPrepaymentAsset(voucher, voucher.DestinationFinancialAccount.Customer),
+            description,
             voucher.Amount,
             voucher.ExchangeRate,
             groupId,
             TransactionType.Debit,
-            destinationLedgerAccount.Id,
+            debitLedgerAccount.Id,
             voucher.VoucherPriceUnitId,
             voucher.Id));
 
-        // بستانکار کردن حساب بانک/صندوق شما (یک دارایی از شما کم می‌شود)
+        // بستانکار کردن حساب بانک/صندوق شما
         transactions.Add(Transaction.CreateForPaymentVoucher(
-            TransactionDescriptionBuilder.ForPrepaymentCashExit(voucher, voucher.DestinationFinancialAccount),
+            description,
             voucher.Amount,
             voucher.ExchangeRate,
             groupId,
             TransactionType.Credit,
-            sourceLedgerAccount.Id,
+            creditLedgerAccount.Id,
             voucher.VoucherPriceUnitId,
             voucher.Id));
 
@@ -653,6 +690,5 @@ internal class AccountingTransactionService(
         ));
 
         await repository.CreateRangeAsync(transactions, cancellationToken);
-
     }
 }

@@ -14,6 +14,7 @@ public static class SystemLedgerAccounts
     public static string CashAccounts => "صندوق‌ها";
     public static string InternalCashAccounts => "صندوق‌های داخلی";
     public static string DepositsWithOthers => "سپرده نزد دیگران";
+    public static string LoansToOthers => "وام‌های پرداختی به دیگران";
     #endregion
 
     #region Liabilities (بدهی‌ها)
@@ -25,6 +26,8 @@ public static class SystemLedgerAccounts
     #region Equity (حقوق صاحبان سهام)
     public static string Equity => "حقوق صاحبان سهام";
     public static string OpeningBalanceEquity => "سرمایه افتتاحیه - تعدیلات";
+    public static string OwnerDraw => "برداشت مالک";
+
     #endregion
 
     #region Revenue (درآمدها)
@@ -40,5 +43,6 @@ public static class SystemLedgerAccounts
     public static string PurchaseDiscounts => "تخفیفات خرید";
     public static string CostOfGoodsSold => "بهای تمام شده کالای فروش رفته";
     public static string OperatingExpenses => "هزینه‌های عملیاتی";
+    public static string ServiceExpenses => "هزینه‌های خدمات";
     #endregion
 }

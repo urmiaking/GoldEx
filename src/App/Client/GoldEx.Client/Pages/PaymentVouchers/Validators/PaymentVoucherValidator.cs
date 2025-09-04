@@ -24,8 +24,8 @@ public class PaymentVoucherValidator : AbstractValidator<PaymentVoucherVm>
         RuleFor(x => x.SourceFinancialAccount)
             .NotEmpty().WithMessage("لطفا حساب پرداختی را انتخاب کنید");
 
-        RuleFor(x => x.DestinationFinancialAccount)
-            .NotEmpty().WithMessage("لطفا حساب دریافتی را انتخاب کنید");
+        RuleFor(x => x.Customer)
+            .NotEmpty().WithMessage("لطفا طرف حساب را انتخاب کنید");
 
         RuleFor(x => x.VoucherType)
             .IsInEnum().WithMessage("لطفا نوع سند را انتخاب کنید");

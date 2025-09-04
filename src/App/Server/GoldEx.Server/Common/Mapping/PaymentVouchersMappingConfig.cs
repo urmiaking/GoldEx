@@ -21,13 +21,9 @@ public class PaymentVouchersMappingConfig : IRegister
                 .Get(new PriceUnitsSetAsDefaultSpecification()).FirstOrDefault()!.Title)
             .Map(dest => dest.VoucherStatus, src => VoucherStatus.Pending) // TODO: Remove this!
             .Map(dest => dest.SupplierName,
-                src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
-                    ? src.DestinationFinancialAccount.Customer.FullName
-                    : string.Empty)
+                src => src.Customer != null ? src.Customer.FullName : string.Empty)
             .Map(dest => dest.SupplierPhoneNumber,
-                src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
-                ? src.DestinationFinancialAccount.Customer.PhoneNumber
-                : string.Empty)
+                src => src.Customer != null ? src.Customer.PhoneNumber : string.Empty)
             .Map(dest => dest.FinancialAccountType,
                 src => src.SourceFinancialAccount != null
                     ? src.SourceFinancialAccount.AccountType

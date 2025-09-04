@@ -130,22 +130,63 @@ public static class TransactionDescriptionBuilder
 
     #endregion
 
-    #region Payment Voucher Descriptions (شرح‌های سند پیش‌پرداخت)
+    #region Payment Voucher Descriptions (شرح‌های سند پرداخت)
 
     /// <summary>
-    /// شرح برای بدهکار کردن حساب "پیش‌پرداخت"
+    /// شرح برای بدهکار کردن حساب مشتری
     /// </summary>
-    public static string ForPrepaymentAsset(PaymentVoucher voucher, Customer supplier)
+    public static string ForPrepaymentToCustomer(PaymentVoucher voucher, Customer customer)
     {
-        return $"ثبت طلب از {supplier.FullName} بابت پیش پرداخت شماره {voucher.VoucherNumber}";
+        return $"ثبت طلب از {customer.FullName} بابت سند پرداخت شماره {voucher.VoucherNumber}";
+    }
+
+    /// <summary>
+    /// استرداد وجه به مشتری
+    /// </summary>
+    /// <param name="voucher"></param>
+    /// <param name="customer"></param>
+    /// <returns></returns>
+    public static string ForRefundToCustomer(PaymentVoucher voucher, Customer customer)
+    {
+        return $"استرداد وجه به {customer.FullName} طبق سند پرداخت شماره {voucher.VoucherNumber}";
     }
 
     /// <summary>
     /// شرح برای بستانکار کردن حساب بانک/صندوق بابت پیش‌پرداخت
     /// </summary>
-    public static string ForPrepaymentCashExit(PaymentVoucher voucher, FinancialAccount sourceAccount)
+    public static string ForVoucherCashExit(PaymentVoucher voucher, FinancialAccount sourceAccount)
     {
-        return $"خروج وجه از حساب '{sourceAccount.AccountType.GetDisplayName()}' بابت پیش پرداخت شماره {voucher.VoucherNumber}";
+        return $"خروج وجه از حساب '{sourceAccount.AccountType.GetDisplayName()}' بابت سند پرداخت شماره {voucher.VoucherNumber}";
+    }
+
+    /// <summary>
+    /// شرح برای پرداخت هزینه خدمات
+    /// </summary>
+    /// <param name="voucher"></param>
+    /// <param name="serviceProvider"></param>
+    /// <returns></returns>
+    public static string ForServiceFeePayment(PaymentVoucher voucher, Customer serviceProvider)
+    {
+        return $"پرداخت هزینه خدمات به {serviceProvider.FullName} طبق سند پرداخت شماره {voucher.VoucherNumber}";
+    }
+
+    /// <summary>
+    /// شرح برای برداشت وجه توسط مالک
+    /// </summary>
+    /// <param name="voucher"></param>
+    /// <param name="owner"></param>
+    /// <returns></returns>
+    public static string ForOwnerDraw(PaymentVoucher voucher, Customer owner)
+    {
+        return $"برداشت وجه توسط {owner.FullName} طبق سند پرداخت شماره {voucher.VoucherNumber}";
+    }
+
+    /// <summary>
+    /// شرحی برای پرداخت وام یا تنخواه به یک همکار ایجاد می‌کند
+    /// </summary>
+    public static string ForPartnerLoan(PaymentVoucher voucher, Customer partner)
+    {
+        return $"پرداخت وام/تنخواه به {partner.FullName} طبق سند پرداخت شماره {voucher.VoucherNumber}";
     }
 
     #endregion

@@ -37,7 +37,6 @@ public class PaymentVoucherVm
     public GetFinancialAccountTitleResponse? SourceFinancialAccount { get; set; }
 
     [Display(Name = "حساب دریافتی")]
-    [Required(ErrorMessage = "حساب دریافتی الزامی است.")]
     public GetFinancialAccountTitleResponse? DestinationFinancialAccount { get; set; }
 
     [Display(Name = "نرخ تبدیل")] 
@@ -77,9 +76,6 @@ public class PaymentVoucherVm
         if (model.SourceFinancialAccount == null)
             throw new ArgumentNullException(nameof(model.SourceFinancialAccount));
 
-        if (model.DestinationFinancialAccount == null)
-            throw new ArgumentNullException(nameof(model.DestinationFinancialAccount));
-
         if (string.IsNullOrEmpty(model.Description))
             throw new ArgumentNullException(nameof(model.Description));
 
@@ -89,6 +85,9 @@ public class PaymentVoucherVm
         if (!model.Amount.HasValue)
             throw new ArgumentNullException(nameof(model.Amount));
 
+        if (model.Customer?.Id == null)
+            throw new ArgumentNullException(nameof(model.Customer));
+
         return new PaymentVoucherRequestDto(model.Id,
             model.VoucherNumber,
             model.Amount.Value,
@@ -96,8 +95,9 @@ public class PaymentVoucherVm
             model.Description,
             DateOnly.FromDateTime(model.PaymentDate.Value), 
             model.VoucherType,
+            model.Customer.Id.Value,
             model.PriceUnit.Id,
             model.SourceFinancialAccount.Id,
-            model.DestinationFinancialAccount.Id);
+            model.DestinationFinancialAccount?.Id);
     }
 }

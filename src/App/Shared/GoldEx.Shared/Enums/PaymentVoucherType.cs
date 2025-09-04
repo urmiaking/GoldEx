@@ -8,5 +8,14 @@ public enum PaymentVoucherType
     PrepaymentToSupplier = 0,
 
     [Display(Name = "استرداد وجه")]
-    RefundToCustomer = 1
+    RefundToCustomer = 1,
+
+    [Display(Name = "پرداخت هزینه خدمات")]
+    ServiceFeePayment,
+
+    [Display(Name = "پرداخت وام/تنخواه به همکار")]
+    PartnerLoan,
+
+    [Display(Name = "برداشت مالک")]
+    OwnerDraw
 }
