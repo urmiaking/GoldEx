@@ -47,7 +47,8 @@ public partial class CustomersList
                     Items = items
                 };
             },
-            createScope: true
+            createScope: true,
+            cancelPrevious: true
         );
 
         return result;

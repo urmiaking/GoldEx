@@ -161,7 +161,8 @@ public partial class EditorForm
             afterSend: response =>
             {
                 _customers = response;
-            });
+            },
+            cancelPrevious: true);
 
         return _customers.Select(CustomerVm.CreateFrom);
     }
@@ -197,7 +198,7 @@ public partial class EditorForm
 
         await SendRequestAsync<IProductService, GetProductResponse?>(
             action: async (s, ct) => await s.GetAsync(barcode, false, ct),
-            async response =>
+            afterSend: async response =>
             {
                 if (response is null)
                     return;
@@ -232,7 +233,8 @@ public partial class EditorForm
                         : _setting?.JewelryProfitPercent ?? 20,
                     Index = _model.GetLastProductIndexNumber() + 1
                 });
-            });
+            },
+            cancelPrevious: true);
     }
 
     #endregion

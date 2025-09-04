@@ -371,8 +371,8 @@ public partial class SimpleCalculator
             }
 
             await SendRequestAsync<IProductService, GetProductResponse?>(
-                action: async (s, ct) => await s.GetAsync(barcode, true, ct),
-                 async response =>
+                 action: async (s, ct) => await s.GetAsync(barcode, true, ct),
+                 afterSend:async response =>
                  {
                      if (response is null)
                          return;
@@ -384,7 +384,8 @@ public partial class SimpleCalculator
                      _model = CalculatorVm.CreateFrom(response, _model, wagePriceUnit);
                      await SelectWagePriceUnit(_model.WagePriceUnit!);
                      OnProductTypeChanged(_model.ProductType);
-                 });
+                 },
+                 cancelPrevious: true);
         }
         finally
         {

@@ -203,7 +203,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
     protected async Task<TResult> SendRequestAsync<TService, TResult, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                                  Func<TResponse, Task<TResult>> afterSend,
-                                                                                 Func<Task>? onFailure = null)
+                                                                                 Func<Task>? onFailure = null
+                                                                                 , bool cancelPrevious = false)
         where TService : notnull
     {
         if (IsDisposed)
@@ -211,7 +212,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
 
@@ -235,7 +237,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
     protected async Task<TResult> SendRequestAsync<TService, TResult, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                                  Func<TResponse, TResult> afterSend,
-                                                                                 Action? onFailure = null)
+                                                                                 Action? onFailure = null,
+                                                                                 bool cancelPrevious = false)
         where TService : notnull
     {
         if (IsDisposed)
@@ -243,7 +246,9 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
         try
         {
-            CancelToken();
+            if (cancelPrevious) 
+                CancelToken();
+
             SetBusy();
             var service = GetRequiredService<TService>();
 
@@ -267,7 +272,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
     protected async Task SendRequestAsync<TService, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                Func<TResponse, Task> afterSend,
-                                                               Func<Task>? onFailure = null)
+                                                               Func<Task>? onFailure = null,
+                                                               bool cancelPrevious = false)
         where TService : notnull
     {
         if (IsDisposed)
@@ -275,7 +281,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
 
@@ -299,7 +306,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
     protected async Task SendRequestAsync<TService, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                Action<TResponse> afterSend,
                                                                Action? onFailure = null,
-                                                               bool createScope = false)
+                                                               bool createScope = false,
+                                                               bool cancelPrevious = false)
         where TService : notnull
     {
         if (IsDisposed)
@@ -308,7 +316,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
         var scope = createScope ? CreateServiceScope() : CurrentScope;
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>(scope);
 
@@ -329,7 +338,9 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected async Task<TResult?> SendRequestAsync<TService, TResult>(Func<TService, CancellationToken, Task<TResult>> action, bool createScope = false)
+    protected async Task<TResult?> SendRequestAsync<TService, TResult>(Func<TService, CancellationToken, Task<TResult>> action,
+                                                                       bool createScope = false,
+                                                                       bool cancelPrevious = false)
         where TService : notnull
     {
         if (IsDisposed)
@@ -338,7 +349,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
         var scope = createScope ? CreateServiceScope() : CurrentScope;
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>(scope);
 
@@ -361,7 +373,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
     protected async Task SendRequestAsync<TService>(Func<TService, CancellationToken, Task> action,
                                                     Func<Task>? afterSend = null,
-                                                    Func<Task>? onFailure = null)
+                                                    Func<Task>? onFailure = null,
+                                                    bool cancelPrevious = false)
         where TService : notnull
     {
         if (IsDisposed)
@@ -369,7 +382,8 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
 

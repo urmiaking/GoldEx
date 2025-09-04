@@ -248,7 +248,8 @@ public partial class Editor
             afterSend: response =>
             {
                 _suppliers = response;
-            });
+            },
+            cancelPrevious: true);
 
         return _suppliers.Select(CustomerVm.CreateFrom);
     }
