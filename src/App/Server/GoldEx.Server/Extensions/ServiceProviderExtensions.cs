@@ -203,6 +203,7 @@ public static class ServiceProviderExtensions
                 defaultSetting.TaxPercent,
                 defaultSetting.GoldProfitPercent,
                 defaultSetting.JewelryProfitPercent,
+                defaultSetting.MoltenGoldCommissionPercent,
                 defaultSetting.GoldSafetyMarginPercent,
                 defaultSetting.OldGoldCarat,
                 defaultSetting.PriceUpdateInterval);

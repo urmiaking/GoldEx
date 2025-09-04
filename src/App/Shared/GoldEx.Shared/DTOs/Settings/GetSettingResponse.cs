@@ -8,6 +8,7 @@ public record GetSettingResponse(
     decimal TaxPercent,
     decimal GoldProfitPercent,
     decimal JewelryProfitPercent,
+    decimal MoltenGoldCommissionPercent,
     decimal GoldSafetyMarginPercent,
     decimal UsedGoldFineness,
     TimeSpan PriceUpdateInterval,
