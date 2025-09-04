@@ -17,8 +17,8 @@ public class CustomerVm
     [StringLength(100, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string FullName { get; set; } = default!;
 
-    [Display(Name = "نوع")]
-    public CustomerType CustomerType { get; set; } = CustomerType.Individual;
+    [Display(Name = "نوع مشتری")]
+    public CustomerType CustomerType { get; set; } = CustomerType.RetailCustomer;
 
     [Display(Name = "شناسه یکتا")]
     [Required(ErrorMessage = "{0} الزامی است")]

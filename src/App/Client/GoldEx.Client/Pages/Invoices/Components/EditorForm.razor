@@ -145,7 +145,7 @@
         </MudGrid>
 
         <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
-            <MudText Typo="Typo.h6" GutterBottom="true">مشخصات طرف حساب</MudText>
+        <MudText Typo="Typo.h6" GutterBottom="true">مشخصات طرف حساب @if(_model.Customer != null) { <span class="d-none d-sm-inline">(@_model.Customer.CustomerType.GetDisplayName())</span> }</MudText>
             <MudSpacer />
 
             <MudAutocomplete T="CustomerVm"
@@ -153,7 +153,7 @@
                              Text="@_model.Customer?.FullName"
                              For="@(() => _model.Customer!)"
                              Placeholder="جستجوی طرف حساب..."
-                             ToStringFunc="@(customer => customer?.FullName)"
+                             ToStringFunc="@(customer => $"{customer?.FullName} - {customer?.CustomerType.GetDisplayName()}")"
                              Margin="Margin.Dense"
                              Adornment="Adornment.Start" 
                              AdornmentIcon="@Icons.Material.Filled.Search"
