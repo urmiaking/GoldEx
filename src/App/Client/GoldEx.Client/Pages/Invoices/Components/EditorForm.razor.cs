@@ -24,6 +24,7 @@ public partial class EditorForm
 {
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
+    [Parameter] public string? Barcode { get; set; }
 
     private bool IsEditMode => Id.HasValue;
 
@@ -51,7 +52,20 @@ public partial class EditorForm
         await LoadPriceUnitsAsync();
         await LoadSettingsAsync();
         await LoadGramPriceAsync();
+        await LoadIncomingProductAsync();
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadIncomingProductAsync()
+    {
+        if (!string.IsNullOrEmpty(Barcode))
+        {
+            _model.InvoiceType = InvoiceType.Sell;
+            await OnInvoiceTypeChanged(InvoiceType.Sell);
+
+            await OnBarcodeChanged(Barcode);
+            StateHasChanged();
+        }
     }
 
     #region Load Initial Data

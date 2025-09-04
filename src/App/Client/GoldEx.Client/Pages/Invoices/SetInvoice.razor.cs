@@ -8,6 +8,7 @@ public partial class SetInvoice
 {
     [Parameter] public string? Id { get; set; }
     [Parameter, SupplyParameterFromQuery] public Guid? CustomerId { get; set; }
+    [Parameter, SupplyParameterFromQuery] public string? Barcode { get; set; }
 
     private Guid? IdValue => string.IsNullOrEmpty(Id) ? null : Guid.Parse(Id);
 
