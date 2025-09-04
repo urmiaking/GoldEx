@@ -8,6 +8,7 @@ public class DefaultSetting
     public decimal TaxPercent { get; set; }
     public decimal GoldProfitPercent { get; set; }
     public decimal JewelryProfitPercent { get; set; }
+    public decimal MoltenGoldCommissionPercent { get; set; }
     public decimal GoldSafetyMarginPercent { get; set; } = 0;
     public decimal OldGoldCarat { get; set; } = 735;
 
