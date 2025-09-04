@@ -74,9 +74,11 @@ public partial class PriceBoard
         StateHasChanged();
     }
 
-    public override void Dispose()
+    public override async ValueTask DisposeAsync()
     {
-        _timer?.Dispose();
-        base.Dispose();
+        if (_timer is not null)
+            await _timer.DisposeAsync();
+
+        await base.DisposeAsync();
     }
 }

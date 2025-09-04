@@ -71,9 +71,9 @@ public partial class Profile
         StateHasChanged();
     }
 
-    public override void Dispose()
+    public override ValueTask DisposeAsync()
     {
         Navigation.LocationChanged -= OnLocationChanged;
-        base.Dispose();
+        return base.DisposeAsync();
     }
 }
