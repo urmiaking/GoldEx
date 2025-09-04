@@ -70,7 +70,7 @@ public class CalculatorHelper
         /// <returns>سود فروشنده</returns>
         public static decimal CalculateProfit(decimal rawPrice, decimal wage, ProductType productType, decimal profitPercent)
         {
-            if (productType is ProductType.UsedGold or ProductType.MoltenGold)
+            if (productType is ProductType.UsedGold)
                 return 0;
 
             return (rawPrice + wage) * (profitPercent / 100);
