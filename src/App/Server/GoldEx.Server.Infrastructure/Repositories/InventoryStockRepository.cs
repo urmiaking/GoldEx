@@ -7,6 +7,7 @@ using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Shared.DTOs.InventoryStocks;
@@ -269,7 +270,7 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
             .AsNoTracking()
             .Where(p => availableProductIds.Contains(p.Id))
             .Where(p => p.ProductType == filter.ProductType)
-            .Where(p => !filter.ProductCategoryId.HasValue || (p.ProductCategoryId.HasValue && p.ProductCategoryId.Value.Value == filter.ProductCategoryId.Value))
+            .Where(p => !filter.ProductCategoryId.HasValue || (p.ProductCategoryId.HasValue && p.ProductCategoryId.Value == new ProductCategoryId(filter.ProductCategoryId.Value)))
             .Where(p => !filter.Fineness.HasValue || p.Fineness == filter.Fineness.Value)
             .Where(p => !filter.MinWeight.HasValue || p.Weight >= filter.MinWeight.Value)
             .Where(p => !filter.MaxWeight.HasValue || p.Weight <= filter.MaxWeight.Value)

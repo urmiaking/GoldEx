@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
@@ -20,25 +21,33 @@ public partial class ReverseCalculator
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private ReverseCalculatorVm _model = new();
 
-    private bool _isInitialLoading = true;
     private bool _isSearching;
 
     private List<GetInventoryStockResponse> _results = [];
+    private List<GetProductCategoryResponse> _productCategories = [];
+    private bool _minWeightFieldMenuOpen;
+    private bool _maxWeightFieldMenuOpen;
 
     protected override async Task OnParametersSetAsync()
     {
-        _isInitialLoading = true;
         try
         {
             await LoadPriceUnitsAsync();
             await LoadSettingsAsync();
+            await LoadCategoriesAsync();
         }
         finally
         {
-            _isInitialLoading = false;
             StateHasChanged();
         }
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        await SendRequestAsync<IProductCategoryService, List<GetProductCategoryResponse>>(
+            action: (s, ct) => s.GetListAsync(ct),
+            afterSend: response => _productCategories = response);
     }
 
     #region Load Initial Data
@@ -190,5 +199,18 @@ public partial class ReverseCalculator
         var finalPrice = rawPrice + wageAmount + profitAmount + taxAmount;
 
         return finalPrice;
+    }
+
+    private void OnProductCategoryCleared()
+    {
+        _model.ProductCategory = null;
+    }
+
+    private async Task SelectUnitType(GoldUnitType item)
+    {
+        _model.UnitType = item;
+        await LoadGramPriceAsync();
+
+        StateHasChanged();
     }
 }

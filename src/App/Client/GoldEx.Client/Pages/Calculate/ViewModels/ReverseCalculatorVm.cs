@@ -42,6 +42,7 @@ public class ReverseCalculatorVm
 
     public decimal TaxPercent { get; set; } = 10;
 
+    [Display(Name = "دسته بندی محصول")]
     public GetProductCategoryResponse? ProductCategory { get; set; }
 
     public ProductType ProductType { get; set; } = ProductType.Gold;
@@ -63,6 +64,17 @@ public class ReverseCalculatorVm
 
     public CalculatorFilterRequest ToFilterRequest()
     {
-        return new CalculatorFilterRequest(GramPrice, TaxPercent, ProfitPercent, Fineness, MaxWage, MinWeight, MaxWeight, MinPrice, MaxPrice, ProductCategory?.Id, ProductType);
+        return new CalculatorFilterRequest(GramPrice,
+            TaxPercent,
+            ProfitPercent,
+            Fineness,
+            MaxWage,
+            MinWeight,
+            MaxWeight,
+            MinPrice,
+            MaxPrice,
+            ProductCategory?.Id,
+            ProductType,
+            UnitType);
     }
 }

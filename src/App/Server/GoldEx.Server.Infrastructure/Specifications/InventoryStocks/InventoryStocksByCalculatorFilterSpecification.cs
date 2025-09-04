@@ -13,6 +13,8 @@ public class InventoryStocksByCalculatorFilterSpecification : SpecificationBase<
 
         AddCriteria(item => item.Product!.ProductType == filter.ProductType);
 
+        AddCriteria(item => item.Product!.GoldUnitType == filter.UnitType);
+
         if (filter.Fineness.HasValue)
         {
             AddCriteria(x => x.Product!.Fineness == filter.Fineness);
