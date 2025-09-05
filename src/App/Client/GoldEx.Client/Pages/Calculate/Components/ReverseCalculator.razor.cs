@@ -129,14 +129,7 @@ public partial class ReverseCalculator
 
         await LoadGramPriceAsync();
 
-        await Search();
-
         StateHasChanged();
-    }
-
-    private async Task Search()
-    {
-
     }
 
     private void OnProductTypeChanged(ProductType productType)

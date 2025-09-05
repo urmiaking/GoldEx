@@ -12,7 +12,7 @@
                                  Text="@_model.Customer?.FullName"
                                  For="@(() => _model.Customer!)"
                                  Placeholder="جستجوی طرف حساب..."
-                                 ToStringFunc="@(customer => $"{customer?.FullName} - {customer?.CustomerType.GetDisplayName()}")"
+                                 ToStringFunc="@(customer => customer != null ? $"{customer.FullName} - {customer.CustomerType.GetDisplayName()}" : null)"
                                  Margin="Margin.Dense"
                                  Adornment="Adornment.Start"
                                  AdornmentIcon="@Icons.Material.Filled.Search"

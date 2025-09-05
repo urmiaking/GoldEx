@@ -35,9 +35,6 @@ public partial class SimpleCalculator
     private string? _barcode;
     private string? _barcodeFieldHelperText;
 
-    private bool _isInitialLoading = true;
-    private bool _isBarcodeProcessing = false;
-    private bool _isRecalculating = false;
     private bool _applySafetyMargin = true;
     private bool _wageFieldMenuOpen;
     private bool _weightFieldMenuOpen;
@@ -64,7 +61,6 @@ public partial class SimpleCalculator
 
     protected override async Task OnParametersSetAsync()
     {
-        _isInitialLoading = true;
         try
         {
             await LoadPriceUnitsAsync();
@@ -73,7 +69,6 @@ public partial class SimpleCalculator
         }
         finally
         {
-            _isInitialLoading = false;
             StateHasChanged();
         }
         await base.OnParametersSetAsync();
@@ -138,7 +133,6 @@ public partial class SimpleCalculator
 
     private async Task LoadGramPriceAsync()
     {
-        _isBarcodeProcessing = true;
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(_model.GoldUnitType, _model.PriceUnit?.Id, _applySafetyMargin, ct),
             afterSend: response =>
@@ -149,15 +143,12 @@ public partial class SimpleCalculator
 
                 StateHasChanged();
             });
-        _isBarcodeProcessing = false;
     }
 
     #endregion
 
     private async Task Calculate()
     {
-        _isRecalculating = true;
-
         try
         {
             if (_model.Weight == 0 || _model is { WageType: not null, Wage: null })
@@ -183,7 +174,6 @@ public partial class SimpleCalculator
         }
         finally
         {
-            _isRecalculating = false;
             StateHasChanged();
         }
     }
@@ -234,7 +224,6 @@ public partial class SimpleCalculator
 
     private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
     {
-        _isRecalculating = true;
         try
         {
             _model.WagePriceUnit = priceUnit;
@@ -256,8 +245,6 @@ public partial class SimpleCalculator
         finally
         {
             await Calculate();
-
-            _isRecalculating = false;
         }
     }
 
@@ -359,7 +346,6 @@ public partial class SimpleCalculator
 
     private async Task OnBarcodeChanged(string barcode)
     {
-        _isBarcodeProcessing = true;
         try
         {
             _barcode = barcode;
@@ -372,7 +358,7 @@ public partial class SimpleCalculator
 
             await SendRequestAsync<IProductService, GetProductResponse?>(
                  action: async (s, ct) => await s.GetAsync(barcode, true, ct),
-                 afterSend:async response =>
+                 afterSend: async response =>
                  {
                      if (response is null)
                          return;
@@ -389,25 +375,16 @@ public partial class SimpleCalculator
         }
         finally
         {
-            _isBarcodeProcessing = false;
             await Calculate();
         }
     }
 
     private void OnBarcodeCleared()
     {
-        _isBarcodeProcessing = true;
-        try
-        {
-            _barcode = null;
-            _barcodeFieldHelperText = null;
-            ResetModel();
-            ResetCalculations();
-        }
-        finally
-        {
-            _isBarcodeProcessing = false;
-        }
+        _barcode = null;
+        _barcodeFieldHelperText = null;
+        ResetModel();
+        ResetCalculations();
     }
 
     private async void ResetModel()
