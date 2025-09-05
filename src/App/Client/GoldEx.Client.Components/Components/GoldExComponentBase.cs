@@ -310,22 +310,34 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
                                                                bool cancelPrevious = false)
         where TService : notnull
     {
+        Console.WriteLine($"Entering SendRequestAsync method with action: {action.Method.Name}");
         if (IsDisposed)
             return;
 
+        Console.WriteLine("Component is not disposed, proceeding with request.");
         var scope = createScope ? CreateServiceScope() : CurrentScope;
         try
         {
+            Console.WriteLine("Service scope created.");
             if (cancelPrevious)
+            {
+                Console.WriteLine("Cancelling previous token.");
                 CancelToken();
+            }
+
+            Console.WriteLine("Setting busy state.");
             SetBusy();
             var service = GetRequiredService<TService>(scope);
+            Console.WriteLine($"Service of type {typeof(TService).Name} retrieved.");
 
             var response = await action.Invoke(service, CancellationToken);
+            Console.WriteLine("Action invoked, processing response.");
             afterSend.Invoke(response);
+            Console.WriteLine("AfterSend action completed.");
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Exception caught: {ex.GetType().Name} - {ex.Message}");
             onFailure?.Invoke();
             HandleRequestException(ex);
         }
@@ -335,6 +347,7 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
                 scope.Dispose();
 
             SetIdeal();
+            Console.WriteLine("Set to ideal state, exiting SendRequestAsync method.");
         }
     }
 

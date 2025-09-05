@@ -153,7 +153,7 @@ public partial class EditorForm
 
     private async Task<IEnumerable<CustomerVm>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(customerName))
+        if (string.IsNullOrWhiteSpace(customerName))
             return null;
 
         await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
