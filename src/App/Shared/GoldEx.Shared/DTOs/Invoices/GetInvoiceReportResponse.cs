@@ -42,5 +42,5 @@ public record GetProductReportResponse(
     ProductType ProductType,
     WageType? WageType,
     GoldUnitType GoldUnitType,
-    CaratType CaratType,
+    decimal Fineness,
     string? ProductCategoryTitle);

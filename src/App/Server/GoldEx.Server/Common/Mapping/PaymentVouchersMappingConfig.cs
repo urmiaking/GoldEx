@@ -41,10 +41,7 @@ public class PaymentVouchersMappingConfig : IRegister
             .Map(dest => dest.VoucherNumber, src => src.VoucherNumber)
             .Map(dest => dest.Amount, src => src.Amount)
             .Map(dest => dest.PriceUnit, src => src.VoucherPriceUnit)
-            .Map(dest => dest.Customer,
-                src => src.DestinationFinancialAccount != null && src.DestinationFinancialAccount.Customer != null
-                    ? src.DestinationFinancialAccount.Customer
-                    : null)
+            .Map(dest => dest.Customer, src => src.Customer)
             .Map(dest => dest.SourceFinancialAccount, src => src.SourceFinancialAccount)
             .Map(dest => dest.DestinationFinancialAccount, src => src.DestinationFinancialAccount);
     }
