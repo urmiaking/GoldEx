@@ -4,7 +4,7 @@
 
 @inject NavigationManager NavigationManager
 
-<MudNavMenu>
+<MudNavMenu Rounded="true" Margin="Margin.Dense" Color="Color.Primary">
     <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
         صفحه اصلی
     </MudNavLink>
@@ -26,14 +26,17 @@
                         Icon="@Icons.Material.Filled.PeopleAlt">
                 مشتریان
             </MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" })"
-                        Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAdd">
-                ثبت فاکتور حدید
-            </MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"
-                        Icon="@Icons.Material.Filled.LibraryBooks">
-                فاکتورهای من
-            </MudNavLink>
+            <MudNavGroup Title="فاکتورها" Icon="@Icons.Material.Filled.LibraryBooks">
+                <MudNavLink Href="@ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" })"
+                            Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAdd">
+                    ثبت فاکتور حدید
+                </MudNavLink>
+                <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"
+                            Icon="@Icons.Material.Filled.LibraryBooks">
+                    فاکتورهای من
+                </MudNavLink>
+            </MudNavGroup>
+            
             <MudNavLink Href="@ClientRoutes.PaymentVouchers.Index" Match="NavLinkMatch.Prefix"
                         Icon="@Icons.Material.Filled.Payment">
                 اسناد پرداخت

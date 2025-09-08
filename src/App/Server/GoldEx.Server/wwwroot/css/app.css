@@ -1,4 +1,4 @@
-@import '../fonts/vazir/Vazirmatn-font-face.css';
+﻿@import '../fonts/vazir/Vazirmatn-font-face.css';
 @import '../fonts/IRANSANS/IRANSANS-font-face.css';
 
 a, .btn-link {
@@ -153,3 +153,7 @@ h1:focus {
     font-size: 1rem;
     color: #B8860B; /* TextSecondary (deep gold) */
 }
+
+    .loading-text:after {
+        content: var(--blazor-load-percentage-text, "در حال بارگذاری...");
+    }
