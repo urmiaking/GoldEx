@@ -80,7 +80,7 @@ public class ReportingMappingConfig : IRegister
                 : $"{src.Wage.ToCurrencyReportFormat(src.WagePriceUnit!.Title)}")
             .Map(dest => dest.ProductType, src => src.ProductType)
             .Map(dest => dest.WageType, src => src.WageType)
-            .Map(dest => dest.CaratType, src => CaratType.Eighteen)
+            .Map(dest => dest.Fineness, src => src.Fineness)
             .Map(dest => dest.ProductCategoryTitle,
                 src => src.ProductCategory != null ? src.ProductCategory.Title : string.Empty);
     }

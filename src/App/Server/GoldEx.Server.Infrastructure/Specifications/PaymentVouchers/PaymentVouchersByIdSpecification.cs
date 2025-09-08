@@ -12,7 +12,7 @@ public class PaymentVouchersByIdSpecification : SpecificationBase<PaymentVoucher
         // --- Includes ---
         AddInclude(x => x.SourceFinancialAccount!.PriceUnit!);
         AddInclude(x => x.DestinationFinancialAccount!.PriceUnit!);
-        AddInclude(x => x.DestinationFinancialAccount!.Customer!);
         AddInclude(x => x.VoucherPriceUnit!);
+        AddInclude(x => x.Customer!);
     }
 }
