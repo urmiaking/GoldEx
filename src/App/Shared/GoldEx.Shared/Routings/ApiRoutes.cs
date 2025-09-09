@@ -132,7 +132,8 @@ public static class ApiRoutes
     public class FinancialAccounts
     {
         public const string Base = "/api/FinancialAccounts";
-        public const string GetList = "";
+        public const string GetAll = "";
+        public const string GetList = "list";
         public const string Get = "{id}";
         public const string Create = "";
         public const string Update = "{id}";
