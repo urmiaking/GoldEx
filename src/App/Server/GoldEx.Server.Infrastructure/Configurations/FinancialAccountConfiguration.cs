@@ -37,7 +37,13 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
 
         builder.OwnsOne(x => x.LocalAccount, Configure);
         builder.OwnsOne(x => x.InternationalAccount, Configure);
-        builder.OwnsOne(x => x.CashAccount);
+        builder.OwnsOne(x => x.CashAccount, Configure);
+    }
+
+    private void Configure(OwnedNavigationBuilder<FinancialAccount, CashAccount> builder)
+    {
+        builder.Property(x => x.Title)
+            .HasMaxLength(50);
     }
 
     private void Configure(OwnedNavigationBuilder<FinancialAccount, InternationalBankAccount> builder)

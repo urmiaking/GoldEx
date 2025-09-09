@@ -11,11 +11,11 @@ public enum PaymentVoucherType
     RefundToCustomer = 1,
 
     [Display(Name = "پرداخت هزینه خدمات")]
-    ServiceFeePayment,
+    ServiceFeePayment = 2,
 
     [Display(Name = "پرداخت وام/تنخواه به همکار")]
-    PartnerLoan,
+    PartnerLoan = 3,
 
     [Display(Name = "برداشت مالک")]
-    OwnerDraw
+    OwnerDraw = 4
 }

@@ -116,6 +116,13 @@
                                 </MudRadioGroup>
                             </MudStack>
                         </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Model.CashAccount.Title"
+                                          For="@(() => Model.CashAccount.Title)"
+                                          Label="@(Model.GetDisplayName(() => Model.CashAccount.Title))"
+                                          Margin="Margin.Dense"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
                         break;
                 }
             </MudGrid>

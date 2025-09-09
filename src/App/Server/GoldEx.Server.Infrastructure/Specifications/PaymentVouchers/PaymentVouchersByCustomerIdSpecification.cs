@@ -9,12 +9,12 @@ public class PaymentVouchersByCustomerIdSpecification : SpecificationBase<Paymen
 {
     public PaymentVouchersByCustomerIdSpecification(CustomerId customerId, VoucherStatus? status = VoucherStatus.Pending)
     {
-        AddInclude(x => x.SourceFinancialAccount!.PriceUnit!);
-        AddInclude(x => x.DestinationFinancialAccount!.Customer!);
+        AddInclude(x => x.Customer!);
         AddInclude(x => x.DestinationFinancialAccount!.PriceUnit!);
+        AddInclude(x => x.SourceFinancialAccount!.PriceUnit!);
         AddInclude(x => x.VoucherPriceUnit!);
 
-        AddCriteria(x => x.DestinationFinancialAccount!.CustomerId == customerId);
+        AddCriteria(x => x.CustomerId == customerId);
 
         // Since this specification is used for getting pending prepayments to suppliers then we should add this criteria
         AddCriteria(x => x.VoucherType == PaymentVoucherType.PrepaymentToSupplier);

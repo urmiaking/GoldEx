@@ -2,4 +2,4 @@
 
 namespace GoldEx.Shared.DTOs.FinancialAccounts;
 
-public record GetCashAccountResponse(CashAccountType AccountType);
+public record GetCashAccountResponse(string? Title, CashAccountType AccountType);
