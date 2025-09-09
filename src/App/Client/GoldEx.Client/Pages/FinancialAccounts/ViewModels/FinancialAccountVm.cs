@@ -60,7 +60,8 @@ public class FinancialAccountVm
             CashAccount = response.CashAccount != null
                 ? new CashAccountVm
                 {
-                    AccountType = response.CashAccount.AccountType
+                    AccountType = response.CashAccount.AccountType,
+                    Title = response.CashAccount.Title
                 }
                 : null
         };
@@ -88,7 +89,7 @@ public class FinancialAccountVm
                     InternationalBankAccount.AccountNumber!)
                 : null,
             FinancialAccountType is FinancialAccountType.Cash && CashAccount != null 
-                ? new CashAccountRequestDto(CashAccount.AccountType) 
+                ? new CashAccountRequestDto(CashAccount.Title, CashAccount.AccountType) 
                 : null);
     }
 
@@ -105,10 +106,20 @@ public class FinancialAccountVm
             FinancialAccountType.Cash => CashAccount?.AccountType switch
             {
                 CashAccountType.DepositsWithOthers =>
-                    $"{CashAccount?.AccountType.GetDisplayName()} - {BrokerName} - {HolderName}",
+                    string.Join(" - ", new[]
+                    {
+                        CashAccount?.AccountType.GetDisplayName(),
+                        CashAccount?.Title,
+                        BrokerName,
+                        HolderName
+                    }.Where(s => !string.IsNullOrEmpty(s))),
 
                 CashAccountType.Internal =>
-                    $"{CashAccount?.AccountType.GetDisplayName()}",
+                    string.Join(" - ", new[]
+                    {
+                        CashAccount?.AccountType.GetDisplayName(),
+                        CashAccount?.Title
+                    }.Where(s => !string.IsNullOrEmpty(s))),
 
                 _ => $"{FinancialAccountType.Cash.GetDisplayName()}"
             },

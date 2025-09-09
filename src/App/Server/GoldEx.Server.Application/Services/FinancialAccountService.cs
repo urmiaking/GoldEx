@@ -118,7 +118,7 @@ internal class FinancialAccountService(
                             request.InternationalBankAccount.AccountNumber));
                         break;
                     case FinancialAccountType.Cash when request.CashAccount is not null:
-                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.AccountType));
+                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.Title, request.CashAccount.AccountType));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -170,7 +170,7 @@ internal class FinancialAccountService(
                             request.InternationalBankAccount.AccountNumber));
                         break;
                     case FinancialAccountType.Cash when request.CashAccount is not null:
-                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.AccountType));
+                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.Title, request.CashAccount.AccountType));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
