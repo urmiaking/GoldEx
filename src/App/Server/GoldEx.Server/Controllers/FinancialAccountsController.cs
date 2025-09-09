@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Routings;
@@ -12,11 +13,19 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class FinancialAccountsController(IFinancialAccountService service) : ApiControllerBase
 {
-    [HttpGet(ApiRoutes.FinancialAccounts.GetList)]
-    public async Task<IActionResult> GetListAsync(Guid? customerId, CancellationToken cancellationToken = default)
+    [HttpGet(ApiRoutes.FinancialAccounts.GetAll)]
+    public async Task<IActionResult> GetAllAsync(Guid? customerId, CancellationToken cancellationToken = default)
     {
-        var list = await service.GetListAsync(cancellationToken);
+        var list = await service.GetAllAsync(cancellationToken);
         return Ok(list);
+    }
+
+    [HttpGet(ApiRoutes.FinancialAccounts.GetList)]
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter,
+        [FromQuery] FinancialAccountFilter financialAccountFilter, CancellationToken cancellationToken = default)
+    {
+        var pagedList = await service.GetListAsync(filter, financialAccountFilter, cancellationToken);
+        return Ok(pagedList);
     }
 
     [HttpGet(ApiRoutes.FinancialAccounts.GetTitles)]

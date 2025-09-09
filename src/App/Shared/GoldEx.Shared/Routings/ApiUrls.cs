@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Extensions;
 using System.Globalization;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Products;
@@ -231,8 +232,12 @@ public class ApiUrls
 
     public class FinancialAccounts
     {
-        public static string GetList() =>
-            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetList);
+        public static string GetAll() =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetAll);
+        public static string GetList(RequestFilter filter, FinancialAccountFilter financialAccountFilter) =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(financialAccountFilter);
         public static string Get(Guid id) =>
             BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Get).FormatRoute(new { id });
         public static string Create() => BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.Create);

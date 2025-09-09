@@ -5,20 +5,36 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Sdk.Common.Data;
 
 namespace GoldEx.Client.Services.Services;
 
 [ScopedService]
 internal class FinancialAccountService(HttpClient client, JsonSerializerOptions jsonOptions) : IFinancialAccountService
 {
-    public async Task<List<GetFinancialAccountResponse>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetFinancialAccountResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.FinancialAccounts.GetList(), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.FinancialAccounts.GetAll(), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<List<GetFinancialAccountResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<PagedList<GetFinancialAccountResponse>> GetListAsync(RequestFilter filer,
+        FinancialAccountFilter financialAccountFilter,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.FinancialAccounts.GetList(filer, financialAccountFilter),
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetFinancialAccountResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }

@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using FluentValidation;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
@@ -35,7 +36,7 @@ internal class FinancialAccountService(
     IMapper mapper,
     ILogger<FinancialAccountService> logger) : IFinancialAccountService
 {
-    public async Task<List<GetFinancialAccountResponse>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetFinancialAccountResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var list = await repository
             .Get(new FinancialAccountsDefaultSpecification(true))
@@ -43,6 +44,28 @@ internal class FinancialAccountService(
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetFinancialAccountResponse>>(list);
+    }
+
+    public async Task<PagedList<GetFinancialAccountResponse>> GetListAsync(RequestFilter filer,
+        FinancialAccountFilter financialAccountFilter,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await repository
+            .Get(new FinancialAccountsByFilterSpecification(filer, financialAccountFilter))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var totalCount = await repository.CountAsync(new FinancialAccountsByFilterSpecification(filer,
+                financialAccountFilter),
+            cancellationToken);
+
+        return new PagedList<GetFinancialAccountResponse>
+        {
+            Data = mapper.Map<List<GetFinancialAccountResponse>>(list),
+            Total = totalCount,
+            Skip = filer.Skip ?? 0,
+            Take = filer.Take ?? 100
+        };
     }
 
     public async Task<List<GetFinancialAccountTitleResponse>> GetTitlesAsync(Guid? customerId, Guid? priceUnitId,
