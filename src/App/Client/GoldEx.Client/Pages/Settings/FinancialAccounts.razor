@@ -31,6 +31,10 @@
                          OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Cash)">
                 @FinancialAccountType.Cash.GetDisplayName()
             </MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled._18UpRating" IconColor="Color.Secondary"
+                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Gold)">
+                @FinancialAccountType.Gold.GetDisplayName()
+            </MudMenuItem>
         </MudMenu>
     </MudButtonGroup>
 

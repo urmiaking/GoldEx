@@ -11,5 +11,8 @@ public enum FinancialAccountType
     InternationalBankAccount = 1,
 
     [Display(Name = "نقدی")]
-    Cash = 2
+    Cash = 2,
+
+    [Display(Name = "طلایی")]
+    Gold = 3
 }

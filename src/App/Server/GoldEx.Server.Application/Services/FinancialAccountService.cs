@@ -98,174 +98,150 @@ internal class FinancialAccountService(
     public async Task CreateAsync(FinancialAccountRequestDto request, CancellationToken cancellationToken = default)
     {
         await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        try
         {
-            try
+            await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+            var goldPriceUnitId = new PriceUnitId();
+
+            if (request.FinancialAccountType is FinancialAccountType.Gold)
             {
-                await validator.ValidateAndThrowAsync(request, cancellationToken);
+                var goldPriceUnit = await priceUnitRepository
+                    .Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
+                    .FirstOrDefaultAsync(cancellationToken)?? throw new NotFoundException("No price unit found for gold accounts.");
 
-                FinancialAccount financialAccount;
-
-                if (request is { CustomerId: not null, IsSystemAccount: false })
-                {
-                    financialAccount = FinancialAccount.CreateCustomerAccount(
-                        request.HolderName,
-                        request.BrokerName,
-                        request.FinancialAccountType,
-                        new PriceUnitId(request.PriceUnitId),
-                        new CustomerId(request.CustomerId.Value));
-                }
-                else
-                {
-                    var ledgerAccountId = await GetOrCreateSystemLedgerAccountAsync(request, cancellationToken);
-
-                    financialAccount = FinancialAccount.CreateSystemAccount(
-                        request.HolderName,
-                        request.BrokerName,
-                        request.FinancialAccountType,
-                        new PriceUnitId(request.PriceUnitId),
-                        ledgerAccountId);
-                }
-
-                switch (request.FinancialAccountType)
-                {
-                    case FinancialAccountType.LocalBankAccount when request.LocalBankAccount is not null:
-                        financialAccount.SetLocalAccount(LocalBankAccount.Create(
-                            request.LocalBankAccount.CardNumber,
-                            request.LocalBankAccount.ShabaNumber,
-                            request.LocalBankAccount.AccountNumber));
-                        break;
-                    case FinancialAccountType.InternationalBankAccount when request.InternationalBankAccount is not null:
-                        financialAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                            request.InternationalBankAccount.SwiftBicCode,
-                            request.InternationalBankAccount.IbanNumber,
-                            request.InternationalBankAccount.AccountNumber));
-                        break;
-                    case FinancialAccountType.Cash when request.CashAccount is not null:
-                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.Title, request.CashAccount.AccountType));
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                await repository.CreateAsync(financialAccount, cancellationToken);
-                await dbTransaction.CommitAsync(cancellationToken);
+                goldPriceUnitId = goldPriceUnit.Id;
             }
-            catch (Exception e)
+
+            LocalBankAccount? localAccount = null;
+            InternationalBankAccount? internationalAccount = null;
+            CashAccount? cashAccount = null;
+
+            switch (request.FinancialAccountType)
             {
-                logger.LogError(e, e.Message);
-                await dbTransaction.RollbackAsync(cancellationToken);
-                throw;
+                case FinancialAccountType.LocalBankAccount when request.LocalBankAccount is not null:
+                    localAccount = LocalBankAccount.Create(
+                        request.LocalBankAccount.CardNumber,
+                        request.LocalBankAccount.ShabaNumber,
+                        request.LocalBankAccount.AccountNumber);
+                    break;
+                case FinancialAccountType.InternationalBankAccount when request.InternationalBankAccount is not null:
+                    internationalAccount = InternationalBankAccount.Create(
+                        request.InternationalBankAccount.SwiftBicCode,
+                        request.InternationalBankAccount.IbanNumber,
+                        request.InternationalBankAccount.AccountNumber);
+                    break;
+                case FinancialAccountType.Cash when request.CashAccount is not null:
+                    cashAccount = CashAccount.Create(request.CashAccount.Title, request.CashAccount.AccountType);
+                    break;
+                case FinancialAccountType.Gold:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
+
+            FinancialAccount financialAccount;
+            if (request is { CustomerId: not null, IsSystemAccount: false })
+            {
+                financialAccount = FinancialAccount.CreateCustomerAccount(
+                    request.HolderName,
+                    request.BrokerName,
+                    request.FinancialAccountType,
+                    request.FinancialAccountType is FinancialAccountType.Gold ? goldPriceUnitId : new PriceUnitId(request.PriceUnitId),
+                    new CustomerId(request.CustomerId.Value),
+                    localAccount,
+                    internationalAccount,
+                    cashAccount);
+            }
+            else
+            {
+                var ledgerAccountId = await GetOrCreateSystemLedgerAccountAsync(request, cancellationToken);
+
+                financialAccount = FinancialAccount.CreateSystemAccount(
+                    request.HolderName,
+                    request.BrokerName,
+                    request.FinancialAccountType,
+                    new PriceUnitId(request.PriceUnitId),
+                    ledgerAccountId,
+                    localAccount,
+                    internationalAccount,
+                    cashAccount);
+            }
+
+            await repository.CreateAsync(financialAccount, cancellationToken);
+            await dbTransaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+            await dbTransaction.RollbackAsync(cancellationToken);
+            throw;
         }
     }
 
     public async Task UpdateAsync(Guid id, FinancialAccountRequestDto request, CancellationToken cancellationToken = default)
     {
         await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        try
         {
-            try
+            await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+            var financialAccount = await repository
+                .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(id)))
+                .Include(x => x.LedgerAccount) 
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+            LocalBankAccount? localAccount = null;
+            InternationalBankAccount? internationalAccount = null;
+            CashAccount? cashAccount = null;
+
+            switch (request.FinancialAccountType)
             {
-                await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-                var financialAccount = await repository
-                    .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(id)))
-                    .Include(x => x.PriceUnit)
-                    .Include(x => x.LedgerAccount)
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-                financialAccount.SetAccountType(request.FinancialAccountType);
-                financialAccount.SetHolderName(request.HolderName);
-                financialAccount.SetBrokerName(request.BrokerName);
-                financialAccount.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
-
-                switch (request.FinancialAccountType)
-                {
-                    case FinancialAccountType.LocalBankAccount when request.LocalBankAccount is not null:
-                        financialAccount.SetLocalAccount(LocalBankAccount.Create(
-                            request.LocalBankAccount.CardNumber,
-                            request.LocalBankAccount.ShabaNumber,
-                            request.LocalBankAccount.AccountNumber));
-                        break;
-                    case FinancialAccountType.InternationalBankAccount when request.InternationalBankAccount is not null:
-                        financialAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                            request.InternationalBankAccount.SwiftBicCode,
-                            request.InternationalBankAccount.IbanNumber,
-                            request.InternationalBankAccount.AccountNumber));
-                        break;
-                    case FinancialAccountType.Cash when request.CashAccount is not null:
-                        financialAccount.SetCashAccount(CashAccount.Create(request.CashAccount.Title, request.CashAccount.AccountType));
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                if (financialAccount.IsSystemAccount)
-                {
-                    var ledgerAccount = financialAccount.LedgerAccount;
-
-                    if (ledgerAccount is null)
-                        throw new InvalidOperationException("System financial accounts must have a ledger account.");
-
-                    var priceUnit = await priceUnitRepository
-                        .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
-                        .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Price unit with ID '{request.PriceUnitId}' not found.");
-
-                    switch (request.FinancialAccountType)
-                    {
-                        case FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount:
-
-                            var banksLedgerAccount = await ledgerAccountRepository
-                                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Banks))
-                                .FirstOrDefaultAsync(cancellationToken) 
-                                                     ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.Banks)}' not found.");
-
-                            ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(
-                                request.FinancialAccountType,
-                                request.BrokerName,
-                                request.LocalBankAccount?.AccountNumber ?? request.InternationalBankAccount?.AccountNumber, null));
-
-                            ledgerAccount.SetParentAccount(banksLedgerAccount.Id);
-
-                            break;
-                        case FinancialAccountType.Cash when financialAccount.CashAccount?.AccountType is CashAccountType.Internal:
-                            var cashLedgerAccount = await ledgerAccountRepository
-                                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
-                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.InternalCashAccounts)}' not found.");
-
-                            ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, null, null, priceUnit.Title));
-                            ledgerAccount.SetParentAccount(cashLedgerAccount.Id);
-
-                            break;
-                        case FinancialAccountType.Cash when financialAccount.CashAccount?.AccountType is CashAccountType.DepositsWithOthers:
-                            var depositsLedgerAccount = await ledgerAccountRepository
-                                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.DepositsWithOthers))
-                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.DepositsWithOthers)}' not found.");
-                            
-                            ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, request.BrokerName, null, priceUnit.Title));
-                            ledgerAccount.SetParentAccount(depositsLedgerAccount.Id);
-
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                    // TODO: need to be reviewed
-                    financialAccount.SetLedgerAccount(ledgerAccount.Id);
-
-                    await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
-                }
-                else
-                    financialAccount.SetLedgerAccount(null);
-
-                await repository.UpdateAsync(financialAccount, cancellationToken);
-
-                await dbTransaction.CommitAsync(cancellationToken);
+                case FinancialAccountType.LocalBankAccount when request.LocalBankAccount is not null:
+                    localAccount = LocalBankAccount.Create(
+                        request.LocalBankAccount.CardNumber,
+                        request.LocalBankAccount.ShabaNumber,
+                        request.LocalBankAccount.AccountNumber);
+                    break;
+                case FinancialAccountType.InternationalBankAccount when request.InternationalBankAccount is not null:
+                    internationalAccount = InternationalBankAccount.Create(
+                        request.InternationalBankAccount.SwiftBicCode,
+                        request.InternationalBankAccount.IbanNumber,
+                        request.InternationalBankAccount.AccountNumber);
+                    break;
+                case FinancialAccountType.Cash when request.CashAccount is not null:
+                    cashAccount = CashAccount.Create(request.CashAccount.Title, request.CashAccount.AccountType);
+                    break;
+                case FinancialAccountType.Gold:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            catch (Exception ex)
+
+            // 2. Call the single, consolidated Update method on the entity.
+            financialAccount.Update(
+                request.HolderName,
+                request.BrokerName,
+                request.FinancialAccountType,
+                new PriceUnitId(request.PriceUnitId),
+                localAccount,
+                internationalAccount,
+                cashAccount
+            );
+
+            if (financialAccount.IsSystemAccount)
             {
-                logger.LogError(ex, ex.Message);
-                await dbTransaction.RollbackAsync(cancellationToken);
-                throw;
+                await UpdateSystemLedgerAccountAsync(financialAccount, request, cancellationToken);
             }
+
+            await repository.UpdateAsync(financialAccount, cancellationToken);
+            await dbTransaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, ex.Message);
+            await dbTransaction.RollbackAsync(cancellationToken);
+            throw;
         }
     }
 
@@ -312,6 +288,50 @@ internal class FinancialAccountService(
         }
     }
 
+    private async Task UpdateSystemLedgerAccountAsync(FinancialAccount financialAccount, FinancialAccountRequestDto request, CancellationToken cancellationToken)
+    {
+        var ledgerAccount = financialAccount.LedgerAccount ?? throw new InvalidOperationException("System financial accounts must have a ledger account.");
+
+        var priceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Price unit with ID '{request.PriceUnitId}' not found.");
+
+        switch (request.FinancialAccountType)
+        {
+            case FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount:
+                var banksLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Banks))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.Banks)}' not found.");
+
+                ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(
+                    request.FinancialAccountType,
+                    request.BrokerName,
+                    request.LocalBankAccount?.AccountNumber ?? request.InternationalBankAccount?.AccountNumber, null));
+                ledgerAccount.SetParentAccount(banksLedgerAccount.Id);
+                break;
+
+            case FinancialAccountType.Cash when financialAccount.CashAccount?.AccountType is CashAccountType.Internal:
+                var cashLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.InternalCashAccounts)}' not found.");
+
+                ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, null, null, priceUnit.Title));
+                ledgerAccount.SetParentAccount(cashLedgerAccount.Id);
+                break;
+
+            case FinancialAccountType.Cash when financialAccount.CashAccount?.AccountType is CashAccountType.DepositsWithOthers:
+                var depositsLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.DepositsWithOthers))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.DepositsWithOthers)}' not found.");
+
+                ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, request.BrokerName, null, priceUnit.Title));
+                ledgerAccount.SetParentAccount(depositsLedgerAccount.Id);
+                break;
+        }
+
+        await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
+    }
+
     private async Task<LedgerAccountId> GetOrCreateSystemLedgerAccountAsync(FinancialAccountRequestDto request, CancellationToken cancellationToken)
     {
         LedgerAccount parentLedgerAccount;
@@ -347,6 +367,13 @@ internal class FinancialAccountService(
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.DepositsWithOthers)}' not found.");
 
                 ledgerAccountTitle = LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, request.BrokerName, null, priceUnit.Title);
+                break;
+            case FinancialAccountType.Gold:
+                parentLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.MoltenGoldInventory)}' not found.");
+
+                ledgerAccountTitle = parentLedgerAccount.Title;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

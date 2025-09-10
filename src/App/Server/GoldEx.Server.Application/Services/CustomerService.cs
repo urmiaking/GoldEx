@@ -12,6 +12,7 @@ using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
@@ -115,43 +116,26 @@ internal class CustomerService(
 
                 await repository.CreateAsync(customer, cancellationToken);
 
-                List<FinancialAccount> bankAccounts = [];
-
-                if (request.FinancialAccounts is not null)
+                if (request.FinancialAccounts is not null && request.FinancialAccounts.Any())
                 {
-                    foreach (var financialAccountRequestDto in request.FinancialAccounts)
+                    var financialAccounts = new List<FinancialAccount>();
+                    foreach (var dto in request.FinancialAccounts)
                     {
+                        var (localAccount, internationalAccount, cashAccount) = CreateAccountDetailsFromDto(dto);
+
                         var bankAccount = FinancialAccount.CreateCustomerAccount(
-                            financialAccountRequestDto.HolderName,
-                            financialAccountRequestDto.BrokerName,
-                            financialAccountRequestDto.FinancialAccountType,
-                            new PriceUnitId(financialAccountRequestDto.PriceUnitId),
-                            customer.Id);
+                            dto.HolderName,
+                            dto.BrokerName,
+                            dto.FinancialAccountType,
+                            new PriceUnitId(dto.PriceUnitId),
+                            customer.Id,
+                            localAccount,
+                            internationalAccount,
+                            cashAccount);
 
-                        switch (bankAccount.AccountType)
-                        {
-                            case FinancialAccountType.InternationalBankAccount when financialAccountRequestDto.InternationalBankAccount is not null:
-                                bankAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                                    financialAccountRequestDto.InternationalBankAccount.SwiftBicCode,
-                                    financialAccountRequestDto.InternationalBankAccount.IbanNumber,
-                                    financialAccountRequestDto.InternationalBankAccount.AccountNumber));
-                                break;
-                            case FinancialAccountType.LocalBankAccount when financialAccountRequestDto.LocalBankAccount is not null:
-                                bankAccount.SetLocalAccount(LocalBankAccount.Create(
-                                    financialAccountRequestDto.LocalBankAccount.CardNumber,
-                                    financialAccountRequestDto.LocalBankAccount.ShabaNumber,
-                                    financialAccountRequestDto.LocalBankAccount.AccountNumber));
-                                break;
-                            case FinancialAccountType.Cash:
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        bankAccounts.Add(bankAccount);
+                        financialAccounts.Add(bankAccount);
                     }
-
-                    await financialAccountRepository.CreateRangeAsync(bankAccounts, cancellationToken);
+                    await financialAccountRepository.CreateRangeAsync(financialAccounts, cancellationToken);
                 }
 
                 await dbTransaction.CommitAsync(cancellationToken);
@@ -192,101 +176,10 @@ internal class CustomerService(
                         ? new PriceUnitId(request.CreditLimitPriceUnitId.Value)
                         : null);
 
-                if (request.FinancialAccounts is not null)
-                {
-                    var existingFinancialAccounts = customer.FinancialAccounts?.ToList() ?? [];
-                    // Remove financial accounts that are not in the request
-                    foreach (var existingAccount in existingFinancialAccounts)
-                    {
-                        if (request.FinancialAccounts.All(x => x.Id != existingAccount.Id.Value))
-                        {
-                            await financialAccountRepository.DeleteAsync(existingAccount, cancellationToken);
-                        }
-                    }
+                if (request.FinancialAccounts is not null) 
+                    await SyncFinancialAccounts(customer, request.FinancialAccounts, cancellationToken);
 
-                    // Update or add new financial accounts
-                    foreach (var bankAccountRequest in request.FinancialAccounts)
-                    {
-                        var existingAccount =
-                            existingFinancialAccounts.FirstOrDefault(x => x.Id.Value == bankAccountRequest.Id);
-                        if (existingAccount is not null)
-                        {
-                            existingAccount.SetAccountType(bankAccountRequest.FinancialAccountType);
-                            existingAccount.SetBrokerName(bankAccountRequest.BrokerName);
-                            existingAccount.SetHolderName(bankAccountRequest.HolderName);
-                            existingAccount.SetPriceUnitId(new PriceUnitId(bankAccountRequest.PriceUnitId));
-
-                            switch (existingAccount.AccountType)
-                            {
-                                case FinancialAccountType.InternationalBankAccount when bankAccountRequest.InternationalBankAccount is not null:
-                                    existingAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                                        bankAccountRequest.InternationalBankAccount.SwiftBicCode,
-                                        bankAccountRequest.InternationalBankAccount.IbanNumber,
-                                        bankAccountRequest.InternationalBankAccount.AccountNumber));
-                                    break;
-                                case FinancialAccountType.LocalBankAccount when bankAccountRequest.LocalBankAccount is not null:
-                                    existingAccount.SetLocalAccount(LocalBankAccount.Create(
-                                        bankAccountRequest.LocalBankAccount.CardNumber,
-                                        bankAccountRequest.LocalBankAccount.ShabaNumber,
-                                        bankAccountRequest.LocalBankAccount.AccountNumber));
-                                    break;
-                                case FinancialAccountType.Cash:
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-
-                            await financialAccountRepository.UpdateAsync(existingAccount, cancellationToken);
-                        }
-                        else
-                        {
-                            var newBankAccount = FinancialAccount.CreateCustomerAccount(
-                                bankAccountRequest.HolderName,
-                                bankAccountRequest.BrokerName,
-                                bankAccountRequest.FinancialAccountType,
-                                new PriceUnitId(bankAccountRequest.PriceUnitId),
-                                customer.Id);
-
-                            switch (bankAccountRequest.FinancialAccountType)
-                            {
-                                case FinancialAccountType.InternationalBankAccount when
-                                    bankAccountRequest.InternationalBankAccount is not null:
-                                    newBankAccount.SetInternationalAccount(InternationalBankAccount.Create(
-                                        bankAccountRequest.InternationalBankAccount.SwiftBicCode,
-                                        bankAccountRequest.InternationalBankAccount.IbanNumber,
-                                        bankAccountRequest.InternationalBankAccount.AccountNumber));
-                                    break;
-                                case FinancialAccountType.LocalBankAccount when
-                                    bankAccountRequest.LocalBankAccount is not null:
-                                    newBankAccount.SetLocalAccount(LocalBankAccount.Create(
-                                        bankAccountRequest.LocalBankAccount.CardNumber,
-                                        bankAccountRequest.LocalBankAccount.ShabaNumber,
-                                        bankAccountRequest.LocalBankAccount.AccountNumber));
-                                    break;
-                                case FinancialAccountType.Cash:
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-
-                            await financialAccountRepository.CreateAsync(newBankAccount, cancellationToken);
-                        }
-                    }
-                }
-
-                var ledgerAccounts = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerIdSpecification(customer.Id))
-                    .ToListAsync(cancellationToken);
-
-                if (ledgerAccounts.Any())
-                {
-                    foreach (var ledgerAccount in ledgerAccounts)
-                    {
-                        ledgerAccount.SetTitle(ledgerAccount.Title.Replace(customerOldName, customer.FullName,
-                            StringComparison.OrdinalIgnoreCase));
-                        await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
-                    }
-                }
+                await SyncLedgerAccountTitles(customer, customerOldName, cancellationToken);
 
                 await repository.UpdateAsync(customer, cancellationToken);
 
@@ -338,6 +231,99 @@ internal class CustomerService(
                 logger.LogError(e, e.Message);
                 await dbTransaction.RollbackAsync(cancellationToken);
                 throw;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Synchronizes the customer's financial accounts based on the request.
+    /// </summary>
+    private async Task SyncFinancialAccounts(Customer customer, List<FinancialAccountRequestDto> accountRequests, CancellationToken cancellationToken)
+    {
+        var existingAccounts = customer.FinancialAccounts?.ToList() ?? [];
+        var accountsToRemove = existingAccounts.Where(e => accountRequests.All(r => r.Id != e.Id.Value)).ToList();
+
+        if (accountsToRemove.Any()) 
+            await financialAccountRepository.DeleteRangeAsync(accountsToRemove, cancellationToken);
+
+        foreach (var request in accountRequests)
+        {
+            var existingAccount = existingAccounts.FirstOrDefault(e => e.Id.Value == request.Id);
+            var (localAccount, internationalAccount, cashAccount) = CreateAccountDetailsFromDto(request);
+
+            if (existingAccount is not null)
+            {
+                existingAccount.Update(
+                    request.HolderName,
+                    request.BrokerName,
+                    request.FinancialAccountType,
+                    new PriceUnitId(request.PriceUnitId),
+                    localAccount,
+                    internationalAccount,
+                    cashAccount);
+
+                await financialAccountRepository.UpdateAsync(existingAccount, cancellationToken);
+            }
+            else
+            {
+                var newAccount = FinancialAccount.CreateCustomerAccount(
+                    request.HolderName,
+                    request.BrokerName,
+                    request.FinancialAccountType,
+                    new PriceUnitId(request.PriceUnitId),
+                    customer.Id,
+                    localAccount,
+                    internationalAccount,
+                    cashAccount);
+
+                await financialAccountRepository.CreateAsync(newAccount, cancellationToken);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates the appropriate account detail value object based on the DTO.
+    /// </summary>
+    private (LocalBankAccount?, InternationalBankAccount?, CashAccount?) CreateAccountDetailsFromDto(FinancialAccountRequestDto request)
+    {
+        switch (request.FinancialAccountType)
+        {
+            case FinancialAccountType.LocalBankAccount when request.LocalBankAccount is not null:
+                return (LocalBankAccount.Create(
+                    request.LocalBankAccount.CardNumber,
+                    request.LocalBankAccount.ShabaNumber,
+                    request.LocalBankAccount.AccountNumber), null, null);
+
+            case FinancialAccountType.InternationalBankAccount when request.InternationalBankAccount is not null:
+                return (null, InternationalBankAccount.Create(
+                    request.InternationalBankAccount.SwiftBicCode,
+                    request.InternationalBankAccount.IbanNumber,
+                    request.InternationalBankAccount.AccountNumber), null);
+
+            case FinancialAccountType.Cash when request.CashAccount is not null:
+                return (null, null, CashAccount.Create(
+                    request.CashAccount.Title,
+                    request.CashAccount.AccountType));
+
+            default:
+                return (null, null, null);
+        }
+    }
+
+    // Placeholder for your existing ledger sync logic
+    private async Task SyncLedgerAccountTitles(Customer customer, string oldName, CancellationToken cancellationToken)
+    {
+        var ledgerAccounts = await ledgerAccountRepository
+            .Get(new LedgerAccountsByCustomerIdSpecification(customer.Id))
+            .ToListAsync(cancellationToken);
+
+        if (ledgerAccounts.Any())
+        {
+            foreach (var ledgerAccount in ledgerAccounts)
+            {
+                ledgerAccount.SetTitle(ledgerAccount.Title.Replace(oldName, customer.FullName,
+                    StringComparison.OrdinalIgnoreCase));
+                await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
             }
         }
     }

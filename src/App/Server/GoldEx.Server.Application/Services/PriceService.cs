@@ -1,19 +1,24 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Application.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Coins;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
@@ -21,6 +26,7 @@ using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -30,6 +36,8 @@ internal class PriceService(
     IPriceUnitRepository priceUnitRepository,
     ISettingRepository settingRepository,
     ICoinService coinService,
+    IFinancialAccountRepository financialAccountRepository,
+    ILedgerAccountRepository ledgerAccountRepository,
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment) : IServerPriceService,
@@ -122,8 +130,38 @@ internal class PriceService(
             {
                 var coinPrices = pricesToCreate.Where(x => x.MarketType is MarketType.Coin).ToList();
 
-                foreach (var coinPrice in coinPrices) 
+                foreach (var coinPrice in coinPrices)
                     await coinService.CreateAsync(new CoinRequestDto(null, coinPrice.Title, coinPrice.Id.Value), cancellationToken);
+            }
+
+            var goldAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold, true), cancellationToken);
+
+            if (!goldAccountExists)
+            {
+                var goldPriceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Gold price unit is not initialized");
+
+                var inventoryLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Molten Gold Inventory ledger account is not initialized");
+
+                var goldAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Gold, goldPriceUnit.Id, inventoryLedgerAccount.Id);
+                await financialAccountRepository.CreateAsync(goldAccount, cancellationToken);
+            }
+
+            var cashAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash, true), cancellationToken);
+
+            if (!cashAccountExists)
+            {
+                var irrPriceUnit = await priceUnitRepository.Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName()))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("IRR price unit is not initialized");
+
+                var internalCashLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Internal Cash Accounts ledger account is not initialized");
+
+                var cashAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Cash, irrPriceUnit.Id, internalCashLedgerAccount.Id,
+                    cashAccount: CashAccount.Create(null, CashAccountType.Internal));
+
+                await financialAccountRepository.CreateAsync(cashAccount, cancellationToken);
             }
         }
 

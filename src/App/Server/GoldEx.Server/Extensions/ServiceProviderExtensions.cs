@@ -15,8 +15,12 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.PriceUnits;
 
@@ -106,6 +110,7 @@ public static class ServiceProviderExtensions
         await GetOrCreateAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.MoltenGoldInventory, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.DepositsWithOthers, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.LoansToOthers, LedgerAccountType.Asset, currentAssets);

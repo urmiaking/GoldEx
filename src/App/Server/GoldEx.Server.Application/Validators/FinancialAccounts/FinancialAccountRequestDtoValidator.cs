@@ -4,6 +4,7 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
@@ -15,75 +16,114 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
 {
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly ICustomerRepository _customerRepository;
+    private readonly IFinancialAccountRepository _repository;
 
-    public FinancialAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository, ICustomerRepository customerRepository)
+    public FinancialAccountRequestDtoValidator(IPriceUnitRepository priceUnitRepository, ICustomerRepository customerRepository, IFinancialAccountRepository repository)
     {
         _priceUnitRepository = priceUnitRepository;
         _customerRepository = customerRepository;
+        _repository = repository;
 
         RuleFor(x => x.FinancialAccountType)
             .IsInEnum().WithMessage("نوع حساب بانکی نامعتبر است");
 
         RuleFor(x => x.PriceUnitId)
-            .MustAsync(BeValidPriceUnitId)
-            .WithMessage("واحد ارزی نامعتبر است");
+            .MustAsync(BeValidPriceUnitId).WithMessage("واحد ارزی نامعتبر است");
 
-        RuleFor(x => x.HolderName)
-            .MaximumLength(100).WithMessage("حداکثر طول نام صاحب حساب 100 کاراکتر می باشد");
+        RuleFor(x => x.CustomerId)
+            .MustAsync(BeValidCustomer).WithMessage("شناسه مشتری نامعتبر است");
 
-        RuleFor(x => x.BrokerName)
-            .MaximumLength(100).WithMessage("حداکثر طول نام بانک/کارگزاری 100 کاراکتر می باشد");
+        RuleFor(x => x.LocalBankAccount)
+            .NotNull().WithMessage("اطلاعات حساب بانکی داخلی الزامی است.")
+            .When(x => x.FinancialAccountType == FinancialAccountType.LocalBankAccount);
 
-        When(x => x.FinancialAccountType is FinancialAccountType.LocalBankAccount && x.LocalBankAccount is not null, () =>
-        {
-            RuleFor(x => x.LocalBankAccount!.CardNumber)
-                .MaximumLength(20).WithMessage("حداکثر طول شماره کارت 20 کاراکتر می باشد");
-            RuleFor(x => x.LocalBankAccount!.ShabaNumber)
-                .MaximumLength(26).WithMessage("حداکثر طول شماره شبا 26 کاراکتر می باشد");
-            RuleFor(x => x.LocalBankAccount!.AccountNumber)
-                .NotEmpty().WithMessage("شماره حساب نباید خالی باشد")
-                .MaximumLength(30).WithMessage("حداکثر طول شماره حساب 30 کاراکتر می باشد");
-        });
+        RuleFor(x => x.InternationalBankAccount)
+            .NotNull().WithMessage("اطلاعات حساب بانکی بین المللی الزامی است.")
+            .When(x => x.FinancialAccountType == FinancialAccountType.InternationalBankAccount);
 
-        When(x => x.FinancialAccountType is FinancialAccountType.InternationalBankAccount && x.InternationalBankAccount is not null, () =>
-        {
-            RuleFor(x => x.InternationalBankAccount!.SwiftBicCode)
-                .MaximumLength(11).WithMessage("حداکثر طول کد سوئیفت 11 کاراکتر می باشد");
-            RuleFor(x => x.InternationalBankAccount!.IbanNumber)
-                .MaximumLength(34).WithMessage("حداکثر طول شماره IBAN 34 کاراکتر می باشد");
-            RuleFor(x => x.InternationalBankAccount!.AccountNumber)
-                .NotEmpty().WithMessage("شماره حساب بین المللی نباید خالی باشد")
-                .MaximumLength(30).WithMessage("حداکثر طول شماره حساب بین المللی 30 کاراکتر می باشد");
-        });
-
-        When(x => x.CustomerId.HasValue, () =>
-        {
-            RuleFor(x => x.CustomerId)
-                .MustAsync(BeValidCustomer)
-                .WithMessage("شناسه مشتری نامعتبر است");
-        });
-
-        When(x => x.CashAccount?.AccountType != CashAccountType.Internal, () =>
+        When(x => x.FinancialAccountType != FinancialAccountType.Gold, () =>
         {
             RuleFor(x => x.HolderName)
-                .NotEmpty().WithMessage("نام صاحب حساب برای حساب های سپرده نزد دیگران الزامی است");
+                .NotEmpty()
+                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash && dto.CashAccount?.AccountType != CashAccountType.Internal
+                    ? "نام صاحب حساب برای حساب های سپرده نزد دیگران الزامی است"
+                    : "نام صاحب حساب نباید خالی باشد.")
+                .MaximumLength(100).WithMessage("نام صاحب حساب نباید بیشتر از 100 کاراکتر باشد.");
+
             RuleFor(x => x.BrokerName)
-                .NotEmpty().WithMessage("نام بانک/کارگزار برای حساب های سپرده نزد دیگران الزامی است");
+                .NotEmpty()
+                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash && dto.CashAccount?.AccountType != CashAccountType.Internal
+                    ? "نام بانک/کارگزار برای حساب های سپرده نزد دیگران الزامی است"
+                    : "نام بانک/کارگزار نباید خالی باشد.")
+                .MaximumLength(100).WithMessage("نام بانک/کارگزار نباید بیشتر از 100 کاراکتر باشد.");
         });
 
-        // TODO: Add validation for unique accounts for system and customer accounts
+        When(x => x.IsSystemAccount && x.FinancialAccountType is FinancialAccountType.Gold, () =>
+        {
+            RuleFor(x => x)
+                .MustAsync(BeUniqueGoldAccount)
+                .WithMessage("تنها یک حساب طلایی سیستمی می تواند وجود داشته باشد.");
+        });
+
+        RuleFor(x => x.LocalBankAccount)
+            .SetValidator(new LocalBankAccountRequestDtoValidator()!)
+            .When(x => x.FinancialAccountType == FinancialAccountType.LocalBankAccount && x.LocalBankAccount is not null);
+
+        RuleFor(x => x.InternationalBankAccount)
+            .SetValidator(new InternationalBankAccountRequestDtoValidator()!)
+            .When(x => x.FinancialAccountType == FinancialAccountType.InternationalBankAccount && x.InternationalBankAccount is not null);
     }
 
-    private async Task<bool> BeValidPriceUnitId(Guid priceUnitId, CancellationToken cancellationToken = default)
+    private async Task<bool> BeUniqueGoldAccount(FinancialAccountRequestDto request, CancellationToken cancellationToken = default)
+    {
+        if (!request.IsSystemAccount)
+            return true;
+
+        return !await _repository.ExistsAsync(new FinancialAccountsByTypeSpecification(request.FinancialAccountType, true), cancellationToken);
+    }
+
+    private async Task<bool> BeValidPriceUnitId(Guid priceUnitId, CancellationToken cancellationToken)
     {
         return await _priceUnitRepository.ExistsAsync(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId)), cancellationToken);
     }
-    
-    private async Task<bool> BeValidCustomer(Guid? customerId, CancellationToken cancellationToken = default)
+
+    private async Task<bool> BeValidCustomer(Guid? customerId, CancellationToken cancellationToken)
     {
         if (!customerId.HasValue)
-            return false;
+            return true;
 
-        return await _customerRepository.ExistsAsync(new CustomersByIdSpecification(new CustomerId(customerId.Value)), cancellationToken);
+        return await _customerRepository.ExistsAsync(new CustomersByIdSpecification(new CustomerId(customerId!.Value)), cancellationToken);
+    }
+}
+
+public class LocalBankAccountRequestDtoValidator : AbstractValidator<LocalBankAccountRequestDto>
+{
+    public LocalBankAccountRequestDtoValidator()
+    {
+        RuleFor(x => x.AccountNumber)
+            .NotEmpty().WithMessage("شماره حساب نباید خالی باشد")
+            .MaximumLength(30).WithMessage("حداکثر طول شماره حساب 30 کاراکتر می باشد");
+
+        RuleFor(x => x.CardNumber)
+            .MaximumLength(20).WithMessage("حداکثر طول شماره کارت 20 کاراکتر می باشد");
+
+        RuleFor(x => x.ShabaNumber)
+            .MaximumLength(26).WithMessage("حداکثر طول شماره شبا 26 کاراکتر می باشد");
+    }
+}
+
+public class InternationalBankAccountRequestDtoValidator : AbstractValidator<InternationalBankAccountRequestDto>
+{
+    public InternationalBankAccountRequestDtoValidator()
+    {
+        RuleFor(x => x.AccountNumber)
+            .NotEmpty().WithMessage("شماره حساب بین المللی نباید خالی باشد")
+            .MaximumLength(30).WithMessage("حداکثر طول شماره حساب بین المللی 30 کاراکتر می باشد");
+
+        RuleFor(x => x.SwiftBicCode)
+            .MaximumLength(11).WithMessage("حداکثر طول کد سوئیفت 11 کاراکتر می باشد");
+
+        RuleFor(x => x.IbanNumber)
+            .MaximumLength(34).WithMessage("حداکثر طول شماره IBAN 34 کاراکتر می باشد");
     }
 }
