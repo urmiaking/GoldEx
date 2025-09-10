@@ -1,11 +1,17 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.LedgerAccounts;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -17,9 +23,12 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class LedgerAccountService(
     ILedgerAccountRepository repository,
+    ICustomerRepository customerRepository,
+    IPriceUnitRepository priceUnitRepository,
+    ILedgerAccountRepository ledgerAccountRepository,
     IMapper mapper,
     LedgerAccountRequestDtoValidator validator,
-    DeleteLedgerAccountValidator deleteValidator) : ILedgerAccountService
+    DeleteLedgerAccountValidator deleteValidator) : ILedgerAccountService, IServerLedgerAccountService
 {
     public async Task<List<GetLedgerAccountResponse>> GetListAsync(Guid? customerId, CancellationToken cancellationToken = default)
     {
@@ -51,17 +60,8 @@ internal class LedgerAccountService(
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var ledgerAccount = request.IsSystemAccount
-            ? LedgerAccount.CreateSystemAccount(request.Title, request.AccountType, request.ParentAccountId.HasValue
-                ? new LedgerAccountId(request.ParentAccountId.Value)
-                : null)
-            :
-            LedgerAccount.CreateCustomerAccount(request.Title,
-                new CustomerId(request.CustomerId!.Value),
-                request.AccountType,
-                request.ParentAccountId.HasValue
-                    ? new LedgerAccountId(request.ParentAccountId.Value)
-                    : null);
+        var ledgerAccount = LedgerAccount.CreateSystemAccount(request.Title, request.AccountType,
+            request.ParentAccountId.HasValue ? new LedgerAccountId(request.ParentAccountId.Value) : null);
 
         await repository.CreateAsync(ledgerAccount, cancellationToken);
     }
@@ -88,5 +88,44 @@ internal class LedgerAccountService(
         await deleteValidator.ValidateAndThrowAsync(ledgerAccount, cancellationToken);
 
         await repository.DeleteAsync(ledgerAccount, cancellationToken);
+    }
+
+    public async Task<LedgerAccount> GetOrCreateCustomerSubLedgerAsync(CustomerId customerId, PriceUnitId priceUnitId, LedgerAccountRole role,
+        CancellationToken cancellationToken = default)
+    {
+        var parentTitle = (role == LedgerAccountRole.Receivable)
+            ? SystemLedgerAccounts.AccountsReceivable
+            : SystemLedgerAccounts.AccountsPayable;
+
+        var parentLedger = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(parentTitle))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Parent ledger '{parentTitle}' not found.");
+
+        var existingLedger = await ledgerAccountRepository
+            .Get(new LedgerAccountByCustomerAndUnitSpecification(customerId, parentLedger.Id, priceUnitId))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingLedger is not null)
+        {
+            return existingLedger;
+        }
+
+        var customer = await customerRepository.Get(new CustomersByIdSpecification(customerId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Customer {customerId.Value} not found");
+
+        var priceUnit = await priceUnitRepository.Get(new PriceUnitsByIdSpecification(priceUnitId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Price unit {priceUnitId.Value} not found");
+
+        var ledgerTitle = LedgerAccountTitleBuilder.ForCustomer(parentTitle, customer.FullName, customer.NationalId, priceUnit.Title);
+
+        var newLedger = LedgerAccount.CreateCustomerAccount(
+            ledgerTitle,
+            customerId,
+            priceUnitId,
+            parentLedger.AccountType,
+            parentLedger.Id);
+
+        await ledgerAccountRepository.CreateAsync(newLedger, cancellationToken);
+
+        return newLedger;
     }
 }

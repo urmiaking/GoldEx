@@ -95,7 +95,7 @@ internal class CoinService(ICoinRepository repository,
                 LastUpdate: basePriceInRial.PriceHistory.LastUpdate,
                 HasIcon: false,
                 Type: basePriceInRial.MarketType,
-                UnitType: basePriceInRial.UnitType
+                UnitType: basePriceInRial.PriceUnit?.UnitType
             );
         }
 

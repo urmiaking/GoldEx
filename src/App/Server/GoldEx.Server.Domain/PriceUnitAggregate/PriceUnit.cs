@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.PriceUnitAggregate;
 
@@ -9,7 +9,7 @@ public class PriceUnit : EntityBase<PriceUnitId>
 {
     public static PriceUnit Create(
         string title,
-        LedgerAccountId ledgerAccountId,
+        UnitType? unitType,
         bool isDefault = false,
         PriceId? priceId = null)
     {
@@ -17,8 +17,8 @@ public class PriceUnit : EntityBase<PriceUnitId>
         {
             Id = new PriceUnitId(Guid.NewGuid()),
             Title = title,
-            LedgerAccountId = ledgerAccountId,
             PriceId = priceId,
+            UnitType = unitType,
             IsActive = true,
             IsDefault = isDefault
         };
@@ -31,12 +31,10 @@ public class PriceUnit : EntityBase<PriceUnitId>
     public string Title { get; private set; }
     public bool IsActive { get; private set; } = true;
     public bool IsDefault { get; private set; }
+    public UnitType? UnitType { get; private set; }
 
     public PriceId? PriceId { get; private set; }
     public Price? Price { get; private set; }
-
-    public LedgerAccount? LedgerAccount { get; private set; }
-    public LedgerAccountId LedgerAccountId { get; private set; }
 
     public void SetTitle(string title) => Title = title;
     public void SetPriceId(PriceId? priceId) => PriceId = priceId;

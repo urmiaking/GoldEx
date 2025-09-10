@@ -8,6 +8,8 @@ public class PricesByMarketTypeSpecification : SpecificationBase<Price>
 {
     public PricesByMarketTypeSpecification(MarketType marketType)
     {
+        AddInclude(x => x.PriceUnit!);
+
         AddCriteria(x => x.MarketType == marketType);
         ApplyOrderBy(x => x.Title);
     }

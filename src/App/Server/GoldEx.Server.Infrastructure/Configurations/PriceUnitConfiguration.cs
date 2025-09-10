@@ -19,13 +19,8 @@ internal class PriceUnitConfiguration : IEntityTypeConfiguration<PriceUnit>
             .HasMaxLength(100);
 
         builder.HasOne(x => x.Price)
-            .WithOne()
+            .WithOne(x => x.PriceUnit)
             .HasForeignKey<PriceUnit>(x => x.PriceId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(x => x.LedgerAccount)
-            .WithMany()
-            .HasForeignKey(x => x.LedgerAccountId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

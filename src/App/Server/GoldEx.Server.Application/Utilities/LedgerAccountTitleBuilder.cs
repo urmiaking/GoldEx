@@ -10,6 +10,11 @@ public static class LedgerAccountTitleBuilder
         return $"{SystemLedgerAccounts.CashAccounts} - {priceUnitTitle}";
     }
 
+    public static string ForCurrencyInternalAccount(string priceUnitTitle)
+    {
+        return $"{SystemLedgerAccounts.InternalCashAccounts} - {priceUnitTitle}";
+    }
+
     public static string ForCoinAccount(string coinTitle)
     {
         return $"{SystemLedgerAccounts.CoinInventory} - {coinTitle}";
@@ -36,5 +41,10 @@ public static class LedgerAccountTitleBuilder
                 _ => throw new ArgumentOutOfRangeException(nameof(accountType), "Unknown financial account type")
             }
         };
+    }
+
+    public static string ForCustomer(string parentTitle, string customerName, string nationalId, string priceUnitTitle)
+    {
+        return $"{parentTitle} - {customerName} ({nationalId}) - {priceUnitTitle}";
     }
 }

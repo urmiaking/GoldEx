@@ -12,6 +12,7 @@ public class PricesMappingConfig : IRegister
         config.NewConfig<Price, GetPriceResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.UnitType, src => src.PriceUnit != null ? src.PriceUnit!.UnitType : null)
             .Map(dest => dest.Value,
                 src => src.PriceHistory != null ? src.PriceHistory.CurrentValue.ToString("N0") : "-")
             .Map(dest => dest.Change, src => src.PriceHistory != null ? src.PriceHistory.DailyChangeRate : "-")

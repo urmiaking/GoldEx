@@ -18,6 +18,7 @@ using System.Security.Claims;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
@@ -155,23 +156,21 @@ public static class ServiceProviderExtensions
 
     private static async Task PopulateDefaultPriceUnitsAsync(IServiceProvider serviceProvider)
     {
-        var priceUnitService = serviceProvider.GetRequiredService<IPriceUnitService>();
+        var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
 
-        var priceUnits = await priceUnitService.GetAllAsync();
+        var priceUnitsExists = await priceUnitRepository.ExistsAsync(new PriceUnitsWithoutSpecification());
 
-        if (!priceUnits.Any())
-            foreach (var unitType in Enum.GetValues<UnitType>()) 
-                await priceUnitService.CreateAsync(new CreatePriceUnitRequest(unitType.GetDisplayName(), null, null));
+        if (priceUnitsExists)
+            return;
 
-        var defaultPriceUnit = priceUnits.FirstOrDefault(x => x.IsDefault);
+        var priceUnitsToCreate = Enum.GetValues<UnitType>()
+            .Select(unitType => PriceUnit.Create(
+                unitType.GetDisplayName(),
+                unitType,
+                unitType == UnitType.IRR))
+            .ToList();
 
-        if (defaultPriceUnit is null)
-        {
-            var irrUnit = priceUnits.FirstOrDefault(x => x.Title == UnitType.IRR.GetDisplayName());
-
-            if (irrUnit is not null) 
-                await priceUnitService.SetAsDefaultAsync(irrUnit.Id);
-        }
+        await priceUnitRepository.CreateRangeAsync(priceUnitsToCreate);
     }
 
     private static async Task PopulateAdministratorClaimsAsync(IEnumerable<IApplicationPolicyProvider> policyProviders, IAccountService accountService)

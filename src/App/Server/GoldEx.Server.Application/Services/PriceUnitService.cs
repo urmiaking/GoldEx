@@ -96,34 +96,28 @@ internal class PriceUnitService(
             {
                 await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-                var cashLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CashAccounts))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Cash ledger account not found");
+                var parentLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"'{SystemLedgerAccounts.InternalCashAccounts}' ledger account not found.");
 
-                var requestedPriceUnitLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCurrencyAccount(request.Title)))
+                var currencyLedgerTitle = LedgerAccountTitleBuilder.ForCurrencyInternalAccount(request.Title);
+
+                var existingLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(currencyLedgerTitle))
                     .FirstOrDefaultAsync(cancellationToken);
 
-                LedgerAccountId ledgerAccountId;
-
-                if (requestedPriceUnitLedgerAccount is not null)
+                if (existingLedgerAccount is null)
                 {
-                    ledgerAccountId = requestedPriceUnitLedgerAccount.Id;
-                }
-                else
-                {
-                    var priceUnitLedgerAccount = LedgerAccount.CreateSystemAccount(
-                        LedgerAccountTitleBuilder.ForCurrencyAccount(request.Title),
+                    var newLedgerAccount = LedgerAccount.CreateSystemAccount(
+                        currencyLedgerTitle,
                         LedgerAccountType.Asset,
-                        cashLedgerAccount.Id);
+                        parentLedgerAccount.Id);
 
-                    await ledgerAccountRepository.CreateAsync(priceUnitLedgerAccount, cancellationToken);
-
-                    ledgerAccountId = priceUnitLedgerAccount.Id;
+                    await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
                 }
 
                 var item = PriceUnit.Create(request.Title,
-                    ledgerAccountId,
+                    null,
                     false,
                     request.PriceId.HasValue
                         ? new PriceId(request.PriceId.Value)
@@ -154,26 +148,31 @@ internal class PriceUnitService(
             {
                 await updateValidator.ValidateAndThrowAsync((id, request), cancellationToken);
 
-                var item = await repository
+                var priceUnit = await repository
                     .Get(new PriceUnitsByIdSpecification(new PriceUnitId(id)))
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                item.SetTitle(request.Title);
-                item.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                var oldTitle = priceUnit.Title;
 
-                await repository.UpdateAsync(item, cancellationToken);
+                priceUnit.SetTitle(request.Title);
+                priceUnit.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                await repository.UpdateAsync(priceUnit, cancellationToken);
 
-                var priceUnitLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByIdSpecification(item.LedgerAccountId))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+                var oldLedgerTitle = LedgerAccountTitleBuilder.ForCurrencyAccount(oldTitle);
+                var ledgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(oldLedgerTitle))
+                    .FirstOrDefaultAsync(cancellationToken);
 
-                priceUnitLedgerAccount.SetTitle(LedgerAccountTitleBuilder.ForCurrencyAccount(item.Title));
-
-                await ledgerAccountRepository.UpdateAsync(priceUnitLedgerAccount, cancellationToken);
+                if (ledgerAccount is not null)
+                {
+                    var newLedgerTitle = LedgerAccountTitleBuilder.ForCurrencyAccount(request.Title);
+                    ledgerAccount.SetTitle(newLedgerTitle);
+                    await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
+                }
 
                 if (request.IconContent is not null)
                     await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetPriceUnitIconPath(
-                        item.Id.Value, null), request.IconContent, cancellationToken);
+                        priceUnit.Id.Value, null), request.IconContent, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }

@@ -27,9 +27,7 @@ public class LedgerAccountVm
         return new LedgerAccountRequestDto(
             Id: model.Id,
             Title: model.Title ?? string.Empty,
-            IsSystemAccount: true, 
             AccountType: model.AccountType ?? LedgerAccountType.Asset,
-            CustomerId: null,
             ParentAccountId: model.ParentAccountId);
     }
 

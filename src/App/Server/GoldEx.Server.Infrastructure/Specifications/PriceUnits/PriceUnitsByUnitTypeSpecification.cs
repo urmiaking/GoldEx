@@ -8,6 +8,6 @@ public class PriceUnitsByUnitTypeSpecification : SpecificationBase<PriceUnit>
 {
     public PriceUnitsByUnitTypeSpecification(UnitType unitType)
     {
-        AddCriteria(x => x.Price!.UnitType == unitType);
+        AddCriteria(x => x.UnitType == unitType);
     }
 }
