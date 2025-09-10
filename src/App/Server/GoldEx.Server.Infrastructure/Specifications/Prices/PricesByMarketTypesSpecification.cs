@@ -8,6 +8,8 @@ public class PricesByMarketTypesSpecification : SpecificationBase<Price>
 {
     public PricesByMarketTypesSpecification(MarketType[] marketTypes)
     {
+        AddInclude(x => x.PriceUnit!);
+
         AddCriteria(x => marketTypes.Contains(x.MarketType));
     }
 }

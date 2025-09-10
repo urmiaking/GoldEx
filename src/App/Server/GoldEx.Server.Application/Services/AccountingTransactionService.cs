@@ -28,7 +28,8 @@ internal class AccountingTransactionService(
     IInvoiceRepository invoiceRepository,
     IPriceUnitRepository priceUnitRepository,
     IFinancialAccountRepository financialAccountRepository,
-    ILedgerAccountRepository ledgerAccountRepository) : IAccountingTransactionService
+    ILedgerAccountRepository ledgerAccountRepository,
+    IServerLedgerAccountService ledgerAccountService) : IAccountingTransactionService
 {
     public async Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
@@ -38,9 +39,8 @@ internal class AccountingTransactionService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Customer {invoice.CustomerId.Value} not found.");
 
         var basePriceUnit = await priceUnitRepository
-                                .Get(new PriceUnitsSetAsDefaultSpecification())
-                                .FirstOrDefaultAsync(cancellationToken) ??
-                            throw new NotFoundException("Default price unit not found.");
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
 
         var transactions = new List<Transaction>();
         if (invoice.TotalAmountWithDiscountsAndExtraCosts != 0)
@@ -50,29 +50,18 @@ internal class AccountingTransactionService(
             {
                 case InvoiceType.Sell:
                     {
-                        var customerLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                                                     invoice.CustomerId,
-                                                     SystemLedgerAccounts.AccountsReceivable))
-                                                 .FirstOrDefaultAsync(cancellationToken) ??
-                                             throw new NotFoundException(
-                                                 $"Customer {invoice.CustomerId.Value} ledger account not found.");
+                        var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
+                            invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
+
                         var salesRevenueLedger = await ledgerAccountRepository
-                                                     .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                         .SalesRevenue))
-                                                     .FirstOrDefaultAsync(cancellationToken) ??
-                                                 throw new NotFoundException("Sales Revenue ledger account not found.");
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.SalesRevenue))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Sales Revenue ledger account not found.");
                         var discountsLedger = await ledgerAccountRepository
-                                                  .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                      .SalesDiscounts))
-                                                  .FirstOrDefaultAsync(cancellationToken) ??
-                                              throw new NotFoundException("Sales Discounts ledger account not found.");
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.SalesDiscounts))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Sales Discounts ledger account not found.");
                         var extraChargesLedger = await ledgerAccountRepository
-                                                     .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                         .AdditionalChargesRevenue))
-                                                     .FirstOrDefaultAsync(cancellationToken) ??
-                                                 throw new NotFoundException(
-                                                     "Additional Charges Revenue ledger account not found.");
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.AdditionalChargesRevenue))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Additional Charges Revenue ledger account not found.");
 
                         transactions.Add(Transaction.CreateForInvoice(
                             TransactionDescriptionBuilder.ForSaleReceivable(invoice, customer),
@@ -124,11 +113,9 @@ internal class AccountingTransactionService(
                         {
 
                             var purchaseInvoice = await invoiceRepository
-                                                      .Get(new InvoicesByProductIdSpecification(
-                                                          invoiceProductItem.ProductId))
-                                                      .FirstOrDefaultAsync(cancellationToken) ??
-                                                  throw new NotFoundException(
-                                                      $"Purchase invoice for product {invoiceProductItem.ProductId.Value} not found.");
+                                .Get(new InvoicesByProductIdSpecification(invoiceProductItem.ProductId))
+                                .FirstOrDefaultAsync(cancellationToken) 
+                                                  ?? throw new NotFoundException($"Purchase invoice for product {invoiceProductItem.ProductId.Value} not found.");
 
                             totalCostOfGoods += purchaseInvoice.TotalAmount * (purchaseInvoice.ExchangeRate ?? 1);
                         }
@@ -138,15 +125,11 @@ internal class AccountingTransactionService(
                         {
                             var cogsGroupId = Guid.NewGuid();
                             var cogsLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                     .CostOfGoodsSold))
-                                                 .FirstOrDefaultAsync(cancellationToken) ??
-                                             throw new NotFoundException("Cost of Goods Sold ledger account not found.");
+                                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CostOfGoodsSold))
+                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Cost of Goods Sold ledger account not found.");
                             var inventoryLedger = await ledgerAccountRepository
-                                                      .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                          .Inventory))
-                                                      .FirstOrDefaultAsync(cancellationToken) ??
-                                                  throw new NotFoundException("Inventory ledger account not found.");
+                                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
 
                             transactions.Add(Transaction.CreateForInvoice(
                                 TransactionDescriptionBuilder.ForCostOfGoodsSold(invoice),
@@ -178,28 +161,18 @@ internal class AccountingTransactionService(
 
                         break;
                     }
-
                 case InvoiceType.Purchase:
                     {
-                        var supplierLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                                                     invoice.CustomerId,
-                                                     SystemLedgerAccounts.AccountsPayable))
-                                                 .FirstOrDefaultAsync(cancellationToken) ??
-                                             throw new NotFoundException(
-                                                 $"Supplier {invoice.CustomerId.Value} ledger account not found.");
+                        var supplierLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
+                            invoice.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
 
                         var inventoryLedger = await ledgerAccountRepository
-                                                  .Get(new LedgerAccountsByTitleSpecification(
-                                                      SystemLedgerAccounts.Inventory))
-                                                  .FirstOrDefaultAsync(cancellationToken) ??
-                                              throw new NotFoundException("Inventory ledger account not found.");
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
 
                         var discountsLedger = await ledgerAccountRepository
-                                                  .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                      .PurchaseDiscounts))
-                                                  .FirstOrDefaultAsync(cancellationToken) ??
-                                              throw new NotFoundException("Purchase Discounts ledger account not found.");
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.PurchaseDiscounts))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Purchase Discounts ledger account not found.");
 
                         var totalInventoryValue = invoice.TotalAmount + invoice.TotalExtraCostAmount;
 
@@ -253,33 +226,24 @@ internal class AccountingTransactionService(
                 if (payment.SourceFinancialAccountId.HasValue)
                 {
                     var sourceFinancialAccount = await financialAccountRepository
-                                                     .Get(new FinancialAccountsByIdSpecification(
-                                                         payment.SourceFinancialAccountId.Value))
-                                                     .FirstOrDefaultAsync(cancellationToken) ??
-                                                 throw new NotFoundException(
-                                                     $"Financial account {payment.SourceFinancialAccountId.Value} not found.");
+                        .Get(new FinancialAccountsByIdSpecification(payment.SourceFinancialAccountId.Value))
+                        .FirstOrDefaultAsync(cancellationToken) 
+                                                 ?? throw new NotFoundException($"Financial account {payment.SourceFinancialAccountId.Value} not found.");
 
                     if (!sourceFinancialAccount.LedgerAccountId.HasValue)
                         throw new NotFoundException(
                             $"Financial account {sourceFinancialAccount.Id.Value} does not have a linked ledger account.");
 
                     var sourceLedgerAccount = await ledgerAccountRepository
-                                                  .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount
-                                                      .LedgerAccountId.Value))
-                                                  .FirstOrDefaultAsync(cancellationToken) ??
-                                              throw new NotFoundException(
-                                                  $"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
+                        .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount.LedgerAccountId.Value))
+                        .FirstOrDefaultAsync(cancellationToken)
+                                              ?? throw new NotFoundException($"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
 
                     if (invoice.InvoiceType == InvoiceType.Sell)
                     {
                         // --- منطق دریافت وجه از مشتری ---
-                        var customerLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                                                     invoice.CustomerId,
-                                                     SystemLedgerAccounts.AccountsReceivable))
-                                                 .FirstOrDefaultAsync(cancellationToken) ??
-                                             throw new NotFoundException(
-                                                 $"Customer {invoice.CustomerId.Value} ledger account not found.");
+                        var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
+                            invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
                         // بدهکار کردن حساب بانک/صندوق شما (افزایش دارایی)
                         transactions.Add(Transaction.CreateForInvoicePayment(
@@ -306,13 +270,8 @@ internal class AccountingTransactionService(
                     else
                     {
                         // --- منطق پرداخت وجه به تامین‌کننده ---
-                        var supplierLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                                                     invoice.CustomerId,
-                                                     SystemLedgerAccounts.AccountsPayable))
-                                                 .FirstOrDefaultAsync(cancellationToken) ??
-                                             throw new NotFoundException(
-                                                 $"Customer {invoice.CustomerId.Value} ledger account not found.");
+                        var supplierLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
+                            invoice.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
 
                         // بدهکار کردن حساب تامین‌کننده (کاهش بدهی شما)
                         transactions.Add(Transaction.CreateForInvoicePayment(
@@ -344,19 +303,12 @@ internal class AccountingTransactionService(
                 {
                     if (invoice.InvoiceType == InvoiceType.Purchase)
                     {
-                        var supplierLedger = await ledgerAccountRepository
-                                                 .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(
-                                                     invoice.CustomerId,
-                                                     SystemLedgerAccounts.AccountsPayable))
-                                                 .FirstOrDefaultAsync(cancellationToken) ??
-                                             throw new NotFoundException(
-                                                 $"Customer {invoice.CustomerId.Value} ledger account not found.");
+                        var supplierLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
+                            invoice.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
+
                         var prepaymentLedger = await ledgerAccountRepository
-                                                   .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                       .PrepaymentsToSuppliers))
-                                                   .FirstOrDefaultAsync(cancellationToken) ??
-                                               throw new NotFoundException(
-                                                   "Prepayments to Suppliers ledger account not found.");
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.PrepaymentsToSuppliers))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Prepayments to Suppliers ledger account not found.");
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice),
@@ -383,7 +335,7 @@ internal class AccountingTransactionService(
         }
 
         if (invoice.UsedProducts.Any())
-            foreach (var usedProduct in invoice.UsedProducts) 
+            foreach (var usedProduct in invoice.UsedProducts)
                 await CreateTransactionForUsedProductsAsync(usedProduct, cancellationToken);
 
         // 5. ذخیره تمام تراکنش‌های جدید
@@ -402,25 +354,19 @@ internal class AccountingTransactionService(
         var transactions = new List<Transaction>();
 
         var sourceFinancialAccount = await financialAccountRepository
-                                         .Get(new FinancialAccountsByIdSpecification(voucher.SourceFinancialAccountId))
-                                         .FirstOrDefaultAsync(cancellationToken) ??
-                                     throw new NotFoundException(
-                                         $"Financial account {voucher.SourceFinancialAccountId.Value} not found.");
+            .Get(new FinancialAccountsByIdSpecification(voucher.SourceFinancialAccountId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Financial account {voucher.SourceFinancialAccountId.Value} not found.");
 
         if (!sourceFinancialAccount.LedgerAccountId.HasValue)
             throw new NotFoundException(
                 $"Financial account {sourceFinancialAccount.Id.Value} does not have a linked ledger account.");
 
         var creditLedgerAccount = await ledgerAccountRepository
-                                      .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount.LedgerAccountId.Value))
-                                      .FirstOrDefaultAsync(cancellationToken) ??
-                                  throw new NotFoundException(
-                                      $"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
+            .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount.LedgerAccountId.Value))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
 
         if (voucher.Customer is null)
-            throw new ArgumentException(
-                "Payment voucher must have a customer ",
-                nameof(voucher));
+            throw new ArgumentException("Payment voucher must have a customer ", nameof(voucher));
 
         LedgerAccount debitLedgerAccount;
         string description;
@@ -428,55 +374,53 @@ internal class AccountingTransactionService(
         switch (voucher.VoucherType)
         {
             case PaymentVoucherType.PrepaymentToSupplier:
-            {
-                // برای پیش‌پرداخت، حساب پرداختنی تامین‌کننده بدهکار می‌شود
-                debitLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(voucher.CustomerId, SystemLedgerAccounts.AccountsPayable))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Supplier's payable account not found.");
+                {
+                    // برای پیش‌پرداخت، حساب پرداختنی تامین‌کننده بدهکار می‌شود
+                    debitLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(voucher.CustomerId,
+                        voucher.VoucherPriceUnitId, LedgerAccountRole.Payable, cancellationToken);
 
-                description = TransactionDescriptionBuilder.ForPrepaymentToCustomer(voucher, voucher.Customer);
-                break;
-            }
+                    description = TransactionDescriptionBuilder.ForPrepaymentToCustomer(voucher, voucher.Customer);
+                    break;
+                }
 
             case PaymentVoucherType.RefundToCustomer:
-            {
-                // برای بازپرداخت، حساب دریافتنی مشتری بدهکار می‌شود
-                debitLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(voucher.CustomerId, SystemLedgerAccounts.AccountsReceivable))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Customer's receivable account not found.");
+                {
+                    // برای بازپرداخت، حساب دریافتنی مشتری بدهکار می‌شود
+                    debitLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(voucher.CustomerId,
+                        voucher.VoucherPriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
-                description = TransactionDescriptionBuilder.ForRefundToCustomer(voucher, voucher.Customer);
-                break;
-            }
+                    description = TransactionDescriptionBuilder.ForRefundToCustomer(voucher, voucher.Customer);
+                    break;
+                }
 
             case PaymentVoucherType.ServiceFeePayment:
-            {
-                debitLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.ServiceExpenses)) // سرفصل جدید: "هزینه خدمات"
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Service Expenses account not found.");
+                {
+                    debitLedgerAccount = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.ServiceExpenses)) // سرفصل جدید: "هزینه خدمات"
+                        .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Service Expenses account not found.");
 
-                description = TransactionDescriptionBuilder.ForServiceFeePayment(voucher, voucher.Customer);
-                break;
-            }
+                    description = TransactionDescriptionBuilder.ForServiceFeePayment(voucher, voucher.Customer);
+                    break;
+                }
             case PaymentVoucherType.PartnerLoan:
                 {
                     debitLedgerAccount = await ledgerAccountRepository
-                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.LoansToOthers)) 
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.LoansToOthers))
                         .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("LoansToOthers account not found.");
 
                     description = TransactionDescriptionBuilder.ForPartnerLoan(voucher, voucher.Customer);
                     break;
                 }
             case PaymentVoucherType.OwnerDraw:
-            {
-                // حساب برداشت مالک بدهکار می‌شود
-                debitLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OwnerDraw)) // سرفصل جدید: "برداشت مالک"
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Owner Draw account not found.");
+                {
+                    // حساب برداشت مالک بدهکار می‌شود
+                    debitLedgerAccount = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OwnerDraw)) // سرفصل جدید: "برداشت مالک"
+                        .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Owner Draw account not found.");
 
-                description = TransactionDescriptionBuilder.ForOwnerDraw(voucher, voucher.Customer);
-                break;
-            }
+                    description = TransactionDescriptionBuilder.ForOwnerDraw(voucher, voucher.Customer);
+                    break;
+                }
             default:
                 throw new ArgumentOutOfRangeException(nameof(voucher.VoucherType));
         }
@@ -554,47 +498,37 @@ internal class AccountingTransactionService(
                     : throw new ArgumentException("At least one of product, coin, or currency must be provided.",
                         nameof(product));
 
-        var basePriceUnit = await priceUnitRepository.Get(new PriceUnitsSetAsDefaultSpecification())
-                                .FirstOrDefaultAsync(cancellationToken) ??
-                            throw new NotFoundException("Default price unit not found.");
+        var basePriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
 
         var openingBalanceLedgerAccount = await ledgerAccountRepository
-                                              .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts
-                                                  .OpeningBalanceEquity))
-                                              .FirstOrDefaultAsync(cancellationToken) ??
-                                          throw new NotFoundException(
-                                              "Opening Balance Equity ledger account not found.");
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Opening Balance Equity ledger account not found.");
 
         LedgerAccountId debitLedgerAccountId;
 
         if (product is not null)
         {
             var inventoryLedgerAccount = await ledgerAccountRepository
-                                             .Get(
-                                                 new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
-                                             .FirstOrDefaultAsync(cancellationToken) ??
-                                         throw new NotFoundException("Inventory ledger account not found.");
+                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
 
             debitLedgerAccountId = inventoryLedgerAccount.Id;
         }
         else if (coin is not null)
         {
             var coinLedgerAccount = await ledgerAccountRepository
-                                        .Get(new LedgerAccountsByTitleSpecification(
-                                            LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
-                                        .FirstOrDefaultAsync(cancellationToken) ??
-                                    throw new NotFoundException($"Coin '{coin.Title}' ledger account not found.");
+                .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Coin '{coin.Title}' ledger account not found.");
 
             debitLedgerAccountId = coinLedgerAccount.Id;
         }
         else if (currency is not null)
         {
             var currencyLedgerAccount = await ledgerAccountRepository
-                                            .Get(new LedgerAccountsByTitleSpecification(
-                                                LedgerAccountTitleBuilder.ForCurrencyAccount(currency.Title)))
-                                            .FirstOrDefaultAsync(cancellationToken) ??
-                                        throw new NotFoundException(
-                                            $"Currency '{currency.Title}' ledger account not found.");
+                .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCurrencyAccount(currency.Title)))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Currency '{currency.Title}' ledger account not found.");
 
             debitLedgerAccountId = currencyLedgerAccount.Id;
         }
@@ -634,7 +568,7 @@ internal class AccountingTransactionService(
         var customer = await customerRepository
             .Get(new CustomersByIdSpecification(usedProduct.Invoice.CustomerId))
             .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken) 
+            .FirstOrDefaultAsync(cancellationToken)
                        ?? throw new NotFoundException($"Customer {usedProduct.Invoice.CustomerId.Value} not found.");
 
         if (usedProduct.IsSellable)
@@ -656,11 +590,8 @@ internal class AccountingTransactionService(
             debitLedgerAccountId = usedProductInventory.Id;
         }
 
-        var customerLedgerAccount = await ledgerAccountRepository
-                                        .Get(new LedgerAccountsByCustomerAndParentTitleSpecification(usedProduct.Invoice.CustomerId, 
-                                            SystemLedgerAccounts.AccountsReceivable))
-                                        .FirstOrDefaultAsync(cancellationToken) ??
-                                    throw new NotFoundException($"Customer {usedProduct.Invoice.CustomerId.Value} ledger account not found.");
+        var customerLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
+            usedProduct.Invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
         // --- Step 3: Create the Debit and Credit Transactions ---
         var transactions = new List<Transaction>();

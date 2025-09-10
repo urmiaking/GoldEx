@@ -22,7 +22,10 @@ public class PriceUnitsMappingConfig : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Title, src => src.Title)
             .Map(dest => dest.IsGoldBased,
-                src => src.Price != null && (src.Price.UnitType == UnitType.Gold18K || src.Price.UnitType == UnitType.Mesghal))
+                src => src.Price != null &&
+                       src.Price.PriceUnit != null &&
+                       (src.Price.PriceUnit.UnitType == UnitType.Gold18K ||
+                        src.Price.PriceUnit.UnitType == UnitType.Mesghal))
             .Map(dest => dest.HasIcon,
                 src => MapContext.Current.GetService<IWebHostEnvironment>().PriceUnitIconExists(src.Id.Value));
     }

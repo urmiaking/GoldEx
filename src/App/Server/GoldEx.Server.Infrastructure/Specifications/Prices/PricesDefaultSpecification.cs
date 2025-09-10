@@ -7,6 +7,8 @@ public class PricesDefaultSpecification : SpecificationBase<Price>
 {
     public PricesDefaultSpecification()
     {
+        AddInclude(x => x.PriceUnit!);
+
         AddCriteria(x => x.IsActive);
         ApplyOrderBy(x => x.MarketType);
         ApplyOrderBy(x => x.Title);

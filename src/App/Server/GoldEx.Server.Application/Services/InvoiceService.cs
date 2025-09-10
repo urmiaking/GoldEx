@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -18,7 +19,6 @@ using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.Products;
-using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -26,7 +26,6 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using FluentValidation.Results;
 using Product = GoldEx.Server.Domain.ProductAggregate.Product;
 
 namespace GoldEx.Server.Application.Services;
@@ -35,7 +34,6 @@ namespace GoldEx.Server.Application.Services;
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
     IInvoicePaymentRepository paymentRepository,
-    ILedgerAccountRepository ledgerAccountRepository,
     IProductRepository productRepository,
     IBarcodeService barcodeService,
     IAccountingTransactionService transactionService,
@@ -52,18 +50,6 @@ internal class InvoiceService(
             try
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-                #region LedgerAccount (Create ledger account if not exists)
-
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
-                    SystemLedgerAccounts.AccountsReceivable,
-                    cancellationToken);
-
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
-                    SystemLedgerAccounts.AccountsPayable,
-                    cancellationToken);
-
-                #endregion
 
                 #region Invoice (Create new invoice instance)    
 
@@ -283,16 +269,6 @@ internal class InvoiceService(
             {
                 await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-                #region LedgerAccount (Create ledger account if not exists)
-
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
-                    SystemLedgerAccounts.AccountsReceivable, cancellationToken);
-
-                await ledgerAccountRepository.CreateForCustomerAsync(new CustomerId(request.CustomerId),
-                    SystemLedgerAccounts.AccountsPayable, cancellationToken);
-
-                #endregion
-
                 #region Invoice (Update existing invoice)
 
                 var invoice = await invoiceRepository
@@ -381,7 +357,7 @@ internal class InvoiceService(
                     {
                         // This exception likely means that the product is referenced in other records (e.g., invoices).
                         logger.LogError(e, e.Message);
-                        // a ui message in persian to inform the user to remove them manually before updating the invoice.
+                        // A ui message in persian to inform the user to remove them manually before updating the invoice.
                         throw new ValidationException(new List<ValidationFailure>
                         {
                             new("UsedProducts",
@@ -638,7 +614,7 @@ internal class InvoiceService(
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
-                .ThenInclude(x => x.SourceFinancialAccount)
+                .ThenInclude(x => x.SourceFinancialAccount!)
                     .ThenInclude(x => x.PriceUnit)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)

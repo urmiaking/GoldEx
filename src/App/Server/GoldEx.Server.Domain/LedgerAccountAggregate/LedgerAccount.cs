@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -14,6 +15,9 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
 
     public LedgerAccount? ParentAccount { get; private set; }
     public LedgerAccountId? ParentAccountId { get; private set; }
+
+    public PriceUnit? PriceUnit { get; private set; }
+    public PriceUnitId? PriceUnitId { get; private set; }
 
     public IReadOnlyList<FinancialAccount>? FinancialAccounts { get; private set; }
 
@@ -32,7 +36,11 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
         };
     }
 
-    public static LedgerAccount CreateCustomerAccount(string title, CustomerId customerId, LedgerAccountType accountType, LedgerAccountId? parentAccountId = null)
+    public static LedgerAccount CreateCustomerAccount(string title,
+        CustomerId customerId,
+        PriceUnitId priceUnitId,
+        LedgerAccountType accountType,
+        LedgerAccountId? parentAccountId = null)
     {
         return new LedgerAccount
         {
@@ -41,7 +49,8 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
             CustomerId = customerId,
             AccountType = accountType,
             IsSystemAccount = false,
-            ParentAccountId = parentAccountId
+            ParentAccountId = parentAccountId,
+            PriceUnitId = priceUnitId
         };
     }
 

@@ -82,8 +82,7 @@ internal class PriceService(
                     PriceHistory.Create(incomingPrice.CurrentValue,
                         incomingPrice.LastUpdate,
                         incomingPrice.Change,
-                        incomingPrice.Unit),
-                    UnitTypeMapper.GetUnitType(incomingPrice));
+                        incomingPrice.Unit));
 
                 pricesToCreate.Add(price);
 
@@ -253,7 +252,7 @@ internal class PriceService(
         var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
         if (setting is not null && setting.GoldSafetyMarginPercent != 0 && applySafetyMargin)
         {
-            if (baseItem.UnitType is UnitType.Gold18K or UnitType.Mesghal)
+            if (baseItem.PriceUnit?.UnitType is UnitType.Gold18K or UnitType.Mesghal)
             {
                 var adjustedValue = baseItem.PriceHistory.CurrentValue * (1 + setting.GoldSafetyMarginPercent / 100);
                 baseItem.PriceHistory.SetCurrentValue(adjustedValue);
@@ -284,7 +283,7 @@ internal class PriceService(
                     LastUpdate: baseItem.PriceHistory.LastUpdate,
                     HasIcon: webHostEnvironment.PriceUnitIconExists(baseItem.Id.Value),
                     Type: baseItem.MarketType,
-                    UnitType: baseItem.UnitType
+                    UnitType: baseItem.PriceUnit?.UnitType
                 );
             }
         }
@@ -298,7 +297,7 @@ internal class PriceService(
             LastUpdate: baseItem.PriceHistory.LastUpdate,
             HasIcon: webHostEnvironment.PriceUnitIconExists(baseItem.Id.Value),
             Type: baseItem.MarketType,
-            UnitType: baseItem.UnitType
+            UnitType: baseItem.PriceUnit?.UnitType
         );
     }
 

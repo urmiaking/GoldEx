@@ -3,14 +3,18 @@ using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.Customers;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
@@ -26,6 +30,7 @@ internal class CustomerService(
     ICustomerRepository repository,
     ILedgerAccountRepository ledgerAccountRepository,
     IFinancialAccountRepository financialAccountRepository,
+    IPriceUnitRepository priceUnitRepository,
     IMapper mapper,
     ILogger<CustomerService> logger,
     CustomerRequestDtoValidator validator,
@@ -123,7 +128,7 @@ internal class CustomerService(
                     {
                         var (localAccount, internationalAccount, cashAccount) = CreateAccountDetailsFromDto(dto);
 
-                        var bankAccount = FinancialAccount.CreateCustomerAccount(
+                        var financialAccount = FinancialAccount.CreateCustomerAccount(
                             dto.HolderName,
                             dto.BrokerName,
                             dto.FinancialAccountType,
@@ -133,10 +138,12 @@ internal class CustomerService(
                             internationalAccount,
                             cashAccount);
 
-                        financialAccounts.Add(bankAccount);
+                        financialAccounts.Add(financialAccount);
                     }
                     await financialAccountRepository.CreateRangeAsync(financialAccounts, cancellationToken);
                 }
+
+                await CreateLedgerAccountsAsync(customer);
 
                 await dbTransaction.CommitAsync(cancellationToken);
 
@@ -165,6 +172,7 @@ internal class CustomerService(
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
                 var customerOldName = customer.FullName;
+                var customerOldNationalId = customer.NationalId;
 
                 customer.SetFullName(request.FullName);
                 customer.SetNationalId(request.NationalId);
@@ -179,7 +187,7 @@ internal class CustomerService(
                 if (request.FinancialAccounts is not null) 
                     await SyncFinancialAccounts(customer, request.FinancialAccounts, cancellationToken);
 
-                await SyncLedgerAccountTitles(customer, customerOldName, cancellationToken);
+                await SyncLedgerAccountTitles(customer, customerOldName, customerOldNationalId, cancellationToken);
 
                 await repository.UpdateAsync(customer, cancellationToken);
 
@@ -310,8 +318,8 @@ internal class CustomerService(
         }
     }
 
-    // Placeholder for your existing ledger sync logic
-    private async Task SyncLedgerAccountTitles(Customer customer, string oldName, CancellationToken cancellationToken)
+    private async Task SyncLedgerAccountTitles(Customer customer, string customerOldName, string oldNationalId,
+        CancellationToken cancellationToken)
     {
         var ledgerAccounts = await ledgerAccountRepository
             .Get(new LedgerAccountsByCustomerIdSpecification(customer.Id))
@@ -321,10 +329,81 @@ internal class CustomerService(
         {
             foreach (var ledgerAccount in ledgerAccounts)
             {
-                ledgerAccount.SetTitle(ledgerAccount.Title.Replace(oldName, customer.FullName,
+                ledgerAccount.SetTitle(ledgerAccount.Title.Replace(customerOldName, customer.FullName,
+                    StringComparison.OrdinalIgnoreCase));
+                ledgerAccount.SetTitle(ledgerAccount.Title.Replace(oldNationalId, customer.NationalId,
                     StringComparison.OrdinalIgnoreCase));
                 await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
             }
         }
+    }
+
+    /// <summary>
+    /// Creates the necessary ledger accounts for a new customer.
+    /// </summary>
+    /// <param name="customer"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    private async Task CreateLedgerAccountsAsync(Customer customer)
+    {
+        var rialPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByUnitTypeSpecification(UnitType.IRR))
+            .AsNoTracking()
+            .FirstOrDefaultAsync() ?? throw new InvalidOperationException("Rial price unit not found.");
+
+        var goldPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
+            .AsNoTracking()
+            .FirstOrDefaultAsync() ?? throw new InvalidOperationException("Gold price unit not found.");
+
+        var ledgerAccounts = new List<LedgerAccount>();
+
+        var parentPayableAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.AccountsPayable))
+            .FirstOrDefaultAsync() ?? throw new InvalidOperationException($"Parent ledger account '{SystemLedgerAccounts.AccountsPayable}' not found.");
+
+        ledgerAccounts.Add(LedgerAccount.CreateCustomerAccount(LedgerAccountTitleBuilder.ForCustomer(
+                SystemLedgerAccounts.AccountsPayable,
+                customer.FullName,
+                customer.NationalId,
+                rialPriceUnit.Title),
+            customer.Id,
+            rialPriceUnit.Id,
+            LedgerAccountType.Liability,
+            parentPayableAccount.Id));
+
+        ledgerAccounts.Add(LedgerAccount.CreateCustomerAccount(LedgerAccountTitleBuilder.ForCustomer(
+                SystemLedgerAccounts.AccountsPayable,
+                customer.FullName,
+                customer.NationalId,
+                goldPriceUnit.Title),
+            customer.Id,
+            goldPriceUnit.Id,
+            LedgerAccountType.Liability,
+            parentPayableAccount.Id));
+
+        var parentReceivableAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.AccountsReceivable))
+            .FirstOrDefaultAsync() ?? throw new InvalidOperationException($"Parent ledger account '{SystemLedgerAccounts.AccountsReceivable}' not found.");
+
+        ledgerAccounts.Add(LedgerAccount.CreateCustomerAccount(LedgerAccountTitleBuilder.ForCustomer(
+                SystemLedgerAccounts.AccountsReceivable,
+                customer.FullName,
+                customer.NationalId,
+                rialPriceUnit.Title),
+            customer.Id,
+            rialPriceUnit.Id,
+            LedgerAccountType.Asset,
+            parentReceivableAccount.Id));
+
+        ledgerAccounts.Add(LedgerAccount.CreateCustomerAccount(LedgerAccountTitleBuilder.ForCustomer(
+                SystemLedgerAccounts.AccountsReceivable,
+                customer.FullName,
+                customer.NationalId,
+                rialPriceUnit.Title),
+            customer.Id,
+            rialPriceUnit.Id,
+            LedgerAccountType.Asset,
+            parentReceivableAccount.Id));
+
+        await ledgerAccountRepository.CreateRangeAsync(ledgerAccounts);
     }
 }

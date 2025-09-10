@@ -30,5 +30,13 @@ internal class LedgerAccountConfiguration : IEntityTypeConfiguration<LedgerAccou
             .WithMany()
             .HasForeignKey(x => x.ParentAccountId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.PriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.PriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => new { x.CustomerId, x.ParentAccountId, x.PriceUnitId })
+            .IsUnique();
     }
 }

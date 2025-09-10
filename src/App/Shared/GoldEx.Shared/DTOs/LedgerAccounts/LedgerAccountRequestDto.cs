@@ -2,4 +2,4 @@
 
 namespace GoldEx.Shared.DTOs.LedgerAccounts;
 
-public record LedgerAccountRequestDto(Guid? Id, string Title, bool IsSystemAccount, LedgerAccountType AccountType, Guid? CustomerId, Guid? ParentAccountId);
+public record LedgerAccountRequestDto(Guid? Id, string Title, LedgerAccountType AccountType, Guid? ParentAccountId);
