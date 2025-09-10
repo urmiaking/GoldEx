@@ -41,28 +41,29 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
             .NotNull().WithMessage("اطلاعات حساب بانکی بین المللی الزامی است.")
             .When(x => x.FinancialAccountType == FinancialAccountType.InternationalBankAccount);
 
-        When(x => x.FinancialAccountType != FinancialAccountType.Gold, () =>
+        When(x => x.FinancialAccountType != FinancialAccountType.Gold &&
+                  x is not { FinancialAccountType: FinancialAccountType.Cash, CashAccount.AccountType: CashAccountType.Internal }, () =>
         {
             RuleFor(x => x.HolderName)
                 .NotEmpty()
-                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash && dto.CashAccount?.AccountType != CashAccountType.Internal
+                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash 
                     ? "نام صاحب حساب برای حساب های سپرده نزد دیگران الزامی است"
                     : "نام صاحب حساب نباید خالی باشد.")
                 .MaximumLength(100).WithMessage("نام صاحب حساب نباید بیشتر از 100 کاراکتر باشد.");
 
             RuleFor(x => x.BrokerName)
                 .NotEmpty()
-                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash && dto.CashAccount?.AccountType != CashAccountType.Internal
+                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash
                     ? "نام بانک/کارگزار برای حساب های سپرده نزد دیگران الزامی است"
                     : "نام بانک/کارگزار نباید خالی باشد.")
                 .MaximumLength(100).WithMessage("نام بانک/کارگزار نباید بیشتر از 100 کاراکتر باشد.");
         });
 
-        When(x => x.IsSystemAccount && x.FinancialAccountType is FinancialAccountType.Gold, () =>
+        When(x => x.FinancialAccountType is FinancialAccountType.Gold, () =>
         {
             RuleFor(x => x)
                 .MustAsync(BeUniqueGoldAccount)
-                .WithMessage("تنها یک حساب طلایی سیستمی می تواند وجود داشته باشد.");
+                .WithMessage("تنها یک حساب طلایی می تواند وجود داشته باشد.");
         });
 
         RuleFor(x => x.LocalBankAccount)
@@ -74,12 +75,24 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
             .When(x => x.FinancialAccountType == FinancialAccountType.InternationalBankAccount && x.InternationalBankAccount is not null);
     }
 
+    /// <summary>
+    /// Only one system gold account can exist or one gold account per customer
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     private async Task<bool> BeUniqueGoldAccount(FinancialAccountRequestDto request, CancellationToken cancellationToken = default)
     {
-        if (!request.IsSystemAccount)
+        if (request is { IsSystemAccount: false, CustomerId: null })
+        {
+            // if the gold account is not a system account, and we don't have a customer id, it means that a new customer request is being created so we can allow it
+            return true;
+        }
+        // also if we are updating an existing gold account, we can allow it
+        if (request.Id.HasValue)
             return true;
 
-        return !await _repository.ExistsAsync(new FinancialAccountsByTypeSpecification(request.FinancialAccountType, true), cancellationToken);
+        return !await _repository.ExistsAsync(new FinancialAccountsByTypeSpecification(request.FinancialAccountType, request.CustomerId), cancellationToken);
     }
 
     private async Task<bool> BeValidPriceUnitId(Guid priceUnitId, CancellationToken cancellationToken)
@@ -92,7 +105,7 @@ internal class FinancialAccountRequestDtoValidator : AbstractValidator<Financial
         if (!customerId.HasValue)
             return true;
 
-        return await _customerRepository.ExistsAsync(new CustomersByIdSpecification(new CustomerId(customerId!.Value)), cancellationToken);
+        return await _customerRepository.ExistsAsync(new CustomersByIdSpecification(new CustomerId(customerId.Value)), cancellationToken);
     }
 }
 

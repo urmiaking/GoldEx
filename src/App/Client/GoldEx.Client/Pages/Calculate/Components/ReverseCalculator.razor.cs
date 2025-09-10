@@ -64,7 +64,7 @@ public partial class ReverseCalculator
 
         if (authenticationState.User.Identity is { IsAuthenticated: false })
         {
-            var priceUnit = new GetPriceUnitTitleResponse(Guid.Empty, "ریال", false, true);
+            var priceUnit = new GetPriceUnitTitleResponse(Guid.Empty, "ریال", false, true, false);
 
             _model.PriceUnit = priceUnit;
 

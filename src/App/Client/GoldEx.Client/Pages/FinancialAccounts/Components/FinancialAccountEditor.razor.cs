@@ -32,13 +32,13 @@ public partial class FinancialAccountEditor
 
     protected override void OnParametersSet()
     {
-        if (CustomerId.HasValue) 
+        if (CustomerId.HasValue)
             Model.CustomerId = CustomerId.Value;
 
         if (!string.IsNullOrEmpty(AccountHolderName))
             Model.HolderName = AccountHolderName;
 
-        if (IsSystemAccount) 
+        if (IsSystemAccount)
             Model.IsSystemAccount = true;
 
         base.OnParametersSet();
@@ -46,7 +46,7 @@ public partial class FinancialAccountEditor
 
     protected override async Task OnParametersSetAsync()
     {
-        if (!PriceUnits.Any()) 
+        if (!PriceUnits.Any())
             await LoadPriceUnitsAsync();
 
         Model.PriceUnit ??= PriceUnits.FirstOrDefault(x => x.IsDefault);
@@ -59,7 +59,7 @@ public partial class FinancialAccountEditor
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
             afterSend: response => PriceUnits = response);
-    }   
+    }
 
     private void Close() => MudDialog.Cancel();
 
@@ -105,21 +105,25 @@ public partial class FinancialAccountEditor
                 Model.LocalBankAccount = new LocalBankAccountVm();
                 Model.InternationalBankAccount = null;
                 Model.CashAccount = null;
+                Model.PriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault);
                 break;
             case FinancialAccountType.InternationalBankAccount:
                 Model.InternationalBankAccount = new InternationalBankAccountVm();
                 Model.LocalBankAccount = null;
                 Model.CashAccount = null;
+                Model.PriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault);
                 break;
             case FinancialAccountType.Cash:
                 Model.CashAccount = new CashAccountVm();
                 Model.InternationalBankAccount = null;
                 Model.LocalBankAccount = null;
+                Model.PriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault);
                 break;
             case FinancialAccountType.Gold:
                 Model.CashAccount = null;
                 Model.InternationalBankAccount = null;
                 Model.LocalBankAccount = null;
+                Model.PriceUnit = PriceUnits.FirstOrDefault(x => x.IsGoldBased);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
