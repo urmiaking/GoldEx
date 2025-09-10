@@ -29,6 +29,9 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
             .MustAsync(BeValidId).WithMessage("شناسه نامعتبر است")
             .When(x => x.Id.HasValue);
 
+        RuleFor(x => x.CustomerType)
+            .IsInEnum().WithMessage("نوع مشتری نامعتبر است");
+
         RuleFor(x => x.NationalId)
             .NotEmpty().WithMessage("وارد کردن شناسه یکتا الزامی است")
             .MaximumLength(25).WithMessage("حداکثر طول شناسه یکتا 25 کاراکتر می باشد")
@@ -60,6 +63,16 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 
         When(x => x.FinancialAccounts is not null, () =>
         {
+            // financial accounts should not contain duplicate entries of the same gold price unit
+            RuleFor(x => x.FinancialAccounts!)
+                .Must(financialAccounts =>
+                {
+                    var goldAccountCount = financialAccounts
+                        .Count(fa => fa.FinancialAccountType == Shared.Enums.FinancialAccountType.Gold);
+                    return goldAccountCount <= 1;
+                })
+                .WithMessage("تنها یک حساب طلایی می تواند برای طرف حساب وجود داشته باشد.");
+
             RuleForEach(x => x.FinancialAccounts)
                 .SetValidator(new FinancialAccountRequestDtoValidator(_priceUnitRepository, _repository, financialAccountRepository))
                 .WithMessage("اطلاعات حساب مالی نامعتبر است");

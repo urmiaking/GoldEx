@@ -30,6 +30,15 @@ public partial class Editor
         await base.OnParametersSetAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        if (Model.FinancialAccounts is not null)
+            foreach (var modelFinancialAccount in Model.FinancialAccounts)
+                modelFinancialAccount.CustomerId = Model.Id;
+
+        base.OnParametersSet();
+    }
+
     private async Task LoadPriceUnitsAsync()
     {
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
@@ -113,17 +122,19 @@ public partial class Editor
 
     private async Task OnEditFinancialAccount(FinancialAccountVm financialAccount)
     {
-        var parameters = new DialogParameters
+        var parameters = new DialogParameters<FinancialAccountEditor>
         {
-            { nameof(FinancialAccountEditor.Model), financialAccount },
-            { nameof(FinancialAccountEditor.PriceUnits), _priceUnits }
+            { x => x.Model, financialAccount },
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.CustomerId, Model.Id },
         };
+
         var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"ویرایش حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()}",
             parameters, _bankAccountsDialogOptions);
         await dialog.Result;
     }
 
-    private async Task OnRemoveBankAccount(FinancialAccountVm financialAccount)
+    private async Task OnRemoveFinancialAccount(FinancialAccountVm financialAccount)
     {
         var result = await DialogService.ShowMessageBox(
             "هشدار",
@@ -137,13 +148,15 @@ public partial class Editor
         }
     }
 
-    private async Task OnAddBankAccount()
+    private async Task OnAddFinancialAccount()
     {
-        var parameters = new DialogParameters
+        var parameters = new DialogParameters<FinancialAccountEditor>
         {
-            { nameof(FinancialAccountEditor.PriceUnits), _priceUnits },
-            { nameof(FinancialAccountEditor.AccountHolderName), Model.FullName }
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.CustomerId, Model.Id },
+            { x => x.AccountHolderName, Model.FullName }
         };
+
         var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی", parameters, _bankAccountsDialogOptions);
         var result = await dialog.Result;
 

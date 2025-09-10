@@ -102,17 +102,6 @@ internal class FinancialAccountService(
         {
             await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-            var goldPriceUnitId = new PriceUnitId();
-
-            if (request.FinancialAccountType is FinancialAccountType.Gold)
-            {
-                var goldPriceUnit = await priceUnitRepository
-                    .Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
-                    .FirstOrDefaultAsync(cancellationToken)?? throw new NotFoundException("No price unit found for gold accounts.");
-
-                goldPriceUnitId = goldPriceUnit.Id;
-            }
-
             LocalBankAccount? localAccount = null;
             InternationalBankAccount? internationalAccount = null;
             CashAccount? cashAccount = null;
@@ -147,7 +136,7 @@ internal class FinancialAccountService(
                     request.HolderName,
                     request.BrokerName,
                     request.FinancialAccountType,
-                    request.FinancialAccountType is FinancialAccountType.Gold ? goldPriceUnitId : new PriceUnitId(request.PriceUnitId),
+                    new PriceUnitId(request.PriceUnitId),
                     new CustomerId(request.CustomerId.Value),
                     localAccount,
                     internationalAccount,

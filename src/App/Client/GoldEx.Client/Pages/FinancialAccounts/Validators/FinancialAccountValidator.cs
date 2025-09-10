@@ -14,30 +14,29 @@ public class FinancialAccountValidator : AbstractValidator<FinancialAccountVm>
         RuleFor(x => x.FinancialAccountType)
             .IsInEnum().WithMessage("نوع حساب نامعتبر است.");
 
-        When(x => x.FinancialAccountType != FinancialAccountType.Gold, () =>
+        When(x => x.FinancialAccountType != FinancialAccountType.Gold &&
+                  x is not { FinancialAccountType: FinancialAccountType.Cash, CashAccount.AccountType: CashAccountType.Internal }, () =>
         {
             RuleFor(x => x.HolderName)
                 .NotEmpty()
-                .WithMessage(vm => vm.FinancialAccountType == FinancialAccountType.Cash && vm.CashAccount?.AccountType != CashAccountType.Internal
+                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash
                     ? "نام صاحب حساب برای حساب های سپرده نزد دیگران الزامی است"
                     : "نام صاحب حساب نباید خالی باشد.")
                 .MaximumLength(100).WithMessage("نام صاحب حساب نباید بیشتر از 100 کاراکتر باشد.");
 
             RuleFor(x => x.BrokerName)
                 .NotEmpty()
-                .WithMessage(vm => vm.FinancialAccountType == FinancialAccountType.Cash && vm.CashAccount?.AccountType != CashAccountType.Internal
+                .WithMessage(dto => dto.FinancialAccountType == FinancialAccountType.Cash
                     ? "نام بانک/کارگزار برای حساب های سپرده نزد دیگران الزامی است"
                     : "نام بانک/کارگزار نباید خالی باشد.")
                 .MaximumLength(100).WithMessage("نام بانک/کارگزار نباید بیشتر از 100 کاراکتر باشد.");
         });
 
-        // Use the dedicated validator for LocalBankAccount
         RuleFor(x => x.LocalBankAccount)
             .NotNull().WithMessage("اطلاعات حساب بانکی داخلی الزامی است.")
             .SetValidator(new LocalBankAccountValidator()!)
             .When(x => x.FinancialAccountType == FinancialAccountType.LocalBankAccount);
 
-        // Use the dedicated validator for InternationalBankAccount
         RuleFor(x => x.InternationalBankAccount)
             .NotNull().WithMessage("اطلاعات حساب بانکی بین المللی الزامی است.")
             .SetValidator(new InternationalBankAccountValidator()!)

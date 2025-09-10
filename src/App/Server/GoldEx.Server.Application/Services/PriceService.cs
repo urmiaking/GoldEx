@@ -134,7 +134,7 @@ internal class PriceService(
                     await coinService.CreateAsync(new CoinRequestDto(null, coinPrice.Title, coinPrice.Id.Value), cancellationToken);
             }
 
-            var goldAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold, true), cancellationToken);
+            var goldAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold), cancellationToken);
 
             if (!goldAccountExists)
             {
@@ -148,7 +148,7 @@ internal class PriceService(
                 await financialAccountRepository.CreateAsync(goldAccount, cancellationToken);
             }
 
-            var cashAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash, true), cancellationToken);
+            var cashAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash), cancellationToken);
 
             if (!cashAccountExists)
             {
