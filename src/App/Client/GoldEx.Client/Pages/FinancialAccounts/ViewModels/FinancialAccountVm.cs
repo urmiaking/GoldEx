@@ -122,7 +122,7 @@ public class FinancialAccountVm
 
                 _ => $"{FinancialAccountType.Cash.GetDisplayName()}"
             },
-
+            FinancialAccountType.Gold => FinancialAccountType.Gold.GetDisplayName(),
             _ => "نامشخص"
         };
     }

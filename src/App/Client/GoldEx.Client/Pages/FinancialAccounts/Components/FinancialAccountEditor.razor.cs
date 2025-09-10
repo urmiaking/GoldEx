@@ -116,6 +116,11 @@ public partial class FinancialAccountEditor
                 Model.InternationalBankAccount = null;
                 Model.LocalBankAccount = null;
                 break;
+            case FinancialAccountType.Gold:
+                Model.CashAccount = null;
+                Model.InternationalBankAccount = null;
+                Model.LocalBankAccount = null;
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }

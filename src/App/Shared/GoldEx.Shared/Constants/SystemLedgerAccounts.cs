@@ -10,6 +10,7 @@ public static class SystemLedgerAccounts
     public static string Inventory => "موجودی کالا";
     public static string UsedProductInventory => "موجودی کالای آب کردنی (مواد اولیه)";
     public static string CoinInventory => "موجودی سکه";
+    public static string MoltenGoldInventory => "موجودی طلای آبشده";
     public static string Banks => "بانک‌ها";
     public static string CashAccounts => "صندوق‌ها";
     public static string InternalCashAccounts => "صندوق‌های داخلی";

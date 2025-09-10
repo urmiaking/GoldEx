@@ -18,6 +18,7 @@ public partial class FinancialAccounts
     public Color AccountTypeColor => _accountType switch
     {
         FinancialAccountType.Cash => Color.Info,
+        FinancialAccountType.Gold => Color.Secondary,
         FinancialAccountType.LocalBankAccount => Color.Primary,
         FinancialAccountType.InternationalBankAccount => Color.Success,
         null => Color.Default,
@@ -26,6 +27,7 @@ public partial class FinancialAccounts
     public string? AccountTypeIcon => _accountType switch
     {
         FinancialAccountType.Cash => Icons.Material.Filled.AttachMoney,
+        FinancialAccountType.Gold => Icons.Material.Filled._18UpRating,
         FinancialAccountType.LocalBankAccount => Icons.Material.Filled.AccountBalance,
         FinancialAccountType.InternationalBankAccount => Icons.Material.Filled.Public,
         null => Icons.Material.Filled.ViewHeadline,
