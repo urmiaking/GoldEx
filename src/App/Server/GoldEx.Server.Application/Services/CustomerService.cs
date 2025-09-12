@@ -398,9 +398,9 @@ internal class CustomerService(
                 SystemLedgerAccounts.AccountsReceivable,
                 customer.FullName,
                 customer.NationalId,
-                rialPriceUnit.Title),
+                goldPriceUnit.Title),
             customer.Id,
-            rialPriceUnit.Id,
+            goldPriceUnit.Id,
             LedgerAccountType.Asset,
             parentReceivableAccount.Id));
 
