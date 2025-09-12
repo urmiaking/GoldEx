@@ -6,10 +6,17 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="12" lg="12">
+                <MudItem xs="6">
                     <MudTextField @bind-Value="Model.Title"
                                   For="@(() => Model.Title)"
-                                  Label="عنوان"
+                                  Label="@Model.GetDisplayName(() => Model.Title)"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="Model.PrefixCode"
+                                  For="@(() => Model.PrefixCode)"
+                                  Label="@Model.GetDisplayName(() => Model.PrefixCode)"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>

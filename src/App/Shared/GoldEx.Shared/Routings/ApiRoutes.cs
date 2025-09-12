@@ -71,6 +71,7 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
+        public const string GetLastCode = "last-code";
     }
 
     public class Customers

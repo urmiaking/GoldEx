@@ -35,10 +35,9 @@ public class ProductsController(IProductService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Products.GetByBarcode)]
-    public async Task<IActionResult> GetAsync(string barcode, [FromQuery] bool? forCalculation = true,
-        CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
-        var product = await service.GetAsync(barcode, forCalculation, cancellationToken);
+        var product = await service.GetAsync(barcode, cancellationToken);
         return product is null ? NotFound() : Ok(product);
     }
 

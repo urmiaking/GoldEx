@@ -144,11 +144,13 @@ public static class ServiceProviderExtensions
 
         var defaultCategories = new List<ProductCategory>
         {
-            ProductCategory.Create("انگشتر"),
-            ProductCategory.Create("النگو"),
-            ProductCategory.Create("دستبند"),
-            ProductCategory.Create("گوشواره"),
-            ProductCategory.Create("گردنبند"),
+            ProductCategory.Create("انگشتر", "01"),
+            ProductCategory.Create("النگو", "02"),
+            ProductCategory.Create("دستبند", "03"),
+            ProductCategory.Create("گوشواره", "04"),
+            ProductCategory.Create("سرویس کامل", "05"),
+            ProductCategory.Create("گردنبند", "06"),
+            ProductCategory.Create("نیم‌ست", "07")
         };
 
         await repository.CreateRangeAsync(defaultCategories);

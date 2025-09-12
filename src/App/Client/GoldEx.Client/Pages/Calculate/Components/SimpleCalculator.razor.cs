@@ -357,7 +357,7 @@ public partial class SimpleCalculator
             }
 
             await SendRequestAsync<IProductService, GetProductResponse?>(
-                 action: async (s, ct) => await s.GetAsync(barcode, true, ct),
+                 action: async (s, ct) => await s.GetAsync(barcode, ct),
                  afterSend: async response =>
                  {
                      if (response is null)

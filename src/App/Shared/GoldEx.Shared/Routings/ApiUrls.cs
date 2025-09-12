@@ -87,9 +87,9 @@ public class ApiUrls
 
         public static string Get(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Get).FormatRoute(new { id });
 
-        public static string Get(string barcode, bool? forCalculation = true) 
+        public static string Get(string barcode) 
             => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
-                .FormatRoute(new { barcode }).AppendQueryString(new { forCalculation });
+                .FormatRoute(new { barcode });
 
         public static string Create() => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Create);
 
@@ -120,6 +120,9 @@ public class ApiUrls
 
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.Delete).FormatRoute(new { id });
+
+        public static string GetLastCode() =>
+            BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetLastCode);
     }
 
     public class Customers

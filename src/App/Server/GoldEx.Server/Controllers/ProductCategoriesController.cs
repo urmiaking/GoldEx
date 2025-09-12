@@ -26,6 +26,13 @@ public class ProductCategoriesController(IProductCategoryService service) : ApiC
         return Ok(item);
     }
 
+    [HttpGet(ApiRoutes.ProductCategories.GetLastCode)]
+    public async Task<IActionResult> GetLastCodeAsync(CancellationToken cancellationToken)
+    {
+        var item = await service.GetLastCodeAsync(cancellationToken);
+        return Ok(item);
+    }
+
     [HttpPost(ApiRoutes.ProductCategories.Create)]
     public async Task<IActionResult> CreateAsync(CreateProductCategoryRequest request, CancellationToken cancellationToken)
     {

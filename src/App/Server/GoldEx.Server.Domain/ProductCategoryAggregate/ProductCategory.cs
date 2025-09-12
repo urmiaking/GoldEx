@@ -7,12 +7,13 @@ public readonly record struct ProductCategoryId(Guid Value);
 
 public class ProductCategory : EntityBase<ProductCategoryId>
 {
-    public static ProductCategory Create(string title)
+    public static ProductCategory Create(string title, string prefixCode)
     {
         return new ProductCategory
         {
             Id = new ProductCategoryId(Guid.NewGuid()),
-            Title = title
+            Title = title,
+            PrefixCode = prefixCode
         };
     }
 
@@ -21,7 +22,10 @@ public class ProductCategory : EntityBase<ProductCategoryId>
 #pragma warning restore CS8618
 
     public string Title { get; private set; }
+    public string PrefixCode { get; private set; }
     public IReadOnlyList<Product>? Products { get; private set; }
 
     public void SetTitle(string title) => Title = title;
+
+    public void SetPrefixCode(string prefixCode) => PrefixCode = prefixCode;
 }
