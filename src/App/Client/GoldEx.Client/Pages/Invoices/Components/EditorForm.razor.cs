@@ -197,7 +197,7 @@ public partial class EditorForm
             return;
 
         await SendRequestAsync<IProductService, GetProductResponse?>(
-            action: async (s, ct) => await s.GetAsync(barcode, false, ct),
+            action: async (s, ct) => await s.GetAsync(barcode, ct),
             afterSend: async response =>
             {
                 if (response is null)

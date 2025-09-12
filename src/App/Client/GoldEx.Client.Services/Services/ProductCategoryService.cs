@@ -59,4 +59,16 @@ internal class ProductCategoryService(HttpClient client, JsonSerializerOptions j
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
+
+    public async Task<GetProductCategoryNumberResponse> GetLastCodeAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.ProductCategories.GetLastCode(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetProductCategoryNumberResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

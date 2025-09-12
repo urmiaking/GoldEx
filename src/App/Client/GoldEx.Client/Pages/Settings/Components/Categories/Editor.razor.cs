@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -10,6 +11,25 @@ public partial class Editor
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public ProductCategoryVm Model { get; set; } = new();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Id.HasValue) 
+            await LoadPrefixAsync();
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadPrefixAsync()
+    {
+        await SendRequestAsync<IProductCategoryService, GetProductCategoryNumberResponse>(
+            action: (s, ct) => s.GetLastCodeAsync(ct),
+            afterSend: response =>
+            {
+                Model.PrefixCode = response.Number;
+                StateHasChanged();
+            });
+    }
 
     private async Task Submit()
     {

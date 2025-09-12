@@ -516,8 +516,6 @@ internal class InvoiceService(
                         product);
                 }
 
-                // TODO: test!
-
                 #endregion
 
                 #endregion

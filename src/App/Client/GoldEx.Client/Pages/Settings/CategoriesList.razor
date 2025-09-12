@@ -24,11 +24,13 @@
     <HeaderContent>
         <MudTh>ردیف</MudTh>
         <MudTh>عنوان</MudTh>
+        <MudTh>پیش کد</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ردیف">@context.Index</MudTd>
         <MudTd DataLabel="عنوان">@context.Title</MudTd>
+        <MudTd DataLabel="پیش کد">@context.PrefixCode</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="ویرایش">

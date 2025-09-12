@@ -18,7 +18,14 @@ internal class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCa
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(x => x.PrefixCode)
+            .HasMaxLength(2)
+            .IsRequired();
+
         builder.HasIndex(x => x.Title)
+            .IsUnique();
+
+        builder.HasIndex(x => x.PrefixCode)
             .IsUnique();
     }
 }
