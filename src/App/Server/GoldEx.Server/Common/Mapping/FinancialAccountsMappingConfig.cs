@@ -24,18 +24,21 @@ public class FinancialAccountsMappingConfig : IRegister
         config.NewConfig<FinancialAccount, GetFinancialAccountTitleResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Title, src =>
-                src.PriceUnit != null
-                    ? $"{src.AccountType.GetDisplayName()} - " +
-                      $"{(src.AccountType == FinancialAccountType.Cash
-                          ? src.CashAccount != null 
-                              ? src.CashAccount.AccountType == CashAccountType.Internal 
-                                  ? $"{src.CashAccount.AccountType.GetDisplayName()} - {src.PriceUnit.Title}" 
-                                  : $"{src.CashAccount.AccountType.GetDisplayName()} - {src.PriceUnit.Title} - {src.BrokerName}"
-                              : string.Empty
-                          : src.AccountType == FinancialAccountType.LocalBankAccount && src.LocalAccount != null
-                              ? src.LocalAccount.AccountNumber
-                              : src.AccountType == FinancialAccountType.InternationalBankAccount && src.InternationalAccount != null
-                                  ? src.InternationalAccount.AccountNumber
-                                  : string.Empty)}" : string.Empty);
+                src.AccountType == FinancialAccountType.Gold
+                    ? src.AccountType.GetDisplayName()
+                    : src.PriceUnit != null
+                        ? $"{src.AccountType.GetDisplayName()} - " +
+                          $"{(src.AccountType == FinancialAccountType.Cash
+                              ? src.CashAccount != null
+                                  ? src.CashAccount.AccountType == CashAccountType.Internal
+                                      ? $"{src.CashAccount.AccountType.GetDisplayName()} - {src.PriceUnit.Title}"
+                                      : $"{src.CashAccount.AccountType.GetDisplayName()} - {src.PriceUnit.Title} - {src.BrokerName}"
+                                  : string.Empty
+                              : src.AccountType == FinancialAccountType.LocalBankAccount && src.LocalAccount != null
+                                  ? src.LocalAccount.AccountNumber
+                                  : src.AccountType == FinancialAccountType.InternationalBankAccount && src.InternationalAccount != null
+                                      ? src.InternationalAccount.AccountNumber
+                                      : string.Empty)}"
+                        : string.Empty);
     }
 }

@@ -271,7 +271,7 @@ internal class AccountingTransactionService(
                     {
                         // --- منطق پرداخت وجه به تامین‌کننده ---
                         var supplierLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
-                            invoice.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
+                            payment.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
 
                         // بدهکار کردن حساب تامین‌کننده (کاهش بدهی شما)
                         transactions.Add(Transaction.CreateForInvoicePayment(
