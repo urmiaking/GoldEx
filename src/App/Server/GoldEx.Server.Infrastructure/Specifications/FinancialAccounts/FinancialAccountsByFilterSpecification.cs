@@ -10,6 +10,8 @@ public class FinancialAccountsByFilterSpecification : SpecificationBase<Financia
 {
     public FinancialAccountsByFilterSpecification(RequestFilter filter, FinancialAccountFilter financialAccountFilter)
     {
+        // TODO: since we will use this specification in customer's financial account list, we should pass customerId here and filter by it.
+
         if (filter.Skip < 0)
             filter.Skip = 0;
 
@@ -22,6 +24,8 @@ public class FinancialAccountsByFilterSpecification : SpecificationBase<Financia
         {
             AddCriteria(x => x.AccountType == financialAccountFilter.AccountType);
         }
+
+        AddCriteria(x => x.IsSystemAccount == financialAccountFilter.IsSystemAccount);
 
         if (!string.IsNullOrEmpty(filter.Search))
         {

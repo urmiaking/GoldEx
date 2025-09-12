@@ -2,4 +2,4 @@
 
 namespace GoldEx.Shared.DTOs.FinancialAccounts;
 
-public record FinancialAccountFilter(FinancialAccountType? AccountType);
+public record FinancialAccountFilter(FinancialAccountType? AccountType, bool IsSystemAccount);

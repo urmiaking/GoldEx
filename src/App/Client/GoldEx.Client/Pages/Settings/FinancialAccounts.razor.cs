@@ -114,7 +114,7 @@ public partial class FinancialAccounts
     {
         var result = new TableData<FinancialAccountVm>();
 
-        var financialAccountFilter = new FinancialAccountFilter(_accountType);
+        var financialAccountFilter = new FinancialAccountFilter(_accountType, true);
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch
