@@ -238,7 +238,20 @@
                     <MudTd DataLabel="دسته">@context.Product?.ProductCategoryTitle</MudTd>
                     <MudTd DataLabel="وزن">@context.Product?.Weight.ToWeightFormat(_model.UnitType)</MudTd>
                     <MudTd DataLabel="عیار">@context.Product?.Fineness.ToString("G29")</MudTd>
-                    <MudTd DataLabel="اجرت">@context.Product?.Wage?.ToString("G29") درصد</MudTd>
+                    <MudTd DataLabel="اجرت">
+                        @if (context.Product?.WageType is WageType.Percent)
+                        {
+                            @($"{context.Product?.Wage?.ToString("G29")} درصد")
+                        }
+                        else if (context.Product?.WageType is WageType.Fixed)
+                        {
+                            @($"{context.Product?.Wage?.ToString("#,##0.##")} {context.Product?.WagePriceUnitTitle}")
+                        }
+                        else
+                        {
+                            @("ندارد")
+                        }
+                    </MudTd>
                     <MudTd DataLabel="قیمت نهایی">
                         <strong>@CalculateFinalPrice(context.Product).ToCurrencyFormat(_model.PriceUnit?.Title)</strong>
                     </MudTd>
