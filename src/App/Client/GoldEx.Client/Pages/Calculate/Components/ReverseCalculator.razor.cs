@@ -1,5 +1,4 @@
 ﻿using GoldEx.Client.Pages.Calculate.ViewModels;
-using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Prices;
@@ -8,6 +7,7 @@ using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -132,25 +132,20 @@ public partial class ReverseCalculator
         StateHasChanged();
     }
 
-    private void OnProductTypeChanged(ProductType productType)
+    private async Task OnProductTypeChanged(ProductType productType)
     {
         _model.ProductType = productType;
-        switch (productType)
+
+        _model.ProfitPercent = productType switch
         {
-            case ProductType.Jewelry:
-                _model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
-                break;
-            case ProductType.Gold:
-                _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
-                break;
-            case ProductType.MoltenGold:
-                _model.ProfitPercent = _settings?.MoltenGoldCommissionPercent ?? 1.5m;
-                break;
-            case ProductType.UsedGold:
-                throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
-            default:
-                throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
-        }
+            ProductType.Jewelry => _settings?.JewelryProfitPercent ?? 20,
+            ProductType.Gold => _settings?.GoldProfitPercent ?? 7,
+            ProductType.MoltenGold => _settings?.MoltenGoldCommissionPercent ?? 1.5m,
+            ProductType.UsedGold => throw new ArgumentOutOfRangeException(nameof(productType), productType, null),
+            _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null)
+        };
+
+        await OnSearch();
     }
 
     #endregion
@@ -184,19 +179,11 @@ public partial class ReverseCalculator
         if (product is null)
             return 0;
 
-        var rawPrice = product.Weight * _model.GramPrice;
-
-        var wageAmount = 0m;
-        if (product.WageType == WageType.Percent)
-        {
-            wageAmount = rawPrice * (product.Wage!.Value / 100);
-        }
-
-        var profitAmount = (rawPrice + wageAmount) * (_model.ProfitPercent / 100);
-
-        var taxAmount = (wageAmount + profitAmount) * (_model.TaxPercent / 100);
-
-        var finalPrice = rawPrice + wageAmount + profitAmount + taxAmount;
+        var rawPrice = CalculatorHelper.Product.CalculateRawPrice(product.Weight, _model.GramPrice, product.Fineness, 1, product.ProductType);
+        var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, product.Weight, product.Wage, product.WageType, null);
+        var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, product.ProductType, _model.ProfitPercent);
+        var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, _model.TaxPercent, product.ProductType);
+        var finalPrice = CalculatorHelper.Product.CalculateFinalPrice(rawPrice, wageAmount, profitAmount, taxAmount, null, product.ProductType);
 
         return finalPrice;
     }
