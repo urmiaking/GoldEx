@@ -123,7 +123,7 @@ internal class InvoiceService(
                             null,
                             null);
 
-                        var barcode = await barcodeService.GenerateProductBarcodeAsync(product, cancellationToken);
+                        var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
 
                         product.SetBarcode(barcode);
 
@@ -194,7 +194,7 @@ internal class InvoiceService(
                         if (string.IsNullOrEmpty(itemDto.Product.Barcode))
                         {
                             // Generate barcode and assign
-                            var barcode = await barcodeService.GenerateProductBarcodeAsync(newProduct, cancellationToken);
+                            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(newProduct.ProductType, newProduct.ProductCategoryId, cancellationToken);
                             newProduct.SetBarcode(barcode);
                         }
                         else
@@ -388,7 +388,7 @@ internal class InvoiceService(
                             null,
                             null);
 
-                        var barcode = await barcodeService.GenerateProductBarcodeAsync(product, cancellationToken);
+                        var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
                         product.SetBarcode(barcode);
 
                         newProductsToCreate.Add(product);
@@ -494,7 +494,7 @@ internal class InvoiceService(
                                     : null);
 
                             // Generate barcode and assign
-                            var barcode = await barcodeService.GenerateProductBarcodeAsync(newProduct, cancellationToken);
+                            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(newProduct.ProductType, newProduct.ProductCategoryId, cancellationToken);
                             newProduct = newProduct.SetBarcode(barcode);
 
                             await productRepository.CreateAsync(newProduct, cancellationToken);

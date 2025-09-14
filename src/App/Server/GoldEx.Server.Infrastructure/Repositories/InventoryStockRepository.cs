@@ -139,6 +139,7 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         .AsNoTracking()
                         .AsSplitQuery()
                         .Include(p => p.ProductCategory)
+                        .Include(x => x.WagePriceUnit)
                         .Where(p => productIds.Contains(p.Id))
                         .ToDictionaryAsync(p => p.Id, p => p, cancellationToken); 
 
@@ -277,6 +278,7 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
             .Where(p => !filter.MaxWeight.HasValue || p.Weight <= filter.MaxWeight.Value)
             .Where(p => !filter.MaxWage.HasValue || (p.WageType == WageType.Percent && p.Wage <= filter.MaxWage.Value))
             .Include(p => p.ProductCategory)
+            .Include(p => p.WagePriceUnit)
             .ToListAsync(cancellationToken);
     }
 }

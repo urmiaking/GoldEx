@@ -3,16 +3,68 @@ using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Server.Infrastructure.Specifications.Products;
+using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Infrastructure.Services;
 
 [ScopedService]
-internal class BarcodeService(IProductRepository productRepository) : IBarcodeService
+internal class BarcodeService(IProductRepository productRepository, IProductCategoryRepository categoryRepository) : IBarcodeService
 {
+    public async Task<string> GenerateNextProductBarcodeAsync(ProductType productType, ProductCategoryId? categoryId, CancellationToken cancellationToken = default)
+    {
+        var typePrefix = GetTypePrefix(productType);
+        var categoryPrefix = "00";
+
+        if (categoryId.HasValue)
+        {
+            var category = await categoryRepository.Get(new ProductCategoriesByIdSpecification(categoryId.Value))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (category?.PrefixCode is not null)
+            {
+                categoryPrefix = category.PrefixCode;
+            }
+        }
+
+        var fullPrefix = $"{typePrefix}{categoryPrefix}";
+
+        // --- قدم دوم: پیدا کردن آخرین بارکد با این پیشوند ---
+        var lastBarcode = await productRepository.GetLastBarcodeWithPrefixAsync(fullPrefix, cancellationToken);
+
+        // --- قدم سوم: استخراج شماره سریال، افزایش و فرمت‌بندی ---
+        var nextSequence = 1;
+        if (!string.IsNullOrEmpty(lastBarcode))
+        {
+            var lastSequenceStr = lastBarcode.Substring(3); // از کاراکتر سوم به بعد
+            if (int.TryParse(lastSequenceStr, out var lastSequence))
+            {
+                nextSequence = lastSequence + 1;
+            }
+        }
+
+        var sequenceNumber = nextSequence.ToString("D5"); // فرمت ۵ رقمی
+
+        // --- قدم چهارم: ترکیب نهایی ---
+        return $"{fullPrefix}{sequenceNumber}";
+    }
+
+    private string GetTypePrefix(ProductType productType)
+    {
+        return productType switch
+        {
+            ProductType.Jewelry => "J",
+            ProductType.Gold => "G",
+            ProductType.MoltenGold => "M",
+            _ => "U" // Unknown
+        };
+    }
+
     public async Task<string> GenerateProductBarcodeAsync(Product product,
         CancellationToken cancellationToken = default)
     {
