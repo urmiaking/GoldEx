@@ -43,7 +43,7 @@
                        Color="Color.Primary"
                        Disabled="@IsBusy"
                        StartIcon="@Icons.Material.Filled.Save"
-                       OnClick="@(async () => await Submit())"
+                       ButtonType="ButtonType.Submit"
                        Variant="Variant.Filled">
                 @if (IsBusy)
                 {
