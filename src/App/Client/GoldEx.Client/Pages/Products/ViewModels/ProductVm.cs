@@ -225,8 +225,7 @@ public class ProductVm : INotifyPropertyChanged
                     Id = item.ProductCategoryId.Value,
                     Title = item.ProductCategoryTitle
                 }
-                : null,
-            Barcode = StringExtensions.GenerateRandomBarcode()
+                : null
         };
     }
 }
