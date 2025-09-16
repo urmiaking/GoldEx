@@ -15,6 +15,8 @@ public class ProductCategoryVm : IEquatable<ProductCategoryVm>
 
     [Display(Name = "پیش کد")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    [MaxLength(2, ErrorMessage = "{0} نمی تواند بزرگتر از {1} رقم باشد")]
+    [MinLength(2, ErrorMessage = "{0} نمی تواند کوچکتر از {1} رقم باشد")]
     public string PrefixCode { get; set; } = default!;
 
     public static ProductCategoryVm CreateFrom(GetProductCategoryResponse response)
