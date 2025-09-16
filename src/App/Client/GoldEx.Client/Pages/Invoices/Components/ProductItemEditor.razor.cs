@@ -136,17 +136,23 @@ public partial class ProductItemEditor
         {
             case ProductType.Jewelry:
                 Model.Product.WageType = WageType.Fixed;
+                Model.Product.WagePriceUnitId = PriceUnit.Id;
+                Model.Product.WagePriceUnitTitle = PriceUnit.Title;
                 Model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
                 Model.TaxPercent = _settings?.TaxPercent ?? 9;
                 break;
             case ProductType.Gold:
                 Model.Product.WageType = WageType.Percent;
+                Model.Product.WagePriceUnitId = null;
+                Model.Product.WagePriceUnitTitle = null;
                 Model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 Model.TaxPercent = _settings?.TaxPercent ?? 9;
                 break;
             case ProductType.MoltenGold:
                 Model.Product.Wage = null;
                 Model.Product.WageType = null;
+                Model.Product.WagePriceUnitId = null;
+                Model.Product.WagePriceUnitTitle = null;
                 Model.ProfitPercent = 0;
                 Model.TaxPercent = 0;
                 break;
