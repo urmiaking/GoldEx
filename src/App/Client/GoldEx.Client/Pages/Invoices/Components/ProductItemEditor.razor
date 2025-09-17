@@ -114,7 +114,7 @@
                         </ChildContent>
                     </MudMenu>
                 </MudItem>
-                <MudItem xs="12" sm="6" md="4">
+                @* <MudItem xs="12" sm="6" md="4">
                     <MudNumericField For="@(() => Model.Quantity)"
                                      Immediate="true"
                                      Label="@Model.GetDisplayName(() => Model.Quantity)"
@@ -123,7 +123,7 @@
                                      @bind-Value="Model.Quantity"
                                      HideSpinButtons="true"
                                      Variant="Variant.Outlined" />
-                </MudItem>
+                </MudItem> *@
                 <MudItem xs="12" sm="6" md="4">
                     <MudNumericField For="@(() => Model.Product.Fineness)"
                                      Format="G29"
