@@ -94,46 +94,52 @@
         @switch (_itemType)
         {
             case ItemType.Product when context.Product is not null:
-                <MudTooltip Text="@GetTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                <MudTooltip Text="@GetBarcodeTooltipText(context)" Arrow="true" Placement="Placement.Top">
                     <MudTd DataLabel="بارکد">@context.Product.Barcode</MudTd>
                 </MudTooltip>
                 <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
                 <MudTd DataLabel="وزن">@(context.Product.Weight?.ToString("G29")) @context.Product.GoldUnitType.GetDisplayName()</MudTd>
-                <MudTd DataLabel="اجرت">
-                    @{
-                        if (_itemStatus is ItemStatus.Sold)
-                        {
-                            @(context.SaleWageType switch
+
+                <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                    <MudTd DataLabel="اجرت">
+                        @{
+                            if (_itemStatus is ItemStatus.Sold)
                             {
-                                WageType.Fixed => $"{context.SaleWage?.ToCurrencyFormat(context.SaleWagePriceUnitTitle)}",
-                                WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
-                                _ => "ندارد"
-                            })
-                        }
-                        else
-                        {
-                            @(context.Product.WageType switch
+                                @(context.SaleWageType switch
+                                {
+                                    WageType.Fixed => $"{context.SaleWage?.ToCurrencyFormat(context.SaleWagePriceUnitTitle)}",
+                                    WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
+                                    _ => "ندارد"
+                                })
+                            }
+                            else
                             {
-                                WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
-                                WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
-                                _ => "ندارد"
-                            })
+                                @(context.Product.WageType switch
+                                {
+                                    WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
+                                    WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                                    _ => "ندارد"
+                                })
+                            }
                         }
-                    }
-                </MudTd>
+                    </MudTd>
+                </MudTooltip>
+                
                 <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
                 <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
                 break;
             case ItemType.Coin when context.Coin is not null:
                 <MudTd DataLabel="عنوان">@(context.Coin.Title)</MudTd>
+                <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToString("G29")</MudTd>
+                <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
                 break;
             case ItemType.Currency when context.Currency is not null:
                 <MudTd DataLabel="عنوان">@(context.Currency.Title)</MudTd>
+                <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToString("G29")</MudTd>
+                <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
                 break;
         }
-        <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToString("G29")</MudTd>
-        <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 @switch (_itemType)
