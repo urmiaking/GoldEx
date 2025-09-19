@@ -63,22 +63,30 @@
                 <MudTh><MudTableSortLabel SortLabel="Product.ProductType" T="InventoryStockVm">نوع جنس</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Name" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Product.Wage" T="InventoryStockVm">اجرت ساخت</MudTableSortLabel></MudTh>
+                @if (_itemStatus is ItemStatus.Sold)
+                {
+                    <MudTh>اجرت ساخت</MudTh>
+                }
+                else
+                {
+                    <MudTh><MudTableSortLabel SortLabel="Product.Wage" T="InventoryStockVm">اجرت ساخت</MudTableSortLabel></MudTh>
+                }
                 <MudTh><MudTableSortLabel SortLabel="Product.Fineness" T="InventoryStockVm">عیار</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.ProductCategory.Title" T="InventoryStockVm">دسته</MudTableSortLabel></MudTh>
                 break;
             case ItemType.Coin:
                 <MudTh><MudTableSortLabel SortLabel="Coin.Title" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CurrentAmount" T="InventoryStockVm">تعداد موجود</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SoldAmount" T="InventoryStockVm">تعداد فروخته شده</MudTableSortLabel></MudTh>
                 break;
             case ItemType.Currency:
                 <MudTh><MudTableSortLabel SortLabel="Currency.Title" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CurrentAmount" T="InventoryStockVm">تعداد موجود</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SoldAmount" T="InventoryStockVm">تعداد فروخته شده</MudTableSortLabel></MudTh>
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
-
-        <MudTh><MudTableSortLabel SortLabel="CurrentAmount" T="InventoryStockVm">تعداد موجود</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="SoldAmount" T="InventoryStockVm">تعداد فروخته شده</MudTableSortLabel></MudTh>
 
         <MudTh>عملیات</MudTh>
     </HeaderContent>
@@ -93,12 +101,26 @@
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
                 <MudTd DataLabel="وزن">@(context.Product.Weight?.ToString("G29")) @context.Product.GoldUnitType.GetDisplayName()</MudTd>
                 <MudTd DataLabel="اجرت">
-                    @(context.Product.WageType switch
-                    {
-                        WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
-                        WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
-                        _ => "ندارد"
-                    })
+                    @{
+                        if (_itemStatus is ItemStatus.Sold)
+                        {
+                            @(context.SaleWageType switch
+                            {
+                                WageType.Fixed => $"{context.SaleWage?.ToCurrencyFormat(context.SaleWagePriceUnitTitle)}",
+                                WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
+                                _ => "ندارد"
+                            })
+                        }
+                        else
+                        {
+                            @(context.Product.WageType switch
+                            {
+                                WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
+                                WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                                _ => "ندارد"
+                            })
+                        }
+                    }
                 </MudTd>
                 <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
                 <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>

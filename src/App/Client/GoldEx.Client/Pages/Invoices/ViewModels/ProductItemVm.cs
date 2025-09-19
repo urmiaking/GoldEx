@@ -119,7 +119,7 @@ public class ProductItemVm
     {
         if (InvoiceType is InvoiceType.Purchase)
         {
-            RawAmount = (CostPrice * Quantity) ?? 0;
+            RawAmount = (CostPrice * (CostPriceExchangeRate ?? 1) * Quantity) ?? 0;
             WageAmount = 0;
             ProfitAmount = 0;
             TaxAmount = 0;

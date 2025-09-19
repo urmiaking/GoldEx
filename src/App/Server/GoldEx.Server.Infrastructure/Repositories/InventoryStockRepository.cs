@@ -5,6 +5,7 @@ using GoldEx.Sdk.Server.Infrastructure.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
@@ -141,19 +142,29 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         .Include(p => p.ProductCategory)
                         .Include(x => x.WagePriceUnit)
                         .Where(p => productIds.Contains(p.Id))
-                        .ToDictionaryAsync(p => p.Id, p => p, cancellationToken); 
+                        .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
+
+                    var saleDetails = await dbContext.Set<Invoice>()
+                        .AsNoTracking()
+                        .Include(x => x.ProductItems)
+                            .ThenInclude(x => x.SaleWagePriceUnit)
+                        .AsSplitQuery()
+                        .Where(i => i.InvoiceType == InvoiceType.Sell)
+                        .SelectMany(i => i.ProductItems) 
+                        .Where(item => productIds.Contains(item.ProductId))
+                        .ToDictionaryAsync(item => item.ProductId, item => item, cancellationToken);
 
                     var combinedData = aggregatedResults.Select(agg => new
                     {
-                        Item = products.GetValueOrDefault(agg.ProductId),
+                        Product = products.GetValueOrDefault(agg.ProductId),
+                        SaleInfo = saleDetails.GetValueOrDefault(agg.ProductId), 
+                        agg.DateTime,
                         agg.CurrentQuantity,
-                        agg.SoldQuantity,
-                        agg.DateTime
-                    }).Where(x => x.Item != null)
-                      .AsQueryable();
+                        agg.SoldQuantity
+                    }).Where(x => x.Product != null).AsQueryable();
 
                     if (!string.IsNullOrEmpty(filter.Search))
-                        combinedData = combinedData.Where(x => x.Item!.Name.Contains(filter.Search) || x.Item!.Barcode.Contains(filter.Search));
+                        combinedData = combinedData.Where(x => x.Product!.Name.Contains(filter.Search) || x.Product!.Barcode.Contains(filter.Search));
 
                     var total = combinedData.Count();
                     var sortedData = combinedData.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending, "Item.CreatedAt");
@@ -161,10 +172,13 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
 
                     var finalData = pagedData.Select(x => new InventorySummaryData
                     {
-                        Product = x.Item,
+                        Product = x.Product,
                         CurrentQuantity = x.CurrentQuantity,
                         SoldQuantity = x.SoldQuantity,
-                        DateTime = x.DateTime
+                        DateTime = x.DateTime,
+                        SaleWage = x.SaleInfo?.SaleWage,
+                        SaleWageType = x.SaleInfo?.SaleWageType,
+                        SaleWagePriceUnitTitle = x.SaleInfo?.SaleWagePriceUnit?.Title
                     }).ToList();
 
                     return (finalData, total);
