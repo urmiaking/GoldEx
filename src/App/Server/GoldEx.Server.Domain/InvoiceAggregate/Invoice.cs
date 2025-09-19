@@ -323,7 +323,7 @@ public class Invoice : EntityBase<InvoiceId>
         CurrencyItems.Sum(item => item.ItemTaxAmount);
 
     public decimal TotalAmount =>
-        ProductItems.Sum(item => item.ItemFinalAmount) +
+        ProductItems.Sum(item => item.ItemFinalAmount * (item.CostPriceExchangeRate ?? 1)) +
         CoinItems.Sum(item => item.ItemFinalAmount) +
         CurrencyItems.Sum(item => item.ItemFinalAmount) +
         UsedProducts.Sum(item => item.ItemFinalAmount);

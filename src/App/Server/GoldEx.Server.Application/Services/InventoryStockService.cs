@@ -234,8 +234,11 @@ internal class InventoryStockService(
                     CurrentAmount: 1,
                     SoldAmount: 0,
                     DateTime.Now,
-                    mapper.Map<GetProductResponse>(item),
                     null,
+                    null,
+                    null,
+                    mapper.Map<GetProductResponse>(item),
+                    null, 
                     null
                 ));
             }
