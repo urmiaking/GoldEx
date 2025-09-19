@@ -11,6 +11,7 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -125,7 +126,7 @@ public partial class PaymentList
             });
     }
 
-    private void OnTotalRemainingClicked()
+    private async Task OnTotalRemainingClicked()
     {
         var remaining = TotalRemainingCalculated;
         if (remaining <= 0)
@@ -149,13 +150,17 @@ public partial class PaymentList
         }
         else
         {
-            Items.Add(new InvoicePaymentVm
+            var item = new InvoicePaymentVm
             {
                 Amount = remaining,
                 AmountAdornmentText = PriceUnit.Title,
                 PriceUnit = PriceUnit,
                 PaymentDate = DateTime.Now
-            });
+            };
+
+            Items.Add(item);
+
+            await LoadFinancialAccountsAsync(item);
         }
     }
 

@@ -20,7 +20,7 @@ public class InvoicesMappingConfig : IRegister
                 src => MapContext.Current.GetService<IPriceUnitRepository>()
                     .Get(new PriceUnitsSetAsDefaultSpecification())
                     .FirstOrDefault()!.Title)
-            .Map(dest => dest.TotalAmount, src => src.TotalAmount * (src.ExchangeRate ?? 1))
+            .Map(dest => dest.TotalAmount, src => src.TotalAmountWithDiscountsAndExtraCosts)
             .Map(dest => dest.PaymentStatus,
                 src => Math.Abs(src.TotalUnpaidAmount - 0m) < 0.01m
                     ? InvoicePaymentStatus.Paid
