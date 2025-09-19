@@ -94,7 +94,7 @@ public class Invoice : EntityBase<InvoiceId>
     private readonly List<InvoiceProductItem> _products = [];
     public IReadOnlyList<InvoiceProductItem> ProductItems => _products;
 
-    public void AddProductItem(InvoiceProductItemId? id,
+    public void AddPurchaseProductItem(InvoiceProductItemId? id,
         decimal gramPrice,
         decimal profitPercent,
         decimal taxPercent,
@@ -105,7 +105,7 @@ public class Invoice : EntityBase<InvoiceId>
         bool isInstantProduct,
         Product product)
     {
-        _products.Add(InvoiceProductItem.Create(id,
+        _products.Add(InvoiceProductItem.CreatePurchaseItem(id,
             gramPrice,
             profitPercent,
             taxPercent,
@@ -118,6 +118,41 @@ public class Invoice : EntityBase<InvoiceId>
             .SetInvoice(this)
             .RecalculateAmounts(product, InvoiceType));
     }
+
+    public void AddSaleProductItem(InvoiceProductItemId? id,
+        decimal gramPrice,
+        decimal profitPercent,
+        decimal taxPercent,
+        int quantity,
+        decimal? costPrice,
+        decimal? costPriceExchangeRate,
+        PriceUnitId? costPriceUnitId,
+        bool isInstantProduct,
+        decimal saleWage,
+        WageType? saleWageType,
+        PriceUnitId? saleWagePriceUnitId,
+        decimal? saleWagePriceUnitExchangeRate,
+        Product product)
+    {
+        _products.Add(InvoiceProductItem.CreateSaleItem(id,
+            gramPrice,
+            profitPercent,
+            taxPercent,
+            quantity,
+            product.Id,
+            costPrice,
+            costPriceExchangeRate,
+            costPriceUnitId,
+            isInstantProduct,
+            saleWage,
+            saleWageType,
+            saleWagePriceUnitId,
+            saleWagePriceUnitExchangeRate)
+            .SetInvoice(this)
+            .RecalculateAmounts(product, InvoiceType));
+    }
+
+    public void RemoveProductItem(InvoiceProductItem productItem) => _products.Remove(productItem);
 
     public void ClearProductItems() => _products.Clear();
 

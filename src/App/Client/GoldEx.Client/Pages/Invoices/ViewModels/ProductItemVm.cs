@@ -14,7 +14,7 @@ public class ProductItemVm
     private decimal _gramPrice;
     private decimal _profitPercent;
     private decimal _taxPercent;
-    private decimal? _exchangeRate;
+    private decimal? _wageExchangeRate;
     private ProductVm _product = ProductVm.CreateDefaultInstance();
 
     [Display(Name = "نرخ هر گرم طلا")]
@@ -51,12 +51,12 @@ public class ProductItemVm
     }
 
     [Display(Name = "نرخ تبدیل ارز")]
-    public decimal? ExchangeRate
+    public decimal? WageExchangeRate
     {
-        get => _exchangeRate;
+        get => _wageExchangeRate;
         set
         {
-            _exchangeRate = value;
+            _wageExchangeRate = value;
             RecalculateAmounts();
         }
     }
@@ -128,7 +128,7 @@ public class ProductItemVm
         else
         {
             RawAmount = CalculatorHelper.Product.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.Fineness, Quantity, Product.ProductType);
-            WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, ExchangeRate);
+            WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, WageExchangeRate);
             ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
             TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
             FinalAmount = CalculatorHelper.Product.CalculateFinalPrice(RawAmount, WageAmount, ProfitAmount, TaxAmount, 0, Product.ProductType);
@@ -143,7 +143,7 @@ public class ProductItemVm
         {
             Product = ProductVm.CreateDefaultInstance(),
             GramPrice = 0,
-            ExchangeRate = null,
+            WageExchangeRate = null,
             ProfitPercent = 0,
             TaxPercent = 0,
             Quantity = 1
@@ -155,7 +155,7 @@ public class ProductItemVm
         Index = other.Index;
         Product = other.Product;
         GramPrice = other.GramPrice;
-        ExchangeRate = other.ExchangeRate;
+        WageExchangeRate = other.WageExchangeRate;
         ProfitPercent = other.ProfitPercent;
         TaxPercent = other.TaxPercent;
         CostPrice = other.CostPrice;
@@ -175,9 +175,9 @@ public class ProductItemVm
             productItem.GramPrice,
             productItem.ProfitPercent,
             productItem.TaxPercent,
-            productItem.ExchangeRate,
             productItem.CostPrice,
             productItem.CostPriceExchangeRate,
+            productItem.WageExchangeRate,
             productItem.CostPriceUnitId,
             productItem.IsInstantProduct,
             productItem.Quantity,
@@ -189,7 +189,7 @@ public class ProductItemVm
         return new ProductItemVm
         {
             Id = response.Id,
-            ExchangeRate = response.ExchangeRate,
+            WageExchangeRate = response.WageExchangeRate,
             GramPrice = response.GramPrice,
             ProfitPercent = response.ProfitPercent,
             TaxPercent = response.TaxPercent,
@@ -198,7 +198,7 @@ public class ProductItemVm
             CostPriceUnitId = response.CostPriceUnitId,
             CostPriceUnitTitle = response.CostPriceUnitTitle,
             IsInstantProduct = response.IsInstantProduct,
-            Product = ProductVm.CreateFrom(response.Product),
+            Product = ProductVm.CreateFromInvoice(response),
             Quantity = response.Quantity,
             InvoiceType = invoiceType
         };

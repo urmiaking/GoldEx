@@ -225,7 +225,7 @@ public partial class EditorForm
                 {
                     Product = ProductVm.CreateFrom(response),
                     GramPrice = gramPrice,
-                    ExchangeRate = exchangeRate,
+                    WageExchangeRate = exchangeRate,
                     InvoiceType = InvoiceType.Sell,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold
@@ -506,12 +506,12 @@ public partial class EditorForm
                         s.GetExchangeRateAsync(item.Product.WagePriceUnitId.Value, _model.InvoicePriceUnit.Id, ct),
                     afterSend: response =>
                     {
-                        item.ExchangeRate = response.ExchangeRate;
+                        item.WageExchangeRate = response.ExchangeRate;
                     });
             }
-            else if (item.ExchangeRate.HasValue)
+            else if (item.WageExchangeRate.HasValue)
             {
-                item.ExchangeRate = null;
+                item.WageExchangeRate = null;
             }
         }
 
