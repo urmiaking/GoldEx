@@ -150,8 +150,23 @@ public partial class InventoryStockList
         Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
     }
 
-    private string GetTooltipText(InventoryStockVm context)
+    private string GetBarcodeTooltipText(InventoryStockVm context)
     {
         return context.DateTime.ToString(CultureInfo.CurrentCulture);
+    }
+
+    private string? GetWageTooltipText(InventoryStockVm context)
+    {
+        if (context.SaleWage.HasValue)
+        {
+            return "اجرت خرید: " + context.Product?.WageType switch
+            {
+                WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
+                WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                _ => "ندارد"
+            };
+        }
+
+        return null;
     }
 }
