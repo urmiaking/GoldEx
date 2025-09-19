@@ -138,15 +138,21 @@ public partial class ProductItemEditor
                 Model.Product.WageType = WageType.Fixed;
                 Model.Product.WagePriceUnitId = PriceUnit.Id;
                 Model.Product.WagePriceUnitTitle = PriceUnit.Title;
-                Model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
-                Model.TaxPercent = _settings?.TaxPercent ?? 9;
+                if (Model.InvoiceType is InvoiceType.Sell)
+                {
+                    Model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
+                    Model.TaxPercent = _settings?.TaxPercent ?? 9;
+                }
                 break;
             case ProductType.Gold:
                 Model.Product.WageType = WageType.Percent;
                 Model.Product.WagePriceUnitId = null;
                 Model.Product.WagePriceUnitTitle = null;
-                Model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
-                Model.TaxPercent = _settings?.TaxPercent ?? 9;
+                if (Model.InvoiceType is InvoiceType.Sell)
+                {
+                    Model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+                    Model.TaxPercent = _settings?.TaxPercent ?? 9;
+                }
                 break;
             case ProductType.MoltenGold:
                 Model.Product.Wage = null;
@@ -195,7 +201,7 @@ public partial class ProductItemEditor
         switch (wageType)
         {
             case WageType.Percent:
-                Model.ExchangeRate = null;
+                Model.WageExchangeRate = null;
                 break;
             case WageType.Fixed:
                 if (Model.Product.WagePriceUnitId.HasValue)
@@ -260,7 +266,7 @@ public partial class ProductItemEditor
                 afterSend: response =>
                 {
                     if (response.ExchangeRate.HasValue)
-                        Model.ExchangeRate = response.ExchangeRate.Value;
+                        Model.WageExchangeRate = response.ExchangeRate.Value;
                 });
 
         StateHasChanged();
@@ -270,6 +276,7 @@ public partial class ProductItemEditor
     {
         Model.CostPriceUnitId = priceUnit.Id;
         Model.CostPriceUnitTitle = priceUnit.Title;
+        Model.CostPriceExchangeRate = null;
 
         if (PriceUnit.Id != Model.CostPriceUnitId)
             await SendRequestAsync<IPriceService, GetExchangeRateResponse>(

@@ -193,13 +193,13 @@
                 @if (Model.Product.WageType is WageType.Fixed && PriceUnit.Id != Model.Product.WagePriceUnitId)
                 {
                     <MudItem xs="12" sm="6" md="4">
-                        <MudNumericField For="@(() => Model.ExchangeRate)"
+                        <MudNumericField For="@(() => Model.WageExchangeRate)"
                                          Format="#,##0.########"
                                          Immediate="true"
                                          Label="@WageExchangeRateLabel"
                                          Margin="Margin.Dense"
                                          T="decimal?"
-                                         @bind-Value="Model.ExchangeRate"
+                                         @bind-Value="Model.WageExchangeRate"
                                          Adornment="Adornment.End"
                                          AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
                                          HideSpinButtons="true"

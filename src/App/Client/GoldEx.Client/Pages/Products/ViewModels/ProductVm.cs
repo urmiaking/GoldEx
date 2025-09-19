@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Client.Pages.Products.ViewModels;
 
@@ -177,6 +178,21 @@ public class ProductVm : INotifyPropertyChanged
                 Purity = x.Purity
             }).ToList()
         };
+    }
+
+    internal static ProductVm CreateFromInvoice(GetInvoiceProductItemResponse response)
+    {
+        var vm = CreateFrom(response.Product);
+
+        if (response.SaleWage is not null)
+        {
+            vm.Wage = response.SaleWage;
+            vm.WageType = response.SaleWageType;
+            vm.WagePriceUnitId = response.SaleWagePriceUnitId;
+            vm.WagePriceUnitTitle = response.SaleWagePriceUnitTitle;
+        }
+
+        return vm;
     }
 
     internal static ProductRequestDto ToRequest(ProductVm item)

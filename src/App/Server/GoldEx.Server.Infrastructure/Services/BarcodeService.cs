@@ -23,7 +23,8 @@ internal class BarcodeService(IProductRepository productRepository, IProductCate
 
         if (categoryId.HasValue)
         {
-            var category = await categoryRepository.Get(new ProductCategoriesByIdSpecification(categoryId.Value))
+            var category = await categoryRepository
+                .Get(new ProductCategoriesByIdSpecification(categoryId.Value))
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (category?.PrefixCode is not null)
@@ -51,7 +52,9 @@ internal class BarcodeService(IProductRepository productRepository, IProductCate
         var sequenceNumber = nextSequence.ToString("D5"); // فرمت ۵ رقمی
 
         // --- قدم چهارم: ترکیب نهایی ---
-        return $"{fullPrefix}{sequenceNumber}";
+        var barcode = $"{fullPrefix}{sequenceNumber}";
+
+        return barcode;
     }
 
     private string GetTypePrefix(ProductType productType)
