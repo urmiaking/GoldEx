@@ -9,10 +9,12 @@ public class InvoiceListVm
     public string CustomerFullName { get; set; } = default!;
     public long InvoiceNumber { get; set; }
     public DateOnly InvoiceDate { get; set; }
+    public DateTime CreatedAt { get; set; }
     public DateOnly? DueDate { get; set; }
     public InvoiceType InvoiceType { get; set; }
     public decimal TotalAmount { get; set; }
-    public string AmountUnit { get; set; } = default!;
+    public decimal TotalUnpaidAmount { get; set; }
+    public string PriceUnit { get; set; } = default!;
     public InvoicePaymentStatus PaymentStatus { get; set; }
 
     public static InvoiceListVm CreateFrom(GetInvoiceListResponse listResponse)
@@ -25,8 +27,10 @@ public class InvoiceListVm
             InvoiceDate = listResponse.InvoiceDate,
             InvoiceType = listResponse.InvoiceType,
             DueDate = listResponse.DueDate,
+            CreatedAt = listResponse.CreatedAt,
             TotalAmount = listResponse.TotalAmount,
-            AmountUnit = listResponse.AmountUnit,
+            PriceUnit = listResponse.PriceUnit,
+            TotalUnpaidAmount = listResponse.TotalUnpaidAmount,
             PaymentStatus = listResponse.PaymentStatus
         };
     }

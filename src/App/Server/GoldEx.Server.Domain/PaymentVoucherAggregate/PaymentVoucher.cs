@@ -70,6 +70,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
     public void SetSourceFinancialAccountId(FinancialAccountId financialAccountId) => SourceFinancialAccountId = financialAccountId;
     public void SetDestinationFinancialAccountId(FinancialAccountId? financialAccountId) => DestinationFinancialAccountId = financialAccountId;
     public void SetCustomerId(CustomerId customerId) => CustomerId = customerId;
+    public void SetCustomer(Customer customer) => Customer = customer;
     public void SetPaymentDate(DateOnly paymentDate) => PaymentDate = paymentDate;
     public void SetVoucherNumber(long voucherNumber) => VoucherNumber = voucherNumber;
     public void SetAmount(decimal amount) => Amount = amount;
