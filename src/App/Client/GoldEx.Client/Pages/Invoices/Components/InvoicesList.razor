@@ -115,13 +115,27 @@
         <MudText>در حال بارگذاری</MudText>
     </LoadingContent>
     <PagerContent>
-        <div class="d-flex flex-column align-center">
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
             <MudPagination SelectedChanged="PageChanged"
                            Color="Color.Primary"
-                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
-                           Class="pa-4"
+                           Count="@pageCount"
                            ShowFirstButton="true"
                            ShowLastButton="true" />
+        
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
         </div>
     </PagerContent>
 </MudTable>
