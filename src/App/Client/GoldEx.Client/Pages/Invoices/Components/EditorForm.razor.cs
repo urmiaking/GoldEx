@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -15,7 +14,6 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
@@ -241,6 +239,39 @@ public partial class EditorForm
 
     #region ProductItem
 
+    private async Task OnOpenProductSelector()
+    {
+        decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+
+        var parameters = new DialogParameters<InventoryItemSelector>
+        {
+            { x => x.GramPrice, gramPrice },
+            { x => x.TaxPercent, _setting?.TaxPercent ?? 10 },
+            { x => x.GoldProfitPercent, _setting?.GoldProfitPercent ?? 7 },
+            { x => x.JewelryProfitPercent, _setting?.JewelryProfitPercent ?? 20 },
+            { x => x.ItemType, ItemType.Product },
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.ItemStatus, ItemStatus.Available }
+        };
+
+        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب جنس از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Large });
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: List<ProductItemVm> productItems })
+        {
+            foreach (var item in productItems)
+            {
+                if (_model.ProductItems.All(x => x.Product.Id != item.Product.Id))
+                {
+                    item.Index = _model.GetLastProductIndexNumber() + 1;
+                    _model.AddProductItem(item);
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
     private async Task OnAddProductItem()
     {
         var model = ProductItemVm.CreateDefaultInstance();
@@ -311,6 +342,33 @@ public partial class EditorForm
 
     #region CoinItem
 
+    private async Task OnOpenCoinSelector()
+    {
+        var parameters = new DialogParameters<InventoryItemSelector>
+        {
+            { x => x.ItemType, ItemType.Coin },
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.ItemStatus, ItemStatus.Available }
+        };
+
+        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب سکه از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Medium });
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: List<CoinItemVm> coinItems })
+        {
+            foreach (var item in coinItems)
+            {
+                if (_model.CoinItems.All(x => x.Coin.Id != item.Coin.Id))
+                {
+                    item.Index = _model.GetLastCoinIndexNumber() + 1;
+                    _model.AddCoinItem(item);
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
     private async Task OnAddCoinItem()
     {
         var parameters = new DialogParameters<CoinItemEditor>
@@ -365,6 +423,33 @@ public partial class EditorForm
     #endregion
 
     #region CurrencyItem
+
+    private async Task OnOpenCurrencySelector()
+    {
+        var parameters = new DialogParameters<InventoryItemSelector>
+        {
+            { x => x.ItemType, ItemType.Currency },
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.ItemStatus, ItemStatus.Available },
+        };
+
+        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب ارز از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Medium });
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: List<CurrencyItemVm> currencyItems })
+        {
+            foreach (var item in currencyItems)
+            {
+                if (_model.CurrencyItems.All(x => x.Currency.Id != item.Currency.Id))
+                {
+                    item.Index = _model.GetLastCurrencyIndexNumber() + 1;
+                    _model.AddCurrencyItem(item);
+                }
+            }
+            StateHasChanged();
+        }
+    }
 
     private async Task OnAddCurrencyItem()
     {

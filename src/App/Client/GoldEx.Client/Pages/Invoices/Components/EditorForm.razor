@@ -209,14 +209,15 @@
         <div class="my-2">
             <MudTabs Elevation="2" Rounded="true" Centered="true">
                 <MudTabPanel Text="طلا و جواهر" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
-                    <ProductItemsList Items="@_model.ProductItems"
-                                      PriceUnit="@_model.InvoicePriceUnit"
+                    <ProductItemsList Items="_model.ProductItems"
+                                      PriceUnit="_model.InvoicePriceUnit"
                                       OnEditItem="OnEditProductItem"
                                       OnRemoveItem="OnRemoveProductItem"
                                       Class="mt-2 pa-4"
                                       Elevation="2"
                                       InvoiceType="_model.InvoiceType"
                                       OnAddItem="OnAddProductItem"
+                                      OnOpenSelector="OnOpenProductSelector"
                                       OnBarcodeChanged="OnBarcodeChanged" />
                 </MudTabPanel>
                 <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
@@ -226,20 +227,24 @@
                                    OnRemoveItem="OnRemoveCoinItem"
                                    Class="mt-2 pa-4"
                                    Elevation="2"
-                                   OnAddItem="OnAddCoinItem" />
+                                   InvoiceType="@_model.InvoiceType"
+                                   OnAddItem="OnAddCoinItem"
+                                   OnOpenSelector="OnOpenCoinSelector" />
                 </MudTabPanel>
                 <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Success">
-                    <CurrencyItemsList Items="@_model.CurrencyItems"
-                                       PriceUnit="@_model.InvoicePriceUnit"
+                    <CurrencyItemsList Items="_model.CurrencyItems"
+                                       PriceUnit="_model.InvoicePriceUnit"
                                        OnEditItem="OnEditCurrencyItem"
                                        OnRemoveItem="OnRemoveCurrencyItem"
                                        Class="mt-2 pa-4"
                                        Elevation="2"
-                                       OnAddItem="OnAddCurrencyItem" />
+                                       InvoiceType="_model.InvoiceType"
+                                       OnAddItem="OnAddCurrencyItem"
+                                       OnOpenSelector="OnOpenCurrencySelector" />
                 </MudTabPanel>
                 <MudTabPanel Text="طلای دست دوم" Icon="@Icons.Material.Filled.Recycling" IconColor="Color.Error">
-                    <UsedProductsList Items="@_model.UsedProducts"
-                                      PriceUnit="@_model.InvoicePriceUnit"
+                    <UsedProductsList Items="_model.UsedProducts"
+                                      PriceUnit="_model.InvoicePriceUnit"
                                       OnEditItem="OnEditUsedProduct"
                                       OnRemoveItem="OnRemoveUsedProduct"
                                       Class="mt-2 pa-4"

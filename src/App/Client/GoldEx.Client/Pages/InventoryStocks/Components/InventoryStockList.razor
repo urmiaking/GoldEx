@@ -1,69 +1,74 @@
 ﻿@inherits GoldExComponentBase
 
 <MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+          MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
+        
+        @if (!Selectable)
+        {
+            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
+                                    Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+                                    PlaceholderStart="از" PlaceholderEnd="تا" Label="@DateRangeFilterLabel" Clearable="true" />
+            </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
-                                Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
-                                PlaceholderStart="از" PlaceholderEnd="تا" Label="@DateRangeFilterLabel" Clearable="true" />
-        </MudHidden>
+            <MudButtonGroup Size="Size.Small" Color="@ItemTypeColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@ItemTypeIcon">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        @ItemType.GetDisplayName()
+                    </MudHidden>
+                </MudButton>    
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info"
+                                 OnClick="() => SetItemTypeFilterText(ItemType.Product)">
+                        @ItemType.Product.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary"
+                                 OnClick="() => SetItemTypeFilterText(ItemType.Coin)">
+                        @ItemType.Coin.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Tertiary"
+                                 OnClick="() => SetItemTypeFilterText(ItemType.Currency)">
+                        @ItemType.Currency.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
 
-        <MudButtonGroup Size="Size.Small" Color="@ItemTypeColor" Variant="Variant.Filled" Class="ml-3">
-            <MudButton Size="Size.Small" StartIcon="@ItemTypeIcon">
-                <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    @_itemType.GetDisplayName()
-                </MudHidden>
-            </MudButton>
-            <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                <MudMenuItem Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info"
-                             OnClick="() => SetItemTypeFilterText(ItemType.Product)">
-                    @ItemType.Product.GetDisplayName()
-                </MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary"
-                             OnClick="() => SetItemTypeFilterText(ItemType.Coin)">
-                    @ItemType.Coin.GetDisplayName()
-                </MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Tertiary"
-                             OnClick="() => SetItemTypeFilterText(ItemType.Currency)">
-                    @ItemType.Currency.GetDisplayName()
-                </MudMenuItem>
-            </MudMenu>
-        </MudButtonGroup>
+            <MudButtonGroup Size="Size.Small" Color="@ItemStatusColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@ItemStatusIcon">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        @ItemStatus.GetDisplayName()
+                    </MudHidden>
+                </MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Success"
+                                 OnClick="() => SetStatusFilterText(ItemStatus.Available)">
+                        @ItemStatus.Available.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket" IconColor="Color.Error"
+                                 OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
+                        @ItemStatus.Sold.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        }
 
-        <MudButtonGroup Size="Size.Small" Color="@ItemStatusColor" Variant="Variant.Filled" Class="ml-3">
-            <MudButton Size="Size.Small" StartIcon="@ItemStatusIcon">
-                <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    @_itemStatus.GetDisplayName()
-                </MudHidden>
-            </MudButton>
-            <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                <MudMenuItem Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Success"
-                             OnClick="() => SetStatusFilterText(ItemStatus.Available)">
-                    @ItemStatus.Available.GetDisplayName()
-                </MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket" IconColor="Color.Error"
-                             OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
-                    @ItemStatus.Sold.GetDisplayName()
-                </MudMenuItem>
-            </MudMenu>
-        </MudButtonGroup>
 
     </ToolBarContent>
     <HeaderContent>
-        @switch (_itemType)
+        @switch (ItemType)
         {
             case ItemType.Product:
                 <MudTh><MudTableSortLabel SortLabel="Product.Barcode" T="InventoryStockVm">بارکد</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.ProductType" T="InventoryStockVm">نوع جنس</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Name" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh>
-                @if (_itemStatus is ItemStatus.Sold)
+                @if (ItemStatus is ItemStatus.Sold)
                 {
                     <MudTh>اجرت ساخت</MudTh>
                 }
@@ -91,7 +96,7 @@
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
-        @switch (_itemType)
+        @switch (ItemType)
         {
             case ItemType.Product when context.Product is not null:
                 <MudTooltip Text="@GetBarcodeTooltipText(context)" Arrow="true" Placement="Placement.Top">
@@ -104,7 +109,7 @@
                 <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
                     <MudTd DataLabel="اجرت">
                         @{
-                            if (_itemStatus is ItemStatus.Sold)
+                            if (ItemStatus is ItemStatus.Sold)
                             {
                                 @(context.SaleWageType switch
                                 {
@@ -142,7 +147,7 @@
         }
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
-                @switch (_itemType)
+                @switch (ItemType)
                 {
                     case ItemType.Product when context.Product is not null:
                         <MudTooltip Text="چاپ بارکد">

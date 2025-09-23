@@ -85,6 +85,17 @@ public class CurrencyItemVm
         TotalAmount = FinalAmount * Amount;
     }
 
+    public Task<CurrencyItemVm> RecalculateAmountsAsync()
+    {
+        RawAmount = UnitPrice;
+        ProfitAmount = CalculatorHelper.Currency.CalculateProfit(UnitPrice, Amount, ProfitPercent);
+        TaxAmount = CalculatorHelper.Currency.CalculateTax(UnitPrice, Amount, TaxPercent);
+        FinalAmount = RawAmount + ProfitAmount + TaxAmount;
+        TotalAmount = FinalAmount * Amount;
+
+        return Task.FromResult(this);
+    }
+
     public static InvoiceCurrencyItemDto ToRequest(CurrencyItemVm currencyItem)
     {
         if (currencyItem.Currency is null)

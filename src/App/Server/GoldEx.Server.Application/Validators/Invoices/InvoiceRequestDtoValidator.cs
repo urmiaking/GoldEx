@@ -72,12 +72,9 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .MustAsync(BeValidPriceUnit)
             .WithMessage("واحد ارزی فاکتور معتبر نمی باشد");
 
-        When(x => x.Id.HasValue, () =>
-        {
-            RuleFor(x => x)
-                .MustAsync(NotResultInNegativeInventory)
-                .WithMessage("موجودی یک یا چند کالا برای انجام این تغییرات کافی نیست.");
-        });
+        RuleFor(x => x)
+            .MustAsync(NotResultInNegativeInventory)
+            .WithMessage("موجودی یک یا چند کالا برای ذخیره فاکتور کافی نیست.");
 
         RuleForEach(x => x.InvoicePayments)
             .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository,
@@ -119,85 +116,125 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
     private async Task<bool> NotResultInNegativeInventory(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
+        // --- (Create) ---
         if (!request.Id.HasValue)
-            return true;
-
-        var originalInvoice = await _invoiceRepository
-            .Get(new InvoicesByIdSpecification(new InvoiceId(request.Id.Value)))
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (originalInvoice is null)
-            return true;
-
-        var productChanges = new Dictionary<ProductId, decimal>();
-        var coinChanges = new Dictionary<CoinId, decimal>();
-        var currencyChanges = new Dictionary<PriceUnitId, decimal>();
-
-        foreach (var oldItem in originalInvoice.ProductItems)
         {
-            productChanges[oldItem.ProductId] = productChanges.GetValueOrDefault(oldItem.ProductId, 0m) - oldItem.Quantity;
-        }
-        foreach (var oldItem in originalInvoice.CoinItems)
-        {
-            coinChanges[oldItem.CoinId] = coinChanges.GetValueOrDefault(oldItem.CoinId, 0m) - oldItem.Quantity;
-        }
-        foreach (var oldItem in originalInvoice.CurrencyItems)
-        {
-            currencyChanges[oldItem.CurrencyId] = currencyChanges.GetValueOrDefault(oldItem.CurrencyId, 0m) - oldItem.Amount;
-        }
+            if (request.InvoiceType is InvoiceType.Purchase)
+                return true;
 
-        foreach (var newItem in request.InvoiceProductItems)
-        {
-            if (newItem.Product.Id.HasValue)
+            foreach (var coinItem in request.InvoiceCoinItems)
             {
-                var productId = new ProductId(newItem.Product.Id.Value);
-                productChanges[productId] = productChanges.GetValueOrDefault(productId, 0m) + newItem.Quantity;
+                var currentStock = await _inventoryStockRepository.GetQuantityAsync(new CoinId(coinItem.CoinId), cancellationToken);
+                if (currentStock < coinItem.Quantity) 
+                    return false;
+            }
+
+            foreach (var currencyItem in request.InvoiceCurrencyItems)
+            {
+                var currentStock = await _inventoryStockRepository.GetQuantityAsync(new PriceUnitId(currencyItem.CurrencyId), cancellationToken);
+                if (currentStock < currencyItem.Amount)
+                    return false;
+            }
+
+            foreach (var productItem in request.InvoiceProductItems)
+            {
+                if (productItem.Product.Id.HasValue)
+                {
+                    var currentStock = await _inventoryStockRepository.GetQuantityAsync(new ProductId(productItem.Product.Id.Value), cancellationToken);
+                    if (currentStock < 1)
+                        return false;
+                }
             }
         }
-        foreach (var newItem in request.InvoiceCoinItems)
+        // (Update)
+        else
         {
-            var coinId = new CoinId(newItem.CoinId);
-            coinChanges[coinId] = coinChanges.GetValueOrDefault(coinId, 0m) + newItem.Quantity;
-        }
-        foreach (var newItem in request.InvoiceCurrencyItems)
-        {
-            var currencyId = new PriceUnitId(newItem.CurrencyId);
-            currencyChanges[currencyId] = currencyChanges.GetValueOrDefault(currencyId, 0m) + newItem.Amount;
-        }
 
-        var allProductIds = productChanges.Keys.ToList();
-        var allCoinIds = coinChanges.Keys.ToList();
-        var allCurrencyIds = currencyChanges.Keys.ToList();
+            var originalInvoice = await _invoiceRepository
+                .Get(new InvoicesByIdSpecification(new InvoiceId(request.Id.Value)))
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
 
-        var productQuantities = await _inventoryStockRepository.GetQuantitiesAsync(allProductIds, cancellationToken);
-        var coinQuantities = await _inventoryStockRepository.GetQuantitiesAsync(allCoinIds, cancellationToken);
-        var currencyQuantities = await _inventoryStockRepository.GetQuantitiesAsync(allCurrencyIds, cancellationToken);
+            if (originalInvoice is null)
+                return true;
 
-        foreach (var (productId, netChange) in productChanges)
-        {
-            var currentStock = productQuantities.GetValueOrDefault(productId, 0m);
-            if (currentStock + netChange < 0)
+            var productChanges = new Dictionary<ProductId, decimal>();
+            var coinChanges = new Dictionary<CoinId, decimal>();
+            var currencyChanges = new Dictionary<PriceUnitId, decimal>();
+
+            foreach (var oldItem in originalInvoice.ProductItems)
             {
-                return false;
+                productChanges[oldItem.ProductId] =
+                    productChanges.GetValueOrDefault(oldItem.ProductId, 0m) - oldItem.Quantity;
             }
-        }
 
-        foreach (var (coinId, netChange) in coinChanges)
-        {
-            var currentStock = coinQuantities.GetValueOrDefault(coinId, 0m);
-            if (currentStock + netChange < 0)
+            foreach (var oldItem in originalInvoice.CoinItems)
             {
-                return false;
+                coinChanges[oldItem.CoinId] = coinChanges.GetValueOrDefault(oldItem.CoinId, 0m) - oldItem.Quantity;
             }
-        }
 
-        foreach (var (currencyId, netChange) in currencyChanges)
-        {
-            var currentStock = currencyQuantities.GetValueOrDefault(currencyId, 0m);
-            if (currentStock + netChange < 0)
+            foreach (var oldItem in originalInvoice.CurrencyItems)
             {
-                return false;
+                currencyChanges[oldItem.CurrencyId] =
+                    currencyChanges.GetValueOrDefault(oldItem.CurrencyId, 0m) - oldItem.Amount;
+            }
+
+            foreach (var newItem in request.InvoiceProductItems)
+            {
+                if (newItem.Product.Id.HasValue)
+                {
+                    var productId = new ProductId(newItem.Product.Id.Value);
+                    productChanges[productId] = productChanges.GetValueOrDefault(productId, 0m) + newItem.Quantity;
+                }
+            }
+
+            foreach (var newItem in request.InvoiceCoinItems)
+            {
+                var coinId = new CoinId(newItem.CoinId);
+                coinChanges[coinId] = coinChanges.GetValueOrDefault(coinId, 0m) + newItem.Quantity;
+            }
+
+            foreach (var newItem in request.InvoiceCurrencyItems)
+            {
+                var currencyId = new PriceUnitId(newItem.CurrencyId);
+                currencyChanges[currencyId] = currencyChanges.GetValueOrDefault(currencyId, 0m) + newItem.Amount;
+            }
+
+            var allProductIds = productChanges.Keys.ToList();
+            var allCoinIds = coinChanges.Keys.ToList();
+            var allCurrencyIds = currencyChanges.Keys.ToList();
+
+            var productQuantities =
+                await _inventoryStockRepository.GetQuantitiesAsync(allProductIds, cancellationToken);
+            var coinQuantities = await _inventoryStockRepository.GetQuantitiesAsync(allCoinIds, cancellationToken);
+            var currencyQuantities =
+                await _inventoryStockRepository.GetQuantitiesAsync(allCurrencyIds, cancellationToken);
+
+            foreach (var (productId, netChange) in productChanges)
+            {
+                var currentStock = productQuantities.GetValueOrDefault(productId, 0m);
+                if (currentStock + netChange < 0)
+                {
+                    return false;
+                }
+            }
+
+            foreach (var (coinId, netChange) in coinChanges)
+            {
+                var currentStock = coinQuantities.GetValueOrDefault(coinId, 0m);
+                if (currentStock + netChange < 0)
+                {
+                    return false;
+                }
+            }
+
+            foreach (var (currencyId, netChange) in currencyChanges)
+            {
+                var currentStock = currencyQuantities.GetValueOrDefault(currencyId, 0m);
+                if (currentStock + netChange < 0)
+                {
+                    return false;
+                }
             }
         }
 

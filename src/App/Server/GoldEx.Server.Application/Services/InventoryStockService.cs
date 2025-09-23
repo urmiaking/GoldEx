@@ -164,7 +164,7 @@ internal class InventoryStockService(
             newStockItems.AddRange(invoice.ProductItems
                 .Where(x => x.IsInstantProduct)
                 .Select(productItem => InventoryStock.CreateProduct(productItem.ProductId,
-                    1,
+                    productItem.Quantity,
                     WarehouseActionType.In,
                     invoice.Id)));
         }

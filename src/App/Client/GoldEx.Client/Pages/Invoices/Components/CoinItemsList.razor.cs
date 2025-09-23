@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
@@ -20,6 +21,12 @@ public partial class CoinItemsList
 
     [Parameter]
     public EventCallback OnAddItem { get; set; }
+
+    [Parameter]
+    public InvoiceType InvoiceType { get; set; }
+
+    [Parameter]
+    public EventCallback OnOpenSelector { get; set; }
 
     [Parameter]
     public EventCallback<CoinItemVm> OnEditItem { get; set; }
