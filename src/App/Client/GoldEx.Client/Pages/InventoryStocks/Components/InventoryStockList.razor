@@ -8,7 +8,7 @@
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
-        
+
         @if (!Selectable)
         {
             <MudHidden Breakpoint="Breakpoint.SmAndDown">
@@ -22,7 +22,7 @@
                     <MudHidden Breakpoint="Breakpoint.SmAndDown">
                         @ItemType.GetDisplayName()
                     </MudHidden>
-                </MudButton>    
+                </MudButton>
                 <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
                     <MudMenuItem Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info"
                                  OnClick="() => SetItemTypeFilterText(ItemType.Product)">
@@ -99,15 +99,17 @@
         @switch (ItemType)
         {
             case ItemType.Product when context.Product is not null:
-                <MudTooltip Text="@GetBarcodeTooltipText(context)" Arrow="true" Placement="Placement.Top">
-                    <MudTd DataLabel="بارکد">@context.Product.Barcode</MudTd>
-                </MudTooltip>
+                <MudTd DataLabel="بارکد">
+                    <MudTooltip Text="@GetBarcodeTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                        @context.Product.Barcode
+                    </MudTooltip>
+                </MudTd>
                 <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
                 <MudTd DataLabel="وزن">@(context.Product.Weight?.ToString("G29")) @context.Product.GoldUnitType.GetDisplayName()</MudTd>
 
-                <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
-                    <MudTd DataLabel="اجرت">
+                <MudTd DataLabel="اجرت">
+                    <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
                         @{
                             if (ItemStatus is ItemStatus.Sold)
                             {
@@ -128,9 +130,9 @@
                                 })
                             }
                         }
-                    </MudTd>
-                </MudTooltip>
-                
+
+                    </MudTooltip>
+                </MudTd>
                 <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
                 <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
                 break;

@@ -22,8 +22,6 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class PaymentVoucherService(
     IPaymentVoucherRepository repository,
-    ILedgerAccountRepository ledgerAccountRepository,
-    ICustomerRepository customerRepository,
     IAccountingTransactionService transactionService,
     IMapper mapper,
     ILogger<PaymentVoucherService> logger,

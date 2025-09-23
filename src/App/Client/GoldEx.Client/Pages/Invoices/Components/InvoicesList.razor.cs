@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+﻿using System.Globalization;
+using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Invoices;
@@ -161,5 +162,10 @@ public partial class InvoicesList
     {
         await _table.ReloadServerData();
         StateHasChanged();
+    }
+
+    private string GetInvoiceDateTooltipText(InvoiceListVm context)
+    {
+        return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";
     }
 }

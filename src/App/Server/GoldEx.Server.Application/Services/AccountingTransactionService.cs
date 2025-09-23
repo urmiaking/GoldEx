@@ -365,8 +365,8 @@ internal class AccountingTransactionService(
             .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount.LedgerAccountId.Value))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
 
-        if (voucher.Customer is null)
-            throw new ArgumentException("Payment voucher must have a customer ", nameof(voucher));
+        var voucherCustomer = await customerRepository.Get(new CustomersByIdSpecification(voucher.CustomerId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Customer {voucher.CustomerId.Value} not found.");
 
         LedgerAccount debitLedgerAccount;
         string description;
@@ -379,7 +379,7 @@ internal class AccountingTransactionService(
                     debitLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(voucher.CustomerId,
                         voucher.VoucherPriceUnitId, LedgerAccountRole.Payable, cancellationToken);
 
-                    description = TransactionDescriptionBuilder.ForPrepaymentToCustomer(voucher, voucher.Customer);
+                    description = TransactionDescriptionBuilder.ForPrepaymentToCustomer(voucher, voucherCustomer);
                     break;
                 }
 
@@ -389,7 +389,7 @@ internal class AccountingTransactionService(
                     debitLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(voucher.CustomerId,
                         voucher.VoucherPriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
-                    description = TransactionDescriptionBuilder.ForRefundToCustomer(voucher, voucher.Customer);
+                    description = TransactionDescriptionBuilder.ForRefundToCustomer(voucher, voucherCustomer);
                     break;
                 }
 
@@ -399,7 +399,7 @@ internal class AccountingTransactionService(
                         .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.ServiceExpenses)) // سرفصل جدید: "هزینه خدمات"
                         .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Service Expenses account not found.");
 
-                    description = TransactionDescriptionBuilder.ForServiceFeePayment(voucher, voucher.Customer);
+                    description = TransactionDescriptionBuilder.ForServiceFeePayment(voucher, voucherCustomer);
                     break;
                 }
             case PaymentVoucherType.PartnerLoan:
@@ -408,7 +408,7 @@ internal class AccountingTransactionService(
                         .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.LoansToOthers))
                         .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("LoansToOthers account not found.");
 
-                    description = TransactionDescriptionBuilder.ForPartnerLoan(voucher, voucher.Customer);
+                    description = TransactionDescriptionBuilder.ForPartnerLoan(voucher, voucherCustomer);
                     break;
                 }
             case PaymentVoucherType.OwnerDraw:
@@ -418,7 +418,7 @@ internal class AccountingTransactionService(
                         .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OwnerDraw)) // سرفصل جدید: "برداشت مالک"
                         .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Owner Draw account not found.");
 
-                    description = TransactionDescriptionBuilder.ForOwnerDraw(voucher, voucher.Customer);
+                    description = TransactionDescriptionBuilder.ForOwnerDraw(voucher, voucherCustomer);
                     break;
                 }
             default:

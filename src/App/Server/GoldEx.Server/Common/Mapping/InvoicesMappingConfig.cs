@@ -16,11 +16,12 @@ public class InvoicesMappingConfig : IRegister
         config.NewConfig<Invoice, GetInvoiceListResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
-            .Map(dest => dest.AmountUnit,
+            .Map(dest => dest.PriceUnit,
                 src => MapContext.Current.GetService<IPriceUnitRepository>()
                     .Get(new PriceUnitsSetAsDefaultSpecification())
                     .FirstOrDefault()!.Title)
             .Map(dest => dest.TotalAmount, src => src.TotalAmountWithDiscountsAndExtraCosts)
+            .Map(dest => dest.TotalUnpaidAmount, src => src.TotalUnpaidAmount)
             .Map(dest => dest.PaymentStatus,
                 src => Math.Abs(src.TotalUnpaidAmount - 0m) < 0.01m
                     ? InvoicePaymentStatus.Paid

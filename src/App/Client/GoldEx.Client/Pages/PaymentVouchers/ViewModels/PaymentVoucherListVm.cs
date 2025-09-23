@@ -17,6 +17,8 @@ public class PaymentVoucherListVm
     [Display(Name = "تاریخ ثبت")]
     public DateOnly PaymentDate { get; set; }
 
+    public DateTime CreatedAt { get; set; }
+
     [Display(Name = "مبلغ")]
     public decimal Amount { get; set; }
 
@@ -55,7 +57,8 @@ public class PaymentVoucherListVm
             SupplierPhoneNumber = response.SupplierPhoneNumber,
             FinancialAccountType = response.FinancialAccountType,
             VoucherType = response.VoucherType,
-            InvoiceId = response.InvoiceId
+            InvoiceId = response.InvoiceId,
+            CreatedAt = response.CreatedAt
         };
     }
 }

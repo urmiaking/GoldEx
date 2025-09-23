@@ -78,7 +78,11 @@
         <MudTd DataLabel="طرف حساب">@context.SupplierName</MudTd>
         <MudTd DataLabel="شماره تماس">@context.SupplierPhoneNumber</MudTd>
         <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
-        <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate.ToShortDateString()</MudTd>
+        <MudTd DataLabel="تاریخ پرداخت">
+            <MudTooltip Text="@($"تاریخ ایجاد: {context.CreatedAt}")" Placement="Placement.Top" Arrow="true">
+                @context.PaymentDate.ToShortDateString()
+            </MudTooltip>
+        </MudTd>
         <MudTd DataLabel="پرداخت از حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
        
         <MudTd DataLabel="عملیات">

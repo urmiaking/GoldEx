@@ -7,6 +7,7 @@ public record GetPaymentVoucherListResponse(
     long VoucherNumber,
     string Description,
     DateOnly PaymentDate,
+    DateTime CreatedAt,
     decimal Amount,
     string PriceUnit,
     VoucherStatus VoucherStatus,
