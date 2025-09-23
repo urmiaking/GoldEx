@@ -18,6 +18,13 @@ public partial class InventoryStockList
 {
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+
+    [Parameter] public ItemType ItemType { get; set; } = ItemType.Product;
+    [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
+    [Parameter] public EventCallback<HashSet<InventoryStockVm>?> SelectedItemsChanged { get; set; }
+
+    [Parameter] public bool Selectable { get; set; }
+
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private string _jsVersion = new Random().Next(1, 1000).ToString();
@@ -26,12 +33,10 @@ public partial class InventoryStockList
     private string? _searchString;
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
-    private ItemType _itemType = ItemType.Product;
-    private ItemStatus _itemStatus = ItemStatus.Available;
 
-    private string DateRangeFilterLabel => _itemStatus == ItemStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
-    private string ItemStatusIcon => _itemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
-    public string? ItemTypeIcon => _itemType switch
+    private string DateRangeFilterLabel => ItemStatus == ItemStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
+    private string ItemStatusIcon => ItemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
+    public string? ItemTypeIcon => ItemType switch
     {
         ItemType.Product => Icons.Material.Filled.Diamond,
         ItemType.Coin => Icons.Material.Filled.MonetizationOn,
@@ -39,7 +44,7 @@ public partial class InventoryStockList
         _ => null
     };
 
-    public Color ItemTypeColor => _itemType switch
+    public Color ItemTypeColor => ItemType switch
     {
         ItemType.Product => Color.Info,
         ItemType.Coin => Color.Secondary,
@@ -47,7 +52,7 @@ public partial class InventoryStockList
         _ => Color.Default
     };
 
-    public Color ItemStatusColor => _itemStatus switch
+    public Color ItemStatusColor => ItemStatus switch
     {
         ItemStatus.Available => Color.Success,
         ItemStatus.Sold => Color.Error,
@@ -67,7 +72,7 @@ public partial class InventoryStockList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var inventoryFilter = new InventoryFilter(_actionType, _itemType, _filterDateRange.Start, _filterDateRange.End);
+        var inventoryFilter = new InventoryFilter(_actionType, ItemType, _filterDateRange.Start, _filterDateRange.End);
 
         await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
             action: (s, token) => s.GetListAsync(filter, inventoryFilter, token),
@@ -131,7 +136,7 @@ public partial class InventoryStockList
 
     private async Task SetStatusFilterText(ItemStatus filterType)
     {
-        _itemStatus = filterType;
+        ItemStatus = filterType;
         _actionType = filterType == ItemStatus.Available
             ? WarehouseActionType.In
             : WarehouseActionType.Out;
@@ -141,7 +146,7 @@ public partial class InventoryStockList
 
     private async Task SetItemTypeFilterText(ItemType itemType)
     {
-        _itemType = itemType;
+        ItemType = itemType;
         await RefreshAsync();
     }
 

@@ -71,6 +71,16 @@ public class CoinItemVm
         TotalAmount = FinalAmount * Quantity;
     }
 
+    public Task<CoinItemVm> RecalculateAmountsAsync()
+    {
+        RawAmount = UnitPrice;
+        ProfitAmount = CalculatorHelper.Coin.CalculateProfit(UnitPrice, ProfitPercent, Quantity);
+        FinalAmount = RawAmount + ProfitAmount;
+        TotalAmount = FinalAmount * Quantity;
+
+        return Task.FromResult(this);
+    }
+
     public static InvoiceCoinItemDto ToRequest(CoinItemVm coinItem)
     {
         if (coinItem.Coin is null)
