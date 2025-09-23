@@ -36,6 +36,7 @@
             <col />
             <col />
             <col />
+            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
@@ -43,6 +44,7 @@
             <MudTh>عنوان</MudTh>
             <MudTh>تعداد</MudTh>
             <MudTh>عیار</MudTh>
+            <MudTh>اجرت</MudTh>
             <MudTh>وزن</MudTh>
             <MudTh>ارزش کل</MudTh>
             <MudTh>عملیات</MudTh>
@@ -53,6 +55,16 @@
             <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
             <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
+            <MudTd DataLabel="اجرت">
+                @{
+                    @(context.Product.WageType switch
+                    {
+                        WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
+                        WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                        _ => "ندارد"
+                    })
+                }
+            </MudTd>
             <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
             <MudTd DataLabel="ارزش کل">@context.FinalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">
