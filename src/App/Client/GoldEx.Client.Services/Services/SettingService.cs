@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using System.Net;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Routings;
@@ -14,6 +15,9 @@ internal class SettingService(HttpClient client, JsonSerializerOptions jsonOptio
     public async Task<GetSettingResponse?> GetAsync(CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Settings.Get(), cancellationToken);
+
+        if (response.StatusCode is HttpStatusCode.NotFound)
+            return null;
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

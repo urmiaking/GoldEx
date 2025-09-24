@@ -87,7 +87,7 @@ public class ApiUrls
 
         public static string Get(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Get).FormatRoute(new { id });
 
-        public static string Get(string barcode) 
+        public static string Get(string barcode)
             => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
                 .FormatRoute(new { barcode });
 
@@ -147,31 +147,6 @@ public class ApiUrls
         public static string GetByName(string? customerName) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByName).FormatRoute(new { customerName });
     }
-
-    //public class Transactions
-    //{
-    //    public static string GetList(RequestFilter filter, TransactionFilter transactionFilter, Guid? customerId) =>
-    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList)
-    //            .AppendQueryString(filter)
-    //            .AppendQueryString(transactionFilter)
-    //            .AppendQueryString(new { customerId });
-
-    //    public static string Get(Guid id) =>
-    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Get).FormatRoute(new { id });
-
-    //    public static string Get(int number) =>
-    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetByNumber)
-    //            .AppendQueryString(new { number });
-
-    //    public static string Set() =>
-    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Set);
-
-    //    public static string Delete(Guid id) =>
-    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.Delete).FormatRoute(new { id });
-
-    //    public static string GetLastNumber() =>
-    //        BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetLastNumber);
-    //}
 
     public class PriceUnits
     {
@@ -328,5 +303,12 @@ public class ApiUrls
         public static string GetAvailableProducts(CalculatorFilterRequest filter) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableProducts)
                 .AppendQueryString(filter);
+    }
+
+    public class Transactions
+    {
+        public static string GetRemainingList(Guid customerId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetRemainingList)
+                .FormatRoute(new { customerId });
     }
 }
