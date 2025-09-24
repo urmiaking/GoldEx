@@ -1,13 +1,14 @@
-﻿@inherits GoldExComponentBase
+﻿@using System.Globalization
+@inherits GoldExComponentBase
 
 <MudTable T="CustomerVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadCustomersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" 
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
         <MudSpacer />
-        
+
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
                                 PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ ثبت مشتری" Clearable="true" />
@@ -27,6 +28,7 @@
         <MudTh><MudTableSortLabel SortLabel="NationalId" T="CustomerVm">کد یکتا</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="PhoneNumber" T="CustomerVm">شماره تماس</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="CreatedAt" T="CustomerVm">تاریخ ثبت</MudTableSortLabel></MudTh>
+        <MudTh>مانده</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -34,7 +36,14 @@
         <MudTd DataLabel="نوع">@context.CustomerType.GetDisplayName()</MudTd>
         <MudTd DataLabel="کد یکتا">@context.NationalId</MudTd>
         <MudTd DataLabel="شماره تماس">@context.PhoneNumber</MudTd>
-        <MudTd DataLabel="تاریخ ثبت">@context.CreatedAt</MudTd>
+        <MudTd DataLabel="تاریخ ثبت">
+            <MudTooltip Text="@context.CreatedAt.ToString(CultureInfo.CurrentUICulture)" Placement="Placement.Top" Arrow="true">
+                @context.CreatedAt.ToShortDateString()
+            </MudTooltip>
+        </MudTd>
+        <MudTh>
+            <CustomerRemaining CustomerId="@context.Id!.Value" />
+        </MudTh>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="مشاهده تراکنش های مشتری">
@@ -50,12 +59,12 @@
                                    Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
                 </MudTooltip>
                 <MudTooltip Text="حذف">
-                    <MudIconButton OnClick="@(_ => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled" 
+                    <MudIconButton OnClick="@(_ => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
                                    Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                 </MudTooltip>
             </div>
         </MudTd>
-    </RowTemplate>
+    </RowTemplate>  
     <NoRecordsContent>
         <MudText>هیچ مشتری یافت نشد</MudText>
     </NoRecordsContent>

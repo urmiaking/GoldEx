@@ -87,16 +87,12 @@ public static class ApiRoutes
         public const string GetByName = "name/{customerName}";
     }
 
-    //public class Transactions
-    //{
-    //    public const string Base = "/api/Transactions";
-    //    public const string GetList = ""; // GET /api/Transactions or /api/Transactions?customerId=123
-    //    public const string Get = "{id}";
-    //    public const string GetByNumber = "number/{number}";
-    //    public const string Set = "";
-    //    public const string Delete = "{id}";
-    //    public const string GetLastNumber = "last-number";
-    //}
+    public class Transactions
+    {
+        public const string Base = "/api/Transactions";
+        public const string GetRemainingList = "{customerId}/remaining-list";
+        //public const string GetList = ""; // GET /api/Transactions or /api/Transactions?customerId=123
+    }
 
     public class PriceUnits
     {

@@ -1,10 +1,13 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
+using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Infrastructure.Repositories;
@@ -50,5 +53,25 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
             return;
 
         await DeleteRangeAsync(transactions, cancellationToken);
+    }
+
+    public async Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, CancellationToken cancellationToken = default)
+    {
+        var balances = await Query
+            .Include(x => x.LedgerAccount!.PriceUnit)
+            .Where(t => t.LedgerAccount != null && t.LedgerAccount.CustomerId == customerId)
+            .GroupBy(t => t.LedgerAccount!.PriceUnit)
+            .Select(group => new
+            {
+                PriceUnit = group.Key,
+                Balance = group.Sum(t =>
+                    // اگر نوع تراکنش بدهکار است، مبلغ مثبت و اگر بستانکار است، مبلغ منفی در نظر گرفته می‌شود
+                    t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount)
+            })
+            .AsNoTracking()
+            .AsSplitQuery()
+            .ToDictionaryAsync(result => result.PriceUnit!, result => result.Balance, cancellationToken);
+
+        return balances;
     }
 }
