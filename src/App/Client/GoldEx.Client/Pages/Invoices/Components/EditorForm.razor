@@ -380,8 +380,10 @@
                         </div>
                     </MudPopover>
                 </MudItem>
-                <MudItem xs="6" md="3">
-                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalUnpaidAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title) @(_model.UnpaidExchangeRate.HasValue ? $"({_model.TotalUnpaidSecondaryAmount.ToCurrencyFormat(_model.UnpaidPriceUnit?.Title)})" : string.Empty)</MudText>
+                <MudItem xs="6" md="3">  
+                    <MudText Typo="Typo.body2" Align="Align.Right" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)">  
+                        @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)  
+                    </MudText>  
                 </MudItem>
                 @if (_model.InvoiceType is InvoiceType.Sell && _model.UsedProducts.Any())
                 {
