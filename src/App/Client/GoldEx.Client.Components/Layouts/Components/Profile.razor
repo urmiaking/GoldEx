@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Client.Components.Extensions
+@using GoldEx.Client.Components.Themes
 @using GoldEx.Sdk.Common
 @using GoldEx.Sdk.Common.Extensions
 @using GoldEx.Shared.Routings
@@ -26,6 +27,38 @@
             </div>
 
             <MudDivider Class="my-4" />
+            
+      
+            <!-- Color Palette Selector -->  
+            <div class="d-flex flex-column align-center">  
+                <MudText Typo="Typo.subtitle2" Class="mb-2">انتخاب تم</MudText>  
+                <div class="d-flex gap-2 flex-wrap justify-center">  
+                    <div class="palette-collection">  
+                        @{  
+                            var predefinedColors = new Dictionary<string, string>  
+                            {  
+                                { "Gold", "#DAA520" },  
+                                { "Blue", "#1976D2" },  
+                                { "Purple", "#7B1FA2" },  
+                                { "Green", "#388E3C" },  
+                                { "Orange", "#F57C00" },  
+                                { "Red", "#D32F2F" }  
+                            };  
+                        }  
+  
+                        @foreach (var color in predefinedColors)  
+                        {  
+                            <div class="palette-dot @(ThemeService?.CurrentPalette == color.Key ? "selected" : "")"  
+                                 style="background-color: @color.Value;"  
+                                 @onclick="@(() => OnPaletteSelected(color.Key))">  
+                            </div>  
+                        }
+                    </div>
+                </div>  
+            </div>  
+
+            <MudDivider Class="my-4" />
+
 
             <div class="d-flex flex-column align-center">
                 <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mb-4">
@@ -59,3 +92,44 @@
         <MudIconButton Color="Color.Inherit" Edge="Edge.End" Icon="@Icons.Material.Filled.Key" Href="@ClientRoutes.Accounts.Login"></MudIconButton>
     </NotAuthorized>
 </AuthorizeView>
+
+<style>  
+    .palette-collection {  
+        display: flex;  
+        flex-wrap: wrap;  
+        gap: 8px;  
+        padding: 8px;  
+    }  
+      
+    .palette-dot {  
+        width: 32px;  
+        height: 32px;  
+        border-radius: 50%;  
+        cursor: pointer;  
+        border: 2px solid transparent;  
+        transition: all 0.2s ease-in-out;  
+        position: relative;  
+    }  
+      
+    .palette-dot:hover {  
+        transform: scale(1.1);  
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);  
+    }  
+      
+    .palette-dot.selected {  
+        border-color: var(--mud-palette-primary);  
+        box-shadow: 0 0 0 2px rgba(var(--mud-palette-primary-rgb), 0.3);  
+    }  
+      
+    .palette-dot.selected::after {  
+        content: '✓';  
+        position: absolute;  
+        top: 50%;  
+        left: 50%;  
+        transform: translate(-50%, -50%);  
+        color: white;  
+        font-weight: bold;  
+        font-size: 14px;  
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);  
+    }  
+</style>

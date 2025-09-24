@@ -1,13 +1,11 @@
-﻿@using GoldEx.Client.Abstractions.Common
-@using GoldEx.Client.Components.Services
-@using GoldEx.Shared.Services.Abstractions
+﻿@using GoldEx.Client.Components.Services
 @using Microsoft.JSInterop
 @inherits LayoutComponentBase
 
 <PageTitle>گلدکس</PageTitle>
 
 <MudRTLProvider RightToLeft="true">
-    <MudThemeProvider Theme="@_theme" IsDarkMode="IsDarkMode" />
+    <MudThemeProvider Theme="@ThemeService?.CurrentTheme" IsDarkMode="@(ThemeService?.IsDarkMode ?? false)" />
     <MudPopoverProvider />
     <MudDialogProvider />
     <MudSnackbarProvider />
@@ -120,22 +118,24 @@
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject] private ISnackbar ToastService { get; set; } = default!;
 
-    protected override void OnInitialized()
-    {
+    protected override async Task OnInitializedAsync()  
+    {  
         _staticToastService = ToastService;
 
-        base.OnInitialized();
+        if (ThemeService is ThemeService service)  
+        {  
+            await service.LoadSettingsAsync(); 
+            service.OnToggleMode += OnToggleMode;  
+            service.OnPaletteChanged += OnPaletteChanged;
+            IsDarkMode = service.IsDarkMode;  
+        }  
+  
+        await base.OnInitializedAsync();  
     }
 
-    protected override async Task OnInitializedAsync()
+    public void OnPaletteChanged(object? sender, EventArgs e)
     {
-        if (ThemeService is ThemeService service)
-        {
-            service.OnToggleMode += OnToggleMode;
-            IsDarkMode = service.IsDarkMode;
-        }
-
-        await base.OnInitializedAsync();
+        StateHasChanged();
     }
 
     public void OnToggleMode(object? sender, EventArgs e)
