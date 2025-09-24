@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -859,4 +860,24 @@ public partial class EditorForm
     }
 
     #endregion
+
+    private string FormatCompleteUnpaidAmount(decimal totalUnpaidAmount, string? primaryUnit, decimal? exchangeRate, decimal totalUnpaidSecondaryAmount, string? secondaryUnit)
+    {
+        var primaryAmount = Math.Abs(totalUnpaidAmount).ToCurrencyFormat(primaryUnit);
+        var secondaryPart = exchangeRate.HasValue && !string.IsNullOrEmpty(secondaryUnit)
+            ? $" ({Math.Abs(totalUnpaidSecondaryAmount).ToCurrencyFormat(secondaryUnit)})"
+            : string.Empty;
+
+        return $"{primaryAmount}{secondaryPart}";
+    }
+
+    private Color GetUnpaidAmountColor(decimal amount)
+    {
+        if (amount == 0)
+            return Color.Default; // Default for zero  
+        else if (amount > 0)
+            return Color.Error; // Red for positive (debt)  
+        else
+            return Color.Success; // Green for negative (credit)  
+    }
 }

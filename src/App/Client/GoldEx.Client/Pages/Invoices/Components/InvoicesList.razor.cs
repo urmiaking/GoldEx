@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+﻿using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
@@ -8,6 +8,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using System.Globalization;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -167,5 +168,14 @@ public partial class InvoicesList
     private string GetInvoiceDateTooltipText(InvoiceListVm context)
     {
         return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";
+    }
+
+    private string FormatDebtAmount(decimal amount, string unit)
+    {
+        if (amount < 0)
+        {
+            return $"{Math.Abs(amount).ToCurrencyFormat(unit)} (بس)";
+        }
+        return amount.ToCurrencyFormat(unit);
     }
 }
