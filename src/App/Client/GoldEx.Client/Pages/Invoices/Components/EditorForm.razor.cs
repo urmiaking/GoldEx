@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using GoldEx.Client.Helpers;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -12,6 +11,7 @@ using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -873,11 +873,33 @@ public partial class EditorForm
 
     private Color GetUnpaidAmountColor(decimal amount)
     {
-        if (amount == 0)
-            return Color.Default; // Default for zero  
-        else if (amount > 0)
-            return Color.Error; // Red for positive (debt)  
-        else
-            return Color.Success; // Green for negative (credit)  
+        return amount switch
+        {
+            0 => Color.Default,
+            > 0 => Color.Error,
+            _ => Color.Success
+        };
+    }
+
+    private async Task HandleSendReminderClick()
+    {
+        if (!_model.InvoiceId.HasValue)
+            return;
+
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            markupMessage: new MarkupString($"آیا برای ارسال پیامک تسویه حساب به شماره همراه {_model.Customer?.PhoneNumber} اطمینان دارید؟ <br> <br> "),
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is null)
+            return;
+
+        await SendRequestAsync<IInvoiceService>(
+            action: (s, ct) => s.SendReminderAsync(_model.InvoiceId.Value, ct),
+            afterSend: () =>
+            {
+                AddSuccessToast("پیامک با موفقیت ارسال شد");
+                return Task.CompletedTask;
+            });
     }
 }

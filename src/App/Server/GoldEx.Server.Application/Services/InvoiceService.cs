@@ -29,6 +29,7 @@ internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
     IInvoicePaymentRepository paymentRepository,
     IServerProductService productService,
+    IServerReminderService reminderService,
     IAccountingTransactionService transactionService,
     IServerInventoryStockService inventoryStockService,
     IMapper mapper,
@@ -395,4 +396,8 @@ internal class InvoiceService(
         return new GetInvoiceNumberResponse(number);
     }
 
+    public Task SendReminderAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return reminderService.SendReminderAsync(id, cancellationToken);
+    }
 }

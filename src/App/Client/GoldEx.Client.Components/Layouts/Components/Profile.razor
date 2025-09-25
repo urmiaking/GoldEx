@@ -1,5 +1,4 @@
 ﻿@using GoldEx.Client.Components.Extensions
-@using GoldEx.Client.Components.Themes
 @using GoldEx.Sdk.Common
 @using GoldEx.Sdk.Common.Extensions
 @using GoldEx.Shared.Routings
@@ -92,44 +91,3 @@
         <MudIconButton Color="Color.Inherit" Edge="Edge.End" Icon="@Icons.Material.Filled.Key" Href="@ClientRoutes.Accounts.Login"></MudIconButton>
     </NotAuthorized>
 </AuthorizeView>
-
-<style>  
-    .palette-collection {  
-        display: flex;  
-        flex-wrap: wrap;  
-        gap: 8px;  
-        padding: 8px;  
-    }  
-      
-    .palette-dot {  
-        width: 32px;  
-        height: 32px;  
-        border-radius: 50%;  
-        cursor: pointer;  
-        border: 2px solid transparent;  
-        transition: all 0.2s ease-in-out;  
-        position: relative;  
-    }  
-      
-    .palette-dot:hover {  
-        transform: scale(1.1);  
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);  
-    }  
-      
-    .palette-dot.selected {  
-        border-color: var(--mud-palette-primary);  
-        box-shadow: 0 0 0 2px rgba(var(--mud-palette-primary-rgb), 0.3);  
-    }  
-      
-    .palette-dot.selected::after {  
-        content: '✓';  
-        position: absolute;  
-        top: 50%;  
-        left: 50%;  
-        transform: translate(-50%, -50%);  
-        color: white;  
-        font-weight: bold;  
-        font-size: 14px;  
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);  
-    }  
-</style>

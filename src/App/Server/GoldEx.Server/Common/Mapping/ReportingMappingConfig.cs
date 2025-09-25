@@ -1,8 +1,8 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Server.Domain.InvoiceAggregate;
+﻿using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;

@@ -20,4 +20,16 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
 
         return invoiceNumber;
     }
+
+    public async Task<List<Invoice>> GetOverdueInvoicesAsync(CancellationToken cancellationToken = default)
+    {
+        return await Query
+            .Include(x => x.PriceUnit)
+            .Include(x => x.Customer)
+            .Where(x => x.DueDate < DateOnly.FromDateTime(DateTime.Now) &&
+                        !x.Notifications!.Any())
+            .AsNoTracking()
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+    }
 }

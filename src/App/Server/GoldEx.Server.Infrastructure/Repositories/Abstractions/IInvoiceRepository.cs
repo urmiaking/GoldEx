@@ -10,4 +10,5 @@ public interface IInvoiceRepository : IRepository<Invoice>,
     IDeleteRepository<Invoice>
 {
     Task<long> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default);
+    Task<List<Invoice>> GetOverdueInvoicesAsync(CancellationToken cancellationToken = default);
 }

@@ -7,7 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
-public class PriceUpdaterBackgroundService(IServiceScopeFactory serviceScopeFactory, ILogger<PriceUpdaterBackgroundService> logger) : BackgroundService
+public class PriceUpdaterBackgroundService(
+    IServiceScopeFactory serviceScopeFactory,
+    ILogger<PriceUpdaterBackgroundService> logger) : BackgroundService
 {
     private const string ClassName = nameof(PriceUpdaterBackgroundService);
 

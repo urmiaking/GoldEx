@@ -149,7 +149,6 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         // (Update)
         else
         {
-
             var originalInvoice = await _invoiceRepository
                 .Get(new InvoicesByIdSpecification(new InvoiceId(request.Id.Value)))
                 .AsNoTracking()

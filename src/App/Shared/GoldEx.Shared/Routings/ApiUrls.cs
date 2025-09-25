@@ -200,6 +200,8 @@ public class ApiUrls
         public static string Create() => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Create);
 
         public static string Update(Guid id) => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Update).FormatRoute(new { id });
+
+        public static string SendReminder(Guid id) => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.SendReminder).FormatRoute(new { id });
     }
 
     public class Reports
@@ -310,5 +312,15 @@ public class ApiUrls
         public static string GetRemainingList(Guid customerId) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetRemainingList)
                 .FormatRoute(new { customerId });
+    }
+
+    public class Notifications
+    {
+        public static string GetList() 
+            => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.GetList);
+        public static string MarkAsRead(Guid id) 
+            => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAsRead).FormatRoute(new { id });
+        public static string MarkAllAsRead() 
+            => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAllAsRead);
     }
 }

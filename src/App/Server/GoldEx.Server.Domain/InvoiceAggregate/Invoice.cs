@@ -2,6 +2,7 @@
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.NotificationAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
@@ -313,6 +314,12 @@ public class Invoice : EntityBase<InvoiceId>
     #region Transactions
 
     public IReadOnlyList<Transaction>? Transactions { get; private set; }
+
+    #endregion
+
+    #region Notifications
+
+    public IReadOnlyList<Notification>? Notifications { get; private set; }
 
     #endregion
 

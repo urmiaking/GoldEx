@@ -63,4 +63,11 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
         var lastNumber = await service.GetLastNumberAsync(invoiceType, cancellationToken);
         return Ok(lastNumber);
     }
+
+    [HttpPost(ApiRoutes.Invoices.SendReminder)]
+    public async Task<IActionResult> SendReminderAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.SendReminderAsync(id, cancellationToken);
+        return NoContent();
+    }
 }
