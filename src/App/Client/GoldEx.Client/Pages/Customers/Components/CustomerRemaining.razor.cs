@@ -1,9 +1,9 @@
-﻿using GoldEx.Client.Helpers;
-using GoldEx.Client.Pages.Customers.ViewModels;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using System.Timers;
+using GoldEx.Shared.Helpers;
 using MudBlazor;
 using Timer = System.Timers.Timer;
 

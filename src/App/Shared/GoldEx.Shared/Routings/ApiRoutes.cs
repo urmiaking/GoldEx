@@ -118,6 +118,7 @@ public static class ApiRoutes
         public const string Delete = "{id}";
         public const string GetLastNumber = "last-number/{invoiceType}";
         public const string GetByNumber = "number/{number}/{invoiceType}";
+        public const string SendReminder = "{id}/send-reminder";
     }
 
     public class Reports
@@ -178,5 +179,13 @@ public static class ApiRoutes
         public const string Base = "/api/InventoryStocks";
         public const string GetList = "";
         public const string GetAvailableProducts = "available";
+    }
+
+    public class Notifications
+    {
+        public const string Base = "/api/Notifications";
+        public const string GetList = "";
+        public const string MarkAsRead = "{id}/read";
+        public const string MarkAllAsRead = "read-all";
     }
 }

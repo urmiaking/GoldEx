@@ -1,8 +1,8 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+﻿using System.Globalization;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Enums;
-using System.Globalization;
 
-namespace GoldEx.Client.Helpers;
+namespace GoldEx.Shared.Helpers;
 
 public static class NumberHelper
 {

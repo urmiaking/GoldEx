@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Shared.DTOs.PriceUnits
+
 @inherits GoldExComponentBase
 
 <MudCard Class="p-4" Elevation="24">
@@ -127,20 +128,30 @@
                                Rounded="true"
                                Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12" md="2">
-                <MudDatePicker @bind-Date="_model.DueDate"
-                               Color="Color.Secondary"
-                               Editable="true"
-                               AnchorOrigin="Origin.TopCenter"
-                               TransformOrigin="Origin.BottomCenter"
-                               For="@(() => _model.DueDate)"
-                               HelperText="@(_model.GetDisplayName(() => _model.DueDate))"
-                               HelperTextOnFocus="true"
-                               Label="@(_model.GetDisplayName(() => _model.DueDate))"
-                               ImmediateText="true"
-                               Margin="Margin.Dense"
-                               Rounded="true"
-                               Variant="Variant.Outlined" />
+            <MudItem xs="12" md="@(_model.IsOverdue ? 3 : 2)">  
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="1">  
+                    <MudDatePicker @bind-Date="_model.DueDate"  
+                                   Color="Color.Secondary"  
+                                   Editable="true"  
+                                   AnchorOrigin="Origin.TopCenter"  
+                                   TransformOrigin="Origin.BottomCenter"  
+                                   For="@(() => _model.DueDate)"  
+                                   Label="@(_model.GetDisplayName(() => _model.DueDate))"  
+                                   ImmediateText="true"  
+                                   Margin="Margin.Dense"  
+                                   Rounded="true"  
+                                   Variant="Variant.Outlined" />  
+                    @if (_model.IsOverdue)
+                    {
+                        <MudTooltip Text="ارسال پیامک یادآوری تسویه">
+                            <MudIconButton Icon="@Icons.Material.Filled.Send"   
+                                           Variant="Variant.Outlined"   
+                                           Color="Color.Primary"
+                                           Class="mr-1"
+                                           OnClick="HandleSendReminderClick" />  
+                        </MudTooltip>
+                    }
+                </MudStack>  
             </MudItem>
         </MudGrid>
 

@@ -14,4 +14,5 @@ public interface IInvoiceService
     Task<GetInvoiceResponse> GetAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetInvoiceNumberResponse> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default);
+    Task SendReminderAsync(Guid id, CancellationToken cancellationToken = default);
 }
