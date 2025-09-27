@@ -8,19 +8,23 @@ public record GetInvoiceDetailResponse(long InvoiceNumber,
     DateTime? DueDate,
     string TotalAmount,
     string TotalPaidAmount,
-    string TotalDiscountAmount,
-    string TotalExtraCostAmount,
+    string? TotalDiscountAmount,
+    string? TotalExtraCostAmount,
     string TotalUnpaidAmount,
     string TotalAmountWithDiscountsAndExtraCosts,
+    string? TotalUsedProductsAmount,
     string DailyGramPrice,
     string TaxPercent,
     string ProfitPercent,
     string TotalUnpaidSecondaryAmount,
     GoldUnitType GoldUnitType,
     GetCustomerResponse Customer,
-    List<GetInvoiceItemReportResponse> InvoiceItems); // TODO: rename this
+    List<GetInvoiceProductItemReportResponse> InvoiceProductItems,
+    List<GetInvoiceCoinItemReportResponse> InvoiceCoinItems,
+    List<GetInvoiceCurrencyItemReportResponse> InvoiceCurrencyItems,
+    List<GetInvoiceUsedProductReportResponse> InvoiceUsedProductItems);
 
-public record GetInvoiceItemReportResponse(
+public record GetInvoiceProductItemReportResponse(
     string GramPrice,
     string ProfitPercent,
     string TaxPercent,
@@ -32,6 +36,8 @@ public record GetInvoiceItemReportResponse(
     string ItemTaxAmount,
     string ItemFinalAmount,
     string TotalAmount,
+    string SaleWage,
+    WageType? SaleWageType,
     GetProductReportResponse Product);
 
 public record GetProductReportResponse(
@@ -44,3 +50,23 @@ public record GetProductReportResponse(
     GoldUnitType GoldUnitType,
     decimal Fineness,
     string? ProductCategoryTitle);
+
+public record GetInvoiceCoinItemReportResponse(
+    string CoinTitle,
+    string TotalPrice,
+    int Quantity);
+
+public record GetInvoiceCurrencyItemReportResponse(
+    string CurrencyTitle,
+    string TotalPrice,
+    string Amount);
+
+public record GetInvoiceUsedProductReportResponse(
+    string Title,
+    string Weight,
+    string? ExtraCosts,
+    string TotalPrice,
+    decimal Fineness,
+    int Quantity,
+    GoldUnitType GoldUnitType,
+    ProductType ProductType);

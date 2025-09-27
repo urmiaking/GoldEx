@@ -38,6 +38,14 @@ internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingSe
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.UnpaidPriceUnit)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.SaleWagePriceUnit)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.Product!.WagePriceUnit)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.Coin)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.Currency)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
