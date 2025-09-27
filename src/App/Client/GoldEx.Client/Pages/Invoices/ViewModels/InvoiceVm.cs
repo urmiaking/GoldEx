@@ -181,7 +181,7 @@ public class InvoiceVm
     /// <summary>
     /// Helper method to ensure all item indexes are sequential (1, 2, 3, ...).
     /// </summary>
-    private void ReorderItemIndexes()
+    private InvoiceVm ReorderItemIndexes()
     {
         for (var i = 0; i < ProductItems.Count; i++)
         {
@@ -202,6 +202,8 @@ public class InvoiceVm
         {
             UsedProducts[i].Index = i + 1;
         }
+
+        return this;
     }
 
     public static InvoiceRequestDto ToRequest(InvoiceVm model)
@@ -268,6 +270,6 @@ public class InvoiceVm
             UnpaidPriceUnit = response.UnpaidPriceUnit,
             ExchangeRate = response.ExchangeRate,
             InvoiceType = response.InvoiceType
-        };
+        }.ReorderItemIndexes();
     }
 }
