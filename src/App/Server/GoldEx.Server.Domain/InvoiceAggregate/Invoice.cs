@@ -213,10 +213,13 @@ public class Invoice : EntityBase<InvoiceId>
         GoldUnitType unitType,
         ProductId? productId)
     {
-        if (_usedProducts.Any(x => x.ProductId == productId))
-            throw new InvalidOperationException(
-                $"The used product with ID {productId?.Value} is already present in the UsedProducts list");
-
+        if (!productId.HasValue)
+        {
+            if (_usedProducts.Any(x => x.ProductId == productId))
+                throw new InvalidOperationException(
+                    $"The used product with ID {productId?.Value} is already present in the UsedProducts list");
+        }
+        
         _usedProducts.Add(InvoiceUsedProduct.Create(id,
             description,
             weight,

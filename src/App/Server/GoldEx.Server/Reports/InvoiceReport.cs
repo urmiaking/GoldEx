@@ -1,9 +1,6 @@
-﻿using DevExpress.XtraReports.UI;
-using System;
-using System.Collections;
-using System.ComponentModel;
-using System.Drawing;
-using DevExpress.Drawing;
+﻿using System.Collections;
+using DevExpress.XtraReports.UI;
+using GoldEx.Shared.DTOs.Reporting;
 
 namespace GoldEx.Server.Reports
 {
