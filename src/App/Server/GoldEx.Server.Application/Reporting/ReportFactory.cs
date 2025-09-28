@@ -52,6 +52,23 @@ internal class ReportFactory(
 
                 report.DataSource = dataSource;
 
+                // Hide DetailReportBands with empty lists
+                foreach (var bandName in new[] { "ProductsList", "CoinsList", "CurrencyList", "UsedProductsList" })
+                {
+                    if (report.FindControl(bandName, true) is DetailReportBand band)
+                    {
+                        var visible = bandName switch
+                        {
+                            "ProductsList" => response.Invoice.InvoiceProductItems.Count > 0,
+                            "CoinsList" => response.Invoice.InvoiceCoinItems.Count > 0,
+                            "CurrencyList" => response.Invoice.InvoiceCurrencyItems.Count > 0,
+                            "UsedProductsList" => response.Invoice.InvoiceUsedProductItems.Count > 0,
+                            _ => true
+                        };
+                        band.Visible = visible;
+                    }
+                }
+
                 if (report.FindControl("logoBox", true) is XRPictureBox pictureBox)
                 {
                     var iconBytes = await iconService.GetIconAsync(IconType.App, Guid.Empty);

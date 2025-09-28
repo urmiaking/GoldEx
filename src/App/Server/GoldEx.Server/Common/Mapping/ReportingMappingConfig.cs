@@ -125,7 +125,7 @@ public class ReportingMappingConfig : IRegister
                 src.Coin != null ? src.Coin.Title : string.Empty);
 
         config.NewConfig<InvoiceCurrencyItem, GetInvoiceCurrencyItemReportResponse>()
-            .Map(dest => dest.Amount, src => src.Amount)
+            .Map(dest => dest.Amount, src => src.Amount.ToCurrencyReportFormat(null))
             .Map(dest => dest.TotalPrice, src =>
                 src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title))
             .Map(dest => dest.CurrencyTitle, src =>
