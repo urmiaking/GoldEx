@@ -4,7 +4,7 @@
           MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
@@ -92,8 +92,12 @@
             default:
                 throw new ArgumentOutOfRangeException();
         }
-
-        <MudTh>عملیات</MudTh>
+        @switch (ItemType)
+        {
+            case ItemType.Product:
+                <MudTh>عملیات</MudTh> 
+                break;
+        }
     </HeaderContent>
     <RowTemplate>
         @switch (ItemType)
@@ -119,7 +123,7 @@
                                     WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                            }
+                                }
                             else
                             {
                                 @(context.Product.WageType switch
@@ -128,7 +132,7 @@
                                     WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                            }
+                                }
                         }
 
                     </MudTooltip>
@@ -143,28 +147,28 @@
                 break;
             case ItemType.Currency when context.Currency is not null:
                 <MudTd DataLabel="عنوان">@(context.Currency.Title)</MudTd>
-                <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToString("G29")</MudTd>
-                <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
+                <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToCurrencyFormat()</MudTd>
+                <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToCurrencyFormat()</MudTd>
                 break;
         }
-        <MudTd DataLabel="عملیات">
-            <div class="d-flex gap-2">
-                @switch (ItemType)
-                {
-                    case ItemType.Product when context.Product is not null:
+        @switch (ItemType)
+        {
+            case ItemType.Product when context.Product is not null:
+                <MudTd DataLabel="عملیات">
+                    <div class="d-flex gap-2">
                         <MudTooltip Text="چاپ بارکد">
                             <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
                                            OnClick="_ => OnPrintBarcode(context.Product)"
                                            Color="@Color.Success"></MudIconButton>
                         </MudTooltip>
-                        break;
-                    case ItemType.Coin:
-                        break;
-                    case ItemType.Currency:
-                        break;
-                }
-            </div>
-        </MudTd>
+                    </div>
+                </MudTd>
+                break;
+            case ItemType.Coin:
+                break;
+            case ItemType.Currency:
+                break;
+        }
     </RowTemplate>
     <NoRecordsContent>
         <MudText>هیچ جنسی در انبار یافت نشد</MudText>

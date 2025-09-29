@@ -3,6 +3,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
@@ -22,7 +23,8 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal? saleWage,
         WageType? saleWageType,
         PriceUnitId? saleWagePriceUnitId,
-        decimal? saleWagePriceUnitExchangeRate)
+        decimal? saleWagePriceUnitExchangeRate,
+        decimal? stonePriceUnitExchangeRate)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
@@ -30,6 +32,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
+
 
         Id = id;
         GramPrice = gramPrice;
@@ -45,6 +48,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         SaleWageType = saleWageType;
         SaleWagePriceUnitId = saleWagePriceUnitId;
         SaleWagePriceUnitExchangeRate = saleWagePriceUnitExchangeRate;
+        StonePriceUnitExchangeRate = stonePriceUnitExchangeRate;
 
         // Stored calculated values are initialized to 0
         ItemRawAmount = 0;
@@ -62,6 +66,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ProductId productId,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
+        decimal? stonePriceUnitExchangeRate,
         PriceUnitId? costPriceUnitId,
         bool isInstantProduct)
     {
@@ -78,7 +83,8 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             null,
             null,
             null,
-            null);
+            null,
+            stonePriceUnitExchangeRate);
     }
 
     internal static InvoiceProductItem CreateSaleItem(InvoiceProductItemId? id,
@@ -94,7 +100,8 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal saleWage,
         WageType? saleWageType,
         PriceUnitId? saleWagePriceUnitId,
-        decimal? saleWagePriceUnitExchangeRate)
+        decimal? saleWagePriceUnitExchangeRate,
+        decimal? stonePriceUnitExchangeRate)
     {
         return new InvoiceProductItem(id ?? new InvoiceProductItemId(Guid.NewGuid()),
             gramPrice,
@@ -109,7 +116,8 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             saleWage,
             saleWageType,
             saleWagePriceUnitId,
-            saleWagePriceUnitExchangeRate);
+            saleWagePriceUnitExchangeRate,
+            stonePriceUnitExchangeRate);
     }
 
 #pragma warning disable CS8618 
@@ -141,6 +149,8 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     public PriceUnit? SaleWagePriceUnit { get; private set; }
     public decimal? SaleWagePriceUnitExchangeRate { get; set; }
 
+    public decimal? StonePriceUnitExchangeRate { get; private set; }
+
     #endregion
 
     #region Calculations
@@ -150,6 +160,9 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     public decimal ItemProfitAmount { get; private set; }
     public decimal ItemTaxAmount { get; private set; }
     public decimal ItemFinalAmount { get; private set; }
+
+    [NotMapped]
+    public decimal? TotalStoneAmount => Product is not null ? Product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) : null;
 
     /// <summary>
     /// Calculates all financial amounts for the invoice item and updates its state.
@@ -205,7 +218,8 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
                                                                            ItemProfitAmount,
                                                                            ItemTaxAmount,
                                                                            null,
-                                                                           product.ProductType);
+                                                                           product.ProductType) +
+                                                                           product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1));
         }
 
         return this;
@@ -248,7 +262,8 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal saleWage,
         WageType? saleWageType,
         PriceUnitId? saleWagePriceUnitId,
-        decimal? saleWagePriceUnitExchangeRate)
+        decimal? saleWagePriceUnitExchangeRate,
+        decimal? stonePriceUnitExchangeRate)
     {
         GramPrice = gramPrice;
         ProfitPercent = profitPercent;
@@ -262,5 +277,6 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         SaleWageType = saleWageType;
         SaleWagePriceUnitId = saleWagePriceUnitId;
         SaleWagePriceUnitExchangeRate = saleWagePriceUnitExchangeRate;
+        StonePriceUnitExchangeRate = stonePriceUnitExchangeRate;
     }
 }

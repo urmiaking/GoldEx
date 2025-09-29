@@ -303,6 +303,8 @@ internal class InvoiceService(
                 .ThenInclude(x => x.PriceUnit)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.SaleWagePriceUnit)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.Product!.StonePriceUnit)
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 

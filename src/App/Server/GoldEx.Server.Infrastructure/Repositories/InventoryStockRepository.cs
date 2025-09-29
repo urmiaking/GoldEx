@@ -141,6 +141,7 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         .AsSplitQuery()
                         .Include(p => p.ProductCategory)
                         .Include(x => x.WagePriceUnit)
+                        .Include(x => x.StonePriceUnit)
                         .Where(p => productIds.Contains(p.Id))
                         .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
 

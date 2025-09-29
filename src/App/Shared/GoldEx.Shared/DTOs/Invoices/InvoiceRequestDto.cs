@@ -73,6 +73,7 @@ public record InvoiceProductItemDto(
     decimal? CostPrice,
     decimal? CostPriceExchangeRate,
     decimal? WagePriceUnitExchangeRate,
+    decimal? StonePriceUnitExchangeRate,
     Guid? CostPriceUnitId,
     bool IsInstantProduct,
     int Quantity,

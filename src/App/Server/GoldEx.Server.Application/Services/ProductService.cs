@@ -108,6 +108,7 @@ internal class ProductService(
             request.GoldUnitType,
             request.WageType,
             request.WagePriceUnitId.HasValue ? new PriceUnitId(request.WagePriceUnitId.Value) : null,
+            request.StonePriceUnitId.HasValue ? new PriceUnitId(request.StonePriceUnitId.Value) : null,
             request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : null);
 
         if (request.ProductType == ProductType.Jewelry)
@@ -118,6 +119,7 @@ internal class ProductService(
                 s.Cut,
                 s.Carat,
                 s.Purity,
+                s.Cost,
                 item.Id)));
         }
 
@@ -169,6 +171,7 @@ internal class ProductService(
                 s.Cut,
                 s.Carat,
                 s.Purity,
+                s.Cost,
                 item.Id)));
         }
         else
@@ -226,6 +229,7 @@ internal class ProductService(
                 s.Cut,
                 s.Carat,
                 s.Purity,
+                s.Cost,
                 item.Id)));
         }
         else
@@ -244,6 +248,7 @@ internal class ProductService(
                                      request.ProductType,
                                      request.Fineness,
                                      request.UnitType,
+                                     null,
                                      null,
                                      null,
                                      null);
@@ -269,6 +274,7 @@ internal class ProductService(
             request.GoldUnitType,
             request.WageType,
             request.WagePriceUnitId.HasValue ? new PriceUnitId(request.WagePriceUnitId.Value) : null,
+            request.StonePriceUnitId.HasValue ? new PriceUnitId(request.StonePriceUnitId.Value) : null,
             request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : null);
 
         if (request.ProductType == ProductType.Jewelry)
@@ -279,6 +285,7 @@ internal class ProductService(
                 s.Cut,
                 s.Carat,
                 s.Purity,
+                s.Cost,
                 item.Id)));
         }
 
@@ -354,6 +361,7 @@ internal class ProductService(
                             dto.ProductType,
                             dto.Fineness,
                             dto.UnitType,
+                            null,
                             null,
                             null,
                             null);
@@ -452,7 +460,8 @@ internal class ProductService(
                             itemDto.Product.Wage,
                             itemDto.Product.WageType,
                             itemDto.Product.WagePriceUnitId.HasValue ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) : null,
-                            itemDto.WagePriceUnitExchangeRate);
+                            itemDto.WagePriceUnitExchangeRate,
+                            itemDto.StonePriceUnitExchangeRate);
                     }
                     else
                     {
@@ -486,6 +495,7 @@ internal class ProductService(
                         itemDto.Quantity,
                         itemDto.CostPrice,
                         itemDto.CostPriceExchangeRate,
+                        itemDto.StonePriceUnitExchangeRate,
                         itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
                         itemDto.IsInstantProduct,
                         product);
@@ -521,6 +531,7 @@ internal class ProductService(
                         itemDto.Product.WageType,
                         itemDto.Product.WagePriceUnitId.HasValue ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) : null,
                         itemDto.WagePriceUnitExchangeRate,
+                        itemDto.StonePriceUnitExchangeRate,
                         product);
                 }
             }

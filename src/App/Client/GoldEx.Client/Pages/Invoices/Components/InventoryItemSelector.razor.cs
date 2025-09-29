@@ -50,15 +50,25 @@ public partial class InventoryItemSelector
     {
         if (_products is not null)
         {
-            var productItems= _products.Select(product => new ProductItemVm
+            var productItemTasks = _products.Select(async product =>
             {
-                GramPrice = GramPrice,
-                TaxPercent = TaxPercent,
-                ProfitPercent = product.ProductType is ProductType.Jewelry ? JewelryProfitPercent : GoldProfitPercent,
-                Product = product,
-                Quantity = 1,
-                InvoiceType = InvoiceType.Sell
-            }.RecalculateAmounts()).ToList();
+                var exchangeRate = await GetCurrencyPriceAsync(product.StonePriceUnit?.Id ?? PriceUnit.Id);
+
+                return new ProductItemVm
+                {
+                    GramPrice = GramPrice,
+                    TaxPercent = TaxPercent,
+                    ProfitPercent = product.ProductType is ProductType.Jewelry
+                        ? JewelryProfitPercent
+                        : GoldProfitPercent,
+                    Product = product,
+                    Quantity = 1,
+                    InvoiceType = InvoiceType.Sell,
+                    StonePriceUnitExchangeRate = exchangeRate
+                }.RecalculateAmounts();
+            });
+
+            var productItems = (await Task.WhenAll(productItemTasks)).ToList();
 
             Dialog.Close(productItems);
         }

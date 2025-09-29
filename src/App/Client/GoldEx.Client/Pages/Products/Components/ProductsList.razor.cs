@@ -21,7 +21,7 @@ public partial class ProductsList
     private string? _searchString;
     private string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<ProductVm> _table = new ();
-    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small};
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
     private ItemStatus _itemStatus = ItemStatus.Available;
     private DateRange _filterDateRange = new();
 
@@ -101,7 +101,7 @@ public partial class ProductsList
             { x => x.ProductName, model.Name }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
 
         var result = await dialog.Result;
 

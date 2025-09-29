@@ -23,6 +23,12 @@ public class ProductValidator : AbstractValidator<ProductVm>
         RuleFor(x => x.Fineness)
             .InclusiveBetween(0, 1000)
             .WithMessage("عیار باید بین 0 تا 1000 باشد");
+
+        When(x => x.ProductType == ProductType.Jewelry, () => 
+        {
+            RuleFor(x => x.StonePriceUnit)
+                .NotNull().WithMessage("لطفا واحد قیمت سنگ را انتخاب کنید");
+        });
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

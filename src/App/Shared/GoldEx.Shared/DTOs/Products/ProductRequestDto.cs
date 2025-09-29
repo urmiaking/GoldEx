@@ -16,6 +16,7 @@ namespace GoldEx.Shared.DTOs.Products;
 /// <param name="GoldUnitType"></param>
 /// <param name="ProductCategoryId"></param>
 /// <param name="WagePriceUnitId"></param>
+/// <param name="StonePriceUnitId"></param>
 /// <param name="GemStones"></param>
 public record ProductRequestDto(
     Guid? Id,
@@ -29,4 +30,5 @@ public record ProductRequestDto(
     GoldUnitType GoldUnitType,
     Guid? ProductCategoryId,
     Guid? WagePriceUnitId,
+    Guid? StonePriceUnitId,
     List<GemStoneRequestDto>? GemStones);

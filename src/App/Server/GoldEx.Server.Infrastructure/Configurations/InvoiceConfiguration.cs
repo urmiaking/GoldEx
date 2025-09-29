@@ -218,6 +218,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.SaleWagePriceUnitExchangeRate)
             .HasPrecision(36, 10);
 
+        builder.Property(x => x.StonePriceUnitExchangeRate)
+            .HasPrecision(36, 10);
+
         builder.Property(x => x.ItemRawAmount)
             .HasPrecision(36, 10)
             .IsRequired();

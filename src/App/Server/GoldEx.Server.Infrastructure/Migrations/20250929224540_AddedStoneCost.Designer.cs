@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250929224540_AddedStoneCost")]
+    partial class AddedStoneCost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1784,8 +1787,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasColumnType("nvarchar(50)");
 
                             b1.Property<decimal>("Cost")
-                                .HasPrecision(36, 10)
-                                .HasColumnType("decimal(36,10)");
+                                .HasColumnType("decimal(18,2)");
 
                             b1.Property<DateTime>("CreatedAt")
                                 .HasColumnType("datetime2");

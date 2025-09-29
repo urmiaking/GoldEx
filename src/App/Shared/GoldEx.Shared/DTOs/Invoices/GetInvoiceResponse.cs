@@ -61,6 +61,7 @@ public record GetInvoiceProductItemResponse(
     Guid? SaleWagePriceUnitId,
     string SaleWagePriceUnitTitle,
     decimal? SaleWagePriceUnitExchangeRate,
+    decimal? StonePriceUnitExchangeRate,
     bool IsInstantProduct,
     int Quantity,
     decimal ItemRawAmount,
@@ -69,6 +70,7 @@ public record GetInvoiceProductItemResponse(
     decimal ItemTaxAmount,
     decimal ItemFinalAmount,
     decimal TotalAmount,
+    decimal? TotalStoneAmount,
     GetProductResponse Product);
 
 public record GetInvoiceCurrencyItemResponse(

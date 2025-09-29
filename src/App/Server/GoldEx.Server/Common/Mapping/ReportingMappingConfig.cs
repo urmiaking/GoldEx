@@ -47,7 +47,7 @@ public class ReportingMappingConfig : IRegister
                     : null)
             .Map(dest => dest.TotalUnpaidAmount,
                 src =>
-                    $"{(src.TotalUnpaidAmount - src.TotalUsedProductsAmount).ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+                    $"{(src.TotalUnpaidAmount - src.TotalUsedProductsAmount).FormatUnpaidAmount(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
             .Map(dest => dest.TotalAmountWithDiscountsAndExtraCosts,
                 src =>
                     $"{src.TotalAmountWithDiscountsAndExtraCosts.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
