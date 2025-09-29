@@ -410,22 +410,46 @@
 
         <MudDivider Class="my-2" />
 
-        <div class="d-flex justify-content-end gap-3 mt-2">
-
+        <div class="d-flex gap-3 mt-2">
+            
             @if (IsEditMode)
             {
-                <MudButton Color="Color.Success"
-                           StartIcon="@Icons.Material.Filled.Print"
+                <MudButton Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.DeleteForever"
                            Disabled="@_processing"
                            Variant="Variant.Filled"
-                           OnClick="OnPrint">
+                           OnClick="OnDelete">
                     @if (_processing)
                     {
                         <MudProgressCircular Class="ms-n1"
                                              Size="Size.Small"
                                              Indeterminate="true" />
                         <MudText Class="ms-2">
-                            در حال ذخیره
+                            در حال پردازش
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText>حذف فاکتور</MudText>
+                    }
+
+                </MudButton>
+            }
+            <MudSpacer />
+            @if (IsEditMode)
+            {
+                <MudButton Color="Color.Success"
+                           StartIcon="@Icons.Material.Filled.Print"
+                           Disabled="@_processing"
+                           Variant="Variant.Filled"
+                           OnClick="OnPrintAsync">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1"
+                                             Size="Size.Small"
+                                             Indeterminate="true" />
+                        <MudText Class="ms-2">
+                            در حال پردازش
                         </MudText>
                     }
                     else
@@ -440,14 +464,14 @@
                        StartIcon="@Icons.Material.Filled.Print"
                        Disabled="@_processing"
                        Variant="Variant.Filled"
-                       OnClick="@(async () => await OnSubmitAndPrintAsync())">
+                       OnClick="@(async () => await SubmitAsync(true))">
                 @if (_processing)
                 {
                     <MudProgressCircular Class="ms-n1"
                                          Size="Size.Small"
                                          Indeterminate="true" />
                     <MudText Class="ms-2">
-                        در حال ذخیره
+                        در حال پردازش
                     </MudText>
                 }
                 else
@@ -460,7 +484,7 @@
             <MudButton Color="Color.Primary"
                        Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"
-                       OnClick="@(async () => await SubmitAsync(ClientRoutes.Invoices.Index))"
+                       OnClick="@(async () => await SubmitAsync(false))"
                        Variant="Variant.Filled">
                 @if (_processing)
                 {
@@ -468,7 +492,7 @@
                                          Size="Size.Small"
                                          Indeterminate="true" />
                     <MudText Class="ms-2">
-                        در حال ذخیره
+                        در حال پردازش
                     </MudText>
                 }
                 else

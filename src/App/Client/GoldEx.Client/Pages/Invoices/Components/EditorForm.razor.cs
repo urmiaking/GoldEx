@@ -15,6 +15,7 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
@@ -24,6 +25,7 @@ public partial class EditorForm
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
     [Parameter] public string? Barcode { get; set; }
+    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private bool IsEditMode => Id.HasValue;
 
@@ -43,6 +45,12 @@ public partial class EditorForm
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
+
+    private string PrintUrl => ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
+    {
+        number = _model.InvoiceNumber,
+        invoiceType = _model.InvoiceType.ToString()
+    });
 
     protected override async Task OnParametersSetAsync()
     {
@@ -704,7 +712,7 @@ public partial class EditorForm
             afterSend: response => _model.ExchangeRate = response.ExchangeRate);
     }
 
-    private async Task SubmitAsync(string navigationUrl)
+    private async Task SubmitAsync(bool printInvoice)
     {
         if (_processing)
             return;
@@ -731,12 +739,18 @@ public partial class EditorForm
 
         await SendRequestAsync<IInvoiceService>(
             action: (s, ct) => request.Id.HasValue ? s.UpdateAsync(request.Id.Value, request, ct) : s.CreateAsync(request, ct),
-            afterSend: () =>
+            afterSend: async () =>
             {
                 AddSuccessToast("فاکتور با موفقیت ذخیره شد");
                 _processing = false;
-                Navigation.NavigateTo(navigationUrl);
-                return Task.CompletedTask;
+                if (printInvoice)
+                {
+                    await OnPrintAsync();
+                }
+                else
+                {
+                    Navigation.NavigateTo(ClientRoutes.Invoices.Index);
+                }
             },
             onFailure: () =>
             {
@@ -779,15 +793,6 @@ public partial class EditorForm
             });
     }
 
-    private async Task OnSubmitAndPrintAsync()
-    {
-        await SubmitAsync(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
-        {
-            number = _model.InvoiceNumber,
-            invoiceType = _model.InvoiceType.ToString()
-        }));
-    }
-
     private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)
     {
         if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
@@ -826,14 +831,7 @@ public partial class EditorForm
         await LoadInvoiceNumberAsync();
     }
 
-    private void OnPrint()
-    {
-        Navigation.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
-        {
-            number = _model.InvoiceNumber,
-            invoiceType = _model.InvoiceType.ToString()
-        }));
-    }
+    private async Task OnPrintAsync() => await JsRuntime.InvokeVoidAsync("open", PrintUrl, "_blank");
 
     #endregion
 
@@ -899,6 +897,29 @@ public partial class EditorForm
             afterSend: () =>
             {
                 AddSuccessToast("پیامک با موفقیت ارسال شد");
+                return Task.CompletedTask;
+            });
+    }
+
+    private async Task OnDelete()
+    {
+        if (!_model.InvoiceId.HasValue)
+            return;
+
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            markupMessage: new MarkupString($"آیا برای حذف فاکتور شماره {_model.InvoiceNumber} اطمینان دارید؟ <br> <br> "),
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is null)
+            return;
+
+        await SendRequestAsync<IInvoiceService>(
+            action: (s, ct) => s.DeleteAsync(_model.InvoiceId.Value, ct),
+            afterSend: () =>
+            {
+                AddSuccessToast("فاکتور با موفقیت حذف شد");
+                Navigation.NavigateTo(ClientRoutes.Invoices.Index);
                 return Task.CompletedTask;
             });
     }
