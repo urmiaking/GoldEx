@@ -102,6 +102,7 @@ public class Invoice : EntityBase<InvoiceId>
         int quantity,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
+        decimal? stonePriceUnitExchangeRate,
         PriceUnitId? costPriceUnitId,
         bool isInstantProduct,
         Product product)
@@ -114,6 +115,7 @@ public class Invoice : EntityBase<InvoiceId>
             product.Id,
             costPrice,
             costPriceExchangeRate,
+            stonePriceUnitExchangeRate,
             costPriceUnitId,
             isInstantProduct)
             .SetInvoice(this)
@@ -133,6 +135,7 @@ public class Invoice : EntityBase<InvoiceId>
         WageType? saleWageType,
         PriceUnitId? saleWagePriceUnitId,
         decimal? saleWagePriceUnitExchangeRate,
+        decimal? stonePriceUnitExchangeRate,
         Product product)
     {
         _products.Add(InvoiceProductItem.CreateSaleItem(id,
@@ -148,7 +151,8 @@ public class Invoice : EntityBase<InvoiceId>
             saleWage,
             saleWageType,
             saleWagePriceUnitId,
-            saleWagePriceUnitExchangeRate)
+            saleWagePriceUnitExchangeRate,
+            stonePriceUnitExchangeRate)
             .SetInvoice(this)
             .RecalculateAmounts(product, InvoiceType));
     }

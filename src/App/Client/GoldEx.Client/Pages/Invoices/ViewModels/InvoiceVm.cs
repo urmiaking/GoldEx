@@ -9,6 +9,8 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class InvoiceVm
 {
+    private const decimal Epsilon = 0.0001m;
+
     public Guid? InvoiceId { get; set; }
 
     [Display(Name = "شماره فاکتور")]
@@ -70,7 +72,9 @@ public class InvoiceVm
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
     public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
     public decimal TotalUsedProductsAmount => UsedProducts.Sum(x => x.ItemAmount);
-    public bool IsPaid => TotalUnpaidAmount <= 0;
+
+    public bool IsPaid => Math.Abs(TotalUnpaidAmount) < Epsilon;
+    public bool IsCreditor => TotalUnpaidAmount < -Epsilon;
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.Now && !IsPaid;
 
     public static InvoiceVm CreateDefaultInstance()

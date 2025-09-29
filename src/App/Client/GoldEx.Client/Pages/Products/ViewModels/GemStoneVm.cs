@@ -24,5 +24,9 @@ public class GemStoneVm
     public decimal Carat { get; set; } = default!;
 
     [Display(Name = "پاكي")]
-    public string? Purity { get; set; } 
+    public string? Purity { get; set; }
+
+    [Display(Name = "نرخ")]
+    [Required(ErrorMessage = "وارد كردن {0} الزامی است")]
+    public decimal Cost { get; set; }
 }

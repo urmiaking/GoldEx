@@ -1,7 +1,5 @@
 ﻿using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
-using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -16,10 +14,6 @@ public class InvoicesMappingConfig : IRegister
         config.NewConfig<Invoice, GetInvoiceListResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
-            //.Map(dest => dest.PriceUnit,
-            //    src => MapContext.Current.GetService<IPriceUnitRepository>()
-            //        .Get(new PriceUnitsSetAsDefaultSpecification())
-            //        .FirstOrDefault()!.Title)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit!.Title)
             .Map(dest => dest.TotalAmount, src => src.TotalAmountWithDiscountsAndExtraCosts)
             .Map(dest => dest.TotalUnpaidAmount, src => src.TotalUnpaidAmount)
@@ -59,7 +53,8 @@ public class InvoicesMappingConfig : IRegister
             .Map(dest => dest.SaleWagePriceUnitId,
                 src => src.SaleWagePriceUnitId.HasValue ? src.SaleWagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.SaleWagePriceUnitTitle,
-                src => src.SaleWagePriceUnit != null ? src.SaleWagePriceUnit.Title : string.Empty);
+                src => src.SaleWagePriceUnit != null ? src.SaleWagePriceUnit.Title : string.Empty)
+            .Map(dest => dest.StonePriceUnitExchangeRate, src => src.StonePriceUnitExchangeRate);
 
         config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);

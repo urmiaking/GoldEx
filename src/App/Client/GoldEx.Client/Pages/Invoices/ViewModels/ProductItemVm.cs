@@ -1,9 +1,10 @@
 ﻿using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.Enums;
+using static GoldEx.Shared.Helpers.CalculatorHelper;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -73,6 +74,9 @@ public class ProductItemVm
     [Display(Name = "نرخ تبدیل واحد ارزش جنس")]
     public decimal? CostPriceExchangeRate { get; set; }
 
+    [Display(Name = "نرخ تبدیل واحد سنگ")]
+    public decimal? StonePriceUnitExchangeRate { get; set; }
+
     public bool IsInstantProduct { get; set; }
 
     public InvoiceType InvoiceType { get; set; }
@@ -131,7 +135,8 @@ public class ProductItemVm
             WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, WageExchangeRate);
             ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
             TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
-            FinalAmount = CalculatorHelper.Product.CalculateFinalPrice(RawAmount, WageAmount, ProfitAmount, TaxAmount, 0, Product.ProductType);
+            FinalAmount = CalculatorHelper.Product.CalculateFinalPrice(RawAmount, WageAmount, ProfitAmount, TaxAmount, 0, Product.ProductType) 
+                + (Product.Stones != null ? Product.Stones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) : 0);
         }
 
         return this;
@@ -178,6 +183,7 @@ public class ProductItemVm
             productItem.CostPrice,
             productItem.CostPriceExchangeRate,
             productItem.WageExchangeRate,
+            productItem.StonePriceUnitExchangeRate,
             productItem.CostPriceUnitId,
             productItem.IsInstantProduct,
             productItem.Quantity,
@@ -197,6 +203,7 @@ public class ProductItemVm
             CostPriceExchangeRate = response.CostPriceExchangeRate,
             CostPriceUnitId = response.CostPriceUnitId,
             CostPriceUnitTitle = response.CostPriceUnitTitle,
+            StonePriceUnitExchangeRate = response.StonePriceUnitExchangeRate,
             IsInstantProduct = response.IsInstantProduct,
             Product = ProductVm.CreateFromInvoice(response),
             Quantity = response.Quantity,

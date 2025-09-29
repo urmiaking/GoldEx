@@ -13,7 +13,12 @@
                         Color color;
                         string text;
 
-                        if (_model.IsPaid)
+                        if (_model.IsCreditor)
+                        {
+                            color = Color.Success;
+                            text = "بستانکار";
+                        }
+                        else if (_model.IsPaid)
                         {
                             color = Color.Success;
                             text = "تسویه حساب شده";
@@ -176,7 +181,6 @@
                              AdornmentIcon="@Icons.Material.Filled.Search"
                              Variant="Variant.Outlined"
                              SearchFunc="@SearchCustomers"
-                             AutoFocus="true"
                              ResetValueOnEmptyText="true"
                              DebounceInterval="0"
                              ShowProgressIndicator="false">

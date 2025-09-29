@@ -43,6 +43,11 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasForeignKey(x => x.WagePriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.StonePriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.StonePriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(x => x.Barcode)
             .IsUnique();
 
@@ -66,6 +71,10 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired();
 
         builder.Property(x => x.Carat)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.Cost)
             .HasPrecision(36, 10)
             .IsRequired();
     }

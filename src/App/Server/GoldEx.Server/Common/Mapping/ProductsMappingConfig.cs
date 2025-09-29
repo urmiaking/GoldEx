@@ -14,8 +14,7 @@ public class ProductsMappingConfig : IRegister
             .Map(dest => dest.ProductCategoryTitle, src => src.ProductCategory != null ? src.ProductCategory.Title : null)
             .Map(dest => dest.WagePriceUnitId, src => src.WagePriceUnitId.HasValue ? src.WagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.WagePriceUnitTitle, src => src.WagePriceUnit != null ? src.WagePriceUnit.Title : null)
-            //.Map(dest => dest.InvoiceId, src => src.SellInvoiceProductItem != null ? src.SellInvoiceProductItem.InvoiceId.Value : (Guid?)null)
-            // TODO: Remove this mapping when SellProduct navigation property is removed from Product entity
+            .Map(dest => dest.StonePriceUnit, src => src.StonePriceUnit)
             .Map(dest => dest.DateTime, src => src.CreatedAt)
             .Map(dest => dest.GemStones, src => src.GemStones);
 

@@ -1,5 +1,4 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
@@ -18,6 +17,7 @@ public class Product : EntityBase<ProductId>
         GoldUnitType goldUnitType,
         WageType? wageType,
         PriceUnitId? wagePriceUnitId,
+        PriceUnitId? stonePriceUnitId,
         ProductCategoryId? productCategoryId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(weight, 0, nameof(weight));
@@ -37,6 +37,7 @@ public class Product : EntityBase<ProductId>
             GoldUnitType = goldUnitType,
             WageType = wageType,
             WagePriceUnitId = wagePriceUnitId,
+            StonePriceUnitId = stonePriceUnitId,
             ProductCategoryId = productCategoryId
         };
     }
@@ -59,6 +60,9 @@ public class Product : EntityBase<ProductId>
 
     public PriceUnitId? WagePriceUnitId { get; private set; }
     public PriceUnit? WagePriceUnit { get; private set; }
+
+    public PriceUnitId? StonePriceUnitId { get; private set; }
+    public PriceUnit? StonePriceUnit { get; private set; }
 
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;

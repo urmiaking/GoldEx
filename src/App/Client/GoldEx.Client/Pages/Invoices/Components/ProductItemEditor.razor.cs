@@ -52,6 +52,11 @@ public partial class ProductItemEditor
         _ => throw new ArgumentOutOfRangeException()
     };
 
+    private string? StonePriceExchangeRateLabel => Model.Product.StonePriceUnit != null
+                                                && PriceUnit.Id != Model.Product.StonePriceUnit.Id
+        ? $"نرخ تبدیل {Model.Product.StonePriceUnit.Title} به {PriceUnit.Title}"
+        : null;
+
     public string CostPriceAdornmentText => Model.CostPriceUnitTitle ?? PriceUnit.Title;
     public string? CostExchangeRateLabel => Model.CostPriceUnitId.HasValue && PriceUnit.Id != Model.CostPriceUnitId
         ? $"نرخ تبدیل {Model.CostPriceUnitTitle} به {PriceUnit.Title}"
@@ -309,5 +314,20 @@ public partial class ProductItemEditor
     {
         Model.Product.GoldUnitType = unitType;
         await LoadGramPriceAsync();
+    }
+	private async Task OnProductStonePriceUnitChanged(GetPriceUnitTitleResponse priceUnit)
+	{
+        Model.Product.StonePriceUnit = priceUnit;
+
+        if (PriceUnit.Id != Model.Product.StonePriceUnit.Id)
+            await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                action: (s, ct) => s.GetExchangeRateAsync(Model.Product.StonePriceUnit.Id, PriceUnit.Id, ct),
+                afterSend: response =>
+                {
+                    if (response.ExchangeRate.HasValue)
+                        Model.StonePriceUnitExchangeRate = response.ExchangeRate.Value;
+                });
+
+        StateHasChanged();
     }
 }

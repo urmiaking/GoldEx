@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Client.Pages.Settings.ViewModels
+@using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_productItemValidator.ValidateValue)" ValidationDelay="0">
@@ -301,6 +302,49 @@
                                   AdornmentColor="Color.Primary" />
                 </MudItem>
 
+                @if(Model.Product.ProductType is ProductType.Jewelry)
+                {
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudSelect For="() => Model.Product.StonePriceUnit"
+                                   Label="@Model.GetDisplayName(() => Model.Product.StonePriceUnit)"
+                                   Margin="Margin.Dense"
+                                   T="GetPriceUnitTitleResponse?"
+                                   Value="Model.Product.StonePriceUnit"
+                                   ValueChanged="OnProductStonePriceUnitChanged"
+                                   Variant="Variant.Outlined">
+                            @foreach (var item in PriceUnits)
+                            {
+                                <MudSelectItem Value="item">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudAvatar Size="Size.Small">
+                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                        </MudAvatar>
+                                        <MudText>@item.Title</MudText>
+                                    </MudStack>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    @if (Model.Product.StonePriceUnit != null && PriceUnit.Id != Model.Product.StonePriceUnit?.Id)
+                    {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField For="@(() => Model.StonePriceUnitExchangeRate)"
+                                             Format="#,##0.########"
+                                             Immediate="true"
+                                             Label="@StonePriceExchangeRateLabel"
+                                             Margin="Margin.Dense"
+                                             T="decimal?"
+                                             @bind-Value="Model.StonePriceUnitExchangeRate"
+                                             Adornment="Adornment.End"
+                                             AdornmentIcon="@Icons.Material.Filled.MonetizationOn"
+                                             HideSpinButtons="true"
+                                             Variant="Variant.Outlined" />
+						</MudItem>
+                        
+                    }
+                }
+
                 @if (Model.Product.ProductType is ProductType.Jewelry)
                 {
                     @if (Model.Product.Stones is not null)
@@ -353,6 +397,18 @@
                                               For="() => Model.Product.Stones[index].Purity"
                                               Label="پاکی" Margin="Margin.Dense"
                                               T="string?" Variant="Variant.Outlined"></MudTextField>
+                            </MudItem>
+                            <MudItem @key="@($"{index} cost")" xs="12" md="2" Class="pt-0">
+                                <MudNumericField @bind-Value="Model.Product.Stones[index].Cost"
+                                                 For="() => Model.Product.Stones[index].Cost"
+                                                 Label="نرخ"
+                                                 Margin="Margin.Dense"
+                                                 T="decimal"
+                                                 Format="#,##0.##"
+                                                 HideSpinButtons="true"
+                                                 Adornment="Adornment.End"
+                                                 AdornmentText="@Model.Product.StonePriceUnit?.Title"
+                                                 Variant="Variant.Outlined"></MudNumericField>
                             </MudItem>
                         }
                     }

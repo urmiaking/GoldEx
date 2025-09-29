@@ -1,11 +1,11 @@
 ﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
-using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Client.Pages.Products.ViewModels;
 
@@ -125,13 +125,15 @@ public class ProductVm : INotifyPropertyChanged
 
     [Display(Name = "دسته بندی")]
     public Guid? ProductCategoryId { get; set; }
-
     public string? ProductCategoryTitle { get; set; } = string.Empty;
 
     [Display(Name = "واحد قیمت اجرت")]
     public Guid? WagePriceUnitId { get; set; }
-
     public string? WagePriceUnitTitle { get; set; }
+
+    [Display(Name = "واحد قیمت سنگ")]
+    public GetPriceUnitTitleResponse? StonePriceUnit { get; set; }
+
     public ProductCategoryVm? CategoryVm { get; set; }
     public List<GemStoneVm>? Stones { get; set; }
     public DateTime DateTime { get; set; }
@@ -161,6 +163,7 @@ public class ProductVm : INotifyPropertyChanged
             ProductCategoryTitle = item.ProductCategoryTitle,
             WagePriceUnitId = item.WagePriceUnitId,
             WagePriceUnitTitle = item.WagePriceUnitTitle,
+            StonePriceUnit = item.StonePriceUnit,
             DateTime = item.DateTime,
             GoldUnitType = item.GoldUnitType,
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm
@@ -175,7 +178,8 @@ public class ProductVm : INotifyPropertyChanged
                 Code = x.Code,
                 Color = x.Color,
                 Cut = x.Cut,
-                Purity = x.Purity
+                Purity = x.Purity,
+                Cost = x.Cost
             }).ToList()
         };
     }
@@ -210,12 +214,14 @@ public class ProductVm : INotifyPropertyChanged
             item.GoldUnitType,
             item.ProductCategoryId,
             item.WagePriceUnitId,
+            item.StonePriceUnit?.Id,
             item.Stones?.Select(x => new GemStoneRequestDto(
                     x.Code,
                     x.Type,
                     x.Color,
                     x.Cut,
                     x.Carat,
+                    x.Cost,
                     x.Purity))
                 .ToList()
         );
@@ -235,6 +241,7 @@ public class ProductVm : INotifyPropertyChanged
             ProductCategoryTitle = item.ProductCategoryTitle,
             WagePriceUnitId = item.WagePriceUnitId,
             WagePriceUnitTitle = item.WagePriceUnitTitle,
+            StonePriceUnit = item.StonePriceUnit,
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle)
                 ? new ProductCategoryVm
                 {

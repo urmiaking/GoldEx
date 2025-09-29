@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Client.Pages.Settings.ViewModels
+@using GoldEx.Shared.DTOs.PriceUnits
 
 @inherits GoldExComponentBase
 
@@ -183,6 +184,29 @@
                 }
                 @if (Model.ProductType is ProductType.Jewelry)
                 {
+                    <MudItem xs="12" md="6" lg="6">
+                        <MudSelect For="() => Model.StonePriceUnit"
+                                   Label="@Model.GetDisplayName(() => Model.StonePriceUnit)"
+                                   Margin="Margin.Dense"
+                                   T="GetPriceUnitTitleResponse?"
+                                   @bind-Value="Model.StonePriceUnit"
+                                   Variant="Variant.Outlined">
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudSelectItem Value="item">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudAvatar Size="Size.Small">
+                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                        </MudAvatar>
+                                        <MudText>@item.Title</MudText>
+                                    </MudStack>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                @if (Model.ProductType is ProductType.Jewelry)
+                {
                     @if (Model.Stones is not null)
                     {
                         @for (var i = 0; i < Model.Stones.Count; i++)
@@ -234,6 +258,18 @@
                                               Label="پاکی" Margin="Margin.Dense"
                                               T="string?" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
+                            <MudItem @key="@($"{index} cost")" xs="12" md="2" Class="pt-0">
+                                <MudNumericField @bind-Value="Model.Stones[index].Cost"
+                                                 For="() => Model.Stones[index].Cost"
+                                                 Label="نرخ"
+                                                 Margin="Margin.Dense"
+                                                 T="decimal"
+                                                 Format="#,##0.##"
+                                                 HideSpinButtons="true"
+                                                 Adornment="Adornment.End"
+                                                 AdornmentText="@Model.StonePriceUnit?.Title"
+                                                 Variant="Variant.Outlined"></MudNumericField>
+							</MudItem>
                         }
                     }
 
