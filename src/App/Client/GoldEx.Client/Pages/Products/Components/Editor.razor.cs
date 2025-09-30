@@ -149,10 +149,7 @@ public partial class Editor
     private void OnAddGemStone()
     {
         Model.Stones ??= [];
-        Model.Stones.Add(new GemStoneVm
-        {
-            Code = StringExtensions.GenerateRandomCode(5)
-        });
+        Model.Stones.Add(new GemStoneVm());
         StateHasChanged();
     }
 

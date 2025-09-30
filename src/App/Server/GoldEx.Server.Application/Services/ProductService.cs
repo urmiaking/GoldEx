@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.Products;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -79,6 +80,9 @@ internal class ProductService(
         var item = await repository
             .Get(new ProductsByIdSpecification(new ProductId(id)))
             .AsNoTracking()
+            .Include(x => x.ProductCategory)
+            .Include(x => x.StonePriceUnit)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetProductResponse>(item);
@@ -90,6 +94,8 @@ internal class ProductService(
             .Get(new ProductsByBarcodeSpecification(barcode))
             .AsNoTracking()
             .Include(x => x.ProductCategory)
+            .Include(x => x.StonePriceUnit)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);
@@ -113,7 +119,7 @@ internal class ProductService(
 
         if (request.ProductType == ProductType.Jewelry)
         {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(s.Code,
+            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
                 s.Type,
                 s.Color,
                 s.Cut,
@@ -145,7 +151,6 @@ internal class ProductService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetName(request.Name);
-        // item.SetBarcode(request.Barcode);
         item.SetWeight(request.Weight);
         item.SetWage(request.Wage);
         item.SetWageType(request.WageType);
@@ -165,7 +170,7 @@ internal class ProductService(
 
         if (request.ProductType == ProductType.Jewelry)
         {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(s.Code,
+            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
                 s.Type,
                 s.Color,
                 s.Cut,
@@ -223,7 +228,7 @@ internal class ProductService(
 
         if (request.ProductType == ProductType.Jewelry)
         {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(s.Code,
+            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
                 s.Type,
                 s.Color,
                 s.Cut,
@@ -279,7 +284,7 @@ internal class ProductService(
 
         if (request.ProductType == ProductType.Jewelry)
         {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(s.Code,
+            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
                 s.Type,
                 s.Color,
                 s.Cut,

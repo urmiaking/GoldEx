@@ -212,7 +212,8 @@ public partial class EditorForm
 
                 decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
-                decimal? exchangeRate = null;
+                decimal? wageExchangeRate = null;
+                decimal? stoneExchangeRate = null;
 
                 if (response.WagePriceUnitId.HasValue && response.WagePriceUnitId.Value != _model.InvoicePriceUnit?.Id)
                 {
@@ -223,7 +224,21 @@ public partial class EditorForm
                                 s.GetExchangeRateAsync(response.WagePriceUnitId.Value, _model.InvoicePriceUnit.Id, ct),
                             afterSend: respExchangeRate =>
                             {
-                                exchangeRate = respExchangeRate.ExchangeRate;
+                                wageExchangeRate = respExchangeRate.ExchangeRate;
+                            });
+                    }
+                }
+
+                if (response.StonePriceUnit is not null && response.StonePriceUnit.Id != _model.InvoicePriceUnit?.Id)
+                {
+                    if (_model.InvoicePriceUnit != null)
+                    {
+                        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                            action: (s, ct) =>
+                                s.GetExchangeRateAsync(response.StonePriceUnit.Id, _model.InvoicePriceUnit.Id, ct),
+                            afterSend: respExchangeRate =>
+                            {
+                                stoneExchangeRate = respExchangeRate.ExchangeRate;
                             });
                     }
                 }
@@ -232,7 +247,8 @@ public partial class EditorForm
                 {
                     Product = ProductVm.CreateFrom(response),
                     GramPrice = gramPrice,
-                    WageExchangeRate = exchangeRate,
+                    WageExchangeRate = wageExchangeRate,
+                    StonePriceUnitExchangeRate = stoneExchangeRate,
                     InvoiceType = InvoiceType.Sell,
                     TaxPercent = _setting?.TaxPercent ?? 9,
                     ProfitPercent = response.ProductType == ProductType.Gold

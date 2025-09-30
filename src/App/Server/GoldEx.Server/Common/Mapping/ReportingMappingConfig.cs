@@ -56,6 +56,9 @@ public class ReportingMappingConfig : IRegister
                     ? $"({(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1))
                         .ToCurrencyReportFormat(src.UnpaidPriceUnit == null ? null : src.UnpaidPriceUnit.Title)})"
                     : null)
+            .Map(dest => dest.TotalStoneAmount, src => src.TotalStoneAmount != 0
+                ? $"{src.TotalStoneAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"
+                : null)
             .Map(dest => dest.InvoiceDate,
                 src => new DateTime(src.InvoiceDate, TimeOnly.MinValue))
             .Map(dest => dest.DueDate,

@@ -28,7 +28,13 @@ public class CalculatorVm
     public decimal GramPrice { get; set; }
 
     [Display(Name = "نرخ تبدیل اجرت")]
-    public decimal? ExchangeRate { get; set; }
+    public decimal? WageExchangeRate { get; set; }
+
+    [Display(Name = "نرخ تبدیل سنگ")]
+    public decimal? StoneExchangeRate { get; set; }
+
+    [Display(Name = "قیمت سنگ")]
+    public decimal? StonePrice { get; set; }
 
     [Display(Name = "عیار")]
     public decimal Fineness { get; set; } = 750m;
@@ -45,21 +51,27 @@ public class CalculatorVm
     [Display(Name = "واحد ارزی اجرت")]
     public GetPriceUnitTitleResponse? WagePriceUnit { get; set; }
 
+    [Display(Name = "واحد ارزی سنگ")]
+    public GetPriceUnitTitleResponse? StonePriceUnit { get; set; }
+
     [Display(Name = "واحد سنجش طلا")]
     public GoldUnitType GoldUnitType { get; set; } = GoldUnitType.Gram;
 
     public decimal WeightAs750 => (Fineness / 750m) * Weight;
 
-    public static CalculatorVm CreateFrom(GetProductResponse response, CalculatorVm model, GetPriceUnitTitleResponse? wagePriceUnit)
+    public CalculatorVm CreateFrom(GetProductResponse response,
+        GetPriceUnitTitleResponse? wagePriceUnit, GetPriceUnitTitleResponse? stonePriceUnit)
     {
-        model.Weight = response.Weight;
-        model.ProductType = response.ProductType;
-        model.Wage = response.Wage;
-        model.WageType = response.WageType;
-        model.Fineness = response.Fineness;
-        model.WagePriceUnit = wagePriceUnit;
-        model.GoldUnitType = response.GoldUnitType;
+        Weight = response.Weight;
+        ProductType = response.ProductType;
+        Wage = response.Wage;
+        WageType = response.WageType;
+        Fineness = response.Fineness;
+        WagePriceUnit = wagePriceUnit;
+        GoldUnitType = response.GoldUnitType;
+        StonePriceUnit = stonePriceUnit;
+        StonePrice = response.GemStones?.Sum(x => x.Cost) ?? 0;
 
-        return model;
+        return this;
     }
 }

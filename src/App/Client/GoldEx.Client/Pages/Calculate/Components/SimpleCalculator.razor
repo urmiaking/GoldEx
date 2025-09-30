@@ -175,14 +175,14 @@
                 @if (_model.WageType is WageType.Fixed && _model.PriceUnit != _model.WagePriceUnit)
                 {
                     <MudItem xs="12" sm="6">
-                        <MudNumericField For="() => _model.ExchangeRate"
+                        <MudNumericField For="() => _model.WageExchangeRate"
                                          Format="#,##0.########"
                                          HideSpinButtons="true"
                                          Immediate="true"
                                          Margin="Margin.Dense"
                                          Label="@WageExchangeRateLabel"
                                          T="decimal?"
-                                         Value="_model.ExchangeRate"
+                                         Value="_model.WageExchangeRate"
                                          ValueChanged="OnWageExchangeRateChanged"
                                          Variant="Variant.Outlined"></MudNumericField>
                     </MudItem>
@@ -221,6 +221,59 @@
                                  ValueChanged="OnExtraCostChanges"
                                  Variant="Variant.Outlined"></MudNumericField>
             </MudItem>
+            @if (_model.ProductType is ProductType.Jewelry)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudMenu @bind-Open="_stoneFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@StoneFieldAdornmentText"
+                                             For="() => _model.StonePrice"
+                                             Format="#,##0.##"
+                                             HideSpinButtons="true"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(_model.GetDisplayName(() => _model.StonePrice))"
+                                             T="decimal?"
+                                             Value="_model.StonePrice"
+                                             ValueChanged="OnStonePriceChanged"
+                                             Variant="Variant.Outlined"
+                                             OnAdornmentClick="OnStoneAdornmentClicked"></MudNumericField>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectStonePriceUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
+                @if (_model.PriceUnit != _model.StonePriceUnit)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField For="() => _model.StoneExchangeRate"
+                                         Format="#,##0.########"
+                                         HideSpinButtons="true"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@StoneExchangeRateLabel"
+                                         T="decimal?"
+                                         Value="_model.StoneExchangeRate"
+                                         ValueChanged="OnStoneExchangeRateChanged"
+                                         Variant="Variant.Outlined"></MudNumericField>
+                    </MudItem>
+                }
+            }
         </MudGrid>
 
         @* The main check to show the results block only when there is a valid price *@
@@ -257,6 +310,15 @@
                             </div>
                         }
 
+                        @* Stone price with formula *@
+                        @if (_stoneCost.HasValue && _stoneCost.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center">
+                                <MudText>قیمت سنگ: مبلغ ثابت (@($"{_model.StonePrice?.ToCurrencyFormat(_model.StonePriceUnit?.Title)}"))</MudText>
+                                <MudText Class="font-weight-bold">@_stoneCost.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                            </div>
+                        }
+
                         @* Manufacturing cost (Wage) with formula *@
                         @if (_wage.HasValue && _wage.Value is not 0)
                         {
@@ -289,7 +351,7 @@
                         @if (_tax.HasValue && _tax.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center">
-                                <MudText>مالیات: @_model.TaxPercent.ToCurrencyFormat()% (سود فروش طلا + اجرت ساخت)</MudText>
+                                <MudText>مالیات: @_model.TaxPercent.ToCurrencyFormat()% (سود فروش طلا + اجرت ساخت@(_model.StonePrice.HasValue ? " + قیمت سنگ" : string.Empty))</MudText>
                                 <MudText Class="font-weight-bold">@_tax.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                             </div>
                         }

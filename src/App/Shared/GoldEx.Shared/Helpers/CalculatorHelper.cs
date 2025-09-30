@@ -83,13 +83,14 @@ public class CalculatorHelper
         /// <param name="profit">سود فروشنده</param>
         /// <param name="taxPercent">درصد مالیات</param>
         /// <param name="productType">نوع محصول</param>
+        /// <param name="stoneAmount">ارزش سنگ</param>
         /// <returns>مالیات بر ارزش افزوده</returns>
-        public static decimal CalculateTax(decimal wage, decimal profit, decimal taxPercent, ProductType productType)
+        public static decimal CalculateTax(decimal wage, decimal profit, decimal taxPercent, ProductType productType, decimal? stoneAmount)
         {
             if (productType is ProductType.UsedGold or ProductType.MoltenGold)
                 return 0;
 
-            return (wage + profit) * (taxPercent / 100);
+            return (wage + profit + (stoneAmount ?? 0)) * (taxPercent / 100);
         }
 
         /// <summary>
