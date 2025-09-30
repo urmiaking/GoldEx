@@ -225,6 +225,10 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
+        builder.Property(x => x.ItemStoneAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
         builder.Property(x => x.ItemWageAmount)
             .HasPrecision(36, 10)
             .IsRequired();

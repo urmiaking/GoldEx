@@ -182,7 +182,7 @@ public partial class ReverseCalculator
         var rawPrice = CalculatorHelper.Product.CalculateRawPrice(product.Weight, _model.GramPrice, product.Fineness, 1, product.ProductType);
         var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, product.Weight, product.Wage, product.WageType, null);
         var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, product.ProductType, _model.ProfitPercent);
-        var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, _model.TaxPercent, product.ProductType);
+        var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, _model.TaxPercent, product.ProductType, null);
         var finalPrice = CalculatorHelper.Product.CalculateFinalPrice(rawPrice, wageAmount, profitAmount, taxAmount, null, product.ProductType);
 
         return finalPrice;

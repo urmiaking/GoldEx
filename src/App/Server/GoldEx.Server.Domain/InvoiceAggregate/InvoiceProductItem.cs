@@ -3,7 +3,6 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
@@ -56,6 +55,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ItemProfitAmount = 0;
         ItemTaxAmount = 0;
         ItemFinalAmount = 0;
+        ItemStoneAmount = 0;
     }
 
     internal static InvoiceProductItem CreatePurchaseItem(InvoiceProductItemId? id,
@@ -156,13 +156,11 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     #region Calculations
 
     public decimal ItemRawAmount { get; private set; }
+    public decimal ItemStoneAmount { get; private set; }
     public decimal ItemWageAmount { get; private set; }
     public decimal ItemProfitAmount { get; private set; }
     public decimal ItemTaxAmount { get; private set; }
     public decimal ItemFinalAmount { get; private set; }
-
-    [NotMapped]
-    public decimal? TotalStoneAmount => Product is not null ? Product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) : null;
 
     /// <summary>
     /// Calculates all financial amounts for the invoice item and updates its state.
@@ -184,16 +182,19 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             ItemWageAmount = 0;
             ItemProfitAmount = 0;
             ItemTaxAmount = 0;
+            ItemStoneAmount = 0;
             ItemFinalAmount = ItemRawAmount;
         }
         else
         {
+            ItemStoneAmount = product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) * Quantity;
+
             ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight,
                                                                        GramPrice,
                                                                        product.Fineness,
                                                                        Quantity,
                                                                        product.ProductType);
-            ItemWageAmount = (SaleWageType is not null && SaleWage.HasValue)
+            ItemWageAmount = SaleWageType is not null && SaleWage.HasValue
                     ? CalculatorHelper.Product.CalculateWage(ItemRawAmount,
                                                              product.Weight,
                                                              SaleWage.Value,
@@ -211,15 +212,15 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             ItemTaxAmount = CalculatorHelper.Product.CalculateTax(ItemWageAmount,
                                                                   ItemProfitAmount,
                                                                   TaxPercent,
-                                                                  product.ProductType);
+                                                                  product.ProductType,
+                                                                  ItemStoneAmount);
 
             ItemFinalAmount = CalculatorHelper.Product.CalculateFinalPrice(ItemRawAmount,
                                                                            ItemWageAmount,
                                                                            ItemProfitAmount,
                                                                            ItemTaxAmount,
                                                                            null,
-                                                                           product.ProductType) +
-                                                                           product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1));
+                                                                           product.ProductType);
         }
 
         return this;

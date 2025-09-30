@@ -32,12 +32,14 @@ public partial class SimpleCalculator
     private decimal? _profit;
     private decimal? _tax;
     private decimal? _finalPrice;
+    private decimal? _stoneCost;
     private string? _barcode;
     private string? _barcodeFieldHelperText;
 
     private bool _applySafetyMargin = true;
     private bool _wageFieldMenuOpen;
     private bool _weightFieldMenuOpen;
+    private bool _stoneFieldMenuOpen;
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
@@ -57,6 +59,13 @@ public partial class SimpleCalculator
     private string? WageExchangeRateLabel =>
         _model is { WageType: WageType.Fixed, WagePriceUnit: not null, PriceUnit: not null }
             ? $"نرخ تبدیل {_model.WagePriceUnit.Title} به {_model.PriceUnit.Title}"
+            : null;
+
+    private string? StoneFieldAdornmentText => _model.StonePriceUnit?.Title;
+
+    private string? StoneExchangeRateLabel =>
+        _model is { StonePriceUnit: not null, PriceUnit: not null }
+            ? $"نرخ تبدیل {_model.StonePriceUnit.Title} به {_model.PriceUnit.Title}"
             : null;
 
     protected override async Task OnParametersSetAsync()
@@ -162,10 +171,12 @@ public partial class SimpleCalculator
             if (_form.IsValid)
             {
                 _rawPrice = CalculatorHelper.Product.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.Fineness, 1, _model.ProductType);
-                _wage = CalculatorHelper.Product.CalculateWage(_rawPrice.Value, _model.Weight, _model.Wage, _model.WageType, _model.ExchangeRate);
+                _wage = CalculatorHelper.Product.CalculateWage(_rawPrice.Value, _model.Weight, _model.Wage, _model.WageType, _model.WageExchangeRate);
                 _profit = CalculatorHelper.Product.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
-                _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType);
-                _finalPrice = CalculatorHelper.Product.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType);
+                _stoneCost = _model.StonePrice * (_model.StoneExchangeRate ?? 1);
+                _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType, _stoneCost);
+                _finalPrice = CalculatorHelper.Product.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType)
+                              + _stoneCost;
             }
             else
             {
@@ -186,7 +197,7 @@ public partial class SimpleCalculator
         switch (wageType)
         {
             case WageType.Percent:
-                _model.ExchangeRate = null;
+                _model.WageExchangeRate = null;
                 break;
             case WageType.Fixed:
                 if (_model.WagePriceUnit != null)
@@ -202,10 +213,9 @@ public partial class SimpleCalculator
         await Calculate();
     }
 
-    private async void OnWageChanged(decimal? wage)
+    private async Task OnWageChanged(decimal? wage)
     {
         _model.Wage = wage;
-
         await Calculate();
     }
 
@@ -217,9 +227,51 @@ public partial class SimpleCalculator
         }
     }
 
-    private void OnWeightAdornmentClicked()
+    private void OnWageExchangeRateChanged(decimal? exchangeRate)
     {
-        _weightFieldMenuOpen = !_weightFieldMenuOpen;
+        _model.WageExchangeRate = exchangeRate;
+    }
+
+    private async Task OnStonePriceChanged(decimal? stonePrice)
+    {
+        _model.StonePrice = stonePrice;
+        await Calculate();
+    }
+
+    private void OnStoneAdornmentClicked()
+    {
+        _stoneFieldMenuOpen = !_stoneFieldMenuOpen;
+    }
+
+    private void OnStoneExchangeRateChanged(decimal? exchangeRate)
+    {
+        _model.StoneExchangeRate = exchangeRate;
+    }
+
+    private async Task SelectStonePriceUnit(GetPriceUnitTitleResponse priceUnit)
+    {
+        try
+        {
+            _model.StonePriceUnit = priceUnit;
+
+            if (_model.PriceUnit is null)
+                return;
+
+            if (_model.PriceUnit != _model.StonePriceUnit && _model.StonePriceUnit != null)
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) => s.GetExchangeRateAsync(_model.StonePriceUnit.Id, _model.PriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        if (response.ExchangeRate.HasValue)
+                        {
+                            _model.StoneExchangeRate = response.ExchangeRate.Value;
+                        }
+                    });
+        }
+        finally
+        {
+            await Calculate();
+        }
     }
 
     private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
@@ -238,7 +290,7 @@ public partial class SimpleCalculator
                     {
                         if (response.ExchangeRate.HasValue)
                         {
-                            _model.ExchangeRate = response.ExchangeRate.Value;
+                            _model.WageExchangeRate = response.ExchangeRate.Value;
                         }
                     });
         }
@@ -248,15 +300,15 @@ public partial class SimpleCalculator
         }
     }
 
+    private void OnWeightAdornmentClicked()
+    {
+        _weightFieldMenuOpen = !_weightFieldMenuOpen;
+    }
+
     private async Task SelectGoldUnitType(GoldUnitType unitType)
     {
         _model.GoldUnitType = unitType;
         await LoadGramPriceAsync();
-    }
-
-    private void OnWageExchangeRateChanged(decimal? exchangeRate)
-    {
-        _model.ExchangeRate = exchangeRate;
     }
 
     private async void OnProductTypeChanged(ProductType productType)
@@ -266,12 +318,14 @@ public partial class SimpleCalculator
         {
             case ProductType.Jewelry:
                 _model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
+                _model.StonePriceUnit ??= _priceUnits.FirstOrDefault(x => x.IsDefault);
                 _model.Fineness = 750m;
                 _applySafetyMargin = true;
                 break;
             case ProductType.Gold:
                 _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 _model.Fineness = 750m;
+                _model.StonePriceUnit = null;
                 _applySafetyMargin = true;
                 break;
             case ProductType.MoltenGold:
@@ -279,6 +333,7 @@ public partial class SimpleCalculator
                 _model.ProfitPercent = _settings?.MoltenGoldCommissionPercent ?? 1.5m;
                 _model.WageType = null;
                 _model.Wage = null;
+                _model.StonePriceUnit = null;
                 _applySafetyMargin = true;
                 break;
             case ProductType.UsedGold:
@@ -286,6 +341,7 @@ public partial class SimpleCalculator
                 _model.Fineness = (int?)_settings?.UsedGoldFineness ?? 735;
                 _model.Wage = null;
                 _model.WageType = null;
+                _model.StonePriceUnit = null;
                 _model.ProfitPercent = 0;
                 break;
             default:
@@ -346,15 +402,14 @@ public partial class SimpleCalculator
 
     private async Task OnBarcodeChanged(string barcode)
     {
+        OnBarcodeCleared();
+
         try
         {
             _barcode = barcode;
 
             if (string.IsNullOrWhiteSpace(barcode))
-            {
-                OnBarcodeCleared();
                 return;
-            }
 
             await SendRequestAsync<IProductService, GetProductResponse?>(
                  action: async (s, ct) => await s.GetAsync(barcode, ct),
@@ -366,9 +421,12 @@ public partial class SimpleCalculator
                      _barcodeFieldHelperText = response.Name;
 
                      var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
+                     var stonePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.StonePriceUnit?.Id);
 
-                     _model = CalculatorVm.CreateFrom(response, _model, wagePriceUnit);
+                     _model.CreateFrom(response, wagePriceUnit, stonePriceUnit);
+
                      await SelectWagePriceUnit(_model.WagePriceUnit!);
+                     await SelectStonePriceUnit(_model.StonePriceUnit!);
                      OnProductTypeChanged(_model.ProductType);
                  },
                  cancelPrevious: true);
@@ -408,6 +466,7 @@ public partial class SimpleCalculator
         _profit = null;
         _tax = null;
         _finalPrice = null;
+        _stoneCost = null;
     }
 
     #endregion

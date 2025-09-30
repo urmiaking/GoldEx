@@ -4,7 +4,6 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using static GoldEx.Shared.Helpers.CalculatorHelper;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -114,6 +113,7 @@ public class ProductItemVm
     public decimal ProfitAmount { get; set; }
     public decimal TaxAmount { get; set; }
     public decimal FinalAmount { get; set; }
+    public decimal StoneAmount { get; set; }
 
     /// <summary>
     /// This method performs the client-side calculation and updates the display properties.
@@ -131,12 +131,12 @@ public class ProductItemVm
         }
         else
         {
+            StoneAmount = (Product.Stones?.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) ?? 0) * Quantity;
             RawAmount = CalculatorHelper.Product.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.Fineness, Quantity, Product.ProductType);
             WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, WageExchangeRate);
             ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
-            TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType);
-            FinalAmount = CalculatorHelper.Product.CalculateFinalPrice(RawAmount, WageAmount, ProfitAmount, TaxAmount, 0, Product.ProductType) 
-                + (Product.Stones != null ? Product.Stones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) : 0);
+            TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType, StoneAmount);
+            FinalAmount = CalculatorHelper.Product.CalculateFinalPrice(RawAmount, WageAmount, ProfitAmount, TaxAmount, 0, Product.ProductType) + StoneAmount;
         }
 
         return this;

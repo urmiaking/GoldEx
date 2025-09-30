@@ -223,7 +223,7 @@ internal class InventoryStockService(
             var rawPrice = CalculatorHelper.Product.CalculateRawPrice(item.Weight, filter.GramPrice, item.Fineness, 1, item.ProductType);
             var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.Weight, item.Wage, item.WageType, null);
             var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, item.ProductType, filter.ProfitPercent);
-            var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, filter.TaxPercent, item.ProductType);
+            var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, filter.TaxPercent, item.ProductType, null);
 
             var finalPrice = rawPrice + wageAmount + profitAmount + taxAmount;
 

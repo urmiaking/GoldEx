@@ -362,43 +362,38 @@
                                     </MudIconButton>
                                 </MudText>
                             </MudItem>
-                            <MudItem @key="@($"{index} code")" xs="12" md="2" Class="pt-0">
-                                <MudTextField @bind-Value="Model.Product.Stones[index].Code"
-                                              For="() => Model.Product.Stones[index].Code"
-                                              Label="کد" Margin="Margin.Dense"
-                                              T="string" Variant="Variant.Outlined"></MudTextField>
-                            </MudItem>
-                            <MudItem @key="@($"{index} type")" xs="12" md="2" Class="pt-0">
+                            
+                            <MudItem @key="@($"{index} type")" xs="6" md="4" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Product.Stones[index].Type"
                                               For="() => Model.Product.Stones[index].Type"
                                               Label="نوع سنگ" Margin="Margin.Dense"
                                               T="string" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem @key="@($"{index} color")" xs="6" md="2" Class="pt-0">
+                            <MudItem @key="@($"{index} color")" xs="6" md="4" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Product.Stones[index].Color"
                                               For="() => Model.Product.Stones[index].Color"
                                               Label="رنگ" Margin="Margin.Dense"
                                               T="string" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem @key="@($"{index} cut")" xs="6" md="2" Class="pt-0">
+                            <MudItem @key="@($"{index} cut")" xs="6" md="4" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Product.Stones[index].Cut"
                                               For="() => Model.Product.Stones[index].Cut"
                                               Label="برش" Margin="Margin.Dense"
                                               T="string?" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem @key="@($"{index} carat")" xs="6" md="2" Class="pt-0">
+                            <MudItem @key="@($"{index} carat")" xs="6" md="4" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Product.Stones[index].Carat"
                                               For="() => Model.Product.Stones[index].Carat"
                                               Label="قیراط" Margin="Margin.Dense" Format="G29"
                                               T="decimal" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem @key="@($"{index} purity")" xs="6" md="2" Class="pt-0">
+                            <MudItem @key="@($"{index} purity")" xs="6" md="4" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Product.Stones[index].Purity"
                                               For="() => Model.Product.Stones[index].Purity"
                                               Label="پاکی" Margin="Margin.Dense"
                                               T="string?" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
-                            <MudItem @key="@($"{index} cost")" xs="12" md="2" Class="pt-0">
+                            <MudItem @key="@($"{index} cost")" xs="6" md="4" Class="pt-0">
                                 <MudNumericField @bind-Value="Model.Product.Stones[index].Cost"
                                                  For="() => Model.Product.Stones[index].Cost"
                                                  Label="نرخ"

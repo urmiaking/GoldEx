@@ -229,10 +229,7 @@ public partial class ProductItemEditor
     private void OnAddGemStone()
     {
         Model.Product.Stones ??= [];
-        Model.Product.Stones.Add(new GemStoneVm
-        {
-            Code = StringExtensions.GenerateRandomCode(5)
-        });
+        Model.Product.Stones.Add(new GemStoneVm());
         StateHasChanged();
     }
 
