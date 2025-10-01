@@ -14,4 +14,7 @@ public record GetInventoryStockResponse(
     string? SaleWagePriceUnitTitle,
     GetProductResponse? Product,
     GetCoinResponse? Coin,
-    GetPriceUnitTitleResponse? Currency);
+    GetPriceUnitTitleResponse? Currency)
+{
+    public decimal FinalPrice { get; set; }
+}

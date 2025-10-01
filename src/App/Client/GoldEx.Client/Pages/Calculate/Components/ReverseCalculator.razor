@@ -229,7 +229,7 @@
                     <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Weight ?? 0)">وزن</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Fineness ?? 0)">عیار</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Wage ?? 0)">اجرت</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => CalculateFinalPrice(x.Product))">قیمت نهایی</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.FinalPrice)">قیمت نهایی</MudTableSortLabel></MudTh>
                     <MudTh>عملیات</MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -253,7 +253,7 @@
                         }
                     </MudTd>
                     <MudTd DataLabel="قیمت نهایی">
-                        <strong>@CalculateFinalPrice(context.Product).ToCurrencyFormat(_model.PriceUnit?.Title)</strong>
+                        <strong>@context.FinalPrice.ToCurrencyFormat(_model.PriceUnit?.Title)</strong>
                     </MudTd>
                     <MudTd DataLabel="عملیات">
                         <MudTooltip Text="فروش">
