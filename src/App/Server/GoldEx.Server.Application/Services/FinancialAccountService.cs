@@ -79,7 +79,6 @@ internal class FinancialAccountService(
         var list = await repository
             .Get(specification)
             .AsNoTracking()
-            .Include(x => x.PriceUnit)
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetFinancialAccountTitleResponse>>(list);

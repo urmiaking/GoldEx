@@ -10,8 +10,8 @@ public class PaymentVouchersByIdSpecification : SpecificationBase<PaymentVoucher
         AddCriteria(x => x.Id == paymentVoucherId);
 
         // --- Includes ---
-        AddInclude(x => x.SourceFinancialAccount!.PriceUnit!);
-        AddInclude(x => x.DestinationFinancialAccount!.PriceUnit!);
+        AddInclude(x => x.SourceFinancialAccount!);
+        AddInclude(x => x.DestinationFinancialAccount!);
         AddInclude(x => x.VoucherPriceUnit!);
         AddInclude(x => x.Customer!);
     }

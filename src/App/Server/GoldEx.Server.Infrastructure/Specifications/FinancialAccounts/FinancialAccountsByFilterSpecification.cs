@@ -18,8 +18,6 @@ public class FinancialAccountsByFilterSpecification : SpecificationBase<Financia
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
-        AddInclude(x => x.PriceUnit!);
-
         if (financialAccountFilter.AccountType != null)
         {
             AddCriteria(x => x.AccountType == financialAccountFilter.AccountType);

@@ -17,10 +17,9 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
         ApplyPaging(skip, take);
 
         // --- Includes ---
-        AddInclude(x => x.SourceFinancialAccount!.PriceUnit!);
-        AddInclude(x => x.DestinationFinancialAccount!.PriceUnit!);
+        AddInclude(x => x.SourceFinancialAccount!);
+        AddInclude(x => x.DestinationFinancialAccount!);
         AddInclude(x => x.Customer!);
-        AddInclude(x => x.VoucherPriceUnit!);
 
         // --- Main Filtering Logic ---
         // Apply customer filter if provided

@@ -46,5 +46,7 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
             .WithMany(x => x.InvoicePayments)
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.PriceUnit).AutoInclude();
     }
 }

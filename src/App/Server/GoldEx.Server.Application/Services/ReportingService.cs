@@ -31,22 +31,13 @@ internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingSe
             .AsNoTracking()
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
-            .Include(x => x.PriceUnit)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
-                    .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
-                .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.UnpaidPriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SaleWagePriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.Product!.WagePriceUnit)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
-            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceDetailResponse>(item);

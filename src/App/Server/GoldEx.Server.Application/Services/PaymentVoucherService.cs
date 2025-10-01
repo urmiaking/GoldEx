@@ -43,7 +43,6 @@ internal class PaymentVoucherService(
         var data = await repository
             .Get(spec)
             .AsNoTracking()
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         var totalCount = await repository.CountAsync(spec, cancellationToken);
@@ -63,7 +62,6 @@ internal class PaymentVoucherService(
         var list = await repository
             .Get(new PaymentVouchersByCustomerIdSpecification(new CustomerId(customerId)))
             .AsNoTracking()
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetPaymentVoucherResponse>>(list);
@@ -191,8 +189,6 @@ internal class PaymentVoucherService(
                 throw;
             }
         }
-
-       
     }
 
     public async Task<GetVoucherNumberResponse> GetLastNumberAsync(CancellationToken cancellationToken = default)

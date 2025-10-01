@@ -29,6 +29,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DevExpress.Drawing;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Extensions;
 
@@ -121,7 +122,10 @@ internal static class ServiceCollectionExtensions
         if (string.IsNullOrEmpty(connectionString))
             throw new Exception("GoldEx connection string is not available");
 
-        services.AddSqlServer<GoldExDbContext>(connectionString);
+        services.AddSqlServer<GoldExDbContext>(connectionString, options =>
+        {
+            options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        });
 
         return services;
     }

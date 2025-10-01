@@ -38,6 +38,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasForeignKey(x => x.UnpaidPriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Navigation(x => x.PriceUnit).AutoInclude();
+        builder.Navigation(x => x.UnpaidPriceUnit).AutoInclude();
+
         builder.OwnsMany(x => x.Discounts, Configure);
         builder.OwnsMany(x => x.ExtraCosts, Configure);
         builder.OwnsMany(x => x.ProductItems, Configure);
@@ -259,6 +262,9 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .WithMany()
             .HasForeignKey(x => x.SaleWagePriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.CostPriceUnit).AutoInclude();
+        builder.Navigation(x => x.SaleWagePriceUnit).AutoInclude();
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceExtraCost> builder)
@@ -279,6 +285,8 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .WithMany()
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.PriceUnit).AutoInclude();
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceDiscount> builder)
@@ -299,5 +307,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .WithMany()
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.PriceUnit).AutoInclude();
     }
 }

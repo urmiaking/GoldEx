@@ -47,7 +47,6 @@ internal class CustomerService(
             .AsNoTracking()
             .Include(x => x.FinancialAccounts!)
                 .ThenInclude(x => x.PriceUnit)
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         var totalCount = await repository.CountAsync(new CustomersByFilterSpecification(filter, customerFilter), cancellationToken);

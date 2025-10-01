@@ -260,7 +260,6 @@ internal class InvoiceService(
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
             .Include(x => x.InvoicePayments)
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         var totalCount = await invoiceRepository.CountAsync(spec, cancellationToken);
@@ -281,31 +280,14 @@ internal class InvoiceService(
             .AsNoTracking()
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
-            .Include(x => x.PriceUnit)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
-                    .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.CostPriceUnit)
-            .Include(x => x.InvoicePayments!)
-                .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.UnpaidPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount!)
-                    .ThenInclude(x => x.PriceUnit)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
-            .Include(x => x.Discounts)
-                .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.ExtraCosts)
-                .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SaleWagePriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.Product!.StonePriceUnit)
-            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceResponse>(item);
@@ -317,30 +299,17 @@ internal class InvoiceService(
         var item = await invoiceRepository
             .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
             .AsNoTracking()
+
             .Include(x => x.Customer!)
-                .ThenInclude(x => x.CreditLimitPriceUnit!)
-            .Include(x => x.PriceUnit)
+                .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
-                    .ThenInclude(x => x!.ProductCategory)
             .Include(x => x.InvoicePayments!)
-                .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.CostPriceUnit)
-            .Include(x => x.UnpaidPriceUnit)
-            .Include(x => x.InvoicePayments!)
-                .ThenInclude(x => x.SourceFinancialAccount)
+                .ThenInclude(x => x.SourceFinancialAccount!)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
-            .Include(x => x.Discounts)
-                .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.ExtraCosts)
-                .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.ProductItems)
-                .ThenInclude(x => x.SaleWagePriceUnit)
-            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceResponse>(item);
@@ -356,7 +325,6 @@ internal class InvoiceService(
                 .Include(x => x.ProductItems)
                     .ThenInclude(x => x.Product)
                 .Include(x => x.InvoicePayments)
-                .AsSplitQuery()
                 .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
             await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);

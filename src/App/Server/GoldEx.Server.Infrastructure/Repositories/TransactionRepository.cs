@@ -69,7 +69,6 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                     t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount)
             })
             .AsNoTracking()
-            .AsSplitQuery()
             .ToDictionaryAsync(result => result.PriceUnit!, result => result.Balance, cancellationToken);
 
         return balances;
