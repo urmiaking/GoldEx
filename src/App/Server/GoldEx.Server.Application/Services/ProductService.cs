@@ -43,7 +43,6 @@ internal class ProductService(
         var data = await repository
             .Get(spec)
             .AsNoTracking()
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         var totalCount = await repository.CountAsync(spec, cancellationToken);
@@ -69,7 +68,6 @@ internal class ProductService(
             .Include(x => x.WagePriceUnit)
             .GroupBy(x => x.Name)
             .Select(x => x.First())
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetProductResponse>>(products);
@@ -82,7 +80,6 @@ internal class ProductService(
             .AsNoTracking()
             .Include(x => x.ProductCategory)
             .Include(x => x.StonePriceUnit)
-            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetProductResponse>(item);
@@ -95,7 +92,6 @@ internal class ProductService(
             .AsNoTracking()
             .Include(x => x.ProductCategory)
             .Include(x => x.StonePriceUnit)
-            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);

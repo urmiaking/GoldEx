@@ -82,7 +82,6 @@ internal class PriceUnitService(
         var items = await repository
             .Get(new PriceUnitsDefaultSpecification())
             .AsNoTracking()
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetPriceUnitTitleResponse>>(items);

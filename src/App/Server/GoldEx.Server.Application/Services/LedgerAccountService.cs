@@ -33,7 +33,7 @@ internal class LedgerAccountService(
     public async Task<List<GetLedgerAccountResponse>> GetListAsync(Guid? customerId, CancellationToken cancellationToken = default)
     {
         var spec = new LedgerAccountsByCustomerIdSpecification(customerId.HasValue ? new CustomerId(customerId.Value) : null);
-        var list = await repository.Get(spec).AsNoTracking().AsSplitQuery().ToListAsync(cancellationToken);
+        var list = await repository.Get(spec).AsNoTracking().ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetLedgerAccountResponse>>(list);
     }

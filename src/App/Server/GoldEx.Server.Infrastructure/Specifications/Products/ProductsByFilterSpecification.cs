@@ -20,41 +20,6 @@ public class ProductsByFilterSpecification : SpecificationBase<Product>
             AddCriteria(x => x.Name.Contains(filter.Search) || x.Barcode.Contains(filter.Search));
         }
 
-        // TODO: replace with new logic
-        //switch (productFilter.Status)
-        //{
-        //    case ProductStatus.Available:
-        //        AddCriteria(x => x.SellInvoiceProductItem == null);
-        //        if (productFilter.Start.HasValue)
-        //        {
-        //            AddCriteria(x => x.CreatedAt >= productFilter.Start.Value);
-        //        }
-        //        if (productFilter.End.HasValue)
-        //        {
-        //            AddCriteria(x => x.CreatedAt <= productFilter.End.Value);
-        //        }
-        //        break;
-
-        //    case ProductStatus.Sold:
-        //        AddCriteria(x => x.SellInvoiceProductItem!.Invoice != null);
-        //        AddInclude(x => x.SellInvoiceProductItem!.Invoice!);
-
-        //        if (productFilter.Start.HasValue)
-        //        {
-        //            var startDateOnly = DateOnly.FromDateTime(productFilter.Start.Value.Date);
-        //            AddCriteria(x => x.SellInvoiceProductItem!.Invoice!.InvoiceDate >= startDateOnly);
-        //        }
-        //        if (productFilter.End.HasValue)
-        //        {
-        //            var endDateOnly = DateOnly.FromDateTime(productFilter.End.Value.Date);
-        //            AddCriteria(x => x.SellInvoiceProductItem!.Invoice!.InvoiceDate <= endDateOnly);
-        //        }
-        //        break;
-
-        //    default:
-        //        throw new ArgumentOutOfRangeException(nameof(productFilter.Status), "Unsupported product status provided.");
-        //}
-
         if (!string.IsNullOrWhiteSpace(filter.SortLabel) && filter.SortDirection.HasValue && filter.SortDirection != SortDirection.None)
         {
             ApplySorting(filter.SortLabel, filter.SortDirection.Value);

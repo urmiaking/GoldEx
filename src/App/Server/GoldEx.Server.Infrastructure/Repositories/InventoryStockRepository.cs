@@ -138,10 +138,7 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                     var productIds = aggregatedResults.Select(x => x.ProductId).ToList();
                     var products = await dbContext.Set<Product>()
                         .AsNoTracking()
-                        .AsSplitQuery()
                         .Include(p => p.ProductCategory)
-                        .Include(x => x.WagePriceUnit)
-                        .Include(x => x.StonePriceUnit)
                         .Where(p => productIds.Contains(p.Id))
                         .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
 
@@ -149,7 +146,6 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
                         .AsNoTracking()
                         .Include(x => x.ProductItems)
                             .ThenInclude(x => x.SaleWagePriceUnit)
-                        .AsSplitQuery()
                         .Where(i => i.InvoiceType == InvoiceType.Sell)
                         .SelectMany(i => i.ProductItems) 
                         .Where(item => productIds.Contains(item.ProductId))
@@ -293,9 +289,6 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
             .Where(p => !filter.MaxWeight.HasValue || p.Weight <= filter.MaxWeight.Value)
             .Where(p => !filter.MaxWage.HasValue || (p.WageType == WageType.Percent && p.Wage <= filter.MaxWage.Value))
             .Include(p => p.ProductCategory)
-            .Include(p => p.WagePriceUnit)
-            .Include(p => p.StonePriceUnit)
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
     }
 }

@@ -15,6 +15,5 @@ public class FinancialAccountsDefaultSpecification : SpecificationBase<Financial
         }
 
         ApplyOrderByDescending(x => x.CreatedAt);
-        AddInclude(x => x.PriceUnit!);
     }
 }

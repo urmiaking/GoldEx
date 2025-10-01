@@ -47,5 +47,7 @@ internal class PaymentVoucherConfiguration : IEntityTypeConfiguration<PaymentVou
             .WithMany()
             .HasForeignKey(x => x.VoucherPriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.VoucherPriceUnit).AutoInclude();
     }
 }

@@ -38,6 +38,8 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
         builder.OwnsOne(x => x.LocalAccount, Configure);
         builder.OwnsOne(x => x.InternationalAccount, Configure);
         builder.OwnsOne(x => x.CashAccount, Configure);
+
+        builder.Navigation(x => x.PriceUnit).AutoInclude();
     }
 
     private void Configure(OwnedNavigationBuilder<FinancialAccount, CashAccount> builder)

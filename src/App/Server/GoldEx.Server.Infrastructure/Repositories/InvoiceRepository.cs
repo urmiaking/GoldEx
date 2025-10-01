@@ -29,7 +29,6 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             .Where(x => x.DueDate < DateOnly.FromDateTime(DateTime.Now) &&
                         !x.Notifications!.Any())
             .AsNoTracking()
-            .AsSplitQuery()
             .ToListAsync(cancellationToken);
     }
 }

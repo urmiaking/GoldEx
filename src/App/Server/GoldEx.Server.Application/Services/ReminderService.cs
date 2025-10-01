@@ -21,8 +21,6 @@ internal class ReminderService(ISmsSender smsSender, IInvoiceRepository invoiceR
             .Get(new InvoicesByIdSpecification(new InvoiceId(invoiceId)))
             .AsNoTracking()
             .Include(x => x.Customer)
-            .Include(x => x.PriceUnit)
-            .Include(x => x.UnpaidPriceUnit)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         if (string.IsNullOrEmpty(invoice.Customer?.PhoneNumber))

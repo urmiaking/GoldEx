@@ -755,18 +755,12 @@ public partial class EditorForm
 
         await SendRequestAsync<IInvoiceService>(
             action: (s, ct) => request.Id.HasValue ? s.UpdateAsync(request.Id.Value, request, ct) : s.CreateAsync(request, ct),
-            afterSend: async () =>
+            afterSend: () =>
             {
                 AddSuccessToast("فاکتور با موفقیت ذخیره شد");
                 _processing = false;
-                if (printInvoice)
-                {
-                    await OnPrintAsync();
-                }
-                else
-                {
-                    Navigation.NavigateTo(ClientRoutes.Invoices.Index);
-                }
+                Navigation.NavigateTo(printInvoice ? PrintUrl : ClientRoutes.Invoices.Index);
+                return Task.CompletedTask;
             },
             onFailure: () =>
             {

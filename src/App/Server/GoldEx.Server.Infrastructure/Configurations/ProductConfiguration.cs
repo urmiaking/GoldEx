@@ -48,6 +48,10 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasForeignKey(x => x.StonePriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Navigation(x => x.WagePriceUnit).AutoInclude();
+        builder.Navigation(x => x.StonePriceUnit).AutoInclude();
+        builder.Navigation(x => x.ProductCategory).AutoInclude();
+
         builder.HasIndex(x => x.Barcode)
             .IsUnique();
 
