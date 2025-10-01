@@ -11,6 +11,7 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
 
@@ -165,25 +166,75 @@ public partial class ReverseCalculator
 
         await SendRequestAsync<IInventoryStockService, List<GetInventoryStockResponse>>(
             action: (s, ct) => s.GetAvailableProductsAsync(_model.ToFilterRequest(), ct),
-            afterSend: response =>
+            afterSend: async response =>
             {
                 _results = response;
+
+                foreach (var item in _results)
+                {
+                    item.FinalPrice = await CalculateFinalPriceAsync(item.Product, _model.PriceUnit);
+                }
             });
 
         _isSearching = false;
         StateHasChanged();
     }
 
-    private decimal CalculateFinalPrice(GetProductResponse? product)
+    private async Task<decimal> CalculateFinalPriceAsync(GetProductResponse? product, GetPriceUnitTitleResponse? contextPriceUnit)
     {
         if (product is null)
             return 0;
 
-        var rawPrice = CalculatorHelper.Product.CalculateRawPrice(product.Weight, _model.GramPrice, product.Fineness, 1, product.ProductType);
+        var rawPrice = CalculatorHelper.Product.CalculateRawPrice(
+            product.Weight,
+            _model.GramPrice,
+            product.Fineness,
+            1,
+            product.ProductType);
+
         var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, product.Weight, product.Wage, product.WageType, null);
         var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, product.ProductType, _model.ProfitPercent);
-        var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, _model.TaxPercent, product.ProductType, null);
-        var finalPrice = CalculatorHelper.Product.CalculateFinalPrice(rawPrice, wageAmount, profitAmount, taxAmount, null, product.ProductType);
+
+        decimal stoneAmount = 0;
+        if (product.GemStones is not null && product.GemStones.Count > 0)
+        {
+            foreach (var stone in product.GemStones)
+            {
+                var stonePrice = stone.Cost;
+
+                if (product.StonePriceUnit != null && contextPriceUnit != null &&
+                    product.StonePriceUnit.Id != contextPriceUnit.Id)
+                {
+                    await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                        action: (s, ct) => s.GetExchangeRateAsync(product.StonePriceUnit.Id, contextPriceUnit.Id, ct),
+                        afterSend: response =>
+                        {
+                            if (response.ExchangeRate.HasValue)
+                            {
+                                var exchangeRate = response.ExchangeRate.Value;
+                                stonePrice *= exchangeRate;
+                            }
+                        });
+                }
+
+                stoneAmount += stonePrice;
+            }
+        }
+
+        var taxAmount = CalculatorHelper.Product.CalculateTax(
+            wageAmount,
+            profitAmount,
+            _model.TaxPercent,
+            product.ProductType,
+            stoneAmount);
+
+        var finalPrice = CalculatorHelper.Product.CalculateFinalPrice(
+            rawPrice,
+            wageAmount,
+            profitAmount,
+            taxAmount,
+            stoneAmount,
+            product.ProductType);
 
         return finalPrice;
     }

@@ -294,6 +294,8 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
             .Where(p => !filter.MaxWage.HasValue || (p.WageType == WageType.Percent && p.Wage <= filter.MaxWage.Value))
             .Include(p => p.ProductCategory)
             .Include(p => p.WagePriceUnit)
+            .Include(p => p.StonePriceUnit)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
     }
 }
