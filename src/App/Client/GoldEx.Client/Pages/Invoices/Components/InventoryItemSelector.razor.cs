@@ -52,7 +52,8 @@ public partial class InventoryItemSelector
         {
             var productItemTasks = _products.Select(async product =>
             {
-                var exchangeRate = await GetCurrencyPriceAsync(product.StonePriceUnit?.Id ?? PriceUnit.Id);
+                var stonePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.StonePriceUnit?.Id ?? PriceUnit.Id);
+                var wagePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.WagePriceUnitId ?? PriceUnit.Id);
 
                 return new ProductItemVm
                 {
@@ -64,7 +65,8 @@ public partial class InventoryItemSelector
                     Product = product,
                     Quantity = 1,
                     InvoiceType = InvoiceType.Sell,
-                    StonePriceUnitExchangeRate = exchangeRate
+                    StonePriceUnitExchangeRate = stonePriceUnitExchangeRate,
+                    WageExchangeRate = wagePriceUnitExchangeRate
                 }.RecalculateAmounts();
             });
 
