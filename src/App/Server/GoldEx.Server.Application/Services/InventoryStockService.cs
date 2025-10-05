@@ -247,5 +247,13 @@ internal class InventoryStockService(
         return results;
     }
 
+    public async Task<List<GetInventoryWeightChartResponse>> GetInventoryWeightChartAsync(GoldUnitType targetUnit,
+        CancellationToken cancellationToken = default)
+    {
+        var summary = await repository.GetInventoryWeightChartDataAsync(targetUnit, cancellationToken);
+
+        return mapper.Map<List<GetInventoryWeightChartResponse>>(summary);
+    }
+
     #endregion
 }

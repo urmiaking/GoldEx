@@ -29,5 +29,10 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
         return Ok(list);
     }
 
-
+    [HttpGet(ApiRoutes.InventoryStocks.GetInventoryWeightChart)]
+    public async Task<IActionResult> GetInventoryWeightChartAsync(GoldUnitType targetUnit, CancellationToken cancellationToken = default)
+    {
+        var list = await service.GetInventoryWeightChartAsync(targetUnit, cancellationToken);
+        return Ok(list);
+    }
 }

@@ -17,5 +17,7 @@ public class InventoryStocksMappingConfig : IRegister
             .Map(dest => dest.CurrentAmount, src => src.CurrentQuantity)
             .Map(dest => dest.SoldAmount, src => src.SoldQuantity)
             .Map(dest => dest.DateTime, src => src.DateTime);
+
+        config.NewConfig<InventoryWeightChartData, GetInventoryWeightChartResponse>();
     }
 }

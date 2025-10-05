@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CoinAggregate;
@@ -290,5 +291,62 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
             .Where(p => !filter.MaxWage.HasValue || (p.WageType == WageType.Percent && p.Wage <= filter.MaxWage.Value))
             .Include(p => p.ProductCategory)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit,
+        CancellationToken cancellationToken = default)
+    {
+        const decimal gramPerMesghal = 4.3318m;
+
+        var productStocks = await dbContext.Set<InventoryStock>()
+            .AsNoTracking()
+            .Include(x => x.Product)
+            .ThenInclude(p => p.ProductCategory)
+            .Where(x => x.ProductId != null)
+            .ToListAsync(cancellationToken);
+
+        if (productStocks.Count == 0)
+            return [];
+
+        var groupedByProduct = productStocks
+            .GroupBy(x => x.ProductId)
+            .Select(g => new
+            {
+                g.First().Product,
+                CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+            })
+            .Where(x => x.CurrentQuantity > 0)
+            .ToList();
+
+        var goldWeight = groupedByProduct
+            .Where(x => x.Product is { ProductType: ProductType.Gold })
+            .Sum(x => ConvertToTarget(x.CurrentQuantity * x.Product!.Weight, x.Product!.GoldUnitType));
+
+        var jewelryWeight = groupedByProduct
+            .Where(x => x.Product is { ProductType: ProductType.Jewelry }) 
+            .Sum(x => ConvertToTarget(x.CurrentQuantity * x.Product!.Weight, x.Product!.GoldUnitType));
+
+        var result = new List<InventoryWeightChartData>();
+
+        if (goldWeight > 0)
+            result.Add(new InventoryWeightChartData(ProductType.Gold.GetDisplayName(), goldWeight, targetUnit));
+
+        if (jewelryWeight > 0)
+            result.Add(new InventoryWeightChartData(ProductType.Jewelry.GetDisplayName(), jewelryWeight, targetUnit));
+
+        return result;
+
+        decimal ConvertToTarget(decimal value, GoldUnitType from)
+        {
+            if (from == targetUnit)
+                return value;
+
+            return from switch
+            {
+                GoldUnitType.Mesghal when targetUnit == GoldUnitType.Gram => value * gramPerMesghal,
+                GoldUnitType.Gram when targetUnit == GoldUnitType.Mesghal => value / gramPerMesghal,
+                _ => value
+            };
+        }
     }
 }
