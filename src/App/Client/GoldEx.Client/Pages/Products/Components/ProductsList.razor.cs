@@ -9,6 +9,12 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
+using MudBlazor.Extensions;
+using MudBlazor.Extensions.Core;
+using MudBlazor.Extensions.Helper;
+using MudBlazor.Extensions.Options;
+using MudBlazor.Utilities;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
@@ -79,7 +85,23 @@ public partial class ProductsList
 
     public async Task OnCreateProduct()
     {
-        var dialog = await DialogService.ShowAsync<Editor>("افزودن جنس جدید", _dialogOptions);
+        var options = new DialogOptionsEx
+        {
+            MaximizeButton = true,
+            CloseButton = true,
+            FullHeight = false,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            DragMode = MudDialogDragMode.Simple,
+            Animations = [AnimationType.Pulse],
+            Position = DialogPosition.Center,
+            DialogBackgroundAppearance = MudExAppearance.FromCss(MudExCss.Classes.Backgrounds.LightBulb),
+            DialogAppearance = MudExAppearance.FromCss(MudExCss.Classes.Dialog.Glass)
+        };
+
+        var dialog = await DialogService.ShowExAsync<Editor>("افزودن جنس جدید", options);
+
+        //var dialog = await DialogService.ShowAsync<Editor>("افزودن جنس جدید", _dialogOptions);
 
         var result = await dialog.Result;
 

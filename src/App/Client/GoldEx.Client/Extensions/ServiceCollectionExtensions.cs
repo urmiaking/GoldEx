@@ -12,6 +12,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using MudBlazor.Extensions;
 
 namespace GoldEx.Client.Extensions;
 
@@ -122,6 +123,8 @@ public static class ServiceCollectionExtensions
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
             config.SnackbarConfiguration.HideTransitionDuration = 1500;
         });
+
+        services.AddMudServicesWithExtensions();
 
         MudGlobal.TransitionDefaults.Duration = TimeSpan.FromMilliseconds(500);
 

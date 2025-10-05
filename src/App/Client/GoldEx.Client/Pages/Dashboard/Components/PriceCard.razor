@@ -1,0 +1,90 @@
+﻿@inherits GoldExComponentBase
+
+@*
+    File: PriceCard.razor
+    Purpose: A reusable component to display a single price card.
+*@
+
+<MudCard Elevation="24">
+    <MudCardContent>
+        <MudStack Spacing="2">
+            <!-- Top Row: Percentage Change and Title/Icon -->
+            <div class="d-flex justify-space-between align-center">
+                
+                <!-- Title and Image -->
+                <div class="align-center d-flex flex-row-reverse gap-2">
+                    <MudText Typo="Typo.h6" Class="mr-2">@Title</MudText>
+                    <MudAvatar Size="Size.Medium">
+                        <MudImage Src="@ImageUrl" Alt="@Title" />
+                    </MudAvatar>
+                </div>
+
+                <!-- Percentage Change Chip -->
+                <MudChip Icon="@ChangeIcon" 
+                         Color="@ChangeColor" 
+                         Size="Size.Medium" 
+                         Variant="Variant.Text" 
+                         T="string"
+                         Label="true">
+                    @($"{Math.Abs(ChangePercent):F2}%")
+                </MudChip>
+            </div>
+
+            <!-- Bottom Row: Price and DateTime -->
+            <div class="d-flex justify-space-between align-center mt-2">
+                <!-- DateTime Stamp -->
+                <MudText Typo="Typo.caption">@DateTime</MudText>
+                
+                <!-- Price and Unit -->
+                <div class="d-flex align-baseline gap-1">
+                    <MudText Typo="Typo.h5" Class="font-weight-bold">@Price</MudText>
+                    <MudText Typo="Typo.body2" Class="ml-1">@PriceUnit</MudText>
+                </div>
+            </div>
+        </MudStack>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    /// <summary>
+    /// The URL for the image or icon on the card.
+    /// </summary>
+    [Parameter]
+    public string? ImageUrl { get; set; }
+
+    /// <summary>
+    /// The title text for the price item.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// The date and time stamp.
+    /// </summary>
+    [Parameter]
+    public string? DateTime { get; set; }
+
+    /// <summary>
+    /// The current price value.
+    /// </summary>
+    [Parameter]
+    public string? Price { get; set; }
+
+    /// <summary>
+    /// The unit for the price (e.g., ریال, USD).
+    /// </summary>
+    [Parameter]
+    public string? PriceUnit { get; set; }
+
+    /// <summary>
+    /// The percentage of change. Use negative for decrease, positive for increase.
+    /// </summary>
+    [Parameter]
+    public double ChangePercent { get; set; }
+
+    // Determines the correct icon (up or down arrow) based on the sign of ChangePercent.
+    private string ChangeIcon => ChangePercent < 0 ? Icons.Material.Filled.ArrowDropDown : Icons.Material.Filled.ArrowDropUp;
+    
+    // Determines the correct color (red for error/decrease, green for success/increase).
+    private Color ChangeColor => ChangePercent < 0 ? Color.Error : Color.Success;
+}

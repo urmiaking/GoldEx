@@ -1,0 +1,38 @@
+﻿@inherits GoldExComponentBase
+
+<MudText Typo="Typo.h5" GutterBottom="true">قیمت لحظه ای طلا، سکه، دلار و ارز</MudText>
+<MudDivider Class="mb-2" />
+
+@if (IsBusy)
+{
+    <div class="align-center d-flex flex-column gap-3 justify-content-center mt-5">
+        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+        <div>در حال بارگذاری</div>
+    </div>
+}
+else
+{
+    <MudGrid>
+        @if (!_items.Any())
+        {
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info">اطلاعاتی برای نمایش وجود ندارد.</MudAlert>
+            </MudItem>
+        }
+        else
+        {
+            foreach (var item in _items)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <PriceCard Title="@item.Title"
+                               ImageUrl="@(ApiUrls.Icons.Get(IconType.Price, item.Id))"
+                               ChangePercent="@ExtractPercentChange(item.Change)"
+                               Price="@item.Value"
+                               PriceUnit="@item.Unit"
+                               DateTime="@item.LastUpdate" />
+                </MudItem>
+            }
+        }
+        
+    </MudGrid>
+}

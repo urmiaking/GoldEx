@@ -1,0 +1,10 @@
+﻿@attribute [Route(ClientRoutes.Dashboard.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <PriceList />
+
+
+</MudContainer>

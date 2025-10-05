@@ -6,7 +6,7 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IPriceService
 {
-    Task<List<GetPriceResponse>> GetListAsync(CancellationToken cancellationToken = default);
+    Task<List<GetPriceResponse>> GetListAsync(bool? isPinned = null, CancellationToken cancellationToken = default);
     Task<List<GetPriceTitleResponse>> GetTitlesAsync(MarketType[] marketTypes, CancellationToken cancellationToken = default);
     Task<List<GetPriceResponse>> GetListAsync(MarketType marketType, CancellationToken cancellationToken = default);
 
@@ -25,4 +25,5 @@ public interface IPriceService
         CancellationToken cancellationToken = default);
     Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default);
     Task SetStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default);
+    Task SetPinnedAsync(Guid id, bool isPinned, CancellationToken cancellationToken = default);
 }
