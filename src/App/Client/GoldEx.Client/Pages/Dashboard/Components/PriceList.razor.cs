@@ -1,26 +1,14 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services.Abstractions;
-using Microsoft.AspNetCore.Components;
-using MudBlazor;
 
-namespace GoldEx.Client.Pages.Home.Components;
+namespace GoldEx.Client.Pages.Dashboard.Components;
 
-public partial class PriceBoard
+public partial class PriceList
 {
-    [Parameter] public string Class { get; set; } = default!;
-    [Parameter] public int Elevation { get; set; } = 0;
-
-    private readonly TableGroupDefinition<GetPriceResponse> _groupDefinition = new()
-    {
-        GroupName = "گروه",
-        Indentation = false,
-        Expandable = true,
-        Selector = e => e.Type.GetDisplayName()
-    };
-
-    private IEnumerable<GetPriceResponse>? _items;
+    private List<GetPriceResponse> _items = [];
     private Timer? _timer;
     private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
 
@@ -50,7 +38,7 @@ public partial class PriceBoard
     private async Task LoadPricesAsync()
     {
         await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
-            action: (s, ct) => s.GetListAsync(null, ct),
+            action: (s, ct) => s.GetListAsync(true, ct),
             afterSend: response => _items = response,
             createScope: true
         );
@@ -80,5 +68,18 @@ public partial class PriceBoard
             await _timer.DisposeAsync();
 
         await base.DisposeAsync();
+    }
+
+    public static double ExtractPercentChange(string input)
+    {
+        var match = Regex.Match(input, @"([-+]?\d+(?:[.,]\d+)?)\s*%");
+        if (match.Success && double.TryParse(match.Groups[1].Value,
+                NumberStyles.Any,
+                CultureInfo.InvariantCulture,
+                out var result))
+        {
+            return result;
+        }
+        return 0;
     }
 }

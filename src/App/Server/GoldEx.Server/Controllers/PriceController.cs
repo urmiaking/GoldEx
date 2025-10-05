@@ -15,9 +15,9 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
 {
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Price.Get)]
-    public async Task<IActionResult> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAsync([FromQuery] bool? isPinned = null, CancellationToken cancellationToken = default)
     {
-        var list = await priceService.GetListAsync(cancellationToken);
+        var list = await priceService.GetListAsync(isPinned, cancellationToken);
 
         return Ok(list);
     }
@@ -77,6 +77,14 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     public async Task<IActionResult> UpdateStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default)
     {
         await priceService.SetStatusAsync(id, request, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPut(ApiRoutes.Price.SetPinned)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+    public async Task<IActionResult> SetPinnedAsync(Guid id, bool isPinned, CancellationToken cancellationToken = default)
+    {
+        await priceService.SetPinnedAsync(id, isPinned, cancellationToken);
         return NoContent();
     }
 }

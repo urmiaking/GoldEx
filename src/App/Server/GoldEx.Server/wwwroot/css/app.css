@@ -187,3 +187,10 @@ h1:focus {
     .loading-text:after {
         content: var(--blazor-load-percentage-text, "در حال بارگذاری...");
     }
+
+
+/* MudEx */
+.mud-ex-dialog-header-actions {
+    right: auto !important;
+    left: 60px !important;
+}

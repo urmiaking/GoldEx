@@ -48,7 +48,7 @@ public class ApiUrls
 
     public class Price
     {
-        public static string Get() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.Get);
+        public static string Get(bool? isPinned) => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.Get).AppendQueryString(new { isPinned });
 
         public static string Get(MarketType marketType) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetMarket).FormatRoute(new { marketType });
@@ -70,6 +70,9 @@ public class ApiUrls
         public static string GetExchangeRate(Guid primaryPriceUnitId, Guid secondaryPriceUnitId) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetExchange)
                 .FormatRoute(new { primaryPriceUnitId, secondaryPriceUnitId });
+
+        public static string SetPinned(Guid id, bool isPinned) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.SetPinned).FormatRoute(new { id, isPinned });
     }
 
     public class Health

@@ -130,4 +130,10 @@ public static class ClientRoutes
         private const string InventoryStocksPrefix = "/inventory-stocks";
         public const string Index = $"{InventoryStocksPrefix}";
     }
+
+    public static class Dashboard
+    {
+        private const string DashboardPrefix = "/dashboard";
+        public const string Index = $"{DashboardPrefix}";
+    }
 }

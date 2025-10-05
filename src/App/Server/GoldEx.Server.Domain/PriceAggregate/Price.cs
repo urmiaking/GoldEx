@@ -29,6 +29,7 @@ public class Price : EntityBase<PriceId>
 
     public string Title { get; private set; }
     public bool IsActive { get; private set; }
+    public bool IsPinned { get; private set; }
     public MarketType MarketType { get; private set; }
 
     public PriceHistory? PriceHistory { get; private set; }
@@ -50,4 +51,5 @@ public class Price : EntityBase<PriceId>
     public void SetTitle(string title) => Title = title;
     public void SetMarketType(MarketType marketType) => MarketType = marketType;
     public void SetStatus(bool isActive) => IsActive = isActive;
+    public void SetPinned(bool isPinned) => IsPinned = isPinned;
 }

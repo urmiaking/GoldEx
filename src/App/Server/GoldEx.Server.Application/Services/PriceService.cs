@@ -1,4 +1,6 @@
-﻿using GoldEx.Sdk.Common.Definitions;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Common.Extensions;
@@ -197,10 +199,10 @@ internal class PriceService(
 
     #region PriceService
 
-    public async Task<List<GetPriceResponse>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetPriceResponse>> GetListAsync(bool? isPinned = null, CancellationToken cancellationToken = default)
     {
         var item = await repository
-            .Get(new PricesDefaultSpecification())
+            .Get(new PricesDefaultSpecification(isPinned))
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -373,7 +375,8 @@ internal class PriceService(
                 group.Select(price => new PriceSettingDto(
                     price.Id.Value,
                     price.Title,
-                    price.IsActive
+                    price.IsActive,
+                    price.IsPinned
                 )).ToList()
             ))
             .ToList();
@@ -388,6 +391,24 @@ internal class PriceService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetStatus(request.IsActive);
+
+        await repository.UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task SetPinnedAsync(Guid id, bool isPinned, CancellationToken cancellationToken = default)
+    {
+        var item = await repository.Get(new PricesByIdSpecification(new PriceId(id)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        var pinnedItemsCount = await repository.CountAsync(new PricesByPinStatusSpecification(), cancellationToken);
+
+        if (isPinned && !item.IsPinned && pinnedItemsCount >= 6)
+            throw new ValidationException(new List<ValidationFailure>
+            {
+                new("IsPinned", "تعداد ارزهای سنجاق شده نمی تواند بیشتر از 6 عدد باشد")
+            });
+
+        item.SetPinned(isPinned);
 
         await repository.UpdateAsync(item, cancellationToken);
     }
