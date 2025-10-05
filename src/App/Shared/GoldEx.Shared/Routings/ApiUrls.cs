@@ -308,6 +308,10 @@ public class ApiUrls
         public static string GetAvailableProducts(CalculatorFilterRequest filter) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableProducts)
                 .AppendQueryString(filter);
+
+        public static string GetInventoryWeightChart(GoldUnitType targetUnit) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetInventoryWeightChart)
+                .FormatRoute(new { targetUnit });
     }
 
     public class Transactions

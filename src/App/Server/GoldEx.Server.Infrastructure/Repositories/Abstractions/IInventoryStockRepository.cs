@@ -28,4 +28,6 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
     Task<List<Product>> GetAvailableProductsForCalculatorAsync(
         CalculatorFilterRequest filter,
         CancellationToken cancellationToken = default);
+
+    Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit, CancellationToken cancellationToken = default);
 }
