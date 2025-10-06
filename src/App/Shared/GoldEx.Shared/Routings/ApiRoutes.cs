@@ -37,6 +37,7 @@ public static class ApiRoutes
         public const string GetTitles = "titles";
         public const string GetByPriceUnit = "price-unit/{priceUnitId}";
         public const string GetExchange = "exchange-rate/{primaryPriceUnitId}/{secondaryPriceUnitId}";
+        public const string SetPinned = "{id}/pin/{isPinned}";
     }
 
     public class Health
@@ -53,6 +54,7 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
+        public const string GetListByName = "search";
     }
 
     public class Settings
@@ -70,6 +72,7 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
+        public const string GetLastCode = "last-code";
     }
 
     public class Customers
@@ -82,18 +85,14 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
+        public const string GetByName = "name/{customerName}";
     }
 
     public class Transactions
     {
         public const string Base = "/api/Transactions";
-        public const string GetList = ""; // GET /api/Transactions or /api/Transactions?customerId=123
-        public const string Get = "{id}";
-        public const string GetByNumber = "number/{number}";
-        public const string Create = "";
-        public const string Update = "{id}";
-        public const string Delete = "{id}";
-        public const string GetLastNumber = "last-number";
+        public const string GetRemainingList = "{customerId}/remaining-list";
+        //public const string GetList = ""; // GET /api/Transactions or /api/Transactions?customerId=123
     }
 
     public class PriceUnits
@@ -110,32 +109,85 @@ public static class ApiRoutes
         public const string SetAsDefault = "default/{id}";
     }
 
-    public class PaymentMethods
-    {
-        public const string Base = "/api/PaymentMethods";
-        public const string GetList = "";
-        public const string GetAll = "all";
-        public const string Get = "{id}";
-        public const string Create = "";
-        public const string Update = "{id}";
-        public const string UpdateStatus = "status/{id}";
-    }
-
     public class Invoices
     {
         public const string Base = "/api/Invoices";
         public const string Create = "";
         public const string Update = "{id}";
-        public const string GetList = ""; // GET /api/Invoices or /api/Invoices?customerId=123
+        public const string GetList = "";
         public const string Get = "{id}";
         public const string Delete = "{id}";
-        public const string GetLastNumber = "last-number";
-        public const string GetByNumber = "number/{number}";
+        public const string GetLastNumber = "last-number/{invoiceType}";
+        public const string GetByNumber = "number/{number}/{invoiceType}";
+        public const string SendReminder = "{id}/send-reminder";
     }
 
     public class Reports
     {
         public const string Base = "/api/Reports";
         public const string GetList = "";
+    }
+
+    public class FinancialAccounts
+    {
+        public const string Base = "/api/FinancialAccounts";
+        public const string GetAll = "";
+        public const string GetList = "list";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+        public const string GetTitles = "titles";
+    }
+
+    public class PaymentVouchers
+    {
+        public const string Base = "/api/PaymentVouchers";
+        public const string GetList = "";
+        public const string GetPendingList = "pending/{customerId}";
+        public const string Get = "{id}";
+        public const string GetByNumber = "number/{voucherNumber}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+        public const string GetLastNumber = "last-number";
+    }
+
+    public class LedgerAccounts
+    {
+        public const string Base = "/api/LedgerAccounts";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string Delete = "{id}";
+        public const string GetTitles = "titles";
+    }
+
+    public class Coins
+    {
+        public const string Base = "/api/Coins";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string SetStatus = "status/{id}/{isActive}";
+        public const string GetPrice = "price/{coinId}/{priceUnitId?}";
+    }
+
+    public class InventoryStocks
+    {
+        public const string Base = "/api/InventoryStocks";
+        public const string GetList = "";
+        public const string GetAvailableProducts = "available";
+        public const string GetInventoryWeightChart = "{targetUnit}/weight-chart";
+    }
+
+    public class Notifications
+    {
+        public const string Base = "/api/Notifications";
+        public const string GetList = "";
+        public const string MarkAsRead = "{id}/read";
+        public const string MarkAllAsRead = "read-all";
     }
 }

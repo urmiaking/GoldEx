@@ -16,20 +16,39 @@
     </MudAlert>
 }
 
-<MudPaper Elevation="24">
-    <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">  
-        @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))  
-        {  
-            <MudTreeViewItem T="object" Value="response.Key" Text="@response.Key.GetDisplayName()">  
-                @foreach (var price in response.SelectMany(r => r.Prices ?? []))  
-                {  
-                    <MudTreeViewItem T="object"   
-                                     Value="price"   
-                                     Text="@price.Title"   
-                                     Selected="price.IsActive"
-                                     SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)" />
-                }  
-            </MudTreeViewItem>
-        }
-    </MudTreeView>
-</MudPaper>
+@if (!_priceSettings.Any())
+{
+    <div class="align-center d-flex flex-column gap-3 justify-content-center">
+        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+        <div>در حال بارگذاری</div>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="24">
+        <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">    
+            @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))    
+            {    
+                <MudTreeViewItem T="object" Value="response.Key" Text="@response.Key.GetDisplayName()">    
+                    @foreach (var price in response.SelectMany(r => r.Prices ?? []))    
+                    {    
+                        <MudTreeViewItem T="object"     
+                                         Value="price"     
+                                         Selected="price.IsActive"  
+                                         SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)">  
+                            <BodyContent>  
+                                <div class="d-flex align-items-center justify-space-between" style="width: 100%;">  
+                                    <MudText>@price.Title</MudText>  
+                                    <MudIconButton Icon="@(price.IsPinned ? Icons.Material.Filled.PushPin : Icons.Material.Outlined.PushPin)"  
+                                                   Color="@(price.IsPinned ? Color.Primary : Color.Default)"  
+                                                   Size="Size.Small"  
+                                                   OnClick="@(() => OnPinToggleAsync(price.Id, price.IsPinned))" />  
+                                </div>  
+                            </BodyContent>  
+                        </MudTreeViewItem>  
+                    }    
+                </MudTreeViewItem>  
+            }  
+        </MudTreeView>
+    </MudPaper>
+}

@@ -1,10 +1,10 @@
 ﻿using Blazored.LocalStorage;
 using GoldEx.Client.Components.Services;
+using GoldEx.Client.Components.Services.Abstractions;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Shared;
-using GoldEx.Shared.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -12,6 +12,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using MudBlazor.Extensions;
 
 namespace GoldEx.Client.Extensions;
 
@@ -38,8 +39,8 @@ public static class ServiceCollectionExtensions
                 DayNames = ["یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"],
                 MonthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty],
                 MonthGenitiveNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty],
-                AbbreviatedMonthGenitiveNames = ["فرو", "ارد", "خرد", "تیر", "مرد", "شهر", "مهر", "آبا", "آذر", "دی", "بهم", "اسف", string.Empty],
-                AbbreviatedMonthNames = ["فرو", "ارد", "خرد", "تیر", "مرد", "شهر", "مهر", "آبا", "آذر", "دی", "بهم", "اسف", string.Empty]
+                AbbreviatedMonthGenitiveNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty],
+                AbbreviatedMonthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty]
             }
         };
 
@@ -64,6 +65,14 @@ public static class ServiceCollectionExtensions
     internal static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.DiscoverServices();
+
+        return services;
+    }
+
+    internal static IServiceCollection AddFluentValidation(this IServiceCollection services)
+    {
+        //ValidatorOptions.Global.DisplayNameResolver = (_, member, _) =>
+        //    member.GetCustomAttribute<DisplayAttribute>()?.GetName();
 
         return services;
     }
@@ -114,6 +123,10 @@ public static class ServiceCollectionExtensions
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
             config.SnackbarConfiguration.HideTransitionDuration = 1500;
         });
+
+        services.AddMudServicesWithExtensions();
+
+        MudGlobal.TransitionDefaults.Duration = TimeSpan.FromMilliseconds(500);
 
         services.AddLocalization();
         services.AddScoped<IThemeService, ThemeService>();

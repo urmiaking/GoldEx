@@ -1,73 +1,78 @@
-﻿@inherits GoldExComponentBase
+﻿@* @inherits GoldExComponentBase *@
 
-<MudTable T="TransactionVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
-          Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
-    <ToolBarContent>
-        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        <MudSpacer />
+@* <MudTable T="TransactionVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true" *@
+@*           Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation"> *@
+@*     <ToolBarContent> *@
+@*         <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start" *@
+@*                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField> *@
+@*         <MudSpacer /> *@
+        
+@*         <MudHidden Breakpoint="Breakpoint.SmAndDown"> *@
+@*             <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3" *@
+@*                                 PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ تراکنش" Clearable="true" /> *@
+@*         </MudHidden> *@
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary"EndIcon="@Icons.Material.Filled.Add" 
-                       OnClick="@(_ => OnCreateTransaction())" Size="Size.Small" Variant="Variant.Filled">ثبت تراکنش جدید</MudButton>
-        </MudHidden>
+@*         <MudHidden Breakpoint="Breakpoint.SmAndDown"> *@
+@*             <MudButton Class="ml-4" Color="Color.Primary"EndIcon="@Icons.Material.Filled.Add"  *@
+@*                        OnClick="@(_ => OnCreateTransaction())" Size="Size.Small" Variant="Variant.Filled">ثبت تراکنش جدید</MudButton> *@
+@*         </MudHidden> *@
 
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateTransaction())"
-                Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
-        </MudHidden>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="Number" T="TransactionVm">کد</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Description" T="TransactionVm">شرح</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="TransactionVm">نام مشتری</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Customer.NationalId" T="TransactionVm">شناسه یکتا</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Credit" T="TransactionVm">بستانکاری</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Debit" T="TransactionVm">بدهکاری</MudTableSortLabel></MudTh>
-        @* <MudTh>مانده</MudTh> *@
-        <MudTh><MudTableSortLabel SortLabel="DateTime" T="TransactionVm">تاریخ</MudTableSortLabel></MudTh>
-        <MudTh>عملیات</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="شماره تراکنش">@context.TransactionNumber</MudTd>
-        <MudTd DataLabel="شرح">@context.Description</MudTd>
-        <MudTd DataLabel="نام مشتری">@context.Customer.FullName</MudTd>
-        <MudTd DataLabel="شناسه یکتای مشتری">@context.Customer.NationalId</MudTd>
-        <MudTd DataLabel="بستانکاری">@(context.Credit.HasValue ? $"{context.Credit:#,##0.##} {context.CreditUnit?.Title}" : "-")</MudTd>
-        <MudTd DataLabel="بدهکاری">@(context.Debit.HasValue ? $"{context.Debit:#,##0.##} {context.DebitUnit?.Title}" : "-")</MudTd>
-        @* <MudTd DataLabel="مانده">@($"{context.Remaining:N0} {context.RemainingUnit}")</MudTd> *@
-        <MudTd DataLabel="تاریخ">@context.TransactionDate?.ToShortDateString()</MudTd>
-        <MudTd DataLabel="عملیات">
-            <div class="d-flex gap-2">
-                <MudTooltip Text="چاپ تراکنش">
-                    <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
-                                    Color="@Color.Success"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="ویرایش تراکنش">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnEditTransaction(context)"></MudIconButton>
-                </MudTooltip>
-                <MudTooltip Text="حذف تراکنش">
-                    <MudIconButton OnClick="@(_ => OnRemoveTransaction(context))" Size="@Size.Small" Variant="@Variant.Filled"
-                                   Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                </MudTooltip>
-            </div>
-        </MudTd>
-    </RowTemplate>
-    <NoRecordsContent>
-        <MudText>هیچ تراکنشی یافت نشد</MudText>
-    </NoRecordsContent>
-    <LoadingContent>
-        <MudText>در حال بارگذاری</MudText>
-    </LoadingContent>
-    <PagerContent>
-        <div class="d-flex flex-column align-center">
-            <MudPagination SelectedChanged="PageChanged"
-                           Color="Color.Primary"
-                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
-                           Class="pa-4"
-                           ShowFirstButton="true"
-                           ShowLastButton="true" />
-        </div>
-    </PagerContent>
-</MudTable>
+@*         <MudHidden Breakpoint="Breakpoint.MdAndUp"> *@
+@*             <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateTransaction())" *@
+@*                 Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton> *@
+@*         </MudHidden> *@
+@*     </ToolBarContent> *@
+@*     <HeaderContent> *@
+@*         <MudTh><MudTableSortLabel SortLabel="Number" T="TransactionVm">کد</MudTableSortLabel></MudTh> *@
+@*         <MudTh><MudTableSortLabel SortLabel="Description" T="TransactionVm">شرح</MudTableSortLabel></MudTh> *@
+@*         <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="TransactionVm">نام مشتری</MudTableSortLabel></MudTh> *@
+@*         <MudTh><MudTableSortLabel SortLabel="Customer.NationalId" T="TransactionVm">شناسه یکتا</MudTableSortLabel></MudTh> *@
+@*         <MudTh><MudTableSortLabel SortLabel="Credit" T="TransactionVm">بستانکاری</MudTableSortLabel></MudTh> *@
+@*         <MudTh><MudTableSortLabel SortLabel="Debit" T="TransactionVm">بدهکاری</MudTableSortLabel></MudTh> *@
+@*         @* <MudTh>مانده</MudTh> *@ 
+@*         <MudTh><MudTableSortLabel SortLabel="DateTime" T="TransactionVm">تاریخ</MudTableSortLabel></MudTh> *@
+@*         <MudTh>عملیات</MudTh> *@
+@*     </HeaderContent> *@
+@*     <RowTemplate> *@
+@*         <MudTd DataLabel="شماره تراکنش">@context.TransactionNumber</MudTd> *@
+@*         <MudTd DataLabel="شرح">@context.Description</MudTd> *@
+@*         <MudTd DataLabel="نام مشتری">@context.Customer.FullName</MudTd> *@
+@*         <MudTd DataLabel="شناسه یکتای مشتری">@context.Customer.NationalId</MudTd> *@
+@*         <MudTd DataLabel="بستانکاری">@(context.Credit.HasValue ? $"{context.Credit:#,##0.##} {context.CreditUnit?.Title}" : "-")</MudTd> *@
+@*         <MudTd DataLabel="بدهکاری">@(context.Debit.HasValue ? $"{context.Debit:#,##0.##} {context.DebitUnit?.Title}" : "-")</MudTd> *@
+@*         @* <MudTd DataLabel="مانده">@($"{context.Remaining:N0} {context.RemainingUnit}")</MudTd> *@ 
+@*         <MudTd DataLabel="تاریخ">@context.TransactionDate?.ToShortDateString()</MudTd> *@
+@*         <MudTd DataLabel="عملیات"> *@
+@*             <div class="d-flex gap-2"> *@
+@*                 <MudTooltip Text="چاپ تراکنش"> *@
+@*                     <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print" *@
+@*                                     Color="@Color.Success"></MudIconButton> *@
+@*                 </MudTooltip> *@
+@*                 <MudTooltip Text="ویرایش تراکنش"> *@
+@*                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled" *@
+@*                                    Color="Color.Primary" OnClick="_ => OnEditTransaction(context)"></MudIconButton> *@
+@*                 </MudTooltip> *@
+@*                 <MudTooltip Text="حذف تراکنش"> *@
+@*                     <MudIconButton OnClick="@(_ => OnRemoveTransaction(context))" Size="@Size.Small" Variant="@Variant.Filled" *@
+@*                                    Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton> *@
+@*                 </MudTooltip> *@
+@*             </div> *@
+@*         </MudTd> *@
+@*     </RowTemplate> *@
+@*     <NoRecordsContent> *@
+@*         <MudText>هیچ تراکنشی یافت نشد</MudText> *@
+@*     </NoRecordsContent> *@
+@*     <LoadingContent> *@
+@*         <MudText>در حال بارگذاری</MudText> *@
+@*     </LoadingContent> *@
+@*     <PagerContent> *@
+@*         <div class="d-flex flex-column align-center"> *@
+@*             <MudPagination SelectedChanged="PageChanged" *@
+@*                            Color="Color.Primary" *@
+@*                            Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)" *@
+@*                            Class="pa-4" *@
+@*                            ShowFirstButton="true" *@
+@*                            ShowLastButton="true" /> *@
+@*         </div> *@
+@*     </PagerContent> *@
+@* </MudTable> *@

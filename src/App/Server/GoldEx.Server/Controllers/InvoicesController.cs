@@ -2,8 +2,9 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,21 +17,29 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     [HttpPost(ApiRoutes.Invoices.Create)]
     public async Task<IActionResult> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        await service.SetAsync(request, cancellationToken);
+        await service.CreateAsync(request, cancellationToken);
         return Created();
     }
 
-    [HttpDelete(ApiRoutes.Invoices.Delete)]
-    public async Task<IActionResult> DeleteAsync(Guid id, [FromQuery] bool deleteProducts, CancellationToken cancellationToken = default)
+    [HttpPut(ApiRoutes.Invoices.Update)]
+    public async Task<IActionResult> UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
-        await service.DeleteAsync(id, deleteProducts, cancellationToken);
-        return Ok();
+        await service.UpdateAsync(id, request, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete(ApiRoutes.Invoices.Delete)]
+    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.DeleteAsync(id, cancellationToken);
+        return NoContent();
     }
 
     [HttpGet(ApiRoutes.Invoices.GetList)]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] Guid? customerId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] InvoiceFilter invoiceFilter,
+        [FromQuery] Guid? customerId, CancellationToken cancellationToken = default)
     {
-        var list = await service.GetListAsync(filter, customerId, cancellationToken);
+        var list = await service.GetListAsync(filter, invoiceFilter, customerId, cancellationToken);
         return Ok(list);
     }
 
@@ -42,16 +51,23 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Invoices.GetByNumber)]
-    public async Task<IActionResult> GetAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default)
     {
-        var item = await service.GetAsync(invoiceNumber, cancellationToken);
+        var item = await service.GetAsync(invoiceNumber, invoiceType, cancellationToken);
         return Ok(item);
     }
 
     [HttpGet(ApiRoutes.Invoices.GetLastNumber)]
-    public async Task<IActionResult> GetLastNumberAsync(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default)
     {
-        var lastNumber = await service.GetLastNumberAsync(cancellationToken);
+        var lastNumber = await service.GetLastNumberAsync(invoiceType, cancellationToken);
         return Ok(lastNumber);
+    }
+
+    [HttpPost(ApiRoutes.Invoices.SendReminder)]
+    public async Task<IActionResult> SendReminderAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.SendReminderAsync(id, cancellationToken);
+        return NoContent();
     }
 }

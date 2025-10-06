@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GoldEx.Server.Infrastructure.Configurations;
 
-public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
+internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 {
     public void Configure(EntityTypeBuilder<Transaction> builder)
     {
@@ -14,44 +14,44 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .HasConversion(id => id.Value,
                 value => new TransactionId(value));
 
-        builder.Property(x => x.DateTime)
-            .IsRequired();
-
         builder.Property(x => x.Description)
             .HasMaxLength(500)
             .IsRequired();
 
-        builder.Property(x => x.Number)
+        builder.Property(x => x.Amount)
+            .HasPrecision(36, 10)
             .IsRequired();
 
-        builder.Property(x => x.Credit)
+        builder.Property(x => x.ExchangeRate)
             .HasPrecision(36, 10);
 
-        builder.Property(x => x.CreditRate)
-            .HasPrecision(36, 10);
+        builder.Property(x => x.BaseCurrencyAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
 
-        builder.Property(x => x.Debit)
-            .HasPrecision(36, 10);
+        builder.HasOne(x => x.PriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.PriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(x => x.DebitRate)
-            .HasPrecision(36, 10);
+        builder.HasOne(x => x.LedgerAccount)
+            .WithMany()
+            .HasForeignKey(x => x.LedgerAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(x => x.Number)
-            .IsUnique();
-
-        builder.HasOne(x => x.Customer)
+        builder.HasOne(x => x.Invoice)
             .WithMany(x => x.Transactions)
-            .HasForeignKey(x => x.CustomerId)
+            .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.CreditUnit)
-            .WithMany()
-            .HasForeignKey(x => x.CreditUnitId)
+        builder.HasOne(x => x.PaymentVoucher)
+            .WithMany(x => x.Transactions)
+            .HasForeignKey(x => x.PaymentVoucherId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.DebitUnit)
+        builder.HasOne(x => x.InvoicePayment)
             .WithMany()
-            .HasForeignKey(x => x.DebitUnitId)
+            .HasForeignKey(x => x.InvoicePaymentId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -1,5 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.Prices;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 
 namespace GoldEx.Client.Pages.Settings;
 
@@ -29,9 +29,12 @@ public partial class PriceSettings
         var request = new UpdatePriceStatusRequest(isActive);
 
         await SendRequestAsync<IPriceService>(
-            action: (s, ct) => s.SetStatusAsync(id, request, ct));
-
-        AddSuccessToast("تغییرات با موفقیت اعمال شد");
+            action: (s, ct) => s.SetStatusAsync(id, request, ct),
+            afterSend: () =>
+            {
+                AddSuccessToast("تغییرات با موفقیت اعمال شد");
+                return Task.CompletedTask;
+            });
     }
 
     private void CloseAlert(bool value)
@@ -40,5 +43,16 @@ public partial class PriceSettings
         {
             _showAlert = false;
         }
+    }
+
+    private async Task OnPinToggleAsync(Guid id, bool currentPinState)
+    {
+        await SendRequestAsync<IPriceService>(
+            action: (s, ct) => s.SetPinnedAsync(id, !currentPinState, ct),
+            afterSend: async () =>
+            {
+                await LoadPriceSettingsAsync();
+                AddSuccessToast(currentPinState ? "سنجاق برداشته شد" : "سنجاق شد");
+            });
     }
 }

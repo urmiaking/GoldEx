@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Invoices.Validators;
 
@@ -20,16 +21,36 @@ public class InvoiceValidator : AbstractValidator<InvoiceVm>
             .When(x => x.DueDate.HasValue)
             .WithMessage("تاریخ سررسید نمی‌تواند قبل از تاریخ فاکتور باشد");
 
-        RuleFor(x => x.Customer)
+        RuleFor(x => x)
+            .Must(invoice =>
+                invoice.ProductItems.Any() ||
+                invoice.CurrencyItems.Any() ||
+                invoice.CoinItems.Any() ||
+                invoice.UsedProducts.Any())
+            .WithMessage("فاکتور باید حداقل دارای یک آیتم (کالا، ارز، سکه یا جنس دست دوم) باشد.");
+
+        RuleFor(x => x)
+            .Must(invoice =>
+                invoice.ProductItems.Any() ||
+                invoice.CurrencyItems.Any() ||
+                invoice.CoinItems.Any())
+            .When(invoice =>
+                invoice.InvoiceType == InvoiceType.Sell &&
+                invoice.UsedProducts.Any())
+            .WithMessage("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک آیتم دیگر باشد.");
+
+        RuleFor(x => x.Customer!)
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")
             .SetValidator(new CustomerValidator());
 
-        RuleFor(x => x.InvoiceItems)
-            .NotNull()
-            .NotEmpty().WithMessage("فاکتور باید حداقل دارای یک آیتم باشد");
+        RuleForEach(x => x.ProductItems)
+            .SetValidator(new ProductItemValidator());
 
-        RuleForEach(x => x.InvoiceItems)
-            .SetValidator(new InvoiceItemValidator());
+        RuleForEach(x => x.CoinItems)
+            .SetValidator(new CoinItemValidator());
+
+        RuleForEach(x => x.CurrencyItems)
+            .SetValidator(new CurrencyItemValidator());
 
         RuleForEach(x => x.InvoiceDiscounts)
             .SetValidator(new InvoiceDiscountValidator());
@@ -39,6 +60,9 @@ public class InvoiceValidator : AbstractValidator<InvoiceVm>
 
         RuleForEach(x => x.InvoicePayments)
             .SetValidator(new InvoicePaymentValidator());
+
+        RuleForEach(x => x.UsedProducts)
+            .SetValidator(new UsedProductValidator());
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

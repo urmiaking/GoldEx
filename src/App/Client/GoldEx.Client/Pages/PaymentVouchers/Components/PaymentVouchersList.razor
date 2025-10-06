@@ -1,0 +1,145 @@
+﻿@inherits GoldExComponentBase
+
+<MudTable T="PaymentVoucherListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+          Dense="true" ServerData="LoadPaymentVouchersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+    <ToolBarContent>
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
+                                Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+                                PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ پرداخت" Clearable="true" />
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="VoucherTypeColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@VoucherTypeIcon">@(_voucherType?.GetDisplayName() ?? "همه")</MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.ViewHeadline" IconColor="Color.Info"
+                                 OnClick="() => SetVoucherTypeFilterText(null)">
+                        همه
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Payment" IconColor="Color.Success"
+                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.PrepaymentToSupplier)">
+                        @PaymentVoucherType.PrepaymentToSupplier.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.PriceCheck" IconColor="Color.Primary"
+                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.RefundToCustomer)">
+                        @PaymentVoucherType.RefundToCustomer.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton StartIcon="@VoucherTypeIcon"></MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Payment"
+                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.PrepaymentToSupplier)">
+                        @VoucherStatus.Applied.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.PriceCheck"
+                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.RefundToCustomer)">
+                        @VoucherStatus.Pending.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">
+                ثبت سند جدید
+            </MudButton>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add"
+                           OnClick="@(_ => OnCreate())" Size="@Size.Small"
+                           Variant="@Variant.Filled"></MudIconButton>
+        </MudHidden>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="VoucherNumber" T="PaymentVoucherListVm">شماره سند</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="VoucherType" T="PaymentVoucherListVm">نوع سند</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="PaymentVoucherListVm">طرف حساب</MudTableSortLabel></MudTh>
+        <MudTh>شماره تماس</MudTh>
+        <MudTh>ارزش کل</MudTh>
+        <MudTh><MudTableSortLabel SortLabel="PaymentDate" T="PaymentVoucherListVm">تاریخ پرداخت</MudTableSortLabel></MudTh>
+        <MudTh>پرداخت از حساب</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="شماره سند">@context.VoucherNumber</MudTd>
+        <MudTd DataLabel="نوع سند">@context.VoucherType.GetDisplayName()</MudTd>
+        <MudTd DataLabel="طرف حساب">@context.SupplierName</MudTd>
+        <MudTd DataLabel="شماره تماس">@context.SupplierPhoneNumber</MudTd>
+        <MudTd DataLabel="ارزش کل">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
+        <MudTd DataLabel="تاریخ پرداخت">
+            <MudTooltip Text="@($"تاریخ ایجاد: {context.CreatedAt}")" Placement="Placement.Top" Arrow="true">
+                @context.PaymentDate.ToShortDateString()
+            </MudTooltip>
+        </MudTd>
+        <MudTd DataLabel="پرداخت از حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+       
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                @if (context.InvoiceId.HasValue)
+                {
+                    <MudTooltip Text="مشاهده فاکتور">
+                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Info" OnClick="_ => OnViewInvoice(context)"></MudIconButton>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="ویرایش سند">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="حذف سند">
+                        <MudIconButton OnClick="@(_ => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
+                                       Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    </MudTooltip>
+                }
+                <MudTooltip Text="چاپ سند">
+                    <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                   Color="@Color.Success" OnClick="_ => OnPrint(context)"></MudIconButton>
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ سندی یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>

@@ -1,7 +1,17 @@
-﻿<MudAppBar Elevation="1" Dense="true">
+﻿<MudAppBar Elevation="12" Dense="true">
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
     <MudImage Src="/assets/logo/logo512.png" Alt="گلدکس" Height="32" Class="ml-3 mr-2" /> <MudText Typo="Typo.h5">گلدکس</MudText>
     <MudSpacer />
+
+    <div class="d-none d-md-flex align-center px-4">
+        <Clock />
+    </div>
+
+    <AuthorizeView>
+        <Authorized>
+            <Notifications />
+        </Authorized>
+    </AuthorizeView>
     <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
 
     <Profile />
@@ -30,6 +40,4 @@
     {
         ThemeService?.ToggleMode();
     }
-
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;  // Inject NavigationManager
 }

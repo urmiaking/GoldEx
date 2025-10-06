@@ -1,27 +1,35 @@
-﻿using FluentValidation;
+﻿using System.Data;
+using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.PriceUnits;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
 internal class PriceUnitService(
     IPriceUnitRepository repository,
+    ILedgerAccountRepository ledgerAccountRepository,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment,
     IMapper mapper,
+    ILogger<PriceUnitService> logger,
     CreatePriceUnitRequestValidator createValidator,
     UpdatePriceUnitRequestValidator updateValidator) : IPriceUnitService
 {
@@ -29,6 +37,7 @@ internal class PriceUnitService(
     {
         var item = await repository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(id)))
+            .AsNoTracking()
             .Include(x => x.Price)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
@@ -39,6 +48,7 @@ internal class PriceUnitService(
     {
         var item = await repository
             .Get(new PriceUnitsSetAsDefaultSpecification())
+            .AsNoTracking()
             .Include(x => x.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -49,6 +59,7 @@ internal class PriceUnitService(
     {
         var items = await repository
             .Get(new PriceUnitsDefaultSpecification())
+            .AsNoTracking()
             .Include(x => x.Price)
             .ToListAsync(cancellationToken);
 
@@ -59,6 +70,7 @@ internal class PriceUnitService(
     {
         var items = await repository
             .Get(new PriceUnitsWithoutSpecification())
+            .AsNoTracking()
             .Include(x => x.Price)
             .ToListAsync(cancellationToken);
 
@@ -69,6 +81,7 @@ internal class PriceUnitService(
     {
         var items = await repository
             .Get(new PriceUnitsDefaultSpecification())
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetPriceUnitTitleResponse>>(items);
@@ -76,32 +89,99 @@ internal class PriceUnitService(
 
     public async Task CreateAsync(CreatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {
-        await createValidator.ValidateAndThrowAsync(request, cancellationToken);
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var item = PriceUnit.Create(request.Title, false, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                var parentLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"'{SystemLedgerAccounts.InternalCashAccounts}' ledger account not found.");
 
-        await repository.CreateAsync(item, cancellationToken);
+                var currencyLedgerTitle = LedgerAccountTitleBuilder.ForCurrencyInternalAccount(request.Title);
 
-        if (request.IconContent is not null)
-            await fileService.SaveLocalFileAsync(webHostEnvironment.GetPriceUnitIconPath(
-                item.Id.Value, null), request.IconContent, cancellationToken);
+                var existingLedgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(currencyLedgerTitle))
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (existingLedgerAccount is null)
+                {
+                    var newLedgerAccount = LedgerAccount.CreateSystemAccount(
+                        currencyLedgerTitle,
+                        LedgerAccountType.Asset,
+                        parentLedgerAccount.Id);
+
+                    await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
+                }
+
+                var item = PriceUnit.Create(request.Title,
+                    null,
+                    false,
+                    request.PriceId.HasValue
+                        ? new PriceId(request.PriceId.Value)
+                        : null);
+
+                await repository.CreateAsync(item, cancellationToken);
+
+                if (request.IconContent is not null)
+                    await fileService.SaveLocalFileAsync(webHostEnvironment.GetPriceUnitIconPath(
+                        item.Id.Value, null), request.IconContent, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 
     public async Task UpdateAsync(Guid id, UpdatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {
-        await updateValidator.ValidateAndThrowAsync((id, request), cancellationToken);
-        var item = await repository
-            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                await updateValidator.ValidateAndThrowAsync((id, request), cancellationToken);
 
-        item.SetTitle(request.Title);
-        item.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                var priceUnit = await repository
+                    .Get(new PriceUnitsByIdSpecification(new PriceUnitId(id)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        await repository.UpdateAsync(item, cancellationToken);
+                var oldTitle = priceUnit.Title;
 
-        if (request.IconContent is not null)
-            await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetPriceUnitIconPath(
-                item.Id.Value, null), request.IconContent, cancellationToken);
+                priceUnit.SetTitle(request.Title);
+                priceUnit.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                await repository.UpdateAsync(priceUnit, cancellationToken);
+
+                var oldLedgerTitle = LedgerAccountTitleBuilder.ForCurrencyAccount(oldTitle);
+                var ledgerAccount = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(oldLedgerTitle))
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (ledgerAccount is not null)
+                {
+                    var newLedgerTitle = LedgerAccountTitleBuilder.ForCurrencyAccount(request.Title);
+                    ledgerAccount.SetTitle(newLedgerTitle);
+                    await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
+                }
+
+                if (request.IconContent is not null)
+                    await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetPriceUnitIconPath(
+                        priceUnit.Id.Value, null), request.IconContent, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 
     public async Task UpdateStatusAsync(Guid id, UpdatePriceUnitStatusRequest request,

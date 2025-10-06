@@ -4,8 +4,9 @@ using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -16,12 +17,24 @@ public partial class Editor
     [Parameter] public ProductVm Model { get; set; } = ProductVm.CreateDefaultInstance();
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private readonly ProductValidator _productValidator = new();
-    private IEnumerable<ProductCategoryVm> _productCategories = [];
-    private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private string? _wageFieldAdornmentText;
-    private bool _wageFieldMenuOpen;
     private MudForm _form = default!;
+    private readonly ProductValidator _productValidator = new();
+
+    private IEnumerable<ProductCategoryVm> _productCategories = [];
+    private List<GetProductResponse> _products = [];
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
+    
+    private bool _wageFieldMenuOpen;
+    private bool _processing;
+    private bool _weightFieldMenuOpen;
+
+    private string? WageFieldAdornmentText => Model.WageType switch
+    {
+        WageType.Percent => "درصد",
+        WageType.Fixed => Model.WagePriceUnitTitle,
+        null => null,
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
     protected override void OnParametersSet()
     {
@@ -70,6 +83,8 @@ public partial class Editor
         if (!_form.IsValid)
             return;
 
+        _processing = true;
+
         var request = ProductVm.ToRequest(Model);
 
         if (!Model.Id.HasValue)
@@ -92,6 +107,8 @@ public partial class Editor
                     return Task.CompletedTask;
                 });
         }
+
+        _processing = false;
     }
 
     private void GenerateBarcode() => Model.Barcode = StringExtensions.GenerateRandomBarcode();
@@ -105,17 +122,17 @@ public partial class Editor
         switch (productType)
         {
             case ProductType.Jewelry:
+                Model.WageType = WageType.Fixed;
                 break;
             case ProductType.Gold:
+                Model.WageType = WageType.Percent;
                 break;
             case ProductType.MoltenGold:
                 Model.Wage = null;
                 Model.WageType = null;
                 break;
-            case ProductType.OldGold:
-                Model.Wage = null;
-                Model.WageType = null;
-                break;
+            case ProductType.UsedGold:
+                throw new InvalidOperationException();
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
         }
@@ -125,31 +142,14 @@ public partial class Editor
     {
         Model.WageType = wageType;
 
-        switch (wageType)
-        {
-            case WageType.Percent:
-                _wageFieldAdornmentText = "درصد";
-                break;
-            case WageType.Fixed:
-                _wageFieldAdornmentText = Model.WagePriceUnitTitle;
-                break;
-            case null:
-                Model.Wage = null;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
-        }
-
-        OnWageChanged(Model.Wage);
+        if (wageType is null) 
+            Model.Wage = null;
     }
 
     private void OnAddGemStone()
     {
         Model.Stones ??= [];
-        Model.Stones.Add(new GemStoneVm
-        {
-            Code = StringExtensions.GenerateRandomCode(5)
-        });
+        Model.Stones.Add(new GemStoneVm());
         StateHasChanged();
     }
 
@@ -161,25 +161,15 @@ public partial class Editor
 
     private void OnProductCategoryChanged(ProductCategoryVm? category)
     {
-        if (category is null)
-            return;
-
         Model.CategoryVm = category;
-        Model.ProductCategoryId = category.Id;
-        Model.ProductCategoryTitle = category.Title;
-    }
-
-    private void OnWageChanged(decimal? wage)
-    {
-        Model.Wage = wage;
+        Model.ProductCategoryId = category?.Id;
+        Model.ProductCategoryTitle = category?.Title;
     }
 
     private void OnWageAdornmentClicked()
     {
-        if (Model.WageType is WageType.Fixed)
-        {
+        if (Model.WageType is WageType.Fixed) 
             _wageFieldMenuOpen = !_wageFieldMenuOpen;
-        }
     }
 
     private void SelectWagePriceUnit(GetPriceUnitTitleResponse item)
@@ -204,5 +194,30 @@ public partial class Editor
             await LoadCategoriesAsync();
             StateHasChanged();
         }
+    }
+
+    private async Task<IEnumerable<string>?> SearchNames(string? name, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(name))
+            return null;
+
+        await SendRequestAsync<IProductService, List<GetProductResponse>> (
+            action: (s, ct) => s.GetListAsync(name, ct),
+            afterSend: response => _products = response);
+
+        return _products.Select(x => x.Name);
+    }
+
+    private void OnProductNameChanged(string name)
+    {
+        var product = _products.FirstOrDefault(x => x.Name == name);
+
+        if (product != null)
+        {
+            Model = ProductVm.CreateFromSearch(product);
+            OnWageTypeChanged(product.WageType);
+        }
+
+        StateHasChanged();
     }
 }

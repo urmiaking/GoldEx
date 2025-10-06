@@ -1,0 +1,107 @@
+﻿@using GoldEx.Client.Pages.FinancialAccounts.ViewModels
+@inherits GoldExComponentBase
+
+@attribute [Route(ClientRoutes.Settings.FinancialAccounts)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+<PageTitle>مدیریت حساب های مالی</PageTitle>
+
+<div class="d-flex align-items-center">
+    <MudText Typo="Typo.h6" GutterBottom="true">مدیریت حساب های مالی</MudText>
+    <MudSpacer />
+    
+    <MudButtonGroup Size="Size.Small" Color="@AccountTypeColor" Variant="Variant.Filled" Class="ml-3">
+        <MudButton Size="Size.Small" StartIcon="@AccountTypeIcon">
+            @(_accountType == null ? "همه" : _accountType.GetDisplayName())
+        </MudButton>
+        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+            <MudMenuItem Icon="@Icons.Material.Filled.ViewHeadline" IconColor="Color.Default"
+                         OnClick="() => SetAccountTypeFilterText(null)">
+                همه
+            </MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.AccountBalance" IconColor="Color.Primary"
+                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.LocalBankAccount)">
+                @FinancialAccountType.LocalBankAccount.GetDisplayName()
+            </MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Public" IconColor="Color.Success"
+                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.InternationalBankAccount)">
+                @FinancialAccountType.InternationalBankAccount.GetDisplayName()
+            </MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Info"
+                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Cash)">
+                @FinancialAccountType.Cash.GetDisplayName()
+            </MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled._18UpRating" IconColor="Color.Secondary"
+                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Gold)">
+                @FinancialAccountType.Gold.GetDisplayName()
+            </MudMenuItem>
+        </MudMenu>
+    </MudButtonGroup>
+
+    <div class="d-flex flex-row align-center">
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true"
+                      ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
+                      Adornment="Adornment.Start" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
+                      IconSize="Size.Small" Class="m-0" Style="max-width: 200px;" />
+        <MudIconButton Color="Color.Primary" Variant="Variant.Outlined"
+                       Icon="@Icons.Material.Filled.Add" OnClick="_ => OnCreate()" />
+    </div>
+</div>
+<MudDivider Class="my-2" />
+
+<MudTable T="FinancialAccountVm" @ref="_table" Hover="true" FixedHeader="true" Dense="true"
+          ServerData="LoadFinancialAccounts" SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" 
+          Elevation="24" RowsPerPage="10" Class="p-2 mt-4">
+    <HeaderContent>
+        <MudTh>نوع حساب</MudTh>
+        <MudTh>واحد ارزی</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="نوع حساب">@context.GetAccountTypeText()</MudTd>
+        <MudTd DataLabel="واحد ارزی">@context.PriceUnit?.Title</MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="ویرایش">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="حذف">
+                    <MudIconButton OnClick="@(_ => OnRemove(context))" ClickPropagation="true"
+                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ حساب مالی یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>

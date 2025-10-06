@@ -1,0 +1,373 @@
+﻿@using GoldEx.Shared.DTOs.PriceUnits
+@inherits GoldExComponentBase
+
+<MudCard Elevation="@Elevation" Class="pa-4">
+    <AuthorizeView>
+        <Authorized>
+            <MudGrid Justify="Justify.SpaceBetween">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTextField Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.QrCode"
+                                  AutoFocus="true"
+                                  Clearable="true"
+                                  HelperText="@_barcodeFieldHelperText"
+                                  Label="بارکد جنس"
+                                  Immediate="true"
+                                  Margin="Margin.Dense"
+                                  OnClearButtonClick="OnBarcodeCleared"
+                                  T="string"
+                                  Value="_barcode"
+                                  ValueChanged="OnBarcodeChanged"
+                                  Variant="Variant.Outlined"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudSelect T="GetPriceUnitTitleResponse?"
+                               Value="_model.PriceUnit"
+                               ValueChanged="OnPriceUnitChanged"
+                               Label="@_model.GetDisplayName(() => _model.PriceUnit)"
+                               For="() => _model.PriceUnit"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var item in _priceUnits)
+                        {
+                            <MudSelectItem Value="item">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                    </MudAvatar>
+                                    <MudText>@item.Title</MudText>
+                                </MudStack>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </Authorized>
+    </AuthorizeView>
+
+    <MudForm Model="_model" @ref="@_form" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
+        <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
+            <MudRadioGroup For="() => _model.ProductType"
+                           T="ProductType"
+                           Value="_model.ProductType"
+                           ValueChanged="OnProductTypeChanged">
+                <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
+                <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
+                <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
+                <MudRadio Value="ProductType.UsedGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
+            </MudRadioGroup>
+        </div>
+
+        <MudGrid Justify="Justify.Center" Spacing="4">
+            <MudItem xs="12" sm="6">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="@_model.PriceUnit?.Title"
+                                 For="() => _model.GramPrice"
+                                 Format="#,##0.##"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Margin="Margin.Dense"
+                                 Label="@($"نرخ {_model.GoldUnitType.GetDisplayName()}")"
+                                 T="decimal"
+                                 Value="@_model.GramPrice"
+                                 ValueChanged="OnGramPriceChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudMenu @bind-Open="_weightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                    <ActivatorContent>
+                        <MudNumericField Adornment="Adornment.End"
+                                         AdornmentText="@_model.GoldUnitType.GetDisplayName()"
+                                         For="() => _model.Weight"
+                                         Format="G29"
+                                         HideSpinButtons="true"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(_model.GetDisplayName(() => _model.Weight))"
+                                         T="decimal"
+                                         Value="_model.Weight"
+                                         ValueChanged="OnWeightChanged"
+                                         Variant="Variant.Outlined"
+                                         OnAdornmentClick="OnWeightAdornmentClicked"></MudNumericField>
+                    </ActivatorContent>
+                    <ChildContent>
+                        @foreach (var item in Enum.GetValues<GoldUnitType>())
+                        {
+                            <MudMenuItem OnClick="() => SelectGoldUnitType(item)">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    @item.GetDisplayName()
+                                </div>
+                            </MudMenuItem>
+                        }
+                    </ChildContent>
+                </MudMenu>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudNumericField For="() => _model.Fineness"
+                                 Immediate="true"
+                                 HideSpinButtons="true"
+                                 Format="G29"
+                                 Margin="Margin.Dense"
+                                 Label="@(_model.GetDisplayName(() => _model.Fineness))"
+                                 T="decimal"
+                                 Value="_model.Fineness"
+                                 ValueChanged="OnFinenessChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
+            </MudItem>
+
+            @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudSelect For="() => _model.WageType"
+                               Immediate="true"
+                               Margin="Margin.Dense"
+                               Label="@(_model.GetDisplayName(() => _model.WageType))"
+                               T="WageType?"
+                               Value="_model.WageType"
+                               ValueChanged="OnWageTypeChanged"
+                               Variant="Variant.Outlined"
+                               AdornmentIcon="@WageTypeAdornmentIcon">
+                        <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
+                        @foreach (WageType wageType in Enum.GetValues(typeof(WageType)))
+                        {
+                            <MudSelectItem Value="@((WageType?)wageType)">@wageType.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@WageFieldAdornmentText"
+                                             For="() => _model.Wage"
+                                             Format="#,##0.##"
+                                             HideSpinButtons="true"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(_model.GetDisplayName(() => _model.Wage))"
+                                             T="decimal?"
+                                             Value="_model.Wage"
+                                             ValueChanged="OnWageChanged"
+                                             Variant="Variant.Outlined"
+                                             OnAdornmentClick="OnWageAdornmentClicked"></MudNumericField>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
+
+                @if (_model.WageType is WageType.Fixed && _model.PriceUnit != _model.WagePriceUnit)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField For="() => _model.WageExchangeRate"
+                                         Format="#,##0.########"
+                                         HideSpinButtons="true"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@WageExchangeRateLabel"
+                                         T="decimal?"
+                                         Value="_model.WageExchangeRate"
+                                         ValueChanged="OnWageExchangeRateChanged"
+                                         Variant="Variant.Outlined"></MudNumericField>
+                    </MudItem>
+                }
+            }
+
+            @if (_model.ProductType != ProductType.UsedGold)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentIcon="@Icons.Material.Filled.Percent"
+                                     For="() => _model.ProfitPercent"
+                                     Format="G29"
+                                     HideSpinButtons="true"
+                                     Immediate="true"
+                                     Margin="Margin.Dense"
+                                     Label="@(_model.GetDisplayName(() => _model.ProfitPercent))"
+                                     T="decimal"
+                                     Value="_model.ProfitPercent"
+                                     ValueChanged="OnProfitChanged"
+                                     Variant="Variant.Outlined"></MudNumericField>
+                </MudItem>
+            }
+
+            <MudItem xs="12" sm="6">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="@_model.PriceUnit?.Title"
+                                 For="() => _model.ExtraCosts"
+                                 Format="#,##0.##"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Margin="Margin.Dense"
+                                 Label="@(_model.GetDisplayName(() => _model.ExtraCosts))"
+                                 T="decimal?"
+                                 Value="_model.ExtraCosts"
+                                 ValueChanged="OnExtraCostChanges"
+                                 Variant="Variant.Outlined"></MudNumericField>
+            </MudItem>
+            @if (_model.ProductType is ProductType.Jewelry)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudMenu @bind-Open="_stoneFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@StoneFieldAdornmentText"
+                                             For="() => _model.StonePrice"
+                                             Format="#,##0.##"
+                                             HideSpinButtons="true"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(_model.GetDisplayName(() => _model.StonePrice))"
+                                             T="decimal?"
+                                             Value="_model.StonePrice"
+                                             ValueChanged="OnStonePriceChanged"
+                                             Variant="Variant.Outlined"
+                                             OnAdornmentClick="OnStoneAdornmentClicked"></MudNumericField>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectStonePriceUnit(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
+                @if (_model.PriceUnit != _model.StonePriceUnit)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField For="() => _model.StoneExchangeRate"
+                                         Format="#,##0.########"
+                                         HideSpinButtons="true"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@StoneExchangeRateLabel"
+                                         T="decimal?"
+                                         Value="_model.StoneExchangeRate"
+                                         ValueChanged="OnStoneExchangeRateChanged"
+                                         Variant="Variant.Outlined"></MudNumericField>
+                    </MudItem>
+                }
+            }
+        </MudGrid>
+
+        @* The main check to show the results block only when there is a valid price *@
+        @if (_finalPrice.HasValue && _finalPrice.Value is not 0)
+        {
+            @* STEP 1: Always show the final, most important result in a prominent paper *@
+            <MudPaper Elevation="4" Class="pa-3 mt-4 rounded-b-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <MudText Typo="Typo.h6">قیمت نهایی جنس:</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">@_finalPrice?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                </div>
+            </MudPaper>
+
+            @* STEP 2: Put all the calculation details inside a collapsible Expansion Panel *@
+            <MudExpansionPanels Class="rounded-t-0" Elevation="4">
+                <MudExpansionPanel Text="نمایش جزئیات محاسبه">
+                    <div class="d-flex flex-column gap-3 mt-2">
+
+                        @* Conditionally show the converted weight if the fineness is not the standard 750 *@
+                        @if (_model.Fineness != 750)
+                        {
+                            <div class="d-flex justify-content-between align-items-center">
+                                <MudText>وزن معادل (بر اساس عیار ۷۵۰):</MudText>
+                                <MudText Class="font-weight-bold">@_model.WeightAs750.ToString("F2") @_model.GoldUnitType.GetDisplayName()</MudText>
+                            </div>
+                        }
+
+                        @* Gold's raw price with formula *@
+                        @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center">
+                                <MudText>قیمت طلا: وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? $"× (750 / {_model.Fineness:G29})" : "")</MudText>
+                                <MudText Class="font-weight-bold">@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                            </div>
+                        }
+
+                        @* Stone price with formula *@
+                        @if (_stoneCost.HasValue && _stoneCost.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center">
+                                <MudText>قیمت سنگ: مبلغ ثابت (@($"{_model.StonePrice?.ToCurrencyFormat(_model.StonePriceUnit?.Title)}"))</MudText>
+                                <MudText Class="font-weight-bold">@_stoneCost.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                            </div>
+                        }
+
+                        @* Manufacturing cost (Wage) with formula *@
+                        @if (_wage.HasValue && _wage.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center">
+                                <MudText>اجرت ساخت: @(_model.WageType is WageType.Fixed ? "مبلغ ثابت" : $"{_model.Wage?.ToCurrencyFormat()}% قیمت طلا")</MudText>
+                                <MudText Class="font-weight-bold">@_wage.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                            </div>
+                        }
+
+                        @* Seller's profit / Molten gold fee with formula *@
+                        @if (_profit.HasValue && _profit.Value is not 0)
+                        {
+                            if (_model.ProductType is ProductType.MoltenGold)
+                            {
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <MudText>کارمزد فروش طلای آب شده: @_model.ProfitPercent.ToCurrencyFormat()% (قیمت طلا)</MudText>
+                                    <MudText Class="font-weight-bold">@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <MudText>سود فروش طلا: @_model.ProfitPercent.ToCurrencyFormat()% (قیمت طلا + اجرت ساخت)</MudText>
+                                    <MudText Class="font-weight-bold">@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                                </div>
+                            }
+                        }
+
+                        @* Tax with formula *@
+                        @if (_tax.HasValue && _tax.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center">
+                                <MudText>مالیات: @_model.TaxPercent.ToCurrencyFormat()% (سود فروش طلا + اجرت ساخت@(_model.StonePrice.HasValue ? " + قیمت سنگ" : string.Empty))</MudText>
+                                <MudText Class="font-weight-bold">@_tax.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                            </div>
+                        }
+
+                        @* Extra Costs *@
+                        @if (_model.ExtraCosts.HasValue && _model.ExtraCosts.Value is not 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center">
+                                <MudText>هزینه های جانبی</MudText>
+                                <MudText Class="font-weight-bold">@_model.ExtraCosts?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                            </div>
+                        }
+
+                    </div>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        }
+    </MudForm>
+</MudCard>

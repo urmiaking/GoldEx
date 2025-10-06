@@ -1,0 +1,77 @@
+﻿<div class="notification-popover">
+    <div class="notification-list">
+        @if (Items.Any())
+        {
+            <div class="notification-header">
+                <MudText Typo="Typo.h6">اعلان ها</MudText>
+                <MudButton Size="Size.Small"
+                           Variant="Variant.Text"
+                           StartIcon="@Icons.Material.Filled.DoneAll"
+                           OnClick="() => OnMarkAllAsRead.InvokeAsync()">
+                    همه را خواندم
+                </MudButton>
+            </div>
+            <MudDivider />
+
+            @foreach (var notification in Items)
+            {
+                <div class="swipeable-notification"
+                     @ontouchstart="(e) => HandleTouchStart(e, notification.Id)"
+                     @ontouchmove="(e) => HandleTouchMove(e, notification.Id)"
+                     @ontouchend="(e) => HandleTouchEnd(e, notification.Id)">
+
+                    <MudListItem Class="notification-item" T="string">
+                        <div class="notification-content d-flex flex-column gap-3">
+                            <MudText Typo="Typo.h6" Class="notification-title">
+                                @notification.Title
+                            </MudText>
+                            <MudText Typo="Typo.body2" Class="notification-message">
+                                @notification.Message
+                            </MudText>
+
+                            <div class="notification-actions">
+                                <div class="notification-buttons">
+                                    @if (notification.Buttons.Any())
+                                    {
+                                        @foreach (var button in notification.Buttons)
+                                        {
+                                            <MudButton Size="Size.Small"
+                                                       Variant="Variant.Filled"
+                                                       Color="@ConvertButtonColor(button.Color)"
+                                                       StartIcon="@ConvertButtonIcon(button.ButtonIcon)"
+                                                       OnClick="() => HandleButtonClick((button.Action, button.ActionType, notification.InvoiceId))">
+                                                @button.Text
+                                            </MudButton>
+                                        }
+                                    }
+                                </div>
+
+                                <MudButton Size="Size.Small"
+                                           Variant="Variant.Text"
+                                           Color="Color.Secondary"
+                                           EndIcon="@Icons.Material.Filled.Done"
+                                           OnClick="() => OnMarkAsRead.InvokeAsync(notification.Id)">
+                                    خواندم
+                                </MudButton>
+                            </div>
+                        </div>
+                    </MudListItem>
+
+                    <div class="swipe-action-indicator">
+                        <MudIcon Icon="@Icons.Material.Filled.Done" Color="Color.Success" />
+                    </div>
+                </div>
+                <MudDivider />
+            }
+        }
+        else
+        {
+            <div class="no-notifications">
+                <MudText Typo="Typo.body1" Align="Align.Center">
+                    هیچ اعلانی وجود ندارد
+                </MudText>
+            </div>
+        }
+    </div>
+</div>
+

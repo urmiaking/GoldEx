@@ -1,0 +1,33 @@
+﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Server.Infrastructure.Repositories;
+using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Infrastructure.Models;
+using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.Enums;
+
+namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
+
+public interface IInventoryStockRepository : IRepository<InventoryStock>,
+    ICreateRepository<InventoryStock>,
+    IDeleteRepository<InventoryStock>
+{
+    Task<decimal> GetQuantityAsync(ProductId productId, CancellationToken cancellationToken = default);
+    Task<decimal> GetQuantityAsync(CoinId coinId, CancellationToken cancellationToken = default);
+    Task<decimal> GetQuantityAsync(PriceUnitId currencyId, CancellationToken cancellationToken = default);
+
+    Task<Dictionary<ProductId, decimal>> GetQuantitiesAsync(IEnumerable<ProductId> productIds, CancellationToken cancellationToken = default);
+    Task<Dictionary<CoinId, decimal>> GetQuantitiesAsync(IEnumerable<CoinId> coinIds, CancellationToken cancellationToken = default);
+    Task<Dictionary<PriceUnitId, decimal>> GetQuantitiesAsync(IEnumerable<PriceUnitId> currencyIds, CancellationToken cancellationToken = default);
+
+    Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter, InventoryFilter inventoryFilter, 
+        CancellationToken cancellationToken = default);
+
+    Task<List<Product>> GetAvailableProductsForCalculatorAsync(
+        CalculatorFilterRequest filter,
+        CancellationToken cancellationToken = default);
+
+    Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit, CancellationToken cancellationToken = default);
+}

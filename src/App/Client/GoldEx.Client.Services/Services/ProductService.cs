@@ -3,7 +3,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -13,14 +13,27 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptions) : IProductService
 {
-    public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Products.GetList(filter, productFilter), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<PagedList<GetProductResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<GetProductResponse>> GetListAsync(string name, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Products.GetList(name), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetProductResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
@@ -37,10 +50,10 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetProductResponse?> GetAsync(string barcode, bool? forCalculation = true,
+    public async Task<GetProductResponse?> GetAsync(string barcode,
         CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.Get(barcode, forCalculation), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Products.Get(barcode), cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;

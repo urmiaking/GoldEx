@@ -2,6 +2,9 @@
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.FinancialAccounts;
+using Microsoft.EntityFrameworkCore;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 
 namespace GoldEx.Client.Pages.Customers.ViewModels;
 
@@ -15,7 +18,7 @@ public class CustomerVm
     public string FullName { get; set; } = default!;
 
     [Display(Name = "نوع مشتری")]
-    public CustomerType CustomerType { get; set; } = CustomerType.Individual;
+    public CustomerType CustomerType { get; set; } = CustomerType.RetailCustomer;
 
     [Display(Name = "شناسه یکتا")]
     [Required(ErrorMessage = "{0} الزامی است")]
@@ -39,6 +42,10 @@ public class CustomerVm
 
     public bool CreditLimitMenuOpen { get; set; }
 
+    public DateTime CreatedAt { get; set; }
+
+    public List<FinancialAccountVm>? FinancialAccounts { get; set; } = [];
+
     internal static CustomerVm CreateFrom(GetCustomerResponse response)
     {
         return new CustomerVm
@@ -50,12 +57,19 @@ public class CustomerVm
             PhoneNumber = response.PhoneNumber,
             Address = response.Address,
             CreditLimit = response.CreditLimit,
-            CreditLimitPriceUnit = response.CreditLimitPriceUnit
+            CreditLimitPriceUnit = response.CreditLimitPriceUnit,
+            CreatedAt = response.CreatedAt,
+            FinancialAccounts = response.FinancialAccounts?.Select(FinancialAccountVm.CreateFrom).ToList()
         };
     }
 
     public static CustomerRequestDto ToRequest(CustomerVm model)
     {
+        List<FinancialAccountRequestDto>? bankAccounts = null;
+
+        if (model.FinancialAccounts is not null) 
+            bankAccounts = model.FinancialAccounts.Select(x => x.ToRequest()).ToList();
+
         return new CustomerRequestDto(model.Id,
             model.FullName,
             model.NationalId,
@@ -63,6 +77,7 @@ public class CustomerVm
             model.Address,
             model.CreditLimit,
             model.CreditLimitPriceUnit?.Id,
-            model.CustomerType);
+            model.CustomerType,
+            bankAccounts);
     }
 }

@@ -6,4 +6,7 @@ namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 public interface IProductRepository : IRepository<Product>,
     ICreateRepository<Product>,
     IUpdateRepository<Product>,
-    IDeleteRepository<Product>;
+    IDeleteRepository<Product>
+{
+    Task<string?> GetLastBarcodeWithPrefixAsync(string prefix, CancellationToken cancellationToken = default);
+}

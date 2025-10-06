@@ -1,0 +1,64 @@
+﻿@using GoldEx.Shared.DTOs.Prices
+@inherits GoldExComponentBase
+
+<EditForm Model="Model" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudTextField @bind-Value="Model.Title"
+                                  For="@(() => Model.Title)"
+                                  Label="@(Model.GetDisplayName(() => Model.Title))"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudSelect T="GetPriceTitleResponse?"
+                               Value="Model.Price"
+                               ValueChanged="OnPriceChanged"
+                               For="@(() => Model.Price)"
+                               Label="@(Model.GetDisplayName(() => Model.PriceId))"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var price in _prices)
+                        {
+                            <MudSelectItem Value="@price">@price.Title</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="12" lg="12">
+                    <MudAlert Severity="Severity.Info">هنگام انتخاب این سکه، قیمت وابسته ای که برای آن انتخاب شود در نرخ تبدیل ارزها لحاظ خواهد شد</MudAlert>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@IsBusy"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled">
+                @if (IsBusy)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>

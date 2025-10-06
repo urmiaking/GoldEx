@@ -3,20 +3,23 @@ using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using GoldEx.Shared.Settings;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
-using GoldEx.Server.Domain.PaymentMethodAggregate;
-using GoldEx.Server.Infrastructure.Specifications.PaymentMethods;
 
 namespace GoldEx.Server.Extensions;
 
@@ -39,9 +42,9 @@ public static class ServiceProviderExtensions
     private static async Task EnsureDatabasePopulated(IServiceProvider serviceProvider)
     {
         await PopulateDefaultSettingsAsync(serviceProvider);
+        await PopulateDefaultLedgerAccountsAsync(serviceProvider);
         await PopulateDefaultPriceUnitsAsync(serviceProvider);
         await PopulateDefaultProductCategoriesAsync(serviceProvider);
-        await PopulateDefaultPaymentMethodsAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();
@@ -62,43 +65,110 @@ public static class ServiceProviderExtensions
         }
     }
 
-    private static async Task PopulateDefaultPaymentMethodsAsync(IServiceProvider serviceProvider)
+    private static async Task PopulateDefaultLedgerAccountsAsync(IServiceProvider serviceProvider)
     {
-        var repository = serviceProvider.GetRequiredService<IPaymentMethodRepository>();
+        var repository = serviceProvider.GetRequiredService<ILedgerAccountRepository>();
 
-        var paymentMethods = await repository.Get(new PaymentMethodsWithoutSpecification()).ToListAsync();
-
-        if (paymentMethods.Any())
-            return;
-
-        var defaultPaymentMethods = new List<PaymentMethod>
+        // متد کمکی برای جلوگیری از تکرار کد
+        async Task<LedgerAccount> GetOrCreateAccount(string title, LedgerAccountType type, LedgerAccount? parent = null)
         {
-            PaymentMethod.Create("نقدی"),
-            PaymentMethod.Create("کارت به کارت"),
-            PaymentMethod.Create("واریز به حساب")
-        };
+            var existingAccount = await repository
+                .Get(new LedgerAccountsByTitleSpecification(title))
+                .FirstOrDefaultAsync();
 
-        await repository.CreateRangeAsync(defaultPaymentMethods);
+            if (existingAccount is not null)
+            {
+                return existingAccount;
+            }
+
+            var newAccount = LedgerAccount.CreateSystemAccount(title, type, parent?.Id);
+            await repository.CreateAsync(newAccount);
+            return newAccount;
+        }
+
+        // --- ایجاد سلسله مراتبی سرفصل‌ها ---
+
+        // سطح ۱ (اصلی)
+        var assets = await GetOrCreateAccount(SystemLedgerAccounts.Assets, LedgerAccountType.Asset);
+        var liabilities = await GetOrCreateAccount(SystemLedgerAccounts.Liabilities, LedgerAccountType.Liability);
+        var equity = await GetOrCreateAccount(SystemLedgerAccounts.Equity, LedgerAccountType.Equity);
+        var revenue = await GetOrCreateAccount(SystemLedgerAccounts.Revenue, LedgerAccountType.Revenue);
+        var expenses = await GetOrCreateAccount(SystemLedgerAccounts.Expenses, LedgerAccountType.Expense);
+
+        // سطح ۲ (زیرمجموعه‌ها)
+        var currentAssets = await GetOrCreateAccount(SystemLedgerAccounts.CurrentAssets, LedgerAccountType.Asset, assets);
+        var currentLiabilities = await GetOrCreateAccount(SystemLedgerAccounts.CurrentLiabilities, LedgerAccountType.Liability, liabilities);
+        var operatingExpenses = await GetOrCreateAccount(SystemLedgerAccounts.OperatingExpenses, LedgerAccountType.Expense, expenses);
+        var openingBalanceEquity = await GetOrCreateAccount(SystemLedgerAccounts.OpeningBalanceEquity, LedgerAccountType.Equity, equity);
+
+        // سطح ۳ (زیرمجموعه‌های نهایی)
+        await GetOrCreateAccount(SystemLedgerAccounts.AccountsReceivable, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.PrepaymentsToSuppliers, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.MoltenGoldInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.DepositsWithOthers, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.LoansToOthers, LedgerAccountType.Asset, currentAssets);
+
+        var cashAccounts = await GetOrCreateAccount(SystemLedgerAccounts.CashAccounts, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.InternalCashAccounts, LedgerAccountType.Asset, cashAccounts);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.AccountsPayable, LedgerAccountType.Liability, currentLiabilities);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.SalesRevenue, LedgerAccountType.Revenue, revenue);
+        await GetOrCreateAccount(SystemLedgerAccounts.AdditionalChargesRevenue, LedgerAccountType.Revenue, revenue);
+        await GetOrCreateAccount(SystemLedgerAccounts.ExchangeGainLoss, LedgerAccountType.Revenue, revenue);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.CostOfGoodsSold, LedgerAccountType.Expense, expenses);
+        await GetOrCreateAccount(SystemLedgerAccounts.SalesDiscounts, LedgerAccountType.Expense, expenses);
+        await GetOrCreateAccount(SystemLedgerAccounts.PurchaseDiscounts, LedgerAccountType.Expense, expenses);
+        await GetOrCreateAccount(SystemLedgerAccounts.ServiceExpenses, LedgerAccountType.Expense, operatingExpenses);
+
+        await GetOrCreateAccount(SystemLedgerAccounts.OwnerDraw, LedgerAccountType.Equity, equity);
     }
 
-    private static Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)
+    private static async Task PopulateDefaultProductCategoriesAsync(IServiceProvider serviceProvider)
     {
-        return Task.CompletedTask; // TODO: populate default product categories
+        var repository = serviceProvider.GetRequiredService<IProductCategoryRepository>();
+
+        var productCategoryCount = await repository.CountAsync(new ProductCategoriesDefaultSpecification());
+
+        if (productCategoryCount > 0)
+            return;
+
+        var defaultCategories = new List<ProductCategory>
+        {
+            ProductCategory.Create("انگشتر", "01"),
+            ProductCategory.Create("النگو", "02"),
+            ProductCategory.Create("دستبند", "03"),
+            ProductCategory.Create("گوشواره", "04"),
+            ProductCategory.Create("سرویس کامل", "05"),
+            ProductCategory.Create("گردنبند", "06"),
+            ProductCategory.Create("نیم‌ست", "07")
+        };
+
+        await repository.CreateRangeAsync(defaultCategories);
     }
 
     private static async Task PopulateDefaultPriceUnitsAsync(IServiceProvider serviceProvider)
     {
         var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
 
-        var priceUnits = await priceUnitRepository.Get(new PriceUnitsWithoutSpecification()).ToListAsync();
+        var priceUnitsExists = await priceUnitRepository.ExistsAsync(new PriceUnitsWithoutSpecification());
 
-        if (priceUnits.Any())
+        if (priceUnitsExists)
             return;
 
-        var unitTypes = Enum.GetValues<UnitType>()
-            .Select(x => PriceUnit.Create(x.GetDisplayName(), x == UnitType.IRR)).ToList();
+        var priceUnitsToCreate = Enum.GetValues<UnitType>()
+            .Select(unitType => PriceUnit.Create(
+                unitType.GetDisplayName(),
+                unitType,
+                unitType == UnitType.IRR))
+            .ToList();
 
-        await priceUnitRepository.CreateRangeAsync(unitTypes);
+        await priceUnitRepository.CreateRangeAsync(priceUnitsToCreate);
     }
 
     private static async Task PopulateAdministratorClaimsAsync(IEnumerable<IApplicationPolicyProvider> policyProviders, IAccountService accountService)
@@ -139,6 +209,7 @@ public static class ServiceProviderExtensions
                 defaultSetting.TaxPercent,
                 defaultSetting.GoldProfitPercent,
                 defaultSetting.JewelryProfitPercent,
+                defaultSetting.MoltenGoldCommissionPercent,
                 defaultSetting.GoldSafetyMarginPercent,
                 defaultSetting.OldGoldCarat,
                 defaultSetting.PriceUpdateInterval);

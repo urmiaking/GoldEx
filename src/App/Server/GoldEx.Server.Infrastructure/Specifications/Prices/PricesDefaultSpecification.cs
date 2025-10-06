@@ -5,9 +5,17 @@ namespace GoldEx.Server.Infrastructure.Specifications.Prices;
 
 public class PricesDefaultSpecification : SpecificationBase<Price>
 {
-    public PricesDefaultSpecification()
+    public PricesDefaultSpecification(bool? isPinned = false)
     {
+        AddInclude(x => x.PriceUnit!);
+
         AddCriteria(x => x.IsActive);
+
+        if (isPinned.HasValue)
+        {
+            AddCriteria(x => x.IsPinned == isPinned.Value);
+        }
+
         ApplyOrderBy(x => x.MarketType);
         ApplyOrderBy(x => x.Title);
     }

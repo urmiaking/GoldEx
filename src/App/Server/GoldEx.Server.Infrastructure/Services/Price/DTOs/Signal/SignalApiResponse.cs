@@ -33,6 +33,9 @@ public class Data
 
     [JsonPropertyName("freeCurrency")]
     public MarketData? Currency { get; set; }
+
+    [JsonPropertyName("ounce")]
+    public MarketData? Ounce { get; set; }
 }
 
 public class MarketDataItem
@@ -44,10 +47,10 @@ public class MarketDataItem
     public string Name { get; set; } = default!;
 
     [JsonPropertyName("close")]
-    public long Close { get; set; }
+    public decimal Close { get; set; }
 
     [JsonPropertyName("change")]
-    public long Change { get; set; }
+    public decimal Change { get; set; }
 
     [JsonPropertyName("percentChange")]
     public double PercentChange { get; set; }

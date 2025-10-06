@@ -1,7 +1,11 @@
 ﻿using GoldEx.Client.Pages.Customers.Validators;
 using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -11,25 +15,28 @@ public partial class Editor
 {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public CustomerVm Model { get; set; } = new();
+    [Parameter] public bool ReturnModel { get; set; }
 
+    private readonly DialogOptions _bankAccountsDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private string? _creditLimitAdornmentText;
     private bool _processing;
 
-    protected override void OnParametersSet()
-    {
-        if (Model.Id.HasValue)
-            OnCreditLimitChanged(Model.CreditLimit);
-
-        base.OnParametersSet();
-    }
-
     protected override async Task OnParametersSetAsync()
     {
         await LoadPriceUnitsAsync();
         await base.OnParametersSetAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Model.FinancialAccounts is not null)
+            foreach (var modelFinancialAccount in Model.FinancialAccounts)
+                modelFinancialAccount.CustomerId = Model.Id;
+
+        base.OnParametersSet();
     }
 
     private async Task LoadPriceUnitsAsync()
@@ -68,18 +75,26 @@ public partial class Editor
 
         if (!Model.Id.HasValue)
         {
-            await SendRequestAsync<ICustomerService>(
-                action:(s, ct) => s.CreateAsync(request, ct),
-                afterSend: () =>
+            await SendRequestAsync<ICustomerService, Guid>(
+                action: (s, ct) => s.CreateAsync(request, cancellationToken: ct),
+                afterSend: async response =>
                 {
-                    MudDialog.Close(DialogResult.Ok(true));
-                    return Task.CompletedTask;
+                    if (ReturnModel)
+                    {
+                        await SendRequestAsync<ICustomerService, GetCustomerResponse>(
+                            action: (s, ct) => s.GetAsync(response, ct),
+                            afterSend: customerResponse => MudDialog.Close(DialogResult.Ok(CustomerVm.CreateFrom(customerResponse))));
+                    }
+                    else
+                    {
+                        MudDialog.Close(DialogResult.Ok(true));
+                    }
                 });
         }
         else
         {
             await SendRequestAsync<ICustomerService>(
-                action:(s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
+                action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
                 afterSend: () =>
                 {
                     MudDialog.Close(DialogResult.Ok(true));
@@ -92,20 +107,6 @@ public partial class Editor
 
     private void Close() => MudDialog.Cancel();
 
-    private void OnCreditLimitChanged(decimal? creditLimit)
-    {
-        Model.CreditLimit = creditLimit;
-
-        if (!string.IsNullOrEmpty(_creditLimitAdornmentText) && creditLimit.HasValue)
-        {
-            Model.CreditLimitPriceUnit = _priceUnits.FirstOrDefault(u => u.Title == _creditLimitAdornmentText);
-        }
-        else
-        {
-            Model.CreditLimitPriceUnit = null;
-        }
-    }
-
     private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? unitType)
     {
         Model.CreditLimitPriceUnit = unitType;
@@ -117,5 +118,52 @@ public partial class Editor
 
         _creditLimitAdornmentText = selectedUnit.Title;
         Model.CreditLimitMenuOpen = false;
+    }
+
+    private async Task OnEditFinancialAccount(FinancialAccountVm financialAccount)
+    {
+        var parameters = new DialogParameters<FinancialAccountEditor>
+        {
+            { x => x.Model, financialAccount },
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.CustomerId, Model.Id },
+        };
+
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"ویرایش حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()}",
+            parameters, _bankAccountsDialogOptions);
+        await dialog.Result;
+    }
+
+    private async Task OnRemoveFinancialAccount(FinancialAccountVm financialAccount)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "هشدار",
+            $"آیا برای حذف حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()} مطمئن هستید؟",
+            yesText: "بله", cancelText: "لغو");
+
+        if (result is true)
+        {
+            Model.FinancialAccounts?.Remove(financialAccount);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnAddFinancialAccount()
+    {
+        var parameters = new DialogParameters<FinancialAccountEditor>
+        {
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.CustomerId, Model.Id },
+            { x => x.AccountHolderName, Model.FullName }
+        };
+
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی", parameters, _bankAccountsDialogOptions);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: FinancialAccountVm bankAccount })
+        {
+            Model.FinancialAccounts ??= [];
+            Model.FinancialAccounts.Add(bankAccount);
+        }
     }
 }

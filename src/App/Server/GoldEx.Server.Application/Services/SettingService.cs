@@ -9,7 +9,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.Settings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +41,7 @@ internal class SettingService(ISettingRepository repository,
             request.TaxPercent,
             request.GoldProfitPercent,
             request.JewelryProfitPercent,
+            request.MoltenGoldCommissionPercent,
             request.GoldSafetyMarginPercent,
             request.OldGoldCarat,
             request.PriceUpdateInterval);
@@ -70,6 +71,7 @@ internal class SettingService(ISettingRepository repository,
         item.SetTax(request.TaxPercent);
         item.SetGoldProfit(request.GoldProfitPercent);
         item.SetJewelryProfit(request.JewelryProfitPercent);
+        item.SetMoltenGoldCommission(request.MoltenGoldCommissionPercent);
         item.SetPriceUpdateInterval(request.PriceUpdateInterval);
         item.SetGoldSafetyMargin(request.GoldSafetyMarginPercent);
         item.SetOldGoldCarat(request.OldGoldCarat);

@@ -1,19 +1,60 @@
-﻿@using GoldEx.Client.Helpers
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
 <MudTable T="ProductVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadProductsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateProduct())" Size="Size.Small" Variant="Variant.Filled">ثبت جنس جدید</MudButton>
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" 
+                                Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+                                PlaceholderStart="از" PlaceholderEnd="تا" Label="@DateRangeFilterLabel" Clearable="true" />
         </MudHidden>
 
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@ProductStatusIcon">@_itemStatus.GetDisplayName()</MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse"
+                                 OnClick="() => SetStatusFilterText(ItemStatus.Available)">
+                        @ItemStatus.Available.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket"
+                                 OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
+                        @ItemStatus.Sold.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateProduct())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
+            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
+                <MudButton StartIcon="@ProductStatusIcon"></MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse"
+                                 OnClick="() => SetStatusFilterText(ItemStatus.Available)">
+                        @ItemStatus.Available.GetDisplayName()
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket"
+                                 OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
+                        @ItemStatus.Sold.GetDisplayName()
+                    </MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OnCreateProduct())" Size="Size.Small" Variant="Variant.Filled">
+                ثبت جنس جدید
+            </MudButton>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" 
+                           OnClick="@(_ => OnCreateProduct())" Size="@Size.Small" 
+                           Variant="@Variant.Filled"></MudIconButton>
         </MudHidden>
     </ToolBarContent>
     <HeaderContent>
@@ -27,11 +68,14 @@
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="بارکد">@context.Barcode</MudTd>
-
+        <MudTd DataLabel="بارکد">
+            <MudTooltip Text="@GetTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                @context.Barcode
+            </MudTooltip>
+        </MudTd>
         <MudTd DataLabel="نوع جنس">@context.ProductType.GetDisplayName()</MudTd>
         <MudTd DataLabel="عنوان">@context.Name</MudTd>
-        <MudTd DataLabel="وزن">@(context.Weight?.ToString("G29") + " گرم")</MudTd>
+        <MudTd DataLabel="وزن">@(context.Weight?.ToString("G29")) @context.GoldUnitType.GetDisplayName()</MudTd>
         <MudTd DataLabel="اجرت">
             @(context.WageType switch
             {
@@ -40,12 +84,13 @@
                 _ => "ندارد"
             })
         </MudTd>
-        <MudTd DataLabel="عیار">@context.CaratType.GetDisplayName()</MudTd>
-        <MudTd DataLabel="دسته">@context.ProductCategoryTitle</MudTd>
+        <MudTd DataLabel="عیار">@context.Fineness.ToString("G29")</MudTd>
+        <MudTd DataLabel="دسته">@(context.ProductCategoryTitle ?? "-")</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ بارکد">
                     <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                   OnClick="_ => OnPrintBarcode(context)"
                                    Color="@Color.Success"></MudIconButton>
                 </MudTooltip>
                 <MudTooltip Text="ویرایش جنس">
@@ -54,7 +99,8 @@
                 </MudTooltip>
                 <MudTooltip Text="حذف جنس">
                     <MudIconButton OnClick="@(_ => OnRemoveProduct(context))" ClickPropagation="true"
-                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" 
+                                   Color="@Color.Error"></MudIconButton>
                 </MudTooltip>
             </div>
         </MudTd>
@@ -66,13 +112,30 @@
         <MudText>در حال بارگذاری</MudText>
     </LoadingContent>
     <PagerContent>
-        <div class="d-flex flex-column align-center">
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
             <MudPagination SelectedChanged="PageChanged"
                            Color="Color.Primary"
-                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
-                           Class="pa-4"
+                           Count="@pageCount"
                            ShowFirstButton="true"
                            ShowLastButton="true" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
         </div>
     </PagerContent>
 </MudTable>
+
+<script src="/js/libs/jsbarcode.all.min.js"></script>
+<script src="/js/print.js?v=@_jsVersion"></script>

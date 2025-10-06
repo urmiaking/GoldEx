@@ -3,9 +3,9 @@
   "short_name": "GoldEx",
   "id": "./",
   "start_url": "./",
-  "display": "standalone",
+  "display": "minimal-ui",
   "background_color": "#ffffff",
-  "theme_color": "#03173d",
+  "theme_color": "#daa520",
   "prefer_related_applications": false,
   "icons": [
     {

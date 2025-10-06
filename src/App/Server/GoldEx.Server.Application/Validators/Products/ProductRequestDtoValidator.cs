@@ -31,23 +31,8 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
             .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
             .MaximumLength(50).WithMessage("طول عنوان جنس نمی تواند بیشتر از 50 کاراکتر باشد");
 
-        RuleFor(x => x.Barcode)
-            .NotEmpty().WithMessage("بارکد جنس نمی تواند خالی باشد")
-            .MaximumLength(50).WithMessage("طول بارکد جنس نمی تواند بیشتر از 50 کاراکتر باشد")
-            .MustAsync(BeUniqueBarcode).WithMessage("بارکد جنس نباید تکراری باشد.");
-
         RuleFor(x => x.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
-
-        RuleFor(x => x)
-            .Must(x => x.ProductType is not ProductType.OldGold)
-            .WithMessage("نوع جنس نمی تواند طلای کهنه باشد. لطفا نوع دیگری انتخاب کنید");
-
-        RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
-
-        RuleFor(product => product.WageType)
-            .NotNull()
-            .WithMessage("لطفا نوع اجرت را وارد کنید");
 
         When(x => x.WageType is WageType.Fixed, () =>
         {
@@ -60,17 +45,30 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
 
         RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
 
-        RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
+        RuleFor(x => x.Fineness)
+            .InclusiveBetween(0, 1000)
+            .WithMessage("عیار باید بین 0 تا 1000 باشد");
 
-        RuleFor(x => x.ProductCategoryId)
-            .NotEmpty()
-                .When(x => x.ProductType is ProductType.Gold or ProductType.Jewelry)
-                .WithMessage("دسته بندی جنس نمی تواند خالی باشد")
-            .MustAsync(BeValidCategoryId).WithMessage("دسته بندی وارد شده معتبر نیست");
+        RuleFor(x => x.Barcode)
+            .MustAsync(BeUniqueBarcode)
+            .WithMessage((dto, barcode) => $"بارکد '{barcode}' برای جنس '{dto.Name}' .تکراری است");
 
         RuleFor(x => x.Id)
             .MustAsync(BeValidId)
             .WithMessage("شناسه جنس وارد شده معتبر نیست");
+    }
+
+    private async Task<bool> BeUniqueBarcode(ProductRequestDto request, string? barcode, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(barcode))
+            return true;
+
+        var item = await _repository
+            .Get(new ProductsByBarcodeSpecification(barcode))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return item is null || item.Id.Value == request.Id;
     }
 
     private async Task<bool> BeValidId(Guid? id, CancellationToken cancellationToken = default)
@@ -87,26 +85,5 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
             return true;
 
         return await _priceUnitRepository.ExistsAsync(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)), cancellationToken);
-    }
-
-    private async Task<bool> BeUniqueBarcode(ProductRequestDto request, string barcode, 
-        CancellationToken cancellationToken = default)
-    {
-        var item = await _repository
-            .Get(new ProductsByBarcodeSpecification(barcode))
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (item is null)
-            return true;
-
-        return item.Id.Value == request.Id;
-    }
-
-    private async Task<bool> BeValidCategoryId(Guid? categoryId, CancellationToken cancellationToken = default)
-    {
-        if (!categoryId.HasValue)
-            return true;
-
-        return await _categoryRepository.ExistsAsync(new ProductCategoriesByIdSpecification(new ProductCategoryId(categoryId.Value)), cancellationToken);
     }
 }

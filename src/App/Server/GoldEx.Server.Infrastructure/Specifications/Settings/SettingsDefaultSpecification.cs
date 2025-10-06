@@ -7,6 +7,6 @@ public class SettingsDefaultSpecification : SpecificationBase<Setting>
 {
     public SettingsDefaultSpecification()
     {
-        
+        ApplyOrderBy(x => x.CreatedAt);
     }
 }

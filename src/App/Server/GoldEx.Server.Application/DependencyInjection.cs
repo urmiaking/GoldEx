@@ -1,5 +1,4 @@
 ﻿using DevExpress.XtraReports.Web.Extensions;
-using DevExpress.XtraReports.Web.WebDocumentViewer.Native.Services;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.BackgroundServices;
@@ -15,6 +14,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddHostedService<PriceUpdaterBackgroundService>();
+        services.AddHostedService<NotificationBackgroundService>();
 
         services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
         services.AddScoped<ReportStorageWebExtension, ReportStorageExtension>();

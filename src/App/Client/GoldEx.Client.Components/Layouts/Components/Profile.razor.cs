@@ -1,6 +1,9 @@
 ﻿using GoldEx.Client.Components.Extensions;
+using GoldEx.Client.Components.Services.Abstractions;
+using GoldEx.Client.Components.Themes;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using MudBlazor;
 
@@ -13,6 +16,9 @@ public partial class Profile
     private Color _color = Color.Dark;
     private string? _username;
     private string _status = "در حال بررسی...";
+
+    [Inject] private IThemeService? ThemeService { get; set; }
+
 
     private IHealthService HealthService => GetRequiredService<IHealthService>();
 
@@ -71,9 +77,17 @@ public partial class Profile
         StateHasChanged();
     }
 
-    public override void Dispose()
+    private async Task OnPaletteSelected(string paletteName)
+    {
+        if (ThemeService is not null)
+        {
+            await ThemeService.SetPaletteAsync(paletteName);
+        }
+    }
+
+    public override ValueTask DisposeAsync()
     {
         Navigation.LocationChanged -= OnLocationChanged;
-        base.Dispose();
+        return base.DisposeAsync();
     }
 }

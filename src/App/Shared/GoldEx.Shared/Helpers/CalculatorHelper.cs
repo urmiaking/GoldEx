@@ -4,130 +4,160 @@ namespace GoldEx.Shared.Helpers;
 
 public class CalculatorHelper
 {
-    /// <summary>
-    /// محاسبه قیمت خام طلا بر اساس وزن، عیار و قیمت گرم طلا.
-    /// </summary>
-    /// <param name="weight">وزن بر حسب گرم</param>
-    /// <param name="gramPrice">نرخ گرم بر اساس ریال</param>
-    /// <param name="caratType">عیار</param>
-    /// <param name="productType">نوع محصول</param>
-    /// <param name="oldGoldCarat"></param>
-    /// <returns>قیمت خام طلا</returns>
-    public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, CaratType caratType, ProductType productType, int? oldGoldCarat = null)
+    public static class Product
     {
-        if (productType == ProductType.OldGold && oldGoldCarat.HasValue)
+        /// <summary>
+        /// محاسبه قیمت خام طلا بر اساس وزن، عیار و قیمت گرم طلا.
+        /// </summary>
+        /// <param name="weight">وزن بر حسب گرم</param>
+        /// <param name="gramPrice">نرخ گرم بر اساس ریال</param>
+        /// <param name="fineness">عیار</param>
+        /// <param name="quantity">تعداد</param>
+        /// <param name="productType">نوع محصول</param>
+        /// <returns>قیمت خام طلا</returns>
+        public static decimal CalculateRawPrice(decimal weight, decimal gramPrice, decimal fineness, int quantity, ProductType productType)
         {
-            return weight * oldGoldCarat.Value / 750 * gramPrice;
+            if (productType == ProductType.UsedGold)
+            {
+                return weight * fineness / 750m * gramPrice;
+            }
+
+            var gramPrice24 = gramPrice / 0.75m;
+            var caratRatio = GetFinenessRatio(fineness);
+            return weight * caratRatio * gramPrice24 * quantity;
         }
 
-        var gramPrice24 = gramPrice / 0.75m;
-        var caratRatio = GetCaratRatio(caratType);
-        return weight * gramPrice24 * caratRatio;
-    }
-
-    /// <summary>
-    /// محاسبه اجرت ساخت ریالی بر اساس قیمت خام، اجرت، نوع اجرت و نرخ تبدیل
-    /// </summary>
-    /// <param name="rawPrice">قیمت خام طلا</param>
-    /// <param name="weight">وزن</param>
-    /// <param name="wageAmount">اجرت</param>
-    /// <param name="wageType">نوع اجرت</param>
-    /// <param name="exchangeRate">نرخ تبدیل دلار</param>
-    /// <returns>اجرت ساخت ریالی</returns>
-    public static decimal CalculateWage(decimal rawPrice, decimal weight, decimal? wageAmount, WageType? wageType, decimal? exchangeRate)
-    {
-        if (wageAmount == null) return 0;
-
-        decimal wage;
-
-        switch (wageType)
+        /// <summary>
+        /// محاسبه اجرت ساخت بر اساس قیمت خام، اجرت، نوع اجرت و نرخ تبدیل
+        /// </summary>
+        /// <param name="rawPrice">قیمت خام طلا</param>
+        /// <param name="weight">وزن</param>
+        /// <param name="wageAmount">اجرت</param>
+        /// <param name="wageType">نوع اجرت</param>
+        /// <param name="exchangeRate">نرخ تبدیل دلار</param>
+        /// <returns>اجرت ساخت</returns>
+        public static decimal CalculateWage(decimal rawPrice, decimal weight, decimal? wageAmount, WageType? wageType, decimal? exchangeRate)
         {
-            case WageType.Percent:
-                wage = rawPrice * (wageAmount.Value / 100);
-                break;
-            case WageType.Fixed:
-                if (exchangeRate == null)
-                    wage = wageAmount.Value * weight;
-                else
-                    wage = wageAmount.Value * exchangeRate.Value * weight;
-                break;
-            default:
+            if (wageAmount == null) return 0;
+
+            decimal wage;
+
+            switch (wageType)
+            {
+                case WageType.Percent:
+                    wage = rawPrice * (wageAmount.Value / 100);
+                    break;
+                case WageType.Fixed:
+                    if (exchangeRate == null)
+                        wage = wageAmount.Value * weight;
+                    else
+                        wage = wageAmount.Value * exchangeRate.Value * weight;
+                    break;
+                default:
+                    return 0;
+            }
+
+            return wage;
+        }
+
+        /// <summary>
+        /// محاسبه سود فروشنده.
+        /// </summary>
+        /// <param name="rawPrice">قیمت خام طلا</param>
+        /// <param name="wage">اجرت ساخت</param>
+        /// <param name="productType">نوع محصول</param>
+        /// <param name="profitPercent">سود درصدی فروشنده</param>
+        /// <returns>سود فروشنده</returns>
+        public static decimal CalculateProfit(decimal rawPrice, decimal wage, ProductType productType, decimal profitPercent)
+        {
+            if (productType is ProductType.UsedGold)
                 return 0;
+
+            return (rawPrice + wage) * (profitPercent / 100);
         }
 
-        return wage;
-    }
-
-    /// <summary>
-    /// محاسبه سود فروشنده.
-    /// </summary>
-    /// <param name="rawPrice">قیمت خام طلا</param>
-    /// <param name="wage">اجرت ساخت</param>
-    /// <param name="productType">نوع محصول</param>
-    /// <param name="profitPercent">سود درصدی فروشنده</param>
-    /// <returns>سود فروشنده</returns>
-    public static decimal CalculateProfit(decimal rawPrice, decimal wage, ProductType productType, decimal profitPercent)
-    {
-        if (productType is ProductType.OldGold or ProductType.MoltenGold)
-            return 0;
-
-        return (rawPrice + wage) * (profitPercent / 100);
-    }
-
-    /// <summary> 
-    /// محاسبه مالیات بر ارزش افزوده.
-    /// </summary>
-    /// <param name="wage">اجرت ساخت</param>
-    /// <param name="profit">سود فروشنده</param>
-    /// <param name="taxPercent">درصد مالیات</param>
-    /// <param name="productType">نوع محصول</param>
-    /// <returns>مالیات بر ارزش افزوده</returns>
-    public static decimal CalculateTax(decimal wage, decimal profit, decimal taxPercent, ProductType productType)
-    {
-        if (productType is ProductType.OldGold or ProductType.MoltenGold)
-            return 0;
-
-        return (wage + profit) * (taxPercent / 100);
-    }
-
-    /// <summary>
-    /// محاسبه قیمت نهایی.
-    /// </summary>
-    /// <param name="rawPrice">قیمت خام طلا</param>
-    /// <param name="wage">اجرت ساخت</param>
-    /// <param name="profit">سود فروشنده</param>
-    /// <param name="tax">مالیات بر ارزش افزوده</param>
-    /// <param name="additionalPrices">مخارج اضافی</param>
-    /// <param name="productType">نوع محصول</param>
-    /// <returns>قیمت نهایی</returns>
-    public static decimal CalculateFinalPrice(decimal rawPrice, decimal wage, decimal profit, decimal tax, decimal? additionalPrices, ProductType productType)
-    {
-        if (productType == ProductType.OldGold)
+        /// <summary> 
+        /// محاسبه مالیات بر ارزش افزوده.
+        /// </summary>
+        /// <param name="wage">اجرت ساخت</param>
+        /// <param name="profit">سود فروشنده</param>
+        /// <param name="taxPercent">درصد مالیات</param>
+        /// <param name="productType">نوع محصول</param>
+        /// <param name="stoneAmount">ارزش سنگ</param>
+        /// <returns>مالیات بر ارزش افزوده</returns>
+        public static decimal CalculateTax(decimal wage, decimal profit, decimal taxPercent, ProductType productType, decimal? stoneAmount)
         {
-            return rawPrice + (additionalPrices ?? 0);
+            if (productType is ProductType.UsedGold or ProductType.MoltenGold)
+                return 0;
+
+            return (wage + profit + (stoneAmount ?? 0)) * (taxPercent / 100);
         }
 
-        return rawPrice + wage + profit + tax + (additionalPrices ?? 0);
+        /// <summary>
+        /// محاسبه قیمت نهایی.
+        /// </summary>
+        /// <param name="rawPrice">قیمت خام طلا</param>
+        /// <param name="wage">اجرت ساخت</param>
+        /// <param name="profit">سود فروشنده</param>
+        /// <param name="tax">مالیات بر ارزش افزوده</param>
+        /// <param name="additionalPrices">مخارج اضافی</param>
+        /// <param name="productType">نوع محصول</param>
+        /// <returns>قیمت نهایی</returns>
+        public static decimal CalculateFinalPrice(decimal rawPrice, decimal wage, decimal profit, decimal tax, decimal? additionalPrices, ProductType productType)
+        {
+            if (productType == ProductType.UsedGold)
+            {
+                return rawPrice + (additionalPrices ?? 0);
+            }
+
+            return rawPrice + wage + profit + tax + (additionalPrices ?? 0);
+        }
+
+        /// <summary>
+        /// دریافت نسبت عیار بر اساس نوع عیار.
+        /// </summary>
+        /// <param name="fineness">نوع عیار</param>
+        /// <returns>نسبت عیار</returns>
+        private static decimal GetFinenessRatio(decimal fineness) => fineness / 1000m;
     }
 
-    /// <summary>
-    /// دریافت نسبت عیار بر اساس نوع عیار.
-    /// </summary>
-    /// <param name="caratType">نوع عیار</param>
-    /// <returns>نسبت عیار</returns>
-    private static decimal GetCaratRatio(CaratType caratType)
+    public static class Coin
     {
-        return caratType switch
+        /// <summary>
+        /// محاسبه سود هر واحد سکه
+        /// </summary>
+        /// <param name="unitPrice">قیمت واحد</param>
+        /// <param name="profitPercent">درصد سود</param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
+        public static decimal CalculateProfit(decimal unitPrice, decimal profitPercent, int quantity)
         {
-            CaratType.Eighteen => 750m / 1000m
-            ,
-            CaratType.TwentyOne => 21m / 24m
-            ,
-            CaratType.TwentyTwo => 22m / 24m
-            ,
-            CaratType.TwentyFour => 1.0m
-            ,
-            _ => throw new ArgumentOutOfRangeException(nameof(caratType), $"Carat type '{caratType}' is not supported.")
-        };
+            return unitPrice * (profitPercent / 100m) * quantity;
+        }
+}
+
+    public static class Currency
+    {
+        public static decimal CalculateProfit(decimal unitPrice, decimal amount, decimal profitPercent)
+        {
+            return unitPrice * amount * (profitPercent / 100m);
+        }
+
+        public static decimal CalculateTax(decimal unitPrice, decimal amount, decimal taxPercent)
+        {
+            return unitPrice * amount * (taxPercent / 100m);
+        }
+    }
+
+    public static class UsedProduct
+    {
+        public static decimal Calculate(decimal weight, decimal fineness, decimal gramPrice, int quantity, decimal? exchangeRate)
+        {
+            if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
+                throw new ArgumentOutOfRangeException(
+                    $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
+
+            return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1)) * quantity;
+        }
     }
 }

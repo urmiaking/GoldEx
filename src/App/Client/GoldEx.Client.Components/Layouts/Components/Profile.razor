@@ -26,6 +26,38 @@
             </div>
 
             <MudDivider Class="my-4" />
+            
+      
+            <!-- Color Palette Selector -->  
+            <div class="d-flex flex-column align-center">  
+                <MudText Typo="Typo.subtitle2" Class="mb-2">انتخاب تم</MudText>  
+                <div class="d-flex gap-2 flex-wrap justify-center">  
+                    <div class="palette-collection">  
+                        @{  
+                            var predefinedColors = new Dictionary<string, string>  
+                            {  
+                                { "Gold", "#DAA520" },  
+                                { "Blue", "#1976D2" },  
+                                { "Purple", "#7B1FA2" },  
+                                { "Green", "#388E3C" },  
+                                { "Orange", "#F57C00" },  
+                                { "Red", "#D32F2F" }  
+                            };  
+                        }  
+  
+                        @foreach (var color in predefinedColors)  
+                        {  
+                            <div class="palette-dot @(ThemeService?.CurrentPalette == color.Key ? "selected" : "")"  
+                                 style="background-color: @color.Value;"  
+                                 @onclick="@(() => OnPaletteSelected(color.Key))">  
+                            </div>  
+                        }
+                    </div>
+                </div>  
+            </div>  
+
+            <MudDivider Class="my-4" />
+
 
             <div class="d-flex flex-column align-center">
                 <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mb-4">

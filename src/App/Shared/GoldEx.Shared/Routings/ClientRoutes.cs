@@ -81,8 +81,10 @@ public static class ClientRoutes
         public const string Index = $"{SettingsPrefix}";
         public const string PriceSettings = $"{SettingsPrefix}/price-settings";
         public const string PriceUnits = $"{SettingsPrefix}/price-units";
-        public const string PaymentMethods = $"{SettingsPrefix}/payment-methods";
         public const string ReportsList = $"{SettingsPrefix}/reports-list";
+        public const string FinancialAccounts = $"{SettingsPrefix}/financial-accounts";
+        public const string LedgerAccounts = $"{SettingsPrefix}/ledger-accounts";
+        public const string Coins = $"{SettingsPrefix}/coins";
     }
 
     public static class Logs
@@ -108,12 +110,30 @@ public static class ClientRoutes
         private const string InvoicesPrefix = "/invoices";
         public const string Index = $"{InvoicesPrefix}";
         public const string SetInvoice = $"{InvoicesPrefix}/set/{{id?}}";
-        public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{number:long}}";
+        public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{number:long}}/{{invoiceType}}";
     }
 
     public static class Reporting
     {
         private const string ReportingPrefix = "/reporting";
         public const string DesignReport = $"{ReportingPrefix}/designer/{{name}}";
+    }
+
+    public static class PaymentVouchers
+    {
+        private const string PaymentVouchersPrefix = "/payment-vouchers";
+        public const string Index = $"{PaymentVouchersPrefix}";
+    }
+
+    public static class InventoryStocks
+    {
+        private const string InventoryStocksPrefix = "/inventory-stocks";
+        public const string Index = $"{InventoryStocksPrefix}";
+    }
+
+    public static class Dashboard
+    {
+        private const string DashboardPrefix = "/dashboard";
+        public const string Index = $"{DashboardPrefix}";
     }
 }

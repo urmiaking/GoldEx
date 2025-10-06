@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Products;
 
@@ -10,9 +11,12 @@ public record GetProductResponse(
     decimal? Wage,
     ProductType ProductType,
     WageType? WageType,
-    CaratType CaratType,
+    decimal Fineness,
     Guid? ProductCategoryId,
     string? ProductCategoryTitle,
     Guid? WagePriceUnitId,
     string? WagePriceUnitTitle,
+    DateTime DateTime,
+    GoldUnitType GoldUnitType,
+    GetPriceUnitTitleResponse? StonePriceUnit,
     List<GetGemStoneResponse>? GemStones);

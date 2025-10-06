@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Application.Validators.FinancialAccounts;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -15,14 +16,21 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 {
     private readonly ICustomerRepository _repository;
     private readonly IPriceUnitRepository _priceUnitRepository;
-    public CustomerRequestDtoValidator(ICustomerRepository repository, IPriceUnitRepository priceUnitRepository)
+    private readonly IFinancialAccountRepository _financialAccountRepository;
+
+    public CustomerRequestDtoValidator(ICustomerRepository repository,
+        IPriceUnitRepository priceUnitRepository, IFinancialAccountRepository financialAccountRepository)
     {
         _repository = repository;
         _priceUnitRepository = priceUnitRepository;
+        _financialAccountRepository = financialAccountRepository;
 
         RuleFor(x => x.Id)
-            .MustAsync(BeValidId).WithMessage("شناسه مشتری نامعتبر است")
+            .MustAsync(BeValidId).WithMessage("شناسه نامعتبر است")
             .When(x => x.Id.HasValue);
+
+        RuleFor(x => x.CustomerType)
+            .IsInEnum().WithMessage("نوع مشتری نامعتبر است");
 
         RuleFor(x => x.NationalId)
             .NotEmpty().WithMessage("وارد کردن شناسه یکتا الزامی است")
@@ -46,15 +54,29 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
             .MustAsync(BeValidPriceUnitId)
             .WithMessage("واحد محدودیت اعتباری نامعتبر است");
 
-        RuleFor(x => x)
-            .Custom((dto, context) =>
-            {
-                var creditLimitHasValue = dto.CreditLimit.HasValue && dto.CreditLimit.Value > 0;
-                var priceUnitHasValue = dto.CreditLimitPriceUnitId.HasValue;
+        When(x => x.CreditLimit is > 0, () =>
+        {
+            RuleFor(x => x.CreditLimitPriceUnitId)
+                .NotNull()
+                .WithMessage("در صورت وارد کردن سقف اعتبار، وارد کردن واحد آن الزامی است");
+        });
 
-                if (creditLimitHasValue != priceUnitHasValue) 
-                    context.AddFailure("در صورت وارد کردن محدودیت اعتباری، وارد کردن واحد آن نیز الزامی است (و بالعکس)");
-            });
+        When(x => x.FinancialAccounts is not null, () =>
+        {
+            // financial accounts should not contain duplicate entries of the same gold price unit
+            RuleFor(x => x.FinancialAccounts!)
+                .Must(financialAccounts =>
+                {
+                    var goldAccountCount = financialAccounts
+                        .Count(fa => fa.FinancialAccountType == Shared.Enums.FinancialAccountType.Gold);
+                    return goldAccountCount <= 1;
+                })
+                .WithMessage("تنها یک حساب طلایی می تواند برای طرف حساب وجود داشته باشد.");
+
+            RuleForEach(x => x.FinancialAccounts)
+                .SetValidator(new FinancialAccountRequestDtoValidator(_priceUnitRepository, _repository, financialAccountRepository))
+                .WithMessage("اطلاعات حساب مالی نامعتبر است");
+        });
     }
 
     private async Task<bool> BeValidPriceUnitId(CustomerRequestDto request, Guid? priceUnitId, CancellationToken cancellationToken = default)

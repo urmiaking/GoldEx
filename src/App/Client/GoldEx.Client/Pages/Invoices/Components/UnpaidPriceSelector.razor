@@ -1,0 +1,68 @@
+﻿@using GoldEx.Shared.DTOs.PriceUnits
+@inherits GoldExComponentBase
+
+<div class="d-flex flex-column gap-3">
+    <MudText>نوع بدهی</MudText>
+    @* Bind directly to the new `SelectedMode` property *@
+    <MudRadioGroup T="string" @bind-Value="SelectedMode">
+        <MudRadio Value="@("main")" Color="Color.Primary">
+            ارز اصلی فاکتور (@MainPriceUnit?.Title)
+        </MudRadio>
+        <MudRadio Value="@("custom")" Color="Color.Primary">
+            ارز سفارشی
+        </MudRadio>
+    </MudRadioGroup>
+
+    @if (SelectedMode == "custom")
+    {
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                @* Bind directly to the property that handles the two-way binding logic *@
+                <MudSelect T="GetPriceUnitTitleResponse" Variant="Variant.Outlined"
+                           Margin="Margin.Dense" Label="واحد ارز سفارشی"
+                           @bind-Value="BoundUnpaidPriceUnit" Dense="true">
+                    @foreach (var item in PriceUnits)
+                    {
+                        <MudSelectItem Value="item">
+                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                <MudAvatar Size="Size.Small">
+                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                </MudAvatar>
+                                <MudText>@item.Title</MudText>
+                            </MudStack>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="BoundExchangeRate"
+                                 Label="نرخ تبدیل"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Format="#,##0.##########"
+                                 Adornment="Adornment.End"
+                                 AdornmentText="@MainPriceUnit?.Title"
+                                 Immediate="true"
+                                 HideSpinButtons="true" />
+            </MudItem>
+        </MudGrid>
+    }
+
+    <MudDivider Class="my-2" />
+
+    <div class="d-flex flex-column align-end">
+        @if (SelectedMode == "main")
+        {
+            <MudText>مبلغ کل: @TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)</MudText>
+        }
+        else if (UnpaidPriceUnit is not null)
+        {
+            <MudText>مبلغ کل: @TotalUnpaidSecondaryAmount?.ToCurrencyFormat(UnpaidPriceUnit.Title)</MudText>
+
+            @if (ExchangeRate is > 0)
+            {
+                <MudText>(معادل @(TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)))</MudText>
+            }
+        }
+    </div>
+</div>

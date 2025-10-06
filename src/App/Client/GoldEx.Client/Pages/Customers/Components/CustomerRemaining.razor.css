@@ -1,0 +1,24 @@
+﻿.customer-remaining-container {
+    min-width: 120px;
+    height: 32px;
+    overflow: hidden;
+}
+
+.remaining-carousel {
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.remaining-item-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.remaining-item {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}

@@ -104,5 +104,8 @@ public enum UnitType
     EUR = 32,
 
     [Display(Name = "طلای 18 عیار (گرم)")]
-    Gold18K = 33
+    Gold18K = 33,
+
+    [Display(Name = "آبشده نقدی")]
+    Mesghal = 34
 }

@@ -94,6 +94,16 @@
             <MudItem xs="12" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 @bind-Value="_model.MoltenGoldCommissionPercent"
+                                 Variant="Variant.Outlined"
+                                 Format="G29"
+                                 Label="@_model.GetDisplayName(() => _model.MoltenGoldCommissionPercent)"
+                                 HideSpinButtons="true"
+                                 For="() => _model.MoltenGoldCommissionPercent"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
                                  @bind-Value="_model.GoldSafetyMarginPercent"
                                  Variant="Variant.Outlined"
                                  Format="G29"

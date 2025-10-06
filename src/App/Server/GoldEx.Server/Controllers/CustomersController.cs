@@ -3,7 +3,7 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +14,10 @@ namespace GoldEx.Server.Controllers;
 public class CustomersController(ICustomerService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Customers.GetList)]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] CustomerFilter customerFilter, 
+        CancellationToken cancellationToken)
     {
-        var list = await service.GetListAsync(filter, cancellationToken);
+        var list = await service.GetListAsync(filter, customerFilter, cancellationToken);
         return Ok(list);
     }
 
@@ -38,7 +39,14 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
     public async Task<IActionResult> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken)
     {
         var item = await service.GetByPhoneNumberAsync(phoneNumber, cancellationToken);
-        return Ok(item);
+        return item is null ? NotFound() : Ok(item);
+    }
+
+    [HttpGet(ApiRoutes.Customers.GetByName)]
+    public async Task<IActionResult> GetByNameAsync(string? customerName, CancellationToken cancellationToken)
+    {
+        var items = await service.GetByNameAsync(customerName, cancellationToken);
+        return Ok(items);
     }
 
     [HttpPost(ApiRoutes.Customers.Create)]

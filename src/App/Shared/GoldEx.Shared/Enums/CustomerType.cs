@@ -4,9 +4,21 @@ namespace GoldEx.Shared.Enums;
 
 public enum CustomerType
 {
-    [Display(Name = "حقیقی")]
-    Individual,
+    [Display(Name = "مشتری خرده فروشی")]
+    RetailCustomer,
 
-    [Display(Name = "حقوقی")]
-    Legal
+    [Display(Name = "بنکدار")]
+    Wholesaler,         // بنکدار
+
+    [Display(Name = "آبشده فروش")]
+    MeltedGoldDealer,   // آبشده فروش
+
+    [Display(Name = "کارگاه دار")]
+    Workshop,           // کارگاه دار
+
+    [Display(Name = "ویترین دار/خرده فروش")]
+    Retailer,            // ویترین دار / خرده فروش
+
+    [Display(Name = "آزمایشگاه/مرکز ری گیری")]
+    AssayingLab
 }

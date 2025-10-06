@@ -1,13 +1,15 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Application.Services.Abstractions;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.BackgroundServices;
 
-public class PriceUpdaterBackgroundService(IServiceScopeFactory serviceScopeFactory, ILogger<PriceUpdaterBackgroundService> logger) : BackgroundService
+public class PriceUpdaterBackgroundService(
+    IServiceScopeFactory serviceScopeFactory,
+    ILogger<PriceUpdaterBackgroundService> logger) : BackgroundService
 {
     private const string ClassName = nameof(PriceUpdaterBackgroundService);
 

@@ -7,12 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="InvoiceProductItemAggregate\**" />
+    <EmbeddedResource Remove="InvoiceProductItemAggregate\**" />
+    <None Remove="InvoiceProductItemAggregate\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Sdk\GoldEx.Sdk.Server\GoldEx.Sdk.Server.csproj" />
     <ProjectReference Include="..\..\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="PaymentMethodAggregate\" />
+    <Folder Include="PaymentVoucherAggregate\" />
     <Folder Include="TransactionAggregate\" />
   </ItemGroup>
 

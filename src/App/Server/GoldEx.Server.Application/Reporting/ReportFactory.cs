@@ -36,49 +36,44 @@ internal class ReportFactory(
 
         if (reportName == "InvoiceReport")
         {
-            // Parse invoiceNumber from query string, e.g., "InvoiceReport?invoiceNumber=123"
+            // Parse invoiceNumber from query string, e.g., "InvoiceReport?invoiceNumber=123&invoiceType=Purchase"
             var queryParams = System.Web.HttpUtility.ParseQueryString(queryString);
-            if (long.TryParse(queryParams["invoiceNumber"], out var invoiceNumber))
+            if (long.TryParse(queryParams["invoiceNumber"], out var invoiceNumber) &&
+                Enum.TryParse<InvoiceType>(queryParams["invoiceType"], out var invoiceType))
             {
-                // Fetch data from IReportingService
-                var response = await reportingService.GetInvoiceReportAsync(invoiceNumber);
-                var iconPath = await iconService.GetIconAsync(IconType.App, Guid.Empty);
+                var response = await reportingService.GetInvoiceReportAsync(invoiceNumber, invoiceType);
 
-                // Create ObjectDataSource
                 var dataSource = new ObjectDataSource
                 {
                     Name = "objectDataSource2",
                     DataSource = response, // Set the GetInvoiceReportResponse object
-                    DataMember = null // Set to null for a single object
+                    DataMember = null
                 };
 
-                // Assign data source to the report
                 report.DataSource = dataSource;
 
                 if (report.FindControl("logoBox", true) is XRPictureBox pictureBox)
                 {
                     var iconBytes = await iconService.GetIconAsync(IconType.App, Guid.Empty);
 
-                    if (iconBytes != null && iconBytes.Length > 0)
+                    if (iconBytes is { Length: > 0 })
                     {
                         try
                         {
                             using var ms = new MemoryStream(iconBytes);
 
                             // WARNING: INTENTIONALLY NOT DISPOSING OF dxImage FOR TESTING
-                            var dxImage = DevExpress.Drawing.DXImage.FromStream(ms);
+                            var dxImage = DXImage.FromStream(ms);
 
-                            pictureBox.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource(dxImage);
+                            pictureBox.ImageSource = new ImageSource(dxImage);
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Failed to create DXImage from stream: {ex.ToString()}");
+                            Console.WriteLine($"Failed to create DXImage from stream: {ex}");
                         }
                     }
                 }
 
-
-                // Map report parameter to invoiceNumber (if defined in the report)
                 if (report.Parameters["invoiceNumber"] != null)
                 {
                     report.Parameters["invoiceNumber"].Value = invoiceNumber;
@@ -91,7 +86,6 @@ internal class ReportFactory(
 
     public XtraReport GetReport(string id, ReportProviderContext context)
     {
-        // Synchronous version (optional, implement if needed)
         return GetReportAsync(id, context).GetAwaiter().GetResult();
     }
 }

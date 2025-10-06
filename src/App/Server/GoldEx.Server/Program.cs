@@ -17,6 +17,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Serilog.Ui.Web.Extensions;
 using DevExpress.AspNetCore.Reporting;
 using DevExpress.AspNetCore;
+using GoldEx.Sdk.Common;
 
 var logger = GetStartupLogger();
 
@@ -135,6 +136,19 @@ void SetupPipeline()
 
     app.UseAuthentication();
     app.UseAuthorization();
+
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments("/serilog-ui"))
+        {
+            if (!context.User.Identity?.IsAuthenticated ?? !context.User.IsInRole(BuiltinRoles.Administrators))
+            {
+                context.Response.Redirect(ClientRoutes.Accounts.AccessDenied);
+                return;
+            }
+        }
+        await next();
+    });
 
     app.UseSerilogUi();
 
