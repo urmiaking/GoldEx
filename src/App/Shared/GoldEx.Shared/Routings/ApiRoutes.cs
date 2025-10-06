@@ -42,7 +42,7 @@ public static class ApiRoutes
 
     public class Health
     {
-        public const string Base = "/api/Health";
+        public const string Base = "api/Health";
     }
 
     public class Products
