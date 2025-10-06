@@ -41,5 +41,29 @@ internal class InventoryStockConfigurations : IEntityTypeConfiguration<Inventory
             .WithMany()
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.OwnsOne(x => x.MoltenGoldDetail, Configure);
+    }
+
+    private void Configure(OwnedNavigationBuilder<InventoryStock, MoltenGoldDetail> builder)
+    {
+        builder.ToTable("MoltenGoldDetails");
+
+        builder.Property(x => x.AssayNumber)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        builder.Property(x => x.Weight)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.Fineness)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
+        builder.HasOne(x => x.Assayer)
+            .WithMany()
+            .HasForeignKey(x => x.AssayerId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

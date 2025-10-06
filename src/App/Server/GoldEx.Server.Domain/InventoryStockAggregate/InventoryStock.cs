@@ -27,6 +27,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
     public Invoice? Invoice { get; private set; }
     public InvoiceId? InvoiceId { get; private set; }
 
+    public MoltenGoldDetail? MoltenGoldDetail { get; private set; }
+
     // TODO: add warehousingId when implemented
 
     public static InventoryStock CreateProduct(
@@ -77,6 +79,26 @@ public class InventoryStock : EntityBase<InventoryStockId>
         {
             Id = new InventoryStockId(Guid.NewGuid()),
             CurrencyId = currencyId,
+            ChangeAmount = changeAmount,
+            ActionType = actionType,
+            InvoiceId = invoiceId
+        };
+    }
+
+    public static InventoryStock CreateMoltenGold(
+        ProductId productId,
+        MoltenGoldDetail moltenGoldDetail,
+        decimal changeAmount,
+        WarehouseActionType actionType,
+        InvoiceId? invoiceId = null)
+    {
+        ArgumentNullException.ThrowIfNull(moltenGoldDetail);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        return new InventoryStock
+        {
+            Id = new InventoryStockId(Guid.NewGuid()),
+            ProductId = productId,
+            MoltenGoldDetail = moltenGoldDetail,
             ChangeAmount = changeAmount,
             ActionType = actionType,
             InvoiceId = invoiceId
