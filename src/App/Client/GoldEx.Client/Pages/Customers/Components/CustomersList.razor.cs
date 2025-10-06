@@ -1,8 +1,9 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Customers;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -11,11 +12,12 @@ namespace GoldEx.Client.Pages.Customers.Components;
 public partial class CustomersList
 {
     [Parameter] public string Class { get; set; } = default!;
-    [Parameter] public int Elevation { get; set; } = 0;
+    [Parameter] public int Elevation { get; set; } = 24;
 
     private string? _searchString;
+    private DateRange _filterDateRange = new();
     private MudTable<CustomerVm> _table = new();
-    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly DialogOptions _viewTransactionDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
 
     private async Task<TableData<CustomerVm>> LoadCustomersAsync(TableState state, CancellationToken cancellationToken = default)
@@ -31,8 +33,10 @@ public partial class CustomersList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
+        var customerFilter = new CustomerFilter(_filterDateRange.Start, _filterDateRange.End);
+
         await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
-            action: (s, token) => s.GetListAsync(filter, token),
+            action: (s, token) => s.GetListAsync(filter, customerFilter, token),
             afterSend: response =>
             {
                 var items = response.Data.Select(CustomerVm.CreateFrom).ToList();
@@ -43,7 +47,8 @@ public partial class CustomersList
                     Items = items
                 };
             },
-            createScope: true
+            createScope: true,
+            cancelPrevious: true
         );
 
         return result;
@@ -52,7 +57,7 @@ public partial class CustomersList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await _table.ReloadServerData();
+        await RefreshAsync();
     }
         
     private void PageChanged(int i)
@@ -69,7 +74,7 @@ public partial class CustomersList
         if (result is {Canceled: false})
         {
             AddSuccessToast("مشتری جدید با موفقیت افزوده شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -91,7 +96,7 @@ public partial class CustomersList
         if (result is { Canceled: false })
         {
             AddSuccessToast("مشتری با موفقیت حذف شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -109,22 +114,47 @@ public partial class CustomersList
         if (result is { Canceled: false })
         {
             AddSuccessToast("اطلاعات مشتری با موفقیت ویرایش شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
     private async Task OnViewTransaction(CustomerVm customerVm)
     {
-        var parameters = new DialogParameters
-        {
-            { nameof(TransactionsList.CustomerId), customerVm.Id }
-        };
-        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
+        //var parameters = new DialogParameters
+        //{
+        //    { nameof(TransactionsList.CustomerId), customerVm.Id }
+        //};
+        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", _viewTransactionDialogOptions);
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
-            AddSuccessToast("اطلاعات مشتری با موفقیت ویرایش شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
+    }
+
+    private async Task OnViewInvoices(CustomerVm customerVm)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(InvoicesList.CustomerId), customerVm.Id }
+        };
+        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await RefreshAsync();
+        }
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _filterDateRange = dateRange;
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        await _table.ReloadServerData();
+        StateHasChanged();
     }
 }

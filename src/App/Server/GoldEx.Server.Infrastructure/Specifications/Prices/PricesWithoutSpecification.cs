@@ -7,6 +7,8 @@ public class PricesWithoutSpecification : SpecificationBase<Price>
 {
     public PricesWithoutSpecification()
     {
+        AddInclude(x => x.PriceUnit!);
+
         ApplyOrderBy(x => x.MarketType);
         ApplyOrderBy(x => x.Title);
     }

@@ -7,17 +7,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
 using System.Security.Claims;
-using GoldEx.Client.Abstractions.Common;
 using Severity = MudBlazor.Severity;
 
 namespace GoldEx.Client.Components.Components;
 
-public class GoldExComponentBase : ComponentBase, IDisposable
+public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 {
     private CancellationTokenSource? _cancellationTokenSource;
     private int _busyCount;
     private bool _shouldRender = true;
     private IServiceScope? _currentScope;
+
+    protected bool IsDisposed;
+
     private IServiceScope CurrentScope
     {
         get
@@ -201,12 +203,17 @@ public class GoldExComponentBase : ComponentBase, IDisposable
 
     protected async Task<TResult> SendRequestAsync<TService, TResult, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                                  Func<TResponse, Task<TResult>> afterSend,
-                                                                                 Func<Task>? onFailure = null)
+                                                                                 Func<Task>? onFailure = null
+                                                                                 , bool cancelPrevious = false)
         where TService : notnull
     {
+        if (IsDisposed)
+            return default!;
+
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
 
@@ -230,12 +237,18 @@ public class GoldExComponentBase : ComponentBase, IDisposable
 
     protected async Task<TResult> SendRequestAsync<TService, TResult, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                                  Func<TResponse, TResult> afterSend,
-                                                                                 Action? onFailure = null)
+                                                                                 Action? onFailure = null,
+                                                                                 bool cancelPrevious = false)
         where TService : notnull
     {
+        if (IsDisposed)
+            return default!;
+
         try
         {
-            CancelToken();
+            if (cancelPrevious) 
+                CancelToken();
+
             SetBusy();
             var service = GetRequiredService<TService>();
 
@@ -259,12 +272,17 @@ public class GoldExComponentBase : ComponentBase, IDisposable
 
     protected async Task SendRequestAsync<TService, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                Func<TResponse, Task> afterSend,
-                                                               Func<Task>? onFailure = null)
+                                                               Func<Task>? onFailure = null,
+                                                               bool cancelPrevious = false)
         where TService : notnull
     {
+        if (IsDisposed)
+            return;
+
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
 
@@ -288,13 +306,21 @@ public class GoldExComponentBase : ComponentBase, IDisposable
     protected async Task SendRequestAsync<TService, TResponse>(Func<TService, CancellationToken, Task<TResponse>> action,
                                                                Action<TResponse> afterSend,
                                                                Action? onFailure = null,
-                                                               bool createScope = false)
+                                                               bool createScope = false,
+                                                               bool cancelPrevious = false)
         where TService : notnull
     {
+        if (IsDisposed)
+            return;
+
         var scope = createScope ? CreateServiceScope() : CurrentScope;
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+            {
+                CancelToken();
+            }
+
             SetBusy();
             var service = GetRequiredService<TService>(scope);
 
@@ -315,13 +341,19 @@ public class GoldExComponentBase : ComponentBase, IDisposable
         }
     }
 
-    protected async Task<TResult?> SendRequestAsync<TService, TResult>(Func<TService, CancellationToken, Task<TResult>> action, bool createScope = false)
+    protected async Task<TResult?> SendRequestAsync<TService, TResult>(Func<TService, CancellationToken, Task<TResult>> action,
+                                                                       bool createScope = false,
+                                                                       bool cancelPrevious = false)
         where TService : notnull
     {
+        if (IsDisposed)
+            return default;
+
         var scope = createScope ? CreateServiceScope() : CurrentScope;
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>(scope);
 
@@ -344,12 +376,17 @@ public class GoldExComponentBase : ComponentBase, IDisposable
 
     protected async Task SendRequestAsync<TService>(Func<TService, CancellationToken, Task> action,
                                                     Func<Task>? afterSend = null,
-                                                    Func<Task>? onFailure = null)
+                                                    Func<Task>? onFailure = null,
+                                                    bool cancelPrevious = false)
         where TService : notnull
     {
+        if (IsDisposed)
+            return;
+
         try
         {
-            CancelToken();
+            if (cancelPrevious)
+                CancelToken();
             SetBusy();
             var service = GetRequiredService<TService>();
 
@@ -423,11 +460,28 @@ public class GoldExComponentBase : ComponentBase, IDisposable
 
     #endregion
 
-    public virtual void Dispose()
+    public virtual async ValueTask DisposeAsync()
     {
-        CancelToken();
+        // Prevent multiple disposals
+        if (IsDisposed)
+        {
+            return;
+        }
 
-        CurrentScope.Dispose();
+        // 1. Set the flag to true IMMEDIATELY.
+        // This stops any in-flight operations from using disposed resources.
+        IsDisposed = true;
+
+        // 2. Unsubscribe from events
         AuthenticationStateProvider.AuthenticationStateChanged -= AuthenticationStateChanged;
+
+        // 3. Dispose of managed resources
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _currentScope?.Dispose();
+
+        // The 'await' here is for future-proofing in case you add async cleanup.
+        // For now, it will complete synchronously.
+        await Task.CompletedTask;
     }
 }

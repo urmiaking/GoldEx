@@ -2,18 +2,21 @@
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Shared.DTOs.Customers;
 
 namespace GoldEx.Server.Infrastructure.Specifications.Customers;
 
 public class CustomersByFilterSpecification : SpecificationBase<Customer>
 {
-    public CustomersByFilterSpecification(RequestFilter filter)
+    public CustomersByFilterSpecification(RequestFilter filter, CustomerFilter customerFilter)
     {
         if (filter.Skip < 0)
             filter.Skip = 0;
 
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
+
+        AddInclude(x => x.CreditLimitPriceUnit!);
 
         // Apply search filter
         if (!string.IsNullOrEmpty(filter.Search))
@@ -32,6 +35,16 @@ public class CustomersByFilterSpecification : SpecificationBase<Customer>
         else
         {
             ApplySorting(nameof(Customer.CreatedAt), SortDirection.Descending);
+        }
+
+        // Apply date range filter on customer
+        if (customerFilter.Start.HasValue)
+        {
+            AddCriteria(x => x.CreatedAt >= customerFilter.Start.Value);
+        }
+        if (customerFilter.End.HasValue)
+        {
+            AddCriteria(x => x.CreatedAt <= customerFilter.End.Value);
         }
 
         // Apply paging

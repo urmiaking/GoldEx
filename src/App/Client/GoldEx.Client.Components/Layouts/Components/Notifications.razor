@@ -1,0 +1,36 @@
+﻿@inherits GoldExComponentBase
+
+<MudMenu @bind-Open="IsOpen"
+         AnchorOrigin="Origin.BottomCenter"
+         TransformOrigin="Origin.TopCenter"
+         PopoverClass="notification-popover"
+         MaxHeight="600">
+    <ActivatorContent>
+        @if (_unreadCount > 0)
+        {
+            <MudBadge Content="@_unreadCount.ToString()"
+                      Color="Color.Error"
+                      Bordered="true"
+                      Dot="true"
+                      Overlap="true"
+                      Class="notification-badge">
+                <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                               Color="Color.Inherit">
+                </MudIconButton>
+            </MudBadge>
+        }
+        else
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                           Color="Color.Inherit">
+            </MudIconButton>
+        }
+    </ActivatorContent>
+    <ChildContent>
+        <NotificationList IsOpen="_isOpen"
+                          Items="_notifications"
+                          OnMarkAsRead="HandleMarkAsRead"
+                          OnMarkAllAsRead="HandleMarkAllAsRead"
+                          OnButtonAction="HandleButtonAction" />
+    </ChildContent>
+</MudMenu>

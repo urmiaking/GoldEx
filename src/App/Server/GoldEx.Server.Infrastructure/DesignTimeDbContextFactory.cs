@@ -11,6 +11,6 @@ internal class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<GoldExDb
         builder.UseSqlServer();
         var options = builder.Options;
         
-        return new GoldExDbContext(options, null!);
+        return new GoldExDbContext(options);
     }
 }

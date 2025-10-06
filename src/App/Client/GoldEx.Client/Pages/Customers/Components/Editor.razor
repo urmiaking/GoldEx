@@ -4,14 +4,18 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12">
-                    <div class="d-flex justify-content-between align-center">
-                        <MudText>نوع مشتری:</MudText>
-                        <MudRadioGroup T="CustomerType" Required="true" For="() => Model.CustomerType" @bind-Value="Model.CustomerType">
-                            <MudRadio Value="@(CustomerType.Individual)">حقیقی</MudRadio>
-                            <MudRadio Value="@(CustomerType.Legal)">حقوقی</MudRadio>
-                        </MudRadioGroup>
-                    </div>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudSelect T="CustomerType"
+                               @bind-Value="Model.CustomerType"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined"
+                               For="@(() => Model.CustomerType)"
+                               Label="@(Model.GetDisplayName(() => Model.CustomerType))">
+                        @foreach (var type in Enum.GetValues<CustomerType>())
+                        {
+                            <MudSelectItem T="CustomerType" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.FullName"
@@ -37,8 +41,7 @@
                 <MudItem xs="12" md="6" lg="6">
                     <MudMenu @bind-Open="Model.CreditLimitMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
                         <ActivatorContent>
-                            <MudNumericField Value="Model.CreditLimit"
-                                             ValueChanged="OnCreditLimitChanged"
+                            <MudNumericField @bind-Value="Model.CreditLimit"
                                              T="decimal?"
                                              HideSpinButtons="true"
                                              Format="#,##0.##"
@@ -54,28 +57,73 @@
                         <ChildContent>
                             @foreach (var item in _priceUnits)
                             {
-                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">  
+                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         @if (item.HasIcon)
                                         {
-                                            <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
                                                 <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                            </MudAvatar>  
+                                            </MudAvatar>
                                         }
                                         @item.Title
-                                    </div>  
-                                </MudMenuItem>  
+                                    </div>
+                                </MudMenuItem>
                             }
                         </ChildContent>
                     </MudMenu>
                 </MudItem>
-                <MudItem xs="12">
+                <MudItem xs="12" lg="6">
                     <MudTextField @bind-Value="Model.Address"
                                   For="@(() => Model.Address)"
-                                  AutoGrow Lines="3"
+                                  AutoGrow
                                   Label="@(Model.GetDisplayName(() => Model.Address))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+
+                        <MudText Typo="Typo.h6" GutterBottom="true">حساب های مالی</MudText>
+                        <MudSpacer />
+                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                            <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="Size.Small"
+                                       Variant="Variant.Filled">ثبت حساب مالی جدید</MudButton>
+                        </MudHidden>
+
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="@Size.Small"
+                                           Variant="@Variant.Filled"></MudIconButton>
+                        </MudHidden>
+                    </MudStack>
+                </MudItem>
+                <MudDivider Class="mb-2" />
+                <MudItem xs="12">
+                    <MudTable Items="@Model.FinancialAccounts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                        <HeaderContent>
+                            <MudTh>نوع حساب</MudTh>
+                            <MudTh>نوع ارز</MudTh>
+                            <MudTh>عملیات</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="نوع حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+                            <MudTd DataLabel="نوع ارز">@context.PriceUnit?.Title</MudTd>
+                            <MudTd DataLabel="عملیات">
+                                <div class="d-flex gap-2">
+                                    <MudTooltip Text="ویرایش">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                                       Color="Color.Info" OnClick="_ => OnEditFinancialAccount(context)"></MudIconButton>
+                                    </MudTooltip>
+                                    <MudTooltip Text="حذف">
+                                        <MudIconButton OnClick="() => OnRemoveFinancialAccount(context)" Size="@Size.Small" Variant="@Variant.Filled"
+                                                       Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                                    </MudTooltip>
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <MudText>هیچ حساب بانکی یافت نشد</MudText>
+                        </NoRecordsContent>
+                    </MudTable>
                 </MudItem>
             </MudGrid>
         </DialogContent>

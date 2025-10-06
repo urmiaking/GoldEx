@@ -1,4 +1,9 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Repositories;
+using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -8,5 +13,9 @@ public interface ITransactionRepository : IRepository<Transaction>,
     IUpdateRepository<Transaction>,
     IDeleteRepository<Transaction>
 {
-    Task<long> GetLastTransactionNumberAsync(CancellationToken cancellationToken = default);
+    Task RemoveByInvoiceIdAsync(InvoiceId invoiceId, CancellationToken cancellationToken = default);
+    Task RemoveByPaymentVoucherIdAsync(PaymentVoucherId paymentVoucherId, CancellationToken cancellationToken = default);
+    Task RemoveByInvoicePaymentIdsAsync(List<InvoicePaymentId>? invoicePaymentIds, CancellationToken cancellationToken = default);
+
+    Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, CancellationToken cancellationToken = default);
 }

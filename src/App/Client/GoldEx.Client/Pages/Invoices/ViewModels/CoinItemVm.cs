@@ -1,0 +1,117 @@
+﻿using GoldEx.Shared.DTOs.Coins;
+using GoldEx.Shared.Helpers;
+using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.Invoices;
+
+namespace GoldEx.Client.Pages.Invoices.ViewModels;
+
+public class CoinItemVm
+{
+    public Guid? Id { get; set; }
+
+    private int _quantity;
+    private decimal _unitPrice;
+    private decimal _profitPercent;
+
+    [Display(Name = "تعداد")]
+    public int Quantity
+    {
+        get => _quantity;
+        set
+        {
+            _quantity = value;
+            RecalculateAmounts();
+        }
+    }
+
+    [Display(Name = "قیمت واحد")]
+    public decimal UnitPrice
+    {
+        get => _unitPrice;
+        set
+        {
+            _unitPrice = value;
+            RecalculateAmounts();
+        }
+    }
+
+    [Display(Name = "سود")]
+    public decimal ProfitPercent
+    {
+        get => _profitPercent;
+        set
+        {
+            _profitPercent = value;
+            RecalculateAmounts();
+        }
+    }
+
+    [Display(Name = "نوع سکه")]
+    public GetCoinResponse Coin { get; set; } = default!;
+
+    // --- Display properties ---
+    public bool ShowDetails { get; set; }
+    public int Index { get; set; } = 1;
+
+    // --- Calculated Properties ---
+    public decimal RawAmount { get; set; }
+    public decimal ProfitAmount { get; set; }
+    public decimal FinalAmount { get; set; }
+    public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// This method performs the client-side calculation and updates the display properties.
+    /// It's called whenever an input property changes.
+    /// </summary>
+    public void RecalculateAmounts()
+    {
+        RawAmount = UnitPrice;
+        ProfitAmount = CalculatorHelper.Coin.CalculateProfit(UnitPrice, ProfitPercent, Quantity);
+        FinalAmount = RawAmount + ProfitAmount;
+        TotalAmount = FinalAmount * Quantity;
+    }
+
+    public Task<CoinItemVm> RecalculateAmountsAsync()
+    {
+        RawAmount = UnitPrice;
+        ProfitAmount = CalculatorHelper.Coin.CalculateProfit(UnitPrice, ProfitPercent, Quantity);
+        FinalAmount = RawAmount + ProfitAmount;
+        TotalAmount = FinalAmount * Quantity;
+
+        return Task.FromResult(this);
+    }
+
+    public static InvoiceCoinItemDto ToRequest(CoinItemVm coinItem)
+    {
+        if (coinItem.Coin is null)
+            throw new FluentValidation.ValidationException("سکه انتخاب نشده است");
+
+        return new InvoiceCoinItemDto(coinItem.Id,
+            coinItem.UnitPrice,
+            coinItem.Quantity,
+            coinItem.ProfitPercent,
+            coinItem.Coin.Id);
+    }
+
+    public static CoinItemVm CreateFrom(GetInvoiceCoinItemResponse response)
+    {
+        return new CoinItemVm
+        {
+            Id = response.Id,
+            UnitPrice = response.UnitPrice,
+            ProfitPercent = response.ProfitPercent,
+            Quantity = response.Quantity,
+            Coin = response.Coin
+        };
+    }
+
+    public void UpdateFrom(CoinItemVm coinItem)
+    {
+        Index = coinItem.Index;
+        UnitPrice = coinItem.UnitPrice;
+        ProfitPercent = coinItem.ProfitPercent;
+        Quantity = coinItem.Quantity;
+        Coin = coinItem.Coin;
+        ShowDetails = coinItem.ShowDetails;
+    }
+}

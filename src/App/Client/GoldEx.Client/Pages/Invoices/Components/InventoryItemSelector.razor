@@ -1,0 +1,24 @@
+﻿@inherits GoldExComponentBase
+
+
+<MudDialog>
+    <DialogContent>
+        <InventoryStockList ItemStatus="ItemStatus" ItemType="ItemType" Elevation="0" 
+                            Selectable="true" SelectedItemsChanged="OnSelectedItemsChanged">
+        </InventoryStockList>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   OnClick="Close"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   Variant="Variant.Filled">بستن</MudButton>
+
+        <MudButton Class="m-2"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="OnSubmit"
+                   Variant="Variant.Filled">
+            <MudText>ذخیره</MudText>
+        </MudButton>
+    </DialogActions>
+</MudDialog>

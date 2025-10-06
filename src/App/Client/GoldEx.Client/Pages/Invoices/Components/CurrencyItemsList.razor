@@ -1,0 +1,71 @@
+﻿@inherits GoldExComponentBase
+
+<MudPaper Elevation="@Elevation" Class="@Class">
+    <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
+        <MudText Typo="Typo.h6">لیست ارزها</MudText>
+        <MudSpacer />
+
+        @if (InvoiceType is InvoiceType.Sell)
+        {
+            <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Tertiary" Text="انتخاب جنس از انبار">
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Size="Size.Small"
+                               Variant="Variant.Filled" Color="Color.Tertiary" OnClick="OnOpenSelector"></MudIconButton>
+            </MudTooltip>
+        }
+
+        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Success" Text="افزودن ارز">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
+                           Variant="Variant.Filled" Color="Color.Success" OnClick="OnAddItem"></MudIconButton>
+        </MudTooltip>
+    </MudStack>
+
+    <MudTable Dense="true" Hover="true" Items="@Items" T="CurrencyItemVm">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh>ردیف</MudTh>
+            <MudTh>عنوان</MudTh>
+            <MudTh>حجم</MudTh>
+            <MudTh>نرخ واحد</MudTh>
+            <MudTh>سود</MudTh>
+            <MudTh>مالیات</MudTh>
+            <MudTh>ارزش کل</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ردیف">@context.Index</MudTd>
+            <MudTd DataLabel="عنوان">@context.Currency.Title</MudTd>
+            <MudTd DataLabel="حجم">@context.Amount.ToCurrencyFormat()</MudTd>
+            <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="سود">@context.ProfitAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="مالیات">@context.TaxAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="ویرایش">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Primary" OnClick="() => OnEditItem.InvokeAsync(context)"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="حذف">
+                        <MudIconButton OnClick="@(_ => OnRemoveItem.InvokeAsync(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">هیچ ارزی ثبت نشده است</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText Typo="Typo.body2">در حال بارگذاری</MudText>
+        </LoadingContent>
+    </MudTable>
+</MudPaper>

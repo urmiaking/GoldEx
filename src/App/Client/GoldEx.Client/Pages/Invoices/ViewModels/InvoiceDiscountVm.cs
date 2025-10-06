@@ -29,14 +29,16 @@ public class InvoiceDiscountVm
         return new InvoiceDiscountDto(item.Amount, item.ExchangeRate, item.Description, item.PriceUnit.Id);
     }
 
-    public static InvoiceDiscountVm CreateFrom(GetInvoiceDiscountResponse response)
+    public static InvoiceDiscountVm CreateFrom(GetInvoiceDiscountResponse response, GetPriceUnitTitleResponse? priceUnit)
     {
         return new InvoiceDiscountVm
         {
             Amount = response.Amount,
             Description = response.Description,
+            ExchangeRate = response.ExchangeRate,
             PriceUnit = response.PriceUnit,
-            AmountAdornmentText = response.PriceUnit.Title
+            AmountAdornmentText = response.PriceUnit.Title,
+            ExchangeRateLabel = $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}"
         };
     }
 }

@@ -2,7 +2,7 @@
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -58,5 +58,17 @@ internal class ProductCategoryService(HttpClient client, JsonSerializerOptions j
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task<GetProductCategoryNumberResponse> GetLastCodeAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.ProductCategories.GetLastCode(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetProductCategoryNumberResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
     }
 }

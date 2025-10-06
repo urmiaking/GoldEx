@@ -1,10 +1,11 @@
 ﻿@using GoldEx.Client.Components.Services
+@using Microsoft.JSInterop
 @inherits LayoutComponentBase
 
 <PageTitle>گلدکس</PageTitle>
 
 <MudRTLProvider RightToLeft="true">
-    <MudThemeProvider Theme="@_theme" IsDarkMode="IsDarkMode" />
+    <MudThemeProvider Theme="@ThemeService?.CurrentTheme" IsDarkMode="@(ThemeService?.IsDarkMode ?? false)" />
     <MudPopoverProvider />
     <MudDialogProvider />
     <MudSnackbarProvider />
@@ -109,20 +110,32 @@
             }
         };
 
+    private static ISnackbar? _staticToastService;
+
     public bool IsDarkMode { get; set; }
 
     [Inject] private IThemeService? ThemeService { get; set; }
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
+    [Inject] private ISnackbar ToastService { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()  
+    {  
+        _staticToastService = ToastService;
+
+        if (ThemeService is ThemeService service)  
+        {  
+            await service.LoadSettingsAsync(); 
+            service.OnToggleMode += OnToggleMode;  
+            service.OnPaletteChanged += OnPaletteChanged;
+            IsDarkMode = service.IsDarkMode;  
+        }  
+  
+        await base.OnInitializedAsync();  
+    }
+
+    public void OnPaletteChanged(object? sender, EventArgs e)
     {
-        if (ThemeService is ThemeService service)
-        {
-            service.OnToggleMode += OnToggleMode;
-            IsDarkMode = service.IsDarkMode;
-        }
-
-        await base.OnInitializedAsync();
+        StateHasChanged();
     }
 
     public void OnToggleMode(object? sender, EventArgs e)
@@ -156,5 +169,16 @@
         IsDarkMode = isDarkMode;
         LocalStorage.SetItemAsStringAsync("IsDarkMode", IsDarkMode.ToString());
         StateHasChanged();
+    }
+
+    [JSInvokable]
+    public static Task OnServiceWorkerInstalling()
+    {
+        if (_staticToastService is not null)
+        {
+            _ = _staticToastService.Add("درحال دریافت و نصب نسخه جدید...", Severity.Info);
+        }
+
+        return Task.CompletedTask;
     }
 }

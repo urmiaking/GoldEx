@@ -1,4 +1,4 @@
-@import '../fonts/vazir/Vazirmatn-font-face.css';
+﻿@import '../fonts/vazir/Vazirmatn-font-face.css';
 @import '../fonts/IRANSANS/IRANSANS-font-face.css';
 
 a, .btn-link {
@@ -74,10 +74,123 @@ h1:focus {
     background-position: center; /* Center the image */
     background-repeat: no-repeat; /* Prevent image tiling */
 }
-.mud-popover{
+
+.mud-popover {
     left: 0;
 }
 
-.mud-dialog-content{
+.mud-dialog-content {
     overflow: hidden !important;
+}
+
+/* Fullscreen overlay */
+.loading-container {
+    position: fixed;
+    inset: 0;
+    background: #FAF0E6; /* Drawer background (light mode) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    direction: rtl; /* Persian */
+    font-family: "IRANSans", "Vazirmatn", "Helvetica", "Arial", sans-serif;
+}
+
+/* Center card */
+.loading-card {
+    background: #FDF5E6; /* Surface color */
+    border-radius: 24px; /* Matches theme */
+    padding: 2rem 3rem;
+    text-align: center;
+    position: relative; /* Needed for pseudo-element border */
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12); /* Deeper multi-layer shadow */
+    overflow: hidden; /* Keep border effect aligned */
+}
+
+    .loading-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        padding: 3px; /* Border thickness */
+        border-radius: 24px;
+        background: linear-gradient( 270deg, #FFD700, #DAA520, #B8860B, #FFD700 );
+        background-size: 400% 400%; /* Make it big so movement is visible */
+        animation: gradient-border 6s linear infinite;
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+
+@keyframes gradient-border {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Logo */
+.loading-logo {
+    width: 140px;
+    height: 100px;
+    margin-bottom: 1rem;
+}
+
+/* Title */
+.loading-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #1C2526; /* TextPrimary */
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+    direction: rtl; /* Persian direction */
+}
+
+/* Brand (GoldEx) */
+.brand-text {
+    font-family: "Cinzel Decorative", serif;
+    font-size: 4rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #FFD700, #DAA520, #B8860B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    margin-right: 0.4rem;
+    letter-spacing: 1px;
+}
+
+
+/* Spinner */
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.35rem;
+    color: #DAA520; /* Primary gold */
+    margin-bottom: 1rem;
+}
+
+/* Text */
+.loading-text {
+    font-size: 1rem;
+    color: #B8860B; /* TextSecondary (deep gold) */
+}
+
+    .loading-text:after {
+        content: var(--blazor-load-percentage-text, "در حال بارگذاری...");
+    }
+
+
+/* MudEx */
+.mud-ex-dialog-header-actions {
+    right: auto !important;
+    left: 60px !important;
 }

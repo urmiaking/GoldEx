@@ -1,0 +1,106 @@
+﻿@inherits GoldExComponentBase
+
+<MudPaper Elevation="@Elevation" Class="@Class">
+    <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
+        <MudText Typo="Typo.h6">لیست طلا و جواهرات</MudText>
+        <MudSpacer />
+        @if (InvoiceType is InvoiceType.Sell)
+        {
+            <MudPaper Elevation="0" Style="max-width: 250px;">
+                <MudTextField Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.QrCode"
+                              Clearable="true"
+                              Label="بارکد جنس"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              Variant="Variant.Outlined"
+                              T="string"
+                              Value="_barcode"
+                              ValueChanged="((s) => OnBarcodeChanged.InvokeAsync(s))"
+                              OnClearButtonClick="OnBarcodeCleared" />
+            </MudPaper>
+            <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Tertiary" Text="انتخاب جنس از انبار">
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Size="Size.Small"
+                               Variant="Variant.Filled" Color="Color.Tertiary" OnClick="OnOpenSelector"></MudIconButton>
+            </MudTooltip>
+        }
+        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Info" Text="افزودن طلا و جواهر">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
+                           Variant="Variant.Filled" Color="Color.Info" OnClick="OnAddItem"></MudIconButton>
+        </MudTooltip>
+    </MudStack>
+
+    <MudTable Dense="true" Hover="true" Items="@Items" T="ProductItemVm">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            @if (Items.Any(x => x.StoneAmount > 0))
+            {
+                <col />
+            }
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh>ردیف</MudTh>
+            <MudTh>نوع جنس</MudTh>
+            <MudTh>عنوان</MudTh>
+            <MudTh>تعداد</MudTh>
+            <MudTh>عیار</MudTh>
+            <MudTh>اجرت</MudTh>
+            <MudTh>وزن</MudTh>
+            @if (Items.Any(x => x.StoneAmount > 0))
+            {
+                <MudTh>ارزش سنگ</MudTh>
+            }
+            <MudTh>ارزش کل</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ردیف">@context.Index</MudTd>
+            <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
+            <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
+            <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
+            <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
+            <MudTd DataLabel="اجرت">
+                @{
+                    @(context.Product.WageType switch
+                    {
+                        WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
+                        WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                        _ => "ندارد"
+                    })
+                }
+            </MudTd>
+            <MudTd DataLabel="وزن">@context.Product.Weight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
+            @if (Items.Any(x => x.StoneAmount > 0))
+            {
+                <MudTd DataLabel="ارزش سنگ">@context.StoneAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            }
+            <MudTd DataLabel="ارزش کل">@context.FinalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="ویرایش جنس">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Primary" OnClick="() => OnEditItem.InvokeAsync(context)"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="حذف جنس">
+                        <MudIconButton OnClick="@(_ => OnRemoveItem.InvokeAsync(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">هیچ جنسی ثبت نشده است</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText Typo="Typo.body2">در حال بارگذاری</MudText>
+        </LoadingContent>
+    </MudTable>
+</MudPaper>

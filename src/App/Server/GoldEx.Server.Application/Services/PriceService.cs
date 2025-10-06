@@ -1,20 +1,28 @@
-﻿using GoldEx.Sdk.Common.Definitions;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Application.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
+using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
+using GoldEx.Shared.Constants;
+using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +34,9 @@ internal class PriceService(
     IPriceRepository repository,
     IPriceUnitRepository priceUnitRepository,
     ISettingRepository settingRepository,
+    ICoinService coinService,
+    IFinancialAccountRepository financialAccountRepository,
+    ILedgerAccountRepository ledgerAccountRepository,
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment) : IServerPriceService,
@@ -70,8 +81,7 @@ internal class PriceService(
                     PriceHistory.Create(incomingPrice.CurrentValue,
                         incomingPrice.LastUpdate,
                         incomingPrice.Change,
-                        incomingPrice.Unit),
-                    UnitTypeMapper.GetUnitType(incomingPrice));
+                        incomingPrice.Unit));
 
                 pricesToCreate.Add(price);
 
@@ -111,6 +121,46 @@ internal class PriceService(
 
             if (updatedPriceUnits.Any())
                 await priceUnitRepository.UpdateRangeAsync(updatedPriceUnits, cancellationToken);
+
+            var coins = await coinService.GetListAsync(null, cancellationToken);
+
+            if (!coins.Any())
+            {
+                var coinPrices = pricesToCreate.Where(x => x.MarketType is MarketType.Coin).ToList();
+
+                foreach (var coinPrice in coinPrices)
+                    await coinService.CreateAsync(new CoinRequestDto(null, coinPrice.Title, coinPrice.Id.Value), cancellationToken);
+            }
+
+            var goldAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold), cancellationToken);
+
+            if (!goldAccountExists)
+            {
+                var goldPriceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Gold price unit is not initialized");
+
+                var inventoryLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Molten Gold Inventory ledger account is not initialized");
+
+                var goldAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Gold, goldPriceUnit.Id, inventoryLedgerAccount.Id);
+                await financialAccountRepository.CreateAsync(goldAccount, cancellationToken);
+            }
+
+            var cashAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash), cancellationToken);
+
+            if (!cashAccountExists)
+            {
+                var irrPriceUnit = await priceUnitRepository.Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName()))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("IRR price unit is not initialized");
+
+                var internalCashLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Internal Cash Accounts ledger account is not initialized");
+
+                var cashAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Cash, irrPriceUnit.Id, internalCashLedgerAccount.Id,
+                    cashAccount: CashAccount.Create(null, CashAccountType.Internal));
+
+                await financialAccountRepository.CreateAsync(cashAccount, cancellationToken);
+            }
         }
 
         if (pricesToUpdate.Any()) await repository.UpdateRangeAsync(pricesToUpdate, cancellationToken);
@@ -149,30 +199,50 @@ internal class PriceService(
 
     #region PriceService
 
-    public async Task<List<GetPriceResponse>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetPriceResponse>> GetListAsync(bool? isPinned = null, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new PricesDefaultSpecification()).ToListAsync(cancellationToken);
+        var item = await repository
+            .Get(new PricesDefaultSpecification(isPinned))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
     public async Task<List<GetPriceTitleResponse>> GetTitlesAsync(MarketType[] marketTypes,
         CancellationToken cancellationToken = default)
     {
-        var items = await repository.Get(new PricesByMarketTypesSpecification(marketTypes))
+        var items = await repository
+            .Get(new PricesByMarketTypesSpecification(marketTypes))
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
+
         return mapper.Map<List<GetPriceTitleResponse>>(items);
     }
 
     public async Task<List<GetPriceResponse>> GetListAsync(MarketType marketType, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new PricesByMarketTypeSpecification(marketType)).ToListAsync(cancellationToken);
+        var item = await repository
+            .Get(new PricesByMarketTypeSpecification(marketType))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
-    public async Task<GetPriceResponse?> GetAsync(UnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
+    public async Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
         CancellationToken cancellationToken = default)
     {
-        var baseItem = await repository.Get(new PricesByUnitTypeSpecification(unitType))
+        var unit = unitType switch
+        {
+            GoldUnitType.Gram => UnitType.Gold18K,
+            GoldUnitType.Mesghal => UnitType.Mesghal,
+            _ => throw new ArgumentOutOfRangeException(nameof(unitType), unitType, null)
+        };
+
+        var baseItem = await repository
+            .Get(new PricesByUnitTypeSpecification(unit))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (baseItem?.PriceHistory is null)
@@ -181,7 +251,7 @@ internal class PriceService(
         var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
         if (setting is not null && setting.GoldSafetyMarginPercent != 0 && applySafetyMargin)
         {
-            if (baseItem is { UnitType: UnitType.Gold18K })
+            if (baseItem.PriceUnit?.UnitType is UnitType.Gold18K or UnitType.Mesghal)
             {
                 var adjustedValue = baseItem.PriceHistory.CurrentValue * (1 + setting.GoldSafetyMarginPercent / 100);
                 baseItem.PriceHistory.SetCurrentValue(adjustedValue);
@@ -192,6 +262,7 @@ internal class PriceService(
         {
             var conversionUnit = await priceUnitRepository
                 .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)))
+                .AsNoTracking()
                 .Include(pu => pu.Price)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -211,7 +282,7 @@ internal class PriceService(
                     LastUpdate: baseItem.PriceHistory.LastUpdate,
                     HasIcon: webHostEnvironment.PriceUnitIconExists(baseItem.Id.Value),
                     Type: baseItem.MarketType,
-                    UnitType: baseItem.UnitType
+                    UnitType: baseItem.PriceUnit?.UnitType
                 );
             }
         }
@@ -225,7 +296,7 @@ internal class PriceService(
             LastUpdate: baseItem.PriceHistory.LastUpdate,
             HasIcon: webHostEnvironment.PriceUnitIconExists(baseItem.Id.Value),
             Type: baseItem.MarketType,
-            UnitType: baseItem.UnitType
+            UnitType: baseItem.PriceUnit?.UnitType
         );
     }
 
@@ -233,6 +304,7 @@ internal class PriceService(
     {
         var item = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId)))
+            .AsNoTracking()
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -244,11 +316,13 @@ internal class PriceService(
     {
         var primaryPriceUnit = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(primaryPriceUnitId)))
+            .AsNoTracking()
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
         var secondaryPriceUnit = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(new PriceUnitId(secondaryPriceUnitId)))
+            .AsNoTracking()
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -289,7 +363,10 @@ internal class PriceService(
 
     public async Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default)
     {
-        var items = await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken);
+        var items = await repository
+            .Get(new PricesWithoutSpecification())
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
         var priceSettings = items
             .GroupBy(p => p.MarketType)
@@ -298,7 +375,8 @@ internal class PriceService(
                 group.Select(price => new PriceSettingDto(
                     price.Id.Value,
                     price.Title,
-                    price.IsActive
+                    price.IsActive,
+                    price.IsPinned
                 )).ToList()
             ))
             .ToList();
@@ -313,6 +391,24 @@ internal class PriceService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetStatus(request.IsActive);
+
+        await repository.UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task SetPinnedAsync(Guid id, bool isPinned, CancellationToken cancellationToken = default)
+    {
+        var item = await repository.Get(new PricesByIdSpecification(new PriceId(id)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        var pinnedItemsCount = await repository.CountAsync(new PricesByPinStatusSpecification(), cancellationToken);
+
+        if (isPinned && !item.IsPinned && pinnedItemsCount >= 6)
+            throw new ValidationException(new List<ValidationFailure>
+            {
+                new("IsPinned", "تعداد ارزهای سنجاق شده نمی تواند بیشتر از 6 عدد باشد")
+            });
+
+        item.SetPinned(isPinned);
 
         await repository.UpdateAsync(item, cancellationToken);
     }

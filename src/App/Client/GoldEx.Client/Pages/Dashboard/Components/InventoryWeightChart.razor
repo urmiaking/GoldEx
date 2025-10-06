@@ -1,0 +1,29 @@
+﻿@inherits GoldExComponentBase
+
+<MudCard Elevation="24" Class="mt-6">  
+    <MudCardHeader>  
+        <CardHeaderContent>  
+            <MudText Typo="Typo.h6">نمودار لحظه ای ارزش موجودی</MudText>  
+        </CardHeaderContent>  
+    </MudCardHeader>  
+    <MudCardContent>  
+        <MudStack>  
+            <MudChart ChartType="ChartType.Pie"   
+                      InputData="@_chartData"   
+                      InputLabels="@_chartLabels"  
+                      Width="300px"   
+                      Height="300px" />  
+        </MudStack> 
+        <MudSelect T="GoldUnitType"   
+                   Label="واحد طلا" 
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Value="_selectedUnitType"  
+                   ValueChanged="OnUnitTypeChanged">  
+            @foreach (GoldUnitType unit in Enum.GetValues(typeof(GoldUnitType)))  
+            {  
+                <MudSelectItem Value="@unit">@unit.GetDisplayName()</MudSelectItem>  
+            }  
+        </MudSelect> 
+    </MudCardContent>  
+</MudCard>

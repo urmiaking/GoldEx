@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.PriceAggregate;
@@ -10,8 +11,7 @@ public class Price : EntityBase<PriceId>
     public static Price Create(
         string title,
         MarketType marketType,
-        PriceHistory priceHistory,
-        UnitType? unitType = null)
+        PriceHistory priceHistory)
     {
         return new Price
         {
@@ -19,7 +19,6 @@ public class Price : EntityBase<PriceId>
             Title = title,
             MarketType = marketType,
             PriceHistory = priceHistory,
-            UnitType = unitType,
             IsActive = true
         };
     }
@@ -30,10 +29,11 @@ public class Price : EntityBase<PriceId>
 
     public string Title { get; private set; }
     public bool IsActive { get; private set; }
+    public bool IsPinned { get; private set; }
     public MarketType MarketType { get; private set; }
-    public UnitType? UnitType { get; private set; }
 
     public PriceHistory? PriceHistory { get; private set; }
+    public PriceUnit? PriceUnit { get; private set; }
 
     public void CreatePriceHistory(PriceHistory priceHistory) => PriceHistory = priceHistory;
 
@@ -50,6 +50,6 @@ public class Price : EntityBase<PriceId>
 
     public void SetTitle(string title) => Title = title;
     public void SetMarketType(MarketType marketType) => MarketType = marketType;
-    public void SetUnitType(UnitType? unitType) => UnitType = unitType;
     public void SetStatus(bool isActive) => IsActive = isActive;
+    public void SetPinned(bool isPinned) => IsPinned = isPinned;
 }

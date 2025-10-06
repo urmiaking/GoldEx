@@ -100,6 +100,22 @@ public static class SignalApiResponseMapper
                     GetMarketType(nameof(response.Data.BubbleCoin))));
         }
 
+        if (response.Data.Ounce is not null)
+        {
+            priceResponses.AddRange(from item in response.Data.Ounce?.Data
+                                    let currentValue = ParseDecimal(item.Close)
+                                    let change = FormatChange(item.Change, item.PercentChange)
+                                    let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
+                                    let iconUrl = item.IconUrl
+                                    select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
+                                        currentValue,
+                                        item.Unit,
+                                        lastUpdate,
+                                        change,
+                                        iconUrl,
+                                        GetMarketType(nameof(response.Data.Ounce))));
+        }
+
         return priceResponses;
     }
 
@@ -149,9 +165,9 @@ public static class SignalApiResponseMapper
         return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Currency.Market));
     }
 
-    private static decimal ParseDecimal(long value) => value;
+    private static decimal ParseDecimal(decimal value) => value;
 
-    private static string FormatChange(long change, double percentChange)
+    private static string FormatChange(decimal change, double percentChange)
     {
         var changeString = change.ToString("N0");
         var percentChangeString = percentChange.ToString("0.00") + "%";
@@ -168,6 +184,7 @@ public static class SignalApiResponseMapper
             nameof(SignalApiResponse.Data.Gold) => MarketType.Gold,
             nameof(SignalApiResponse.Data.BubbleCoin) => MarketType.BubbleCoin,
             nameof(SignalApiResponse.Data.ParsianCoin) => MarketType.ParsianCoin,
+            nameof(SignalApiResponse.Data.Ounce) => MarketType.Ounce,
 
             _ => throw new ArgumentOutOfRangeException()
         };

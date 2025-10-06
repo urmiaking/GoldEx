@@ -12,10 +12,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace GoldEx.Server.Controllers;
 
 // This controller is required for the Document Viewer and Report Designer.
+[ApiExplorerSettings(IgnoreApi = true)]
 public class CustomWebDocumentViewerController(IWebDocumentViewerMvcControllerService controllerService)
     : WebDocumentViewerController(controllerService);
 
 // This controller is required for the Report Designer.
+[ApiExplorerSettings(IgnoreApi = true)]
 public class CustomReportDesignerController(IReportDesignerMvcControllerService controllerService)
     : ReportDesignerController(controllerService)
 {
@@ -48,5 +50,6 @@ public class CustomReportDesignerController(IReportDesignerMvcControllerService 
 }
 
 // This controller is required for the Report Designer.
+[ApiExplorerSettings(IgnoreApi = true)]
 public class CustomQueryBuilderController(IQueryBuilderMvcControllerService controllerService)
     : QueryBuilderController(controllerService);

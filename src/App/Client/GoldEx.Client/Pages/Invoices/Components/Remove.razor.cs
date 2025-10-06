@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.Services;
+﻿using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -15,21 +15,8 @@ public partial class Remove
         if (IsBusy)
             return;
 
-        var deleteProducts = false;
-
-        var result = await DialogService.ShowMessageBox(
-            "هشدار",
-            markupMessage: new MarkupString("با حذف فاکتور اجناس مربوط به آن به انبار بازگردد؟ <br> <br> "),
-            yesText: "بله", noText: "خیر", cancelText: "لغو عملیات");
-
-        if (result is null)
-            return;
-
-        if (result is false)
-            deleteProducts = true;
-
         await SendRequestAsync<IInvoiceService>(
-            action: (s, ct) => s.DeleteAsync(Id, deleteProducts, ct),
+            action: (s, ct) => s.DeleteAsync(Id, ct),
             afterSend: () =>
             {
                 MudDialog.Close(DialogResult.Ok(true));

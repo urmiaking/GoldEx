@@ -17,5 +17,8 @@ public enum MarketType
     BubbleCoin = 3,
 
     [Display(Name = "پارسیان")]
-    ParsianCoin = 4
+    ParsianCoin = 4,
+
+    [Display(Name = "انس")]
+    Ounce = 5
 }

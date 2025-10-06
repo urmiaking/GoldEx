@@ -1,6 +1,7 @@
 ﻿using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Client.Pages.Calculate.ViewModels;
 
@@ -27,10 +28,16 @@ public class CalculatorVm
     public decimal GramPrice { get; set; }
 
     [Display(Name = "نرخ تبدیل اجرت")]
-    public decimal? ExchangeRate { get; set; }
+    public decimal? WageExchangeRate { get; set; }
+
+    [Display(Name = "نرخ تبدیل سنگ")]
+    public decimal? StoneExchangeRate { get; set; }
+
+    [Display(Name = "قیمت سنگ")]
+    public decimal? StonePrice { get; set; }
 
     [Display(Name = "عیار")]
-    public CaratType CaratType { get; set; } = CaratType.Eighteen;
+    public decimal Fineness { get; set; } = 750m;
 
     [Display(Name = "مالیات")]
     public decimal TaxPercent { get; set; } = 9;
@@ -44,6 +51,27 @@ public class CalculatorVm
     [Display(Name = "واحد ارزی اجرت")]
     public GetPriceUnitTitleResponse? WagePriceUnit { get; set; }
 
-    [Display(Name = "عیار طلای کهنه")]
-    public int? OldGoldCarat { get; set; }
+    [Display(Name = "واحد ارزی سنگ")]
+    public GetPriceUnitTitleResponse? StonePriceUnit { get; set; }
+
+    [Display(Name = "واحد سنجش طلا")]
+    public GoldUnitType GoldUnitType { get; set; } = GoldUnitType.Gram;
+
+    public decimal WeightAs750 => (Fineness / 750m) * Weight;
+
+    public CalculatorVm CreateFrom(GetProductResponse response,
+        GetPriceUnitTitleResponse? wagePriceUnit, GetPriceUnitTitleResponse? stonePriceUnit)
+    {
+        Weight = response.Weight;
+        ProductType = response.ProductType;
+        Wage = response.Wage;
+        WageType = response.WageType;
+        Fineness = response.Fineness;
+        WagePriceUnit = wagePriceUnit;
+        GoldUnitType = response.GoldUnitType;
+        StonePriceUnit = stonePriceUnit;
+        StonePrice = response.GemStones?.Sum(x => x.Cost) ?? 0;
+
+        return this;
+    }
 }

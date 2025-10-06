@@ -1,12 +1,17 @@
-﻿using GoldEx.Client.Pages.Invoices.ViewModels;
-using GoldEx.Client.Pages.Settings.Components.PaymentMethods;
-using GoldEx.Shared.DTOs.PaymentMethods;
+﻿using GoldEx.Client.Pages.Customers.Components;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
+using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.PaymentVouchers.Components;
+using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -16,8 +21,10 @@ public partial class PaymentList
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public decimal TotalInvoiceAmount { get; set; }
+    [Parameter] public InvoiceType InvoiceType { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
 
-    private List<GetPaymentMethodResponse> _paymentMethods = [];
+    private List<Guid> _voucherIds = [];
 
     private decimal GetTotalPaid()
     {
@@ -26,45 +33,51 @@ public partial class PaymentList
 
     private decimal TotalRemainingCalculated => TotalInvoiceAmount - GetTotalPaid();
 
-    protected override async Task OnParametersSetAsync()
+    public string FinancialAccountLabelText => InvoiceType switch
     {
-        if (!_paymentMethods.Any()) 
-            await LoadPaymentMethodsAsync();
+        InvoiceType.Purchase => "پرداخت از حساب",
+        InvoiceType.Sell => "پرداخت به حساب",
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
-        await base.OnParametersSetAsync();
+    protected override void OnParametersSet()
+    {
+        _voucherIds = Items.Where(x => x.VoucherId.HasValue)
+            .Select(x => x.VoucherId!.Value)
+            .ToList();
+
+        base.OnParametersSet();
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (!Items.Any())
-            AddItem();
+            await AddItem();
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
-    private async Task LoadPaymentMethodsAsync()
+    private async Task LoadFinancialAccountsAsync(InvoicePaymentVm item)
     {
-        await SendRequestAsync<IPaymentMethodService, List<GetPaymentMethodResponse>>(
-            action: (s, ct) => s.GetListAsync(ct),
-            afterSend: response =>
-            {
-                _paymentMethods = response;
-                Items.First().PaymentMethod = _paymentMethods.FirstOrDefault();
-
-                StateHasChanged();
-            });
+        await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(null, item.PriceUnit?.Id ?? PriceUnit.Id, ct),
+            afterSend: response => item.FinancialAccounts = response);
     }
 
-    private void AddItem()
+    private async Task AddItem()
     {
-        Items.Add(new InvoicePaymentVm
+        var item = new InvoicePaymentVm
         {
             Amount = 0m,
             Note = string.Empty,
             PaymentDate = DateTime.Now,
             PriceUnit = PriceUnit,
             AmountAdornmentText = PriceUnit.Title
-        });
+        };
+
+        Items.Add(item);
+
+        await LoadFinancialAccountsAsync(item);
     }
 
     private void RemoveItem(InvoicePaymentVm item)
@@ -94,6 +107,14 @@ public partial class PaymentList
         item.AmountAdornmentText = priceUnit.Title;
         item.ExchangeRateLabel = $"نرخ تبدیل {item.PriceUnit.Title} به {PriceUnit.Title}";
 
+        await LoadFinancialAccountsAsync(item);
+
+        if (PriceUnit.Id == priceUnit.Id)
+        {
+            StateHasChanged();
+            return;
+        }
+
         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
             action: (s, ct) => s.GetExchangeRateAsync(priceUnit.Id, PriceUnit.Id, ct),
             afterSend: response =>
@@ -105,7 +126,7 @@ public partial class PaymentList
             });
     }
 
-    private void OnTotalRemainingClicked()
+    private async Task OnTotalRemainingClicked()
     {
         var remaining = TotalRemainingCalculated;
         if (remaining <= 0)
@@ -129,28 +150,98 @@ public partial class PaymentList
         }
         else
         {
-            Items.Add(new InvoicePaymentVm
+            var item = new InvoicePaymentVm
             {
                 Amount = remaining,
                 AmountAdornmentText = PriceUnit.Title,
                 PriceUnit = PriceUnit,
                 PaymentDate = DateTime.Now
-            });
+            };
+
+            Items.Add(item);
+
+            await LoadFinancialAccountsAsync(item);
         }
     }
 
-    private async Task OnAddPaymentMethod()
+    private async Task OnAddFinancialAccount(InvoicePaymentVm item)
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+        DialogOptions dialogOptions = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            FullScreen = false,
+            MaxWidth = MaxWidth.Small
+        };
 
-        var dialog = await DialogService.ShowAsync<Editor>("افزودن روش پرداخت جدید", dialogOptions);
+        var parameters = new DialogParameters<FinancialAccountEditor>
+        {
+            { x => x.PriceUnits, PriceUnits },
+            { x => x.IsSystemAccount, true },
+            { x => x.SubmitIndependently, true }
+        };
+
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید",
+            parameters, dialogOptions);
 
         var result = await dialog.Result;
 
-        if (result is { Canceled: false, Data: true })
+        if (result is { Canceled: false, Data: FinancialAccountVm })
         {
-            await LoadPaymentMethodsAsync();
+            await LoadFinancialAccountsAsync(item);
             StateHasChanged();
+        }
+    }
+
+    private async Task OnAddPaymentVoucher()
+    {
+        DialogOptions dialogOptions = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            FullScreen = false,
+            MaxWidth = MaxWidth.Medium
+        };
+
+        if (CustomerId is null)
+        {
+            AddErrorToast("لطفاً ابتدا تامین کننده را انتخاب کنید");
+            return;
+        }
+
+        var parameters = new DialogParameters<PaymentVouchersSelectorList>
+        {
+            {x => x.CustomerId, CustomerId.Value },
+            {x => x.SelectedPaymentVouchers, _voucherIds }
+        };
+
+        var dialog = await DialogService.ShowAsync<PaymentVouchersSelectorList>("اسناد پرداخت", parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: HashSet<GetPaymentVoucherResponse> paymentVouchers })
+        {
+            AddPaymentVouchersToList(paymentVouchers);
+            StateHasChanged();
+        }
+    }
+
+    private void AddPaymentVouchersToList(HashSet<GetPaymentVoucherResponse> paymentVouchers)
+    {
+        foreach (var paymentVoucher in paymentVouchers)
+        {
+            Items.Add(new InvoicePaymentVm
+            {
+                VoucherId = paymentVoucher.Id,
+                Amount = paymentVoucher.Amount,
+                Note = paymentVoucher.Description,
+                ReferenceNumber = paymentVoucher.VoucherNumber.ToString(),
+                PaymentDate = new DateTime(paymentVoucher.PaymentDate.Year, paymentVoucher.PaymentDate.Month, paymentVoucher.PaymentDate.Day),
+                PriceUnit = paymentVoucher.PriceUnit,
+                AmountAdornmentText = paymentVoucher.PriceUnit.Title,
+                ExchangeRate = paymentVoucher.ExchangeRate,
+                Disabled = true
+            });
         }
     }
 }

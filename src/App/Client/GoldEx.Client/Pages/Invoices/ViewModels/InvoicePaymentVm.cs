@@ -1,14 +1,14 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
-using GoldEx.Shared.DTOs.PaymentMethods;
 using GoldEx.Shared.DTOs.PriceUnits;
-using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
 public class InvoicePaymentVm
 {
+    public Guid? Id { get; set; }
+
     [Display(Name = "تاریخ پرداخت")]
     public DateTime? PaymentDate { get; set; }
 
@@ -23,9 +23,10 @@ public class InvoicePaymentVm
 
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
-    [Display(Name = "روش پرداخت")]
-    [Required(ErrorMessage = "وارد کردن روش پرداخت الزامی است")]
-    public GetPaymentMethodResponse? PaymentMethod { get; set; }
+    [Display(Name = "حساب مالی")]
+    public GetFinancialAccountTitleResponse? FinancialAccount { get; set; }
+
+    public List<GetFinancialAccountTitleResponse> FinancialAccounts { get; set; } = [];
 
     [Display(Name = "نرخ تبدیل")]
     public decimal? ExchangeRate { get; set; }
@@ -33,35 +34,42 @@ public class InvoicePaymentVm
     public string? ExchangeRateLabel { get; set; }
     public string AmountAdornmentText { get; set; } = default!;
     public bool AmountMenuOpen { get; set; }
+    public bool Disabled { get; set; }
+
+    public Guid? VoucherId { get; set; }
 
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {
         if (item.PriceUnit is null)
             throw new FluentValidation.ValidationException("واحد ارزی برای پرداختی ها مشخص نشده است");
 
-        if (item.PaymentMethod is null)
-            throw new FluentValidation.ValidationException("روش پرداخت برای پرداختی ها مشخص نشده است");
+        if (item.FinancialAccount is null && !item.VoucherId.HasValue)
+            throw new FluentValidation.ValidationException("حساب مالی برای پرداختی ها مشخص نشده است");
 
         if (!item.PaymentDate.HasValue)
             throw new FluentValidation.ValidationException("تاریخ پرداخت مشخص نشده است");
 
-        return new InvoicePaymentDto(item.Amount, item.ExchangeRate, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
-            item.PaymentMethod.Id, item.PriceUnit.Id);
+        return new InvoicePaymentDto(item.Id, item.Amount, item.ExchangeRate, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
+            item.FinancialAccount?.Id, item.VoucherId, item.PriceUnit.Id);
     }
 
     public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response, GetPriceUnitTitleResponse? priceUnit)
     {
         return new InvoicePaymentVm
         {
+            Id = response.Id,
             Amount = response.Amount,
             PriceUnit = response.PriceUnit,
-            PaymentMethod = response.PaymentMethod,
+            FinancialAccount = response.FinancialAccount,
             PaymentDate = response.PaymentDate,
             ReferenceNumber = response.ReferenceNumber,
             Note = response.Note,
             ExchangeRate = response.ExchangeRate,
             AmountAdornmentText = response.PriceUnit.Title,
-            ExchangeRateLabel = $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}"
+            ExchangeRateLabel = $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}",
+            VoucherId = response.VoucherId,
+            Disabled = response.VoucherId.HasValue,
+            FinancialAccounts = response.FinancialAccounts
         };
     }
 }

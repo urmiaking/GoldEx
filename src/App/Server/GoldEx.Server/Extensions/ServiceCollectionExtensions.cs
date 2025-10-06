@@ -29,6 +29,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DevExpress.Drawing;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Extensions;
 
@@ -121,7 +122,10 @@ internal static class ServiceCollectionExtensions
         if (string.IsNullOrEmpty(connectionString))
             throw new Exception("GoldEx connection string is not available");
 
-        services.AddSqlServer<GoldExDbContext>(connectionString);
+        services.AddSqlServer<GoldExDbContext>(connectionString, options =>
+        {
+            options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        });
 
         return services;
     }
@@ -266,13 +270,13 @@ internal static class ServiceCollectionExtensions
     {
         services.AddDevExpressControls();
 
-        DXDrawingEngine.ForceSkia();
+        DevExpress.Drawing.Settings.DrawingEngine = DrawingEngine.Skia;
 
         DevExpress.Utils.DeserializationSettings.RegisterTrustedAssembly(typeof(GetInvoiceReportResponse).Assembly);
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceReportResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetPriceUnitTitleResponse));
-        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceItemResponse));
+        DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceProductItemResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetSettingResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceDiscountResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoicePaymentResponse));

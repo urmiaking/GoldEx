@@ -1,5 +1,6 @@
 ﻿using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Invoices;
 
@@ -10,9 +11,15 @@ namespace GoldEx.Shared.DTOs.Invoices;
 /// <param name="InvoiceNumber"></param>
 /// <param name="InvoiceDate"></param>
 /// <param name="DueDate"></param>
+/// <param name="InvoiceType"></param>
 /// <param name="PriceUnitId"></param>
+/// <param name="UnpaidAmountExchangeRate"></param>
+/// <param name="UnpaidPriceUnitId"></param>
+/// <param name="ExchangeRate"></param>
 /// <param name="Customer"></param>
-/// <param name="InvoiceItems"></param>
+/// <param name="InvoiceProductItems"></param>
+/// <param name="InvoiceCoinItems"></param>
+/// <param name="InvoiceCurrencyItems"></param>
 /// <param name="InvoiceDiscounts"></param>
 /// <param name="InvoicePayments"></param>
 /// <param name="InvoiceExtraCosts"></param>
@@ -21,31 +28,71 @@ public record InvoiceRequestDto(
     long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
+    InvoiceType InvoiceType,
     Guid PriceUnitId,
-    CustomerRequestDto Customer,
-    List<InvoiceItemDto> InvoiceItems,
+    decimal? UnpaidAmountExchangeRate,
+    Guid? UnpaidPriceUnitId,
+    decimal? ExchangeRate,
+    Guid CustomerId,
+    List<InvoiceProductItemDto> InvoiceProductItems,
+    List<InvoiceCoinItemDto> InvoiceCoinItems,
+    List<InvoiceCurrencyItemDto> InvoiceCurrencyItems,
     List<InvoiceDiscountDto> InvoiceDiscounts,
     List<InvoicePaymentDto> InvoicePayments,
-    List<InvoiceExtraCostsDto> InvoiceExtraCosts);
+    List<InvoiceExtraCostsDto> InvoiceExtraCosts,
+    List<InvoiceUsedProductDto> InvoiceUsedProducts);
+
+public record InvoiceUsedProductDto(
+    Guid? Id,
+    string Description,
+    decimal Weight,
+    decimal GramPrice,
+    decimal? ExtraCostsAmount,
+    decimal Fineness,
+    int Quantity,
+    bool IsSellable,
+    ProductType ProductType,
+    GoldUnitType UnitType);
 
 public record InvoicePaymentDto(
+    Guid? Id,
     decimal Amount,
     decimal? ExchangeRate,
     DateTime PaymentDate,
     string? ReferenceNumber,
     string? Note,
-    Guid PaymentMethodId,
+    Guid? FinancialAccountId,
+    Guid? VoucherId,
     Guid PriceUnitId);
 
-public record InvoiceItemDto(
+public record InvoiceProductItemDto(
     Guid? Id,
     decimal GramPrice,
     decimal ProfitPercent,
     decimal TaxPercent,
-    decimal? ExchangeRate,
+    decimal? CostPrice,
+    decimal? CostPriceExchangeRate,
+    decimal? WagePriceUnitExchangeRate,
+    decimal? StonePriceUnitExchangeRate,
+    Guid? CostPriceUnitId,
+    bool IsInstantProduct,
     int Quantity,
-    ProductRequestDto Product,
-    Guid PriceUnit);
+    ProductRequestDto Product);
+
+public record InvoiceCoinItemDto(
+    Guid? Id,
+    decimal UnitPrice,
+    int Quantity,
+    decimal ProfitPercent,
+    Guid CoinId);
+
+public record InvoiceCurrencyItemDto(
+    Guid? Id,
+    decimal UnitPrice,
+    decimal Amount,
+    decimal ProfitPercent,
+    decimal TaxPercent,
+    Guid CurrencyId);
 
 public record InvoiceExtraCostsDto(decimal Amount, decimal? ExchangeRate, string? Description, Guid PriceUnitId);
 

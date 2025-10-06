@@ -14,8 +14,11 @@ public class InvoicePaymentValidator : AbstractValidator<InvoicePaymentVm>
             .NotNull().WithMessage("تاریخ پرداخت الزامی است")
             .NotEmpty().WithMessage("تاریخ پرداخت الزامی است");
 
-        RuleFor(p => p.PaymentMethod)
-            .NotNull().WithMessage("روش پرداخت الزامی است");
+        When(x => !x.VoucherId.HasValue, () =>
+        {
+            RuleFor(p => p.FinancialAccount)
+                .NotNull().WithMessage("روش پرداخت الزامی است");
+        });
 
         RuleFor(p => p.PriceUnit)
             .NotNull().WithMessage("واحد ارزی پرداخت الزامی است");

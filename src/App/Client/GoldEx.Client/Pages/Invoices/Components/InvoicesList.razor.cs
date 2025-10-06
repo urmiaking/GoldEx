@@ -2,10 +2,13 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using System.Globalization;
+using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -16,8 +19,45 @@ public partial class InvoicesList
     [Parameter] public Guid? CustomerId { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
+    public string? InvoicePaymentStatusIcon => _invoicePaymentStatus switch
+    {
+        InvoicePaymentStatus.Paid => Icons.Material.Filled.Check,
+        InvoicePaymentStatus.HasDebt => Icons.Material.Filled.Pending,
+        InvoicePaymentStatus.Overdue => Icons.Material.Filled.MoreTime,
+        null => Icons.Material.Filled.ViewHeadline,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public string? InvoiceTypeIcon => _invoiceType switch
+    {
+        InvoiceType.Sell => Icons.Material.Filled.ArrowDownward,
+        InvoiceType.Purchase => Icons.Material.Filled.ArrowUpward,
+        null => Icons.Material.Filled.CompareArrows,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public Color InvoiceTypeColor => _invoiceType switch
+    {
+        InvoiceType.Purchase => Color.Success,
+        InvoiceType.Sell => Color.Error,
+        null => Color.Info,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public Color InvoicePaymentStatusColor => _invoicePaymentStatus switch
+    {
+        InvoicePaymentStatus.Paid => Color.Success,
+        InvoicePaymentStatus.HasDebt => Color.Primary,
+        InvoicePaymentStatus.Overdue => Color.Error,
+        null => Color.Info,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    private InvoicePaymentStatus? _invoicePaymentStatus;
+    private InvoiceType? _invoiceType;
     private string? _searchString;
     private MudTable<InvoiceListVm> _table = new();
+    private DateRange _filterDateRange = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
     private async Task<TableData<InvoiceListVm>> LoadInvoicesAsync(TableState state, CancellationToken cancellationToken = default)
@@ -33,8 +73,10 @@ public partial class InvoicesList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
+        var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _filterDateRange.Start, _filterDateRange.End);
+
         await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
-            action: (service, token) => service.GetListAsync(filter, CustomerId, token),
+            action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
             afterSend: response =>
             {
                 var items = response.Data.Select(InvoiceListVm.CreateFrom).ToList();
@@ -43,7 +85,8 @@ public partial class InvoicesList
                     TotalItems = response.Total,
                     Items = items
                 };
-            }
+            },
+            cancelPrevious: true
         );
 
         return result;
@@ -60,9 +103,9 @@ public partial class InvoicesList
         _table.NavigateTo(i - 1);
     }
 
-    public async Task OnCreateInvoice()
+    public void OnCreateInvoice()
     {
-        NavigationManager.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute( new { Id = "" }));
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute( new { Id = "" }).AppendQueryString(new { CustomerId }));
     }
 
     private async Task OnRemoveInvoice(InvoiceListVm model)
@@ -80,7 +123,7 @@ public partial class InvoicesList
         if (result is { Canceled: false })
         {
             AddSuccessToast("فاکتور با موفقیت حذف شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -91,6 +134,48 @@ public partial class InvoicesList
 
     private void OnViewInvoice(InvoiceListVm model)
     {
-        NavigationManager.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = model.InvoiceNumber }));
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
+        {
+            number = model.InvoiceNumber,
+            invoiceType = model.InvoiceType.ToString()
+        }));
+    }
+
+    private async Task SetStatusFilterText(InvoicePaymentStatus? status)
+    {
+        _invoicePaymentStatus = status;
+        await RefreshAsync();
+    }
+
+    private async Task SetInvoiceTypeText(InvoiceType? invoiceType)
+    {
+        _invoiceType = invoiceType;
+        await RefreshAsync();
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _filterDateRange = dateRange;
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        await _table.ReloadServerData();
+        StateHasChanged();
+    }
+
+    private string GetInvoiceDateTooltipText(InvoiceListVm context)
+    {
+        return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";
+    }
+
+    private string FormatDebtAmount(decimal amount, string unit)
+    {
+        if (amount < 0)
+        {
+            return $"{Math.Abs(amount).ToCurrencyFormat(unit)} (بس)";
+        }
+        return amount.ToCurrencyFormat(unit);
     }
 }

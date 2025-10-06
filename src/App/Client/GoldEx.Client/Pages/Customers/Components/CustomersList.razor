@@ -1,11 +1,18 @@
-﻿@inherits GoldExComponentBase
+﻿@using System.Globalization
+@inherits GoldExComponentBase
 
 <MudTable T="CustomerVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadCustomersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
         <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged" Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+                                PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ ثبت مشتری" Clearable="true" />
+        </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">ثبت مشتری جدید</MudButton>
@@ -20,6 +27,8 @@
         <MudTh><MudTableSortLabel SortLabel="CustomerType" T="CustomerVm">نوع</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="NationalId" T="CustomerVm">کد یکتا</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="PhoneNumber" T="CustomerVm">شماره تماس</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="CreatedAt" T="CustomerVm">تاریخ ثبت</MudTableSortLabel></MudTh>
+        <MudTh>مانده</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -27,23 +36,35 @@
         <MudTd DataLabel="نوع">@context.CustomerType.GetDisplayName()</MudTd>
         <MudTd DataLabel="کد یکتا">@context.NationalId</MudTd>
         <MudTd DataLabel="شماره تماس">@context.PhoneNumber</MudTd>
+        <MudTd DataLabel="تاریخ ثبت">
+            <MudTooltip Text="@context.CreatedAt.ToString(CultureInfo.CurrentUICulture)" Placement="Placement.Top" Arrow="true">
+                @context.CreatedAt.ToShortDateString()
+            </MudTooltip>
+        </MudTd>
+        <MudTh>
+            <CustomerRemaining CustomerId="@context.Id!.Value" />
+        </MudTh>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="مشاهده تراکنش های مشتری">
                     <MudIconButton Icon="@Icons.Material.Filled.DocumentScanner" Size="Size.Small" Variant="Variant.Filled"
                                    Color="Color.Success" OnClick="_ => OnViewTransaction(context)"></MudIconButton>
                 </MudTooltip>
+                <MudTooltip Text="مشاهده فاکتورهای مشتری">
+                    <MudIconButton Icon="@Icons.Material.Filled.LibraryBooks" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Info" OnClick="_ => OnViewInvoices(context)"></MudIconButton>
+                </MudTooltip>
                 <MudTooltip Text="ویرایش">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
                                    Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
                 </MudTooltip>
                 <MudTooltip Text="حذف">
-                    <MudIconButton OnClick="@(_ => OnRemove(context))" ClickPropagation="true"
-                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    <MudIconButton OnClick="@(_ => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
+                                   Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                 </MudTooltip>
             </div>
         </MudTd>
-    </RowTemplate>
+    </RowTemplate>  
     <NoRecordsContent>
         <MudText>هیچ مشتری یافت نشد</MudText>
     </NoRecordsContent>
@@ -51,13 +72,27 @@
         <MudText>در حال بارگذاری</MudText>
     </LoadingContent>
     <PagerContent>
-        <div class="d-flex flex-column align-center">
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
             <MudPagination SelectedChanged="PageChanged"
                            Color="Color.Primary"
-                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
-                           Class="pa-4"
+                           Count="@pageCount"
                            ShowFirstButton="true"
                            ShowLastButton="true" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
         </div>
     </PagerContent>
 </MudTable>

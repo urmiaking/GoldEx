@@ -1,6 +1,6 @@
 ﻿using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Settings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace GoldEx.Client.Pages.Settings;

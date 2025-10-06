@@ -11,20 +11,6 @@ public class ProductValidator : AbstractValidator<ProductVm>
         RuleFor(x => x.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن را وارد کنید");
 
-        When(product => product.ProductType is ProductType.Gold or ProductType.Jewelry, () =>
-        {
-            RuleFor(product => product.Wage).NotNull().WithMessage("لطفا اجرت ساخت را وارد کنید");
-            RuleFor(product => product.WageType)
-                .NotNull()
-                .WithMessage("لطفا نوع اجرت را وارد کنید");
-        });
-
-        When(product => product.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>
-        {
-            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
-            RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای سکه ها، طلای آبشده و دست دوم نباید وارد شود");
-        });
-
         When(product => product.WageType is WageType.Percent, () =>
         {
             RuleFor(product => product.Wage)
@@ -34,7 +20,15 @@ public class ProductValidator : AbstractValidator<ProductVm>
 
         RuleFor(x => x.ProductType).IsInEnum().WithMessage("لطفا نوع جنس را انتخاب کنید");
 
-        RuleFor(x => x.CaratType).IsInEnum().WithMessage("لطفا عیار را انتخاب کنید");
+        RuleFor(x => x.Fineness)
+            .InclusiveBetween(0, 1000)
+            .WithMessage("عیار باید بین 0 تا 1000 باشد");
+
+        When(x => x.ProductType == ProductType.Jewelry, () => 
+        {
+            RuleFor(x => x.StonePriceUnit)
+                .NotNull().WithMessage("لطفا واحد قیمت سنگ را انتخاب کنید");
+        });
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

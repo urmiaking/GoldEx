@@ -1,56 +1,66 @@
 ﻿@inherits GoldExComponentBase
 
-<MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" Height="450px" FixedHeader="true" Elevation="@Elevation"
-          Items="@_items" Class="@Class"
-          GroupBy="@_groupDefinition"
-          GroupFooterClass="mb-4">
-    <ColGroup>
-        <col />
-        <col />
-        <col />
-        <col />
-    </ColGroup>
-    <HeaderContent>
-        <MudTh></MudTh>
-        <MudTh>عنوان</MudTh>
-        <MudTh>قیمت</MudTh>
-        <MudTh>تغییرات</MudTh>
-        <MudTh>تاریخ بروزرسانی</MudTh>
-    </HeaderContent>
-    <GroupHeaderTemplate>
-        <!-- TODO: fix rtl-->
-        <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.Key}")</MudTh>
-    </GroupHeaderTemplate>
-    <RowTemplate>
-        @if (context.HasIcon)
-        {
-            <MudTd DataLabel="">
-                <MudAvatar Size="Size.Small">
-                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.Price, context.Id))" Alt="img" />
-                </MudAvatar>
-            </MudTd>
-        }
+@if (_items is null)
+{
+    <div class="align-center d-flex flex-column gap-3 justify-content-center mt-5">
+        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+        <div>در حال بارگذاری</div>
+    </div>
+}
+else
+{
+    <MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" Height="450px" FixedHeader="true" Elevation="@Elevation"
+              Items="@_items" Class="@Class"
+              GroupBy="@_groupDefinition"
+              GroupFooterClass="mb-4">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh></MudTh>
+            <MudTh>عنوان</MudTh>
+            <MudTh>قیمت</MudTh>
+            <MudTh>تغییرات</MudTh>
+            <MudTh>تاریخ بروزرسانی</MudTh>
+        </HeaderContent>
+        <GroupHeaderTemplate>
+            <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.Key}")</MudTh>
+        </GroupHeaderTemplate>
+        <RowTemplate>
+            @if (context.HasIcon)
+            {
+                <MudTd DataLabel="">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.Price, context.Id))" Alt="img" />
+                    </MudAvatar>
+                </MudTd>
+            }
             
-        <MudTd DataLabel="عنوان">@context.Title</MudTd>
-        <MudTd DataLabel="قیمت">@context.Value @context.Unit</MudTd>
-        <MudTd DataLabel="تغییرات">
-            @if (context.Change.Contains("-"))
-            {
-                <div class="red-text">
-                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon> @context.Change
-                </div>
-            }
-            else if (!context.Change.Contains("(0.00%)"))
-            {
-                <div class="green-text">
-                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp"></MudIcon> @context.Change
-                </div>
-            }
-            else
-            {
-                <MudIcon Icon="@Icons.Material.Filled.Remove"></MudIcon> @context.Change
-            }
-        </MudTd>
-        <MudTd DataLabel="تاریخ بروزرسانی">@context.LastUpdate</MudTd>
-    </RowTemplate>
-</MudTable>
+            <MudTd DataLabel="عنوان">@context.Title</MudTd>
+            <MudTd DataLabel="قیمت">@context.Value @context.Unit</MudTd>
+            <MudTd DataLabel="تغییرات">
+                @if (context.Change.Contains("-"))
+                {
+                    <div class="red-text">
+                        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon> @context.Change
+                    </div>
+                }
+                else if (!context.Change.Contains("(0.00%)"))
+                {
+                    <div class="green-text">
+                        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp"></MudIcon> @context.Change
+                    </div>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Remove"></MudIcon> @context.Change
+                }
+            </MudTd>
+            <MudTd DataLabel="تاریخ بروزرسانی">@context.LastUpdate</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+

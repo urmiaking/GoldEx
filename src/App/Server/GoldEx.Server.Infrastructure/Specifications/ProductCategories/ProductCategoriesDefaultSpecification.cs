@@ -7,6 +7,6 @@ public class ProductCategoriesDefaultSpecification : SpecificationBase<ProductCa
 {
     public ProductCategoriesDefaultSpecification()
     {
-        ApplyOrderBy(x => x.Title);
+        ApplyOrderBy(x => x.PrefixCode);
     }
 }

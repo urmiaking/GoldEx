@@ -32,6 +32,10 @@ public class SettingsVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public decimal JewelryProfitPercent { get; set; }
 
+    [Display(Name = "کارمزد طلای آب شده")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public decimal MoltenGoldCommissionPercent { get; set; }
+
     [Display(Name = "حاشیه اطمینان قیمت طلا")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public decimal GoldSafetyMarginPercent { get; set; }
@@ -59,6 +63,7 @@ public class SettingsVm
             TaxPercent,
             GoldProfitPercent,
             JewelryProfitPercent,
+            MoltenGoldCommissionPercent,
             PriceUpdateInterval,
             GoldSafetyMarginPercent,
             OldGoldCarat,
@@ -76,9 +81,10 @@ public class SettingsVm
             TaxPercent = response.TaxPercent,
             GoldProfitPercent = response.GoldProfitPercent,
             JewelryProfitPercent = response.JewelryProfitPercent,
+            MoltenGoldCommissionPercent = response.MoltenGoldCommissionPercent,
             PriceUpdateInterval = response.PriceUpdateInterval,
             GoldSafetyMarginPercent = response.GoldSafetyMarginPercent,
-            OldGoldCarat = response.OldGoldCarat,
+            OldGoldCarat = response.UsedGoldFineness,
             HasIcon = response.HasIcon
         };
     }

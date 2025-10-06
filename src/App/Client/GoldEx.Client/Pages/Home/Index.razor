@@ -1,5 +1,5 @@
 ﻿@attribute [Route(ClientRoutes.Home.Index)]
-@using GoldEx.Client.Pages.Invoices.Components
+
 @inherits GoldExComponentBase
 
 <PageTitle>صفحه اصلی</PageTitle>
@@ -30,30 +30,33 @@
         </NotAuthorized>
     </AuthorizeView>
     
-    <MudTabs Elevation="24" Color="Color.Transparent" Centered="true">
+    <MudTabs Elevation="24" Color="Color.Transparent" Centered="true" TabHeaderClass="rounded-5">
         <MudTabPanel Text="قیمت ارز، طلا و سکه" Icon="@Icons.Material.Filled.AttachMoney">
-            <PriceBoard Class="mt-5" Elevation="24" />
+            <PriceBoard Class="mt-5 p-2" Elevation="24" />
         </MudTabPanel>
         <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate">
             <Calculator Class="mt-5" Elevation="24" />
         </MudTabPanel>
         <AuthorizeView>
             <Authorized>
+                <MudTabPanel Text="انبار" Icon="@Icons.Material.Filled.Warehouse">
+                    <InventoryStockList Class="mt-5" Elevation="24" />
+                </MudTabPanel>
                 <MudTabPanel Text="اجناس من" Icon="@Icons.Material.Filled.Warehouse">
-                    <ProductsList Class="mt-5" Elevation="24" />
+                    <ProductsList Class="mt-5" Elevation="24"/>
                 </MudTabPanel>
                 <MudTabPanel Text="مشتریان" Icon="@Icons.Material.Filled.PeopleAlt">
-                    <CustomersList Class="mt-5" Elevation="24" />
+                    <CustomersList Class="mt-5" Elevation="24"/>
                 </MudTabPanel>
-                <MudTabPanel Text="اسناد حسابداری" Icon="@Icons.Material.Filled.DocumentScanner">
-                    <TransactionsList Class="mt-5" Elevation="24" />
+                <MudTabPanel Text="اسناد پرداخت" Icon="@Icons.Material.Filled.Payment">
+                    <PaymentVouchersList Class="mt-5" Elevation="24"/>
                 </MudTabPanel>
-                <MudTabPanel Text="فاکتورهای من" Icon="@Icons.Material.Filled.AutoStories">
-                    <InvoicesList Class="mt-5" Elevation="24" />
+                <MudTabPanel Text="فاکتورهای من" Icon="@Icons.Material.Filled.LibraryBooks">
+                    <InvoicesList Class="mt-5" Elevation="24"/>
                 </MudTabPanel>
-                <MudTabPanel Text="گزارش گیری"></MudTabPanel>
-                <MudTabPanel Text="اجناس فروخته شده"></MudTabPanel>
-                <MudTabPanel Text="لیست بدهی ها"></MudTabPanel>
+                <MudTabPanel Text="گزارش گیری" Icon="@Icons.Material.Filled.InsertChart">
+                    <ReportPanel Class="mt-5" Elevation="24"/>
+                </MudTabPanel>
             </Authorized>
         </AuthorizeView>
     </MudTabs>

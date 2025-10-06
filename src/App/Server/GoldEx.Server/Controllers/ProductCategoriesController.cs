@@ -2,7 +2,7 @@
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +23,13 @@ public class ProductCategoriesController(IProductCategoryService service) : ApiC
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var item = await service.GetAsync(id, cancellationToken);
+        return Ok(item);
+    }
+
+    [HttpGet(ApiRoutes.ProductCategories.GetLastCode)]
+    public async Task<IActionResult> GetLastCodeAsync(CancellationToken cancellationToken)
+    {
+        var item = await service.GetLastCodeAsync(cancellationToken);
         return Ok(item);
     }
 

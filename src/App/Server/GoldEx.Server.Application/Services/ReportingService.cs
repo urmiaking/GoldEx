@@ -5,7 +5,8 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,29 +15,29 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingService settingService, IMapper mapper) : IReportingService
 {
-    public async Task<GetInvoiceReportResponse> GetInvoiceReportAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    public async Task<GetInvoiceReportResponse> GetInvoiceReportAsync(long invoiceNumber, InvoiceType invoiceType,
+        CancellationToken cancellationToken = default)
     {
-        var invoiceResponse = await GetInvoiceDetailAsync(invoiceNumber, cancellationToken);
+        var invoiceResponse = await GetInvoiceDetailAsync(invoiceNumber, invoiceType, cancellationToken);
         var setting = await settingService.GetAsync(cancellationToken);
 
         return new GetInvoiceReportResponse(invoiceResponse, setting!);
     }
 
-    private async Task<GetInvoiceDetailResponse> GetInvoiceDetailAsync(long invoiceNumber, CancellationToken cancellationToken = default)
+    private async Task<GetInvoiceDetailResponse> GetInvoiceDetailAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default)
     {
         var item = await invoiceRepository
-            .Get(new InvoicesByNumberSpecification(invoiceNumber))
-            .Include(x => x.Customer)
-            .ThenInclude(x => x.CreditLimitPriceUnit)
-            .Include(x => x.PriceUnit)
-            .Include(x => x.Items)
-            .ThenInclude(x => x.Product)
-            .ThenInclude(x => x!.ProductCategory)
-            .Include(x => x.InvoicePayments)
-            .ThenInclude(x => x.PriceUnit)
-            .Include(x => x.InvoicePayments)
-            .ThenInclude(x => x.PaymentMethod)
-            .AsSplitQuery()
+            .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
+            .AsNoTracking()
+            .Include(x => x.Customer!)
+                .ThenInclude(x => x.CreditLimitPriceUnit)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.Product)
+            .Include(x => x.InvoicePayments!)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.Coin)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.Currency)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceDetailResponse>(item);

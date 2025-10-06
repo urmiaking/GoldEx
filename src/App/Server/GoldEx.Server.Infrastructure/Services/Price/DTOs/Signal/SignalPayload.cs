@@ -25,12 +25,36 @@ public class SignalPayloadItem
     {
         return
         [
+            CreateOuncePayload(),
             CreateCoinPayload(),
             CreateCoinBubblePayload(),
             CreateCoinParsianPayload(),
             CreateCurrencyPayload(),
             CreateGoldPayload()
         ];
+    }
+
+    private static SignalPayloadItem CreateOuncePayload()
+    {
+        return new SignalPayloadItem
+        {
+            Market = "ounce",
+            FilterName = "ounce",
+            Property =
+            [
+                "name",
+                "change",
+                "close",
+                "iconUrl",
+                "id",
+                "index",
+                "jDate",
+                "persianName",
+                "time",
+                "percentChange",
+                "unit"
+            ]
+        };
     }
 
     public static SignalPayloadItem CreateGoldPayload()

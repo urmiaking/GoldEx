@@ -1,9 +1,20 @@
 ﻿using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Products;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
+using GoldEx.Shared.Routings;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
+using MudBlazor.Extensions;
+using MudBlazor.Extensions.Core;
+using MudBlazor.Extensions.Helper;
+using MudBlazor.Extensions.Options;
+using MudBlazor.Utilities;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Products.Components;
 
@@ -11,14 +22,29 @@ public partial class ProductsList
 {
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private string? _searchString;
+    private string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<ProductVm> _table = new ();
-    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small};
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
+    private ItemStatus _itemStatus = ItemStatus.Available;
+    private DateRange _filterDateRange = new();
+
+    private string DateRangeFilterLabel => _itemStatus == ItemStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
+    private string ProductStatusIcon => _itemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
+
+    private async Task RefreshAsync()
+    {
+        await _table.ReloadServerData();
+        StateHasChanged();
+    }
 
     private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<ProductVm>();
+
+        var productFilter = new ProductFilter(_itemStatus, _filterDateRange.Start, _filterDateRange.End);
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch
@@ -30,7 +56,7 @@ public partial class ProductsList
             });
 
         await SendRequestAsync<IProductService, PagedList<GetProductResponse>>(
-            action: (service, token) => service.GetListAsync(filter, token),
+            action: (service, token) => service.GetListAsync(filter, productFilter, token),
             afterSend: response =>
             {
                 var items = response.Data.Select(ProductVm.CreateFrom).ToList();
@@ -39,7 +65,8 @@ public partial class ProductsList
                     TotalItems = response.Total,
                     Items = items
                 };
-            }
+            },
+            cancelPrevious: true
         );
 
         return result;
@@ -48,7 +75,7 @@ public partial class ProductsList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await _table.ReloadServerData();
+        await RefreshAsync();
     }
 
     private void PageChanged(int i)
@@ -58,14 +85,30 @@ public partial class ProductsList
 
     public async Task OnCreateProduct()
     {
-        var dialog = await DialogService.ShowAsync<Editor>("افزودن جنس جدید", _dialogOptions);
+        var options = new DialogOptionsEx
+        {
+            MaximizeButton = true,
+            CloseButton = true,
+            FullHeight = false,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            DragMode = MudDialogDragMode.Simple,
+            Animations = [AnimationType.Pulse],
+            Position = DialogPosition.Center,
+            DialogBackgroundAppearance = MudExAppearance.FromCss(MudExCss.Classes.Backgrounds.LightBulb),
+            DialogAppearance = MudExAppearance.FromCss(MudExCss.Classes.Dialog.Glass)
+        };
+
+        var dialog = await DialogService.ShowExAsync<Editor>("افزودن جنس جدید", options);
+
+        //var dialog = await DialogService.ShowAsync<Editor>("افزودن جنس جدید", _dialogOptions);
 
         var result = await dialog.Result;
 
         if (result is { Canceled: false })
         {
             AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -80,14 +123,14 @@ public partial class ProductsList
             { x => x.ProductName, model.Name }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
 
         var result = await dialog.Result;
 
         if (result is { Canceled: false })
         {
             AddSuccessToast("جنس با موفقیت حذف شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
     }
 
@@ -105,7 +148,47 @@ public partial class ProductsList
         if (result is { Canceled: false })
         {
             AddSuccessToast("جنس با موفقیت ویرایش شد.");
-            await _table.ReloadServerData();
+            await RefreshAsync();
         }
+    }
+
+    private async Task OnPrintBarcode(ProductVm product)
+    {
+        var labelData = new
+        {
+            text = product.Barcode,
+            name = product.Name,
+            weight = "وزن: " + product.Weight?.ToString("G29") + "g",
+            wage = "اجرت: " + product.WageType switch
+            {
+                WageType.Fixed => $"{product.Wage?.ToCurrencyFormat(product.WagePriceUnitTitle)}",
+                WageType.Percent => product.Wage?.ToString("G29") + "%",
+                _ => "ندارد"
+            }
+        };
+
+        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
+    }
+
+    private async Task SetStatusFilterText(ItemStatus filterType)
+    {
+        _itemStatus = filterType;
+        await RefreshAsync();
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _filterDateRange = dateRange;
+        await RefreshAsync();
+    }
+
+    private void OnViewInvoice(Guid? invoiceId)
+    {
+        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
+    }
+
+    private string GetTooltipText(ProductVm item)
+    {
+        return "DELETED";
     }
 }

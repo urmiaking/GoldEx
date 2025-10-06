@@ -1,16 +1,57 @@
-﻿@using GoldEx.Client.Helpers
-@using GoldEx.Client.Pages.Invoices.ViewModels
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
 <MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=>OnSearch(s))" Placeholder="جستجو ..." Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        <MudSpacer />
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
+                      Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense" Class="ml-2" Style="width: 180px;"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
+            <MudDateRangePicker DateRange="@_filterDateRange"
+                                DateRangeChanged="OnDateRangeChanged"
+                                Margin="Margin.Dense"
+                                Variant="Variant.Outlined"
+                                Class="ml-3"
+                                PlaceholderStart="از"
+                                PlaceholderEnd="تا"
+                                Elevation="24"
+                                RelativeWidth="DropdownWidth.Adaptive"
+                                Label="تاریخ فاکتور"
+                                Clearable="true" />
+        </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateInvoice())" Size="Size.Small" Variant="Variant.Filled">ثبت فاکتور جدید</MudButton>
+            <MudButtonGroup Size="Size.Small" Color="@InvoiceTypeColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@InvoiceTypeIcon">
+                    @(_invoiceType == null ? "همه" : _invoiceType.GetDisplayName())
+                </MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.CompareArrows" OnClick="() => SetInvoiceTypeText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.ArrowUpward" OnClick="() => SetInvoiceTypeText(InvoiceType.Purchase)">@InvoiceType.Purchase.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.ArrowDownward" OnClick="() => SetInvoiceTypeText(InvoiceType.Sell)">@InvoiceType.Sell.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="@InvoicePaymentStatusColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@InvoicePaymentStatusIcon">
+                    @(_invoicePaymentStatus == null ? "همه" : _invoicePaymentStatus.GetDisplayName())
+                </MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.HasDebt)">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.MoreTime" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Overdue)">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Paid)">@InvoicePaymentStatus.Paid.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OnCreateInvoice())" Size="Size.Small" Variant="Variant.Filled">
+                فاکتور جدید
+            </MudButton>
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
@@ -18,21 +59,42 @@
         </MudHidden>
     </ToolBarContent>
     <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="InvoiceType" T="InvoiceListVm">نوع فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره فاکتور</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">نام مشتری</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
         <MudTh>ارزش کل</MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceDate" T="InvoiceListVm">تاریخ فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="DueDate" T="InvoiceListVm">تاریخ سررسید</MudTableSortLabel></MudTh>
-        <MudTh>وضعیت</MudTh>
+        <MudTh>مانده بدهی</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
+        <MudTd DataLabel="نوع فاکتور">@context.InvoiceType.GetDisplayName()</MudTd>
         <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
-        <MudTd DataLabel="نام مشتری">@context.CustomerFullName</MudTd>
-        <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.AmountUnit)</MudTd>
-        <MudTd DataLabel="تاریخ فاکتور">@context.InvoiceDate.ToShortDateString()</MudTd>
+        <MudTd DataLabel="طرف حساب">@context.CustomerFullName</MudTd>
+        <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.PriceUnit)</MudTd>
+        <MudTd DataLabel="تاریخ فاکتور">
+            <MudTooltip Text="@GetInvoiceDateTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                @context.InvoiceDate.ToShortDateString()
+            </MudTooltip>
+        </MudTd>
         <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
-        <MudTd DataLabel="وضعیت">@context.PaymentStatus.GetDisplayName()</MudTd>
+        <MudTd DataLabel="مانده بدهی">
+            @switch (context.PaymentStatus)
+            {
+                case InvoicePaymentStatus.Paid:
+                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Check">@context.PaymentStatus.GetDisplayName()</MudChip>
+                    break;
+                case InvoicePaymentStatus.HasDebt:
+                    @FormatDebtAmount(context.TotalUnpaidAmount, context.PriceUnit)
+                    break;
+                case InvoicePaymentStatus.Overdue:
+                    <MudChip Size="Size.Small" T="string" Color="Color.Error" Variant="Variant.Filled">@context.TotalUnpaidAmount.ToCurrencyFormat(context.PriceUnit)</MudChip>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        </MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="چاپ فاکتور">
@@ -44,8 +106,8 @@
                                    Color="Color.Primary" OnClick="_ => OnEditInvoice(context)"></MudIconButton>
                 </MudTooltip>
                 <MudTooltip Text="حذف فاکتور">
-                    <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))" ClickPropagation="true"
-                                   Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))"Size="@Size.Small" Variant="@Variant.Filled"
+                                   Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                 </MudTooltip>
             </div>
         </MudTd>
@@ -57,13 +119,27 @@
         <MudText>در حال بارگذاری</MudText>
     </LoadingContent>
     <PagerContent>
-        <div class="d-flex flex-column align-center">
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
             <MudPagination SelectedChanged="PageChanged"
                            Color="Color.Primary"
-                           Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)"
-                           Class="pa-4"
+                           Count="@pageCount"
                            ShowFirstButton="true"
                            ShowLastButton="true" />
+        
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
         </div>
     </PagerContent>
 </MudTable>

@@ -3,7 +3,7 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +14,16 @@ namespace GoldEx.Server.Controllers;
 public class ProductsController(IProductService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Products.GetList)]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] ProductFilter productFilter, CancellationToken cancellationToken)
     {
-        var list = await service.GetListAsync(filter, cancellationToken);
+        var list = await service.GetListAsync(filter, productFilter, cancellationToken);
+        return Ok(list);
+    }
+
+    [HttpGet(ApiRoutes.Products.GetListByName)]
+    public async Task<IActionResult> GetListAsync([FromQuery] string name, CancellationToken cancellationToken)
+    {
+        var list = await service.GetListAsync(name, cancellationToken);
         return Ok(list);
     }
 
@@ -28,10 +35,9 @@ public class ProductsController(IProductService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Products.GetByBarcode)]
-    public async Task<IActionResult> GetAsync(string barcode, [FromQuery] bool? forCalculation = true,
-        CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
-        var product = await service.GetAsync(barcode, forCalculation, cancellationToken);
+        var product = await service.GetAsync(barcode, cancellationToken);
         return product is null ? NotFound() : Ok(product);
     }
 

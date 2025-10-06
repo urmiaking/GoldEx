@@ -1,7 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Settings;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -50,7 +50,7 @@ public partial class PriceBoard
     private async Task LoadPricesAsync()
     {
         await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
-            action: (s, ct) => s.GetListAsync(ct),
+            action: (s, ct) => s.GetListAsync(null, ct),
             afterSend: response => _items = response,
             createScope: true
         );
@@ -74,9 +74,11 @@ public partial class PriceBoard
         StateHasChanged();
     }
 
-    public override void Dispose()
+    public override async ValueTask DisposeAsync()
     {
-        _timer?.Dispose();
-        base.Dispose();
+        if (_timer is not null)
+            await _timer.DisposeAsync();
+
+        await base.DisposeAsync();
     }
 }

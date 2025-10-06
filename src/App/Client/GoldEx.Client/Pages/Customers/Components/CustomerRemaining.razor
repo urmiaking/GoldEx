@@ -1,0 +1,27 @@
+﻿@inherits GoldExComponentBase
+
+<div class="customer-remaining-container">  
+    @if (_isLoading)  
+    {  
+        <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="32px" Width="120px" Class="rounded" />  
+    }
+    else if (_remainingList?.Any() == true)  
+    {  
+        <div class="remaining-carousel">    
+            <div class="remaining-item-container" style="transform: translateY(-@(_currentIndex * 100)%); transition: transform 0.5s ease-in-out;">    
+                @foreach (var customerRemaining in _remainingList)    
+                {   
+                    <div class="remaining-item">  
+                        <MudText Typo="Typo.body2" Color="@GetMudColor(customerRemaining.Amount)">
+                            @GetFormattedAmount(customerRemaining)
+                        </MudText>  
+                    </div>    
+                }    
+            </div>    
+        </div>
+    }  
+    else  
+    {  
+        <MudText Typo="Typo.caption">بدون تراکنش</MudText>  
+    }  
+</div> 

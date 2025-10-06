@@ -6,8 +6,11 @@ public record GetInvoiceListResponse(
     Guid Id,
     long InvoiceNumber,
     DateOnly InvoiceDate,
+    DateTime CreatedAt,
     DateOnly? DueDate,
+    InvoiceType InvoiceType,
     string CustomerFullName,
     decimal TotalAmount,
-    string AmountUnit,
+    decimal TotalUnpaidAmount,
+    string PriceUnit,
     InvoicePaymentStatus PaymentStatus);

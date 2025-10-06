@@ -1,0 +1,141 @@
+﻿@inherits GoldExComponentBase
+
+<MudForm Model="Model" @ref="@_form" Validation="@(_usedProductValidator.ValidateValue)" ValidationDelay="0">
+    <MudDialog>
+        <DialogContent>
+            <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="@PriceUnit.Title"
+                                 @bind-Value="Model.GramPrice"
+                                 For="@(() => Model.GramPrice)"
+                                 Format="#,##0.##"
+                                 Immediate="true"
+                                 HideSpinButtons="true"
+                                 Label="@($"نرخ هر {Model.UnitType.GetDisplayName()} طلا")"
+                                 Margin="Margin.Dense"
+                                 Variant="Variant.Outlined" />
+            </div>
+            <MudGrid Class="mb-0">
+                <MudItem xs="12" md="6">
+                    <MudSelect For="() => Model.ProductType"
+                               Label="@Model.GetDisplayName(() => Model.ProductType)"
+                               Margin="Margin.Dense"
+                               T="ProductType"
+                               @bind-Value="Model.ProductType"
+                               Variant="Variant.Outlined">
+                        @foreach (var productType in Enum.GetValues<ProductType>().Where(x => x is ProductType.Gold or ProductType.Jewelry))
+                        {
+                            <MudSelectItem T="ProductType"
+                                           Value="productType">
+                                @productType.GetDisplayName()
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string"
+                                  @bind-Value="Model.Description"
+                                  For="@(() => Model.Description!)"
+                                  Label="@Model.GetDisplayName(() => Model.Description)"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined"
+                                  DebounceInterval="0">
+                    </MudTextField>
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudMenu @bind-Open="_weightMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                        <ActivatorContent>
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@Model.UnitType.GetDisplayName()"
+                                             For="() => Model.Weight"
+                                             Format="G29"
+                                             HideSpinButtons="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(Model.GetDisplayName(() => Model.Weight))"
+                                             T="decimal?"
+                                             @bind-Value="Model.Weight"
+                                             Variant="Variant.Outlined"
+                                             OnAdornmentClick="() => _weightMenuOpen = !_weightMenuOpen"></MudNumericField>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in Enum.GetValues<GoldUnitType>())
+                            {
+                                <MudMenuItem OnClick="() => OnUnitTypeSelected(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @item.GetDisplayName()
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField For="@(() => Model.Fineness)"
+                                     Format="G29"
+                                     Immediate="true"
+                                     Label="@Model.GetDisplayName(() => Model.Fineness)"
+                                     Margin="Margin.Dense"
+                                     T="decimal?"
+                                     @bind-Value="Model.Fineness"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField For="@(() => Model.Quantity)"
+                                     Immediate="true"
+                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
+                                     Margin="Margin.Dense"
+                                     T="int"
+                                     @bind-Value="Model.Quantity"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField For="@(() => Model.ExtraCostsAmount)"
+                                     Format="#,##0.##"
+                                     Immediate="true"
+                                     Label="@Model.GetDisplayName(() => Model.ExtraCostsAmount)"
+                                     Margin="Margin.Dense"
+                                     T="decimal?"
+                                     @bind-Value="Model.ExtraCostsAmount"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="@PriceUnit.Title"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudCheckBox T="bool" Label="@Model.GetDisplayName(() => Model.IsSellable)"
+                                 LabelPlacement="Placement.Right" Color="Color.Primary"
+                                 @bind-Value="Model.IsSellable" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@_isProcessing"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (_isProcessing)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>

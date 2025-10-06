@@ -1,7 +1,7 @@
 ﻿using GoldEx.Client.Pages.Settings.Components.Categories;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.ProductCategories;
-using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Settings;
@@ -10,6 +10,7 @@ public partial class CategoriesList
 {
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IEnumerable<ProductCategoryVm> _productCategories = new List<ProductCategoryVm>();
+    private bool _processing;
 
     protected override async Task OnInitializedAsync()
     {
@@ -19,6 +20,8 @@ public partial class CategoriesList
 
     private async Task LoadCategoriesAsync()
     {
+        _processing = true;
+
         await SendRequestAsync<IProductCategoryService, List<GetProductCategoryResponse>>(
             action: (s, ct) => s.GetListAsync(ct),
             afterSend: response =>
@@ -29,6 +32,8 @@ public partial class CategoriesList
                     vm.Index = index + 1;
                     return vm;
                 });
+
+                _processing = false;
             });
     }
 

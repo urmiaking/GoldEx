@@ -1,9 +1,7 @@
 ﻿@inherits GoldExComponentBase
-@using GoldEx.Client.Pages.Invoices.Components
 
 @attribute [Route(ClientRoutes.Invoices.SetInvoice)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-<!-- TODO: Add Policy -->
 
 <PageTitle>@(IdValue.HasValue ? "ویرایش فاکتور" : "فاکتور جدید")</PageTitle>
 
@@ -14,6 +12,6 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <EditorForm Id="IdValue" />
+    <EditorForm Id="@IdValue" CustomerId="@CustomerId" Barcode="@Barcode" />
 
 </MudContainer>

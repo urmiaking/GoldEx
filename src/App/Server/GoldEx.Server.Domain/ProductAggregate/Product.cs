@@ -7,38 +7,38 @@ namespace GoldEx.Server.Domain.ProductAggregate;
 
 public readonly record struct ProductId(Guid Value);
 public class Product : EntityBase<ProductId>
-{ 
+{
     public static Product Create(
         string name,
-        string barcode,
         decimal weight,
         decimal wage,
         ProductType productType,
-        CaratType caratType,
-        WageType wageType,
+        decimal fineness,
+        GoldUnitType goldUnitType,
+        WageType? wageType,
         PriceUnitId? wagePriceUnitId,
+        PriceUnitId? stonePriceUnitId,
         ProductCategoryId? productCategoryId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(weight, 0, nameof(weight));
-
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
 
-        if (wageType is WageType.Percent && wage > 100)
+        if (wageType is Shared.Enums.WageType.Percent && wage > 100)
             throw new ArgumentOutOfRangeException(nameof(wage), "درصد اجرت باید بین 0 الی 100 باشد");
 
         return new Product
         {
             Id = new ProductId(Guid.NewGuid()),
             Name = name,
-            Barcode = barcode,
             Weight = weight,
             Wage = wage,
             ProductType = productType,
-            CaratType = caratType,
+            Fineness = fineness,
+            GoldUnitType = goldUnitType,
             WageType = wageType,
             WagePriceUnitId = wagePriceUnitId,
-            ProductCategoryId = productCategoryId,
-            ProductStatus = ProductStatus.Available
+            StonePriceUnitId = stonePriceUnitId,
+            ProductCategoryId = productCategoryId
         };
     }
 
@@ -51,15 +51,18 @@ public class Product : EntityBase<ProductId>
     public decimal Weight { get; private set; }
     public decimal Wage { get; private set; }
     public ProductType ProductType { get; private set; }
-    public CaratType CaratType { get; private set; }
-    public WageType WageType { get; private set; }
-    public ProductStatus ProductStatus { get; private set; }
+    public decimal Fineness { get; private set; }
+    public WageType? WageType { get; private set; }
+    public GoldUnitType GoldUnitType { get; private set; }
 
     public ProductCategoryId? ProductCategoryId { get; private set; }
     public ProductCategory? ProductCategory { get; private set; }
 
-    public PriceUnitId? WagePriceUnitId { get; set; }
-    public PriceUnit? WagePriceUnit { get; set; }
+    public PriceUnitId? WagePriceUnitId { get; private set; }
+    public PriceUnit? WagePriceUnit { get; private set; }
+
+    public PriceUnitId? StonePriceUnitId { get; private set; }
+    public PriceUnit? StonePriceUnit { get; private set; }
 
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
@@ -94,15 +97,21 @@ public class Product : EntityBase<ProductId>
         return this;
     }
 
-    public Product SetCaratType(CaratType caratType)
+    public Product SetFineness(decimal fineness)
     {
-        CaratType = caratType;
+        Fineness = fineness;
         return this;
     }
 
-    public Product SetWageType(WageType wageType)
+    public Product SetGoldUnitType(GoldUnitType goldUnitType)
     {
-        if (wageType is WageType.Percent) 
+        GoldUnitType = goldUnitType;
+        return this;
+    }
+
+    public Product SetWageType(WageType? wageType)
+    {
+        if (wageType is Shared.Enums.WageType.Percent) 
             WagePriceUnitId = null;
 
         WageType = wageType;
@@ -126,21 +135,9 @@ public class Product : EntityBase<ProductId>
     }
     public void ClearGemStones() => _stones.Clear();
 
-    public Product MarkAsSold()
-    {
-        ProductStatus = ProductStatus.Sold;
-        return this;
-    }
-
-    public Product MarkAsAvailable()
-    {
-        ProductStatus = ProductStatus.Available;
-        return this;
-    }
-
     public Product SetWagePriceUnitId(PriceUnitId? wagePriceUnitId)
     {
-        if (WageType is WageType.Percent && WagePriceUnitId is not null)
+        if (WageType is Shared.Enums.WageType.Percent && WagePriceUnitId is not null)
             throw new InvalidOperationException("Percent wage type cannot have wage price unit");
 
         WagePriceUnitId = wagePriceUnitId;

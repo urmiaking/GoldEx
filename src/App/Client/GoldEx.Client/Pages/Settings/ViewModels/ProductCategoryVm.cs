@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
-using GoldEx.Shared.DTOs.ProductCategories;
+﻿using GoldEx.Shared.DTOs.ProductCategories;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Settings.ViewModels;
 
@@ -14,23 +13,30 @@ public class ProductCategoryVm : IEquatable<ProductCategoryVm>
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public string Title { get; set; } = default!;
 
+    [Display(Name = "پیش کد")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    [MaxLength(2, ErrorMessage = "{0} نمی تواند بزرگتر از {1} رقم باشد")]
+    [MinLength(2, ErrorMessage = "{0} نمی تواند کوچکتر از {1} رقم باشد")]
+    public string PrefixCode { get; set; } = default!;
+
     public static ProductCategoryVm CreateFrom(GetProductCategoryResponse response)
     {
         return new ProductCategoryVm
         {
             Id = response.Id,
             Title = response.Title,
+            PrefixCode = response.PrefixCode
         };
     }
 
     public static CreateProductCategoryRequest ToCreateRequest(ProductCategoryVm item)
     {
-        return new CreateProductCategoryRequest(item.Title);
+        return new CreateProductCategoryRequest(item.Title, item.PrefixCode);
     }
 
     public static UpdateProductCategoryRequest ToUpdateRequest(ProductCategoryVm item)
     {
-        return new UpdateProductCategoryRequest(item.Title);
+        return new UpdateProductCategoryRequest(item.Title, item.PrefixCode);
     }
 
     public bool Equals(ProductCategoryVm? other)
