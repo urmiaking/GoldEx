@@ -190,4 +190,14 @@ public static class ApiRoutes
         public const string MarkAsRead = "{id}/read";
         public const string MarkAllAsRead = "read-all";
     }
+
+    public class MeltingBatches
+    {
+        public const string Base = "/api/MeltingBatches";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string SendToLab = "{id}/send-to-lab";
+        public const string CompleteMelting = "{id}/complete-melting";
+    }
 }

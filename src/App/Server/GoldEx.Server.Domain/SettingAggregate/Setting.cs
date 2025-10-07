@@ -13,7 +13,8 @@ public class Setting : EntityBase<SettingsId>
         decimal jewelryProfitPercent,
         decimal moltenGoldCommissionPercent,
         decimal goldSafetyMarginPercent,
-        decimal oldGoldCarat,
+        decimal usedGoldFineness,
+        decimal gramPerMesghal,
         TimeSpan priceUpdateInterval)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
@@ -21,14 +22,19 @@ public class Setting : EntityBase<SettingsId>
         ArgumentOutOfRangeException.ThrowIfLessThan(jewelryProfitPercent, 0, nameof(jewelryProfitPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(moltenGoldCommissionPercent, 0, nameof(moltenGoldCommissionPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(goldSafetyMarginPercent, 0, nameof(goldSafetyMarginPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(oldGoldCarat, 0, nameof(oldGoldCarat));
+        ArgumentOutOfRangeException.ThrowIfLessThan(usedGoldFineness, 0, nameof(usedGoldFineness));
+        ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0, nameof(gramPerMesghal));
 
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(goldProfitPercent, 100, nameof(goldProfitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(jewelryProfitPercent, 100, nameof(jewelryProfitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(moltenGoldCommissionPercent, 100, nameof(moltenGoldCommissionPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(goldSafetyMarginPercent, 100, nameof(goldSafetyMarginPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(oldGoldCarat, 1000, nameof(oldGoldCarat));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(usedGoldFineness, 1000, nameof(usedGoldFineness));
+
+        ArgumentNullException.ThrowIfNull(institutionName, nameof(institutionName));
+        ArgumentNullException.ThrowIfNull(address, nameof(address));
+        ArgumentNullException.ThrowIfNull(phoneNumber, nameof(phoneNumber));
 
         return new Setting
         {
@@ -41,7 +47,8 @@ public class Setting : EntityBase<SettingsId>
             JewelryProfitPercent = jewelryProfitPercent,
             MoltenGoldCommissionPercent = moltenGoldCommissionPercent,
             GoldSafetyMarginPercent = goldSafetyMarginPercent,
-            UsedGoldFineness = oldGoldCarat,
+            UsedGoldFineness = usedGoldFineness,
+            GramPerMesghal = gramPerMesghal,
             PriceUpdateInterval = priceUpdateInterval
         };
     }
@@ -59,6 +66,7 @@ public class Setting : EntityBase<SettingsId>
     public decimal JewelryProfitPercent { get; private set; }
     public decimal MoltenGoldCommissionPercent { get; private set; }
     public decimal UsedGoldFineness { get; private set; }
+    public decimal GramPerMesghal { get; private set; }
     public TimeSpan PriceUpdateInterval { get; private set; }
 
     public void SetInstitutionName(string institutionName) => InstitutionName = institutionName;
@@ -98,10 +106,16 @@ public class Setting : EntityBase<SettingsId>
 
     public void SetGoldSafetyMargin(decimal safetyMargin) => GoldSafetyMarginPercent = safetyMargin;
     public void SetPriceUpdateInterval(TimeSpan interval) => PriceUpdateInterval = interval;
-    public void SetOldGoldCarat(decimal oldGoldCarat)
+    public void SetUsedGoldFineness(decimal usedGoldFineness)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(oldGoldCarat, 0, nameof(oldGoldCarat));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(oldGoldCarat, 1000, nameof(oldGoldCarat));
-        UsedGoldFineness = oldGoldCarat;
+        ArgumentOutOfRangeException.ThrowIfLessThan(usedGoldFineness, 0, nameof(usedGoldFineness));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(usedGoldFineness, 1000, nameof(usedGoldFineness));
+        UsedGoldFineness = usedGoldFineness;
+    }
+
+    public void SetGramPerMesghal(decimal gramPerMesghal)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0, nameof(gramPerMesghal));
+        GramPerMesghal = gramPerMesghal;
     }
 }

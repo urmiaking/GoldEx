@@ -143,4 +143,19 @@ public class Product : EntityBase<ProductId>
         WagePriceUnitId = wagePriceUnitId;
         return this;
     }
+
+    public static Product CreateMoltenGold(string barcode, decimal fineness)
+    {
+        return new Product
+        {
+            Id = new ProductId(Guid.NewGuid()),
+            Barcode = barcode,
+            Name = $"طلای آبشده عیار {fineness:G29}",
+            Weight = 0,
+            Wage = 0,
+            ProductType = ProductType.MoltenGold,
+            Fineness = fineness,
+            GoldUnitType = GoldUnitType.Gram
+        };
+    }
 }

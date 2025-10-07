@@ -129,6 +129,13 @@ public static class ClientRoutes
     {
         private const string InventoryStocksPrefix = "/inventory-stocks";
         public const string Index = $"{InventoryStocksPrefix}";
+        public const string List = $"{InventoryStocksPrefix}/list";
+
+        public static class MeltingBatches
+        {
+            private const string MeltingBatchesPrefix = $"{InventoryStocksPrefix}/melting-batches";
+            public const string Index = $"{MeltingBatchesPrefix}";
+        }
     }
 
     public static class Dashboard

@@ -36,7 +36,7 @@ internal class UpdateSettingRequestValidator : AbstractValidator<UpdateSettingRe
         RuleFor(x => x.PriceUpdateInterval)
             .NotEmpty().WithMessage("فاصله زمانی بروزرسانی قیمت نمی تواند خالی باشد");
 
-        RuleFor(x => x.OldGoldCarat)
+        RuleFor(x => x.UsedGoldFineness)
             .InclusiveBetween(0, 1000).WithMessage("عیار طلای کهنه باید بین 0 تا 1000 باشد");
     }
 }

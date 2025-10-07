@@ -368,6 +368,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("InvoiceId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("MeltingBatchId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
@@ -382,6 +385,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("CurrencyId");
 
                     b.HasIndex("InvoiceId");
+
+                    b.HasIndex("MeltingBatchId");
 
                     b.HasIndex("ProductId");
 
@@ -535,6 +540,36 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasFilter("[CustomerId] IS NOT NULL AND [ParentAccountId] IS NOT NULL AND [PriceUnitId] IS NOT NULL");
 
                     b.ToTable("LedgerAccounts", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AssayerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("TotalWeight")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
+
+                    b.Property<int>("WeightUnitType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssayerId");
+
+                    b.ToTable("MeltingBatches", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.NotificationAggregate.Notification", b =>
@@ -806,6 +841,10 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<decimal>("GoldSafetyMarginPercent")
                         .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal>("GramPerMesghal")
+                        .HasPrecision(36, 10)
+                        .HasColumnType("decimal(36,10)");
 
                     b.Property<string>("InstitutionName")
                         .IsRequired()
@@ -1131,6 +1170,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", "MeltingBatch")
+                        .WithMany("InventoryStocks")
+                        .HasForeignKey("MeltingBatchId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("GoldEx.Server.Domain.ProductAggregate.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
@@ -1186,6 +1230,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("Currency");
 
                     b.Navigation("Invoice");
+
+                    b.Navigation("MeltingBatch");
 
                     b.Navigation("MoltenGoldDetail");
 
@@ -1709,6 +1755,50 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("PriceUnit");
                 });
 
+            modelBuilder.Entity("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", b =>
+                {
+                    b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", "Assayer")
+                        .WithMany()
+                        .HasForeignKey("AssayerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsMany("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatchChangeLog", "ChangeLogs", b1 =>
+                        {
+                            b1.Property<Guid>("MeltingBatchId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime>("DateTime")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("Description")
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
+
+                            b1.Property<int>("Status")
+                                .HasColumnType("int");
+
+                            b1.HasKey("MeltingBatchId", "Id");
+
+                            b1.ToTable("MeltingBatchChangeLogs", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("MeltingBatchId");
+                        });
+
+                    b.Navigation("Assayer");
+
+                    b.Navigation("ChangeLogs");
+                });
+
             modelBuilder.Entity("GoldEx.Server.Domain.NotificationAggregate.Notification", b =>
                 {
                     b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", "Invoice")
@@ -1961,6 +2051,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
             modelBuilder.Entity("GoldEx.Server.Domain.LedgerAccountAggregate.LedgerAccount", b =>
                 {
                     b.Navigation("FinancialAccounts");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", b =>
+                {
+                    b.Navigation("InventoryStocks");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", b =>

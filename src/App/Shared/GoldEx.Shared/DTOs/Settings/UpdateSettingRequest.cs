@@ -10,5 +10,6 @@ public record UpdateSettingRequest(
     decimal MoltenGoldCommissionPercent,
     TimeSpan PriceUpdateInterval,
     decimal GoldSafetyMarginPercent,
-    decimal OldGoldCarat,
+    decimal UsedGoldFineness,
+    decimal GramPerMesghal,
     byte[]? IconContent);

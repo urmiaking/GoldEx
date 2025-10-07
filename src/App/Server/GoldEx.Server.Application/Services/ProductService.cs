@@ -544,5 +544,22 @@ internal class ProductService(
         return repository.DeleteRangeAsync(productList, cancellationToken);
     }
 
+    public async Task<Product> FindOrCreateMoltenGoldProductAsync(decimal fineness, CancellationToken cancellationToken = default)
+    {
+        var product = await repository
+            .Get(new ProductsByMoltenGoldSpecification(fineness))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (product is null)
+        {
+            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(ProductType.MoltenGold, null, cancellationToken);
+
+            product = Product.CreateMoltenGold(barcode, fineness);
+            await repository.CreateAsync(product, cancellationToken);
+        }
+
+        return product;
+    }
+
     #endregion
 }
