@@ -3,13 +3,20 @@
 
 @inherits GoldExComponentBase
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+<PageTitle>داشبورد</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
     <PriceList />
     <MudGrid>
         <MudItem xs="12" sm="6" md="4">
-            <InventoryWeightChart />
+            <InventoryWeightChart/>
         </MudItem>
     </MudGrid>
-    
 
 </MudContainer>

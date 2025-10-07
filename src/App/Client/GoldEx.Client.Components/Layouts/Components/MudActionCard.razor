@@ -1,0 +1,55 @@
+﻿@inherits MudComponentBase
+
+@* The MudLink component makes the entire card a clickable link. *@
+<MudLink Href="@Href" Underline="Underline.None" Style="color: inherit;">
+
+    @* MudPaper acts as the card container. 
+       The HoverElevation property creates the slick "lift" effect on hover. *@
+    <MudPaper Class="pa-4 py-5" Width="100%" Elevation="24">
+
+        @* The main stack arranges its children horizontally (Row="true"),
+           puts space between them, and centers them vertically. *@
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="2">
+
+            @* This inner stack groups the starting icon and the text together. *@
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                <MudIcon Icon="@StartIcon" Size="Size.Large" Color="Color.Primary" />
+
+                @* This stack keeps the Title and Description neatly stacked vertically. *@
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6">@Title</MudText>
+                    <MudText Typo="Typo.caption">@Description</MudText>
+                </MudStack>
+            </MudStack>
+
+            @* The forward arrow icon is placed at the end. *@
+            <MudIcon Icon="@Icons.Material.Filled.ArrowBackIos" Color="Color.Default" />
+        </MudStack>
+    </MudPaper>
+</MudLink>
+
+@code {
+    /// <summary>
+    /// The title text displayed on the card.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = "Title";
+
+    /// <summary>
+    /// The description text displayed below the title.
+    /// </summary>
+    [Parameter]
+    public string Description { get; set; } = "Description for the action card.";
+
+    /// <summary>
+    /// The MudBlazor icon to display at the start of the card.
+    /// </summary>
+    [Parameter]
+    public string StartIcon { get; set; } = Icons.Material.Filled.Settings;
+
+    /// <summary>
+    /// The destination URL for navigation when the card is clicked.
+    /// </summary>
+    [Parameter]
+    public string Href { get; set; } = "/";
+}

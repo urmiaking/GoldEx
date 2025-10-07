@@ -114,12 +114,22 @@
             <MudItem xs="12" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
-                                 @bind-Value="_model.OldGoldCarat"
+                                 @bind-Value="_model.UsedGoldFineness"
                                  Variant="Variant.Outlined"
                                  Format="G29"
-                                 Label="@_model.GetDisplayName(() => _model.OldGoldCarat)"
+                                 Label="@_model.GetDisplayName(() => _model.UsedGoldFineness)"
                                  HideSpinButtons="true"
-                                 For="() => _model.OldGoldCarat"></MudNumericField>
+                                 For="() => _model.UsedGoldFineness"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.CurrencyExchange"
+                                 @bind-Value="_model.GramPerMesghal"
+                                 Variant="Variant.Outlined"
+                                 Format="G29"
+                                 Label="@_model.GetDisplayName(() => _model.GramPerMesghal)"
+                                 HideSpinButtons="true"
+                                 For="() => _model.GramPerMesghal"></MudNumericField>
             </MudItem>
         </MudGrid>
 

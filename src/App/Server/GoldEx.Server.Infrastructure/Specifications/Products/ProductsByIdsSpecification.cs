@@ -5,8 +5,8 @@ namespace GoldEx.Server.Infrastructure.Specifications.Products;
 
 public class ProductsByIdsSpecification : SpecificationBase<Product>
 {
-    public ProductsByIdsSpecification(List<ProductId> productIdsToDelete)
+    public ProductsByIdsSpecification(List<ProductId> productIds)
     {
-        AddCriteria(x => productIdsToDelete.Contains(x.Id));
+        AddCriteria(x => productIds.Contains(x.Id));
     }
 }

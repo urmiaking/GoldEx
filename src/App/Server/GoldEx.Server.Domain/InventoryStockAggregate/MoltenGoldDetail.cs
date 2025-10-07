@@ -30,6 +30,7 @@ public class MoltenGoldDetail : EntityBase
         Fineness = fineness;
         AssayerId = assayerId;
     }
+
 #pragma warning disable CS8618
     private MoltenGoldDetail() { }
 #pragma warning restore CS8618

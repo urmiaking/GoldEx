@@ -1,9 +1,12 @@
-﻿using GoldEx.Sdk.Common.Data;
+﻿using FluentValidation;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Application.Validators.InventoryStocks;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -21,14 +24,19 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class InventoryStockService(
     IInventoryStockRepository repository,
-    IMapper mapper) : IServerInventoryStockService,
-    IInventoryStockService
+    IServerProductService productService,
+    IMapper mapper,
+    MeltUsedProductsValidator usedProductsValidator,
+    CreateMoltenGoldRequestValidator moltenGoldRequestValidator) 
+    : IServerInventoryStockService, IInventoryStockService
 {
     #region Server Service
 
     public async Task SetForProductAsync(ProductId productId, int quantity, WarehouseActionType actionType, InvoiceId? invoiceId,
        CancellationToken cancellationToken = default)
     {
+        // TODO: add validation for product existence and availability
+
         if (invoiceId.HasValue)
         {
             var inventoryItems = await repository
@@ -54,6 +62,8 @@ internal class InventoryStockService(
     public async Task SetForCoinAsync(CoinId coinId, int quantity, WarehouseActionType actionType, InvoiceId? invoiceId,
         CancellationToken cancellationToken = default)
     {
+        // TODO: add validation for coin existence and availability
+
         if (invoiceId.HasValue)
         {
             var inventoryItems = await repository
@@ -77,6 +87,8 @@ internal class InventoryStockService(
     public async Task SetForCurrencyAsync(PriceUnitId currencyId, decimal amount, WarehouseActionType actionType, InvoiceId? invoiceId,
         CancellationToken cancellationToken = default)
     {
+        // TODO: add validation for currency existence and availability
+
         if (invoiceId.HasValue)
         {
             var inventoryItems = await repository
@@ -114,7 +126,7 @@ internal class InventoryStockService(
             .ToListAsync(cancellationToken);
 
         if (oldStockItems.Any())
-        {   
+        {
             await repository.DeleteRangeAsync(oldStockItems, cancellationToken);
         }
 
@@ -193,11 +205,41 @@ internal class InventoryStockService(
         }
     }
 
+    public async Task MeltProductsAsync(MeltingBatchId meltingBatchId, List<ProductId> productIds, CancellationToken cancellationToken = default)
+    {
+        await usedProductsValidator.ValidateAndThrowAsync(productIds, cancellationToken);
+
+        List<InventoryStock> inventoryItems = [];
+
+        foreach (var productId in productIds)
+        {
+            var inventoryStocks = InventoryStock.CreateProduct(productId, 1, WarehouseActionType.Out);
+            inventoryItems.Add(inventoryStocks);
+        }
+
+        if (inventoryItems.Any())
+            await repository.CreateRangeAsync(inventoryItems, cancellationToken);
+    }
+
+    public async Task CreateMoltenGoldAsync(MeltingBatch meltingBatch, string assayNumber, decimal fineness, decimal weight,
+        CancellationToken cancellationToken = default)
+    {
+        await moltenGoldRequestValidator.ValidateAndThrowAsync((meltingBatch, assayNumber, fineness, weight), cancellationToken);
+
+        var moltenGoldDetail = MoltenGoldDetail.Create(weight, meltingBatch.WeightUnitType, assayNumber, fineness, meltingBatch.AssayerId!.Value);
+
+        var product = await productService.FindOrCreateMoltenGoldProductAsync(fineness, cancellationToken);
+
+        var inventoryItem = InventoryStock.CreateMoltenGold(product.Id, meltingBatch.Id, moltenGoldDetail, weight, WarehouseActionType.In);
+
+        await repository.CreateAsync(inventoryItem, cancellationToken);
+    }
+
     #endregion
 
     #region Shared Service
 
-    public async Task<PagedList<GetInventoryStockResponse>> GetListAsync(RequestFilter filter, InventoryFilter inventoryFilter, 
+    public async Task<PagedList<GetInventoryStockResponse>> GetListAsync(RequestFilter filter, InventoryFilter inventoryFilter,
         CancellationToken cancellationToken = default)
     {
         var summary = await repository.GetInventorySummaryAsync(filter, inventoryFilter, cancellationToken);
@@ -238,7 +280,7 @@ internal class InventoryStockService(
                     null,
                     null,
                     mapper.Map<GetProductResponse>(item),
-                    null, 
+                    null,
                     null
                 ));
             }

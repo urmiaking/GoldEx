@@ -12,6 +12,7 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,10 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Infrastructure.Repositories;
 
 [ScopedService]
-internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryBase<InventoryStock>(dbContext), IInventoryStockRepository
+internal class InventoryStockRepository(
+    GoldExDbContext dbContext,
+    ISettingRepository settingRepository) : RepositoryBase<InventoryStock>(dbContext),
+    IInventoryStockRepository
 {
     public Task<decimal> GetQuantityAsync(ProductId productId, CancellationToken cancellationToken = default)
     {
@@ -296,7 +300,11 @@ internal class InventoryStockRepository(GoldExDbContext dbContext) : RepositoryB
     public async Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit,
         CancellationToken cancellationToken = default)
     {
-        const decimal gramPerMesghal = 4.3318m;
+        var settings = await settingRepository
+            .Get(new SettingsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var gramPerMesghal = settings?.GramPerMesghal ?? 4.608m;
 
         var productStocks = await dbContext.Set<InventoryStock>()
             .AsNoTracking()

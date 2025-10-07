@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
@@ -19,6 +20,9 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
     public PriceUnit? Currency { get; private set; }
     public PriceUnitId? CurrencyId { get; private set; }
+
+    public MeltingBatchId? MeltingBatchId { get; private set; }
+    public MeltingBatch? MeltingBatch { get; private set; }
 
     public decimal ChangeAmount { get; private set; }
 
@@ -87,6 +91,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
     public static InventoryStock CreateMoltenGold(
         ProductId productId,
+        MeltingBatchId meltingBatchId,
         MoltenGoldDetail moltenGoldDetail,
         decimal changeAmount,
         WarehouseActionType actionType,
@@ -99,6 +104,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
             Id = new InventoryStockId(Guid.NewGuid()),
             ProductId = productId,
             MoltenGoldDetail = moltenGoldDetail,
+            MeltingBatchId = meltingBatchId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
             InvoiceId = invoiceId
