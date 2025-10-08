@@ -50,7 +50,6 @@ public record InvoiceUsedProductDto(
     decimal? ExtraCostsAmount,
     decimal Fineness,
     int Quantity,
-    bool IsSellable,
     ProductType ProductType,
     GoldUnitType UnitType);
 
