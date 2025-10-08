@@ -647,32 +647,18 @@ internal class AccountingTransactionService(
 
     private async Task CreateTransactionForUsedProductsAsync(InvoiceUsedProduct usedProduct, CancellationToken cancellationToken = default)
     {
-        LedgerAccountId debitLedgerAccountId;
-
         var customer = await customerRepository
-            .Get(new CustomersByIdSpecification(usedProduct.Invoice.CustomerId))
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken)
+                           .Get(new CustomersByIdSpecification(usedProduct.Invoice.CustomerId))
+                           .AsNoTracking()
+                           .FirstOrDefaultAsync(cancellationToken)
                        ?? throw new NotFoundException($"Customer {usedProduct.Invoice.CustomerId.Value} not found.");
 
-        if (usedProduct.IsSellable)
-        {
-            var inventoryLedgerAccount = await ledgerAccountRepository
-                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
-                .FirstOrDefaultAsync(cancellationToken) ??
-                throw new NotFoundException("Inventory ledger account not found.");
+        var inventoryLedgerAccount = await ledgerAccountRepository
+                                         .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+                                         .FirstOrDefaultAsync(cancellationToken) ??
+                                     throw new NotFoundException("Inventory ledger account not found.");
 
-            debitLedgerAccountId = inventoryLedgerAccount.Id;
-        }
-        else
-        {
-            var usedProductInventory = await ledgerAccountRepository
-                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.UsedProductInventory))
-                .FirstOrDefaultAsync(cancellationToken) ??
-                throw new NotFoundException("Used product inventory ledger account not found.");
-
-            debitLedgerAccountId = usedProductInventory.Id;
-        }
+        var debitLedgerAccountId = inventoryLedgerAccount.Id;
 
         var customerLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
             usedProduct.Invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);

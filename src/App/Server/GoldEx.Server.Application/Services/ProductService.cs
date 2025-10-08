@@ -353,42 +353,23 @@ internal class ProductService(
 
         foreach (var dto in usedProductDtos)
         {
-            if (dto.IsSellable)
-            {
-                // ساخت محصول جدید در حافظه
-                var product = Product.Create(dto.Description,
-                            dto.Weight,
-                            0,
-                            dto.ProductType,
-                            dto.Fineness,
-                            dto.UnitType,
-                            null,
-                            null,
-                            null,
-                            null);
+            // ساخت محصول جدید در حافظه
+            var product = Product.Create(dto.Description,
+                dto.Weight,
+                0,
+                dto.ProductType,
+                dto.Fineness,
+                dto.UnitType,
+                null,
+                null,
+                null,
+                null);
 
-                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
-                product.SetBarcode(barcode);
+            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
+            product.SetBarcode(barcode);
 
-                newProductsToCreate.Add(product);
-                usedProductsWithNewProduct.Add((dto, product));
-            }
-            else // اگر قابل فروش نیست، مستقیماً به فاکتور اضافه می‌شود
-            {
-                invoice.AddUsedProduct(dto.Id.HasValue
-                                ? new InvoiceUsedProductId(dto.Id.Value)
-                                : null,
-                            dto.Description,
-                            dto.Weight,
-                            dto.GramPrice,
-                            dto.ExtraCostsAmount,
-                            dto.Fineness,
-                            dto.Quantity,
-                            false,
-                            dto.ProductType,
-                            dto.UnitType,
-                            null);
-            }
+            newProductsToCreate.Add(product);
+            usedProductsWithNewProduct.Add((dto, product));
         }
 
         // ذخیره دسته‌ای تمام محصولات جدید
@@ -407,7 +388,6 @@ internal class ProductService(
                         dto.ExtraCostsAmount,
                         dto.Fineness,
                         dto.Quantity,
-                        true,
                         dto.ProductType,
                         dto.UnitType,
                         newProduct.Id);

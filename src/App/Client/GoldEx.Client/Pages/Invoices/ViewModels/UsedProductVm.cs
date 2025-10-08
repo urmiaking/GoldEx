@@ -67,9 +67,6 @@ public class UsedProductVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public string? Description { get; set; }
 
-    [Display(Name = "افزودن به انبار")]
-    public bool IsSellable { get; set; }
-
     [Display(Name = "هزینه های جانبی")]
     public decimal? ExtraCostsAmount { get; set; }
 
@@ -116,7 +113,6 @@ public class UsedProductVm
         Quantity = other.Quantity;
         Weight = other.Weight;
         Description = other.Description;
-        IsSellable = other.IsSellable;
         ExtraCostsAmount = other.ExtraCostsAmount;
         ProductType = other.ProductType;
         UnitType = other.UnitType;
@@ -131,7 +127,6 @@ public class UsedProductVm
             productItem.ExtraCostsAmount ?? 0,
             productItem.Fineness ?? 0,
             productItem.Quantity,
-            productItem.IsSellable,
             productItem.ProductType,
             productItem.UnitType);
     }
@@ -146,7 +141,6 @@ public class UsedProductVm
             Weight = response.Weight,
             Description = response.Description,
             ExtraCostsAmount = response.ExtraCostsAmount,
-            IsSellable = response.IsSellable,
             Quantity = response.Quantity,
             ItemAmount = response.ItemAmount,
             ProductType = response.ProductType,

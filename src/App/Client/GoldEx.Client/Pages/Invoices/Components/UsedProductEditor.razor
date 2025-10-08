@@ -103,11 +103,6 @@
                                      AdornmentText="@PriceUnit.Title"
                                      Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudCheckBox T="bool" Label="@Model.GetDisplayName(() => Model.IsSellable)"
-                                 LabelPlacement="Placement.Right" Color="Color.Primary"
-                                 @bind-Value="Model.IsSellable" />
-                </MudItem>
             </MudGrid>
         </DialogContent>
         <DialogActions>
