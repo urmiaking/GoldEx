@@ -19,7 +19,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
       ASPNETCORE_URLS: "http://+:8080"
-
+      TZ: "Asia/Tehran"
       # override connection string for dockerized SQL Server
       ConnectionStrings__GoldEx: "Server=sqldb,1433;Database=GoldEx;User Id=sa;Password=YourStrong!Passw0rd;MultipleActiveResultSets=True;TrustServerCertificate=True"
       Serilog__WriteTo__0__Args__connectionString: "Server=sqldb,1433;Database=GoldEx;User Id=sa;Password=YourStrong!Passw0rd;MultipleActiveResultSets=True;TrustServerCertificate=True"

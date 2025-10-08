@@ -1,5 +1,7 @@
 ﻿using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
 
 namespace GoldEx.Server.Application.Services.Abstractions;
 
@@ -9,4 +11,5 @@ public interface IAccountingTransactionService
     Task CreateTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default);
     Task ClearTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default);
     Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
+    Task SetForMeltingBatchRequestAsync(MeltingBatchId meltingBatchId, List<ProductId> productIds, CancellationToken cancellationToken = default);
 }
