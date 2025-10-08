@@ -5,6 +5,7 @@ using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -14,7 +15,9 @@ using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Server.Infrastructure.Specifications.MeltingBatches;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +31,8 @@ internal class AccountingTransactionService(
     IInvoiceRepository invoiceRepository,
     IPriceUnitRepository priceUnitRepository,
     IFinancialAccountRepository financialAccountRepository,
+    IMeltingBatchRepository meltingBatchRepository,
+    IProductRepository productRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IServerLedgerAccountService ledgerAccountService) : IAccountingTransactionService
 {
@@ -461,6 +466,85 @@ internal class AccountingTransactionService(
         await repository.RemoveByInvoiceIdAsync(invoice.Id, cancellationToken);
         await repository.RemoveByInvoicePaymentIdsAsync(invoice.InvoicePayments?.Select(x => x.Id).ToList(),
             cancellationToken);
+    }
+
+    public async Task SetForMeltingBatchRequestAsync(MeltingBatchId meltingBatchId, List<ProductId> productIds,
+        CancellationToken cancellationToken = default)
+    {
+        var inventoryLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
+
+        var cogsLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CostOfGoodsSold))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Cost of Goods Sold ledger account not found.");
+
+        var meltingBatch = await meltingBatchRepository
+            .Get(new MeltingBatchesByIdSpecification(meltingBatchId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Melting batch {meltingBatchId.Value} not found.");
+
+        var products = await productRepository
+            .Get(new ProductsByIdsSpecification(productIds))
+            .ToListAsync(cancellationToken);
+
+        if (products.Count != productIds.Count)
+            throw new NotFoundException("One or more products not found.");
+
+        var basePriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
+        
+        var transactions = new List<Transaction>();
+
+        var groupId = Guid.NewGuid();
+
+        foreach (var product in products)
+        {
+            var invoice = await invoiceRepository
+                .Get(new InvoicesByProductIdSpecification(product.Id))
+                .FirstOrDefaultAsync(cancellationToken) 
+                          ?? throw new NotFoundException($"Invoice for product {product.Id.Value} not found.");
+
+            var invoiceItem = invoice.UsedProducts.FirstOrDefault(x => x.ProductId == product.Id)
+                              ?? throw new NotFoundException($"Used product item for product {product.Id.Value} not found in invoice {invoice.Id.Value}.");
+
+            var amount = invoiceItem.ItemFinalAmount; // ارزش نهایی آیتم (قیمت خرید)
+            var baseCurrencyAmount = amount * (invoice.ExchangeRate ?? 1); // معادل ارز پایه (ریال)
+
+            // تراکنش Debit: ثبت در COGS (هزینه خروج برای محاسبه کسر ذوب)
+            var debitTransaction = Transaction.CreateForMeltingBatch(
+                description: TransactionDescriptionBuilder.ForMeltingBatchCogs(meltingBatch, product, invoice),
+                amount: amount,
+                exchangeRate: invoice.ExchangeRate,
+                baseCurrencyAmount: baseCurrencyAmount,
+                transactionType: TransactionType.Debit,
+                groupId: groupId,
+                priceUnitId: basePriceUnit.Id,
+                ledgerAccountId: cogsLedgerAccount.Id,
+                invoiceId: invoice.Id
+            );
+
+            // تراکنش Credit: کاهش موجودی Inventory
+            var creditTransaction = Transaction.CreateForMeltingBatch(
+                description: TransactionDescriptionBuilder.ForMeltingBatchInventoryExit(meltingBatch, product, invoice),
+                amount: amount,
+                exchangeRate: invoice.ExchangeRate,
+                baseCurrencyAmount: baseCurrencyAmount,
+                transactionType: TransactionType.Credit,
+                groupId: groupId,
+                priceUnitId: basePriceUnit.Id,
+                ledgerAccountId: inventoryLedgerAccount.Id,
+                invoiceId: invoice.Id
+            );
+
+            transactions.Add(debitTransaction);
+            transactions.Add(creditTransaction);
+        }
+
+        if (transactions.Any())
+        {
+            await repository.CreateRangeAsync(transactions, cancellationToken);
+        }
     }
 
     private async Task CreateTransactionForManualEntryAsync(Product? product, Coin? coin, PriceUnit? currency,

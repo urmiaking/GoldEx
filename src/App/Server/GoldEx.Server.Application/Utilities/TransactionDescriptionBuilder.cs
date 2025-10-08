@@ -3,6 +3,7 @@ using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 
@@ -35,7 +36,7 @@ public static class TransactionDescriptionBuilder
     {
         var desc = $"ثبت تخفیف فروش مربوط به فاکتور شماره {invoice.InvoiceNumber}";
         foreach (var description in descriptions)
-            if (!string.IsNullOrWhiteSpace(description)) 
+            if (!string.IsNullOrWhiteSpace(description))
                 desc += $" (بابت: {description})";
 
         return desc;
@@ -215,6 +216,20 @@ public static class TransactionDescriptionBuilder
     public static string ForUsedProductPurchase(InvoiceUsedProduct usedProduct, Customer customer)
     {
         return $"خرید طلای کارکرده '{usedProduct.Description}' از {customer.FullName} در فاکتور شماره {usedProduct.Invoice.InvoiceNumber}";
+    }
+
+    #endregion
+
+    #region Melting Batch (شرح های جمع آوری برای ذوب)
+
+    public static string ForMeltingBatchCogs(MeltingBatch meltingBatch, Product product, Invoice invoice)
+    {
+        return $"ثبت هزینه خروج بابت ذوب به شرح {meltingBatch.Description} (محصول: {product.Name}, فاکتور: {invoice.InvoiceNumber})";
+    }
+
+    public static string ForMeltingBatchInventoryExit(MeltingBatch meltingBatch, Product product, Invoice invoice)
+    {
+        return $"ثبت خروج از انبار بابت ذوب به شرح {meltingBatch.Description} (محصول: {product.Name}, فاکتور: {invoice.InvoiceNumber})";
     }
 
     #endregion

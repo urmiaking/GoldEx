@@ -175,4 +175,36 @@ public class Transaction : EntityBase<TransactionId>
 
     public InvoicePaymentId? InvoicePaymentId { get; private set; }
     public InvoicePayment? InvoicePayment { get; private set; }
+
+    public static Transaction CreateForMeltingBatch(string description,
+        decimal amount,
+        decimal? exchangeRate,
+        decimal baseCurrencyAmount,
+        TransactionType transactionType,
+        Guid groupId,
+        PriceUnitId priceUnitId,
+        LedgerAccountId ledgerAccountId,
+        InvoiceId invoiceId)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+        if (amount < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than or equal to zero.");
+        if (exchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero if provided.");
+
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            Description = description,
+            Amount = amount,
+            BaseCurrencyAmount = baseCurrencyAmount,
+            TransactionType = transactionType,
+            ExchangeRate = exchangeRate,
+            GroupId = groupId,
+            InvoiceId = invoiceId,
+            PriceUnitId = priceUnitId,
+            LedgerAccountId = ledgerAccountId
+        };
+    }
 }

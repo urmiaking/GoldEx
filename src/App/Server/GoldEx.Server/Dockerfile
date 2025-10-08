@@ -2,6 +2,21 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+
+RUN mkdir -p /app/uploads && \
+    mkdir -p /app/Reports && \
+    chown -R $APP_UID:$APP_UID /app/uploads && \
+    chmod -R u+rwX /app/uploads && \
+    chown -R $APP_UID:$APP_UID /app/Reports && \
+    chmod -R u+rwX /app/Reports
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        fontconfig \
+        libgdiplus \
+        fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -43,4 +58,14 @@ RUN dotnet publish "./GoldEx.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publ
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+COPY ./fonts /usr/local/share/fonts/custom/
+RUN fc-cache -fv
+
+USER root
+RUN chown -R $APP_UID:$APP_UID /app/uploads && \
+    chown -R $APP_UID:$APP_UID /app/Reports
+
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "GoldEx.Server.dll"]

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.MeltingBatches;
 
+[ScopedService]
 internal class SendToLabRequestValidator : AbstractValidator<(Guid MeltingBatchId, SendToLabRequestDto Request)>
 {
     private readonly IMeltingBatchRepository _meltingBatchRepository;

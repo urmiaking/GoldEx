@@ -27,6 +27,7 @@ internal class MeltingBatchService(
     ISettingRepository settingRepository,
     IProductRepository productRepository,
     IServerInventoryStockService inventoryService,
+    IAccountingTransactionService transactionService,
     IMapper mapper,
     ILogger<MeltingBatchService> logger,
     CreateMeltingBatchRequestValidator createValidator,
@@ -83,6 +84,8 @@ internal class MeltingBatchService(
                 await repository.CreateAsync(item, cancellationToken);
 
                 await inventoryService.MeltProductsAsync(item.Id, productIds, cancellationToken);
+                await transactionService.SetForMeltingBatchRequestAsync(item.Id, productIds, cancellationToken);
+                // TODO: add transactions
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }
@@ -127,6 +130,7 @@ internal class MeltingBatchService(
                 await repository.UpdateAsync(item, cancellationToken);
 
                 await inventoryService.CreateMoltenGoldAsync(item, request.AssayNumber, request.Fineness, request.Weight, cancellationToken);
+                // TODO: add transactions
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }
