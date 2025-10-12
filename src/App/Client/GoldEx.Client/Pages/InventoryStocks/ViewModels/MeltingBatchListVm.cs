@@ -18,6 +18,7 @@ public class MeltingBatchListVm
     public GetCustomerNameResponse? Assayer { get; set; }
     public List<GetProductResponse> Products { get; set; } = [];
     public GetMeltingBatchDetailResponse? FinalProductDetail { get; set; }
+    public List<GetMeltingBatchTransactionSummary>? Transactions { get; set; }
 
     public decimal? WasteWeight => TotalWeight - FinalProductDetail?.Weight;
     public decimal? WastePercentage => WasteWeight.HasValue && TotalWeight != 0
@@ -36,7 +37,8 @@ public class MeltingBatchListVm
             CurrentDateTime = response.CurrentDateTime,
             Assayer = response.Assayer,
             Products = response.Products,
-            FinalProductDetail = response.FinalProductDetail
+            FinalProductDetail = response.FinalProductDetail,
+            Transactions = response.Transactions
         };
     }
 }
