@@ -1,4 +1,5 @@
 ﻿@using GoldEx.Shared.DTOs.Customers
+@using GoldEx.Shared.DTOs.FinancialAccounts
 @inherits GoldExComponentBase
 
 <MudPaper Elevation="@Elevation" Class="@Class">
@@ -103,7 +104,7 @@
                     </div>
                     
                     <MudGrid Spacing="6" Class="mt-0">
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12" sm="6" md="3">
                             <MudNumericField Adornment="Adornment.End"
                                              AdornmentText="@_model.PriceUnit?.Title"
                                              For="() => _model.GramPrice"
@@ -116,7 +117,7 @@
                                              @bind-Value="@_model.GramPrice"
                                              Variant="Variant.Outlined"></MudNumericField>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12" sm="6" md="3">
                             <MudNumericField @bind-Value="_model.MeltedGoldWeight"
                                              Label="@_model.GetDisplayName(() => _model.MeltedGoldWeight)"
                                              Variant="Variant.Outlined"
@@ -124,9 +125,11 @@
                                              AutoFocus="true"
                                              HideSpinButtons="true"
                                              Immediate="true"
+                                             Adornment="Adornment.End"
+                                             AdornmentText="@_model.WeightUnitType.GetDisplayName()"
                                              Margin="Margin.Dense"/>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12" sm="6" md="3">
                             <MudNumericField @bind-Value="_model.Fineness"
                                              Label="@_model.GetDisplayName(() => _model.Fineness)"
                                              Variant="Variant.Outlined"
@@ -135,14 +138,86 @@
                                              HideSpinButtons="true"
                                              Margin="Margin.Dense"/>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12" sm="6" md="3">
                             <MudTextField @bind-Value="_model.AssayNumber"
                                           Label="@_model.GetDisplayName(() => _model.AssayNumber)"
                                           Variant="Variant.Outlined"
                                           Immediate="true"
                                           Margin="Margin.Dense"/>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="8">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudMenu @bind-Open="_feeFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
+                                <ActivatorContent>
+                                    <MudNumericField Adornment="Adornment.End"
+                                                     AdornmentText="@_model.FeePriceUnit?.Title"
+                                                     For="() => _model.FeeAmount"
+                                                     Format="#,##0.##"
+                                                     HideSpinButtons="true"
+                                                     Immediate="true"
+                                                     Margin="Margin.Dense"
+                                                     Label="@(_model.GetDisplayName(() => _model.FeeAmount))"
+                                                     T="decimal?"
+                                                     @bind-Value="_model.FeeAmount"
+                                                     Variant="Variant.Outlined"
+                                                     OnAdornmentClick="() => _feeFieldMenuOpen = !_feeFieldMenuOpen"></MudNumericField>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    @foreach (var item in _priceUnits)
+                                    {
+                                        <MudMenuItem OnClick="() => SelectFeePriceUnit(item)">
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                @if (item.HasIcon)
+                                                {
+                                                    <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                    </MudAvatar>
+                                                }
+                                                @item.Title
+                                            </div>
+                                        </MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                        </MudItem>
+
+                        @if (_model.FeePriceUnit?.Id != _model.PriceUnit?.Id)
+                        {
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudNumericField For="() => _model.FeeExchangeRate"
+                                                 Format="#,##0.########"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true"
+                                                 Margin="Margin.Dense"
+                                                 Label="@FeeExchangeRateLabel"
+                                                 T="decimal?"
+                                                 @bind-Value="_model.FeeExchangeRate"
+                                                 Variant="Variant.Outlined"></MudNumericField>
+                            </MudItem>
+                        }
+                        
+                        @if (_model.FeeAmount.HasValue)
+                        {
+                            <MudItem xs="12" sm="6" md="3">
+                                <div class="d-flex align-items-center gap-1">
+                                    <MudSelect @bind-Value="@_model.FinancialAccount"
+                                               T="GetFinancialAccountTitleResponse?"
+                                               For="@(() => _model.FinancialAccount)"
+                                               Label="@_model.GetDisplayName(() => _model.FinancialAccount)"
+                                               Margin="Margin.Dense"
+                                               Variant="Variant.Outlined"
+                                               ToStringFunc="@(acc => acc?.Title)">
+                                        @foreach (var account in _financialAccounts)
+                                        {
+                                            <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
+                                                   Color="Color.Primary" OnClick="() => OnAddFinancialAccount()"></MudIconButton>
+                                </div>
+                            </MudItem>
+                        }
+
+                        <MudItem xs="12" sm="6" md="@GetDescriptionMd()">
                             <MudTextField @bind-Value="_model.CompleteDescription"
                                           Label="@_model.GetDisplayName(() => _model.CompleteDescription)"
                                           Variant="Variant.Outlined"
@@ -155,6 +230,15 @@
                         <MudText>وزن کل طلای آبشده: @_model.MeltedGoldWeight?.ToWeightFormat(_model.WeightUnitType)</MudText>
                         <MudText>کسری ذوب: @_model.WasteWeight?.ToWeightFormat(_model.WeightUnitType) (@_model.WastePercentage?.ToString("0.##")%)</MudText>
                     </div>
+                    
+                    @if (_model.TotalPrice.HasValue)
+                    {
+                        <div class="d-flex justify-content-between align-center flex-wrap p-2">
+                            <MudText>هزینه ذوب/ری گیری: @_model.FeePrice?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                            <MudText>ارزش طلای آبشده: @_model.MeltedGoldPrice?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                            <MudText>ارزش کل: @_model.TotalPrice?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
+                        </div>
+                    }
 
                     <div class="d-flex justify-content-end">
                         <MudButton Variant="Variant.Filled" Color="Color.Success"
@@ -182,8 +266,8 @@
             </MudStep>
         </ChildContent>
         <ActionContent>
-            <div class="d-flex justify-content-center align-items-center">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="BackToList" StartIcon="@Icons.Material.Filled.ExitToApp">بازگشت به لیست</MudButton>
+            <div class="d-flex justify-content-center align-items-center w-100 my-2">
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="BackToList" StartIcon="@Icons.Material.Filled.ExitToApp">بازگشت به لیست</MudButton>
             </div>
         </ActionContent>
     </MudStepper>
