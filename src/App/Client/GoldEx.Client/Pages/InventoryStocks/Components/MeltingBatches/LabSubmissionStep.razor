@@ -1,0 +1,49 @@
+﻿@using GoldEx.Shared.DTOs.Customers
+
+@inherits GoldExComponentBase
+
+<MudPaper Elevation="0">
+    <div class="d-flex justify-start pr-2 py-3">
+        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small"></MudIcon>
+        <MudText Class="me-2" Typo="Typo.body2">پس از انتخاب اجناس مستعمل جهت ذوب، در این مرحله باید نام آزمایشگاه را جهت ری گیری و صدور شماره انگ وارد کنید.</MudText>
+    </div>
+    <div class="d-flex justify-content-between align-center flex-wrap gap-6 p-2">
+        <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
+            <MudAutocomplete T="GetCustomerNameResponse"
+                             @bind-Value="Model.Assayer"
+                             Label="@Model.GetDisplayName(() => Model.Assayer)"
+                             Text="@Model.Assayer?.FullName"
+                             For="@(() => Model.Assayer!)"
+                             Placeholder="جستجوی آزمایشگاه..."
+                             ToStringFunc="@(assayer => assayer != null ? $"{assayer.FullName}" : null)"
+                             Margin="Margin.Dense"
+                             Adornment="Adornment.Start"
+                             Immediate="true"
+                             AdornmentIcon="@Icons.Material.Filled.Search"
+                             Variant="Variant.Outlined"
+                             SearchFunc="@SearchAssayers"
+                             ResetValueOnEmptyText="true"
+                             DebounceInterval="0"
+                             ShowProgressIndicator="false" />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddAssayer"></MudIconButton>
+        </MudStack>
+        <MudTextField @bind-Value="Model.LabDescription"
+                      Label="@Model.GetDisplayName(() => Model.LabDescription)"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense" />
+        <MudButton Variant="Variant.Filled" Color="Color.Success"
+                   OnClick="OnSendToLab"
+                   Disabled="@(Model.Assayer == null || Processing)"
+                   EndIcon="@Icons.Material.Filled.ArrowBack">
+            @if (Processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">در حال پردازش</MudText>
+            }
+            else
+            {
+                <MudText>ارسال به آزمایشگاه</MudText>
+            }
+        </MudButton>
+    </div>
+</MudPaper>
