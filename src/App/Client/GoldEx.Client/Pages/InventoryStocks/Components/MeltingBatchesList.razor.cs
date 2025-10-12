@@ -1,5 +1,4 @@
 ﻿using GoldEx.Client.Pages.InventoryStocks.ViewModels;
-using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.MeltingBatches;

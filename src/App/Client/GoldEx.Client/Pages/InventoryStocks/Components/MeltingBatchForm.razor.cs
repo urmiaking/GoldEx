@@ -1,8 +1,6 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
-using GoldEx.Client.Pages.FinancialAccounts.Components;
+﻿using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
-using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.DTOs.Prices;
@@ -13,7 +11,6 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using System.Collections;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -25,30 +22,13 @@ public partial class MeltingBatchForm
 
     private MeltingBatchVm _model = new();
     private GetSettingResponse? _setting;
-    private List<GetCustomerNameResponse> _assayers = [];
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
+    private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
     private Guid? _id;
-
-    private MudAutocomplete<GetCustomerNameResponse> _assayerField = new();
 
     private MudStepper? _stepper;
     private int _activeIndex = 0;
     private bool _processing;
-    private bool _feeFieldMenuOpen;
-    private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
-
-    private string? FeeExchangeRateLabel =>
-        _model is { FeePriceUnit: not null, PriceUnit: not null }
-            ? $"نرخ تبدیل {_model.FeePriceUnit.Title} به {_model.PriceUnit.Title}"
-            : null;
-
-    private bool IsCompleteProcessDisabled =>
-        _processing ||
-        _model.MeltedGoldWeight is null ||
-        _model.Fineness is null ||
-        string.IsNullOrEmpty(_model.AssayNumber) ||
-        _model.GramPrice is null ||
-        _model is { FeeAmount: not null, FinancialAccount: null };
 
     protected override async Task OnParametersSetAsync()
     {
@@ -106,7 +86,6 @@ public partial class MeltingBatchForm
                 afterSend: response =>
                 {
                     _model = MeltingBatchVm.CreateFrom(response);
-
                     _activeIndex = response.CurrentStatus switch
                     {
                         MeltingBatchStatus.Melting => 1,
@@ -117,11 +96,10 @@ public partial class MeltingBatchForm
         }
     }
 
+    // --- Corrected Event Handlers ---
     private async Task HandleMeltingProducts()
     {
-        if (_stepper is null)
-            return;
-
+        if (_stepper is null) return;
         var result = await DialogService.ShowMessageBox(
             "تأیید عملیات",
             "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام انتخاب شده از انبار خارج و وارد فرایند ذوب خواهند شد",
@@ -131,8 +109,7 @@ public partial class MeltingBatchForm
         if (result == true)
         {
             _processing = true;
-            StateHasChanged();
-
+            StateHasChanged(); // Refresh UI to show spinner
             await SendRequestAsync<IMeltingBatchService, CreateMeltingBatchResponse>(
                 action: (s, ct) => s.CreateAsync(_model.ToMeltingRequest(), ct),
                 afterSend: async response =>
@@ -155,13 +132,6 @@ public partial class MeltingBatchForm
         if (_stepper is null)
             return;
 
-        if (_model.Assayer is null)
-        {
-            AddErrorToast("لطفا آزمایشگاه را مشخص کنید");
-            await _assayerField.FocusAsync();
-            return;
-        }
-
         var result = await DialogService.ShowMessageBox(
             "تأیید عملیات",
             "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام ذوب شده برای آزمایشگاه ارسال خواهند شد",
@@ -172,7 +142,6 @@ public partial class MeltingBatchForm
         {
             _processing = true;
             StateHasChanged();
-
             await SendRequestAsync<IMeltingBatchService>(
                 action: (s, ct) => s.SendToLabAsync(_id.Value, _model.ToSendToLabRequest(), ct),
                 afterSend: async () =>
@@ -191,8 +160,7 @@ public partial class MeltingBatchForm
 
     private async Task HandleCompleteProcess()
     {
-        if (_stepper is null)
-            return;
+        if (_stepper is null) return;
 
         var result = await DialogService.ShowMessageBox(
             "تأیید عملیات",
@@ -204,7 +172,6 @@ public partial class MeltingBatchForm
         {
             _processing = true;
             StateHasChanged();
-
             await SendRequestAsync<IMeltingBatchService>(
                 action: (s, ct) => s.CompleteMeltingAsync(_id.Value, _model.ToCompleteMeltingRequest(), ct),
                 afterSend: () =>
@@ -228,49 +195,6 @@ public partial class MeltingBatchForm
         StateHasChanged();
     }
 
-    private void OnSelectedItemsChanged(HashSet<InventoryStockVm>? inventoryItems)
-    {
-        _model.Products = inventoryItems?.Where(x => x.Product != null)
-            .Select(x => x.Product!).ToList() ?? [];
-
-        (_model.WeightUnitType, _model.TotalWeight) = _model.GetWeightParams(_setting?.GramPerMesghal);
-        StateHasChanged();
-    }
-
-    private async Task<IEnumerable<GetCustomerNameResponse>?> SearchAssayers(string? assayerName, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(assayerName))
-            return null;
-
-        await SendRequestAsync<ICustomerService, List<GetCustomerNameResponse>>(
-            action: (s, ct) => s.GetNamesAsync(assayerName, CustomerType.AssayingLab, ct),
-            afterSend: response => _assayers = response,
-            cancelPrevious: true);
-
-        return _assayers;
-    }
-
-    private async Task OnAddAssayer()
-    {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
-
-        var parameters = new DialogParameters<Customers.Components.Editor>
-        {
-            { x => x.ReturnModel, true },
-            { x => x.Model, new CustomerVm(){ CustomerType = CustomerType.AssayingLab }}
-        };
-
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
-
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false, Data: CustomerVm customerVm })
-        {
-            _model.Assayer = new GetCustomerNameResponse(customerVm.Id!.Value, customerVm.FullName);
-            StateHasChanged();
-        }
-    }
-
     private void BackToList()
     {
         Navigation.NavigateTo(ClientRoutes.InventoryStocks.MeltingBatches.Index);
@@ -279,7 +203,6 @@ public partial class MeltingBatchForm
     private async Task SelectFeePriceUnit(GetPriceUnitTitleResponse item)
     {
         _model.FeePriceUnit = item;
-
         if (_model is { FeePriceUnit: not null, PriceUnit: not null })
         {
             await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
@@ -320,18 +243,5 @@ public partial class MeltingBatchForm
             await LoadFinancialAccountsAsync();
             StateHasChanged();
         }
-    }
-
-    private int GetDescriptionMd()
-    {
-        var used = 3; // FeeAmount always visible
-
-        if (_model.FeePriceUnit != _model.PriceUnit)
-            used += 3; // Exchange rate field
-
-        if (_model.FeeAmount.HasValue)
-            used += 3; // Financial account field
-
-        return 12 - used; // Remaining for description
     }
 }
