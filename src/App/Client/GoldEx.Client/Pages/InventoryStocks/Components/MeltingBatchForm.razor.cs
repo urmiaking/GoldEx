@@ -42,6 +42,14 @@ public partial class MeltingBatchForm
             ? $"نرخ تبدیل {_model.FeePriceUnit.Title} به {_model.PriceUnit.Title}"
             : null;
 
+    private bool IsCompleteProcessDisabled =>
+        _processing ||
+        _model.MeltedGoldWeight is null ||
+        _model.Fineness is null ||
+        string.IsNullOrEmpty(_model.AssayNumber) ||
+        _model.GramPrice is null ||
+        _model is { FeeAmount: not null, FinancialAccount: null };
+
     protected override async Task OnParametersSetAsync()
     {
         if (_id != Id)
