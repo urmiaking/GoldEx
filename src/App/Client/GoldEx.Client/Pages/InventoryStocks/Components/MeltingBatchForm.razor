@@ -243,7 +243,7 @@
                     <div class="d-flex justify-content-end">
                         <MudButton Variant="Variant.Filled" Color="Color.Success"
                                    OnClick="@(async () => await HandleCompleteProcess())"
-                                   Disabled="@(_model.MeltedGoldWeight is null || _model.Fineness is null || string.IsNullOrEmpty(_model.AssayNumber) || _model.GramPrice is null || _processing)"
+                                   Disabled="@(IsCompleteProcessDisabled)"
                                    EndIcon="@Icons.Material.Filled.ArrowBack"
                                    Class="mt-4">
                             @if (_processing)

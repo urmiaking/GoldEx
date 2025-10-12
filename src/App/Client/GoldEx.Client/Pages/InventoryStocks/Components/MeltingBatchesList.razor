@@ -186,6 +186,48 @@
                                     <MudText>کسری ذوب: @context.WasteWeight?.ToWeightFormat(context.WeightUnitType) (@context.WastePercentage?.ToString("0.##")%)</MudText>
                                 </div>
                             }
+                            @if(context.Transactions is not null && context.Transactions.Any())
+                            {
+                                <MudTable Items="context.Transactions" Context="TransactionContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Class="w-100 mt-4">
+                                    <ToolBarContent>
+                                        <MudText Typo="Typo.body1">تراکنش‌های مرتبط با این درخواست</MudText>
+                                    </ToolBarContent>
+                                    <ColGroup>
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                    </ColGroup>
+                                    <HeaderContent>
+                                        <MudTh>تاریخ</MudTh>
+                                        <MudTh>نوع تراکنش</MudTh>
+                                        <MudTh>مبلغ</MudTh>
+                                        <MudTh>شرح</MudTh>
+                                        <MudTh>حساب تحت تاثیر</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="تاریخ">@TransactionContext.CreatedAt.ToString("yyyy/MM/dd HH:mm")</MudTd>
+                                        <MudTd DataLabel="نوع تراکنش">
+                                            @if (TransactionContext.TransactionType == TransactionType.Credit)
+                                            {
+                                                <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowUp">
+                                                    @TransactionContext.TransactionType.GetDisplayName()
+                                                </MudChip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowDown">
+                                                    @TransactionContext.TransactionType.GetDisplayName()
+                                                </MudChip>
+                                            }
+                                        </MudTd>
+                                        <MudTd DataLabel="مبلغ">@TransactionContext.Amount.ToCurrencyFormat(TransactionContext.PriceUnit)</MudTd>
+                                        <MudTd DataLabel="شرح">@TransactionContext.Description</MudTd>
+                                        <MudTd DataLabel="حساب تحت تاثیر">@TransactionContext.LedgerAccount</MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+                            }
                         </MudCardActions>
                     </MudCard>
                 </MudCollapse>
