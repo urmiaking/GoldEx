@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
@@ -19,6 +20,7 @@ using GoldEx.Server.Infrastructure.Specifications.MeltingBatches;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.Constants;
+using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -550,10 +552,9 @@ internal class AccountingTransactionService(
         }
     }
 
-    public async Task SetForMoltenGoldEntryAsync(MeltingBatch meltingBatch, string assayNumber, decimal fineness, decimal weight,
-        decimal gramPrice, Guid priceUnitId, CancellationToken cancellationToken = default)
+    public async Task SetForMoltenGoldEntryAsync(MeltingBatch meltingBatch, CompleteMeltingRequestDto request, CancellationToken cancellationToken = default)
     {
-        var moltenValue = CalculatorHelper.MoltenGold.Calculate(weight, fineness, gramPrice, null);
+        var moltenValue = CalculatorHelper.MoltenGold.Calculate(request.Weight, request.Fineness, request.GramPrice, null);
 
         // دریافت حساب‌ها
         var moltenInventoryAccount = await ledgerAccountRepository
@@ -565,16 +566,16 @@ internal class AccountingTransactionService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Cost of Goods Sold ledger account not found.");
 
         var priceUnit = await priceUnitRepository
-            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId)))
-            .FirstOrDefaultAsync(cancellationToken) 
-                        ?? throw new NotFoundException($"Price unit with id '{priceUnitId}' not found.");
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
+            .FirstOrDefaultAsync(cancellationToken)
+                        ?? throw new NotFoundException($"Price unit with id '{request.PriceUnitId}' not found.");
 
         var transactions = new List<Transaction>();
         var groupId = Guid.NewGuid();
 
         // تراکنش Debit: افزایش موجودی طلای آبشده
         var entryDebit = Transaction.CreateForMoltenGold(
-            description: $"انتقال به موجودی: {weight} گرم طلای آبشده عیار {fineness} (انگ {assayNumber}) از درخواست ذوب {meltingBatch.BatchNumber} - آزمایشگاه {meltingBatch.Assayer?.FullName ?? "نامشخص"}",
+            description: MoltenGoldDescriptionBuilder.BuildMoltenEntryDebit(request.Weight, request.Fineness, request.AssayNumber, meltingBatch.BatchNumber, meltingBatch.Assayer?.FullName),
             amount: moltenValue,
             exchangeRate: null,
             baseCurrencyAmount: moltenValue,
@@ -587,7 +588,7 @@ internal class AccountingTransactionService(
 
         // تراکنش Credit: تسویه بهای تمام‌شده ذوب
         var entryCredit = Transaction.CreateForMoltenGold(
-            description: $"تسویه بهای تمام‌شده: ورود {weight} گرم طلای آبشده عیار {fineness} (انگ {assayNumber}) از درخواست ذوب شماره {meltingBatch.BatchNumber} (ارزش خالص {moltenValue.ToCurrencyFormat(priceUnit.Title)} پس از کسر ناخالصی)",
+            description: MoltenGoldDescriptionBuilder.BuildMoltenEntryCredit(request.Weight, request.Fineness, request.AssayNumber, meltingBatch.BatchNumber, moltenValue, priceUnit.Title),
             amount: moltenValue,
             exchangeRate: null,
             baseCurrencyAmount: moltenValue,
@@ -600,6 +601,67 @@ internal class AccountingTransactionService(
 
         transactions.Add(entryDebit);
         transactions.Add(entryCredit);
+
+        // ثبت هزینه‌های جانبی ذوب
+        if (request is { FeeAmount: > 0, FinancialAccountId: not null })
+        {
+            var expensesAccount = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OperatingExpenses))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("OperatingExpenses ledger account not found.");
+
+            var sourceFinancialAccount = await financialAccountRepository
+                                             .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(request.FinancialAccountId.Value)))
+                                             .FirstOrDefaultAsync(cancellationToken)
+                                         ?? throw new NotFoundException($"Financial account {request.FinancialAccountId.Value} not found.");
+
+            if (!sourceFinancialAccount.LedgerAccountId.HasValue)
+                throw new NotFoundException(
+                    $"Financial account {sourceFinancialAccount.Id.Value} does not have a linked ledger account.");
+
+            var sourceLedgerAccount = await ledgerAccountRepository
+                                          .Get(new LedgerAccountsByIdSpecification(sourceFinancialAccount.LedgerAccountId.Value))
+                                          .FirstOrDefaultAsync(cancellationToken)
+                                      ?? throw new NotFoundException($"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
+
+            var feeExchangeRate = request.FeeExchangeRate;
+            var feeBaseAmount = request.FeeAmount.Value * (feeExchangeRate ?? 1);
+
+            var feePriceUnitId = request.FeePriceUnitId ?? request.PriceUnitId;
+            var feePriceUnit = await priceUnitRepository
+                .Get(new PriceUnitsByIdSpecification(new PriceUnitId(feePriceUnitId)))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Fee price unit with id '{feePriceUnitId}' not found.");
+
+            var feeGroupId = Guid.NewGuid();
+
+            // تراکنش Debit: ثبت هزینه ری‌گیری
+            var feeDebit = Transaction.CreateForMoltenGold(
+                description: MoltenGoldDescriptionBuilder.BuildAssayFeeDebit(request.FeeAmount.Value, feePriceUnit.Title, feeExchangeRate, feeBaseAmount, priceUnit.Title, meltingBatch.BatchNumber, request.AssayNumber, meltingBatch.Assayer?.FullName),
+                amount: request.FeeAmount.Value,
+                exchangeRate: feeExchangeRate,
+                baseCurrencyAmount: feeBaseAmount,
+                transactionType: TransactionType.Debit,
+                groupId: feeGroupId,
+                priceUnitId: feePriceUnit.Id,
+                ledgerAccountId: expensesAccount.Id,
+                meltingBatchId: meltingBatch.Id
+            );
+
+            // تراکنش Credit: پرداخت هزینه ری‌گیری
+            var feeCredit = Transaction.CreateForMoltenGold(
+                description: MoltenGoldDescriptionBuilder.BuildAssayFeeCredit(request.FeeAmount.Value, feePriceUnit.Title, feeExchangeRate, feeBaseAmount, priceUnit.Title, meltingBatch.BatchNumber),
+                amount: request.FeeAmount.Value,
+                exchangeRate: feeExchangeRate,
+                baseCurrencyAmount: feeBaseAmount,
+                transactionType: TransactionType.Credit,
+                groupId: feeGroupId,
+                priceUnitId: feePriceUnit.Id,
+                ledgerAccountId: sourceLedgerAccount.Id,
+                meltingBatchId: meltingBatch.Id
+            );
+
+            transactions.Add(feeDebit);
+            transactions.Add(feeCredit);
+        }
 
         // ذخیره تراکنش‌ها
         await repository.CreateRangeAsync(transactions, cancellationToken);

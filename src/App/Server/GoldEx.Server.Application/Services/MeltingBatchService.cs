@@ -144,13 +144,8 @@ internal class MeltingBatchService(
                 await repository.UpdateAsync(item, cancellationToken);
 
                 await inventoryService.CreateMoltenGoldAsync(item, request.AssayNumber, request.Fineness, request.Weight, cancellationToken);
-                await transactionService.SetForMoltenGoldEntryAsync(item,
-                    request.AssayNumber,
-                    request.Fineness,
-                    request.Weight,
-                    request.GramPrice,
-                    request.PriceUnitId,
-                    cancellationToken);
+
+                await transactionService.SetForMoltenGoldEntryAsync(item, request, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }

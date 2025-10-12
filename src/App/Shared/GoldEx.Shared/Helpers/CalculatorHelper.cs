@@ -110,7 +110,9 @@ public class CalculatorHelper
                 return rawPrice + (additionalPrices ?? 0);
             }
 
-            return rawPrice + wage + profit + tax + (additionalPrices ?? 0);
+            var result = rawPrice + wage + profit + tax + (additionalPrices ?? 0);
+
+            return result;
         }
 
         /// <summary>
@@ -168,6 +170,9 @@ public class CalculatorHelper
             if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
                 throw new ArgumentOutOfRangeException(
                     $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
+
+            // log to console:
+            Console.WriteLine($"Calculated MoltenGold: {weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1))}");
 
             return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1));
         }

@@ -1,6 +1,9 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -10,6 +13,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using System.Collections;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -22,15 +26,21 @@ public partial class MeltingBatchForm
     private MeltingBatchVm _model = new();
     private GetSettingResponse? _setting;
     private List<GetCustomerNameResponse> _assayers = [];
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private Guid? _id;
 
     private MudAutocomplete<GetCustomerNameResponse> _assayerField = new();
 
     private MudStepper? _stepper;
-    private bool _initialized = false;
     private int _activeIndex = 0;
     private bool _processing;
-    private bool _priceFieldMenuOpen;
+    private bool _feeFieldMenuOpen;
+    private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
+
+    private string? FeeExchangeRateLabel =>
+        _model is { FeePriceUnit: not null, PriceUnit: not null }
+            ? $"نرخ تبدیل {_model.FeePriceUnit.Title} به {_model.PriceUnit.Title}"
+            : null;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -40,19 +50,29 @@ public partial class MeltingBatchForm
             await LoadMeltingBatchAsync();
         }
 
-        await LoadDefaultPriceUnitAsync();
+        await LoadPriceUnitsAsync();
         await LoadGramPriceAsync();
+        await LoadFinancialAccountsAsync();
 
         await base.OnParametersSetAsync();
     }
 
-    private async Task LoadDefaultPriceUnitAsync()
+    private async Task LoadFinancialAccountsAsync()
     {
-        await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse?>(
-            action: (s, ct) => s.GetDefaultAsync(ct),
+        await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(null, _model.FeePriceUnit?.Id, ct),
+            afterSend: response => _financialAccounts = response);
+    }
+
+    private async Task LoadPriceUnitsAsync()
+    {
+        await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
+            action: (s, ct) => s.GetTitlesAsync(ct),
             afterSend: response =>
             {
-                _model.PriceUnit = response;
+                _priceUnits = response;
+                _model.PriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                _model.FeePriceUnit = response.FirstOrDefault(x => x.IsDefault);
                 StateHasChanged();
             });
     }
@@ -86,18 +106,6 @@ public partial class MeltingBatchForm
                         _ => throw new ArgumentOutOfRangeException()
                     };
                 });
-        }
-    }
-
-    // TODO: remove
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && _stepper != null)
-        {
-            // Wait for stepper to initialize  
-            await Task.Delay(1);
-            _initialized = true;
-            StateHasChanged();
         }
     }
 
@@ -253,5 +261,69 @@ public partial class MeltingBatchForm
             _model.Assayer = new GetCustomerNameResponse(customerVm.Id!.Value, customerVm.FullName);
             StateHasChanged();
         }
+    }
+
+    private void BackToList()
+    {
+        Navigation.NavigateTo(ClientRoutes.InventoryStocks.MeltingBatches.Index);
+    }
+
+    private async Task SelectFeePriceUnit(GetPriceUnitTitleResponse item)
+    {
+        _model.FeePriceUnit = item;
+
+        if (_model is { FeePriceUnit: not null, PriceUnit: not null })
+        {
+            await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                action: (s, ct) => s.GetExchangeRateAsync(_model.FeePriceUnit.Id, _model.PriceUnit.Id, ct),
+                afterSend: async response =>
+                {
+                    _model.FeeExchangeRate = response.ExchangeRate;
+                    await LoadFinancialAccountsAsync();
+                    StateHasChanged();
+                });
+        }
+    }
+
+    private async Task OnAddFinancialAccount()
+    {
+        DialogOptions dialogOptions = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            FullScreen = false,
+            MaxWidth = MaxWidth.Small
+        };
+
+        var parameters = new DialogParameters<FinancialAccountEditor>
+        {
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.IsSystemAccount, true },
+            { x => x.SubmitIndependently, true }
+        };
+
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>("افزودن حساب مالی جدید",
+            parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: FinancialAccountVm })
+        {
+            await LoadFinancialAccountsAsync();
+            StateHasChanged();
+        }
+    }
+
+    private int GetDescriptionMd()
+    {
+        var used = 3; // FeeAmount always visible
+
+        if (_model.FeePriceUnit != _model.PriceUnit)
+            used += 3; // Exchange rate field
+
+        if (_model.FeeAmount.HasValue)
+            used += 3; // Financial account field
+
+        return 12 - used; // Remaining for description
     }
 }
