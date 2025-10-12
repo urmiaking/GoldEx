@@ -1,3 +1,3 @@
 ﻿namespace GoldEx.Shared.DTOs.MeltingBatches;
 
-public record MeltingBatchRequestDto(string Description, List<Guid> ProductIds);
+public record MeltingBatchRequestDto(List<Guid> ProductIds);

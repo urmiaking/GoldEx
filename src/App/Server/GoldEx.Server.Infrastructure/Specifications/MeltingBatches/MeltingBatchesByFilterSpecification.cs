@@ -19,7 +19,15 @@ public class MeltingBatchesByFilterSpecification : SpecificationBase<MeltingBatc
         // Apply search filter
         if (!string.IsNullOrEmpty(requestFilter.Search))
         {
-            AddCriteria(x => x.Description.Contains(requestFilter.Search));
+            if (int.TryParse(requestFilter.Search, out var batchNumber))
+            {
+                AddCriteria(x => x.BatchNumber == batchNumber);
+            }
+        }
+
+        if (filter.Status.HasValue)
+        {
+            AddCriteria(x => x.ChangeLogs.Max(y => y.Status) == filter.Status);
         }
 
         // Apply sorting
@@ -35,11 +43,12 @@ public class MeltingBatchesByFilterSpecification : SpecificationBase<MeltingBatc
         // Apply date range filter on melting batch
         if (filter.Start.HasValue)
         {
-            AddCriteria(x => x.CreatedAt >= filter.Start.Value);
+            AddCriteria(x => x.ChangeLogs.Max(y => y.DateTime) >= filter.Start.Value);
         }
         if (filter.End.HasValue)
         {
-            AddCriteria(x => x.CreatedAt <= filter.End.Value);
+            var endOfDay = filter.End.Value.Date.AddDays(1).AddTicks(-1);
+            AddCriteria(x => x.ChangeLogs.Max(y => y.DateTime) <= endOfDay);
         }
 
         // Apply paging

@@ -1,5 +1,6 @@
 ﻿using GoldEx.Server.Domain.MeltingBatchAggregate;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GoldEx.Server.Infrastructure.Configurations;
@@ -13,9 +14,11 @@ internal class MeltingBatchConfiguration : IEntityTypeConfiguration<MeltingBatch
         builder.Property(x => x.Id)
             .HasConversion(x => x.Value, id => new MeltingBatchId(id));
 
-        builder.Property(x => x.Description)
+        builder.Property(x => x.BatchNumber)
+            .ValueGeneratedOnAdd()
+            .UseIdentityColumn()
             .IsRequired()
-            .HasMaxLength(100);
+            .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
 
         builder.Property(x => x.TotalWeight)
             .HasPrecision(36, 10)

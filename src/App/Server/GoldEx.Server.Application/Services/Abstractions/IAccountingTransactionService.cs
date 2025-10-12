@@ -12,4 +12,11 @@ public interface IAccountingTransactionService
     Task ClearTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default);
     Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
     Task SetForMeltingBatchRequestAsync(MeltingBatchId meltingBatchId, List<ProductId> productIds, CancellationToken cancellationToken = default);
+    Task SetForMoltenGoldEntryAsync(MeltingBatch meltingBatch,
+        string assayNumber,
+        decimal fineness,
+        decimal weight,
+        decimal gramPrice,
+        Guid priceUnitId,
+        CancellationToken cancellationToken = default);
 }

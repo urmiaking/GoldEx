@@ -76,15 +76,8 @@ public class UsedProductVm
     [Display(Name = "ارزش کل")]
     public decimal ItemFinalAmount => ItemAmount + (ExtraCostsAmount ?? 0);
 
-    [Display(Name = "نوع کالا")]
-    public ProductType ProductType { get; set; } = ProductType.Gold;
-
     [Display(Name = "نوع واحد طلا")]
     public GoldUnitType UnitType { get; set; }
-
-    [Display(Name = "تعداد")]
-    [Range(1, int.MaxValue, ErrorMessage = "{0} باید حداقل {1} باشد.")]
-    public int Quantity { get; set; } = 1;
 
     public int Index { get; set; } = 1;
 
@@ -100,7 +93,7 @@ public class UsedProductVm
             return;
         }
 
-        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness.Value, GramPrice, Quantity, ExchangeRate) + (ExtraCostsAmount ?? 0);
+        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness.Value, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
     }
 
     public void UpdateFrom(UsedProductVm other)
@@ -110,11 +103,9 @@ public class UsedProductVm
         GramPrice = other.GramPrice;
         ExchangeRate = other.ExchangeRate;
         Fineness = other.Fineness;
-        Quantity = other.Quantity;
         Weight = other.Weight;
         Description = other.Description;
         ExtraCostsAmount = other.ExtraCostsAmount;
-        ProductType = other.ProductType;
         UnitType = other.UnitType;
     }
 
@@ -126,8 +117,8 @@ public class UsedProductVm
             productItem.GramPrice,
             productItem.ExtraCostsAmount ?? 0,
             productItem.Fineness ?? 0,
-            productItem.Quantity,
-            productItem.ProductType,
+            1,
+            ProductType.UsedGold,
             productItem.UnitType);
     }
 
@@ -141,9 +132,7 @@ public class UsedProductVm
             Weight = response.Weight,
             Description = response.Description,
             ExtraCostsAmount = response.ExtraCostsAmount,
-            Quantity = response.Quantity,
             ItemAmount = response.ItemAmount,
-            ProductType = response.ProductType,
             UnitType = response.UnitType
         };
     }

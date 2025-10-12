@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.MeltingBatchAggregate;
@@ -8,7 +9,8 @@ namespace GoldEx.Server.Domain.MeltingBatchAggregate;
 public readonly record struct MeltingBatchId(Guid Value);
 public class MeltingBatch : EntityBase<MeltingBatchId>
 {
-    public string Description { get; private set; }
+    public int BatchNumber { get; private set; }
+
     public decimal TotalWeight { get; private set; }
     public GoldUnitType WeightUnitType { get; private set; }
 
@@ -18,33 +20,33 @@ public class MeltingBatch : EntityBase<MeltingBatchId>
     private readonly List<MeltingBatchChangeLog> _changeLogs = [];
     public IReadOnlyList<MeltingBatchChangeLog> ChangeLogs => _changeLogs.OrderBy(x => x.DateTime).ToList();
     public IReadOnlyList<InventoryStock>? InventoryStocks { get; private set; }
+    public IReadOnlyList<Transaction>? Transactions { get; private set; }
 
     public MeltingBatchStatus CurrentStatus => ChangeLogs.Any() ? ChangeLogs.MaxBy(x => x.DateTime)!.Status : MeltingBatchStatus.Melting;
     public DateTime CurrentDateTime => ChangeLogs.Any() ? ChangeLogs.MaxBy(x => x.DateTime)!.DateTime : DateTime.MinValue;
 
-    private MeltingBatch(string description, decimal totalWeight, GoldUnitType weightUnitType)
+    private MeltingBatch(decimal totalWeight, GoldUnitType weightUnitType)
     {
-        ArgumentException.ThrowIfNullOrEmpty(description);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0, nameof(totalWeight));
 
         Id = new MeltingBatchId(Guid.NewGuid());
-        Description = description;
         TotalWeight = totalWeight;
         WeightUnitType = weightUnitType;
+        _changeLogs = [MeltingBatchChangeLog.Create(MeltingBatchStatus.Melting)];
     }
 
 #pragma warning disable CS8618
     private MeltingBatch() { }
 #pragma warning restore CS8618
 
-    public static MeltingBatch Create(string description, decimal totalWeight, GoldUnitType weightUnitType)
+    public static MeltingBatch Create(decimal totalWeight, GoldUnitType weightUnitType)
     {
-        return new MeltingBatch(description, totalWeight, weightUnitType).AddChangeLog(MeltingBatchStatus.Melting);
+        return new MeltingBatch(totalWeight, weightUnitType);
     }
 
     private MeltingBatch AddChangeLog(MeltingBatchStatus status, string? description = null)
     {
-        if (CurrentStatus < status)
+        if (CurrentStatus >= status)
             throw new InvalidOperationException($"Melting batch is already in status {status}");
 
         _changeLogs.Add(MeltingBatchChangeLog.Create(status, description));

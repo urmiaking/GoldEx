@@ -35,6 +35,24 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
     // TODO: add warehousingId when implemented
 
+    public static InventoryStock CreateMeltingBatchProduct(
+        ProductId productId,
+        int changeAmount,
+        WarehouseActionType actionType,
+        MeltingBatchId batchId)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+
+        return new InventoryStock
+        {
+            Id = new InventoryStockId(Guid.NewGuid()),
+            ProductId = productId,
+            ChangeAmount = changeAmount,
+            ActionType = actionType,
+            MeltingBatchId = batchId
+        };
+    }
+
     public static InventoryStock CreateProduct(
         ProductId productId,
         int changeAmount,

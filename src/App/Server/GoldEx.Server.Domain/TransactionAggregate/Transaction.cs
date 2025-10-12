@@ -2,6 +2,7 @@
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
@@ -176,6 +177,9 @@ public class Transaction : EntityBase<TransactionId>
     public InvoicePaymentId? InvoicePaymentId { get; private set; }
     public InvoicePayment? InvoicePayment { get; private set; }
 
+    public MeltingBatchId? MeltingBatchId { get; private set; }
+    public MeltingBatch? MeltingBatch { get; private set; }
+
     public static Transaction CreateForMeltingBatch(string description,
         decimal amount,
         decimal? exchangeRate,
@@ -184,7 +188,8 @@ public class Transaction : EntityBase<TransactionId>
         Guid groupId,
         PriceUnitId priceUnitId,
         LedgerAccountId ledgerAccountId,
-        InvoiceId invoiceId)
+        InvoiceId invoiceId,
+        MeltingBatchId meltingBatchId)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -204,7 +209,39 @@ public class Transaction : EntityBase<TransactionId>
             GroupId = groupId,
             InvoiceId = invoiceId,
             PriceUnitId = priceUnitId,
-            LedgerAccountId = ledgerAccountId
+            LedgerAccountId = ledgerAccountId,
+            MeltingBatchId = meltingBatchId
+        };
+    }
+
+    public static Transaction CreateForMoltenGold(string description,
+        decimal amount,
+        decimal? exchangeRate,
+        decimal baseCurrencyAmount,
+        TransactionType transactionType,
+        Guid groupId,
+        PriceUnitId priceUnitId,
+        LedgerAccountId ledgerAccountId,
+        MeltingBatchId meltingBatchId)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+        if (amount < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than or equal to zero.");
+        
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            Description = description,
+            Amount = amount,
+            BaseCurrencyAmount = baseCurrencyAmount,
+            TransactionType = transactionType,
+            ExchangeRate = exchangeRate,
+            GroupId = groupId,
+            PriceUnitId = priceUnitId,
+            LedgerAccountId = ledgerAccountId,
+            MeltingBatchId = meltingBatchId
         };
     }
 }

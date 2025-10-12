@@ -110,6 +110,7 @@ public static class ClientRoutes
         private const string InvoicesPrefix = "/invoices";
         public const string Index = $"{InvoicesPrefix}";
         public const string SetInvoice = $"{InvoicesPrefix}/set/{{id?}}";
+        public const string Create = $"{InvoicesPrefix}/create";
         public const string ViewInvoice = $"{InvoicesPrefix}/viewer/{{number:long}}/{{invoiceType}}";
     }
 
@@ -135,6 +136,8 @@ public static class ClientRoutes
         {
             private const string MeltingBatchesPrefix = $"{InventoryStocksPrefix}/melting-batches";
             public const string Index = $"{MeltingBatchesPrefix}";
+            public const string Create = $"{MeltingBatchesPrefix}/create";
+            public const string Set = $"{MeltingBatchesPrefix}/set/{{id:guid?}}";
         }
     }
 

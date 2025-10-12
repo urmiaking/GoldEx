@@ -1,0 +1,186 @@
+﻿@using GoldEx.Shared.DTOs.Customers
+@inherits GoldExComponentBase
+
+<MudPaper Elevation="@Elevation" Class="@Class">
+    <MudStepper @ref="_stepper" ActiveIndex="_activeIndex" ActiveIndexChanged="OnIndexChanged">
+        <ChildContent>
+            <MudStep Title="انتخاب محصولات">
+                <div class="d-flex justify-start pr-2 py-3">
+                    <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small"></MudIcon>
+                    <MudText Class="me-2" Typo="Typo.body2">
+                        در اولین قدم از فرایند ذوب، ابتدا باید اجناس مستعمل خریداری شده از مشتریان را جهت وارد کردن به چرخه ذوب انتخاب کنید و سپس آن ها را به آزمایشگاه جهت ری گیری ارسال کنید.
+                    </MudText>
+                </div>
+
+                <InventoryStockList ItemStatus="ItemStatus.Available" ItemType="ItemType.UsedProduct" Elevation="0"
+                                    Selectable="true" SelectedItemsChanged="OnSelectedItemsChanged">
+                </InventoryStockList>
+
+                <MudPaper Elevation="0" Class="d-flex justify-content-between align-center flex-wrap mt-4 p-2">
+                    <MudText Class="m-2">تعداد اقلام انتخابی: @_model.Products.Count</MudText>
+                    <MudText Class="m-2">وزن کل: @(_model.TotalWeight?.ToWeightFormat(_model.WeightUnitType) ?? "0")</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success"
+                               OnClick="@(async () => await HandleMeltingProducts())"
+                               Disabled="@(!_model.Products.Any() || _processing)"
+                               EndIcon="@Icons.Material.Filled.ArrowBack">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1"
+                                                 Size="Size.Small"
+                                                 Indeterminate="true" />
+                            <MudText Class="ms-2">
+                                در حال پردازش
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText>جمع آوری برای ذوب</MudText>
+                        }
+                    </MudButton>
+                </MudPaper>
+            </MudStep>
+
+            <MudStep Title="ارسال به آزمایشگاه">
+                <MudPaper Elevation="0">
+                    <div class="d-flex justify-start pr-2 py-3">
+                        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small"></MudIcon>
+                        <MudText Class="me-2" Typo="Typo.body2">پس از انتخاب اجناس مستعمل جهت ذوب، در این مرحله باید نام آزمایشگاه را جهت ری گیری و صدور شماره انگ وارد کنید.</MudText>
+                    </div>
+                    <div class="d-flex justify-content-between align-center flex-wrap gap-6 p-2">
+                        <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
+                            <MudAutocomplete T="GetCustomerNameResponse"
+                                             @ref="_assayerField"
+                                             @bind-Value="_model.Assayer"
+                                             Label="@_model.GetDisplayName(() => _model.Assayer)"
+                                             Text="@_model.Assayer?.FullName"
+                                             For="@(() => _model.Assayer!)"
+                                             Placeholder="جستجوی آزمایشگاه..."
+                                             ToStringFunc="@(assayer => assayer != null ? $"{assayer.FullName}" : null)"
+                                             Margin="Margin.Dense"
+                                             Adornment="Adornment.Start"
+                                             Immediate="true"
+                                             AdornmentIcon="@Icons.Material.Filled.Search"
+                                             Variant="Variant.Outlined"
+                                             SearchFunc="@SearchAssayers"
+                                             ResetValueOnEmptyText="true"
+                                             DebounceInterval="0"
+                                             ShowProgressIndicator="false">
+                            </MudAutocomplete>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddAssayer"></MudIconButton>
+                        </MudStack>
+                        <MudTextField @bind-Value="_model.LabDescription"
+                                      Label="@_model.GetDisplayName(() => _model.LabDescription)"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Success"
+                                   OnClick="@(async () => await HandleSendToLab())"
+                                   Disabled="@(_model.Assayer == null || _processing)"
+                                   EndIcon="@Icons.Material.Filled.ArrowBack">
+                            @if (_processing)
+                            {
+                                <MudProgressCircular Class="ms-n1"
+                                                     Size="Size.Small"
+                                                     Indeterminate="true" />
+                                <MudText Class="ms-2">
+                                    در حال پردازش
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudText>ارسال به آزمایشگاه</MudText>
+                            }
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            </MudStep>
+
+            <MudStep Title="تبدیل به طلای آبشده">
+                <MudPaper Elevation="0">
+                    <div class="d-flex justify-start pr-2 py-3">
+                        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small"></MudIcon>
+                        <MudText Class="me-2" Typo="Typo.body2">در مرحله آخر، اطلاعات مربوط به طلای آبشده دریافتی از آزمایشگاه را وارد کرده و نرخ آن را تعیین کنید. با اتمام این عملیات، موجودی طلای آبشده به انبار اضافه خواهد شد.</MudText>
+                    </div>
+                    
+                    <MudGrid Spacing="6" Class="mt-0">
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@_model.PriceUnit?.Title"
+                                             For="() => _model.GramPrice"
+                                             Format="#,##0.##"
+                                             HideSpinButtons="true"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@($"نرخ {_model.WeightUnitType.GetDisplayName()}")"
+                                             T="decimal?"
+                                             @bind-Value="@_model.GramPrice"
+                                             Variant="Variant.Outlined"></MudNumericField>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_model.MeltedGoldWeight"
+                                             Label="@_model.GetDisplayName(() => _model.MeltedGoldWeight)"
+                                             Variant="Variant.Outlined"
+                                             Format="G29"
+                                             AutoFocus="true"
+                                             HideSpinButtons="true"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"/>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_model.Fineness"
+                                             Label="@_model.GetDisplayName(() => _model.Fineness)"
+                                             Variant="Variant.Outlined"
+                                             Immediate="true"
+                                             Format="G29"
+                                             HideSpinButtons="true"
+                                             Margin="Margin.Dense"/>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudTextField @bind-Value="_model.AssayNumber"
+                                          Label="@_model.GetDisplayName(() => _model.AssayNumber)"
+                                          Variant="Variant.Outlined"
+                                          Immediate="true"
+                                          Margin="Margin.Dense"/>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="8">
+                            <MudTextField @bind-Value="_model.CompleteDescription"
+                                          Label="@_model.GetDisplayName(() => _model.CompleteDescription)"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"/>
+                        </MudItem>
+                    </MudGrid>
+
+                    <div class="d-flex justify-content-between align-center flex-wrap p-2 mt-4">
+                        <MudText>وزن کل اجناس ذوب شده: @_model.TotalWeight?.ToWeightFormat(_model.WeightUnitType)</MudText>
+                        <MudText>وزن کل طلای آبشده: @_model.MeltedGoldWeight?.ToWeightFormat(_model.WeightUnitType)</MudText>
+                        <MudText>کسری ذوب: @_model.WasteWeight?.ToWeightFormat(_model.WeightUnitType) (@_model.WastePercentage?.ToString("0.##")%)</MudText>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success"
+                                   OnClick="@(async () => await HandleCompleteProcess())"
+                                   Disabled="@(_model.MeltedGoldWeight is null || _model.Fineness is null || string.IsNullOrEmpty(_model.AssayNumber) || _model.GramPrice is null || _processing)"
+                                   EndIcon="@Icons.Material.Filled.ArrowBack"
+                                   Class="mt-4">
+                            @if (_processing)
+                            {
+                                <MudProgressCircular Class="ms-n1"
+                                                     Size="Size.Small"
+                                                     Indeterminate="true"/>
+                                <MudText Class="ms-2">
+                                    در حال پردازش
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudText>اتمام عملیات</MudText>
+                            }
+
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            </MudStep>
+        </ChildContent>
+        <ActionContent></ActionContent>
+    </MudStepper>
+</MudPaper>

@@ -9,7 +9,7 @@ public interface IMeltingBatchService
         MeltingBatchFilter filter,
         CancellationToken cancellationToken = default);
     Task<GetMeltingBatchResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
-    Task CreateAsync(MeltingBatchRequestDto request, CancellationToken cancellationToken = default);
+    Task<CreateMeltingBatchResponse> CreateAsync(MeltingBatchRequestDto request, CancellationToken cancellationToken = default);
     Task SendToLabAsync(Guid id, SendToLabRequestDto request, CancellationToken cancellationToken = default);
     Task CompleteMeltingAsync(Guid id, CompleteMeltingRequestDto request, CancellationToken cancellationToken = default);
 }

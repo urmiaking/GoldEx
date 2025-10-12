@@ -41,6 +41,14 @@ internal class MeltingBatchService(
 
         var list = await repository
             .Get(spec)
+            .Include(x => x.InventoryStocks!)
+                .ThenInclude(x => x.Product)
+            .Include(x => x.Assayer)
+            .Include(x => x.Transactions!)
+                .ThenInclude(x => x.LedgerAccount)
+            .Include(x => x.Transactions!)
+                .ThenInclude(x => x.PriceUnit)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
@@ -58,13 +66,17 @@ internal class MeltingBatchService(
     {
         var item = await repository
             .Get(new MeltingBatchesByIdSpecification(new MeltingBatchId(id)))
+            .Include(x => x.InventoryStocks!)
+                .ThenInclude(x => x.Product)
+            .Include(x => x.Assayer)
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken) 
                    ?? throw new NotFoundException($"Melting batch with id '{id}' not found.");
 
         return mapper.Map<GetMeltingBatchResponse>(item);
     }
 
-    public async Task CreateAsync(MeltingBatchRequestDto request, CancellationToken cancellationToken = default)
+    public async Task<CreateMeltingBatchResponse> CreateAsync(MeltingBatchRequestDto request, CancellationToken cancellationToken = default)
     {
         await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -80,14 +92,15 @@ internal class MeltingBatchService(
 
                 var (selectedUnit, totalWeight) = await GetWeightUnitAsync(products, cancellationToken);
 
-                var item = MeltingBatch.Create(request.Description, totalWeight, selectedUnit);
+                var item = MeltingBatch.Create(totalWeight, selectedUnit);
                 await repository.CreateAsync(item, cancellationToken);
 
                 await inventoryService.MeltProductsAsync(item.Id, productIds, cancellationToken);
                 await transactionService.SetForMeltingBatchRequestAsync(item.Id, productIds, cancellationToken);
-                // TODO: add transactions
 
                 await dbTransaction.CommitAsync(cancellationToken);
+
+                return new CreateMeltingBatchResponse(item.Id.Value);
             }
             catch (Exception e)
             {
@@ -121,8 +134,9 @@ internal class MeltingBatchService(
             try
             {
                 var item = await repository
-                               .Get(new MeltingBatchesByIdSpecification(new MeltingBatchId(id)))
-                               .FirstOrDefaultAsync(cancellationToken)
+                   .Get(new MeltingBatchesByIdSpecification(new MeltingBatchId(id)))
+                   .Include(x => x.Assayer)
+                   .FirstOrDefaultAsync(cancellationToken) 
                            ?? throw new NotFoundException($"Melting batch with id '{id}' not found.");
 
                 item.CompleteMelting(request.Description);
@@ -130,7 +144,13 @@ internal class MeltingBatchService(
                 await repository.UpdateAsync(item, cancellationToken);
 
                 await inventoryService.CreateMoltenGoldAsync(item, request.AssayNumber, request.Fineness, request.Weight, cancellationToken);
-                // TODO: add transactions
+                await transactionService.SetForMoltenGoldEntryAsync(item,
+                    request.AssayNumber,
+                    request.Fineness,
+                    request.Weight,
+                    request.GramPrice,
+                    request.PriceUnitId,
+                    cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }

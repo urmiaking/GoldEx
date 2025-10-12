@@ -7,9 +7,15 @@ public enum ItemType
     [Display(Name = "طلا و جواهر")]
     Product = 1,
 
+    [Display(Name = "طلای آبشده")]
+    MoltenGold = 2,
+
     [Display(Name = "سکه")]
-    Coin = 2,
+    Coin = 3,
 
     [Display(Name = "ارز")]
-    Currency = 3
+    Currency = 4,
+
+    [Display(Name = "طلای دست دوم")]
+    UsedProduct = 5
 }

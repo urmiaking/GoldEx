@@ -26,8 +26,7 @@ internal class InventoryStockService(
     IInventoryStockRepository repository,
     IServerProductService productService,
     IMapper mapper,
-    MeltUsedProductsValidator usedProductsValidator,
-    CreateMoltenGoldRequestValidator moltenGoldRequestValidator) 
+    MeltUsedProductsValidator usedProductsValidator) 
     : IServerInventoryStockService, IInventoryStockService
 {
     #region Server Service
@@ -213,7 +212,7 @@ internal class InventoryStockService(
 
         foreach (var productId in productIds)
         {
-            var inventoryStocks = InventoryStock.CreateProduct(productId, 1, WarehouseActionType.Out);
+            var inventoryStocks = InventoryStock.CreateMeltingBatchProduct(productId, 1, WarehouseActionType.Out, meltingBatchId);
             inventoryItems.Add(inventoryStocks);
         }
 
@@ -224,8 +223,6 @@ internal class InventoryStockService(
     public async Task CreateMoltenGoldAsync(MeltingBatch meltingBatch, string assayNumber, decimal fineness, decimal weight,
         CancellationToken cancellationToken = default)
     {
-        await moltenGoldRequestValidator.ValidateAndThrowAsync((meltingBatch, assayNumber, fineness, weight), cancellationToken);
-
         var moltenGoldDetail = MoltenGoldDetail.Create(weight, meltingBatch.WeightUnitType, assayNumber, fineness, meltingBatch.AssayerId!.Value);
 
         var product = await productService.FindOrCreateMoltenGoldProductAsync(fineness, cancellationToken);

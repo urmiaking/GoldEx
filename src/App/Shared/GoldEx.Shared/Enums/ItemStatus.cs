@@ -8,5 +8,8 @@ public enum ItemStatus
     Available = 0,
 
     [Display(Name = "فروخته شده")]
-    Sold = 1
+    Sold = 1,
+
+    [Display(Name = "ذوب شده")]
+    Melted = 2
 }
