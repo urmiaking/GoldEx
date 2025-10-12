@@ -15,7 +15,6 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         decimal? extraCostsAmount,
         decimal fineness,
         int quantity,
-        bool isSellable,
         ProductType productType,
         GoldUnitType unitType,
         ProductId? productId,
@@ -26,14 +25,6 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         ArgumentOutOfRangeException.ThrowIfLessThan(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 0, nameof(quantity));
 
-        if (!isSellable && productId.HasValue)
-            throw new ArgumentException("If the trade-in is not sellable, product ID should not be provided.",
-                nameof(isSellable));
-
-        if (productType != ProductType.Jewelry && productType != ProductType.Gold)
-            throw new ArgumentException(
-                "Product ID can only be provided for Jewelry or Gold product types.", nameof(productId));
-
         var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, fineness, gramPrice, quantity, invoice.ExchangeRate);
 
         Id = id;
@@ -41,7 +32,6 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         Fineness = fineness;
         Weight = weight;
         GramPrice = gramPrice;
-        IsSellable = isSellable;
         Quantity = quantity;
         ProductId = productId;
         Invoice = invoice;
@@ -59,7 +49,6 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         decimal? extraCostsAmount,
         decimal fineness,
         int quantity,
-        bool isSellable,
         ProductType productType,
         GoldUnitType unitType,
         ProductId? productId,
@@ -72,7 +61,6 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
             extraCostsAmount,
             fineness,
             quantity,
-            isSellable,
             productType,
             unitType,
             productId,
@@ -83,7 +71,6 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
     public decimal Fineness { get; private set; }
     public decimal Weight { get; private set; }
     public decimal GramPrice { get; private set; }
-    public bool IsSellable { get; private set; }
     public int Quantity { get; private set; }
     public ProductType ProductType { get; private set; }
     public GoldUnitType UnitType { get; private set; }

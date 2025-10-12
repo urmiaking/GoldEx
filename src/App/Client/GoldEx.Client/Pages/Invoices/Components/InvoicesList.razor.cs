@@ -105,7 +105,7 @@ public partial class InvoicesList
 
     public void OnCreateInvoice()
     {
-        NavigationManager.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute( new { Id = "" }).AppendQueryString(new { CustomerId }));
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { CustomerId }));
     }
 
     private async Task OnRemoveInvoice(InvoiceListVm model)

@@ -1,0 +1,41 @@
+﻿version: '3.9'
+
+services:
+  sqldb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqldb
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldb_data:/var/opt/mssql
+    restart: always
+
+  goldex-app:
+    image: localhost:5000/goldex:latest       # use your previously built image
+    container_name: goldex-app
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      TZ: "Asia/Tehran"
+      # override connection string for dockerized SQL Server
+      ConnectionStrings__GoldEx: "Server=sqldb,1433;Database=GoldEx;User Id=sa;Password=YourStrong!Passw0rd;MultipleActiveResultSets=True;TrustServerCertificate=True"
+      Serilog__WriteTo__0__Args__connectionString: "Server=sqldb,1433;Database=GoldEx;User Id=sa;Password=YourStrong!Passw0rd;MultipleActiveResultSets=True;TrustServerCertificate=True"
+
+    depends_on:
+      - sqldb
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - uploads_data:/app/uploads
+      - reports_data:/app/Reports
+
+    restart: always
+
+volumes:
+  sqldb_data:
+  uploads_data:
+  reports_data:

@@ -254,7 +254,7 @@ public partial class ReverseCalculator
 
     private void OnSellProduct(GetProductResponse? product)
     {
-        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" }).AppendQueryString(new { barcode = product?.Barcode }));
+        Navigation.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { barcode = product?.Barcode }));
     }
 
     #region Timer

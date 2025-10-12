@@ -8,16 +8,16 @@ public enum CustomerType
     RetailCustomer,
 
     [Display(Name = "بنکدار")]
-    Wholesaler,         // بنکدار
+    Wholesaler,
 
     [Display(Name = "آبشده فروش")]
-    MeltedGoldDealer,   // آبشده فروش
+    MeltedGoldDealer,
 
     [Display(Name = "کارگاه دار")]
-    Workshop,           // کارگاه دار
+    Workshop,
 
     [Display(Name = "ویترین دار/خرده فروش")]
-    Retailer,            // ویترین دار / خرده فروش
+    Retailer,
 
     [Display(Name = "آزمایشگاه/مرکز ری گیری")]
     AssayingLab

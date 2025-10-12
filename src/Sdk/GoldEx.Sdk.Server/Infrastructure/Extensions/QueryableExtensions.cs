@@ -12,13 +12,14 @@ public static class QueryableExtensions
         return tracking ? source.AsTracking() : source.AsNoTracking();
     }
 
-    public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string? sortLabel, SortDirection sortDirection,
-        string defaultSortProperty = "CreatedAt") where T : class
+    public static IQueryable<T> ApplySorting<T>(
+    this IQueryable<T> query,
+    string? sortLabel,
+    SortDirection sortDirection,
+    string defaultSortProperty = "CreatedAt") where T : class
     {
         if (string.IsNullOrEmpty(sortLabel))
-        {
             return ApplyDefaultSort(query, sortDirection, defaultSortProperty);
-        }
 
         var propertyPaths = sortLabel.Split('.');
         var parameter = Expression.Parameter(typeof(T), "x");
@@ -31,34 +32,48 @@ public static class QueryableExtensions
             {
                 var property = propertyType.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
                 if (property == null)
-                {
-                    // Property not found, fallback to default sorting.
                     return ApplyDefaultSort(query, sortDirection, defaultSortProperty);
+
+                var memberAccess = Expression.MakeMemberAccess(propertyExpression, property);
+
+                if (!propertyType.IsValueType || Nullable.GetUnderlyingType(propertyType) != null)
+                {
+                    propertyExpression = Expression.Condition(
+                        Expression.Equal(propertyExpression, Expression.Constant(null, propertyExpression.Type)),
+                        Expression.Constant(GetDefaultValue(property.PropertyType), property.PropertyType),
+                        memberAccess);
                 }
-                propertyExpression = Expression.MakeMemberAccess(propertyExpression, property);
+                else
+                {
+                    propertyExpression = memberAccess;
+                }
+
                 propertyType = property.PropertyType;
             }
 
-            var orderByExpression = Expression.Lambda(propertyExpression, parameter);
+            var lambda = Expression.Lambda(propertyExpression, parameter);
             var methodName = sortDirection == SortDirection.Ascending ? "OrderBy" : "OrderByDescending";
             var orderByMethod = typeof(Queryable).GetMethods()
                 .Single(m => m.Name == methodName && m.GetParameters().Length == 2)
                 .MakeGenericMethod(typeof(T), propertyType);
 
-            return (IQueryable<T>)orderByMethod.Invoke(null, new object[] { query, orderByExpression })!;
+            return (IQueryable<T>)orderByMethod.Invoke(null, new object[] { query, lambda })!;
         }
-        catch (Exception)
+        catch
         {
-            // Exception while building expression, fallback to default sorting.
             return ApplyDefaultSort(query, sortDirection, defaultSortProperty);
         }
+    }
+
+    private static object? GetDefaultValue(Type type)
+    {
+        if (type.IsValueType) return Activator.CreateInstance(type);
+        return null;
     }
 
     // This is the method with the key change.
     private static IQueryable<T> ApplyDefaultSort<T>(this IQueryable<T> query, SortDirection sortDirection, string defaultSortProperty) where T : class
     {
-        // *** START OF FIX ***
-        // This helper now also supports nested properties, just like the main method.
         var propertyPaths = defaultSortProperty.Split('.');
         var parameter = Expression.Parameter(typeof(T), "x");
         Expression propertyExpression = parameter;
@@ -91,6 +106,5 @@ public static class QueryableExtensions
             // If building the default sort expression fails for any reason, return the original query.
             return query;
         }
-        // *** END OF FIX ***
     }
 }

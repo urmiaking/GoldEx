@@ -158,7 +158,7 @@ public partial class ProductsList
         {
             text = product.Barcode,
             name = product.Name,
-            weight = "وزن: " + product.Weight?.ToString("G29") + "g",
+            weight = "وزن: " + product.Weight?.ToString("G29") + $"{(product.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
             wage = "اجرت: " + product.WageType switch
             {
                 WageType.Fixed => $"{product.Wage?.ToCurrencyFormat(product.WagePriceUnitTitle)}",

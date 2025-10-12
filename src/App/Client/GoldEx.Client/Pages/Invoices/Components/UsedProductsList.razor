@@ -19,10 +19,10 @@
             <col />
             <col />
             <col />
+            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
-            <MudTh>نوع جنس</MudTh>
             <MudTh>عنوان</MudTh>
             <MudTh>عیار</MudTh>
             <MudTh>وزن</MudTh>
@@ -33,7 +33,6 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
-            <MudTd DataLabel="نوع جنس">@context.ProductType.GetDisplayName()</MudTd>
             <MudTd DataLabel="عنوان">@context.Description</MudTd>
             <MudTd DataLabel="عیار">@context.Fineness?.ToString("G29")</MudTd>
             <MudTd DataLabel="وزن">@context.Weight?.ToString("G29") @context.UnitType.GetDisplayName()</MudTd>

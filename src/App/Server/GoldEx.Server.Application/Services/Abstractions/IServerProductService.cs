@@ -15,4 +15,5 @@ internal interface IServerProductService
     Task SyncProductItemsAsync(Invoice invoice, IEnumerable<InvoiceProductItemDto> requestedItems, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task DeleteRangeAsync(List<Product> productList, CancellationToken cancellationToken = default);
+    Task<Product> FindOrCreateMoltenGoldProductAsync(decimal fineness, CancellationToken cancellationToken = default);
 }

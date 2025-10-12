@@ -10,6 +10,7 @@ using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.DTOs.MeltingBatches;
 
 namespace GoldEx.Shared.Routings;
 
@@ -149,6 +150,11 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Delete).FormatRoute(new { id });
         public static string GetByName(string? customerName) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByName).FormatRoute(new { customerName });
+
+        public static string GetNames(string? name, CustomerType type) =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetNames)
+                .FormatRoute(new { type })
+                .AppendQueryString(new { name });
     }
 
     public class PriceUnits
@@ -329,5 +335,24 @@ public class ApiUrls
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAsRead).FormatRoute(new { id });
         public static string MarkAllAsRead() 
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAllAsRead);
+    }
+
+    public class MeltingBatches
+    {
+        public static string GetList(RequestFilter filter, MeltingBatchFilter meltingBatchFilter) =>
+            BuildUrl(ApiRoutes.MeltingBatches.Base, ApiRoutes.MeltingBatches.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(meltingBatchFilter);
+
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.MeltingBatches.Base, ApiRoutes.MeltingBatches.Get).FormatRoute(new { id });
+
+        public static string Create() => BuildUrl(ApiRoutes.MeltingBatches.Base, ApiRoutes.MeltingBatches.Create);
+
+        public static string SendToLab(Guid id) =>
+            BuildUrl(ApiRoutes.MeltingBatches.Base, ApiRoutes.MeltingBatches.SendToLab).FormatRoute(new { id });
+
+        public static string CompleteMelting(Guid id) =>
+            BuildUrl(ApiRoutes.MeltingBatches.Base, ApiRoutes.MeltingBatches.CompleteMelting).FormatRoute(new { id });
     }
 }

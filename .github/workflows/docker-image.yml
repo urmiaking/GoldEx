@@ -1,0 +1,30 @@
+name: docker-image
+on:
+  workflow_dispatch:    # Allow running the workflow manually from the GitHub UI
+  push:
+    branches:
+      - 'master'        # Run the workflow when pushing to the main branch
+  release:
+    types:
+      - published       # Run the workflow when a new GitHub release is published
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  Version: 1.0.${{ github.run_number }}
+
+jobs:
+  create-image:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
+
+    - name: Build and push Docker image for goldex
+      run: docker build --push -t localhost:5000/goldex -f src/App/Server/GoldEx.Server/Dockerfile .
+
+    - name: Run initialization script
+      run: |
+        docker rm -f goldex
+        chmod +x /masoud/initialize.sh
+        /initialize.sh

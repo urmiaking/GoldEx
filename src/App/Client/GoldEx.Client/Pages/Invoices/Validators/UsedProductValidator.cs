@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using GoldEx.Client.Pages.Invoices.ViewModels;
-using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Invoices.Validators;
 
@@ -23,10 +22,6 @@ public class UsedProductValidator : AbstractValidator<UsedProductVm>
         RuleFor(x => x.Weight)
             .GreaterThanOrEqualTo(0).WithMessage("وزن باید بزرگتر یا مساوی 0 باشد.")
             .NotEmpty().WithMessage("لطفا وزن را وارد کنید");
-
-        RuleFor(x => x.ProductType)
-            .Must(x => x is ProductType.Gold or ProductType.Jewelry)
-            .WithMessage("نوع محصول باید طلا یا جواهر باشد.");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

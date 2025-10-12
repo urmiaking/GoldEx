@@ -8,6 +8,13 @@
     <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
         صفحه اصلی
     </MudNavLink>
+    <AuthorizeView>
+        <Authorized>
+            <MudNavLink Href="@ClientRoutes.Dashboard.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+                داشبرد
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
     <MudNavLink Href="@ClientRoutes.Calculator.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Calculate">
         محاسبه گر
     </MudNavLink>
@@ -27,7 +34,7 @@
                 مشتریان
             </MudNavLink>
             <MudNavGroup Title="فاکتورها" Icon="@Icons.Material.Filled.LibraryBooks">
-                <MudNavLink Href="@ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = "" })"
+                <MudNavLink Href="@ClientRoutes.Invoices.Create"
                             Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAdd">
                     ثبت فاکتور حدید
                 </MudNavLink>
@@ -36,7 +43,7 @@
                     فاکتورهای من
                 </MudNavLink>
             </MudNavGroup>
-            
+
             <MudNavLink Href="@ClientRoutes.PaymentVouchers.Index" Match="NavLinkMatch.Prefix"
                         Icon="@Icons.Material.Filled.Payment">
                 اسناد پرداخت
