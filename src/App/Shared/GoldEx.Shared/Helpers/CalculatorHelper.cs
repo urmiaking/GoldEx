@@ -110,7 +110,11 @@ public class CalculatorHelper
                 return rawPrice + (additionalPrices ?? 0);
             }
 
-            return rawPrice + wage + profit + tax + (additionalPrices ?? 0);
+            var result = rawPrice + wage + profit + tax + (additionalPrices ?? 0);
+
+            Console.WriteLine($"Calculated FinalPrice: {result}");
+
+            return result;
         }
 
         /// <summary>
