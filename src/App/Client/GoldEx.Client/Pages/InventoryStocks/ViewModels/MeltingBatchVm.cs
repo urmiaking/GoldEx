@@ -3,7 +3,9 @@ using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Client.Pages.InventoryStocks.ViewModels;
 
@@ -22,8 +24,8 @@ public class MeltingBatchVm
     [Display(Name = "وزن طلای آبشده")]
     public decimal? MeltedGoldWeight { get; set; }
 
-    [Display(Name = "عیار نهایی")]
-    public decimal? Fineness { get; set; }
+    [Display(Name = "عیار نهایی")] 
+    public decimal? Fineness { get; set; } = 750m;
 
     [Display(Name = "شماره انگ")]
     public string? AssayNumber { get; set; }
@@ -31,15 +33,42 @@ public class MeltingBatchVm
     [Display(Name = "یادداشت های تکمیلی")]
     public string? CompleteDescription { get; set; }
 
+    [Display(Name = "نرخ گرم")]
     public decimal? GramPrice { get; set; }
 
+    [Display(Name = "هزینه ذوب/ری گیری")]
+    public decimal? FeeAmount { get; set; }
+
+    public GetPriceUnitTitleResponse? FeePriceUnit { get; set; }
+
+    [Display(Name = "نرخ تبدیل")]
+    public decimal? FeeExchangeRate { get; set; }
+
     public List<ProductVm> Products { get; set; } = [];
+
+    public GetPriceUnitTitleResponse? PriceUnit { get; set; }
+
     public decimal? WasteWeight => TotalWeight - MeltedGoldWeight;
+
     public decimal? WastePercentage => TotalWeight.HasValue && WasteWeight.HasValue && TotalWeight != 0
         ? (WasteWeight / TotalWeight) * 100
         : null;
 
-    public GetPriceUnitResponse? PriceUnit { get; set; }
+    [Display(Name = "ارزش طلای آبشده")]
+    public decimal? MeltedGoldPrice => GramPrice.HasValue && MeltedGoldWeight.HasValue && Fineness.HasValue
+        ? CalculatorHelper.MoltenGold.Calculate(MeltedGoldWeight.Value, Fineness.Value, GramPrice.Value, null)
+        : null;
+
+    [Display(Name = "ارزش ذوب/ری گیری")]
+    public decimal? FeePrice => FeeAmount.HasValue && FeePriceUnit != null
+        ? (FeeExchangeRate ?? 1) * FeeAmount.Value
+        : null;
+
+    [Display(Name = "ارزش کل")]
+    public decimal? TotalPrice => MeltedGoldPrice + (FeePrice ?? 0m);
+
+    [Display(Name = "صندوق پرداختی")]
+    public GetFinancialAccountTitleResponse? FinancialAccount { get; set; }
 
     public static MeltingBatchVm CreateFrom(GetMeltingBatchResponse response)
     {
@@ -105,6 +134,10 @@ public class MeltingBatchVm
             AssayNumber!,
             GramPrice!.Value,
             PriceUnit!.Id,
-            CompleteDescription);
+            CompleteDescription,
+            FeeAmount,
+            FeeExchangeRate,
+            FeePriceUnit?.Id,
+            FinancialAccount?.Id);
     }
 }

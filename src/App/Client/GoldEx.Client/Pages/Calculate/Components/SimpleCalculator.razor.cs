@@ -176,7 +176,16 @@ public partial class SimpleCalculator
                 _stoneCost = _model.StonePrice * (_model.StoneExchangeRate ?? 1);
                 _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType, _stoneCost);
                 _finalPrice = CalculatorHelper.Product.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType)
-                              + _stoneCost;
+                              + (_stoneCost ?? 0m);
+
+                // console all prices:
+                Console.WriteLine($"Raw Price: {_rawPrice}");
+                Console.WriteLine($"Wage: {_wage}");
+                Console.WriteLine($"Profit: {_profit}");
+                Console.WriteLine($"Stone Cost: {_stoneCost}");
+                Console.WriteLine($"Tax: {_tax}");
+                Console.WriteLine($"Final Price: {_finalPrice}");
+
             }
             else
             {
@@ -467,6 +476,9 @@ public partial class SimpleCalculator
         _tax = null;
         _finalPrice = null;
         _stoneCost = null;
+
+        // console reset prices:
+        Console.WriteLine("Calculations reset:");
     }
 
     #endregion
