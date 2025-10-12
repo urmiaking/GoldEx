@@ -43,5 +43,8 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
 
         builder.Property(x => x.UsedGoldFineness)
             .HasPrecision(9, 6);
+
+        builder.Property(x => x.GramPerMesghal)
+            .HasPrecision(36, 10);
     }
 }

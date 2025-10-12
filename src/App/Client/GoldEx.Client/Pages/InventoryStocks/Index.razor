@@ -11,6 +11,21 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <InventoryStockList />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudActionCard Title="مدیریت انبار"
+                           Description="مشاهده موجودی طلا، جواهر، ارز و سکه"
+                           StartIcon="@Icons.Material.Filled.Warehouse"
+                           Href="@ClientRoutes.InventoryStocks.List"/>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudActionCard Title="ورود آبشده از ذوب طلا"
+                           Description="مدیریت فرایند ذوب طلا و ورود آبشده"
+                           StartIcon="@Icons.Material.Filled.Transform"
+                           Href="@ClientRoutes.InventoryStocks.MeltingBatches.Index" />
+        </MudItem>
+    </MudGrid>
+
+
 
 </MudContainer>

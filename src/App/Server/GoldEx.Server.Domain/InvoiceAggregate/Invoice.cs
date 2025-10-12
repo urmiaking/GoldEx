@@ -212,7 +212,6 @@ public class Invoice : EntityBase<InvoiceId>
         decimal? extraCostsAmount,
         decimal fineness,
         int quantity,
-        bool isSellable,
         ProductType productType,
         GoldUnitType unitType,
         ProductId? productId)
@@ -231,7 +230,6 @@ public class Invoice : EntityBase<InvoiceId>
             extraCostsAmount,
             fineness,
             quantity,
-            isSellable,
             productType,
             unitType,
             productId,

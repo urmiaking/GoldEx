@@ -13,5 +13,8 @@ public class CustomersMappingConfig : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.CreditLimitPriceUnit, src => src.CreditLimitPriceUnit)
             .Map(dest => dest.FinancialAccounts, src => src.FinancialAccounts);
+
+        config.NewConfig<Customer, GetCustomerNameResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value);
     }
 }

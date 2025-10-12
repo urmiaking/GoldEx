@@ -342,58 +342,31 @@ internal class ProductService(
             }
         }
 
-        // پاک کردن لیست آیتم‌های طلای کارکرده از آبجکت فاکتور
         invoice.ClearUsedProducts();
 
         // --- بخش ۲: ایجاد محصولات جدید و افزودن به فاکتور ---
-
-        var newProductsToCreate = new List<Product>();
-        // لیستی برای نگهداری موقت آیتم‌های جدید و محصول متناظرشان
         var usedProductsWithNewProduct = new List<(InvoiceUsedProductDto Dto, Product NewProduct)>();
 
         foreach (var dto in usedProductDtos)
         {
-            if (dto.IsSellable)
-            {
-                // ساخت محصول جدید در حافظه
-                var product = Product.Create(dto.Description,
-                            dto.Weight,
-                            0,
-                            dto.ProductType,
-                            dto.Fineness,
-                            dto.UnitType,
-                            null,
-                            null,
-                            null,
-                            null);
+            var product = Product.Create(dto.Description,
+                dto.Weight,
+                0,
+                dto.ProductType,
+                dto.Fineness,
+                dto.UnitType,
+                null,
+                null,
+                null,
+                null);
 
-                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
-                product.SetBarcode(barcode);
+            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
+            product.SetBarcode(barcode);
 
-                newProductsToCreate.Add(product);
-                usedProductsWithNewProduct.Add((dto, product));
-            }
-            else // اگر قابل فروش نیست، مستقیماً به فاکتور اضافه می‌شود
-            {
-                invoice.AddUsedProduct(dto.Id.HasValue
-                                ? new InvoiceUsedProductId(dto.Id.Value)
-                                : null,
-                            dto.Description,
-                            dto.Weight,
-                            dto.GramPrice,
-                            dto.ExtraCostsAmount,
-                            dto.Fineness,
-                            dto.Quantity,
-                            false,
-                            dto.ProductType,
-                            dto.UnitType,
-                            null);
-            }
+            await repository.CreateAsync(product, cancellationToken);
+
+            usedProductsWithNewProduct.Add((dto, product));
         }
-
-        // ذخیره دسته‌ای تمام محصولات جدید
-        if (newProductsToCreate.Any())
-            await repository.CreateRangeAsync(newProductsToCreate, cancellationToken);
 
         // افزودن آیتم‌های طلای کارکرده (که محصول جدید برایشان ساخته شده) به فاکتور
         foreach (var (dto, newProduct) in usedProductsWithNewProduct)
@@ -407,7 +380,6 @@ internal class ProductService(
                         dto.ExtraCostsAmount,
                         dto.Fineness,
                         dto.Quantity,
-                        true,
                         dto.ProductType,
                         dto.UnitType,
                         newProduct.Id);
@@ -542,6 +514,23 @@ internal class ProductService(
     public Task DeleteRangeAsync(List<Product> productList, CancellationToken cancellationToken = default)
     {
         return repository.DeleteRangeAsync(productList, cancellationToken);
+    }
+
+    public async Task<Product> FindOrCreateMoltenGoldProductAsync(decimal fineness, CancellationToken cancellationToken = default)
+    {
+        var product = await repository
+            .Get(new ProductsByMoltenGoldSpecification(fineness))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (product is null)
+        {
+            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(ProductType.MoltenGold, null, cancellationToken);
+
+            product = Product.CreateMoltenGold(barcode, fineness);
+            await repository.CreateAsync(product, cancellationToken);
+        }
+
+        return product;
     }
 
     #endregion

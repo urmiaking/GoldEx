@@ -212,6 +212,7 @@ public static class ServiceProviderExtensions
                 defaultSetting.MoltenGoldCommissionPercent,
                 defaultSetting.GoldSafetyMarginPercent,
                 defaultSetting.OldGoldCarat,
+                defaultSetting.GramPerMesghal,
                 defaultSetting.PriceUpdateInterval);
 
             await serverSettingService.CreateAsync(setting);

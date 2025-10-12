@@ -1,0 +1,20 @@
+﻿@attribute [Route(ClientRoutes.InventoryStocks.MeltingBatches.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<PageTitle>ذوب طلا</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <MudText Typo="Typo.h5" GutterBottom="true">لیست طلاجات ذوب شده</MudText>
+    <MudDivider Class="mb-2" />
+
+    <MeltingBatchesList Class="mb-4" Elevation="24" />
+
+</MudContainer>

@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
@@ -46,6 +47,13 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
     public async Task<IActionResult> GetByNameAsync(string? customerName, CancellationToken cancellationToken)
     {
         var items = await service.GetByNameAsync(customerName, cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpGet(ApiRoutes.Customers.GetNames)]
+    public async Task<IActionResult> GetNamesAsync([FromQuery] string? name, [FromRoute] CustomerType type, CancellationToken cancellationToken)
+    {
+        var items = await service.GetNamesAsync(name, type, cancellationToken);
         return Ok(items);
     }
 

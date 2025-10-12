@@ -44,7 +44,8 @@ public class CustomersByFilterSpecification : SpecificationBase<Customer>
         }
         if (customerFilter.End.HasValue)
         {
-            AddCriteria(x => x.CreatedAt <= customerFilter.End.Value);
+            var endOfDay = customerFilter.End.Value.Date.AddDays(1).AddTicks(-1);
+            AddCriteria(x => x.CreatedAt <= endOfDay);
         }
 
         // Apply paging

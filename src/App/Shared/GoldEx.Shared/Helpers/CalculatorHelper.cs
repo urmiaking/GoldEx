@@ -134,7 +134,7 @@ public class CalculatorHelper
         {
             return unitPrice * (profitPercent / 100m) * quantity;
         }
-}
+    }
 
     public static class Currency
     {
@@ -158,6 +158,18 @@ public class CalculatorHelper
                     $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
 
             return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1)) * quantity;
+        }
+    }
+
+    public static class MoltenGold
+    {
+        public static decimal Calculate(decimal weight, decimal fineness, decimal gramPrice, decimal? exchangeRate)
+        {
+            if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
+                throw new ArgumentOutOfRangeException(
+                    $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
+
+            return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1));
         }
     }
 }

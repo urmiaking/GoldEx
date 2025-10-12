@@ -67,9 +67,6 @@ public class UsedProductVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public string? Description { get; set; }
 
-    [Display(Name = "افزودن به انبار")]
-    public bool IsSellable { get; set; }
-
     [Display(Name = "هزینه های جانبی")]
     public decimal? ExtraCostsAmount { get; set; }
 
@@ -79,15 +76,8 @@ public class UsedProductVm
     [Display(Name = "ارزش کل")]
     public decimal ItemFinalAmount => ItemAmount + (ExtraCostsAmount ?? 0);
 
-    [Display(Name = "نوع کالا")]
-    public ProductType ProductType { get; set; } = ProductType.Gold;
-
     [Display(Name = "نوع واحد طلا")]
     public GoldUnitType UnitType { get; set; }
-
-    [Display(Name = "تعداد")]
-    [Range(1, int.MaxValue, ErrorMessage = "{0} باید حداقل {1} باشد.")]
-    public int Quantity { get; set; } = 1;
 
     public int Index { get; set; } = 1;
 
@@ -103,7 +93,7 @@ public class UsedProductVm
             return;
         }
 
-        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness.Value, GramPrice, Quantity, ExchangeRate) + (ExtraCostsAmount ?? 0);
+        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness.Value, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
     }
 
     public void UpdateFrom(UsedProductVm other)
@@ -113,12 +103,9 @@ public class UsedProductVm
         GramPrice = other.GramPrice;
         ExchangeRate = other.ExchangeRate;
         Fineness = other.Fineness;
-        Quantity = other.Quantity;
         Weight = other.Weight;
         Description = other.Description;
-        IsSellable = other.IsSellable;
         ExtraCostsAmount = other.ExtraCostsAmount;
-        ProductType = other.ProductType;
         UnitType = other.UnitType;
     }
 
@@ -130,9 +117,8 @@ public class UsedProductVm
             productItem.GramPrice,
             productItem.ExtraCostsAmount ?? 0,
             productItem.Fineness ?? 0,
-            productItem.Quantity,
-            productItem.IsSellable,
-            productItem.ProductType,
+            1,
+            ProductType.UsedGold,
             productItem.UnitType);
     }
 
@@ -146,10 +132,7 @@ public class UsedProductVm
             Weight = response.Weight,
             Description = response.Description,
             ExtraCostsAmount = response.ExtraCostsAmount,
-            IsSellable = response.IsSellable,
-            Quantity = response.Quantity,
             ItemAmount = response.ItemAmount,
-            ProductType = response.ProductType,
             UnitType = response.UnitType
         };
     }

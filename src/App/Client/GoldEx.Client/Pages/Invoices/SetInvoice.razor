@@ -1,6 +1,7 @@
 ﻿@inherits GoldExComponentBase
 
 @attribute [Route(ClientRoutes.Invoices.SetInvoice)]
+@attribute [Route(ClientRoutes.Invoices.Create)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 <PageTitle>@(IdValue.HasValue ? "ویرایش فاکتور" : "فاکتور جدید")</PageTitle>

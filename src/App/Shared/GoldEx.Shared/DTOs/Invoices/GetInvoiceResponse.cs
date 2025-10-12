@@ -40,8 +40,6 @@ public record GetInvoiceUsedProductResponse(
     decimal Fineness,
     decimal GramPrice,
     decimal? ExtraCostsAmount,
-    int Quantity,
-    bool IsSellable,
     decimal ItemAmount,
     ProductType ProductType,
     GoldUnitType UnitType);

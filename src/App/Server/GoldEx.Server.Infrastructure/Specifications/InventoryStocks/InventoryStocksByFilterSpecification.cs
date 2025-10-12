@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
@@ -58,7 +59,8 @@ public class InventoryStocksByFilterSpecification : SpecificationBase<InventoryS
         }
         if (inventoryFilter.End.HasValue)
         {
-            AddCriteria(x => x.CreatedAt <= inventoryFilter.End.Value);
+            var endOfDay = inventoryFilter.End.Value.Date.AddDays(1).AddTicks(-1);
+            AddCriteria(x => x.CreatedAt <= endOfDay);
         }
 
         // Apply paging
