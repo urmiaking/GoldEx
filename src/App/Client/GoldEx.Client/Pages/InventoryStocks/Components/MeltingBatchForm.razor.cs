@@ -254,4 +254,9 @@ public partial class MeltingBatchForm
             StateHasChanged();
         }
     }
+
+    private void BackToList()
+    {
+        Navigation.NavigateTo(ClientRoutes.InventoryStocks.MeltingBatches.Index);
+    }
 }

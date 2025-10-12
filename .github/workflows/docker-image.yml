@@ -27,4 +27,4 @@ jobs:
       run: |
         docker rm -f goldex
         chmod +x /masoud/initialize.sh
-        /initialize.sh
+        /masoud/initialize.sh
