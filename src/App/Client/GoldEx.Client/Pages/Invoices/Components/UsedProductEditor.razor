@@ -17,22 +17,6 @@
             </div>
             <MudGrid Class="mb-0">
                 <MudItem xs="12" md="6">
-                    <MudSelect For="() => Model.ProductType"
-                               Label="@Model.GetDisplayName(() => Model.ProductType)"
-                               Margin="Margin.Dense"
-                               T="ProductType"
-                               @bind-Value="Model.ProductType"
-                               Variant="Variant.Outlined">
-                        @foreach (var productType in Enum.GetValues<ProductType>().Where(x => x is ProductType.Gold or ProductType.Jewelry))
-                        {
-                            <MudSelectItem T="ProductType"
-                                           Value="productType">
-                                @productType.GetDisplayName()
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="6">
                     <MudTextField T="string"
                                   @bind-Value="Model.Description"
                                   For="@(() => Model.Description!)"
@@ -79,15 +63,6 @@
                                      T="decimal?"
                                      @bind-Value="Model.Fineness"
                                      HideSpinButtons="true"
-                                     Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudNumericField For="@(() => Model.Quantity)"
-                                     Immediate="true"
-                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
-                                     Margin="Margin.Dense"
-                                     T="int"
-                                     @bind-Value="Model.Quantity"
                                      Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6">

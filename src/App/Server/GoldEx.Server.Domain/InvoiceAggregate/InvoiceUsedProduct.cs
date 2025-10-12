@@ -25,10 +25,6 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         ArgumentOutOfRangeException.ThrowIfLessThan(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 0, nameof(quantity));
 
-        if (productType != ProductType.Jewelry && productType != ProductType.Gold)
-            throw new ArgumentException(
-                "Product ID can only be provided for Jewelry or Gold product types.", nameof(productId));
-
         var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, fineness, gramPrice, quantity, invoice.ExchangeRate);
 
         Id = id;

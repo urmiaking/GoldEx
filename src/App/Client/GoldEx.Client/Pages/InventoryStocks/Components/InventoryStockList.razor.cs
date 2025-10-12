@@ -34,13 +34,29 @@ public partial class InventoryStockList
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
 
-    private string DateRangeFilterLabel => ItemStatus == ItemStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
-    private string ItemStatusIcon => ItemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
+    private string DateRangeFilterLabel => ItemStatus switch
+    {
+        ItemStatus.Available => "تاریخ ثبت جنس",
+        ItemStatus.Sold => "تاریخ فروش جنس",
+        ItemStatus.Melted => "تاریخ ذوب جنس",
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    private string ItemStatusIcon => ItemStatus switch
+    {
+        ItemStatus.Available => Icons.Material.Filled.Warehouse,
+        ItemStatus.Sold => Icons.Material.Filled.ShoppingBasket,
+        ItemStatus.Melted => Icons.Material.Filled.Whatshot,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
     public string? ItemTypeIcon => ItemType switch
     {
         ItemType.Product => Icons.Material.Filled.Diamond,
         ItemType.Coin => Icons.Material.Filled.MonetizationOn,
         ItemType.Currency => Icons.Material.Filled.AttachMoney,
+        ItemType.MoltenGold => Icons.Material.Filled.Whatshot,
+        ItemType.UsedProduct => Icons.Material.Filled.DiscFull,
         _ => null
     };
 
@@ -49,6 +65,8 @@ public partial class InventoryStockList
         ItemType.Product => Color.Info,
         ItemType.Coin => Color.Secondary,
         ItemType.Currency => Color.Tertiary,
+        ItemType.MoltenGold => Color.Warning,
+        ItemType.UsedProduct => Color.Error,
         _ => Color.Default
     };
 
@@ -56,6 +74,7 @@ public partial class InventoryStockList
     {
         ItemStatus.Available => Color.Success,
         ItemStatus.Sold => Color.Error,
+        ItemStatus.Melted => Color.Warning,
         _ => Color.Default
     };
 
@@ -122,7 +141,7 @@ public partial class InventoryStockList
         {
             text = product.Barcode,
             name = product.Name,
-            weight = "وزن: " + product.Weight?.ToString("G29") + "g",
+            weight = "وزن: " + product.Weight?.ToString("G29") + $"{(product.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
             wage = "اجرت: " + product.WageType switch
             {
                 WageType.Fixed => $"{product.Wage?.ToCurrencyFormat(product.WagePriceUnitTitle)}",
@@ -147,6 +166,12 @@ public partial class InventoryStockList
     private async Task SetItemTypeFilterText(ItemType itemType)
     {
         ItemType = itemType;
+
+        if (ItemType is not ItemType.MoltenGold && ItemStatus is ItemStatus.Melted)
+        {
+            ItemStatus = ItemStatus.Available;
+        }
+
         await RefreshAsync();
     }
 

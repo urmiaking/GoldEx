@@ -17,10 +17,6 @@ internal class CreateMeltingBatchRequestValidator : AbstractValidator<MeltingBat
     {
         _productRepository = productRepository;
 
-        RuleFor(x => x.Description)
-            .NotEmpty().WithMessage("توضیحات الزامی است.")
-            .MaximumLength(200).WithMessage("توضیحات نباید بیشتر از 200 کاراکتر باشد.");
-
         RuleFor(x => x.ProductIds)
             .NotEmpty().WithMessage("حداقل یک محصول باید انتخاب شود.")
             .MustAsync(BeValidProducts)

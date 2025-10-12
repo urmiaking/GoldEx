@@ -342,18 +342,13 @@ internal class ProductService(
             }
         }
 
-        // پاک کردن لیست آیتم‌های طلای کارکرده از آبجکت فاکتور
         invoice.ClearUsedProducts();
 
         // --- بخش ۲: ایجاد محصولات جدید و افزودن به فاکتور ---
-
-        var newProductsToCreate = new List<Product>();
-        // لیستی برای نگهداری موقت آیتم‌های جدید و محصول متناظرشان
         var usedProductsWithNewProduct = new List<(InvoiceUsedProductDto Dto, Product NewProduct)>();
 
         foreach (var dto in usedProductDtos)
         {
-            // ساخت محصول جدید در حافظه
             var product = Product.Create(dto.Description,
                 dto.Weight,
                 0,
@@ -368,13 +363,10 @@ internal class ProductService(
             var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
             product.SetBarcode(barcode);
 
-            newProductsToCreate.Add(product);
+            await repository.CreateAsync(product, cancellationToken);
+
             usedProductsWithNewProduct.Add((dto, product));
         }
-
-        // ذخیره دسته‌ای تمام محصولات جدید
-        if (newProductsToCreate.Any())
-            await repository.CreateRangeAsync(newProductsToCreate, cancellationToken);
 
         // افزودن آیتم‌های طلای کارکرده (که محصول جدید برایشان ساخته شده) به فاکتور
         foreach (var (dto, newProduct) in usedProductsWithNewProduct)

@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.Services.Abstractions;
 
@@ -7,6 +8,7 @@ public interface ICustomerService
 {
     Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CustomerFilter customerFilter, CancellationToken cancellationToken = default);
     Task<List<GetCustomerResponse>> GetByNameAsync(string? customerName, CancellationToken cancellationToken = default);
+    Task<List<GetCustomerNameResponse>> GetNamesAsync(string? name, CustomerType type, CancellationToken cancellationToken = default);
     Task<GetCustomerResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetCustomerResponse?> GetAsync(string nationalId, CancellationToken cancellationToken = default);
     Task<GetCustomerResponse?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);

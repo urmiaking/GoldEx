@@ -550,13 +550,14 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("AssayerId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("BatchNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BatchNumber"));
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("TotalWeight")
                         .HasPrecision(36, 10)
@@ -920,6 +921,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("LedgerAccountId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("MeltingBatchId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("PaymentVoucherId")
                         .HasColumnType("uniqueidentifier");
 
@@ -938,6 +942,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("InvoicePaymentId");
 
                     b.HasIndex("LedgerAccountId");
+
+                    b.HasIndex("MeltingBatchId");
 
                     b.HasIndex("PaymentVoucherId");
 
@@ -1985,6 +1991,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", "MeltingBatch")
+                        .WithMany("Transactions")
+                        .HasForeignKey("MeltingBatchId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", "PaymentVoucher")
                         .WithMany("Transactions")
                         .HasForeignKey("PaymentVoucherId")
@@ -2001,6 +2012,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("InvoicePayment");
 
                     b.Navigation("LedgerAccount");
+
+                    b.Navigation("MeltingBatch");
 
                     b.Navigation("PaymentVoucher");
 
@@ -2053,6 +2066,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
             modelBuilder.Entity("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", b =>
                 {
                     b.Navigation("InventoryStocks");
+
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.PaymentVoucherAggregate.PaymentVoucher", b =>

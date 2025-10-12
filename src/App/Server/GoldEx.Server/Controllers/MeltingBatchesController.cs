@@ -31,8 +31,8 @@ public class MeltingBatchesController(IMeltingBatchService service) : ApiControl
     [HttpPost(ApiRoutes.MeltingBatches.Create)]
     public async Task<ActionResult> CreateAsync([FromBody] MeltingBatchRequestDto request, CancellationToken cancellationToken = default)
     {
-        await service.CreateAsync(request, cancellationToken);
-        return Created();
+        var result = await service.CreateAsync(request, cancellationToken);
+        return Ok(result);
     }
 
     [HttpPut(ApiRoutes.MeltingBatches.SendToLab)]

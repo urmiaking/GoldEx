@@ -224,12 +224,12 @@ public static class TransactionDescriptionBuilder
 
     public static string ForMeltingBatchCogs(MeltingBatch meltingBatch, Product product, Invoice invoice)
     {
-        return $"ثبت هزینه خروج بابت ذوب به شرح {meltingBatch.Description} (محصول: {product.Name}, فاکتور: {invoice.InvoiceNumber})";
+        return $"ثبت هزینه خروج بابت ذوب به شماره {meltingBatch.BatchNumber} (محصول: {product.Name}, فاکتور: {invoice.InvoiceNumber})";
     }
 
     public static string ForMeltingBatchInventoryExit(MeltingBatch meltingBatch, Product product, Invoice invoice)
     {
-        return $"ثبت خروج از انبار بابت ذوب به شرح {meltingBatch.Description} (محصول: {product.Name}, فاکتور: {invoice.InvoiceNumber})";
+        return $"ثبت خروج از انبار بابت ذوب به شماره {meltingBatch.BatchNumber} (محصول: {product.Name}, فاکتور: {invoice.InvoiceNumber})";
     }
 
     #endregion

@@ -20,6 +20,7 @@ using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
@@ -501,7 +502,7 @@ internal class AccountingTransactionService(
         foreach (var product in products)
         {
             var invoice = await invoiceRepository
-                .Get(new InvoicesByProductIdSpecification(product.Id))
+                .Get(new InvoicesByUsedProductIdSpecification(product.Id))
                 .FirstOrDefaultAsync(cancellationToken) 
                           ?? throw new NotFoundException($"Invoice for product {product.Id.Value} not found.");
 
@@ -521,7 +522,8 @@ internal class AccountingTransactionService(
                 groupId: groupId,
                 priceUnitId: basePriceUnit.Id,
                 ledgerAccountId: cogsLedgerAccount.Id,
-                invoiceId: invoice.Id
+                invoiceId: invoice.Id,
+                meltingBatchId: meltingBatchId
             );
 
             // تراکنش Credit: کاهش موجودی Inventory
@@ -534,7 +536,8 @@ internal class AccountingTransactionService(
                 groupId: groupId,
                 priceUnitId: basePriceUnit.Id,
                 ledgerAccountId: inventoryLedgerAccount.Id,
-                invoiceId: invoice.Id
+                invoiceId: invoice.Id,
+                meltingBatchId: meltingBatchId
             );
 
             transactions.Add(debitTransaction);
@@ -545,6 +548,61 @@ internal class AccountingTransactionService(
         {
             await repository.CreateRangeAsync(transactions, cancellationToken);
         }
+    }
+
+    public async Task SetForMoltenGoldEntryAsync(MeltingBatch meltingBatch, string assayNumber, decimal fineness, decimal weight,
+        decimal gramPrice, Guid priceUnitId, CancellationToken cancellationToken = default)
+    {
+        var moltenValue = CalculatorHelper.MoltenGold.Calculate(weight, fineness, gramPrice, null);
+
+        // دریافت حساب‌ها
+        var moltenInventoryAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("MoltenGoldInventory ledger account not found.");
+
+        var cogsLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CostOfGoodsSold))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Cost of Goods Sold ledger account not found.");
+
+        var priceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId)))
+            .FirstOrDefaultAsync(cancellationToken) 
+                        ?? throw new NotFoundException($"Price unit with id '{priceUnitId}' not found.");
+
+        var transactions = new List<Transaction>();
+        var groupId = Guid.NewGuid();
+
+        // تراکنش Debit: افزایش موجودی طلای آبشده
+        var entryDebit = Transaction.CreateForMoltenGold(
+            description: $"انتقال به موجودی: {weight} گرم طلای آبشده عیار {fineness} (انگ {assayNumber}) از درخواست ذوب {meltingBatch.BatchNumber} - آزمایشگاه {meltingBatch.Assayer?.FullName ?? "نامشخص"}",
+            amount: moltenValue,
+            exchangeRate: null,
+            baseCurrencyAmount: moltenValue,
+            transactionType: TransactionType.Debit,
+            groupId: groupId,
+            priceUnitId: priceUnit.Id,
+            ledgerAccountId: moltenInventoryAccount.Id,
+            meltingBatchId: meltingBatch.Id
+        );
+
+        // تراکنش Credit: تسویه بهای تمام‌شده ذوب
+        var entryCredit = Transaction.CreateForMoltenGold(
+            description: $"تسویه بهای تمام‌شده: ورود {weight} گرم طلای آبشده عیار {fineness} (انگ {assayNumber}) از درخواست ذوب شماره {meltingBatch.BatchNumber} (ارزش خالص {moltenValue.ToCurrencyFormat(priceUnit.Title)} پس از کسر ناخالصی)",
+            amount: moltenValue,
+            exchangeRate: null,
+            baseCurrencyAmount: moltenValue,
+            transactionType: TransactionType.Credit,
+            groupId: groupId,
+            priceUnitId: priceUnit.Id,
+            ledgerAccountId: cogsLedgerAccount.Id,
+            meltingBatchId: meltingBatch.Id
+        );
+
+        transactions.Add(entryDebit);
+        transactions.Add(entryCredit);
+
+        // ذخیره تراکنش‌ها
+        await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 
     private async Task CreateTransactionForManualEntryAsync(Product? product, Coin? coin, PriceUnit? currency,

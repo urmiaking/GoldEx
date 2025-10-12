@@ -19,6 +19,7 @@ internal class CompleteMeltingRequestValidator : AbstractValidator<(Guid Melting
         RuleFor(x => x.MeltingBatchId)
             .MustAsync(BeInValidState)
             .WithMessage("وضعیت درخواست ذوب معتبر نمی باشد.");
+
         RuleFor(x => x.Request.AssayNumber)
             .NotEmpty().WithMessage("شماره انگ نمی‌تواند خالی باشد.");
 

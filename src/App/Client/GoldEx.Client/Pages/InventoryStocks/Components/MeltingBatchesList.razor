@@ -1,0 +1,238 @@
+﻿@using GoldEx.Shared.DTOs.MeltingBatches
+@inherits GoldExComponentBase
+
+<MudTable T="MeltingBatchListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
+          Dense="true" ServerData="LoadMeltingBatchAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+    <ToolBarContent>
+        <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
+                                Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
+                                PlaceholderStart="از" PlaceholderEnd="تا" Label="تاریخ ثبت" Clearable="true" />
+        </MudHidden>
+
+        <MudButtonGroup Size="Size.Small" Color="@StatusColor" Variant="Variant.Filled" Class="ml-3">
+            <MudButton Size="Size.Small" StartIcon="@StatusIcon" Color="Color.Info">
+                @(_status == null ? "همه" : _status.GetDisplayName())
+            </MudButton>
+            <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusText(null)">همه</MudMenuItem>
+                <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Whatshot" OnClick="() => SetStatusText(MeltingBatchStatus.Melting)">@MeltingBatchStatus.Melting.GetDisplayName()</MudMenuItem>
+                <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Science" OnClick="() => SetStatusText(MeltingBatchStatus.SentToLab)">@MeltingBatchStatus.SentToLab.GetDisplayName()</MudMenuItem>
+                <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusText(MeltingBatchStatus.Completed)">@MeltingBatchStatus.Completed.GetDisplayName()</MudMenuItem>
+            </MudMenu>
+        </MudButtonGroup>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OnCreateMeltingBatch())" Size="Size.Small" Variant="Variant.Filled">
+                درخواست جدید
+            </MudButton>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateMeltingBatch())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
+        </MudHidden>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="BatchNumber" T="MeltingBatchListVm">شماره درخواست</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Weight" T="MeltingBatchListVm">وزن برآورد شده</MudTableSortLabel></MudTh>
+        <MudTh>تاریخ</MudTh>
+        <MudTh>وضعیت</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="شماره درخواست">@context.BatchNumber</MudTd>
+        <MudTd DataLabel="وزن برآورد شده">@context.TotalWeight.ToWeightFormat(context.WeightUnitType)</MudTd>
+        <MudTd DataLabel="تاریخ">@context.CurrentDateTime.ToString("yyyy/MM/dd HH:mm")</MudTd>
+        <MudTd DataLabel="وضعیت">
+            @switch (context.CurrentStatus)
+            {
+                case MeltingBatchStatus.Melting:
+                    <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Whatshot">
+                        @context.CurrentStatus.GetDisplayName()
+                    </MudChip>
+                    break;
+                case MeltingBatchStatus.SentToLab:
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Science">
+                        @context.CurrentStatus.GetDisplayName()
+                    </MudChip>
+                    break;
+                case MeltingBatchStatus.Completed:
+                    <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Check">
+                        @context.CurrentStatus.GetDisplayName()
+                    </MudChip>
+                    break;
+            }
+        </MudTd>
+        <MudTd DataLabel="عملیات">
+            @switch (context.CurrentStatus)
+            {
+                case MeltingBatchStatus.Melting:
+                    <MudTooltip Text="ارسال به آزمایشگاه" Placement="Placement.Top">
+                        <MudIconButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Science"
+                                       OnClick="() => OnProcessBatch(context.Id)"></MudIconButton>
+                    </MudTooltip>
+                    break;
+                case MeltingBatchStatus.SentToLab:
+                    <MudTooltip Text="برآورد وزن نهایی" Placement="Placement.Top">
+                        <MudIconButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Check"
+                                       OnClick="() => OnProcessBatch(context.Id)"></MudIconButton>
+                    </MudTooltip>
+                    break;
+                case MeltingBatchStatus.Completed:
+                    <MudTooltip Text="مشاهده جزئیات" Placement="Placement.Top">
+                        <MudIconButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.RemoveRedEye"
+                                       OnClick="() => context.ShowDetails = !context.ShowDetails"></MudIconButton>
+                    </MudTooltip>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+        </MudTd>
+    </RowTemplate>
+    <ChildRowContent>
+        <MudTr Class="mud-table-row-child">
+            <td colspan="5">
+                <MudCollapse Expanded="@context.ShowDetails">
+                    <MudCard Elevation="2" Class="m-2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <div class="d-flex justify-content-between align-center">
+                                    <MudText Typo="Typo.body1">لیست اجناس ذوب شده درخواست شماره @context.BatchNumber</MudText>
+                                    @if (context.Assayer != null)
+                                    {
+                                        <MudChip T="string" Icon="@Icons.Material.Filled.Science" Color="Color.Info">@context.Assayer.FullName</MudChip>
+                                    }
+                                </div>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudTable Items="@context.Products" Context="ProductContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh>بارکد</MudTh>
+                                    <MudTh>نوع جنس</MudTh>
+                                    <MudTh>عنوان</MudTh>
+                                    <MudTh>وزن</MudTh>
+                                    <MudTh>عیار</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="بارکد">@ProductContext.Barcode</MudTd>
+                                    <MudTd DataLabel="نوع جنس">@ProductContext.ProductType.GetDisplayName()</MudTd>
+                                    <MudTd DataLabel="عنوان">@ProductContext.Name</MudTd>
+                                    <MudTd DataLabel="وزن">@ProductContext.Weight.ToWeightFormat(context.WeightUnitType)</MudTd>
+                                    <MudTd DataLabel="عیار">@ProductContext.Fineness.ToString("G29")</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudCardContent>
+                        <MudCardActions Class="flex-column">
+                            @if (context.FinalProductDetail is not null)
+                            {
+                                <MudTable Items="@(new List<GetMeltingBatchDetailResponse> { context.FinalProductDetail })" Context="FinalProductContext"
+                                          Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Class="w-100">
+                                    <ToolBarContent>
+                                        <MudText Typo="Typo.body1">محصول نهایی فرایند ذوب</MudText>
+                                    </ToolBarContent>
+                                    <ColGroup>
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                    </ColGroup>
+                                    <HeaderContent>
+                                        <MudTh>بارکد</MudTh>
+                                        <MudTh>نوع جنس</MudTh>
+                                        <MudTh>عنوان</MudTh>
+                                        <MudTh>وزن</MudTh>
+                                        <MudTh>عیار</MudTh>
+                                        <MudTh>شماره انگ</MudTh>
+                                        <MudTh>عملیات</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="بارکد">@FinalProductContext.Product.Barcode</MudTd>
+                                        <MudTd DataLabel="نوع جنس">@FinalProductContext.Product.ProductType.GetDisplayName()</MudTd>
+                                        <MudTd DataLabel="عنوان">@FinalProductContext.Product.Name</MudTd>
+                                        <MudTd DataLabel="وزن">@FinalProductContext.Weight.ToWeightFormat(context.WeightUnitType)</MudTd>
+                                        <MudTd DataLabel="عیار">@FinalProductContext.Fineness.ToString("G29")</MudTd>
+                                        <MudTd DataLabel="شماره انگ">@FinalProductContext.AssayNumber</MudTd>
+                                        <MudTd DataLabel="عملیات">
+                                            <div class="d-flex gap-2">
+                                                <MudTooltip Text="چاپ بارکد">
+                                                    <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                                                   OnClick="_ => OnPrintBarcode(context.FinalProductDetail)"
+                                                                   Color="@Color.Success"></MudIconButton>
+                                                </MudTooltip>
+                                            </div>
+                                        </MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+                                <div class="align-center d-flex flex-wrap justify-content-between mb-2 mt-4 px-4 w-100">
+                                    <MudText>وزن کل اجناس ذوب شده: @context.TotalWeight.ToWeightFormat(context.WeightUnitType)</MudText>
+                                    <MudText>وزن کل طلای آبشده: @context.FinalProductDetail.Weight.ToWeightFormat(context.FinalProductDetail.WeightUnitType)</MudText>
+                                    <MudText>کسری ذوب: @context.WasteWeight?.ToWeightFormat(context.WeightUnitType) (@context.WastePercentage?.ToString("0.##")%)</MudText>
+                                </div>
+                            }
+                        </MudCardActions>
+                    </MudCard>
+                </MudCollapse>
+            </td>
+        </MudTr>
+    </ChildRowContent>
+    <NoRecordsContent>
+        <MudText>هیچ درخواست ذوب طلایی یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگذاری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>
+
+<script src="/js/libs/jsbarcode.all.min.js"></script>
+<script src="/js/print.js?v=@_jsVersion"></script>
+
+<style>
+    .mud-table-row-child {
+        background-color: rgba(0, 0, 0, 0.10);
+    }
+
+    .mud-collapse-container {
+        transition: grid-template-rows 500ms ease-in-out !important;
+    }
+</style>
