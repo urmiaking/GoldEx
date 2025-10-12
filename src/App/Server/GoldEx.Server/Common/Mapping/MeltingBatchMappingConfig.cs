@@ -21,10 +21,7 @@ public class MeltingBatchMappingConfig : IRegister
             .Map(dest => dest.CurrentDateTime, src => src.CurrentDateTime)
             .Map(dest => dest.Assayer, src => src.Assayer)
             .Map(dest => dest.Transactions,
-                src => src.Transactions != null
-                    ? src.Transactions.OrderByDescending(x => x.CreatedAt)
-                        .ToList()
-                    : null)
+                src => src.Transactions != null ? src.Transactions.OrderBy(x => x.CreatedAt).ToList() : null)
             .Map(dest => dest.Products, src =>
                 src.InventoryStocks != null
                     ? src.InventoryStocks.Where(x =>
