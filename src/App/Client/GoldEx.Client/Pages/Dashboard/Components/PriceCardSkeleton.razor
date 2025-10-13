@@ -1,0 +1,29 @@
+﻿<MudCard Elevation="24" Style="height: 120px;">
+    <MudCardContent>
+        <MudStack Spacing="2">
+            <!-- Top Row: Skeleton for Title/Icon and Percentage Change -->
+            <div class="d-flex justify-space-between align-center">
+                <!-- Title and Avatar Skeleton -->
+                <div class="align-center d-flex flex-row-reverse gap-2">
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="120px" Height="24px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Circle" Width="40px" Height="40px" />
+                </div>
+
+                <!-- Percentage Change Chip Skeleton -->
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="80px" Height="32px" />
+            </div>
+
+            <!-- Bottom Row: DateTime and Price Skeleton -->
+            <div class="d-flex justify-space-between align-center mt-2">
+                <!-- DateTime Skeleton -->
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="100px" Height="16px" />
+
+                <!-- Price and Unit Skeleton -->
+                <div class="d-flex align-baseline gap-1">
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="80px" Height="32px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Width="40px" Height="20px" />
+                </div>
+            </div>
+        </MudStack>
+    </MudCardContent>
+</MudCard>
