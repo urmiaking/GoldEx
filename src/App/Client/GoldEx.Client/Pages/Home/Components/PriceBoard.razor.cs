@@ -10,7 +10,9 @@ namespace GoldEx.Client.Pages.Home.Components;
 public partial class PriceBoard
 {
     [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
+    [Parameter] public bool ShowTitle { get; set; }
 
     private readonly TableGroupDefinition<GetPriceResponse> _groupDefinition = new()
     {

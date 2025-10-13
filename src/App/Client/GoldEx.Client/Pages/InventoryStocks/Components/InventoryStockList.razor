@@ -1,7 +1,15 @@
 ﻿@inherits GoldExComponentBase
 
-<MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
-          MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)"
+@if (ShowTitle)
+{
+    <div class="d-flex justify-content-center">
+        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">مدیریت انبار</MudText>
+    </div>
+    <MudDivider />
+}
+
+<MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+          MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
@@ -47,6 +55,13 @@
 
                 </MudMenu>
             </MudButtonGroup>
+
+            @* <MudToggleIconButton @bind-Toggled="_inventoryStatus"
+                                 Icon="@Icons.Material.Filled.ShoppingBasket"
+                                 Color="@Color.Error"
+                                 ToggledIcon="@Icons.Material.Filled.Inventory"
+                                 ToggledColor="@Color.Success"
+                                 title="@(_inventoryStatus ? "موجود" : "فروخته شده")" /> *@
 
             <MudButtonGroup Size="Size.Small" Color="@ItemStatusColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@ItemStatusIcon" Class="@(ItemStatus == ItemStatus.Melted ? "black-text" : "")">

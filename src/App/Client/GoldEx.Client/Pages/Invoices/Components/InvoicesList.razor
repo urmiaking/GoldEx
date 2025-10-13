@@ -1,6 +1,14 @@
 ﻿@inherits GoldExComponentBase
 
-<MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+@if (ShowTitle)
+{
+    <div class="d-flex justify-content-center">
+        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">فاکتورها</MudText>
+    </div>
+    <MudDivider />
+}
+
+<MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."

@@ -188,9 +188,53 @@ h1:focus {
         content: var(--blazor-load-percentage-text, "در حال بارگذاری...");
     }
 
+.loading-title {
+    text-align: center;
+    direction: rtl;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive brand text */
+.brand-text {
+    font-family: "Cinzel Decorative", serif;
+    font-size: clamp(2rem, 8vw, 4rem); /* Scales with screen width */
+    font-weight: 700;
+    background: linear-gradient(45deg, #FFD700, #DAA520, #B8860B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    letter-spacing: 1px;
+    margin-top: 0.4rem;
+    direction: ltr; /* Fix mixed direction rendering */
+}
+
 
 /* MudEx */
 .mud-ex-dialog-header-actions {
     right: auto !important;
     left: 60px !important;
 }
+
+/* Custom */
+.responsive-table {
+    height: calc(100vh - 280px);
+}
+
+@media (min-width: 960px) {
+    .responsive-table {
+        height: calc(100vh - 150px);
+    }
+}
+
+.responsive-table-toolbar {
+    height: calc(100vh - 470px);
+}
+
+@media (min-width: 960px) {
+    .responsive-table-toolbar {
+        height: calc(100vh - 280px);
+    }
+}  
