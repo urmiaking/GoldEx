@@ -15,13 +15,13 @@
                     if (!string.IsNullOrEmpty(provider.DisplayName) && provider.DisplayName.Contains("Google"))
                     {
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit" StartIcon="@Icons.Custom.Brands.Google">
-                            @ExternalLoginPickerSource.GetDisplayName() با حساب گوگل
+                            گوگل
                         </MudButton>
                     }
                     else
                     {
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit">
-                            @ExternalLoginPickerSource.GetDisplayName() با حساب @provider.DisplayName
+                            @provider.DisplayName
                         </MudButton>
                     }
                 }
