@@ -5,10 +5,14 @@
 
 @if (IsBusy)
 {
-    <div class="align-center d-flex flex-column gap-3 justify-content-center mt-5">
-        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
-        <div>در حال بارگذاری</div>
-    </div>
+    <MudGrid>
+        @for (var i = 0; i < 6; i++)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <PriceCardSkeleton />
+            </MudItem>
+        }
+    </MudGrid>
 }
 else
 {
@@ -33,6 +37,6 @@ else
                 </MudItem>
             }
         }
-        
+
     </MudGrid>
 }
