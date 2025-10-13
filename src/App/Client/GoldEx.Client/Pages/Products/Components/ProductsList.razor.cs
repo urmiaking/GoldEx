@@ -95,8 +95,8 @@ public partial class ProductsList
             DragMode = MudDialogDragMode.Simple,
             Animations = [AnimationType.Pulse],
             Position = DialogPosition.Center,
-            DialogBackgroundAppearance = MudExAppearance.FromCss(MudExCss.Classes.Backgrounds.LightBulb),
-            DialogAppearance = MudExAppearance.FromCss(MudExCss.Classes.Dialog.Glass)
+            //DialogBackgroundAppearance = MudExAppearance.FromCss(MudExCss.Classes.Backgrounds.LightBulb),
+            //DialogAppearance = MudExAppearance.FromCss(MudExCss.Classes.Dialog.Glass)
         };
 
         var dialog = await DialogService.ShowExAsync<Editor>("افزودن جنس جدید", options);

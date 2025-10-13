@@ -281,7 +281,7 @@
         {
             @* STEP 1: Always show the final, most important result in a prominent paper *@
             <MudPaper Elevation="4" Class="pa-3 mt-4 rounded-b-0">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
                     <MudText Typo="Typo.h6">قیمت نهایی جنس:</MudText>
                     <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">@_finalPrice?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                 </div>
@@ -290,12 +290,12 @@
             @* STEP 2: Put all the calculation details inside a collapsible Expansion Panel *@
             <MudExpansionPanels Class="rounded-t-0" Elevation="4">
                 <MudExpansionPanel Text="نمایش جزئیات محاسبه">
-                    <div class="d-flex flex-column gap-3 mt-2">
+                    <div class="d-flex flex-column gap-4 mt-2">
 
                         @* Conditionally show the converted weight if the fineness is not the standard 750 *@
                         @if (_model.Fineness != 750)
                         {
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
                                 <MudText>وزن معادل (بر اساس عیار ۷۵۰):</MudText>
                                 <MudText Class="font-weight-bold">@_model.WeightAs750.ToString("F2") @_model.GoldUnitType.GetDisplayName()</MudText>
                             </div>
@@ -304,7 +304,7 @@
                         @* Gold's raw price with formula *@
                         @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
                         {
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
                                 <MudText>قیمت طلا: وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? $"× (750 / {_model.Fineness:G29})" : "")</MudText>
                                 <MudText Class="font-weight-bold">@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                             </div>
@@ -313,7 +313,7 @@
                         @* Stone price with formula *@
                         @if (_stoneCost.HasValue && _stoneCost.Value is not 0)
                         {
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
                                 <MudText>قیمت سنگ: مبلغ ثابت (@($"{_model.StonePrice?.ToCurrencyFormat(_model.StonePriceUnit?.Title)}"))</MudText>
                                 <MudText Class="font-weight-bold">@_stoneCost.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                             </div>
@@ -322,7 +322,7 @@
                         @* Manufacturing cost (Wage) with formula *@
                         @if (_wage.HasValue && _wage.Value is not 0)
                         {
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
                                 <MudText>اجرت ساخت: @(_model.WageType is WageType.Fixed ? "مبلغ ثابت" : $"{_model.Wage?.ToCurrencyFormat()}% قیمت طلا")</MudText>
                                 <MudText Class="font-weight-bold">@_wage.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
                             </div>
@@ -333,14 +333,14 @@
                         {
                             if (_model.ProductType is ProductType.MoltenGold)
                             {
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap">
                                     <MudText>کارمزد فروش طلای آب شده: @_model.ProfitPercent.ToCurrencyFormat()% (قیمت طلا)</MudText>
                                     <MudText Class="font-weight-bold">@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                                 </div>
                             }
                             else
                             {
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap">
                                     <MudText>سود فروش طلا: @_model.ProfitPercent.ToCurrencyFormat()% (قیمت طلا + اجرت ساخت)</MudText>
                                     <MudText Class="font-weight-bold">@_profit.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                                 </div>
@@ -350,7 +350,7 @@
                         @* Tax with formula *@
                         @if (_tax.HasValue && _tax.Value is not 0)
                         {
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
                                 <MudText>مالیات: @_model.TaxPercent.ToCurrencyFormat()% (سود فروش طلا + اجرت ساخت@(_model.StonePrice.HasValue ? " + قیمت سنگ" : string.Empty))</MudText>
                                 <MudText Class="font-weight-bold">@_tax.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                             </div>
@@ -359,7 +359,7 @@
                         @* Extra Costs *@
                         @if (_model.ExtraCosts.HasValue && _model.ExtraCosts.Value is not 0)
                         {
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
                                 <MudText>هزینه های جانبی</MudText>
                                 <MudText Class="font-weight-bold">@_model.ExtraCosts?.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                             </div>

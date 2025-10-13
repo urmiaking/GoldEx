@@ -15,7 +15,9 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 public partial class InvoicesList
 {
     [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 

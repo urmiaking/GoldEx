@@ -1,6 +1,6 @@
 ﻿@inherits GoldExComponentBase
 
-<MudTable T="ProductVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
+<MudTable T="ProductVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadProductsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s=> OnSearch(s))"

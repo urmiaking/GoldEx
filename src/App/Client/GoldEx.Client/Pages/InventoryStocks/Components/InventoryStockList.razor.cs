@@ -17,7 +17,10 @@ namespace GoldEx.Client.Pages.InventoryStocks.Components;
 public partial class InventoryStockList
 {
     [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Parameter] public bool ShowTitle { get; set; }
+
 
     [Parameter] public ItemType ItemType { get; set; } = ItemType.Product;
     [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
@@ -33,6 +36,7 @@ public partial class InventoryStockList
     private string? _searchString;
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
+    private bool _inventoryStatus;
 
     private string DateRangeFilterLabel => ItemStatus switch
     {

@@ -9,8 +9,15 @@
 }
 else
 {
-    <MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" Height="450px" FixedHeader="true" Elevation="@Elevation"
-              Items="@_items" Class="@Class"
+    @if (ShowTitle)
+    {
+        <div class="d-flex justify-content-center">
+            <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">تابلوی قیمت ها</MudText>
+        </div>
+        <MudDivider />
+    }
+    <MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" ContainerClass="@ContainerClass" FixedHeader="true" Elevation="@Elevation"
+              Items="@_items" Class="@($"{Class} p-2")"
               GroupBy="@_groupDefinition"
               GroupFooterClass="mb-4">
         <ColGroup>
