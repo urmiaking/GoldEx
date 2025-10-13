@@ -42,6 +42,7 @@ public partial class EditorForm
     private bool _paymentsMenuOpen;
     private bool _processing;
     private bool _totalUnpaidMenuOpen;
+    private bool _isLoadingInvoice;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -54,12 +55,16 @@ public partial class EditorForm
 
     protected override async Task OnParametersSetAsync()
     {
+        _isLoadingInvoice = true;
+
         await LoadCustomerAsync();
         await LoadInvoiceAsync();
         await LoadPriceUnitsAsync();
         await LoadSettingsAsync();
         await LoadGramPriceAsync();
         await LoadIncomingProductAsync();
+
+        _isLoadingInvoice = false;
         await base.OnParametersSetAsync();
     }
 
