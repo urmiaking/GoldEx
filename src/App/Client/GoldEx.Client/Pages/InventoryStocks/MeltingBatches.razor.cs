@@ -9,6 +9,6 @@ public partial class MeltingBatches
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
         new("انبار", href: ClientRoutes.InventoryStocks.Index, icon: Icons.Material.Filled.Warehouse),
-        new("ذوب طلا", href: ClientRoutes.InventoryStocks.MeltingBatches.Index, icon: Icons.Material.Filled.Whatshot)
+        new("لیست ذوب طلا", href: ClientRoutes.InventoryStocks.MeltingBatches.Index, icon: Icons.Material.Filled.Whatshot)
     ];
 }
