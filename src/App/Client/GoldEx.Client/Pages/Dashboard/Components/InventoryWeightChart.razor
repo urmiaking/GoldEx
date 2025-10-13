@@ -1,29 +1,49 @@
 ﻿@inherits GoldExComponentBase
 
-<MudCard Elevation="24" Class="mt-6">  
-    <MudCardHeader>  
-        <CardHeaderContent>  
-            <MudText Typo="Typo.h6">نمودار لحظه ای ارزش موجودی</MudText>  
-        </CardHeaderContent>  
-    </MudCardHeader>  
-    <MudCardContent>  
-        <MudStack>  
-            <MudChart ChartType="ChartType.Pie"   
-                      InputData="@_chartData"   
-                      InputLabels="@_chartLabels"  
-                      Width="300px"   
-                      Height="300px" />  
-        </MudStack> 
-        <MudSelect T="GoldUnitType"   
-                   Label="واحد طلا" 
-                   Variant="Variant.Outlined"
-                   Margin="Margin.Dense"
-                   Value="_selectedUnitType"  
-                   ValueChanged="OnUnitTypeChanged">  
-            @foreach (GoldUnitType unit in Enum.GetValues(typeof(GoldUnitType)))  
-            {  
-                <MudSelectItem Value="@unit">@unit.GetDisplayName()</MudSelectItem>  
-            }  
-        </MudSelect> 
-    </MudCardContent>  
+<MudCard Elevation="24" Class="mt-6">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">نمودار لحظه ای ارزش موجودی</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (_chartResponse is null)
+        {
+            <div class="d-flex flex-column gap-4 justify-content-center align-items-center">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                <MudText Class="mr-2">در حال بارگذاری...</MudText>
+            </div>
+        }
+        else
+        {
+            if (!_chartResponse.Any())
+            {
+                <div class="d-flex flex-column gap-4 justify-content-center align-items-center">
+                    <MudText>هیچ داده ای در دسترس نیست</MudText>
+                </div>
+            }
+            else
+            {
+                <MudStack>
+                    <MudChart ChartType="ChartType.Pie"
+                              InputData="@_chartData"
+                              InputLabels="@_chartLabels"
+                              Width="300px"
+                              Height="300px" />
+                </MudStack>
+                <MudSelect T="GoldUnitType"
+                           Label="واحد طلا"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Value="_selectedUnitType"
+                           ValueChanged="OnUnitTypeChanged">
+                    @foreach (GoldUnitType unit in Enum.GetValues(typeof(GoldUnitType)))
+                    {
+                        <MudSelectItem Value="@unit">@unit.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+        }
+
+    </MudCardContent>
 </MudCard>
