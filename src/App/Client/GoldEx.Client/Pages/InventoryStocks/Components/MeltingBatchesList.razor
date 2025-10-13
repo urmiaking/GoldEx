@@ -1,8 +1,8 @@
 ﻿@using GoldEx.Shared.DTOs.MeltingBatches
 @inherits GoldExComponentBase
 
-<MudTable T="MeltingBatchListVm" Class="@Class" RowsPerPage="8" Hover="true" @ref="_table" FixedHeader="true"
-          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
+<MudTable T="MeltingBatchListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadMeltingBatchAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" AutoFocus="true" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"

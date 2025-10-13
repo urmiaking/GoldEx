@@ -4,7 +4,7 @@
 
 <PageTitle>صفحه اصلی</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
@@ -30,34 +30,38 @@
         </NotAuthorized>
     </AuthorizeView>
     
-    <MudTabs Elevation="24" Color="Color.Transparent" Centered="true" TabHeaderClass="rounded-5">
-        <MudTabPanel Text="قیمت ارز، طلا و سکه" Icon="@Icons.Material.Filled.AttachMoney">
-            <PriceBoard Class="mt-5 p-2" Elevation="24" />
+    <MudTabs Elevation="24" Color="Color.Transparent" Position="@_tabPosition" TabPanelClass="my-custom-tab" MinimumTabWidth="20px" AlwaysShowScrollButtons="false">
+        <MudTabPanel Text="@(_isMobile ? "" : "تابلوی قیمت ها")" Icon="@Icons.Material.Filled.AttachMoney" Class="w-100">
+            <PriceBoard Class="@_contentClass" Elevation="24" ShowTitle="_isMobile" ContainerClass="responsive-table" />
         </MudTabPanel>
-        <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate">
-            <Calculator Class="mt-5" Elevation="24" />
+        <MudTabPanel Text="@(_isMobile ? "" : "محاسبه گر")" Icon="@Icons.Material.Outlined.Calculate" Class="w-100">
+            <Calculator Class="@_contentClass" Elevation="24" />
         </MudTabPanel>
         <AuthorizeView>
             <Authorized>
-                <MudTabPanel Text="انبار" Icon="@Icons.Material.Filled.Warehouse">
-                    <InventoryStockList Class="mt-5" Elevation="24" />
+                <MudTabPanel Text="@(_isMobile ? "" : "انبار")" Icon="@Icons.Material.Filled.Warehouse" Class="w-100">
+                    <InventoryStockList Class="@_contentClass" Elevation="24" ShowTitle="_isMobile" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
-                <MudTabPanel Text="اجناس من" Icon="@Icons.Material.Filled.Warehouse">
-                    <ProductsList Class="mt-5" Elevation="24"/>
+                <MudTabPanel Text="@(_isMobile ? "" : "مشتریان")" Icon="@Icons.Material.Filled.PeopleAlt" Class="w-100">
+                    <CustomersList Class="@_contentClass" Elevation="24" ShowTitle="_isMobile" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
-                <MudTabPanel Text="مشتریان" Icon="@Icons.Material.Filled.PeopleAlt">
-                    <CustomersList Class="mt-5" Elevation="24"/>
+                <MudTabPanel Text="@(_isMobile ? "" : "اسناد پرداخت")" Icon="@Icons.Material.Filled.Payment" Class="w-100">
+                    <PaymentVouchersList Class="@_contentClass" Elevation="24" ShowTitle="_isMobile" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
-                <MudTabPanel Text="اسناد پرداخت" Icon="@Icons.Material.Filled.Payment">
-                    <PaymentVouchersList Class="mt-5" Elevation="24"/>
+                <MudTabPanel Text="@(_isMobile ? "" : "فاکتورهای من")" Icon="@Icons.Material.Filled.LibraryBooks" Class="w-100">
+                    <InvoicesList Class="@_contentClass" Elevation="24" ShowTitle="_isMobile" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
-                <MudTabPanel Text="فاکتورهای من" Icon="@Icons.Material.Filled.LibraryBooks">
-                    <InvoicesList Class="mt-5" Elevation="24"/>
-                </MudTabPanel>
-                <MudTabPanel Text="گزارش گیری" Icon="@Icons.Material.Filled.InsertChart">
-                    <ReportPanel Class="mt-5" Elevation="24"/>
+                <MudTabPanel Text="@(_isMobile ? "" : "گزارش گیری")" Icon="@Icons.Material.Filled.InsertChart" Class="w-100">
+                    <ReportPanel Class="@_contentClass" Elevation="24" />
                 </MudTabPanel>
             </Authorized>
         </AuthorizeView>
     </MudTabs>
 </MudContainer>
+
+<style>
+    .my-custom-tab {
+        justify-content: flex-start; /* for left alignment */
+        /* or justify-content: flex-end; for right alignment */
+    }
+</style>

@@ -13,7 +13,9 @@ namespace GoldEx.Client.Pages.PaymentVouchers.Components;
 public partial class PaymentVouchersList
 {
     [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
 
     public string? VoucherTypeIcon => _voucherType switch

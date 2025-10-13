@@ -15,6 +15,7 @@ namespace GoldEx.Client.Pages.InventoryStocks.Components;
 public partial class MeltingBatchesList
 {
     [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
