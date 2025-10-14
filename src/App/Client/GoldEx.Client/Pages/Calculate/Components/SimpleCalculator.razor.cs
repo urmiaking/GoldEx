@@ -347,7 +347,7 @@ public partial class SimpleCalculator
                 break;
             case ProductType.UsedGold:
                 _applySafetyMargin = false;
-                _model.Fineness = (int?)_settings?.UsedGoldFineness ?? 735;
+                _model.Fineness = (int?)_settings?.UsedGoldFinenessDeductionRate ?? 735;
                 _model.Wage = null;
                 _model.WageType = null;
                 _model.StonePriceUnit = null;

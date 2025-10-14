@@ -13,7 +13,7 @@ public class Setting : EntityBase<SettingsId>
         decimal jewelryProfitPercent,
         decimal moltenGoldCommissionPercent,
         decimal goldSafetyMarginPercent,
-        decimal usedGoldFineness,
+        decimal usedGoldFinenessDeductionRate,
         decimal gramPerMesghal,
         TimeSpan priceUpdateInterval)
     {
@@ -22,7 +22,7 @@ public class Setting : EntityBase<SettingsId>
         ArgumentOutOfRangeException.ThrowIfLessThan(jewelryProfitPercent, 0, nameof(jewelryProfitPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(moltenGoldCommissionPercent, 0, nameof(moltenGoldCommissionPercent));
         ArgumentOutOfRangeException.ThrowIfLessThan(goldSafetyMarginPercent, 0, nameof(goldSafetyMarginPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(usedGoldFineness, 0, nameof(usedGoldFineness));
+        ArgumentOutOfRangeException.ThrowIfLessThan(usedGoldFinenessDeductionRate, 0, nameof(usedGoldFinenessDeductionRate));
         ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0, nameof(gramPerMesghal));
 
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
@@ -30,7 +30,7 @@ public class Setting : EntityBase<SettingsId>
         ArgumentOutOfRangeException.ThrowIfGreaterThan(jewelryProfitPercent, 100, nameof(jewelryProfitPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(moltenGoldCommissionPercent, 100, nameof(moltenGoldCommissionPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(goldSafetyMarginPercent, 100, nameof(goldSafetyMarginPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(usedGoldFineness, 1000, nameof(usedGoldFineness));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(usedGoldFinenessDeductionRate, 1000, nameof(usedGoldFinenessDeductionRate));
 
         ArgumentNullException.ThrowIfNull(institutionName, nameof(institutionName));
         ArgumentNullException.ThrowIfNull(address, nameof(address));
@@ -47,7 +47,7 @@ public class Setting : EntityBase<SettingsId>
             JewelryProfitPercent = jewelryProfitPercent,
             MoltenGoldCommissionPercent = moltenGoldCommissionPercent,
             GoldSafetyMarginPercent = goldSafetyMarginPercent,
-            UsedGoldFineness = usedGoldFineness,
+            UsedGoldFinenessDeductionRate = usedGoldFinenessDeductionRate,
             GramPerMesghal = gramPerMesghal,
             PriceUpdateInterval = priceUpdateInterval
         };
@@ -65,7 +65,7 @@ public class Setting : EntityBase<SettingsId>
     public decimal GoldSafetyMarginPercent { get; private set; }
     public decimal JewelryProfitPercent { get; private set; }
     public decimal MoltenGoldCommissionPercent { get; private set; }
-    public decimal UsedGoldFineness { get; private set; }
+    public decimal UsedGoldFinenessDeductionRate { get; private set; }
     public decimal GramPerMesghal { get; private set; }
     public TimeSpan PriceUpdateInterval { get; private set; }
 
@@ -106,11 +106,11 @@ public class Setting : EntityBase<SettingsId>
 
     public void SetGoldSafetyMargin(decimal safetyMargin) => GoldSafetyMarginPercent = safetyMargin;
     public void SetPriceUpdateInterval(TimeSpan interval) => PriceUpdateInterval = interval;
-    public void SetUsedGoldFineness(decimal usedGoldFineness)
+    public void SetUsedGoldFinenessDeduction(decimal deductionRate)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(usedGoldFineness, 0, nameof(usedGoldFineness));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(usedGoldFineness, 1000, nameof(usedGoldFineness));
-        UsedGoldFineness = usedGoldFineness;
+        ArgumentOutOfRangeException.ThrowIfLessThan(deductionRate, -250, nameof(deductionRate));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(deductionRate, 750, nameof(deductionRate));
+        UsedGoldFinenessDeductionRate = deductionRate;
     }
 
     public void SetGramPerMesghal(decimal gramPerMesghal)

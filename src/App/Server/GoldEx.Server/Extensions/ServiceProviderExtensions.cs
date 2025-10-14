@@ -211,7 +211,7 @@ public static class ServiceProviderExtensions
                 defaultSetting.JewelryProfitPercent,
                 defaultSetting.MoltenGoldCommissionPercent,
                 defaultSetting.GoldSafetyMarginPercent,
-                defaultSetting.OldGoldCarat,
+                defaultSetting.UsedGoldFinenessDeductionRate,
                 defaultSetting.GramPerMesghal,
                 defaultSetting.PriceUpdateInterval);
 

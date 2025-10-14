@@ -10,7 +10,7 @@ public class DefaultSetting
     public decimal JewelryProfitPercent { get; set; }
     public decimal MoltenGoldCommissionPercent { get; set; }
     public decimal GoldSafetyMarginPercent { get; set; } = 0;
-    public decimal OldGoldCarat { get; set; } = 735;
+    public decimal UsedGoldFinenessDeductionRate { get; set; } = 15;
     public decimal GramPerMesghal { get; set; } = 4.6083m;
 
     public TimeSpan PriceUpdateInterval { get; set; } = TimeSpan.FromMinutes(1);
