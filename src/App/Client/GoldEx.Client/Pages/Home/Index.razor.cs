@@ -20,6 +20,8 @@ public partial class Index
     private bool _isInitialized;
     private readonly Guid _observerId = Guid.NewGuid();
 
+    private string PriceBoardClass => User?.Identity?.IsAuthenticated ?? false ? "responsive-table" : "responsive-table-login";
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
