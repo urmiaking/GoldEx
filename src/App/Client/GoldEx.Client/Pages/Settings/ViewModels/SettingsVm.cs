@@ -40,9 +40,9 @@ public class SettingsVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public decimal GoldSafetyMarginPercent { get; set; }
 
-    [Display(Name = "عیار طلای کهنه")]
+    [Display(Name = "نرخ کاهش عیار طلای کهنه")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public decimal UsedGoldFineness { get; set; }
+    public decimal UsedGoldFinenessDeductionRate { get; set; }
 
     [Display(Name = "هر گرم مثقال")]
     public decimal GramPerMesghal { get; set; }
@@ -69,7 +69,7 @@ public class SettingsVm
             MoltenGoldCommissionPercent,
             PriceUpdateInterval,
             GoldSafetyMarginPercent,
-            UsedGoldFineness,
+            UsedGoldFinenessDeductionRate,
             GramPerMesghal,
             IconContent);
     }
@@ -88,7 +88,7 @@ public class SettingsVm
             MoltenGoldCommissionPercent = response.MoltenGoldCommissionPercent,
             PriceUpdateInterval = response.PriceUpdateInterval,
             GoldSafetyMarginPercent = response.GoldSafetyMarginPercent,
-            UsedGoldFineness = response.UsedGoldFineness,
+            UsedGoldFinenessDeductionRate = response.UsedGoldFinenessDeductionRate,
             GramPerMesghal = response.GramPerMesghal,
             HasIcon = response.HasIcon
         };

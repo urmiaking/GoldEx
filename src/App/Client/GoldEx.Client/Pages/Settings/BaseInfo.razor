@@ -114,12 +114,12 @@
             <MudItem xs="12" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
-                                 @bind-Value="_model.UsedGoldFineness"
+                                 @bind-Value="_model.UsedGoldFinenessDeductionRate"
                                  Variant="Variant.Outlined"
                                  Format="G29"
-                                 Label="@_model.GetDisplayName(() => _model.UsedGoldFineness)"
+                                 Label="@_model.GetDisplayName(() => _model.UsedGoldFinenessDeductionRate)"
                                  HideSpinButtons="true"
-                                 For="() => _model.UsedGoldFineness"></MudNumericField>
+                                 For="() => _model.UsedGoldFinenessDeductionRate"></MudNumericField>
             </MudItem>
             <MudItem xs="12" sm="4">
                 <MudNumericField Adornment="Adornment.End"
