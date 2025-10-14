@@ -1,0 +1,79 @@
+﻿@using GoldEx.Sdk.Common.Definitions
+@using GoldEx.Shared.DTOs.Prices
+<MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" ContainerClass="@ContainerClass" FixedHeader="true" Elevation="@Elevation"
+          Items="@_items" Class="@($"{Class} p-2")"
+          GroupBy="@_groupDefinition"
+          GroupFooterClass="mb-4">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh></MudTh>
+        <MudTh>عنوان</MudTh>
+        <MudTh>قیمت</MudTh>
+        <MudTh>تغییرات</MudTh>
+        <MudTh>تاریخ بروزرسانی</MudTh>
+    </HeaderContent>
+    <GroupHeaderTemplate>
+        <MudTh Class="mud-table-cell-custom-group" colspan="5">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Text" Width="200" Height="25" Class="w-50" />
+        </MudTh>
+    </GroupHeaderTemplate>
+    <RowTemplate>
+        <MudTd DataLabel="">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="40" Height="40" Class="w-50" />
+        </MudTd>
+        <MudTd DataLabel="عنوان">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Text" Width="150" Height="20" Class="w-50" />
+        </MudTd>
+        <MudTd DataLabel="قیمت">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Text" Width="100" Height="20" Class="w-50" />
+        </MudTd>
+        <MudTd DataLabel="تغییرات">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="80" Height="20" Class="w-50" />
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="30" Height="20" Class="ml-1 w-50" />
+        </MudTd>
+        <MudTd DataLabel="تاریخ بروزرسانی">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Text" Width="120" Height="20" Class="w-50" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code
+{
+    [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public string ContainerClass { get; set; } = default!;
+    [Parameter] public int Elevation { get; set; } = 0;
+
+    private readonly TableGroupDefinition<GetPriceResponse> _groupDefinition = new()
+    {
+        GroupName = "گروه",
+        Indentation = false,
+        Expandable = true,
+        Selector = e => e.Type.GetDisplayName()
+    };
+
+    private IEnumerable<GetPriceResponse>? _items;
+
+    protected override void OnInitialized()
+    {
+        _items = Enumerable.Range(1, 20).Select(i => new GetPriceResponse
+        (
+            Id: Guid.Empty, 
+            Title: "عنوان نمونه",
+            Value: "123,456",
+            Unit: "تومان",
+            Change: "+1,234 (0.99%)",
+            LastUpdate: DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
+            Type: MarketType.Gold,
+            HasIcon: true,
+            UnitType: UnitType.AED
+        )).ToList();
+
+        base.OnInitialized();
+    }
+}
