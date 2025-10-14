@@ -8,9 +8,9 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 public class UsedProductVm
 {
     private decimal _gramPrice;
-    private decimal? _fineness = 735m;
     private decimal? _weight;
     private decimal? _exchangeRate;
+    private decimal? _finenessDeductionRate = 15;
 
     public Guid? Id { get; set; }
 
@@ -27,14 +27,17 @@ public class UsedProductVm
     }
 
     [Display(Name = "عیار")]
+    public decimal Fineness { get; set; }
+
+    [Display(Name = "کسری عیار")]
+    [Range(-250, 750, ErrorMessage = "{0} باید بین {1} و {2} باشد.")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    [Range(0, 1000, ErrorMessage = "{0} باید بین {1} و {2} باشد.")]
-    public decimal? Fineness
+    public decimal? FinenessDeductionRate
     {
-        get => _fineness;
+        get => _finenessDeductionRate;
         set
         {
-            _fineness = value;
+            _finenessDeductionRate = value;
             RecalculateAmounts();
         }
     }
@@ -70,6 +73,9 @@ public class UsedProductVm
     [Display(Name = "هزینه های جانبی")]
     public decimal? ExtraCostsAmount { get; set; }
 
+    [Display(Name = "آیا طلای شکسته است؟")]
+    public bool IsBroken { get; set; }
+
     [Display(Name = "مبلغ کالا")]
     public decimal ItemAmount { get; set; }
 
@@ -87,13 +93,13 @@ public class UsedProductVm
     /// </summary>
     public void RecalculateAmounts()
     {
-        if (Weight == null || Fineness == null || GramPrice <= 0)
+        if (Weight == null || FinenessDeductionRate == null || GramPrice <= 0)
         {
             ItemAmount = 0;
             return;
         }
 
-        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness.Value, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
+        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, FinenessDeductionRate.Value, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
     }
 
     public void UpdateFrom(UsedProductVm other)
@@ -107,6 +113,7 @@ public class UsedProductVm
         Description = other.Description;
         ExtraCostsAmount = other.ExtraCostsAmount;
         UnitType = other.UnitType;
+        IsBroken = other.IsBroken;
     }
 
     public static InvoiceUsedProductDto ToRequest(UsedProductVm productItem)
@@ -116,8 +123,9 @@ public class UsedProductVm
             productItem.Weight ?? 0,
             productItem.GramPrice,
             productItem.ExtraCostsAmount ?? 0,
-            productItem.Fineness ?? 0,
+            productItem.FinenessDeductionRate ?? 0,
             1,
+            productItem.IsBroken,
             ProductType.UsedGold,
             productItem.UnitType);
     }
@@ -128,12 +136,13 @@ public class UsedProductVm
         {
             Id = response.Id,
             GramPrice = response.GramPrice,
-            Fineness = response.Fineness,
+            FinenessDeductionRate = response.FinenessDeductionRate,
             Weight = response.Weight,
             Description = response.Description,
             ExtraCostsAmount = response.ExtraCostsAmount,
             ItemAmount = response.ItemAmount,
-            UnitType = response.UnitType
+            UnitType = response.UnitType,
+            IsBroken = response.IsBroken,
         };
     }
 }

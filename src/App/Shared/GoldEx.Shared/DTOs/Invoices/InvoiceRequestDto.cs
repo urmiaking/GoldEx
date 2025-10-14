@@ -48,8 +48,9 @@ public record InvoiceUsedProductDto(
     decimal Weight,
     decimal GramPrice,
     decimal? ExtraCostsAmount,
-    decimal Fineness,
+    decimal FinenessDeductionRate,
     int Quantity,
+    bool IsBroken,
     ProductType ProductType,
     GoldUnitType UnitType);
 

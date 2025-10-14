@@ -153,13 +153,13 @@ public class CalculatorHelper
 
     public static class UsedProduct
     {
-        public static decimal Calculate(decimal weight, decimal fineness, decimal gramPrice, int quantity, decimal? exchangeRate)
+        public static decimal Calculate(decimal weight, decimal deductionRate, decimal gramPrice, int quantity, decimal? exchangeRate)
         {
-            if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
+            if (gramPrice <= 0 || weight <= 0)
                 throw new ArgumentOutOfRangeException(
-                    $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
+                    $"{nameof(weight)} and {nameof(gramPrice)} must be greater than zero.");
 
-            return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1)) * quantity;
+            return weight * ((750m - deductionRate) / 750m) * (gramPrice * (exchangeRate ?? 1)) * quantity;
         }
     }
 
@@ -170,9 +170,6 @@ public class CalculatorHelper
             if (fineness <= 0 || gramPrice <= 0 || weight <= 0)
                 throw new ArgumentOutOfRangeException(
                     $"{nameof(weight)}, {nameof(fineness)}, and {nameof(gramPrice)} must be greater than zero.");
-
-            // log to console:
-            Console.WriteLine($"Calculated MoltenGold: {weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1))}");
 
             return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1));
         }

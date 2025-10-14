@@ -24,7 +24,7 @@
         <HeaderContent>
             <MudTh>ردیف</MudTh>
             <MudTh>عنوان</MudTh>
-            <MudTh>عیار</MudTh>
+            <MudTh>کسری عیار</MudTh>
             <MudTh>وزن</MudTh>
             <MudTh>ارزش کالا</MudTh>
             <MudTh>مخارج جانبی</MudTh>
@@ -33,8 +33,18 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
-            <MudTd DataLabel="عنوان">@context.Description</MudTd>
-            <MudTd DataLabel="عیار">@context.Fineness?.ToString("G29")</MudTd>
+            <MudTd DataLabel="عنوان">
+                @if (context.IsBroken)
+                {
+                    <MudIcon Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.BrokenImage" />
+                }
+                else
+                {
+                    <MudIcon Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle" />
+                }
+                @context.Description
+            </MudTd>
+            <MudTd DataLabel="کسری عیار">@context.FinenessDeductionRate?.ToString("G29")</MudTd>
             <MudTd DataLabel="وزن">@context.Weight?.ToString("G29") @context.UnitType.GetDisplayName()</MudTd>
             <MudTd DataLabel="ارزش کالا">@context.ItemAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="مخارج جانبی">@context.ExtraCostsAmount?.ToCurrencyFormat(PriceUnit?.Title)</MudTd>

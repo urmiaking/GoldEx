@@ -104,18 +104,36 @@
                 </MudMenu>
             </MudItem>
 
-            <MudItem xs="12" sm="6">
-                <MudNumericField For="() => _model.Fineness"
-                                 Immediate="true"
-                                 HideSpinButtons="true"
-                                 Format="G29"
-                                 Margin="Margin.Dense"
-                                 Label="@(_model.GetDisplayName(() => _model.Fineness))"
-                                 T="decimal"
-                                 Value="_model.Fineness"
-                                 ValueChanged="OnFinenessChanged"
-                                 Variant="Variant.Outlined"></MudNumericField>
-            </MudItem>
+            @if(_model.ProductType is not ProductType.UsedGold)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudNumericField For="() => _model.Fineness"
+                                     Immediate="true"
+                                     HideSpinButtons="true"
+                                     Format="G29"
+                                     Margin="Margin.Dense"
+                                     Label="@(_model.GetDisplayName(() => _model.Fineness))"
+                                     T="decimal"
+                                     Value="_model.Fineness"
+                                     ValueChanged="OnFinenessChanged"
+                                     Variant="Variant.Outlined"></MudNumericField>
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12" sm="6">
+                    <MudNumericField For="() => _model.UsedGoldFinenessDeductionRate"
+                                     Immediate="true"
+                                     HideSpinButtons="true"
+                                     Format="G29"
+                                     Margin="Margin.Dense"
+                                     Label="@(_model.GetDisplayName(() => _model.UsedGoldFinenessDeductionRate))"
+                                     T="decimal"
+                                     Value="_model.UsedGoldFinenessDeductionRate"
+                                     ValueChanged="OnUsedGoldFinenessDeductionRateChanged"
+                                     Variant="Variant.Outlined"></MudNumericField>
+                </MudItem>
+            }
 
             @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
             {
