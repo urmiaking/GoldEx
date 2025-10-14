@@ -158,16 +158,27 @@ h1:focus {
 /* Brand (GoldEx) */
 .brand-text {
     font-family: "Cinzel Decorative", serif;
-    font-size: 4rem;
+    font-size: clamp(2rem, 8vw, 4rem); /* Scales with screen width */
     font-weight: 700;
-    background: linear-gradient(45deg, #FFD700, #DAA520, #B8860B);
+    background: linear-gradient(90deg, #B8860B 0%, #DAA520 30%, #FFD700 50%, #DAA520 70%, #B8860B 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
-    margin-right: 0.4rem;
     letter-spacing: 1px;
+    margin-top: 0.4rem;
+    direction: ltr; /* Fix mixed direction rendering */
+    background-size: 200% 100%; /* اندازه بزرگ‌تر برای حرکت */
+    animation: shine 10s linear infinite; /* انیمیشن اصلی */
 }
+@keyframes shine {
+    0% {
+        background-position: 200% center;
+    }
 
+    100% {
+        background-position: -200% center;
+    }
+}
 
 /* Spinner */
 .loading-spinner {
@@ -197,21 +208,6 @@ h1:focus {
     justify-content: center;
 }
 
-/* Responsive brand text */
-.brand-text {
-    font-family: "Cinzel Decorative", serif;
-    font-size: clamp(2rem, 8vw, 4rem); /* Scales with screen width */
-    font-weight: 700;
-    background: linear-gradient(45deg, #FFD700, #DAA520, #B8860B);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-    letter-spacing: 1px;
-    margin-top: 0.4rem;
-    direction: ltr; /* Fix mixed direction rendering */
-}
-
-
 /* MudEx */
 .mud-ex-dialog-header-actions {
     right: auto !important;
@@ -235,6 +231,16 @@ h1:focus {
 
 @media (min-width: 960px) {
     .responsive-table-toolbar {
-        height: calc(100vh - 280px);
+        height: calc(100vh - 262px);
+    }
+}
+
+.responsive-table-login {
+    height: calc(100vh - 380px);
+}
+
+@media (min-width: 960px) {
+    .responsive-table-login {
+        height: calc(100vh - 250px);
     }
 }  
