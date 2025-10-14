@@ -4,10 +4,16 @@
            Overlay="false"
            Variant="DrawerVariant.Responsive"
            ClipMode="DrawerClipMode.Always">
-    <NavMenu />
+    <NavMenu OnNavigate="HandleNavigate" />
 </MudDrawer>
 
 @code
 {
     [Parameter] public bool IsDrawerOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsDrawerOpenChanged { get; set; }
+
+    private async Task HandleNavigate(bool shouldOpen)
+    {
+        await IsDrawerOpenChanged.InvokeAsync(shouldOpen);
+    }
 }
