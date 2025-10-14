@@ -1,21 +1,19 @@
 ﻿@inherits GoldExComponentBase
 
+@if (ShowTitle)
+{
+    <div class="d-flex justify-content-center">
+        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">تابلوی قیمت ها</MudText>
+    </div>
+    <MudDivider />
+}
+
 @if (_items is null)
 {
-    <div class="align-center d-flex flex-column gap-3 justify-content-center mt-5">
-        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
-        <div>در حال بارگذاری</div>
-    </div>
+    <PriceBoardSkeleton Class="@Class" Elevation="@Elevation" ContainerClass="@ContainerClass" />
 }
 else
 {
-    @if (ShowTitle)
-    {
-        <div class="d-flex justify-content-center">
-            <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">تابلوی قیمت ها</MudText>
-        </div>
-        <MudDivider />
-    }
     <MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" ContainerClass="@ContainerClass" FixedHeader="true" Elevation="@Elevation"
               Items="@_items" Class="@($"{Class} p-2")"
               GroupBy="@_groupDefinition"

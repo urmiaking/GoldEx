@@ -12,12 +12,12 @@
     </MudBreadcrumbs>
     <AuthorizeView>
         <NotAuthorized>
-            <div class="row mt-4">
+            <div class="row">
                 <div class="col-12 col-md-8">
                     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                        <MudText Typo="Typo.h4" Style="font-weight: 500">سامانه یکپارچه طلا و جواهر گلدکس</MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight: 500" Class="mb-4">سامانه یکپارچه طلا و جواهر گلدکس</MudText>
                     </MudHidden>
-                    <div class="my-4">
+                    <div class="mb-4">
                         لطفا برای استفاده از امکانات سامانه، وارد حساب کاربری خود شوید
                     </div>
                 </div>
@@ -32,7 +32,7 @@
     
     <MudTabs Elevation="24" Color="Color.Transparent" Position="@_tabPosition" TabPanelClass="my-custom-tab" MinimumTabWidth="20px" AlwaysShowScrollButtons="false">
         <MudTabPanel Text="@(_isMobile ? "" : "تابلوی قیمت ها")" Icon="@Icons.Material.Filled.AttachMoney" Class="w-100">
-            <PriceBoard Class="@_contentClass" Elevation="24" ShowTitle="_isMobile" ContainerClass="responsive-table" />
+            <PriceBoard Class="@_contentClass" Elevation="24" ShowTitle="_isMobile" ContainerClass="@PriceBoardClass" />
         </MudTabPanel>
         <MudTabPanel Text="@(_isMobile ? "" : "محاسبه گر")" Icon="@Icons.Material.Outlined.Calculate" Class="w-100">
             <Calculator Class="@_contentClass" Elevation="24" />
