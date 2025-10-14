@@ -37,10 +37,11 @@ public record GetInvoiceUsedProductResponse(
     Guid Id,
     string Description,
     decimal Weight,
-    decimal Fineness,
+    decimal FinenessDeductionRate,
     decimal GramPrice,
     decimal? ExtraCostsAmount,
     decimal ItemAmount,
+    bool IsBroken,
     ProductType ProductType,
     GoldUnitType UnitType);
 

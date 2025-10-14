@@ -177,15 +177,6 @@ public partial class SimpleCalculator
                 _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType, _stoneCost);
                 _finalPrice = CalculatorHelper.Product.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType)
                               + (_stoneCost ?? 0m);
-
-                // console all prices:
-                Console.WriteLine($"Raw Price: {_rawPrice}");
-                Console.WriteLine($"Wage: {_wage}");
-                Console.WriteLine($"Profit: {_profit}");
-                Console.WriteLine($"Stone Cost: {_stoneCost}");
-                Console.WriteLine($"Tax: {_tax}");
-                Console.WriteLine($"Final Price: {_finalPrice}");
-
             }
             else
             {
@@ -347,7 +338,8 @@ public partial class SimpleCalculator
                 break;
             case ProductType.UsedGold:
                 _applySafetyMargin = false;
-                _model.Fineness = (int?)_settings?.UsedGoldFinenessDeductionRate ?? 735;
+                _model.UsedGoldFinenessDeductionRate = (int?)_settings?.UsedGoldFinenessDeductionRate ?? 15;
+                _model.Fineness = 750m - _model.UsedGoldFinenessDeductionRate;
                 _model.Wage = null;
                 _model.WageType = null;
                 _model.StonePriceUnit = null;
@@ -363,6 +355,14 @@ public partial class SimpleCalculator
     private async void OnFinenessChanged(decimal fineness)
     {
         _model.Fineness = fineness;
+
+        await Calculate();
+    }
+
+    private async void OnUsedGoldFinenessDeductionRateChanged(decimal deductionRate)
+    {
+        _model.UsedGoldFinenessDeductionRate = deductionRate;
+        _model.Fineness = 750m - deductionRate;
 
         await Calculate();
     }
@@ -458,6 +458,7 @@ public partial class SimpleCalculator
     {
         _model.Weight = 0;
         _model.Fineness = 750m;
+        _model.UsedGoldFinenessDeductionRate = 0;
         _model.ProductType = ProductType.Gold;
         _model.Wage = 0;
         _model.WageType = null;
@@ -476,9 +477,6 @@ public partial class SimpleCalculator
         _tax = null;
         _finalPrice = null;
         _stoneCost = null;
-
-        // console reset prices:
-        Console.WriteLine("Calculations reset:");
     }
 
     #endregion

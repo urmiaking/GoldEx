@@ -76,7 +76,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.ExtraCostsAmount)
             .HasPrecision(36, 10);
 
-        builder.Property(x => x.Fineness)
+        builder.Property(x => x.FinenessDeductionRate)
             .HasPrecision(9, 6)
             .IsRequired();
 

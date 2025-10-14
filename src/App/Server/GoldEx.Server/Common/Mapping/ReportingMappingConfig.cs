@@ -140,7 +140,7 @@ public class ReportingMappingConfig : IRegister
                 src => src.ExtraCostsAmount.HasValue
                     ? src.ExtraCostsAmount.Value.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)
                     : null)
-            .Map(dest => dest.Fineness, src => src.Fineness)
+            .Map(dest => dest.Fineness, src => src.FinenessDeductionRate)
             .Map(dest => dest.GoldUnitType, src => src.UnitType)
             .Map(dest => dest.Weight, src => src.Weight.ToWeightFormat(src.UnitType))
             .Map(dest => dest.Weight, src => src.Weight.ToWeightFormat(src.UnitType))

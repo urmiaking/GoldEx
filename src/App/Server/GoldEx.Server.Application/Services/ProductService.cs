@@ -247,7 +247,7 @@ internal class ProductService(
                                      request.Weight,
                                      0,
                                      request.ProductType,
-                                     request.Fineness,
+                                     request.FinenessDeductionRate,
                                      request.UnitType,
                                      null,
                                      null,
@@ -349,23 +349,46 @@ internal class ProductService(
 
         foreach (var dto in usedProductDtos)
         {
-            var product = Product.Create(dto.Description,
-                dto.Weight,
-                0,
-                dto.ProductType,
-                dto.Fineness,
-                dto.UnitType,
-                null,
-                null,
-                null,
-                null);
+            if (!dto.IsBroken)
+            {
+                var product = Product.Create(dto.Description,
+                    dto.Weight,
+                    0,
+                    ProductType.Gold,
+                    750m,
+                    dto.UnitType,
+                    null,
+                    null,
+                    null,
+                    null);
 
-            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
-            product.SetBarcode(barcode);
+                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(ProductType.Gold, null, cancellationToken);
+                product.SetBarcode(barcode);
 
-            await repository.CreateAsync(product, cancellationToken);
+                await repository.CreateAsync(product, cancellationToken);
 
-            usedProductsWithNewProduct.Add((dto, product));
+                usedProductsWithNewProduct.Add((dto, product));
+            }
+            else
+            {
+                var product = Product.Create(dto.Description,
+                    dto.Weight,
+                    0,
+                    dto.ProductType,
+                    750 - dto.FinenessDeductionRate,
+                    dto.UnitType,
+                    null,
+                    null,
+                    null,
+                    null);
+
+                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(dto.ProductType, null, cancellationToken);
+                product.SetBarcode(barcode);
+
+                await repository.CreateAsync(product, cancellationToken);
+
+                usedProductsWithNewProduct.Add((dto, product));
+            }
         }
 
         // افزودن آیتم‌های طلای کارکرده (که محصول جدید برایشان ساخته شده) به فاکتور
@@ -378,8 +401,9 @@ internal class ProductService(
                         dto.Weight,
                         dto.GramPrice,
                         dto.ExtraCostsAmount,
-                        dto.Fineness,
+                        dto.FinenessDeductionRate,
                         dto.Quantity,
+                        dto.IsBroken,
                         dto.ProductType,
                         dto.UnitType,
                         newProduct.Id);

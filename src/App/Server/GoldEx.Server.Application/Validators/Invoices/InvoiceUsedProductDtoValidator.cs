@@ -14,7 +14,7 @@ internal class InvoiceUsedProductDtoValidator : AbstractValidator<InvoiceUsedPro
             .NotEmpty().WithMessage("لطفا عنوان/توضیحات را وارد کنید")
             .MaximumLength(100).WithMessage("عنوان/توضیحات نمی تواند بیشتر از 100 کاراکتر باشد.");
 
-        RuleFor(x => x.Fineness)
+        RuleFor(x => x.FinenessDeductionRate)
             .InclusiveBetween(0, 1000).WithMessage("عیار باید بین 0 و 1000 باشد.")
             .NotEmpty().WithMessage("لطفا عیار را وارد کنید");
 

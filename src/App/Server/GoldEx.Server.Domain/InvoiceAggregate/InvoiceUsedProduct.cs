@@ -13,23 +13,24 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         decimal weight,
         decimal gramPrice,
         decimal? extraCostsAmount,
-        decimal fineness,
+        decimal finenessDeductionRate,
         int quantity,
+        bool isBroken,
         ProductType productType,
         GoldUnitType unitType,
         ProductId? productId,
         Invoice invoice)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(fineness, 0, nameof(fineness));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(finenessDeductionRate, -250, nameof(finenessDeductionRate));
         ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
         ArgumentOutOfRangeException.ThrowIfLessThan(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 0, nameof(quantity));
 
-        var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, fineness, gramPrice, quantity, invoice.ExchangeRate);
+        var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, finenessDeductionRate, gramPrice, quantity, invoice.ExchangeRate);
 
         Id = id;
         Description = description;
-        Fineness = fineness;
+        FinenessDeductionRate = finenessDeductionRate;
         Weight = weight;
         GramPrice = gramPrice;
         Quantity = quantity;
@@ -40,6 +41,7 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         ItemAmount = itemAmount;
         ItemFinalAmount = itemAmount + (extraCostsAmount ?? 0);
         ExtraCostsAmount = extraCostsAmount;
+        IsBroken = isBroken;
     }
 
     internal static InvoiceUsedProduct Create(InvoiceUsedProductId? id,
@@ -47,8 +49,9 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         decimal weight,
         decimal gramPrice,
         decimal? extraCostsAmount,
-        decimal fineness,
+        decimal finenessDeductionRate,
         int quantity,
+        bool isBroken,
         ProductType productType,
         GoldUnitType unitType,
         ProductId? productId,
@@ -59,8 +62,9 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
             weight,
             gramPrice,
             extraCostsAmount,
-            fineness,
+            finenessDeductionRate,
             quantity,
+            isBroken,
             productType,
             unitType,
             productId,
@@ -68,10 +72,11 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
     }
 
     public string Description { get; private set; }
-    public decimal Fineness { get; private set; }
+    public decimal FinenessDeductionRate { get; private set; }
     public decimal Weight { get; private set; }
     public decimal GramPrice { get; private set; }
     public int Quantity { get; private set; }
+    public bool IsBroken { get; private set; }
     public ProductType ProductType { get; private set; }
     public GoldUnitType UnitType { get; private set; }
 
