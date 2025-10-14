@@ -402,10 +402,10 @@ internal class PriceService(
 
         var pinnedItemsCount = await repository.CountAsync(new PricesByPinStatusSpecification(), cancellationToken);
 
-        if (isPinned && !item.IsPinned && pinnedItemsCount >= 6)
+        if (isPinned && !item.IsPinned && pinnedItemsCount >= 8)
             throw new ValidationException(new List<ValidationFailure>
             {
-                new("IsPinned", "تعداد ارزهای سنجاق شده نمی تواند بیشتر از 6 عدد باشد")
+                new("IsPinned", "تعداد ارزهای سنجاق شده نمی تواند بیشتر از 8 عدد باشد")
             });
 
         item.SetPinned(isPinned);
