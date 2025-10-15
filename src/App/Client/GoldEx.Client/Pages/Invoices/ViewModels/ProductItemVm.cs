@@ -4,6 +4,7 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -61,19 +62,15 @@ public class ProductItemVm
         }
     }
 
-    [Display(Name = "نرخ خرید هر واحد جنس")]
+    [Display(Name = "نرخ خرید کل")]
     public decimal? CostPrice { get; set; }
 
-    [Display(Name = "واحد ارزی نرخ خرید جنس")]
     public Guid? CostPriceUnitId { get; set; }
 
-    [Display(Name = "واحد ارزی نرخ خرید جنس")]
     public string? CostPriceUnitTitle { get; set; }
 
-    [Display(Name = "نرخ تبدیل واحد ارزش جنس")]
     public decimal? CostPriceExchangeRate { get; set; }
 
-    [Display(Name = "نرخ تبدیل واحد سنگ")]
     public decimal? StonePriceUnitExchangeRate { get; set; }
 
     public bool IsInstantProduct { get; set; }
@@ -82,6 +79,10 @@ public class ProductItemVm
 
     [Display(Name = "تعداد")]
     public int Quantity { get; set; } = 1;
+
+    [Display(Name = "وزن کل")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public decimal? TotalWeight { get; set; }
 
     public ProductVm Product
     {
@@ -123,7 +124,7 @@ public class ProductItemVm
     {
         if (InvoiceType is InvoiceType.Purchase)
         {
-            RawAmount = (CostPrice * (CostPriceExchangeRate ?? 1) * Quantity) ?? 0;
+            RawAmount = (CostPrice * (CostPriceExchangeRate ?? 1)) ?? 0;
             WageAmount = 0;
             ProfitAmount = 0;
             TaxAmount = 0;
@@ -131,9 +132,9 @@ public class ProductItemVm
         }
         else
         {
-            StoneAmount = (Product.Stones?.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) ?? 0) * Quantity;
-            RawAmount = CalculatorHelper.Product.CalculateRawPrice(Product.Weight ?? 0, GramPrice, Product.Fineness, Quantity, Product.ProductType);
-            WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, Product.Weight ?? 0, Product.Wage, Product.WageType, WageExchangeRate);
+            StoneAmount = (Product.Stones?.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) ?? 0) /* * Quantity */;
+            RawAmount = CalculatorHelper.Product.CalculateRawPrice(TotalWeight ?? 0, GramPrice, Product.Fineness, 1, Product.ProductType);
+            WageAmount = CalculatorHelper.Product.CalculateWage(RawAmount, TotalWeight ?? 0, Product.Wage, Product.WageType, WageExchangeRate);
             ProfitAmount = CalculatorHelper.Product.CalculateProfit(RawAmount, WageAmount, Product.ProductType, ProfitPercent);
             TaxAmount = CalculatorHelper.Product.CalculateTax(WageAmount, ProfitAmount, TaxPercent, Product.ProductType, StoneAmount);
             FinalAmount = CalculatorHelper.Product.CalculateFinalPrice(RawAmount, WageAmount, ProfitAmount, TaxAmount, 0, Product.ProductType) + StoneAmount;
@@ -171,10 +172,14 @@ public class ProductItemVm
         ShowDetails = other.ShowDetails;
         InvoiceType = other.InvoiceType;
         Quantity = other.Quantity;
+        TotalWeight = other.TotalWeight;
     }
 
     public static InvoiceProductItemDto ToRequest(ProductItemVm productItem)
     {
+        if (!productItem.TotalWeight.HasValue)
+            throw new ValidationException("وزن کل جنس وارد نشده است");
+
         return new InvoiceProductItemDto(
             productItem.Id,
             productItem.GramPrice,
@@ -187,6 +192,7 @@ public class ProductItemVm
             productItem.CostPriceUnitId,
             productItem.IsInstantProduct,
             productItem.Quantity,
+            productItem.TotalWeight.Value,
             ProductVm.ToRequest(productItem.Product));
     }
 
@@ -207,6 +213,7 @@ public class ProductItemVm
             IsInstantProduct = response.IsInstantProduct,
             Product = ProductVm.CreateFromInvoice(response),
             Quantity = response.Quantity,
+            TotalWeight = response.TotalWeight,
             InvoiceType = invoiceType
         };
     }

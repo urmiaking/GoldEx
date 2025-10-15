@@ -25,6 +25,7 @@ public partial class EditorForm
     [Parameter] public Guid? Id { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
     [Parameter] public string? Barcode { get; set; }
+    [Parameter] public TradeScale TradeScale { get; set; }
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private bool IsEditMode => Id.HasValue;
@@ -66,6 +67,13 @@ public partial class EditorForm
 
         _isLoadingInvoice = false;
         await base.OnParametersSetAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _model.TradeScale = TradeScale;
+
+        base.OnParametersSet();
     }
 
     private async Task LoadIncomingProductAsync()
@@ -136,13 +144,15 @@ public partial class EditorForm
     {
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
-            afterSend: response =>
+            afterSend: async response =>
             {
                 _priceUnits = response;
 
                 if (_model.InvoicePriceUnit is null)
                 {
-                    _model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                    // Set default price unit to gram because the tradeScale initially set to wholesale
+                    _model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsGoldBased);
+                    await LoadExchangeRateAsync();
 
                     StateHasChanged();
                 }
@@ -844,6 +854,20 @@ public partial class EditorForm
 
         _model.InvoiceType = invoiceType;
         await LoadInvoiceNumberAsync();
+    }
+
+    private async Task OnTradeScaleChanged(TradeScale tradeScale)
+    {
+        _model.TradeScale = tradeScale;
+
+        var priceUnit = tradeScale switch
+        {
+            TradeScale.Retail => _priceUnits.FirstOrDefault(x => x.IsDefault),
+            TradeScale.Wholesale => _priceUnits.FirstOrDefault(x => x.IsGoldBased),
+            _ => null
+        };
+
+        await OnInvoicePriceUnitChanged(priceUnit);
     }
 
     private async Task OnPrintAsync() => await JsRuntime.InvokeVoidAsync("open", PrintUrl, "_blank");

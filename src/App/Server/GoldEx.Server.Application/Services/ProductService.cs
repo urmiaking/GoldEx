@@ -450,6 +450,7 @@ internal class ProductService(
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
                             itemDto.Quantity,
+                            itemDto.TotalWeight,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
                             invoice.PriceUnitId,
@@ -464,6 +465,7 @@ internal class ProductService(
                     {
                         existingItem.UpdatePurchaseItem(itemDto.GramPrice,
                             itemDto.Quantity,
+                            itemDto.TotalWeight,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
                             itemDto.CostPriceUnitId.HasValue
@@ -490,6 +492,7 @@ internal class ProductService(
                         itemDto.ProfitPercent,
                         itemDto.TaxPercent,
                         itemDto.Quantity,
+                        itemDto.TotalWeight,
                         itemDto.CostPrice,
                         itemDto.CostPriceExchangeRate,
                         itemDto.StonePriceUnitExchangeRate,
@@ -520,13 +523,18 @@ internal class ProductService(
                         itemDto.ProfitPercent,
                         itemDto.TaxPercent,
                         itemDto.Quantity,
+                        itemDto.TotalWeight,
                         itemDto.CostPrice,
                         itemDto.CostPriceExchangeRate,
-                        itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
+                        itemDto.CostPriceUnitId.HasValue 
+                            ? new PriceUnitId(itemDto.CostPriceUnitId.Value)
+                            : null,
                         itemDto.IsInstantProduct,
                         itemDto.Product.Wage,
                         itemDto.Product.WageType,
-                        itemDto.Product.WagePriceUnitId.HasValue ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) : null,
+                        itemDto.Product.WagePriceUnitId.HasValue 
+                            ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) 
+                            : null,
                         itemDto.WagePriceUnitExchangeRate,
                         itemDto.StonePriceUnitExchangeRate,
                         product);

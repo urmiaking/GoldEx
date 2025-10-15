@@ -14,6 +14,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal profitPercent,
         decimal taxPercent,
         int quantity,
+        decimal totalWeight,
         ProductId productId,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
@@ -31,7 +32,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
-
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0, nameof(totalWeight));
 
         Id = id;
         GramPrice = gramPrice;
@@ -43,6 +44,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         CostPriceUnitId = costPriceUnitId;
         IsInstantProduct = isInstantProduct;
         Quantity = quantity;
+        TotalWeight = totalWeight;
         SaleWage = saleWage;
         SaleWageType = saleWageType;
         SaleWagePriceUnitId = saleWagePriceUnitId;
@@ -63,6 +65,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal profitPercent,
         decimal taxPercent,
         int quantity,
+        decimal totalWeight,
         ProductId productId,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
@@ -75,6 +78,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             profitPercent,
             taxPercent,
             quantity,
+            totalWeight,
             productId,
             costPrice,
             costPriceExchangeRate,
@@ -92,6 +96,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal profitPercent,
         decimal taxPercent,
         int quantity,
+        decimal totalWeight,
         ProductId productId,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
@@ -108,6 +113,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             profitPercent,
             taxPercent,
             quantity,
+            totalWeight,
             productId,
             costPrice,
             costPriceExchangeRate,
@@ -133,6 +139,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     public decimal? CostPriceExchangeRate { get; private set; }
     public bool IsInstantProduct { get; private set; }
     public int Quantity { get; private set; }
+    public decimal TotalWeight { get; private set; }
 
     public PriceUnitId? CostPriceUnitId { get; private set; }
     public PriceUnit? CostPriceUnit { get; private set; }
@@ -178,7 +185,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
 
         if (invoiceType is InvoiceType.Purchase)
         {
-            ItemRawAmount = (CostPrice ?? 0) * Quantity;
+            ItemRawAmount = CostPrice ?? 0;
             ItemWageAmount = 0;
             ItemProfitAmount = 0;
             ItemTaxAmount = 0;
@@ -189,19 +196,19 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         {
             ItemStoneAmount = product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) * Quantity;
 
-            ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(product.Weight,
+            ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(TotalWeight,
                                                                        GramPrice,
                                                                        product.Fineness,
                                                                        Quantity,
                                                                        product.ProductType);
             ItemWageAmount = SaleWageType is not null && SaleWage.HasValue
                     ? CalculatorHelper.Product.CalculateWage(ItemRawAmount,
-                                                             product.Weight,
+                                                             TotalWeight,
                                                              SaleWage.Value,
                                                              SaleWageType.Value,
                                                              SaleWagePriceUnitExchangeRate ?? Invoice.ExchangeRate)
                     : CalculatorHelper.Product.CalculateWage(ItemRawAmount,
-                                                             product.Weight,
+                                                             TotalWeight,
                                                              product.Wage,
                                                              product.WageType,
                                                              Invoice.ExchangeRate);
@@ -241,6 +248,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
 
     public void UpdatePurchaseItem(decimal gramPrice, 
         int quantity,
+        decimal totalWeight,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
         PriceUnitId? costPriceUnitId)
@@ -256,6 +264,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal profitPercent,
         decimal taxPercent,
         int quantity,
+        decimal totalWeight,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
         PriceUnitId? costPriceUnitId,
@@ -270,6 +279,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         ProfitPercent = profitPercent;
         TaxPercent = taxPercent;
         Quantity = quantity;
+        TotalWeight = totalWeight;
         CostPrice = costPrice;
         CostPriceExchangeRate = costPriceExchangeRate;
         CostPriceUnitId = costPriceUnitId;

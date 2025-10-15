@@ -73,7 +73,7 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
 
     public string Description { get; private set; }
     public decimal FinenessDeductionRate { get; private set; }
-    public decimal Weight { get; private set; }
+    public decimal Weight { get; private set; } // TODO: change to total weight
     public decimal GramPrice { get; private set; }
     public int Quantity { get; private set; }
     public bool IsBroken { get; private set; }
