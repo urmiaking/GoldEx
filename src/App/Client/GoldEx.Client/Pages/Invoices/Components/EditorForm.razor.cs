@@ -261,6 +261,7 @@ public partial class EditorForm
                 _model.ProductItems.Add(new ProductItemVm
                 {
                     Product = ProductVm.CreateFrom(response),
+                    TotalWeight = response.Weight,
                     GramPrice = gramPrice,
                     WageExchangeRate = wageExchangeRate,
                     StonePriceUnitExchangeRate = stoneExchangeRate,

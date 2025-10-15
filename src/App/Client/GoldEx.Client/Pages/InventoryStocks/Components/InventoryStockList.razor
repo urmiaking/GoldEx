@@ -101,6 +101,7 @@
             case ItemType.Product:
                 <MudTh><MudTableSortLabel SortLabel="Product.Barcode" T="InventoryStockVm">بارکد</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.ProductType" T="InventoryStockVm">نوع جنس</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Product.ProductCategory.Title" T="InventoryStockVm">دسته</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Name" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh>
                 @if (ItemStatus is ItemStatus.Sold)
@@ -112,7 +113,8 @@
                     <MudTh><MudTableSortLabel SortLabel="Product.Wage" T="InventoryStockVm">اجرت ساخت</MudTableSortLabel></MudTh>
                 }
                 <MudTh><MudTableSortLabel SortLabel="Product.Fineness" T="InventoryStockVm">عیار</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Product.ProductCategory.Title" T="InventoryStockVm">دسته</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CurrentQuantity" T="InventoryStockVm">موجود</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SoldQuantity" T="InventoryStockVm">فروخته شده</MudTableSortLabel></MudTh>
                 break;
             case ItemType.MoltenGold:
                 <MudTh><MudTableSortLabel SortLabel="Product.Name" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
@@ -152,8 +154,9 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
+                <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
-                <MudTd DataLabel="وزن">@(context.Product.Weight?.ToWeightFormat(context.Product.GoldUnitType))</MudTd>
+                <MudTd DataLabel="وزن">@(context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType))</MudTd>
                 <MudTd DataLabel="اجرت">
                     <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
                         @{
@@ -180,7 +183,8 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
-                <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
+                <MudTd DataLabel="وزن موجود">@context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
+                <MudTd DataLabel="وزن فروخته شده">@context.SoldAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
                 break;
             case ItemType.MoltenGold when context.Product is not null:
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
@@ -195,8 +199,8 @@
                 break;
             case ItemType.Currency when context.Currency is not null:
                 <MudTd DataLabel="عنوان">@(context.Currency.Title)</MudTd>
-                <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToCurrencyFormat()</MudTd>
-                <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToCurrencyFormat()</MudTd>
+                <MudTd DataLabel="حجم موجود">@context.CurrentAmount.ToCurrencyFormat()</MudTd>
+                <MudTd DataLabel="حجم فروخته شده">@context.SoldAmount.ToCurrencyFormat()</MudTd>
                 break;
         }
         @switch (ItemType)

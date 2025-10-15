@@ -64,8 +64,7 @@ internal class ProductService(
         var products = await repository
             .Get(new ProductsByNameSpecification(name))
             .AsNoTracking()
-            .Include(x => x.ProductCategory)
-            .Include(x => x.WagePriceUnit)
+            .AsSplitQuery()
             .GroupBy(x => x.Name)
             .Select(x => x.First())
             .ToListAsync(cancellationToken);
@@ -73,25 +72,11 @@ internal class ProductService(
         return mapper.Map<List<GetProductResponse>>(products);
     }
 
-    public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var item = await repository
-            .Get(new ProductsByIdSpecification(new ProductId(id)))
-            .AsNoTracking()
-            .Include(x => x.ProductCategory)
-            .Include(x => x.StonePriceUnit)
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-        return mapper.Map<GetProductResponse>(item);
-    }
-
     public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         var item = await repository
             .Get(new ProductsByBarcodeSpecification(barcode))
             .AsNoTracking()
-            .Include(x => x.ProductCategory)
-            .Include(x => x.StonePriceUnit)
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);
@@ -147,7 +132,7 @@ internal class ProductService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetName(request.Name);
-        item.SetWeight(request.Weight);
+        // item.SetWeight(request.Weight);
         item.SetWage(request.Wage);
         item.SetWageType(request.WageType);
         item.SetProductType(request.ProductType);
@@ -200,7 +185,6 @@ internal class ProductService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetName(request.Name);
-        item.SetWeight(request.Weight);
 
         if (invoiceType is InvoiceType.Purchase)
         {

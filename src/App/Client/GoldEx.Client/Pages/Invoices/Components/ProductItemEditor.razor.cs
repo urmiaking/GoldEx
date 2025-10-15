@@ -207,6 +207,7 @@ public partial class ProductItemEditor
         {
             case WageType.Percent:
                 Model.WageExchangeRate = null;
+                Model.Product.WagePriceUnitId = null;
                 break;
             case WageType.Fixed:
                 if (Model.Product.WagePriceUnitId.HasValue)
@@ -220,6 +221,8 @@ public partial class ProductItemEditor
                 break;
             case null:
                 Model.Product.Wage = null;
+                Model.WageExchangeRate = null;
+                Model.Product.WagePriceUnitId = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
