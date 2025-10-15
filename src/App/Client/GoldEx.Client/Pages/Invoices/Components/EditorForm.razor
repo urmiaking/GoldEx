@@ -91,7 +91,7 @@ else
             <MudGrid>
                 @if (!IsEditMode) // this section is only shown when creating a new invoice
                 {
-                    <MudItem xs="12" md="2">
+                    <MudItem xs="6" md="2">
                         <MudSelect T="InvoiceType"
                                    Value="_model.InvoiceType"
                                    ValueChanged="OnInvoiceTypeChanged"
@@ -105,6 +105,25 @@ else
                                 <MudSelectItem Value="invoiceType">
                                     <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
                                         <MudText>@invoiceType.GetDisplayName()</MudText>
+                                    </MudStack>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="6" md="2">
+                        <MudSelect T="TradeScale"
+                                   Value="_model.TradeScale"
+                                   ValueChanged="OnTradeScaleChanged"
+                                   Label="@_model.GetDisplayName(() => _model.TradeScale)"
+                                   For="() => _model.TradeScale"
+                                   FitContent="false"
+                                   Margin="Margin.Dense"
+                                   Variant="Variant.Outlined">
+                            @foreach (var tradeScale in Enum.GetValues<TradeScale>())
+                            {
+                                <MudSelectItem Value="tradeScale">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudText>@tradeScale.GetDisplayName()</MudText>
                                     </MudStack>
                                 </MudSelectItem>
                             }

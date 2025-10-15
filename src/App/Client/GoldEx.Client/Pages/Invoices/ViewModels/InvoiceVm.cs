@@ -26,6 +26,9 @@ public class InvoiceVm
     [Display(Name = "نوع فاکتور")]
     public InvoiceType InvoiceType { get; set; }
 
+    [Display(Name = "نوع معامله")]
+    public TradeScale TradeScale { get; set; }
+
     public CustomerVm? Customer { get; set; } = new();
 
     [Display(Name = "واحد ارزی فاکتور")]

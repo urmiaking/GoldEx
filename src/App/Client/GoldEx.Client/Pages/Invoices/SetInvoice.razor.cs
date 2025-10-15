@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.Routings;
+﻿using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -9,8 +10,10 @@ public partial class SetInvoice
     [Parameter] public string? Id { get; set; }
     [Parameter, SupplyParameterFromQuery] public Guid? CustomerId { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? Barcode { get; set; }
+    [Parameter, SupplyParameterFromQuery] public string? Scale { get; set; }
 
     private Guid? IdValue => string.IsNullOrEmpty(Id) ? null : Guid.Parse(Id);
+    private TradeScale TradeScaleValue => Enum.TryParse<TradeScale>(Scale, out var scale) ? scale : TradeScale.Wholesale;
 
     private List<BreadcrumbItem> _breadcrumbs = [];
 
@@ -22,6 +25,7 @@ public partial class SetInvoice
             new("فاکتورها", href: ClientRoutes.Invoices.Index, icon: Icons.Material.Filled.ReceiptLong),
             new(Id == null ? "فاکتور جدید" : "ویرایش فاکتور", href: null, icon: Icons.Material.Filled.Edit)
         ];
-    }
 
+        base.OnParametersSet();
+    }
 }

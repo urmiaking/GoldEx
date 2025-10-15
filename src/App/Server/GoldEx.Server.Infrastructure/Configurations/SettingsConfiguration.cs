@@ -41,7 +41,7 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
         builder.Property(x => x.GoldSafetyMarginPercent)
             .HasPrecision(9, 6);
 
-        builder.Property(x => x.UsedGoldFineness)
+        builder.Property(x => x.UsedGoldFinenessDeductionRate)
             .HasPrecision(9, 6);
 
         builder.Property(x => x.GramPerMesghal)

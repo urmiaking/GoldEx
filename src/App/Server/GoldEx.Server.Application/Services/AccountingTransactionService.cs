@@ -778,7 +778,12 @@ internal class AccountingTransactionService(
                                          .FirstOrDefaultAsync(cancellationToken) ??
                                      throw new NotFoundException("Inventory ledger account not found.");
 
-        var debitLedgerAccountId = inventoryLedgerAccount.Id;
+        var usedProductInventoryLedgerAccount = await ledgerAccountRepository
+                                         .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.UsedProductInventory))
+                                         .FirstOrDefaultAsync(cancellationToken) ??
+                                     throw new NotFoundException("UsedProductInventory ledger account not found.");
+
+        var debitLedgerAccountId = usedProduct.IsBroken ? usedProductInventoryLedgerAccount.Id : inventoryLedgerAccount.Id;
 
         var customerLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
             usedProduct.Invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);

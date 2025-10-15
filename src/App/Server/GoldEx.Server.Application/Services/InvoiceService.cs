@@ -21,6 +21,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -30,6 +31,7 @@ internal class InvoiceService(
     IInvoicePaymentRepository paymentRepository,
     IServerProductService productService,
     IServerReminderService reminderService,
+    IPriceUnitRepository priceUnitRepositoy,
     IAccountingTransactionService transactionService,
     IServerInventoryStockService inventoryStockService,
     IMapper mapper,
@@ -47,11 +49,16 @@ internal class InvoiceService(
 
                 #region Invoice (Create new invoice instance)    
 
+                var basePriceUnit = await priceUnitRepositoy
+                    .Get(new PriceUnitsSetAsDefaultSpecification())
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException("Base price unit not found");
+
                 var invoice = Invoice.Create(request.InvoiceNumber,
                     request.UnpaidAmountExchangeRate,
                     request.ExchangeRate,
                     request.InvoiceType,
                     new CustomerId(request.CustomerId),
+                    basePriceUnit.Id,
                     new PriceUnitId(request.PriceUnitId),
                     request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
                     DateOnly.FromDateTime(request.InvoiceDate),

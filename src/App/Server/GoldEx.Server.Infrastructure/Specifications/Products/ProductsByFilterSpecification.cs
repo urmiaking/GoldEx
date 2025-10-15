@@ -14,6 +14,7 @@ public class ProductsByFilterSpecification : SpecificationBase<Product>
 
         AddInclude(x => x.WagePriceUnit!);
         AddInclude(x => x.ProductCategory!);
+        AddInclude(x => x.InventoryStocks!);
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {

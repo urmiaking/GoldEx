@@ -64,8 +64,7 @@ internal class ProductService(
         var products = await repository
             .Get(new ProductsByNameSpecification(name))
             .AsNoTracking()
-            .Include(x => x.ProductCategory)
-            .Include(x => x.WagePriceUnit)
+            .AsSplitQuery()
             .GroupBy(x => x.Name)
             .Select(x => x.First())
             .ToListAsync(cancellationToken);
@@ -73,25 +72,11 @@ internal class ProductService(
         return mapper.Map<List<GetProductResponse>>(products);
     }
 
-    public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var item = await repository
-            .Get(new ProductsByIdSpecification(new ProductId(id)))
-            .AsNoTracking()
-            .Include(x => x.ProductCategory)
-            .Include(x => x.StonePriceUnit)
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-        return mapper.Map<GetProductResponse>(item);
-    }
-
     public async Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {
         var item = await repository
             .Get(new ProductsByBarcodeSpecification(barcode))
             .AsNoTracking()
-            .Include(x => x.ProductCategory)
-            .Include(x => x.StonePriceUnit)
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);
@@ -147,7 +132,7 @@ internal class ProductService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetName(request.Name);
-        item.SetWeight(request.Weight);
+        // item.SetWeight(request.Weight);
         item.SetWage(request.Wage);
         item.SetWageType(request.WageType);
         item.SetProductType(request.ProductType);
@@ -200,7 +185,6 @@ internal class ProductService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         item.SetName(request.Name);
-        item.SetWeight(request.Weight);
 
         if (invoiceType is InvoiceType.Purchase)
         {
@@ -247,7 +231,7 @@ internal class ProductService(
                                      request.Weight,
                                      0,
                                      request.ProductType,
-                                     request.Fineness,
+                                     request.FinenessDeductionRate,
                                      request.UnitType,
                                      null,
                                      null,
@@ -349,23 +333,46 @@ internal class ProductService(
 
         foreach (var dto in usedProductDtos)
         {
-            var product = Product.Create(dto.Description,
-                dto.Weight,
-                0,
-                dto.ProductType,
-                dto.Fineness,
-                dto.UnitType,
-                null,
-                null,
-                null,
-                null);
+            if (!dto.IsBroken)
+            {
+                var product = Product.Create(dto.Description,
+                    dto.Weight,
+                    0,
+                    ProductType.Gold,
+                    750m,
+                    dto.UnitType,
+                    null,
+                    null,
+                    null,
+                    null);
 
-            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
-            product.SetBarcode(barcode);
+                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(ProductType.Gold, null, cancellationToken);
+                product.SetBarcode(barcode);
 
-            await repository.CreateAsync(product, cancellationToken);
+                await repository.CreateAsync(product, cancellationToken);
 
-            usedProductsWithNewProduct.Add((dto, product));
+                usedProductsWithNewProduct.Add((dto, product));
+            }
+            else
+            {
+                var product = Product.Create(dto.Description,
+                    dto.Weight,
+                    0,
+                    dto.ProductType,
+                    750 - dto.FinenessDeductionRate,
+                    dto.UnitType,
+                    null,
+                    null,
+                    null,
+                    null);
+
+                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(dto.ProductType, null, cancellationToken);
+                product.SetBarcode(barcode);
+
+                await repository.CreateAsync(product, cancellationToken);
+
+                usedProductsWithNewProduct.Add((dto, product));
+            }
         }
 
         // افزودن آیتم‌های طلای کارکرده (که محصول جدید برایشان ساخته شده) به فاکتور
@@ -378,8 +385,9 @@ internal class ProductService(
                         dto.Weight,
                         dto.GramPrice,
                         dto.ExtraCostsAmount,
-                        dto.Fineness,
+                        dto.FinenessDeductionRate,
                         dto.Quantity,
+                        dto.IsBroken,
                         dto.ProductType,
                         dto.UnitType,
                         newProduct.Id);
@@ -426,6 +434,7 @@ internal class ProductService(
                             itemDto.ProfitPercent,
                             itemDto.TaxPercent,
                             itemDto.Quantity,
+                            itemDto.TotalWeight,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
                             invoice.PriceUnitId,
@@ -440,6 +449,7 @@ internal class ProductService(
                     {
                         existingItem.UpdatePurchaseItem(itemDto.GramPrice,
                             itemDto.Quantity,
+                            itemDto.TotalWeight,
                             itemDto.CostPrice,
                             itemDto.CostPriceExchangeRate,
                             itemDto.CostPriceUnitId.HasValue
@@ -466,6 +476,7 @@ internal class ProductService(
                         itemDto.ProfitPercent,
                         itemDto.TaxPercent,
                         itemDto.Quantity,
+                        itemDto.TotalWeight,
                         itemDto.CostPrice,
                         itemDto.CostPriceExchangeRate,
                         itemDto.StonePriceUnitExchangeRate,
@@ -496,13 +507,18 @@ internal class ProductService(
                         itemDto.ProfitPercent,
                         itemDto.TaxPercent,
                         itemDto.Quantity,
+                        itemDto.TotalWeight,
                         itemDto.CostPrice,
                         itemDto.CostPriceExchangeRate,
-                        itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
+                        itemDto.CostPriceUnitId.HasValue 
+                            ? new PriceUnitId(itemDto.CostPriceUnitId.Value)
+                            : null,
                         itemDto.IsInstantProduct,
                         itemDto.Product.Wage,
                         itemDto.Product.WageType,
-                        itemDto.Product.WagePriceUnitId.HasValue ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) : null,
+                        itemDto.Product.WagePriceUnitId.HasValue 
+                            ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) 
+                            : null,
                         itemDto.WagePriceUnitExchangeRate,
                         itemDto.StonePriceUnitExchangeRate,
                         product);

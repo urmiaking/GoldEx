@@ -24,7 +24,10 @@ public class ReportingMappingConfig : IRegister
                     : null)
             .Map(dest => dest.DailyGramPrice,
                 src => src.ProductItems.FirstOrDefault() != null
-                    ? $"{src.ProductItems.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"
+                    ? $"{src.ProductItems.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit!.Title)}" +
+                      (src.ExchangeRate.HasValue && src.BasePriceUnit != null
+                          ? $" (معادل {src.ExchangeRate.Value.ToCurrencyReportFormat(null)} {src.BasePriceUnit.Title})"
+                          : "")
                     : null)
             .Map(dest => dest.GoldUnitType,
                 src => src.ProductItems.FirstOrDefault() != null
@@ -87,6 +90,8 @@ public class ReportingMappingConfig : IRegister
                 src => $"{src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)}")
             .Map(dest => dest.TotalAmount,
                 src => $"{src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)}")
+            .Map(dest => dest.TotalWeight, 
+                src => $"{src.TotalWeight.ToWeightFormat(src.Product != null ? src.Product.GoldUnitType : GoldUnitType.Gram)}")
             .Map(dest => dest.GramPrice, src =>
                 $"{src.GramPrice.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)}")
             .Map(dest => dest.ProfitPercent, src =>
@@ -140,9 +145,8 @@ public class ReportingMappingConfig : IRegister
                 src => src.ExtraCostsAmount.HasValue
                     ? src.ExtraCostsAmount.Value.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)
                     : null)
-            .Map(dest => dest.Fineness, src => src.Fineness)
+            .Map(dest => dest.Fineness, src => src.FinenessDeductionRate)
             .Map(dest => dest.GoldUnitType, src => src.UnitType)
-            .Map(dest => dest.Weight, src => src.Weight.ToWeightFormat(src.UnitType))
             .Map(dest => dest.Weight, src => src.Weight.ToWeightFormat(src.UnitType))
             .Map(dest => dest.TotalPrice, src =>
                 src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title));

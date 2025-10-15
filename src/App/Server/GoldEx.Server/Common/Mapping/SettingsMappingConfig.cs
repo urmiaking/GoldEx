@@ -11,7 +11,7 @@ public class SettingsMappingConfig : IRegister
     {
         config.NewConfig<Setting, GetSettingResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.UsedGoldFineness, src => src.UsedGoldFineness)
+            .Map(dest => dest.UsedGoldFinenessDeductionRate, src => src.UsedGoldFinenessDeductionRate)
             .Map(dest => dest.HasIcon, src => MapContext.Current.GetService<IWebHostEnvironment>().AppIconExists());
     }
 }

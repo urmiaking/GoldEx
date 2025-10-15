@@ -165,7 +165,7 @@ internal class InventoryStockService(
 
         var newStockItems = invoice.ProductItems.Select(productItem => InventoryStock.CreateProduct(
                 productItem.ProductId,
-                productItem.Quantity,
+                productItem.TotalWeight,
                 warehouseActionType,
                 invoice.Id))
             .ToList();
@@ -175,7 +175,7 @@ internal class InventoryStockService(
             newStockItems.AddRange(invoice.ProductItems
                 .Where(x => x.IsInstantProduct)
                 .Select(productItem => InventoryStock.CreateProduct(productItem.ProductId,
-                    productItem.Quantity,
+                    productItem.TotalWeight,
                     WarehouseActionType.In,
                     invoice.Id)));
         }
@@ -194,7 +194,7 @@ internal class InventoryStockService(
         newStockItems.AddRange(invoice.UsedProducts
             .Where(usedProduct => usedProduct is { ProductId: not null })
             .Select(usedProduct => InventoryStock.CreateProduct(usedProduct.ProductId!.Value,
-                usedProduct.Quantity,
+                usedProduct.Weight,
                 WarehouseActionType.In,
                 invoice.Id)));
 

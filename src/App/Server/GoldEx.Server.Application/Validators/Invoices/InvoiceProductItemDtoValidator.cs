@@ -9,8 +9,7 @@ namespace GoldEx.Server.Application.Validators.Invoices;
 [ScopedService]
 internal class InvoiceProductItemDtoValidator : AbstractValidator<InvoiceProductItemDto>
 {
-    public InvoiceProductItemDtoValidator(IProductCategoryRepository categoryRepository,
-        IProductRepository productRepository,
+    public InvoiceProductItemDtoValidator(IProductRepository productRepository,
         IPriceUnitRepository priceUnitRepository)
     {
         RuleFor(i => i.GramPrice)
@@ -24,6 +23,6 @@ internal class InvoiceProductItemDtoValidator : AbstractValidator<InvoiceProduct
 
         RuleFor(i => i.Product)
             .NotNull().WithMessage("اطلاعات محصول برای آیتم فاکتور الزامی است")
-            .SetValidator(new ProductRequestDtoValidator(productRepository, categoryRepository, priceUnitRepository));
+            .SetValidator(new ProductRequestDtoValidator(productRepository, priceUnitRepository));
     }
 }

@@ -33,7 +33,7 @@ internal class InventoryStockConfigurations : IEntityTypeConfiguration<Inventory
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Product)
-            .WithMany()
+            .WithMany(x => x.InventoryStocks)
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 

@@ -24,12 +24,11 @@
             }
             else
             {
-                <MudStack>
+                <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
                     <MudChart ChartType="ChartType.Pie"
                               InputData="@_chartData"
                               InputLabels="@_chartLabels"
-                              Width="300px"
-                              Height="300px" />
+                              />
                 </MudStack>
                 <MudSelect T="GoldUnitType"
                            Label="واحد طلا"

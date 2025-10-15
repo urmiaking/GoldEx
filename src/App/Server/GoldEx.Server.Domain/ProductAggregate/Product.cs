@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
@@ -20,7 +21,7 @@ public class Product : EntityBase<ProductId>
         PriceUnitId? stonePriceUnitId,
         ProductCategoryId? productCategoryId)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(weight, 0, nameof(weight));
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
 
         if (wageType is Shared.Enums.WageType.Percent && wage > 100)
@@ -66,6 +67,8 @@ public class Product : EntityBase<ProductId>
 
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
+
+    public IReadOnlyList<InventoryStock>? InventoryStocks { get; private set; }
 
     public Product SetName(string name)
     {

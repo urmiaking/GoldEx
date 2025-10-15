@@ -39,6 +39,9 @@ public class CalculatorVm
     [Display(Name = "عیار")]
     public decimal Fineness { get; set; } = 750m;
 
+    [Display(Name = "کسری عیار")]
+    public decimal UsedGoldFinenessDeductionRate { get; set; } = 15;
+
     [Display(Name = "مالیات")]
     public decimal TaxPercent { get; set; } = 9;
 

@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251014161621_RenameDeductionRate")]
+    partial class RenameDeductionRate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -398,9 +401,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BasePriceUnitId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -434,8 +434,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BasePriceUnitId");
 
                     b.HasIndex("CustomerId");
 
@@ -1251,12 +1249,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             modelBuilder.Entity("GoldEx.Server.Domain.InvoiceAggregate.Invoice", b =>
                 {
-                    b.HasOne("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", "BasePriceUnit")
-                        .WithMany()
-                        .HasForeignKey("BasePriceUnitId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
@@ -1580,10 +1572,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasPrecision(9, 6)
                                 .HasColumnType("decimal(9,6)");
 
-                            b1.Property<decimal>("TotalWeight")
-                                .HasPrecision(36, 10)
-                                .HasColumnType("decimal(36,10)");
-
                             b1.HasKey("Id", "InvoiceId");
 
                             b1.HasIndex("CostPriceUnitId");
@@ -1652,9 +1640,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasPrecision(36, 10)
                                 .HasColumnType("decimal(36,10)");
 
-                            b1.Property<bool>("IsBroken")
-                                .HasColumnType("bit");
-
                             b1.Property<decimal>("ItemAmount")
                                 .HasPrecision(36, 10)
                                 .HasColumnType("decimal(36,10)");
@@ -1699,8 +1684,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                             b1.Navigation("Product");
                         });
-
-                    b.Navigation("BasePriceUnit");
 
                     b.Navigation("CoinItems");
 

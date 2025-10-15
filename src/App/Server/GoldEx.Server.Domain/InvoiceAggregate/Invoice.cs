@@ -19,6 +19,7 @@ public class Invoice : EntityBase<InvoiceId>
         decimal? exchangeRate,
         InvoiceType invoiceType,
         CustomerId customerId,
+        PriceUnitId basePriceUnitId,
         PriceUnitId priceUnitId,
         PriceUnitId? unpaidPriceUnitId,
         DateOnly invoiceDate,
@@ -31,6 +32,7 @@ public class Invoice : EntityBase<InvoiceId>
             InvoiceType = invoiceType,
             CustomerId = customerId,
             InvoiceDate = invoiceDate,
+            BasePriceUnitId = basePriceUnitId,
             PriceUnitId = priceUnitId,
             DueDate = dueDate,
             UnpaidPriceUnitId = unpaidPriceUnitId,
@@ -100,6 +102,7 @@ public class Invoice : EntityBase<InvoiceId>
         decimal profitPercent,
         decimal taxPercent,
         int quantity,
+        decimal totalWeight,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
         decimal? stonePriceUnitExchangeRate,
@@ -112,6 +115,7 @@ public class Invoice : EntityBase<InvoiceId>
             profitPercent,
             taxPercent,
             quantity,
+            totalWeight,
             product.Id,
             costPrice,
             costPriceExchangeRate,
@@ -127,6 +131,7 @@ public class Invoice : EntityBase<InvoiceId>
         decimal profitPercent,
         decimal taxPercent,
         int quantity,
+        decimal totalWeight,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
         PriceUnitId? costPriceUnitId,
@@ -143,6 +148,7 @@ public class Invoice : EntityBase<InvoiceId>
             profitPercent,
             taxPercent,
             quantity,
+            totalWeight,
             product.Id,
             costPrice,
             costPriceExchangeRate,
@@ -210,8 +216,9 @@ public class Invoice : EntityBase<InvoiceId>
         decimal weight,
         decimal gramPrice,
         decimal? extraCostsAmount,
-        decimal fineness,
+        decimal finenessDeductionRate,
         int quantity,
+        bool isBroken,
         ProductType productType,
         GoldUnitType unitType,
         ProductId? productId)
@@ -228,8 +235,9 @@ public class Invoice : EntityBase<InvoiceId>
             weight,
             gramPrice,
             extraCostsAmount,
-            fineness,
+            finenessDeductionRate,
             quantity,
+            isBroken,
             productType,
             unitType,
             productId,
@@ -287,6 +295,9 @@ public class Invoice : EntityBase<InvoiceId>
     #endregion
 
     #region Unit
+
+    public PriceUnit? BasePriceUnit { get; private set; }
+    public PriceUnitId BasePriceUnitId { get; private set; }
 
     public PriceUnit? PriceUnit { get; private set; }
     public PriceUnitId PriceUnitId { get; private set; }

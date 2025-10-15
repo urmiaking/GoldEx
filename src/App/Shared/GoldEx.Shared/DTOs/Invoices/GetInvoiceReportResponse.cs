@@ -38,6 +38,7 @@ public record GetInvoiceProductItemReportResponse(
     string ItemFinalAmount,
     string TotalAmount,
     string SaleWage,
+    string TotalWeight,
     WageType? SaleWageType,
     GetProductReportResponse Product);
 
