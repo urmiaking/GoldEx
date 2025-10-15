@@ -77,6 +77,7 @@ public record InvoiceProductItemDto(
     Guid? CostPriceUnitId,
     bool IsInstantProduct,
     int Quantity,
+    decimal TotalWeight,
     ProductRequestDto Product);
 
 public record InvoiceCoinItemDto(

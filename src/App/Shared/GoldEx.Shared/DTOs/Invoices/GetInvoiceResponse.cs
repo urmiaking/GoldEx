@@ -63,6 +63,7 @@ public record GetInvoiceProductItemResponse(
     decimal? StonePriceUnitExchangeRate,
     bool IsInstantProduct,
     int Quantity,
+    decimal TotalWeight,
     decimal ItemRawAmount,
     decimal ItemWageAmount,
     decimal ItemProfitAmount,

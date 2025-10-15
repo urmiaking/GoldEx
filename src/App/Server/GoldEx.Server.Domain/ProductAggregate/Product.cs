@@ -20,7 +20,7 @@ public class Product : EntityBase<ProductId>
         PriceUnitId? stonePriceUnitId,
         ProductCategoryId? productCategoryId)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(weight, 0, nameof(weight));
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
 
         if (wageType is Shared.Enums.WageType.Percent && wage > 100)
