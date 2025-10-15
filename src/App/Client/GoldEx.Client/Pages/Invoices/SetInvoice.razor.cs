@@ -21,9 +21,9 @@ public partial class SetInvoice
     {
         _breadcrumbs =
         [
-            new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
-            new("فاکتورها", href: ClientRoutes.Invoices.Index, icon: Icons.Material.Filled.ReceiptLong),
-            new(Id == null ? "فاکتور جدید" : "ویرایش فاکتور", href: null, icon: Icons.Material.Filled.Edit)
+            new BreadcrumbItem("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
+            new BreadcrumbItem("فاکتور ها", href: ClientRoutes.Invoices.Index, icon: Icons.Material.Filled.LibraryBooks),
+            new BreadcrumbItem(Id == null ? "فاکتور جدید" : "ویرایش فاکتور", href: null, icon: Icons.Material.Filled.Edit)
         ];
 
         base.OnParametersSet();

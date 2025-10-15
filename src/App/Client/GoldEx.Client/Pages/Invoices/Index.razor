@@ -2,7 +2,7 @@
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 @inherits GoldExComponentBase
 
-<PageTitle>فاکتورها</PageTitle>
+<PageTitle>مدیریت فاکتور</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
@@ -11,6 +11,24 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <InvoicesList ContainerClass="responsive-table-toolbar" />
-
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="مدیریت فاکتورها"
+                           Description="ایجاد، مشاهده، ویرایش و حذف فاکتورها"
+                           StartIcon="@Icons.Material.Filled.LibraryBooks"
+                           Href="@ClientRoutes.Invoices.List" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="فاکتور خرده فروشی"
+                           Description="ثبت فاکتور خرده فروشی برای مشتریان خرد"
+                           StartIcon="@Icons.Material.Filled.Transform"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Retail })" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="فاکتور عمده فروشی"
+                           Description="ثبت فاکتور عمده فروشی برای مشتریان عمده"
+                           StartIcon="@Icons.Material.Filled.Transform"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Wholesale })" />
+        </MudItem>
+    </MudGrid>
 </MudContainer>
