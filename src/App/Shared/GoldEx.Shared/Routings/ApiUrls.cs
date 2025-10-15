@@ -89,8 +89,6 @@ public class ApiUrls
         public static string GetList(string name) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetListByName).AppendQueryString(new { name });
 
-        public static string Get(Guid id) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.Get).FormatRoute(new { id });
-
         public static string Get(string barcode)
             => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
                 .FormatRoute(new { barcode });

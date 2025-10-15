@@ -5,11 +5,17 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface IProductService
 {
+    [Obsolete]
     Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter, CancellationToken cancellationToken = default);
     Task<List<GetProductResponse>> GetListAsync(string name, CancellationToken cancellationToken = default);
-    Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetProductResponse?> GetAsync(string barcode, CancellationToken cancellationToken = default);
+
+    [Obsolete]
     Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default);
+
+    [Obsolete]
     Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default);
+
+    [Obsolete]
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

@@ -194,12 +194,12 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         }
         else
         {
-            ItemStoneAmount = product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) * Quantity;
+            ItemStoneAmount = product.GemStones.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1));
 
             ItemRawAmount = CalculatorHelper.Product.CalculateRawPrice(TotalWeight,
                                                                        GramPrice,
                                                                        product.Fineness,
-                                                                       Quantity,
+                                                                       1,
                                                                        product.ProductType);
             ItemWageAmount = SaleWageType is not null && SaleWage.HasValue
                     ? CalculatorHelper.Product.CalculateWage(ItemRawAmount,

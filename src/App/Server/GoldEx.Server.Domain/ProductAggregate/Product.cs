@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Shared.Enums;
@@ -66,6 +67,8 @@ public class Product : EntityBase<ProductId>
 
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
+
+    public IReadOnlyList<InventoryStock>? InventoryStocks { get; private set; }
 
     public Product SetName(string name)
     {
