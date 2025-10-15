@@ -27,13 +27,6 @@ public class ProductsController(IProductService service) : ApiControllerBase
         return Ok(list);
     }
 
-    [HttpGet(ApiRoutes.Products.Get)]
-    public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
-    {
-        var product = await service.GetAsync(id, cancellationToken);
-        return Ok(product);
-    }
-
     [HttpGet(ApiRoutes.Products.GetByBarcode)]
     public async Task<IActionResult> GetAsync(string barcode, CancellationToken cancellationToken = default)
     {

@@ -25,10 +25,10 @@
                         Icon="@Icons.Material.Filled.Warehouse">
                 انبار
             </MudNavLink>
-            <MudNavLink Href="@ClientRoutes.Products.Index" Match="NavLinkMatch.Prefix"
+            @* <MudNavLink Href="@ClientRoutes.Products.Index" Match="NavLinkMatch.Prefix"
                         Icon="@Icons.Material.Filled.Warehouse">
                 اجناس من
-            </MudNavLink>
+            </MudNavLink> *@
             <MudNavLink Href="@ClientRoutes.Customers.Index" Match="NavLinkMatch.Prefix"
                         Icon="@Icons.Material.Filled.PeopleAlt">
                 مشتریان
@@ -68,15 +68,18 @@
 @code {
     private string? _currentUrl;
 
+    [Parameter] public EventCallback<bool> OnNavigate { get; set; }
+
     protected override void OnInitialized()
     {
         _currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        await OnNavigate.InvokeAsync(false); // Close the drawer
         StateHasChanged();
     }
 

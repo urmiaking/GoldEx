@@ -2,10 +2,8 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
-using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
-using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
@@ -17,22 +15,16 @@ namespace GoldEx.Server.Application.Validators.Products;
 internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
 {
     private readonly IProductRepository _repository;
-    private readonly IProductCategoryRepository _categoryRepository;
     private readonly IPriceUnitRepository _priceUnitRepository;
     public ProductRequestDtoValidator(IProductRepository repository,
-        IProductCategoryRepository categoryRepository,
         IPriceUnitRepository priceUnitRepository)
     {
         _repository = repository;
-        _categoryRepository = categoryRepository;
         _priceUnitRepository = priceUnitRepository;
 
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
             .MaximumLength(50).WithMessage("طول عنوان جنس نمی تواند بیشتر از 50 کاراکتر باشد");
-
-        RuleFor(x => x.Weight)
-            .GreaterThan(0).WithMessage("لطفا وزن جنس را وارد کنید");
 
         When(x => x.WageType is WageType.Fixed, () =>
         {

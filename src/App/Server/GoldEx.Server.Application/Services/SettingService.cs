@@ -43,7 +43,7 @@ internal class SettingService(ISettingRepository repository,
             request.JewelryProfitPercent,
             request.MoltenGoldCommissionPercent,
             request.GoldSafetyMarginPercent,
-            request.UsedGoldFineness,
+            request.UsedGoldFinenessDeductionRate,
             request.GramPerMesghal,
             request.PriceUpdateInterval);
 
@@ -75,7 +75,7 @@ internal class SettingService(ISettingRepository repository,
         item.SetMoltenGoldCommission(request.MoltenGoldCommissionPercent);
         item.SetPriceUpdateInterval(request.PriceUpdateInterval);
         item.SetGoldSafetyMargin(request.GoldSafetyMarginPercent);
-        item.SetUsedGoldFineness(request.UsedGoldFineness);
+        item.SetUsedGoldFinenessDeduction(request.UsedGoldFinenessDeductionRate);
         item.SetGramPerMesghal(request.GramPerMesghal);
 
         await repository.UpdateAsync(item, cancellationToken);

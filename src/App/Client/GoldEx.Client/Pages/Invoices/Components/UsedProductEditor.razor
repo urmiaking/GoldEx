@@ -26,7 +26,7 @@
                                   DebounceInterval="0">
                     </MudTextField>
                 </MudItem>
-                
+
                 <MudItem xs="12" md="6">
                     <MudMenu @bind-Open="_weightMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                         <ActivatorContent>
@@ -55,13 +55,13 @@
                     </MudMenu>
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudNumericField For="@(() => Model.Fineness)"
+                    <MudNumericField For="@(() => Model.FinenessDeductionRate)"
                                      Format="G29"
                                      Immediate="true"
-                                     Label="@Model.GetDisplayName(() => Model.Fineness)"
+                                     Label="@Model.GetDisplayName(() => Model.FinenessDeductionRate)"
                                      Margin="Margin.Dense"
                                      T="decimal?"
-                                     @bind-Value="Model.Fineness"
+                                     @bind-Value="Model.FinenessDeductionRate"
                                      HideSpinButtons="true"
                                      Variant="Variant.Outlined" />
                 </MudItem>
@@ -79,6 +79,11 @@
                                      Variant="Variant.Outlined" />
                 </MudItem>
             </MudGrid>
+            <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
+                <MudCheckBox @bind-Value="Model.IsBroken"
+                             For="@(() => Model.IsBroken)"
+                             Label="@Model.GetDisplayName(() => Model.IsBroken)" />
+            </div>
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"

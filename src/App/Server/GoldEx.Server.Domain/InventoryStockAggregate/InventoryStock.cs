@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using GoldEx.Sdk.Server.Domain.Entities;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
@@ -55,7 +54,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
     public static InventoryStock CreateProduct(
         ProductId productId,
-        int changeAmount,
+        decimal changeAmount,
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null)
     {

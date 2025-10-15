@@ -38,18 +38,6 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetProductResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        using var response = await client.GetAsync(ApiUrls.Products.Get(id), cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
-
-        var result = await response.Content.ReadFromJsonAsync<GetProductResponse>(jsonOptions, cancellationToken);
-
-        return result ?? throw new UnexpectedHttpResponseException();
-    }
-
     public async Task<GetProductResponse?> GetAsync(string barcode,
         CancellationToken cancellationToken = default)
     {

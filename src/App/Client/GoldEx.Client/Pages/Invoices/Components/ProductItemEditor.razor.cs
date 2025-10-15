@@ -207,6 +207,7 @@ public partial class ProductItemEditor
         {
             case WageType.Percent:
                 Model.WageExchangeRate = null;
+                Model.Product.WagePriceUnitId = null;
                 break;
             case WageType.Fixed:
                 if (Model.Product.WagePriceUnitId.HasValue)
@@ -220,10 +221,28 @@ public partial class ProductItemEditor
                 break;
             case null:
                 Model.Product.Wage = null;
+                Model.WageExchangeRate = null;
+                Model.Product.WagePriceUnitId = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
         }
+
+        SetCostPrice();
+    }
+
+    private void SetCostPrice()
+    {
+        if (!PriceUnit.IsGoldBased)
+            return;
+
+        Model.CostPrice = Model.Product.WageType switch
+        {
+            WageType.Percent => Model.TotalWeight * (Model.Product.Wage / 100m) + Model.TotalWeight,
+            WageType.Fixed => Model.Product.WagePriceUnitId == PriceUnit.Id ? Model.TotalWeight + Model.Product.Wage : Model.TotalWeight + Model.WageAmount,
+            null => null,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     private void OnAddGemStone()
@@ -312,11 +331,11 @@ public partial class ProductItemEditor
         Model.Product.GoldUnitType = unitType;
         await LoadGramPriceAsync();
     }
-	private async Task OnProductStonePriceUnitChanged(GetPriceUnitTitleResponse priceUnit)
+	private async Task OnProductStonePriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
 	{
         Model.Product.StonePriceUnit = priceUnit;
 
-        if (PriceUnit.Id != Model.Product.StonePriceUnit.Id)
+        if (Model.Product.StonePriceUnit != null && PriceUnit.Id != Model.Product.StonePriceUnit.Id)
             await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                 action: (s, ct) => s.GetExchangeRateAsync(Model.Product.StonePriceUnit.Id, PriceUnit.Id, ct),
                 afterSend: response =>
@@ -326,5 +345,17 @@ public partial class ProductItemEditor
                 });
 
         StateHasChanged();
+    }
+
+    private void OnTotalWeightChanged(decimal? totalWeight)
+    {
+        Model.TotalWeight = totalWeight;
+        SetCostPrice();
+    }
+
+    private void OnWageChanged(decimal? wage)
+    {
+        Model.Product.Wage = wage;
+        SetCostPrice();
     }
 }

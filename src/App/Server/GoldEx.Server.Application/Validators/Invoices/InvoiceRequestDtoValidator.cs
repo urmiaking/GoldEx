@@ -83,7 +83,6 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
 
         RuleForEach(x => x.InvoiceProductItems)
             .SetValidator(new InvoiceProductItemDtoValidator(
-                productCategoryRepository,
                 productRepository,
                 priceUnitRepository))
             .MustAsync(ProductAvailable)

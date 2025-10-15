@@ -33,11 +33,17 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.BasePriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.BasePriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(x => x.UnpaidPriceUnit)
             .WithMany()
             .HasForeignKey(x => x.UnpaidPriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Navigation(x => x.BasePriceUnit).AutoInclude();
         builder.Navigation(x => x.PriceUnit).AutoInclude();
         builder.Navigation(x => x.UnpaidPriceUnit).AutoInclude();
 
@@ -76,7 +82,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.ExtraCostsAmount)
             .HasPrecision(36, 10);
 
-        builder.Property(x => x.Fineness)
+        builder.Property(x => x.FinenessDeductionRate)
             .HasPrecision(9, 6)
             .IsRequired();
 
@@ -214,6 +220,10 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.Property(x => x.CostPriceExchangeRate)
             .HasPrecision(36, 10);
+
+        builder.Property(x => x.TotalWeight)
+            .HasPrecision(36, 10)
+            .IsRequired();
 
         builder.Property(x => x.SaleWage)
             .HasPrecision(36, 10);
