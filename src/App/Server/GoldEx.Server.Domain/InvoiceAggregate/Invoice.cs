@@ -230,7 +230,7 @@ public class Invoice : EntityBase<InvoiceId>
                 throw new InvalidOperationException(
                     $"The used product with ID {productId?.Value} is already present in the UsedProducts list");
         }
-        
+
         _usedProducts.Add(InvoiceUsedProduct.Create(id,
             description,
             weight,
@@ -306,7 +306,7 @@ public class Invoice : EntityBase<InvoiceId>
 
     public void SetPriceUnitId(PriceUnitId priceUnitId)
     {
-        if (PriceUnitId != priceUnitId) 
+        if (PriceUnitId != priceUnitId)
             PriceUnitId = priceUnitId;
     }
 
@@ -351,9 +351,11 @@ public class Invoice : EntityBase<InvoiceId>
 
     public decimal TotalAmount =>
         ProductItems.Sum(item => item.ItemFinalAmount * (item.CostPriceExchangeRate ?? 1)) + TotalStoneAmount +
-        CoinItems.Sum(item => item.ItemFinalAmount) +
-        CurrencyItems.Sum(item => item.ItemFinalAmount) +
-        UsedProducts.Sum(item => item.ItemFinalAmount);
+            CoinItems.Sum(item => item.ItemFinalAmount) +
+            CurrencyItems.Sum(item => item.ItemFinalAmount) +
+            (InvoiceType is InvoiceType.Purchase 
+                ? UsedProducts.Sum(item => item.ItemFinalAmount) 
+                : 0);
 
     public decimal TotalWageAmount =>
         ProductItems.Sum(item => item.ItemWageAmount);

@@ -30,6 +30,7 @@ public partial class Viewer
         [
             new BreadcrumbItem("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
             new BreadcrumbItem("فاکتورها", href: ClientRoutes.Invoices.Index, icon: Icons.Material.Filled.ReceiptLong),
+            new BreadcrumbItem("لیست", href: ClientRoutes.Invoices.List, icon: Icons.Material.Filled.List),
             new BreadcrumbItem("مشاهده فاکتور", href: null, icon: Icons.Material.Filled.ViewTimeline)
         ];
     }
