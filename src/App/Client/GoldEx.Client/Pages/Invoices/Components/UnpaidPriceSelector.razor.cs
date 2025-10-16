@@ -36,7 +36,7 @@ public partial class UnpaidPriceSelector
             {
                 if (UnpaidPriceUnit is null)
                 {
-                    var defaultUnit = PriceUnits.LastOrDefault(pu => pu.IsGoldBased) ?? PriceUnits.FirstOrDefault();
+                    var defaultUnit = PriceUnits.FirstOrDefault(pu => pu.IsGoldBased) ?? PriceUnits.FirstOrDefault();
                     _ = SetUnpaidPriceUnitAsync(defaultUnit);
                 }
             }
