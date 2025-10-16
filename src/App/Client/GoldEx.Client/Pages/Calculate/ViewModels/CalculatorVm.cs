@@ -77,4 +77,49 @@ public class CalculatorVm
 
         return this;
     }
+
+    public void SetJewelry(decimal? jewelryProfitPercent, GetPriceUnitTitleResponse? defaultPriceUnit)
+    {
+        ProfitPercent = jewelryProfitPercent ?? 20;
+        StonePriceUnit ??= defaultPriceUnit;
+        Fineness = 750m;
+        UsedGoldFinenessDeductionRate = 0;
+        WageType = Shared.Enums.WageType.Fixed;
+        WagePriceUnit ??= defaultPriceUnit;
+    }
+
+    public void SetGold(decimal? goldProfitPercent)
+    {
+        ProfitPercent = goldProfitPercent ?? 7;
+        Fineness = 750m;
+        StonePriceUnit = null;
+        UsedGoldFinenessDeductionRate = 0;
+        WageType = Shared.Enums.WageType.Percent;
+        WagePriceUnit = null;
+
+        if (Wage is > 100)
+            Wage = 0;
+    }
+
+    public void SetMoltenGold(decimal? commissionPercent)
+    {
+        Fineness = 750m;
+        UsedGoldFinenessDeductionRate = 0;
+        ProfitPercent = commissionPercent ?? 1.5m;
+        WageType = null;
+        WagePriceUnit = null;
+        Wage = null;
+        StonePriceUnit = null;
+    }
+
+    public void SetUsedGold(decimal? deductionRate)
+    {
+        UsedGoldFinenessDeductionRate = deductionRate ?? 15;
+        Fineness = 750m;
+        Wage = null;
+        WageType = null;
+        WagePriceUnit = null;
+        StonePriceUnit = null;
+        ProfitPercent = 0;
+    }
 }

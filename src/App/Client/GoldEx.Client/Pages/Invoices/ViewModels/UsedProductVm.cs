@@ -99,7 +99,7 @@ public class UsedProductVm
             return;
         }
 
-        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, FinenessDeductionRate.Value, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
+        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, 0, FinenessDeductionRate.Value, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
     }
 
     public void UpdateFrom(UsedProductVm other)

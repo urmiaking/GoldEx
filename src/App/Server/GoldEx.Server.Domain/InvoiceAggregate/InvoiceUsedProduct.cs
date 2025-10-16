@@ -26,7 +26,7 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         ArgumentOutOfRangeException.ThrowIfLessThan(gramPrice, 0, nameof(gramPrice));
         ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 0, nameof(quantity));
 
-        var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, finenessDeductionRate, gramPrice, quantity, invoice.ExchangeRate);
+        var itemAmount = CalculatorHelper.UsedProduct.Calculate(weight, 0, finenessDeductionRate, gramPrice, quantity, invoice.ExchangeRate);
 
         Id = id;
         Description = description;
