@@ -58,9 +58,10 @@ public partial class EditorForm
     {
         _isLoadingInvoice = true;
 
+        await LoadPriceUnitsAsync();
+
         await LoadCustomerAsync();
         await LoadInvoiceAsync();
-        await LoadPriceUnitsAsync();
         await LoadSettingsAsync();
         await LoadGramPriceAsync();
         await LoadIncomingProductAsync();
@@ -153,9 +154,9 @@ public partial class EditorForm
                     // Set default price unit to gram because the tradeScale initially set to wholesale
                     _model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsGoldBased);
                     await LoadExchangeRateAsync();
-
-                    StateHasChanged();
                 }
+
+                StateHasChanged();
             });
     }
 
