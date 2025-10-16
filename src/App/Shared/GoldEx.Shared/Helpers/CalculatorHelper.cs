@@ -153,13 +153,43 @@ public class CalculatorHelper
 
     public static class UsedProduct
     {
-        public static decimal Calculate(decimal weight, decimal deductionRate, decimal gramPrice, int quantity, decimal? exchangeRate)
+        /// <summary>
+        /// محاسبه قیمت طلای کهنه با درنظر گرفتن وزن معادل 750 و کسری عیار از 750.
+        /// </summary>
+        /// <param name="weight">وزن واقعی طلا (گرم)</param>
+        /// <param name="fineness">عیار واقعی طلا (مثلاً 750 یا 867)</param>
+        /// <param name="deductionFrom750">مقدار کسری عیار از 750 (مثلاً 15 یعنی 750→735)</param>
+        /// <param name="gramPrice">نرخ روز هر گرم طلای 750</param>
+        /// <param name="quantity">تعداد اقلام</param>
+        /// <param name="exchangeRate">نرخ ارز در صورت نیاز</param>
+        /// <returns>قیمت نهایی خرید طلای کهنه</returns>
+        public static decimal Calculate(
+            decimal weight,
+            decimal fineness,
+            decimal deductionFrom750,
+            decimal gramPrice,
+            int quantity = 1,
+            decimal? exchangeRate = null)
         {
-            if (gramPrice <= 0 || weight <= 0)
-                throw new ArgumentOutOfRangeException(
-                    $"{nameof(weight)} and {nameof(gramPrice)} must be greater than zero.");
+            if (weight <= 0)
+                throw new ArgumentOutOfRangeException(nameof(weight));
+            if (gramPrice <= 0)
+                throw new ArgumentOutOfRangeException(nameof(gramPrice));
+            if (fineness <= 0)
+                throw new ArgumentOutOfRangeException(nameof(fineness));
 
-            return weight * ((750m - deductionRate) / 750m) * (gramPrice * (exchangeRate ?? 1)) * quantity;
+            var rate = exchangeRate ?? 1;
+
+            // 1. وزن معادل بر اساس عیار واقعی
+            var equivalentWeight = weight * (fineness / 750m);
+
+            // 2. اعمال کسری عیار از 750
+            var effectiveWeight = equivalentWeight * ((750m - deductionFrom750) / 750m);
+
+            // 3. محاسبه قیمت نهایی
+            var price = effectiveWeight * gramPrice * rate * quantity;
+
+            return price;
         }
     }
 

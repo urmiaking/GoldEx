@@ -44,7 +44,7 @@
                 }
                 @context.Description
             </MudTd>
-            <MudTd DataLabel="کسری عیار">@context.FinenessDeductionRate?.ToString("G29")</MudTd>
+            <MudTd DataLabel="کسری عیار">@context.FinenessDeductionRate.ToString("G29")</MudTd>
             <MudTd DataLabel="وزن">@context.Weight?.ToString("G29") @context.UnitType.GetDisplayName()</MudTd>
             <MudTd DataLabel="ارزش کالا">@context.ItemAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="مخارج جانبی">@context.ExtraCostsAmount?.ToCurrencyFormat(PriceUnit?.Title)</MudTd>

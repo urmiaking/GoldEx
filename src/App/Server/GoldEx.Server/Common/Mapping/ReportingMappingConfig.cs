@@ -50,10 +50,10 @@ public class ReportingMappingConfig : IRegister
                     : null)
             .Map(dest => dest.TotalUnpaidAmount,
                 src =>
-                    $"{(src.TotalUnpaidAmount - src.TotalUsedProductsAmount).FormatUnpaidAmount(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
-            .Map(dest => dest.TotalAmountWithDiscountsAndExtraCosts,
+                    $"{(src.TotalUnpaidAmount).FormatUnpaidAmount(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+            .Map(dest => dest.TotalPayableAmount,
                 src =>
-                    $"{src.TotalAmountWithDiscountsAndExtraCosts.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+                    $"{(src.TotalAmountWithDiscountsAndExtraCosts - src.TotalUsedProductsAmount).ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
             .Map(dest => dest.TotalUnpaidSecondaryAmount,
                 src => src.UnpaidPriceUnitId.HasValue
                     ? $"({(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1))
@@ -116,9 +116,9 @@ public class ReportingMappingConfig : IRegister
             .Map(dest => dest.Name, src => src.Name)
             .Map(dest => dest.Barcode, src => src.Barcode)
             .Map(dest => dest.Weight, src => $"{src.Weight.ToWeightFormat(src.GoldUnitType)}")
-            .Map(dest => dest.Wage, src => src.WageType == WageType.Percent
+            .Map(dest => dest.Wage, src => src.WageType != null ? src.WageType == WageType.Percent
                 ? $"{src.Wage.ToCurrencyReportFormat(null)}%"
-                : $"{src.Wage.ToCurrencyReportFormat(src.WagePriceUnit!.Title)}")
+                : $"{src.Wage.ToCurrencyReportFormat(src.WagePriceUnit!.Title)}" : "ندارد")
             .Map(dest => dest.ProductType, src => src.ProductType)
             .Map(dest => dest.WageType, src => src.WageType)
             .Map(dest => dest.Fineness, src => src.Fineness)

@@ -10,7 +10,8 @@ public class UsedProductVm
     private decimal _gramPrice;
     private decimal? _weight;
     private decimal? _exchangeRate;
-    private decimal? _finenessDeductionRate = 15;
+    private decimal _finenessDeductionRate;
+    private decimal _fineness = 750m;
 
     public Guid? Id { get; set; }
 
@@ -27,12 +28,22 @@ public class UsedProductVm
     }
 
     [Display(Name = "عیار")]
-    public decimal Fineness { get; set; }
+    [Range(0, 1000, ErrorMessage = "{0} باید بین {1} و {2} باشد.")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public decimal Fineness
+    {
+        get => _fineness;
+        set
+        {
+            _fineness = value;
+            RecalculateAmounts();
+        }
+    }
 
     [Display(Name = "کسری عیار")]
     [Range(-250, 750, ErrorMessage = "{0} باید بین {1} و {2} باشد.")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public decimal? FinenessDeductionRate
+    public decimal FinenessDeductionRate
     {
         get => _finenessDeductionRate;
         set
@@ -93,13 +104,13 @@ public class UsedProductVm
     /// </summary>
     public void RecalculateAmounts()
     {
-        if (Weight == null || FinenessDeductionRate == null || GramPrice <= 0)
+        if (Weight == null || GramPrice <= 0)
         {
             ItemAmount = 0;
             return;
         }
 
-        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, FinenessDeductionRate.Value, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
+        ItemAmount = CalculatorHelper.UsedProduct.Calculate(Weight.Value, Fineness, FinenessDeductionRate, GramPrice, 1, ExchangeRate) + (ExtraCostsAmount ?? 0);
     }
 
     public void UpdateFrom(UsedProductVm other)
@@ -109,6 +120,7 @@ public class UsedProductVm
         GramPrice = other.GramPrice;
         ExchangeRate = other.ExchangeRate;
         Fineness = other.Fineness;
+        FinenessDeductionRate = other.FinenessDeductionRate;
         Weight = other.Weight;
         Description = other.Description;
         ExtraCostsAmount = other.ExtraCostsAmount;
@@ -123,7 +135,8 @@ public class UsedProductVm
             productItem.Weight ?? 0,
             productItem.GramPrice,
             productItem.ExtraCostsAmount ?? 0,
-            productItem.FinenessDeductionRate ?? 0,
+            productItem.Fineness,
+            productItem.FinenessDeductionRate,
             1,
             productItem.IsBroken,
             ProductType.UsedGold,
@@ -136,6 +149,7 @@ public class UsedProductVm
         {
             Id = response.Id,
             GramPrice = response.GramPrice,
+            Fineness = response.Fineness,
             FinenessDeductionRate = response.FinenessDeductionRate,
             Weight = response.Weight,
             Description = response.Description,

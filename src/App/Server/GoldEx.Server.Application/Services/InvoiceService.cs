@@ -295,6 +295,9 @@ internal class InvoiceService(
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
+            .Include(x => x.UsedProducts)
+                .ThenInclude(x => x.Product)
+            .Include(x => x.PriceUnit!.Price!)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceResponse>(item);
@@ -306,7 +309,6 @@ internal class InvoiceService(
         var item = await invoiceRepository
             .Get(new InvoicesByNumberSpecification(invoiceNumber, invoiceType))
             .AsNoTracking()
-
             .Include(x => x.Customer!)
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.ProductItems)
@@ -317,6 +319,9 @@ internal class InvoiceService(
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
+            .Include(x => x.UsedProducts)
+                .ThenInclude(x => x.Product)
+            .Include(x => x.PriceUnit!.Price!)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceResponse>(item);
