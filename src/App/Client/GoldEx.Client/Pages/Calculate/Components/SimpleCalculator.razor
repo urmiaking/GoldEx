@@ -104,22 +104,20 @@
                 </MudMenu>
             </MudItem>
 
-            @if(_model.ProductType is not ProductType.UsedGold)
-            {
-                <MudItem xs="12" sm="6">
-                    <MudNumericField For="() => _model.Fineness"
-                                     Immediate="true"
-                                     HideSpinButtons="true"
-                                     Format="G29"
-                                     Margin="Margin.Dense"
-                                     Label="@(_model.GetDisplayName(() => _model.Fineness))"
-                                     T="decimal"
-                                     Value="_model.Fineness"
-                                     ValueChanged="OnFinenessChanged"
-                                     Variant="Variant.Outlined"></MudNumericField>
-                </MudItem>
-            }
-            else
+            <MudItem xs="12" sm="6">
+                <MudNumericField For="() => _model.Fineness"
+                                 Immediate="true"
+                                 HideSpinButtons="true"
+                                 Format="G29"
+                                 Margin="Margin.Dense"
+                                 Label="@(_model.GetDisplayName(() => _model.Fineness))"
+                                 T="decimal"
+                                 Value="_model.Fineness"
+                                 ValueChanged="OnFinenessChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
+            </MudItem>
+
+            @if (_model.ProductType is ProductType.UsedGold)
             {
                 <MudItem xs="12" sm="6">
                     <MudNumericField For="() => _model.UsedGoldFinenessDeductionRate"
@@ -320,11 +318,25 @@
                         }
 
                         @* Gold's raw price with formula *@
-                        @if (_rawPrice.HasValue && _rawPrice.Value is not 0)
+                        @if (_rawPrice.HasValue && _rawPrice.Value != 0)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                <MudText>قیمت طلا: وزن × نرخ روز طلا @(_model.ProductType is ProductType.UsedGold ? $"× (750 / {_model.Fineness:G29})" : "")</MudText>
-                                <MudText Class="font-weight-bold">@_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title</MudText>
+                                <MudText>
+                                    قیمت طلا: وزن × نرخ روز طلا
+                                    @if (_model.ProductType is ProductType.UsedGold)
+                                    {
+                                        var fineness = _model.Fineness;
+                                        var deduction = _model.UsedGoldFinenessDeductionRate;
+                                        var parts = new List<string>();
+                                        if (fineness != 750) parts.Add($"(750 / {fineness:G29})");
+                                        if (deduction > 0) parts.Add($"(750 / {750m - deduction:G29})");
+                                        if (parts.Any()) { <text> × @string.Join(" × ", parts)</text>; }
+                                    }
+                                </MudText>
+
+                                <MudText Class="font-weight-bold">
+                                    @_rawPrice.Value.ToCurrencyFormat() @_model.PriceUnit?.Title
+                                </MudText>
                             </div>
                         }
 

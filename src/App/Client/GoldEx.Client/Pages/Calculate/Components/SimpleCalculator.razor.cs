@@ -68,6 +68,8 @@ public partial class SimpleCalculator
             ? $"نرخ تبدیل {_model.StonePriceUnit.Title} به {_model.PriceUnit.Title}"
             : null;
 
+    private GetPriceUnitTitleResponse? DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault);
+
     protected override async Task OnParametersSetAsync()
     {
         try
@@ -170,13 +172,26 @@ public partial class SimpleCalculator
 
             if (_form.IsValid)
             {
-                _rawPrice = CalculatorHelper.Product.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.Fineness, 1, _model.ProductType);
-                _wage = CalculatorHelper.Product.CalculateWage(_rawPrice.Value, _model.Weight, _model.Wage, _model.WageType, _model.WageExchangeRate);
-                _profit = CalculatorHelper.Product.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
-                _stoneCost = _model.StonePrice * (_model.StoneExchangeRate ?? 1);
-                _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType, _stoneCost);
-                _finalPrice = CalculatorHelper.Product.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType)
-                              + (_stoneCost ?? 0m);
+                if (_model.ProductType is ProductType.UsedGold)
+                {
+                    _rawPrice = CalculatorHelper.UsedProduct.Calculate(_model.Weight, _model.Fineness, _model.UsedGoldFinenessDeductionRate, _model.GramPrice);
+                    _wage = 0m;
+                    _profit = 0m;
+                    _tax = 0m;
+                    _finalPrice = _rawPrice + (_model.ExtraCosts ?? 0m);
+                }
+                else
+                {
+                    _rawPrice = CalculatorHelper.Product.CalculateRawPrice(_model.Weight, _model.GramPrice, _model.Fineness, 1, _model.ProductType);
+                    _wage = CalculatorHelper.Product.CalculateWage(_rawPrice.Value, _model.Weight, _model.Wage, _model.WageType, _model.WageExchangeRate);
+                    _profit = CalculatorHelper.Product.CalculateProfit(_rawPrice.Value, _wage.Value, _model.ProductType, _model.ProfitPercent);
+                    _stoneCost = _model.StonePrice * (_model.StoneExchangeRate ?? 1);
+                    _tax = CalculatorHelper.Product.CalculateTax(_wage.Value, _profit.Value, _model.TaxPercent, _model.ProductType, _stoneCost);
+                    _finalPrice = CalculatorHelper.Product.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType)
+                                  + (_stoneCost ?? 0m);
+                }
+
+
             }
             else
             {
@@ -314,40 +329,29 @@ public partial class SimpleCalculator
     private async void OnProductTypeChanged(ProductType productType)
     {
         _model.ProductType = productType;
+
         switch (productType)
         {
             case ProductType.Jewelry:
-                _model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
-                _model.StonePriceUnit ??= _priceUnits.FirstOrDefault(x => x.IsDefault);
-                _model.Fineness = 750m;
+                _model.SetJewelry(_settings?.JewelryProfitPercent, DefaultPriceUnit);
                 _applySafetyMargin = true;
                 break;
             case ProductType.Gold:
-                _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
-                _model.Fineness = 750m;
-                _model.StonePriceUnit = null;
+                _model.SetGold(_settings?.GoldProfitPercent);
                 _applySafetyMargin = true;
                 break;
             case ProductType.MoltenGold:
-                _model.Fineness = 750m;
-                _model.ProfitPercent = _settings?.MoltenGoldCommissionPercent ?? 1.5m;
-                _model.WageType = null;
-                _model.Wage = null;
-                _model.StonePriceUnit = null;
+                _model.SetMoltenGold(_settings?.MoltenGoldCommissionPercent);
                 _applySafetyMargin = true;
                 break;
             case ProductType.UsedGold:
+                _model.SetUsedGold(_settings?.UsedGoldFinenessDeductionRate);
                 _applySafetyMargin = false;
-                _model.UsedGoldFinenessDeductionRate = (int?)_settings?.UsedGoldFinenessDeductionRate ?? 15;
-                _model.Fineness = 750m - _model.UsedGoldFinenessDeductionRate;
-                _model.Wage = null;
-                _model.WageType = null;
-                _model.StonePriceUnit = null;
-                _model.ProfitPercent = 0;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(productType), productType, null);
         }
+
         await LoadGramPriceAsync();
         await Calculate();
     }
