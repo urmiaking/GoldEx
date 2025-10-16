@@ -27,10 +27,14 @@ public partial class InventoryItemSelector
     private List<CoinVm>? _coins;
     private List<PriceUnitVm>? _currencies;
 
+    private List<InventoryStockVm>? _selectedItems;
+
     private void OnSelectedItemsChanged(HashSet<InventoryStockVm>? items)
     {
         if (items is null)
             return;
+
+        _selectedItems = items.ToList();
 
         if (items.All(x => x.Product is not null))
         {
@@ -52,12 +56,15 @@ public partial class InventoryItemSelector
         {
             var productItemTasks = _products.Select(async product =>
             {
+                var stock = _selectedItems?.FirstOrDefault(x => x.Product?.Id == product.Id);
+
                 var stonePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.StonePriceUnit?.Id ?? PriceUnit.Id);
                 var wagePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.WagePriceUnitId ?? PriceUnit.Id);
 
                 return new ProductItemVm
                 {
                     GramPrice = GramPrice,
+                    TotalWeight = stock?.CurrentAmount,
                     TaxPercent = TaxPercent,
                     ProfitPercent = product.ProductType is ProductType.Jewelry
                         ? JewelryProfitPercent
