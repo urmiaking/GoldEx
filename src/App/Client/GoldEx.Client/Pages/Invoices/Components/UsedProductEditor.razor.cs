@@ -38,7 +38,7 @@ public partial class UsedProductEditor
             afterSend: response =>
             {
                 _settings = response;
-                Model.FinenessDeductionRate ??= _settings?.UsedGoldFinenessDeductionRate ?? 15;
+                Model.FinenessDeductionRate = _settings?.UsedGoldFinenessDeductionRate ?? 15;
             });
     }
 

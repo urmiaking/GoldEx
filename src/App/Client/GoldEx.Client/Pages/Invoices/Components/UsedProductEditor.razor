@@ -3,18 +3,21 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_usedProductValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
-                <MudNumericField Adornment="Adornment.End"
-                                 AdornmentText="@PriceUnit.Title"
-                                 @bind-Value="Model.GramPrice"
-                                 For="@(() => Model.GramPrice)"
-                                 Format="#,##0.##"
-                                 Immediate="true"
-                                 HideSpinButtons="true"
-                                 Label="@($"نرخ هر {Model.UnitType.GetDisplayName()} طلا")"
-                                 Margin="Margin.Dense"
-                                 Variant="Variant.Outlined" />
-            </div>
+            @if (!PriceUnit.IsGoldBased)
+            {
+                <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentText="@PriceUnit.Title"
+                                     @bind-Value="Model.GramPrice"
+                                     For="@(() => Model.GramPrice)"
+                                     Format="#,##0.##"
+                                     Immediate="true"
+                                     HideSpinButtons="true"
+                                     Label="@($"نرخ هر {Model.UnitType.GetDisplayName()} طلا")"
+                                     Margin="Margin.Dense"
+                                     Variant="Variant.Outlined" />
+                </div>
+            }
             <MudGrid Class="mb-0">
                 <MudItem xs="12" md="6">
                     <MudTextField T="string"
@@ -55,12 +58,23 @@
                     </MudMenu>
                 </MudItem>
                 <MudItem xs="12" md="6">
+                    <MudNumericField For="@(() => Model.Fineness)"
+                                     Format="G29"
+                                     Immediate="true"
+                                     Label="@Model.GetDisplayName(() => Model.Fineness)"
+                                     Margin="Margin.Dense"
+                                     T="decimal"
+                                     @bind-Value="Model.Fineness"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
                     <MudNumericField For="@(() => Model.FinenessDeductionRate)"
                                      Format="G29"
                                      Immediate="true"
                                      Label="@Model.GetDisplayName(() => Model.FinenessDeductionRate)"
                                      Margin="Margin.Dense"
-                                     T="decimal?"
+                                     T="decimal"
                                      @bind-Value="Model.FinenessDeductionRate"
                                      HideSpinButtons="true"
                                      Variant="Variant.Outlined" />
@@ -78,12 +92,12 @@
                                      AdornmentText="@PriceUnit.Title"
                                      Variant="Variant.Outlined" />
                 </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudCheckBox @bind-Value="Model.IsBroken"
+                                 For="@(() => Model.IsBroken)"
+                                 Label="@Model.GetDisplayName(() => Model.IsBroken)" />
+                </MudItem>
             </MudGrid>
-            <div class="d-flex flex-column flex-wrap align-center gap-3 pa-3">
-                <MudCheckBox @bind-Value="Model.IsBroken"
-                             For="@(() => Model.IsBroken)"
-                             Label="@Model.GetDisplayName(() => Model.IsBroken)" />
-            </div>
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
