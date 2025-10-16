@@ -179,11 +179,23 @@ internal class InventoryStockRepository(
                     var saleDetails = await dbContext.Set<Invoice>()
                         .AsNoTracking()
                         .Include(i => i.ProductItems)
-                            .ThenInclude(pi => pi.SaleWagePriceUnit)
+                        .ThenInclude(pi => pi.SaleWagePriceUnit)
                         .Where(i => i.InvoiceType == InvoiceType.Sell)
-                        .SelectMany(i => i.ProductItems)
+                        .SelectMany(i => i.ProductItems
+                            .Select(pi => new
+                            {
+                                pi.ProductId,
+                                pi.SaleWage,
+                                pi.SaleWageType,
+                                pi.SaleWagePriceUnit,
+                                pi.CreatedAt
+                            }))
                         .Where(item => productIds.Contains(item.ProductId))
-                        .ToDictionaryAsync(item => item.ProductId, item => item, cancellationToken);
+                        .GroupBy(item => item.ProductId)
+                        .Select(g => g
+                            .OrderByDescending(x => x.CreatedAt)
+                            .First())
+                        .ToDictionaryAsync(x => x.ProductId, x => x, cancellationToken);
 
                     var combinedData = aggregatedResults.Select(agg => new
                     {
