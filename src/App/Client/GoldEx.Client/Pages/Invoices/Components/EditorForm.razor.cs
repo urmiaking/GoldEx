@@ -775,7 +775,7 @@ public partial class EditorForm
             {
                 AddSuccessToast("فاکتور با موفقیت ذخیره شد");
                 _processing = false;
-                Navigation.NavigateTo(printInvoice ? PrintUrl : ClientRoutes.Invoices.Index);
+                Navigation.NavigateTo(printInvoice ? PrintUrl : ClientRoutes.Invoices.List);
                 return Task.CompletedTask;
             },
             onFailure: () =>
