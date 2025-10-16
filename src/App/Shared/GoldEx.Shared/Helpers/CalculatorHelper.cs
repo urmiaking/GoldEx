@@ -189,7 +189,7 @@ public class CalculatorHelper
             // 3. محاسبه قیمت نهایی
             var price = effectiveWeight * gramPrice * rate * quantity;
 
-            return decimal.Round(price, 0, MidpointRounding.AwayFromZero);
+            return price;
         }
     }
 
