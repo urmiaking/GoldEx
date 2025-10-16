@@ -68,7 +68,7 @@
         </Item12>
         <Item13 Ref="40" ControlType="XRLabel" Name="xrLabel24" RightToLeft="Yes" Multiline="true" Text="xrLabel24" TextAlignment="TopRight" SizeF="224.7807,25" LocationFloat="524.1667,125" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
           <ExpressionBindings>
-            <Item1 Ref="41" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalAmountWithDiscountsAndExtraCosts]" />
+            <Item1 Ref="41" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalPayableAmount]" />
           </ExpressionBindings>
           <StylePriority Ref="42" UseFont="false" UseBorders="false" />
         </Item13>
