@@ -201,12 +201,27 @@ internal class PriceService(
 
     public async Task<List<GetPriceResponse>> GetListAsync(bool? isPinned = null, CancellationToken cancellationToken = default)
     {
-        var item = await repository
+        var list = await repository
             .Get(new PricesDefaultSpecification(isPinned))
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        return mapper.Map<List<GetPriceResponse>>(item);
+        var defaultPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        foreach (var price in list.Where(price => price.MarketType is not MarketType.Ounce))
+        {
+            price.PriceHistory!.SetCurrentValue(ConvertFromRial(price.PriceHistory.CurrentValue, defaultPriceUnit?.UnitType));
+            price.PriceHistory!.SetUnit(defaultPriceUnit?.Title ?? price.PriceHistory.Unit);
+            price.PriceHistory!.SetDailyChangeRate(ConvertFormattedPrice(
+                price.PriceHistory.DailyChangeRate,
+                defaultPriceUnit?.UnitType
+            ));
+        }
+
+        return mapper.Map<List<GetPriceResponse>>(list);
     }
 
     public async Task<List<GetPriceTitleResponse>> GetTitlesAsync(MarketType[] marketTypes,
@@ -230,7 +245,7 @@ internal class PriceService(
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
-    public async Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin, 
+    public async Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
         CancellationToken cancellationToken = default)
     {
         var unit = unitType switch
@@ -250,6 +265,11 @@ internal class PriceService(
 
         var setting = await settingRepository
             .Get(new SettingsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var defaultUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (setting is not null && setting.GoldSafetyMarginPercent != 0)
@@ -297,7 +317,7 @@ internal class PriceService(
         return new GetPriceResponse(
             Id: baseItem.Id.Value,
             Title: baseItem.Title,
-            Value: baseItem.PriceHistory.CurrentValue.ToString("G29"),
+            Value: ConvertFromRial(baseItem.PriceHistory.CurrentValue, defaultUnit?.UnitType).ToString("G29"),
             Unit: baseItem.PriceHistory.Unit,
             Change: baseItem.PriceHistory.DailyChangeRate,
             LastUpdate: baseItem.PriceHistory.LastUpdate,
@@ -334,11 +354,16 @@ internal class PriceService(
             .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (primaryPriceUnit?.Price is null && primaryPriceUnit?.Title == "ریال")
+        var defaultPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (primaryPriceUnit?.Price is null && primaryPriceUnit?.UnitType == defaultPriceUnit?.UnitType)
         {
             if (secondaryPriceUnit?.Price?.PriceHistory is not null && secondaryPriceUnit.Price?.PriceHistory?.CurrentValue != 0)
             {
-                var rate = 1 / secondaryPriceUnit.Price?.PriceHistory?.CurrentValue;
+                var rate = 1 / ConvertFromRial(secondaryPriceUnit.Price?.PriceHistory?.CurrentValue ?? 1, defaultPriceUnit?.UnitType);
                 return new GetExchangeRateResponse(rate);
             }
         }
@@ -347,7 +372,7 @@ internal class PriceService(
             return new GetExchangeRateResponse(0);
 
         if (secondaryPriceUnit?.Price is null)
-            return new GetExchangeRateResponse(primaryPriceUnit.Price?.PriceHistory?.CurrentValue);
+            return new GetExchangeRateResponse(ConvertFromRial(primaryPriceUnit.Price?.PriceHistory?.CurrentValue ?? 0, defaultPriceUnit?.UnitType));
 
         if (primaryPriceUnit == secondaryPriceUnit)
             throw new InvalidOperationException("Secondary unit cannot be as same as Primary unit");
@@ -365,7 +390,7 @@ internal class PriceService(
         var exchangeRate = primaryValue / secondaryValue;
 
         return new GetExchangeRateResponse(
-            exchangeRate.Value
+            ConvertFromRial(exchangeRate ?? 0, defaultPriceUnit?.UnitType)
         );
     }
 
@@ -422,4 +447,42 @@ internal class PriceService(
     }
 
     #endregion
+
+    private static decimal ConvertFromRial(decimal value, UnitType? defaultUnitType)
+    {
+        return defaultUnitType switch
+        {
+            UnitType.Toman => value / 10,
+            _ => value // Rial or any other non-adjusted unit
+        };
+    }
+
+    private static string ConvertFormattedPrice(string formattedPrice, UnitType? defaultUnitType)
+    {
+        if (string.IsNullOrWhiteSpace(formattedPrice))
+            return formattedPrice;
+
+        // Split the numeric and percentage parts (e.g. "4٬542٬268 (0.94%)")
+        var parts = formattedPrice.Split('(', StringSplitOptions.TrimEntries);
+        var numberPart = parts[0].Trim();
+        var percentPart = parts.Length > 1 ? "(" + parts[1] : string.Empty;
+
+        // Remove Persian/Arabic thousand separators and commas
+        var cleaned = numberPart
+            .Replace("٬", string.Empty) // Arabic comma
+            .Replace(",", string.Empty) // Normal comma
+            .Trim();
+
+        if (!decimal.TryParse(cleaned, out var value))
+            return formattedPrice; // if parse fails, return original
+
+        // Convert if default unit is Toman
+        if (defaultUnitType == UnitType.Toman)
+            value /= 10;
+
+        // Format back with a thousand separators (using current culture)
+        var formattedValue = $"{value:N0}";
+
+        return $"{formattedValue} {percentPart}".TrimEnd();
+    }
 }
