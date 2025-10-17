@@ -262,7 +262,6 @@ internal class InventoryStockRepository(
                         .ToListAsync(cancellationToken);
                     return (data, total);
                 }
-
             case ItemType.Currency:
                 {
                     var aggQuery = baseQuery
@@ -297,48 +296,103 @@ internal class InventoryStockRepository(
                         .ToListAsync(cancellationToken);
                     return (data, total);
                 }
-
             default:
                 throw new ArgumentOutOfRangeException(nameof(inventoryFilter.ItemType), "Invalid item type for inventory summary.");
         }
     }
 
-
-    public async Task<List<Product>> GetAvailableProductsForCalculatorAsync(
-        CalculatorFilterRequest filter,
-        CancellationToken cancellationToken = default)
+    public async Task<(List<InventorySummaryData> Data, int Total)> GetAvailableInventorySummaryAsync(RequestFilter filter,
+    CalculatorFilterRequest calculatorFilter,
+    CancellationToken cancellationToken = default)
     {
-        var stockLevels = await Query
+        var settings = await settingRepository
+             .Get(new SettingsDefaultSpecification())
+             .FirstOrDefaultAsync(cancellationToken);
+
+        var gramPerMesghal = settings?.GramPerMesghal ?? 4.6083m;
+
+        var baseQuery = Query
             .AsNoTracking()
-            .Where(s => s.ProductId.HasValue)
-            .GroupBy(s => s.ProductId!.Value)
-            .Select(g => new
-            {
-                ProductId = g.Key,
-                CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
-            })
-            .Where(s => s.CurrentQuantity > 0)
-            .ToDictionaryAsync(k => k.ProductId, v => v.CurrentQuantity, cancellationToken);
+            .Where(x => x.ProductId != null && x.Product!.ProductType == calculatorFilter.ProductType);
 
-        if (!stockLevels.Any())
-        {
-            return [];
-        }
+        var aggregationQuery = baseQuery
+                        .Include(x => x.Product!.ProductCategory)
+                        .Where(x => x.ProductId != null && x.Product!.ProductType == calculatorFilter.ProductType)
+                        .GroupBy(x => x.ProductId!.Value)
+                        .Select(g => new
+                        {
+                            ProductId = g.Key,
+                            CurrentQuantity = g.Sum(s =>
+                                ((s.MoltenGoldDetail != null && s.Product!.ProductType == ProductType.MoltenGold)
+                                    ? s.MoltenGoldDetail.WeightUnitType
+                                    : s.Product!.GoldUnitType) == GoldUnitType.Mesghal
+                                    ? (s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount) * gramPerMesghal
+                                    : (s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+                            ),
+                            SoldQuantity = g.Where(s => s.ActionType == WarehouseActionType.Out)
+                                .Sum(s =>
+                                    ((s.MoltenGoldDetail != null && s.Product!.ProductType == ProductType.MoltenGold)
+                                        ? s.MoltenGoldDetail.WeightUnitType
+                                        : s.Product!.GoldUnitType) == GoldUnitType.Mesghal
+                                        ? s.ChangeAmount * gramPerMesghal
+                                        : s.ChangeAmount
+                                ),
+                            DateTime = g.Min(s => s.CreatedAt)
+                        });
 
-        var availableProductIds = stockLevels.Keys.ToList();
+        var filteredAggregationQuery = aggregationQuery.Where(x => x.CurrentQuantity > 0);
 
-        return await dbContext.Set<Product>()
+        var aggregatedResults = await filteredAggregationQuery.ToListAsync(cancellationToken);
+
+        if (!aggregatedResults.Any())
+            return ([], 0);
+
+        var productIds = aggregatedResults.Select(x => x.ProductId).ToList();
+
+        var products = await dbContext.Set<Product>()
             .AsNoTracking()
-            .Where(p => availableProductIds.Contains(p.Id))
-            .Where(p => string.IsNullOrEmpty(filter.Name) || p.Name.Contains(filter.Name))
-            .Where(p => p.ProductType == filter.ProductType)
-            .Where(p => !filter.ProductCategoryId.HasValue || (p.ProductCategoryId.HasValue && p.ProductCategoryId.Value == new ProductCategoryId(filter.ProductCategoryId.Value)))
-            .Where(p => !filter.Fineness.HasValue || p.Fineness == filter.Fineness.Value)
-            .Where(p => !filter.MinWeight.HasValue || p.Weight >= filter.MinWeight.Value)
-            .Where(p => !filter.MaxWeight.HasValue || p.Weight <= filter.MaxWeight.Value)
-            .Where(p => !filter.MaxWage.HasValue || (p.WageType == WageType.Percent && p.Wage <= filter.MaxWage.Value))
             .Include(p => p.ProductCategory)
-            .ToListAsync(cancellationToken);
+            .Where(p => productIds.Contains(p.Id))
+            .Where(p => string.IsNullOrEmpty(calculatorFilter.Name) || p.Name.Contains(calculatorFilter.Name))
+            .Where(p => !calculatorFilter.Fineness.HasValue || p.Fineness == calculatorFilter.Fineness.Value)
+            .Where(p => !calculatorFilter.MaxWage.HasValue || (p.WageType == WageType.Percent && p.Wage <= calculatorFilter.MaxWage.Value))
+            .Where(p => !calculatorFilter.ProductCategoryId.HasValue || (p.ProductCategoryId.HasValue && p.ProductCategoryId.Value == new ProductCategoryId(calculatorFilter.ProductCategoryId.Value)))
+            .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
+
+        var filteredAggregatedResults = aggregatedResults
+            .Where(agg => !calculatorFilter.MinWeight.HasValue || agg.CurrentQuantity >= calculatorFilter.MinWeight.Value)
+            .Where(agg => !calculatorFilter.MaxWeight.HasValue || agg.CurrentQuantity <= calculatorFilter.MaxWeight.Value)
+            .ToList();
+
+        if (!filteredAggregatedResults.Any())
+            return ([], 0);
+
+        var combinedData = filteredAggregatedResults.Select(agg => new
+        {
+            Product = products.GetValueOrDefault(agg.ProductId),
+            agg.DateTime,
+            agg.CurrentQuantity,
+            agg.SoldQuantity
+        }).Where(x => x.Product != null).AsQueryable();
+
+        if (!string.IsNullOrEmpty(filter.Search))
+            combinedData = combinedData.Where(x =>
+                x.Product!.Name.Contains(filter.Search) ||
+                x.Product!.Barcode.Contains(filter.Search));
+
+        var total = combinedData.Count();
+        var sortedData = combinedData.ApplySorting(filter.SortLabel, filter.SortDirection ?? SortDirection.Descending,
+            "Product.CreatedAt");
+        var pagedData = sortedData.Skip(filter.Skip ?? 0).Take(filter.Take ?? 100).ToList();
+        var finalData = pagedData.Select(x => new InventorySummaryData
+        {
+            Product = x.Product,
+            CurrentQuantity = x.CurrentQuantity,
+            SoldQuantity = x.SoldQuantity,
+            DateTime = x.DateTime
+        }).ToList();
+
+        return (finalData, total);
     }
 
     public async Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit,

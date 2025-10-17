@@ -25,8 +25,8 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
     Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter, InventoryFilter inventoryFilter, 
         CancellationToken cancellationToken = default);
 
-    Task<List<Product>> GetAvailableProductsForCalculatorAsync(
-        CalculatorFilterRequest filter,
+    Task<(List<InventorySummaryData> Data, int Total)> GetAvailableInventorySummaryAsync(RequestFilter filter,
+        CalculatorFilterRequest calculatorFilter,
         CancellationToken cancellationToken = default);
 
     Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit, CancellationToken cancellationToken = default);

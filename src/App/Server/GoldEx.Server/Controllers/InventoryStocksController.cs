@@ -23,9 +23,10 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
     }
 
     [HttpGet(ApiRoutes.InventoryStocks.GetAvailableProducts)]
-    public async Task<IActionResult> GetAvailableProductsAsync([FromQuery] CalculatorFilterRequest filter, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAvailableProductsAsync([FromQuery] CalculatorFilterRequest calculatorFilter, [FromQuery] RequestFilter requestFilter,
+        CancellationToken cancellationToken = default)
     {
-        var list = await service.GetAvailableProductsAsync(filter, cancellationToken);
+        var list = await service.GetAvailableProductsAsync(calculatorFilter, requestFilter, cancellationToken);
         return Ok(list);
     }
 
