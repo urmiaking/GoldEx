@@ -817,6 +817,7 @@ public partial class EditorForm
 
         _model.InvoiceType = invoiceType;
         await LoadInvoiceNumberAsync();
+        await LoadGramPriceAsync();
     }
 
     private async Task OnTradeScaleChanged(TradeScale tradeScale)

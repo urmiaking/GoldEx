@@ -107,5 +107,8 @@ public enum UnitType
     Gold18K = 33,
 
     [Display(Name = "آبشده نقدی")]
-    Mesghal = 34
+    Mesghal = 34,
+
+    [Display(Name = "تومان")]
+    Toman = 35
 }

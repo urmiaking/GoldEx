@@ -11,7 +11,7 @@ public static class NumberHelper
         if (string.IsNullOrEmpty(unit))
             return number.ToString("#,##0.##");
 
-        if (unit == "ریال")
+        if (unit is "ریال" or "تومان")
             return number.ToString("#,##0") + " " + unit;
 
         return number.ToString("#,##0.##") + " " + unit;
@@ -31,7 +31,7 @@ public static class NumberHelper
         if (string.IsNullOrEmpty(unit))
             return number.ToString("#,##0.##", nfi);
 
-        if (unit == "ریال")
+        if (unit is "ریال" or "تومان")
         {
             return number.ToString("#,##0", nfi) + " " + unit;
         }
