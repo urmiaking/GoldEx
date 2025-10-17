@@ -15,6 +15,10 @@ public class InvoiceListVm
     public decimal TotalAmount { get; set; }
     public decimal TotalUnpaidAmount { get; set; }
     public string PriceUnit { get; set; } = default!;
+
+    public decimal? TotalUnpaidAmountSecondary { get; set; }
+    public string? SecondaryPriceUnit { get; set; }
+
     public InvoicePaymentStatus PaymentStatus { get; set; }
 
     public static InvoiceListVm CreateFrom(GetInvoiceListResponse listResponse)
@@ -31,7 +35,9 @@ public class InvoiceListVm
             TotalAmount = listResponse.TotalAmount,
             PriceUnit = listResponse.PriceUnit,
             TotalUnpaidAmount = listResponse.TotalUnpaidAmount,
-            PaymentStatus = listResponse.PaymentStatus
+            PaymentStatus = listResponse.PaymentStatus,
+            TotalUnpaidAmountSecondary = listResponse.TotalUnpaidAmountSecondary,
+            SecondaryPriceUnit = listResponse.SecondaryPriceUnit
         };
     }
 }

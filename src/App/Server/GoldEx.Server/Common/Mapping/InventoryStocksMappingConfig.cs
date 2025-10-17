@@ -12,7 +12,6 @@ public class InventoryStocksMappingConfig : IRegister
         config.NewConfig<InventoryStock, GetInventoryStockResponse>()
             .Map(dest => dest.CurrentAmount, src => src.ChangeAmount);
             
-
         config.NewConfig<InventorySummaryData, GetInventoryStockResponse>()
             .Map(dest => dest.CurrentAmount, src => src.CurrentQuantity)
             .Map(dest => dest.SoldAmount, src => src.SoldQuantity)

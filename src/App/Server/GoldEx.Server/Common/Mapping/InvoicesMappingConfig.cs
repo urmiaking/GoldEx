@@ -17,6 +17,8 @@ public class InvoicesMappingConfig : IRegister
             .Map(dest => dest.PriceUnit, src => src.PriceUnit!.Title)
             .Map(dest => dest.TotalAmount, src => src.TotalAmountWithDiscountsAndExtraCosts)
             .Map(dest => dest.TotalUnpaidAmount, src => src.TotalUnpaidAmount)
+            .Map(dest => dest.TotalUnpaidAmountSecondary, src => src.TotalUnpaidAmount * src.UnpaidAmountExchangeRate)
+            .Map(dest => dest.SecondaryPriceUnit, src => src.UnpaidPriceUnit != null ? src.UnpaidPriceUnit.Title : null)
             .Map(dest => dest.PaymentStatus,
                 src => Math.Abs(src.TotalUnpaidAmount - 0m) < 0.01m
                     ? InvoicePaymentStatus.Paid
@@ -68,6 +70,7 @@ public class InvoicesMappingConfig : IRegister
 
         config.NewConfig<InvoiceUsedProduct, GetInvoiceUsedProductResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Barcode, src => src.Product != null ? src.Product.Barcode : string.Empty)
             .Map(dest => dest.Fineness, src => src.Product != null ? src.Product.Fineness : 0);
 
         config.NewConfig<InvoicePayment, GetInvoicePaymentResponse>()

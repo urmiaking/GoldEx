@@ -33,6 +33,7 @@ public partial class EditorForm
     private InvoiceVm _model = InvoiceVm.CreateDefaultInstance();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
+    private string _jsVersion = new Random().Next(1, 1000).ToString();
     private GetSettingResponse? _setting;
     private GetPriceResponse? _gramPrice;
     private MudForm _form = default!;
@@ -780,40 +781,6 @@ public partial class EditorForm
             });
     }
 
-    private async Task SelectTotalUnpaidPriceUnit(GetPriceUnitTitleResponse? item)
-    {
-        _model.UnpaidPriceUnit = item;
-
-        if (_model.InvoicePriceUnit is null)
-            return;
-
-        if (item is null)
-        {
-            _model.UnpaidExchangeRate = null;
-            _totalUnpaidMenuOpen = false;
-            return;
-        }
-
-        if (_model.InvoicePriceUnit.Id == item.Id)
-        {
-            _model.UnpaidExchangeRate = null;
-            _totalUnpaidMenuOpen = false;
-            return;
-        }
-
-        decimal? exchangeRate;
-
-        await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-            action: (s, ct) =>
-                s.GetExchangeRateAsync(_model.InvoicePriceUnit.Id, item.Id, ct),
-            afterSend: respExchangeRate =>
-            {
-                exchangeRate = respExchangeRate.ExchangeRate;
-                _model.UnpaidExchangeRate = exchangeRate;
-                _totalUnpaidMenuOpen = false;
-            });
-    }
-
     private async Task OnInvoiceTypeChanged(InvoiceType invoiceType)
     {
         if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
@@ -957,5 +924,36 @@ public partial class EditorForm
                 Navigation.NavigateTo(ClientRoutes.Invoices.Index);
                 return Task.CompletedTask;
             });
+    }
+
+    private async Task OnPrintBarcode(ProductItemVm item)
+    {
+        var labelData = new
+        {
+            text = item.Product.Barcode,
+            name = item.Product.Name,
+            weight = "وزن: " + item.TotalWeight?.ToString("G29") + $"{(item.Product.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
+            wage = "اجرت: " + item.Product.WageType switch
+            {
+                WageType.Fixed => $"{item.Product.Wage?.ToCurrencyFormat(item.Product.WagePriceUnitTitle)}",
+                WageType.Percent => item.Product.Wage?.ToString("G29") + "%",
+                _ => "ندارد"
+            }
+        };
+
+        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
+    }
+
+    private async Task OnPrintUsedBarcode(UsedProductVm item)
+    {
+        var labelData = new
+        {
+            text = item.Barcode,
+            name = item.Description,
+            weight = "وزن: " + item.Weight?.ToString("G29") + $"{(item.UnitType is GoldUnitType.Gram ? "g" : "m")}",
+            wage = "اجرت: ندارد"
+        };
+
+        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
     }
 }
