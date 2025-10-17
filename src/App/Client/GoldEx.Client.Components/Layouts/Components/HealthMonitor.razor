@@ -1,0 +1,38 @@
+﻿@inherits GoldExComponentBase
+
+<MudCard Elevation="24">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex justify-content-between">
+                <MudText Typo="Typo.h6">
+                    وضعیت سلامت برنامه
+                </MudText>
+                <MudIcon Color="@GetStatusColor(_healthResponse?.Status)" Icon="@GetStatusIcon(_healthResponse?.Status)"/>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (_healthResponse is null)
+        {
+            <MudList Dense="true" T="string" SelectionMode="SelectionMode.ToggleSelection" Color="Color.Info">
+                @for (var i = 0; i < 3; i++)
+                {
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Text" Height="55" Width="300" />
+                }
+            </MudList>
+        }
+        else
+        {
+            @if (_healthResponse.Entries is not null)
+            {
+                <MudList Dense="true" T="string" SelectionMode="SelectionMode.ToggleSelection" Color="Color.Info">
+                    @foreach (var entry in _healthResponse.Entries)
+                    {
+                        <MudListItem T="string" Text="@entry.Key" SecondaryText="@GetDescription(entry.Value)"
+                                     Icon="@GetStatusIcon(entry.Value.Status)" IconColor="@GetStatusColor(entry.Value.Status)" />
+                    }
+                </MudList>
+            }
+        }
+    </MudCardContent>
+</MudCard>

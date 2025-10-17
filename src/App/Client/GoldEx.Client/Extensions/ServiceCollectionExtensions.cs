@@ -124,8 +124,6 @@ public static class ServiceCollectionExtensions
             config.SnackbarConfiguration.HideTransitionDuration = 1500;
         });
 
-        services.AddMudServicesWithExtensions();
-
         MudGlobal.TransitionDefaults.Duration = TimeSpan.FromMilliseconds(500);
 
         services.AddLocalization();
