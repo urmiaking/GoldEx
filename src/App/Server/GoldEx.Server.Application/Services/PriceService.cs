@@ -230,7 +230,7 @@ internal class PriceService(
         return mapper.Map<List<GetPriceResponse>>(item);
     }
 
-    public async Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
+    public async Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin, 
         CancellationToken cancellationToken = default)
     {
         var unit = unitType switch
@@ -248,12 +248,19 @@ internal class PriceService(
         if (baseItem?.PriceHistory is null)
             return null;
 
-        var setting = await settingRepository.Get(new SettingsDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
-        if (setting is not null && setting.GoldSafetyMarginPercent != 0 && applySafetyMargin)
+        var setting = await settingRepository
+            .Get(new SettingsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (setting is not null && setting.GoldSafetyMarginPercent != 0)
         {
             if (baseItem.PriceUnit?.UnitType is UnitType.Gold18K or UnitType.Mesghal)
             {
-                var adjustedValue = baseItem.PriceHistory.CurrentValue * (1 + setting.GoldSafetyMarginPercent / 100);
+                var marginFactor = setting.GoldSafetyMarginPercent / 100m;
+                var adjustedValue = applySafetyMargin
+                    ? baseItem.PriceHistory.CurrentValue * (1 + marginFactor)
+                    : baseItem.PriceHistory.CurrentValue * (1 - marginFactor);
+
                 baseItem.PriceHistory.SetCurrentValue(adjustedValue);
             }
         }
@@ -299,6 +306,7 @@ internal class PriceService(
             UnitType: baseItem.PriceUnit?.UnitType
         );
     }
+
 
     public async Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
     {
