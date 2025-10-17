@@ -138,17 +138,17 @@ public partial class InventoryStockList
         _table.NavigateTo(i - 1);
     }
 
-    private async Task OnPrintBarcode(ProductVm product)
+    private async Task OnPrintBarcode(InventoryStockVm item)
     {
         var labelData = new
         {
-            text = product.Barcode,
-            name = product.Name,
-            weight = "وزن: " + product.Weight?.ToString("G29") + $"{(product.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: " + product.WageType switch
+            text = item.Product?.Barcode,
+            name = item.Product?.Name,
+            weight = "وزن: " + item.CurrentAmount.ToString("G29") + $"{(item.Product?.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
+            wage = "اجرت: " + item.Product?.WageType switch
             {
-                WageType.Fixed => $"{product.Wage?.ToCurrencyFormat(product.WagePriceUnitTitle)}",
-                WageType.Percent => product.Wage?.ToString("G29") + "%",
+                WageType.Fixed => $"{item.Product?.Wage?.ToCurrencyFormat(item.Product?.WagePriceUnitTitle)}",
+                WageType.Percent => item.Product?.Wage?.ToString("G29") + "%",
                 _ => "ندارد"
             }
         };
