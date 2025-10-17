@@ -26,15 +26,15 @@ internal class InventoryStockService(HttpClient client, JsonSerializerOptions js
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<List<GetInventoryStockResponse>> GetAvailableProductsAsync(CalculatorFilterRequest filter,
+    public async Task<PagedList<GetInventoryStockResponse>> GetAvailableProductsAsync(CalculatorFilterRequest calculatorFilter, RequestFilter filter,
         CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.InventoryStocks.GetAvailableProducts(filter), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.InventoryStocks.GetAvailableProducts(calculatorFilter, filter), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        var result = await response.Content.ReadFromJsonAsync<List<GetInventoryStockResponse>>(jsonOptions, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetInventoryStockResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }

@@ -57,6 +57,7 @@ public partial class EditorForm
     protected override async Task OnParametersSetAsync()
     {
         _isLoadingInvoice = true;
+        _model.TradeScale = TradeScale;
 
         await LoadPriceUnitsAsync();
 
@@ -68,13 +69,6 @@ public partial class EditorForm
 
         _isLoadingInvoice = false;
         await base.OnParametersSetAsync();
-    }
-
-    protected override void OnParametersSet()
-    {
-        _model.TradeScale = TradeScale;
-
-        base.OnParametersSet();
     }
 
     private async Task LoadIncomingProductAsync()
@@ -152,7 +146,7 @@ public partial class EditorForm
                 if (_model.InvoicePriceUnit is null)
                 {
                     // Set default price unit to gram because the tradeScale initially set to wholesale
-                    _model.InvoicePriceUnit = response.FirstOrDefault(x => x.IsGoldBased);
+                    _model.InvoicePriceUnit = response.FirstOrDefault(x => TradeScale is TradeScale.Wholesale ? x.IsGoldBased : x.IsDefault);
                     await LoadExchangeRateAsync();
                 }
 
