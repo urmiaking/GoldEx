@@ -1,13 +1,12 @@
-﻿using System.Net.Http.Json;
-using GoldEx.Sdk.Common;
+﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Infrastructure.Services.Price.DTOs.Signal;
 using GoldEx.Shared;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Azure;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Net.Http.Json;
 
 namespace GoldEx.Server.Infrastructure.HealthChecks;
 
@@ -30,15 +29,15 @@ public class SignalHealthCheck(IHttpClientFactory httpClientFactory, IEmailSende
                     if (!string.IsNullOrEmpty(user.Email))
                     {
                         await emailSender.SendEmailAsync(user.Email,
-                            "signal apis are unhealthy",
-                            $"Signal api responded with {response.StatusCode} and the content of this response is {content}");
+                            "سرویس استعلام قیمت آنلاین با مشکل مواجه شده است",
+                            $"کد خطا: {response.StatusCode} و متن خطا: {content}");
                     }
                 });
             }
 
             return response.IsSuccessStatusCode
-                ? HealthCheckResult.Healthy("Signal endpoints is healthy.")
-                : HealthCheckResult.Unhealthy("Signal endpoint is unhealthy");
+                ? HealthCheckResult.Healthy()
+                : HealthCheckResult.Unhealthy("اختلال در سرویس");
         }
         catch (Exception e)
         {
@@ -49,17 +48,17 @@ public class SignalHealthCheck(IHttpClientFactory httpClientFactory, IEmailSende
                     if (!string.IsNullOrEmpty(user.Email))
                     {
                         await emailSender.SendEmailAsync(user.Email,
-                            "signal apis are unhealthy",
-                            $"Signal api are unhealthy and has exception: {e.Message}. The Stacktrace is {e.StackTrace}");
+                            "سرویس استعلام قیمت آنلاین با مشکل مواجه شده است",
+                            $"سرویس استعلام قیمت آنلاین با مشکل مواجه شده است و خطا: {e.Message}. Stacktrace: {e.StackTrace}");
                     }
                 });
             }
-            catch (Exception exception)
+            catch 
             {
-                return HealthCheckResult.Unhealthy($"Signal endpoint, UserManager or EmailSender is unhealthy and has exception: {e.Message}", exception);
+                return HealthCheckResult.Unhealthy("اختلال در سرویس");
             }
 
-            return HealthCheckResult.Unhealthy($"Signal endpoint is unhealthy and has exception: {e.Message}", e);
+            return HealthCheckResult.Unhealthy("اختلال در سرویس");
         }
     }
 }

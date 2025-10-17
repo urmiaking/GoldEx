@@ -1,23 +1,22 @@
-using GoldEx.Server.Common.Middlewares;
-using GoldEx.Server.Components.Account;
-using GoldEx.Server.Components;
-using GoldEx.Server.Extensions;
+using DevExpress.AspNetCore;
+using DevExpress.AspNetCore.Reporting;
 using GoldEx.Client;
-using System.Reflection;
 using GoldEx.Client.Extensions;
+using GoldEx.Sdk.Common;
 using GoldEx.Server;
 using GoldEx.Server.Application;
+using GoldEx.Server.Common.Middlewares;
+using GoldEx.Server.Components;
+using GoldEx.Server.Components.Account;
+using GoldEx.Server.Extensions;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Shared.Routings;
 using HealthChecks.UI.Client;
-using HealthChecks.UI.Configuration;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Serilog.Ui.Web.Extensions;
-using DevExpress.AspNetCore.Reporting;
-using DevExpress.AspNetCore;
-using GoldEx.Sdk.Common;
+using System.Reflection;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 var logger = GetStartupLogger();
 
@@ -25,7 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 var setupServices = SetupServices();
 
 // Initial Serilog configuration (Console sink)
-builder.Host.UseSerilog((context, configuration) =>
+builder.Host.UseSerilog((_, configuration) =>
 {
     configuration
         .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
@@ -169,14 +168,8 @@ void SetupPipeline()
     //HealthCheck Middleware
     app.MapHealthChecks(ApiRoutes.Health.Base, new HealthCheckOptions
     {
-        Predicate = _ => true,
+        AllowCachingResponses = true,
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
-    app.UseHealthChecksUI(delegate (Options options)
-    {
-        options.UIPath = ClientRoutes.Health.Base;
-        options.AsideMenuOpened = false;
-        options.PageTitle = "GoldEx Health Monitor";
     });
 
     AppDomain.CurrentDomain.SetData("DXResourceDirectory", app.Environment.ContentRootPath);

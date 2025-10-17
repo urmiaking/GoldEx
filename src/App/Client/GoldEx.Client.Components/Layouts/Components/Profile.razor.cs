@@ -1,10 +1,10 @@
 ﻿using GoldEx.Client.Components.Extensions;
 using GoldEx.Client.Components.Services.Abstractions;
-using GoldEx.Client.Components.Themes;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MudBlazor;
 
 namespace GoldEx.Client.Components.Layouts.Components;
@@ -16,9 +16,9 @@ public partial class Profile
     private Color _color = Color.Dark;
     private string? _username;
     private string _status = "در حال بررسی...";
+    private bool _healthMonitorOpen;
 
     [Inject] private IThemeService? ThemeService { get; set; }
-
 
     private IHealthService HealthService => GetRequiredService<IHealthService>();
 
@@ -31,8 +31,8 @@ public partial class Profile
 
             var response = await HealthService.GetAsync(CancellationTokenSource.Token);
 
-            _color = response.Status == "Healthy" ? Color.Success : Color.Warning;
-            _status = response.Status == "Healthy" ? "آنلاین" : "اختلال در سرویس ها";
+            _color = response.Status is HealthStatus.Healthy ? Color.Success : Color.Warning;
+            _status = response.Status == HealthStatus.Healthy ? "آنلاین" : "اختلال در سرویس ها";
         }
         catch
         {
