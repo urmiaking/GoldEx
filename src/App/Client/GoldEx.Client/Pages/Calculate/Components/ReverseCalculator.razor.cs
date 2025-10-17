@@ -11,7 +11,6 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
 

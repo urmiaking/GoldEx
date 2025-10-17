@@ -171,13 +171,6 @@ public class CalculatorHelper
             int quantity = 1,
             decimal? exchangeRate = null)
         {
-            if (weight <= 0)
-                throw new ArgumentOutOfRangeException(nameof(weight));
-            if (gramPrice <= 0)
-                throw new ArgumentOutOfRangeException(nameof(gramPrice));
-            if (fineness <= 0)
-                throw new ArgumentOutOfRangeException(nameof(fineness));
-
             var rate = exchangeRate ?? 1;
 
             // 1. وزن معادل بر اساس عیار واقعی

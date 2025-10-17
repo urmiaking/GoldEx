@@ -162,7 +162,7 @@ public partial class SimpleCalculator
     {
         try
         {
-            if (_model.Weight == 0 || _model is { WageType: not null, Wage: null })
+            if (_model.Weight == 0 || _model is { WageType: not null, Wage: null, Fineness: 0 })
             {
                 ResetCalculations();
                 return;
