@@ -1,5 +1,5 @@
 ﻿using DevExpress.AspNetCore;
-using DevExpress.Drawing.Internal;
+using DevExpress.Drawing;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Api.Identity;
@@ -12,7 +12,6 @@ using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.DTOs.Settings;
-using GoldEx.Shared.Routings;
 using GoldEx.Shared.Settings;
 using Mapster;
 using MapsterMapper;
@@ -21,6 +20,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog.Ui.Core.Extensions;
 using Serilog.Ui.MsSqlServerProvider.Extensions;
@@ -28,8 +28,6 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DevExpress.Drawing;
-using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Extensions;
 
@@ -227,26 +225,17 @@ internal static class ServiceCollectionExtensions
     {
         services.AddHealthChecks()
             .AddSqlServer(configuration.GetConnectionString("GoldEx")!, healthQuery: "select 1",
-                name: "SQL Database Server",
+                name: "پایگاه داده",
                 failureStatus: HealthStatus.Unhealthy,
-                tags: ["Database"])
+                tags: ["پایگاه داده"])
             .AddCheck<SignalHealthCheck>(
-                name: "Signal price fetcher api",
+                name: "سرویس استعلام قیمت",
                 failureStatus: HealthStatus.Unhealthy,
-                tags: ["External API"])
+                tags: ["سرویس استعلام قیمت"])
             .AddCheck<MemoryHealthCheck>(
-                name:"Memory Check",
+                name:"عملکرد RAM",
                 failureStatus: HealthStatus.Unhealthy,
-                tags: ["Memory"]);
-
-        services.AddHealthChecksUI(opt =>
-            {
-                opt.SetEvaluationTimeInSeconds(60); //time in seconds between check
-                opt.MaximumHistoryEntriesPerEndpoint(60); //maximum history of checks    
-                opt.SetApiMaxActiveRequests(1); //api requests concurrency    
-                opt.AddHealthCheckEndpoint("GoldEx Service Health Checker", ApiRoutes.Health.Base); //map health check api
-            })
-            .AddInMemoryStorage();
+                tags: ["رم"]);
 
         return services;
     }

@@ -23,9 +23,11 @@ public class MemoryHealthCheck(IOptionsMonitor<MemoryCheckOptions> options) : IH
         };
         var status = allocated < options1.Threshold ? HealthStatus.Healthy : HealthStatus.Unhealthy;
 
+        var percent = (double)allocated / options1.Threshold * 100;
+
         return Task.FromResult(new HealthCheckResult(
             status,
-            description: $"{allocated.Bytes()} of {options1.Threshold.Bytes()} Used. Total free memory : {(options1.Threshold - allocated).Bytes()}",
+            description: $"استفاده شده: {percent:F1} %",
             exception: null,
             data: data));
     }
