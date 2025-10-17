@@ -309,8 +309,9 @@ public class ApiUrls
                 .AppendQueryString(filter)
                 .AppendQueryString(inventoryFilter);
 
-        public static string GetAvailableProducts(CalculatorFilterRequest filter) =>
+        public static string GetAvailableProducts(CalculatorFilterRequest calculatorFilter, RequestFilter filter) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableProducts)
+                .AppendQueryString(calculatorFilter)
                 .AppendQueryString(filter);
 
         public static string GetInventoryWeightChart(GoldUnitType targetUnit) =>

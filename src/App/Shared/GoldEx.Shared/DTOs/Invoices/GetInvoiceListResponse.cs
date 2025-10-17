@@ -13,4 +13,6 @@ public record GetInvoiceListResponse(
     decimal TotalAmount,
     decimal TotalUnpaidAmount,
     string PriceUnit,
+    decimal? TotalUnpaidAmountSecondary,
+    string? SecondaryPriceUnit,
     InvoicePaymentStatus PaymentStatus);

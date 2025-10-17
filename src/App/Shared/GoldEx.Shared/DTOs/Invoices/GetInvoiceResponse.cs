@@ -35,6 +35,7 @@ public record GetInvoiceResponse(
 
 public record GetInvoiceUsedProductResponse(
     Guid Id,
+    string Barcode,
     string Description,
     decimal Weight,
     decimal Fineness,

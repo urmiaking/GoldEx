@@ -37,6 +37,8 @@ public partial class ProductItemsList
     [Parameter]
     public EventCallback<string> OnBarcodeChanged { get; set; }
 
+    [Parameter] public EventCallback<ProductItemVm> OnPrintBarcode { get; set; }
+
     private string? _barcode;
 
     private Task OnBarcodeCleared()

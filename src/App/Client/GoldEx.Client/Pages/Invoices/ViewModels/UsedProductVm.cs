@@ -96,6 +96,8 @@ public class UsedProductVm
     [Display(Name = "نوع واحد طلا")]
     public GoldUnitType UnitType { get; set; }
 
+    public string Barcode { get; set; } = default!;
+
     public int Index { get; set; } = 1;
 
     /// <summary>
@@ -157,6 +159,7 @@ public class UsedProductVm
             ItemAmount = response.ItemAmount,
             UnitType = response.UnitType,
             IsBroken = response.IsBroken,
+            Barcode = response.Barcode
         };
     }
 }

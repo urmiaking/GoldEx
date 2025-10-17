@@ -61,12 +61,17 @@ internal class AccountingTransactionService(
                         var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
                             invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
+                        // درآمد حاصل از فروش
                         var salesRevenueLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.SalesRevenue))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Sales Revenue ledger account not found.");
+
+                        // تخفیف
                         var discountsLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.SalesDiscounts))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Sales Discounts ledger account not found.");
+
+                        // مخارج جانبی
                         var extraChargesLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.AdditionalChargesRevenue))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Additional Charges Revenue ledger account not found.");
@@ -785,8 +790,8 @@ internal class AccountingTransactionService(
 
         var debitLedgerAccountId = usedProduct.IsBroken ? usedProductInventoryLedgerAccount.Id : inventoryLedgerAccount.Id;
 
-        var customerLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
-            usedProduct.Invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
+        //var customerLedgerAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
+        //    usedProduct.Invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
         // --- Step 3: Create the Debit and Credit Transactions ---
         var transactions = new List<Transaction>();
@@ -804,16 +809,18 @@ internal class AccountingTransactionService(
             usedProduct.InvoiceId
         ));
 
-        transactions.Add(Transaction.CreateForInvoice(
-            description,
-            usedProduct.ItemFinalAmount,
-            usedProduct.Invoice.ExchangeRate,
-            groupId,
-            TransactionType.Credit,
-            customerLedgerAccount.Id,
-            usedProduct.Invoice.PriceUnitId,
-            usedProduct.InvoiceId
-        ));
+        // removed because we credit the customer earlier in the invoice processing
+
+        //transactions.Add(Transaction.CreateForInvoice(
+        //    description,
+        //    usedProduct.ItemFinalAmount,
+        //    usedProduct.Invoice.ExchangeRate,
+        //    groupId,
+        //    TransactionType.Credit,
+        //    customerLedgerAccount.Id,
+        //    usedProduct.Invoice.PriceUnitId,
+        //    usedProduct.InvoiceId
+        //));
 
         await repository.CreateRangeAsync(transactions, cancellationToken);
     }
