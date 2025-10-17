@@ -69,18 +69,16 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Settings" Href="@ClientRoutes.Settings.Index"></MudIconButton>
                     </MudTooltip>
                     
-                    <AuthorizeView Roles="@BuiltinRoles.Administrators" Context="ctx">
-                        <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
-                            <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" OnClick="() => _healthMonitorOpen = !_healthMonitorOpen"></MudIconButton>
-                            <MudPopover Open="_healthMonitorOpen" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                                <HealthMonitor />
-                            </MudPopover>
-                        </MudTooltip>
+                    <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" OnClick="() => _healthMonitorOpen = !_healthMonitorOpen"></MudIconButton>
+                        <MudPopover Open="_healthMonitorOpen" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <HealthMonitor />
+                        </MudPopover>
+                    </MudTooltip>
                     
-                        <MudTooltip Text="گزارش خطاهای برنامه" Placement="Placement.Bottom" Arrow="true">
-                            <MudIconButton Icon="@Icons.Material.Filled.ErrorOutline" Href="@ClientRoutes.Logs.Base"></MudIconButton>
-                        </MudTooltip>
-                    </AuthorizeView>
+                    <MudTooltip Text="گزارش خطاهای برنامه" Placement="Placement.Bottom" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.ErrorOutline" Href="@ClientRoutes.Logs.Base"></MudIconButton>
+                    </MudTooltip>
                     
                     <MudTooltip Text="خروج" Placement="Placement.Right" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" Href="@ApiUrls.Account.Logout(_currentUrl)"></MudIconButton>
