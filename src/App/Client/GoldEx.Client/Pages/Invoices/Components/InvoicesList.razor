@@ -95,17 +95,28 @@
                     <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Check">@context.PaymentStatus.GetDisplayName()</MudChip>
                     break;
                 case InvoicePaymentStatus.HasDebt:
-                    if (context.InvoiceType is InvoiceType.Purchase)
-                    {
-                        <MudText Color="Color.Success">@FormatDebtAmount(context.TotalUnpaidAmount, context.PriceUnit)</MudText>
-                    }
-                    else
-                    {
-                        <MudText Color="Color.Error">@FormatDebtAmount(context.TotalUnpaidAmount, context.PriceUnit)</MudText>
-                    }
+                    <MudText Color="@(context.InvoiceType is InvoiceType.Purchase ? Color.Success : Color.Error)">
+                        @if (string.IsNullOrEmpty(context.SecondaryPriceUnit) || !context.TotalUnpaidAmountSecondary.HasValue)
+                        {
+                            @(context.TotalUnpaidAmount.ToCurrencyFormat(context.PriceUnit))
+                        }
+                        else
+                        {
+                            @(context.TotalUnpaidAmountSecondary.Value.ToCurrencyFormat(context.SecondaryPriceUnit))
+                        }
+                    </MudText>
                     break;
                 case InvoicePaymentStatus.Overdue:
-                    <MudChip Size="Size.Small" T="string" Color="Color.Error" Variant="Variant.Filled">@context.TotalUnpaidAmount.ToCurrencyFormat(context.PriceUnit)</MudChip>
+                    <MudChip Size="Size.Small" T="string" Color="Color.Error" Variant="Variant.Filled">
+                        @if (string.IsNullOrEmpty(context.SecondaryPriceUnit) || !context.TotalUnpaidAmountSecondary.HasValue)
+                        {
+                            @(context.TotalUnpaidAmount.ToCurrencyFormat(context.PriceUnit))
+                        }
+                        else
+                        {
+                            @(context.TotalUnpaidAmountSecondary.Value.ToCurrencyFormat(context.SecondaryPriceUnit))
+                        }
+                    </MudChip>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -122,7 +133,7 @@
                                    Color="Color.Primary" OnClick="_ => OnEditInvoice(context)"></MudIconButton>
                 </MudTooltip>
                 <MudTooltip Text="حذف فاکتور">
-                    <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))"Size="@Size.Small" Variant="@Variant.Filled"
+                    <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))" Size="@Size.Small" Variant="@Variant.Filled"
                                    Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                 </MudTooltip>
             </div>
@@ -152,7 +163,7 @@
                            Count="@pageCount"
                            ShowFirstButton="true"
                            ShowLastButton="true" />
-        
+
             <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
                 @infoText
             </div>

@@ -258,7 +258,8 @@ else
                                           InvoiceType="_model.InvoiceType"
                                           OnAddItem="OnAddProductItem"
                                           OnOpenSelector="OnOpenProductSelector"
-                                          OnBarcodeChanged="OnBarcodeChanged" />
+                                          OnBarcodeChanged="OnBarcodeChanged"
+                                          OnPrintBarcode="OnPrintBarcode" />
                     </MudTabPanel>
                     <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
                         <CoinItemsList Items="@_model.CoinItems"
@@ -289,7 +290,8 @@ else
                                           OnRemoveItem="OnRemoveUsedProduct"
                                           Class="mt-2 pa-4"
                                           Elevation="2"
-                                          OnAddItem="OnAddUsedProduct" />
+                                          OnAddItem="OnAddUsedProduct"
+                                          OnPrintBarcode="OnPrintUsedBarcode" />
                     </MudTabPanel>
                 </MudTabs>
             </div>
@@ -523,3 +525,6 @@ else
         </MudForm>
     </MudCard>
 }
+
+<script src="/js/libs/jsbarcode.all.min.js"></script>
+<script src="/js/print.js?v=@_jsVersion"></script>
