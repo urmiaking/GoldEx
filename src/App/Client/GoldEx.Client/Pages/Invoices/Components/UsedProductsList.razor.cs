@@ -26,4 +26,7 @@ public partial class UsedProductsList
 
     [Parameter]
     public EventCallback<UsedProductVm> OnRemoveItem { get; set; }
+
+    [Parameter]
+    public EventCallback<UsedProductVm> OnPrintBarcode { get; set; }
 }

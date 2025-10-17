@@ -1,4 +1,6 @@
 ﻿using GoldEx.Client.Pages.Calculate.ViewModels;
+using GoldEx.Client.Pages.InventoryStocks.ViewModels;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Prices;
@@ -11,6 +13,8 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
 
@@ -25,8 +29,7 @@ public partial class ReverseCalculator
     private GetSettingResponse? _settings;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private ReverseCalculatorVm _model = new();
-
-    private bool _isSearching;
+    private MudTable<GetInventoryStockResponse> _table = default!;
 
     private List<GetInventoryStockResponse> _results = [];
     private List<GetProductCategoryResponse> _productCategories = [];
@@ -158,54 +161,76 @@ public partial class ReverseCalculator
         await LoadGramPriceAsync();
     }
 
-    private async Task OnSearch()
+    private async Task<TableData<GetInventoryStockResponse>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
     {
-        _isSearching = true;
-        _results.Clear();
+        var result = new TableData<GetInventoryStockResponse>();
 
-        await SendRequestAsync<IInventoryStockService, List<GetInventoryStockResponse>>(
-            action: (s, ct) => s.GetAvailableProductsAsync(_model.ToFilterRequest(), ct),
-            afterSend: async response =>
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, null, state.SortLabel,
+            state.SortDirection switch
             {
-                _results = response;
-
-                foreach (var item in _results)
-                {
-                    item.FinalPrice = await CalculateFinalPriceAsync(item.Product, _model.PriceUnit);
-                }
+                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
+                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
+                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
+                _ => throw new ArgumentOutOfRangeException()
             });
 
-        _isSearching = false;
+        var calculatorFilter = _model.ToFilterRequest();
+
+        await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
+            action: (s, ct) => s.GetAvailableProductsAsync(calculatorFilter, filter, ct),
+            afterSend: async response =>
+            {
+                result.Items = response.Data;
+                result.TotalItems = response.Total;
+
+                foreach (var item in response.Data)
+                {
+                    item.FinalPrice = await CalculateFinalPriceAsync(item, _model.PriceUnit);
+                }
+            });
+        return result;
+    }
+
+    private async Task RefreshAsync()
+    {
+        await _table.ReloadServerData();
         StateHasChanged();
     }
 
-    private async Task<decimal> CalculateFinalPriceAsync(GetProductResponse? product, GetPriceUnitTitleResponse? contextPriceUnit)
+    private async Task OnSearch()
     {
-        if (product is null)
+        await RefreshAsync();
+
+        StateHasChanged();
+    }
+
+    private async Task<decimal> CalculateFinalPriceAsync(GetInventoryStockResponse? item, GetPriceUnitTitleResponse? contextPriceUnit)
+    {
+        if (item?.Product is null)
             return 0;
 
         var rawPrice = CalculatorHelper.Product.CalculateRawPrice(
-            product.Weight,
+            item.CurrentAmount,
             _model.GramPrice,
-            product.Fineness,
+            item.Product.Fineness,
             1,
-            product.ProductType);
+            item.Product.ProductType);
 
-        var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, product.Weight, product.Wage, product.WageType, null);
-        var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, product.ProductType, _model.ProfitPercent);
+        var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.CurrentAmount, item.Product.Wage, item.Product.WageType, null);
+        var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, item.Product.ProductType, _model.ProfitPercent);
 
         decimal stoneAmount = 0;
-        if (product.GemStones is not null && product.GemStones.Count > 0)
+        if (item.Product.GemStones is not null && item.Product.GemStones.Count > 0)
         {
-            foreach (var stone in product.GemStones)
+            foreach (var stone in item.Product.GemStones)
             {
                 var stonePrice = stone.Cost;
 
-                if (product.StonePriceUnit != null && contextPriceUnit != null &&
-                    product.StonePriceUnit.Id != contextPriceUnit.Id)
+                if (item.Product.StonePriceUnit != null && contextPriceUnit != null &&
+                    item.Product.StonePriceUnit.Id != contextPriceUnit.Id)
                 {
                     await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-                        action: (s, ct) => s.GetExchangeRateAsync(product.StonePriceUnit.Id, contextPriceUnit.Id, ct),
+                        action: (s, ct) => s.GetExchangeRateAsync(item.Product.StonePriceUnit.Id, contextPriceUnit.Id, ct),
                         afterSend: response =>
                         {
                             if (response.ExchangeRate.HasValue)
@@ -224,7 +249,7 @@ public partial class ReverseCalculator
             wageAmount,
             profitAmount,
             _model.TaxPercent,
-            product.ProductType,
+            item.Product.ProductType,
             stoneAmount);
 
         var finalPrice = CalculatorHelper.Product.CalculateFinalPrice(
@@ -233,7 +258,7 @@ public partial class ReverseCalculator
             profitAmount,
             taxAmount,
             stoneAmount,
-            product.ProductType);
+            item.Product.ProductType);
 
         return finalPrice;
     }
@@ -253,7 +278,8 @@ public partial class ReverseCalculator
 
     private void OnSellProduct(GetProductResponse? product)
     {
-        Navigation.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { barcode = product?.Barcode }));
+        Navigation.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { barcode = product?.Barcode })
+            .AppendQueryString(new { TradeScale = TradeScale.Retail }));
     }
 
     #region Timer
@@ -280,8 +306,19 @@ public partial class ReverseCalculator
             if (IsDisposed) return; 
 
             await LoadGramPriceAsync();
+
+            await RefreshPricesAsync();
+
             StateHasChanged();
         });
+    }
+
+    private async Task RefreshPricesAsync()
+    {
+        foreach (var item in _table.FilteredItems)
+        {
+            item.FinalPrice = await CalculateFinalPriceAsync(item, _model.PriceUnit);
+        }
     }
 
     public override async ValueTask DisposeAsync()
@@ -293,4 +330,17 @@ public partial class ReverseCalculator
     }
 
     #endregion
+
+    private void PageChanged(int i)
+    {
+        _table.NavigateTo(i - 1);
+    }
+
+    private async Task OnGramPriceChanged(decimal gramPrice)
+    {
+        _model.GramPrice = gramPrice;
+        await RefreshPricesAsync();
+
+        StateHasChanged();
+    }
 }

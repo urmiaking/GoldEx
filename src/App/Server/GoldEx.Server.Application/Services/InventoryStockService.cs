@@ -250,40 +250,40 @@ internal class InventoryStockService(
         };
     }
 
-    public async Task<List<GetInventoryStockResponse>> GetAvailableProductsAsync(CalculatorFilterRequest filter,
+    public async Task<PagedList<GetInventoryStockResponse>> GetAvailableProductsAsync(CalculatorFilterRequest calculatorFilter, RequestFilter filter,
         CancellationToken cancellationToken = default)
     {
-        var candidateProducts = await repository.GetAvailableProductsForCalculatorAsync(filter, cancellationToken);
+        var candidateProducts = await repository.GetAvailableInventorySummaryAsync(filter, calculatorFilter, cancellationToken);
 
         var results = new List<GetInventoryStockResponse>();
 
-        foreach (var item in candidateProducts)
+        foreach (var item in candidateProducts.Data)
         {
-            var rawPrice = CalculatorHelper.Product.CalculateRawPrice(item.Weight, filter.GramPrice, item.Fineness, 1, item.ProductType);
-            var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.Weight, item.Wage, item.WageType, null);
-            var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, item.ProductType, filter.ProfitPercent);
-            var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, filter.TaxPercent, item.ProductType, null);
+            if (item.Product is null)
+                continue;
+
+            var rawPrice = CalculatorHelper.Product.CalculateRawPrice(item.CurrentQuantity, calculatorFilter.GramPrice, item.Product.Fineness,
+                1, item.Product.ProductType);
+            var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.CurrentQuantity, item.Product.Wage, item.Product.WageType, null);
+            var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, item.Product.ProductType, calculatorFilter.ProfitPercent);
+            var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, calculatorFilter.TaxPercent, item.Product.ProductType, null);
 
             var finalPrice = rawPrice + wageAmount + profitAmount + taxAmount;
 
-            if ((!filter.MinPrice.HasValue || finalPrice >= filter.MinPrice.Value) &&
-                (!filter.MaxPrice.HasValue || finalPrice <= filter.MaxPrice.Value))
+            if ((!calculatorFilter.MinPrice.HasValue || finalPrice >= calculatorFilter.MinPrice.Value) &&
+                (!calculatorFilter.MaxPrice.HasValue || finalPrice <= calculatorFilter.MaxPrice.Value))
             {
-                results.Add(new GetInventoryStockResponse(
-                    CurrentAmount: 1,
-                    SoldAmount: 0,
-                    DateTime.Now,
-                    null,
-                    null,
-                    null,
-                    mapper.Map<GetProductResponse>(item),
-                    null,
-                    null
-                ));
+                results.Add(mapper.Map<GetInventoryStockResponse>(item));
             }
         }
 
-        return results;
+        return new PagedList<GetInventoryStockResponse>
+        {
+            Data = mapper.Map<List<GetInventoryStockResponse>>(results),
+            Total = results.Count,
+            Skip = filter.Skip ?? 0,
+            Take = filter.Take ?? 100
+        };
     }
 
     public async Task<List<GetInventoryWeightChartResponse>> GetInventoryWeightChartAsync(GoldUnitType targetUnit,
