@@ -11,9 +11,11 @@ public partial class SetInvoice
     [Parameter, SupplyParameterFromQuery] public Guid? CustomerId { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? Barcode { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? TradeScale { get; set; }
+    [Parameter, SupplyParameterFromQuery] public string? InvoiceType { get; set; }
 
     private Guid? IdValue => string.IsNullOrEmpty(Id) ? null : Guid.Parse(Id);
     private TradeScale TradeScaleValue => Enum.TryParse<TradeScale>(TradeScale, out var scale) ? scale : Shared.Enums.TradeScale.Wholesale;
+    private InvoiceType InvoiceTypeValue => Enum.TryParse<InvoiceType>(InvoiceType, out var type) ? type : Shared.Enums.InvoiceType.Sell;
 
     private List<BreadcrumbItem> _breadcrumbs = [];
 

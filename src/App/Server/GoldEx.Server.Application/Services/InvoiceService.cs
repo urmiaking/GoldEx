@@ -31,7 +31,7 @@ internal class InvoiceService(
     IInvoicePaymentRepository paymentRepository,
     IServerProductService productService,
     IServerReminderService reminderService,
-    IPriceUnitRepository priceUnitRepositoy,
+    IPriceUnitRepository priceUnitRepository,
     IAccountingTransactionService transactionService,
     IServerInventoryStockService inventoryStockService,
     IMapper mapper,
@@ -49,7 +49,7 @@ internal class InvoiceService(
 
                 #region Invoice (Create new invoice instance)    
 
-                var basePriceUnit = await priceUnitRepositoy
+                var basePriceUnit = await priceUnitRepository
                     .Get(new PriceUnitsSetAsDefaultSpecification())
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException("Base price unit not found");
 
@@ -57,6 +57,7 @@ internal class InvoiceService(
                     request.UnpaidAmountExchangeRate,
                     request.ExchangeRate,
                     request.InvoiceType,
+                    request.TradeScale,
                     new CustomerId(request.CustomerId),
                     basePriceUnit.Id,
                     new PriceUnitId(request.PriceUnitId),

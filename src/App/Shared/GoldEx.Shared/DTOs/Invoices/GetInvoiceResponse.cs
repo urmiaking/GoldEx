@@ -13,6 +13,7 @@ public record GetInvoiceResponse(
     DateTime InvoiceDate,
     DateTime? DueDate,
     InvoiceType InvoiceType,
+    TradeScale TradeScale,
     decimal TotalAmount,
     decimal TotalPaidAmount,
     decimal TotalDiscountAmount,

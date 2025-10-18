@@ -18,6 +18,7 @@ public class Invoice : EntityBase<InvoiceId>
         decimal? unpaidAmountExchangeRate,
         decimal? exchangeRate,
         InvoiceType invoiceType,
+        TradeScale tradeScale,
         CustomerId customerId,
         PriceUnitId basePriceUnitId,
         PriceUnitId priceUnitId,
@@ -30,6 +31,7 @@ public class Invoice : EntityBase<InvoiceId>
             Id = new InvoiceId(Guid.NewGuid()),
             InvoiceNumber = invoiceNumber,
             InvoiceType = invoiceType,
+            TradeScale = tradeScale,
             CustomerId = customerId,
             InvoiceDate = invoiceDate,
             BasePriceUnitId = basePriceUnitId,
@@ -49,6 +51,7 @@ public class Invoice : EntityBase<InvoiceId>
     public DateOnly? DueDate { get; private set; }
     public DateOnly InvoiceDate { get; private set; }
     public InvoiceType InvoiceType { get; private set; }
+    public TradeScale TradeScale { get; private set; }
     public decimal? ExchangeRate { get; private set; }
 
     public void SetInvoiceNumber(long invoiceNumber)

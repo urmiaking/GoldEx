@@ -26,6 +26,7 @@ public partial class EditorForm
     [Parameter] public Guid? CustomerId { get; set; }
     [Parameter] public string? Barcode { get; set; }
     [Parameter] public TradeScale TradeScale { get; set; }
+    [Parameter] public InvoiceType InvoiceType { get; set; }
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private bool IsEditMode => Id.HasValue;
@@ -59,6 +60,7 @@ public partial class EditorForm
     {
         _isLoadingInvoice = true;
         _model.TradeScale = TradeScale;
+        _model.InvoiceType = InvoiceType;
 
         await LoadPriceUnitsAsync();
 
