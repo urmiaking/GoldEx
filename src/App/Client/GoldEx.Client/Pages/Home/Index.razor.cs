@@ -63,8 +63,8 @@ public partial class Index
         }
         else
         {
-            _tabPosition = Position.Right;
-            _contentClass = "mr-5";
+            _tabPosition = Position.Top;
+            _contentClass = "mt-5";
         }
 
         // Only trigger state change if position actually changed  
@@ -72,6 +72,8 @@ public partial class Index
         {
             StateHasChanged();
         }
+
+        StateHasChanged();
     }
 
     public override async ValueTask DisposeAsync()
