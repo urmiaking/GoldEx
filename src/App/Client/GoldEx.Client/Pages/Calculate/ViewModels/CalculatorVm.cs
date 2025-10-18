@@ -9,7 +9,7 @@ public class CalculatorVm
 {
     [Display(Name = "وزن")]
     [Required(ErrorMessage = "لطفا وزن را وارد کنید")]
-    public decimal Weight { get; set; }
+    public decimal Weight { get; set; } = 1;
 
     public ProductType ProductType { get; set; } = ProductType.Gold;
 
@@ -95,7 +95,7 @@ public class CalculatorVm
         StonePriceUnit = null;
         UsedGoldFinenessDeductionRate = 0;
         WageType = Shared.Enums.WageType.Percent;
-        WagePriceUnit = null;
+        //WagePriceUnit = null;
 
         if (Wage is > 100)
             Wage = 0;

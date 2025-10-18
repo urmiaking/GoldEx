@@ -5,12 +5,13 @@
     <AuthorizeView>
         <Authorized>
             <MudGrid Justify="Justify.SpaceBetween">
-                <MudItem xs="12" sm="6" md="4">
+                <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudTextField Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.QrCode"
                                   Clearable="true"
                                   HelperText="@_barcodeFieldHelperText"
                                   Label="بارکد جنس"
+                                  dir="ltr"
                                   Immediate="true"
                                   Margin="Margin.Dense"
                                   OnClearButtonClick="OnBarcodeCleared"
@@ -19,7 +20,7 @@
                                   ValueChanged="OnBarcodeChanged"
                                   Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
-                <MudItem xs="12" sm="6" md="4">
+                <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="_model.PriceUnit"
                                ValueChanged="OnPriceUnitChanged"
@@ -57,8 +58,8 @@
             </MudRadioGroup>
         </div>
 
-        <MudGrid Justify="Justify.Center" Spacing="4">
-            <MudItem xs="12" sm="6">
+        <MudGrid Spacing="4">
+            <MudItem xs="12" sm="6" md="4" lg="3">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentText="@_model.PriceUnit?.Title"
                                  For="() => _model.GramPrice"
@@ -67,13 +68,14 @@
                                  Immediate="true"
                                  Margin="Margin.Dense"
                                  Label="@($"نرخ {_model.GoldUnitType.GetDisplayName()}")"
+                                 dir="ltr"
                                  T="decimal"
                                  Value="@_model.GramPrice"
                                  ValueChanged="OnGramPriceChanged"
                                  Variant="Variant.Outlined"></MudNumericField>
             </MudItem>
 
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="6" md="4" lg="3">
                 <MudMenu @bind-Open="_weightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                     <ActivatorContent>
                         <MudNumericField Adornment="Adornment.End"
@@ -84,6 +86,7 @@
                                          Immediate="true"
                                          Margin="Margin.Dense"
                                          Label="@(_model.GetDisplayName(() => _model.Weight))"
+                                         dir="ltr"
                                          T="decimal"
                                          Value="_model.Weight"
                                          ValueChanged="OnWeightChanged"
@@ -103,13 +106,14 @@
                 </MudMenu>
             </MudItem>
 
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="6" md="4" lg="3">
                 <MudNumericField For="() => _model.Fineness"
                                  Immediate="true"
                                  HideSpinButtons="true"
                                  Format="G29"
                                  Margin="Margin.Dense"
                                  Label="@(_model.GetDisplayName(() => _model.Fineness))"
+                                 dir="ltr"
                                  T="decimal"
                                  Value="_model.Fineness"
                                  ValueChanged="OnFinenessChanged"
@@ -118,13 +122,14 @@
 
             @if (_model.ProductType is ProductType.UsedGold)
             {
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudNumericField For="() => _model.UsedGoldFinenessDeductionRate"
                                      Immediate="true"
                                      HideSpinButtons="true"
                                      Format="G29"
                                      Margin="Margin.Dense"
                                      Label="@(_model.GetDisplayName(() => _model.UsedGoldFinenessDeductionRate))"
+                                     dir="ltr"
                                      T="decimal"
                                      Value="_model.UsedGoldFinenessDeductionRate"
                                      ValueChanged="OnUsedGoldFinenessDeductionRateChanged"
@@ -134,7 +139,7 @@
 
             @if (_model.ProductType is ProductType.Jewelry or ProductType.Gold)
             {
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudSelect For="() => _model.WageType"
                                Immediate="true"
                                Margin="Margin.Dense"
@@ -151,7 +156,7 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                         <ActivatorContent>
                             <MudNumericField Adornment="Adornment.End"
@@ -162,6 +167,7 @@
                                              Immediate="true"
                                              Margin="Margin.Dense"
                                              Label="@(_model.GetDisplayName(() => _model.Wage))"
+                                             dir="ltr"
                                              T="decimal?"
                                              Value="_model.Wage"
                                              ValueChanged="OnWageChanged"
@@ -189,13 +195,14 @@
 
                 @if (_model.WageType is WageType.Fixed && _model.PriceUnit != _model.WagePriceUnit)
                 {
-                    <MudItem xs="12" sm="6">
+                    <MudItem xs="12" sm="6" md="4" lg="3">
                         <MudNumericField For="() => _model.WageExchangeRate"
                                          Format="#,##0.########"
                                          HideSpinButtons="true"
                                          Immediate="true"
                                          Margin="Margin.Dense"
                                          Label="@WageExchangeRateLabel"
+                                         dir="ltr"
                                          T="decimal?"
                                          Value="_model.WageExchangeRate"
                                          ValueChanged="OnWageExchangeRateChanged"
@@ -206,15 +213,16 @@
 
             @if (_model.ProductType != ProductType.UsedGold)
             {
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudNumericField Adornment="Adornment.End"
-                                     AdornmentIcon="@Icons.Material.Filled.Percent"
+                                     AdornmentText="درصد"
                                      For="() => _model.ProfitPercent"
                                      Format="G29"
                                      HideSpinButtons="true"
                                      Immediate="true"
                                      Margin="Margin.Dense"
                                      Label="@(_model.GetDisplayName(() => _model.ProfitPercent))"
+                                     dir="ltr"
                                      T="decimal"
                                      Value="_model.ProfitPercent"
                                      ValueChanged="OnProfitChanged"
@@ -222,7 +230,7 @@
                 </MudItem>
             }
 
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="6" md="4" lg="3">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentText="@_model.PriceUnit?.Title"
                                  For="() => _model.ExtraCosts"
@@ -231,6 +239,7 @@
                                  Immediate="true"
                                  Margin="Margin.Dense"
                                  Label="@(_model.GetDisplayName(() => _model.ExtraCosts))"
+                                 dir="ltr"
                                  T="decimal?"
                                  Value="_model.ExtraCosts"
                                  ValueChanged="OnExtraCostChanges"
@@ -238,7 +247,7 @@
             </MudItem>
             @if (_model.ProductType is ProductType.Jewelry)
             {
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudMenu @bind-Open="_stoneFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
                         <ActivatorContent>
                             <MudNumericField Adornment="Adornment.End"
@@ -249,6 +258,7 @@
                                              Immediate="true"
                                              Margin="Margin.Dense"
                                              Label="@(_model.GetDisplayName(() => _model.StonePrice))"
+                                             dir="ltr"
                                              T="decimal?"
                                              Value="_model.StonePrice"
                                              ValueChanged="OnStonePriceChanged"
@@ -275,13 +285,14 @@
                 </MudItem>
                 @if (_model.PriceUnit != _model.StonePriceUnit)
                 {
-                    <MudItem xs="12" sm="6">
+                    <MudItem xs="12" sm="6" md="4" lg="3">
                         <MudNumericField For="() => _model.StoneExchangeRate"
                                          Format="#,##0.########"
                                          HideSpinButtons="true"
                                          Immediate="true"
                                          Margin="Margin.Dense"
                                          Label="@StoneExchangeRateLabel"
+                                         dir="ltr"
                                          T="decimal?"
                                          Value="_model.StoneExchangeRate"
                                          ValueChanged="OnStoneExchangeRateChanged"

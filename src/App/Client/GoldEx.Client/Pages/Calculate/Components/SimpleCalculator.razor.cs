@@ -463,7 +463,7 @@ public partial class SimpleCalculator
 
     private async void ResetModel()
     {
-        _model.Weight = 0;
+        _model.Weight = 1;
         _model.Fineness = 750m;
         _model.UsedGoldFinenessDeductionRate = 0;
         _model.ProductType = ProductType.Gold;
