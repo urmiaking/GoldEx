@@ -93,7 +93,10 @@ public partial class SimpleCalculator
 
         if (authenticationState.User.Identity is { IsAuthenticated: false })
         {
-            var priceUnit = new GetPriceUnitTitleResponse(Guid.Empty, "ریال", false, true, false);
+            var defaultPriceUnit = await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse?>(
+                action: (s, ct) => s.GetDefaultAsync(ct));
+
+            var priceUnit = new GetPriceUnitTitleResponse(defaultPriceUnit?.Id ?? Guid.Empty, defaultPriceUnit?.Title ?? "ریال", false, true, false);
 
             _model.PriceUnit = priceUnit;
             _model.WagePriceUnit = priceUnit;
