@@ -230,7 +230,7 @@ public class InvoiceVm
         if (model.InvoiceType == InvoiceType.Sell && hasUsedItems && !hasNewItems)
             throw new ValidationException("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک کالای نو، سکه یا ارز باشد.");
 
-        if (model.Customer is null || !model.Customer.Id.HasValue)
+        if (model.Customer?.Id == null)
             throw new ValidationException("لطفا طرف حساب را انتخاب کنید");
 
         return new InvoiceRequestDto(model.InvoiceId,
@@ -238,6 +238,7 @@ public class InvoiceVm
             model.InvoiceDate.Value,
             model.DueDate,
             model.InvoiceType,
+            model.TradeScale,
             model.InvoicePriceUnit.Id,
             model.UnpaidExchangeRate,
             model.UnpaidPriceUnit?.Id,
@@ -276,7 +277,8 @@ public class InvoiceVm
             UnpaidExchangeRate = response.UnpaidAmountExchangeRate,
             UnpaidPriceUnit = response.UnpaidPriceUnit,
             ExchangeRate = response.ExchangeRate,
-            InvoiceType = response.InvoiceType
+            InvoiceType = response.InvoiceType,
+            TradeScale = response.TradeScale
         }.ReorderItemIndexes();
     }
 }

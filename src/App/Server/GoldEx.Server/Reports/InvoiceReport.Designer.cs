@@ -280,6 +280,8 @@
             // 
             // xrLabel19
             // 
+            this.xrLabel19.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", resources.GetString("xrLabel19.ExpressionBindings"))});
             this.xrLabel19.Font = new DevExpress.Drawing.DXFont("B Nazanin", 10F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel19.LocationFloat = new DevExpress.Utils.PointFloat(0F, 228.8751F);
             this.xrLabel19.Multiline = true;
@@ -1160,7 +1162,7 @@
             this.xrLabel44.Multiline = true;
             this.xrLabel44.Name = "xrLabel44";
             this.xrLabel44.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel44.SizeF = new System.Drawing.SizeF(95.19073F, 40.70837F);
+            this.xrLabel44.SizeF = new System.Drawing.SizeF(88.54169F, 40.70837F);
             this.xrLabel44.StylePriority.UseFont = false;
             this.xrLabel44.StylePriority.UseTextAlignment = false;
             this.xrLabel44.Text = "مصنوعات طلا";
@@ -1169,9 +1171,9 @@
             // xrLine5
             // 
             this.xrLine5.BorderWidth = 1F;
-            this.xrLine5.LocationFloat = new DevExpress.Utils.PointFloat(99.984F, 11.48071F);
+            this.xrLine5.LocationFloat = new DevExpress.Utils.PointFloat(93.33496F, 11.48071F);
             this.xrLine5.Name = "xrLine5";
-            this.xrLine5.SizeF = new System.Drawing.SizeF(650.0159F, 23F);
+            this.xrLine5.SizeF = new System.Drawing.SizeF(656.665F, 23F);
             this.xrLine5.StylePriority.UseBorderWidth = false;
             // 
             // xrTable4
@@ -1318,6 +1320,9 @@
             // 
             // xrLabel1
             // 
+            this.xrLabel1.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Iif([Invoice.InvoiceType] == \'Purchase\', \'فاکتور خرید\', \n    Iif([Invoice.Invoice" +
+                    "Type] == \'Sell\', \'فاکتور فروش\', \'\'))\n")});
             this.xrLabel1.Font = new DevExpress.Drawing.DXFont("B Farnaz", 24F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(261.2391F, 10.00001F);
             this.xrLabel1.Multiline = true;
@@ -1326,7 +1331,7 @@
             this.xrLabel1.SizeF = new System.Drawing.SizeF(217.7082F, 43.83332F);
             this.xrLabel1.StylePriority.UseFont = false;
             this.xrLabel1.StylePriority.UseTextAlignment = false;
-            this.xrLabel1.Text = "فاکتور فروش";
+            this.xrLabel1.Text = "عنوان صفحه";
             this.xrLabel1.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
             // 
             // logoBox
@@ -1415,9 +1420,9 @@
             // xrLine1
             // 
             this.xrLine1.LineWidth = 2F;
-            this.xrLine1.LocationFloat = new DevExpress.Utils.PointFloat(130.8335F, 9.06081F);
+            this.xrLine1.LocationFloat = new DevExpress.Utils.PointFloat(128.9584F, 9.060791F);
             this.xrLine1.Name = "xrLine1";
-            this.xrLine1.SizeF = new System.Drawing.SizeF(613.9583F, 23F);
+            this.xrLine1.SizeF = new System.Drawing.SizeF(618.9478F, 23F);
             // 
             // xrLabel14
             // 
@@ -1460,14 +1465,14 @@
             // 
             // xrLabel17
             // 
+            this.xrLabel17.CanShrink = true;
             this.xrLabel17.Font = new DevExpress.Drawing.DXFont("B Titr", 14F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel17.LocationFloat = new DevExpress.Utils.PointFloat(4.791809F, 3.935799F);
-            this.xrLabel17.Multiline = true;
+            this.xrLabel17.LocationFloat = new DevExpress.Utils.PointFloat(4.791809F, 3.935806F);
             this.xrLabel17.Name = "xrLabel17";
             this.xrLabel17.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel17.SizeF = new System.Drawing.SizeF(126.0416F, 40.70836F);
+            this.xrLabel17.SizeF = new System.Drawing.SizeF(124.1666F, 40.70836F);
             this.xrLabel17.StylePriority.UseFont = false;
-            this.xrLabel17.Text = "مشخصات خریدار";
+            this.xrLabel17.Text = "مشخصات مشتری";
             // 
             // xrLabel9
             // 
