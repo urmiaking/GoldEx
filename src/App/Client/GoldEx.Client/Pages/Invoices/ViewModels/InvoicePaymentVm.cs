@@ -66,7 +66,7 @@ public class InvoicePaymentVm
             Note = response.Note,
             ExchangeRate = response.ExchangeRate,
             AmountAdornmentText = response.PriceUnit.Title,
-            ExchangeRateLabel = $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}",
+            ExchangeRateLabel = response.PriceUnit != priceUnit ? $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}" : null,
             VoucherId = response.VoucherId,
             Disabled = response.VoucherId.HasValue,
             FinancialAccounts = response.FinancialAccounts

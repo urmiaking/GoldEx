@@ -4,9 +4,9 @@ namespace GoldEx.Shared.Enums;
 
 public enum TradeScale
 {
-    [Display(Name = "خرده")]
-    Retail = 1,
-
     [Display(Name = "عمده")]
-    Wholesale = 0
+    Wholesale = 0,
+
+    [Display(Name = "خرده")]
+    Retail = 1
 }

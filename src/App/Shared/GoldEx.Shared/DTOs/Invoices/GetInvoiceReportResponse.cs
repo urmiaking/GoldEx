@@ -6,6 +6,8 @@ namespace GoldEx.Shared.DTOs.Invoices;
 public record GetInvoiceDetailResponse(long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
+    InvoiceType InvoiceType,
+    TradeScale TradeScale,
     string TotalAmount,
     string TotalPaidAmount,
     string? TotalDiscountAmount,
