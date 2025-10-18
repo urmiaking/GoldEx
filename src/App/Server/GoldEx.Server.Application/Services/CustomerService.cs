@@ -363,6 +363,11 @@ internal class CustomerService(
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new InvalidOperationException("Rial price unit not found.");
 
+        var tomanPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByUnitTypeSpecification(UnitType.Toman))
+            .AsNoTracking()
+            .FirstOrDefaultAsync() ?? throw new InvalidOperationException("Toman price unit not found.");
+
         var goldPriceUnit = await priceUnitRepository
             .Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
             .AsNoTracking()
@@ -387,6 +392,16 @@ internal class CustomerService(
                 SystemLedgerAccounts.AccountsPayable,
                 customer.FullName,
                 customer.NationalId,
+                tomanPriceUnit.Title),
+            customer.Id,
+            tomanPriceUnit.Id,
+            LedgerAccountType.Liability,
+            parentPayableAccount.Id));
+
+        ledgerAccounts.Add(LedgerAccount.CreateCustomerAccount(LedgerAccountTitleBuilder.ForCustomer(
+                SystemLedgerAccounts.AccountsPayable,
+                customer.FullName,
+                customer.NationalId,
                 goldPriceUnit.Title),
             customer.Id,
             goldPriceUnit.Id,
@@ -403,6 +418,16 @@ internal class CustomerService(
                 rialPriceUnit.Title),
             customer.Id,
             rialPriceUnit.Id,
+            LedgerAccountType.Asset,
+            parentReceivableAccount.Id));
+
+        ledgerAccounts.Add(LedgerAccount.CreateCustomerAccount(LedgerAccountTitleBuilder.ForCustomer(
+                SystemLedgerAccounts.AccountsReceivable,
+                customer.FullName,
+                customer.NationalId,
+                tomanPriceUnit.Title),
+            customer.Id,
+            tomanPriceUnit.Id,
             LedgerAccountType.Asset,
             parentReceivableAccount.Id));
 
