@@ -380,7 +380,7 @@
                         @if (_tax.HasValue && _tax.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                <MudText>مالیات: @_model.TaxPercent.ToCurrencyFormat()% (سود فروش طلا + اجرت ساخت@(_model.StonePrice.HasValue ? " + قیمت سنگ" : string.Empty))</MudText>
+                                <MudText>مالیات: @_model.TaxPercent.ToCurrencyFormat()% (سود فروش طلا + اجرت ساخت@(_model.StonePrice.HasValue && _model.StonePrice != 0 ? " + قیمت سنگ" : string.Empty))</MudText>
                                 <MudText Class="font-weight-bold">@_tax.Value.ToCurrencyFormat(_model.PriceUnit?.Title)</MudText>
                             </div>
                         }
