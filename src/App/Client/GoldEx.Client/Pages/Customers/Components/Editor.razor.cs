@@ -69,7 +69,10 @@ public partial class Editor
         await _form.Validate();
 
         if (!_form.IsValid)
+        {
+            _processing = false;
             return;
+        }
 
         var request = CustomerVm.ToRequest(Model);
 

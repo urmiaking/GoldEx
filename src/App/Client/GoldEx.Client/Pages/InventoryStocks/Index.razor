@@ -19,6 +19,12 @@
                            Href="@ClientRoutes.InventoryStocks.List"/>
         </MudItem>
         <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="ورود جنس با فاکتور خرید"
+                           Description="ثبت فاکتور خرید و ورود جنس به انبار"
+                           StartIcon="@Icons.Material.Filled.PostAdd"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { InvoiceType = InvoiceType.Purchase })" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="ورود آبشده از ذوب طلا"
                            Description="مدیریت فرایند ذوب طلا و ورود آبشده"
                            StartIcon="@Icons.Material.Filled.Transform"
