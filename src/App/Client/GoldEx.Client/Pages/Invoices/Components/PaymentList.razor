@@ -56,7 +56,7 @@
                     </ChildContent>
                 </MudMenu>
             </MudTd>
-            @if (context.PriceUnit != PriceUnit)
+            @if (context.PriceUnit?.Id != PriceUnit.Id)
             {
                 <MudTd DataLabel="@context.ExchangeRateLabel">
                     <MudNumericField For="@(() => context.ExchangeRate)"
