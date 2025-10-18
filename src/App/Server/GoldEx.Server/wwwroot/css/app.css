@@ -221,7 +221,7 @@ h1:focus {
 
 @media (min-width: 960px) {
     .responsive-table {
-        height: calc(100vh - 150px);
+        height: calc(100vh - 220px);
     }
 }
 
@@ -231,7 +231,7 @@ h1:focus {
 
 @media (min-width: 960px) {
     .responsive-table-toolbar {
-        height: calc(100vh - 262px);
+        height: calc(100vh - 332px);
     }
 }
 
@@ -241,6 +241,6 @@ h1:focus {
 
 @media (min-width: 960px) {
     .responsive-table-login {
-        height: calc(100vh - 250px);
+        height: calc(100vh - 310px);
     }
 }
