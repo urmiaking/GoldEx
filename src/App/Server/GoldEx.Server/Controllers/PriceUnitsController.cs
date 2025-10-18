@@ -40,6 +40,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
         return Ok(priceUnit);
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.PriceUnits.GetDefault)]
     public async Task<IActionResult> GetDefaultAsync(CancellationToken cancellationToken = default)
     {
