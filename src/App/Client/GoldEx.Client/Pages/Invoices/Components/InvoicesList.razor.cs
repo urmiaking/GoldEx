@@ -21,15 +21,6 @@ public partial class InvoicesList
     [Parameter] public Guid? CustomerId { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
-    public string? InvoicePaymentStatusIcon => _invoicePaymentStatus switch
-    {
-        InvoicePaymentStatus.Paid => Icons.Material.Filled.Check,
-        InvoicePaymentStatus.HasDebt => Icons.Material.Filled.Pending,
-        InvoicePaymentStatus.Overdue => Icons.Material.Filled.MoreTime,
-        null => Icons.Material.Filled.ViewHeadline,
-        _ => throw new ArgumentOutOfRangeException()
-    };
-
     public string? InvoiceTypeIcon => _invoiceType switch
     {
         InvoiceType.Sell => Icons.Material.Filled.ArrowDownward,
@@ -46,6 +37,31 @@ public partial class InvoicesList
         _ => throw new ArgumentOutOfRangeException()
     };
 
+    public string? TradeScaleIcon => _tradeScale switch
+    {
+        TradeScale.Wholesale => Icons.Material.Filled.Apps,
+        TradeScale.Retail => Icons.Material.Filled.Square,
+        null => Icons.Material.Filled.ViewHeadline,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public Color TradeScaleColor => _tradeScale switch
+    {
+        TradeScale.Wholesale => Color.Primary,
+        TradeScale.Retail => Color.Success,
+        null => Color.Info,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public string? InvoicePaymentStatusIcon => _invoicePaymentStatus switch
+    {
+        InvoicePaymentStatus.Paid => Icons.Material.Filled.Check,
+        InvoicePaymentStatus.HasDebt => Icons.Material.Filled.Pending,
+        InvoicePaymentStatus.Overdue => Icons.Material.Filled.MoreTime,
+        null => Icons.Material.Filled.ViewHeadline,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
     public Color InvoicePaymentStatusColor => _invoicePaymentStatus switch
     {
         InvoicePaymentStatus.Paid => Color.Success,
@@ -57,6 +73,7 @@ public partial class InvoicesList
 
     private InvoicePaymentStatus? _invoicePaymentStatus;
     private InvoiceType? _invoiceType;
+    private TradeScale? _tradeScale;
     private string? _searchString;
     private MudTable<InvoiceListVm> _table = new();
     private DateRange _filterDateRange = new();
@@ -75,7 +92,7 @@ public partial class InvoicesList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _filterDateRange.Start, _filterDateRange.End);
+        var invoiceFilter = new InvoiceFilter(_invoicePaymentStatus, _invoiceType, _tradeScale, _filterDateRange.Start, _filterDateRange.End);
 
         await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
             action: (service, token) => service.GetListAsync(filter, invoiceFilter, CustomerId, token),
@@ -155,6 +172,12 @@ public partial class InvoicesList
         await RefreshAsync();
     }
 
+    private async Task SetTradeScaleText(TradeScale? tradeScale)
+    {
+        _tradeScale = tradeScale;
+        await RefreshAsync();
+    }
+
     private async Task OnDateRangeChanged(DateRange dateRange)
     {
         _filterDateRange = dateRange;
@@ -170,14 +193,5 @@ public partial class InvoicesList
     private string GetInvoiceDateTooltipText(InvoiceListVm context)
     {
         return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";
-    }
-
-    private string FormatDebtAmount(decimal amount, string unit)
-    {
-        if (amount < 0)
-        {
-            return $"{Math.Abs(amount).ToCurrencyFormat(unit)} (بس)";
-        }
-        return amount.ToCurrencyFormat(unit);
     }
 }

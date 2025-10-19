@@ -48,6 +48,12 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
             AddCriteria(x => x.InvoiceType == invoiceFilter.InvoiceType);
         }
 
+        // Apply trade scale if provided
+        if (invoiceFilter.TradeScale.HasValue)
+        {
+            AddCriteria(x => x.TradeScale == invoiceFilter.TradeScale);
+        }
+
         // Apply status filter only if a status is provided
         if (invoiceFilter.Status.HasValue)
         {
