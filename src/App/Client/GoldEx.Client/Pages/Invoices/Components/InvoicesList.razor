@@ -28,14 +28,27 @@
                                 Label="تاریخ فاکتور"
                                 Clearable="true" />
         </MudHidden>
+        
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="@TradeScaleColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@TradeScaleIcon">
+                    @(_tradeScale == null ? "نوع معامله" : _tradeScale.GetDisplayName())
+                </MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.CompareArrows" OnClick="() => SetTradeScaleText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Apps" OnClick="() => SetTradeScaleText(TradeScale.Wholesale)">@TradeScale.Wholesale.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Square" OnClick="() => SetTradeScaleText(TradeScale.Retail)">@TradeScale.Retail.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButtonGroup Size="Size.Small" Color="@InvoiceTypeColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@InvoiceTypeIcon">
-                    @(_invoiceType == null ? "همه" : _invoiceType.GetDisplayName())
+                    @(_invoiceType == null ? "نوع فاکتور" : _invoiceType.GetDisplayName())
                 </MudButton>
                 <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.CompareArrows" OnClick="() => SetInvoiceTypeText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.CompareArrows" OnClick="() => SetInvoiceTypeText(null)">همه</MudMenuItem>
                     <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.ArrowUpward" OnClick="() => SetInvoiceTypeText(InvoiceType.Purchase)">@InvoiceType.Purchase.GetDisplayName()</MudMenuItem>
                     <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.ArrowDownward" OnClick="() => SetInvoiceTypeText(InvoiceType.Sell)">@InvoiceType.Sell.GetDisplayName()</MudMenuItem>
                 </MudMenu>
@@ -45,10 +58,10 @@
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButtonGroup Size="Size.Small" Color="@InvoicePaymentStatusColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@InvoicePaymentStatusIcon">
-                    @(_invoicePaymentStatus == null ? "همه" : _invoicePaymentStatus.GetDisplayName())
+                    @(_invoicePaymentStatus == null ? "وضعیت" : _invoicePaymentStatus.GetDisplayName())
                 </MudButton>
                 <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
                     <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.HasDebt)">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudMenuItem>
                     <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.MoreTime" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Overdue)">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudMenuItem>
                     <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Paid)">@InvoicePaymentStatus.Paid.GetDisplayName()</MudMenuItem>
@@ -69,6 +82,7 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortLabel="InvoiceType" T="InvoiceListVm">نوع فاکتور</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="TradeScale" T="InvoiceListVm">نوع معامله</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
         <MudTh>ارزش کل</MudTh>
@@ -79,6 +93,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="نوع فاکتور">@context.InvoiceType.GetDisplayName()</MudTd>
+        <MudTd DataLabel="نوع معامله">@context.TradeScale.GetDisplayName()</MudTd>
         <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
         <MudTd DataLabel="طرف حساب">@context.CustomerFullName</MudTd>
         <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.PriceUnit)</MudTd>

@@ -12,6 +12,7 @@ public class InvoiceListVm
     public DateTime CreatedAt { get; set; }
     public DateOnly? DueDate { get; set; }
     public InvoiceType InvoiceType { get; set; }
+    public TradeScale TradeScale { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal TotalUnpaidAmount { get; set; }
     public string PriceUnit { get; set; } = default!;
@@ -30,6 +31,7 @@ public class InvoiceListVm
             InvoiceNumber = listResponse.InvoiceNumber,
             InvoiceDate = listResponse.InvoiceDate,
             InvoiceType = listResponse.InvoiceType,
+            TradeScale = listResponse.TradeScale,
             DueDate = listResponse.DueDate,
             CreatedAt = listResponse.CreatedAt,
             TotalAmount = listResponse.TotalAmount,

@@ -9,6 +9,7 @@ public record GetInvoiceListResponse(
     DateTime CreatedAt,
     DateOnly? DueDate,
     InvoiceType InvoiceType,
+    TradeScale TradeScale,
     string CustomerFullName,
     decimal TotalAmount,
     decimal TotalUnpaidAmount,
