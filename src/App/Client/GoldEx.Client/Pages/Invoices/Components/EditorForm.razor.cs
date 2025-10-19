@@ -264,10 +264,10 @@ public partial class EditorForm
                     WageExchangeRate = wageExchangeRate,
                     StonePriceUnitExchangeRate = stoneExchangeRate,
                     InvoiceType = InvoiceType.Sell,
-                    TaxPercent = _setting?.TaxPercent ?? 9,
-                    ProfitPercent = response.ProductType == ProductType.Gold
+                    TaxPercent = _model.TradeScale is TradeScale.Retail ? _setting?.TaxPercent ?? 9 : 0,
+                    ProfitPercent = _model.TradeScale is TradeScale.Retail ? response.ProductType == ProductType.Gold
                         ? _setting?.GoldProfitPercent ?? 7
-                        : _setting?.JewelryProfitPercent ?? 20,
+                        : _setting?.JewelryProfitPercent ?? 20 : 0,
                     Index = _model.GetLastProductIndexNumber() + 1
                 });
             },
@@ -285,9 +285,9 @@ public partial class EditorForm
         var parameters = new DialogParameters<InventoryItemSelector>
         {
             { x => x.GramPrice, gramPrice },
-            { x => x.TaxPercent, _setting?.TaxPercent ?? 10 },
-            { x => x.GoldProfitPercent, _setting?.GoldProfitPercent ?? 7 },
-            { x => x.JewelryProfitPercent, _setting?.JewelryProfitPercent ?? 20 },
+            { x => x.TaxPercent, _model.TradeScale is TradeScale.Retail ? _setting?.TaxPercent ?? 10 : 0 },
+            { x => x.GoldProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.GoldProfitPercent ?? 7 : 0 },
+            { x => x.JewelryProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.JewelryProfitPercent ?? 20 : 0 },
             { x => x.ItemType, ItemType.Product },
             { x => x.PriceUnit, _model.InvoicePriceUnit },
             { x => x.ItemStatus, ItemStatus.Available }
@@ -329,7 +329,8 @@ public partial class EditorForm
         {
             { x => x.Model, model },
             { x => x.PriceUnits, _priceUnits },
-            { x => x.PriceUnit, _model.InvoicePriceUnit }
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.TradeScale, _model.TradeScale }
         };
 
         var dialog = await DialogService.ShowAsync<ProductItemEditor>("افزودن جنس جدید", parameters, _dialogOptions);
@@ -350,7 +351,8 @@ public partial class EditorForm
         {
             { x => x.Model, productItemVm },
             { x => x.PriceUnits, _priceUnits },
-            { x => x.PriceUnit, _model.InvoicePriceUnit }
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.TradeScale, _model.TradeScale }
         };
 
         var dialog = await DialogService.ShowAsync<ProductItemEditor>("ویرایش جنس", parameters, _dialogOptions);
@@ -832,6 +834,21 @@ public partial class EditorForm
             TradeScale.Wholesale => _priceUnits.FirstOrDefault(x => x.IsGoldBased),
             _ => null
         };
+
+        if (tradeScale is TradeScale.Wholesale)
+        {
+            var result = await DialogService.ShowMessageBox(
+                "هشدار",
+                markupMessage: new MarkupString("تغییر نوع معامله باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
+                yesText: "بله", cancelText: "لغو");
+
+            if (result is null or false)
+                return;
+
+            _model.ProductItems.Clear();
+            _model.CoinItems.Clear();
+            _model.CurrencyItems.Clear();
+        }
 
         await OnInvoicePriceUnitChanged(priceUnit);
     }

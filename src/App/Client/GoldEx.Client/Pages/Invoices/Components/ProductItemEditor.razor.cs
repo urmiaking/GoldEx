@@ -21,6 +21,7 @@ public partial class ProductItemEditor
     [Parameter] public ProductItemVm Model { get; set; } = ProductItemVm.CreateDefaultInstance();
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
+    [Parameter] public TradeScale TradeScale { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private readonly ProductItemValidator _productItemValidator = new();
@@ -71,6 +72,12 @@ public partial class ProductItemEditor
         }
 
         OnWageTypeChanged(Model.Product.WageType);
+
+        if (TradeScale is TradeScale.Wholesale)
+        {
+            Model.ProfitPercent = 0;
+            Model.TaxPercent = 0;
+        }
 
         base.OnParametersSet();
     }
