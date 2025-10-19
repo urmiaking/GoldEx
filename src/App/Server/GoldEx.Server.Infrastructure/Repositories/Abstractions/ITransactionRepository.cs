@@ -17,5 +17,5 @@ public interface ITransactionRepository : IRepository<Transaction>,
     Task RemoveByPaymentVoucherIdAsync(PaymentVoucherId paymentVoucherId, CancellationToken cancellationToken = default);
     Task RemoveByInvoicePaymentIdsAsync(List<InvoicePaymentId>? invoicePaymentIds, CancellationToken cancellationToken = default);
 
-    Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, CancellationToken cancellationToken = default);
+    Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, DateTime? untilDate = null, CancellationToken cancellationToken = default);
 }

@@ -40,4 +40,14 @@ public class PriceUnit : EntityBase<PriceUnitId>
     public void SetPriceId(PriceId? priceId) => PriceId = priceId;
     public void SetStatus(bool isActive) => IsActive = isActive;
     public void SetDefault(bool isDefault) => IsDefault = isDefault;
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not PriceUnit other)
+            return false;
+
+        return Id == other.Id;
+    }
+
+    public override int GetHashCode() => Id.GetHashCode();
 }
