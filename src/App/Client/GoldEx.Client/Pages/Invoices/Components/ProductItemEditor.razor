@@ -11,6 +11,7 @@
                     <MudNumericField Adornment="Adornment.End"
                                      AdornmentText="@PriceUnit.Title"
                                      @bind-Value="Model.GramPrice"
+                                     dir="ltr"
                                      For="@(() => Model.GramPrice)"
                                      Format="#,##0.##"
                                      Immediate="true"
@@ -97,6 +98,7 @@
                             <MudNumericField Adornment="Adornment.End"
                                              AdornmentText="@Model.Product.GoldUnitType.GetDisplayName()"
                                              For="() => Model.TotalWeight"
+                                             dir="ltr"
                                              Format="G29"
                                              Immediate="true"
                                              HideSpinButtons="true"
@@ -125,6 +127,7 @@
                     <MudItem xs="12" sm="6" md="4">
                         <MudNumericField For="@(() => Model.Quantity)"
                                          Immediate="true"
+                                         dir="ltr"
                                          Label="@Model.GetDisplayName(() => Model.Quantity)"
                                          Margin="Margin.Dense"
                                          T="int"
@@ -137,6 +140,7 @@
                     <MudNumericField For="@(() => Model.Product.Fineness)"
                                      Format="G29"
                                      Immediate="true"
+                                     dir="ltr"
                                      Label="@Model.GetDisplayName(() => Model.Product.Fineness)"
                                      Margin="Margin.Dense"
                                      T="decimal"
@@ -170,6 +174,7 @@
                                                  AdornmentText="@WageFieldAdornmentText"
                                                  For="() => Model.Product.Wage"
                                                  Format="#,##0.##"
+                                                 dir="ltr"
                                                  HideSpinButtons="true"
                                                  Immediate="true"
                                                  Margin="Margin.Dense"
@@ -205,6 +210,7 @@
                     <MudItem xs="12" sm="6" md="4">
                         <MudNumericField For="@(() => Model.WageExchangeRate)"
                                          Format="#,##0.########"
+                                         dir="ltr"
                                          Immediate="true"
                                          Label="@WageExchangeRateLabel"
                                          Margin="Margin.Dense"
@@ -222,6 +228,7 @@
                     <MudItem xs="12" sm="6" md="4">
                         <MudNumericField For="@(() => Model.ProfitPercent)"
                                          Format="G29"
+                                         dir="ltr"
                                          Immediate="true"
                                          Label="@Model.GetDisplayName(() => Model.ProfitPercent)"
                                          Margin="Margin.Dense"
@@ -235,6 +242,7 @@
                     <MudItem xs="12" sm="6" md="4">
                         <MudNumericField For="@(() => Model.TaxPercent)"
                                          Format="G29"
+                                         dir="ltr"
                                          Immediate="true"
                                          Label="@Model.GetDisplayName(() => Model.TaxPercent)"
                                          Margin="Margin.Dense"
@@ -254,6 +262,7 @@
                                              AdornmentText="@CostPriceAdornmentText"
                                              For="() => Model.CostPrice"
                                              Format="#,##0.##"
+                                             dir="ltr"
                                              HideSpinButtons="true"
                                              Immediate="true"
                                              Margin="Margin.Dense"
@@ -287,6 +296,7 @@
                     <MudItem xs="12" sm="6" md="4">
                         <MudNumericField For="@(() => Model.CostPriceExchangeRate)"
                                          Format="#,##0.########"
+                                         dir="ltr"
                                          Immediate="true"
                                          Label="@CostExchangeRateLabel"
                                          Margin="Margin.Dense"
@@ -340,6 +350,7 @@
                         <MudItem xs="12" sm="6" md="4">
                             <MudNumericField For="@(() => Model.StonePriceUnitExchangeRate)"
                                              Format="#,##0.########"
+                                             dir="ltr"
                                              Immediate="true"
                                              Label="@StonePriceExchangeRateLabel"
                                              Margin="Margin.Dense"
@@ -393,6 +404,7 @@
                             <MudItem @key="@($"{index} carat")" xs="6" md="4" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Product.Stones[index].Carat"
                                               For="() => Model.Product.Stones[index].Carat"
+                                              dir="ltr"
                                               Label="قیراط" Margin="Margin.Dense" Format="G29"
                                               T="decimal" Variant="Variant.Outlined"></MudTextField>
                             </MudItem>
@@ -408,6 +420,7 @@
                                                  Label="نرخ"
                                                  Margin="Margin.Dense"
                                                  T="decimal"
+                                                 dir="ltr"
                                                  Format="#,##0.##"
                                                  HideSpinButtons="true"
                                                  Adornment="Adornment.End"

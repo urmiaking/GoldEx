@@ -17,6 +17,7 @@
             <MudNumericField Adornment="Adornment.End"
                              AdornmentText="@Model.PriceUnit?.Title"
                              For="() => Model.GramPrice"
+                             dir="ltr"
                              Format="#,##0.##"
                              HideSpinButtons="true"
                              Immediate="true"
@@ -30,6 +31,7 @@
             <MudNumericField @bind-Value="Model.MeltedGoldWeight"
                              Label="@Model.GetDisplayName(() => Model.MeltedGoldWeight)"
                              Variant="Variant.Outlined"
+                             dir="ltr"
                              Format="G29"
                              AutoFocus="true"
                              HideSpinButtons="true"
@@ -42,6 +44,7 @@
             <MudNumericField @bind-Value="Model.Fineness"
                              Label="@Model.GetDisplayName(() => Model.Fineness)"
                              Variant="Variant.Outlined"
+                             dir="ltr"
                              Immediate="true"
                              Format="G29"
                              HideSpinButtons="true"
@@ -51,6 +54,7 @@
             <MudTextField @bind-Value="Model.AssayNumber"
                           Label="@Model.GetDisplayName(() => Model.AssayNumber)"
                           Variant="Variant.Outlined"
+                          dir="ltr"
                           Immediate="true"
                           Margin="Margin.Dense" />
         </MudItem>
@@ -60,6 +64,7 @@
                     <MudNumericField Adornment="Adornment.End"
                                      AdornmentText="@Model.FeePriceUnit?.Title"
                                      For="() => Model.FeeAmount"
+                                     dir="ltr"
                                      Format="#,##0.##"
                                      HideSpinButtons="true"
                                      Immediate="true"
@@ -94,6 +99,7 @@
             <MudItem xs="12" sm="6" md="3">
                 <MudNumericField For="() => Model.FeeExchangeRate"
                                  Format="#,##0.########"
+                                 dir="ltr"
                                  HideSpinButtons="true"
                                  Immediate="true"
                                  Margin="Margin.Dense"

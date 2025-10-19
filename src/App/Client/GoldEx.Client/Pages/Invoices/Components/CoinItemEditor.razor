@@ -26,6 +26,7 @@
                                      Label="@Model.GetDisplayName(() => Model.UnitPrice)"
                                      For="() => Model.UnitPrice"
                                      Format="#,##0.##"
+                                     dir="ltr"
                                      Immediate="true"
                                      HideSpinButtons="true"
                                      Margin="Margin.Dense"
@@ -40,6 +41,7 @@
                                      Label="@Model.GetDisplayName(() => Model.Quantity)"
                                      For="() => Model.Quantity"
                                      Immediate="true"
+                                     dir="ltr"
                                      Margin="Margin.Dense"
                                      Variant="Variant.Outlined"
                                      InputMode="InputMode.numeric" />
@@ -51,6 +53,7 @@
                                      For="() => Model.ProfitPercent"
                                      Adornment="Adornment.End"
                                      AdornmentText="درصد"
+                                     dir="ltr"
                                      HideSpinButtons="true"
                                      Format="G29"
                                      Immediate="true"

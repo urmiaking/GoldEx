@@ -16,6 +16,7 @@
                 <MudItem xs="6">
                     <MudTextField @bind-Value="Model.PrefixCode"
                                   For="@(() => Model.PrefixCode)"
+                                  dir="ltr"
                                   Label="@Model.GetDisplayName(() => Model.PrefixCode)"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
