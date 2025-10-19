@@ -1,4 +1,5 @@
-﻿@using GoldEx.Shared.DTOs.PriceUnits
+﻿@using GoldEx.Client.Components.Utilities
+@using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_financialAccountValidator.ValidateValue)" ValidationDelay="0">
@@ -81,12 +82,16 @@
                         <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="Model.LocalBankAccount.AccountNumber"
                                           For="@(() => Model.LocalBankAccount.AccountNumber)"
+                                          dir="ltr"
                                           Label="@(Model.GetDisplayName(() => Model.LocalBankAccount.AccountNumber))"
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined" />
                         </MudItem>
                         <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="Model.LocalBankAccount.CardNumber"
+                                          Mask="@Masks.CreditCardMask"
+                                          Placeholder="____ ____ ____ ____"
+                                          dir="ltr"
                                           For="@(() => Model.LocalBankAccount.CardNumber)"
                                           Label="@(Model.GetDisplayName(() => Model.LocalBankAccount.CardNumber))"
                                           Margin="Margin.Dense"
@@ -95,6 +100,9 @@
                         <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="Model.LocalBankAccount.ShabaNumber"
                                           For="@(() => Model.LocalBankAccount.ShabaNumber)"
+                                          Placeholder="IR ____ ____ ____ ____ ____ ____"
+                                          Mask="@(Masks.ShabaMask)"
+                                          dir="ltr"
                                           Label="@(Model.GetDisplayName(() => Model.LocalBankAccount.ShabaNumber))"
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined" />
@@ -104,6 +112,7 @@
                         <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="Model.InternationalBankAccount.AccountNumber"
                                           For="@(() => Model.InternationalBankAccount.AccountNumber)"
+                                          dir="ltr"
                                           Label="@(Model.GetDisplayName(() => Model.InternationalBankAccount.AccountNumber))"
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined" />
@@ -111,6 +120,9 @@
                         <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="Model.InternationalBankAccount.SwiftBicCode"
                                           For="@(() => Model.InternationalBankAccount.SwiftBicCode)"
+                                          Placeholder="____ __ __ ____"
+                                          Mask="@Masks.SwiftBicCode"
+                                          dir="ltr"
                                           Label="@(Model.GetDisplayName(() => Model.InternationalBankAccount.SwiftBicCode))"
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined" />
@@ -118,6 +130,9 @@
                         <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="Model.InternationalBankAccount.IbanNumber"
                                           For="@(() => Model.InternationalBankAccount.IbanNumber)"
+                                          Placeholder="XY__ ____ ____ ____ ____ ____ ____"
+                                          Mask="@Masks.InternationalIbanMask"
+                                          dir="ltr"
                                           Label="@(Model.GetDisplayName(() => Model.InternationalBankAccount.IbanNumber))"
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined" />
