@@ -3,7 +3,8 @@ using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Invoices;
 
-public record GetInvoiceDetailResponse(long InvoiceNumber,
+public record GetInvoiceDetailResponse(
+    long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
     InvoiceType InvoiceType,
@@ -25,7 +26,9 @@ public record GetInvoiceDetailResponse(long InvoiceNumber,
     List<GetInvoiceProductItemReportResponse> InvoiceProductItems,
     List<GetInvoiceCoinItemReportResponse> InvoiceCoinItems,
     List<GetInvoiceCurrencyItemReportResponse> InvoiceCurrencyItems,
-    List<GetInvoiceUsedProductReportResponse> InvoiceUsedProductItems);
+    List<GetInvoiceUsedProductReportResponse> InvoiceUsedProductItems,
+    string? PreviousRemaining,
+    string? AfterRemaining);
 
 public record GetInvoiceProductItemReportResponse(
     string GramPrice,

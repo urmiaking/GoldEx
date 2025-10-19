@@ -55,18 +55,24 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         await DeleteRangeAsync(transactions, cancellationToken);
     }
 
-    public async Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, DateTime? untilDate = null, 
+        CancellationToken cancellationToken = default)
     {
-        var balances = await Query
+        var baseQuery = Query
             .Include(x => x.LedgerAccount!.PriceUnit)
-            .Where(t => t.LedgerAccount != null && t.LedgerAccount.CustomerId == customerId)
+            .Where(t => t.LedgerAccount != null && t.LedgerAccount.CustomerId == customerId);
+
+        if (untilDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(t => t.CreatedAt < untilDate.Value);
+        }
+
+        var balances = await baseQuery
             .GroupBy(t => t.LedgerAccount!.PriceUnit)
             .Select(group => new
             {
                 PriceUnit = group.Key,
-                Balance = group.Sum(t =>
-                    // اگر نوع تراکنش بدهکار است، مبلغ مثبت و اگر بستانکار است، مبلغ منفی در نظر گرفته می‌شود
-                    t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount)
+                Balance = group.Sum(t => t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount)
             })
             .AsNoTracking()
             .ToDictionaryAsync(result => result.PriceUnit!, result => result.Balance, cancellationToken);

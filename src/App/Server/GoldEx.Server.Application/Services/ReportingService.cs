@@ -1,11 +1,13 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +15,11 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingService settingService, IMapper mapper) : IReportingService
+internal class ReportingService(
+    IInvoiceRepository invoiceRepository,
+    ITransactionRepository transactionRepository,
+    ISettingService settingService,
+    IMapper mapper) : IReportingService
 {
     public async Task<GetInvoiceReportResponse> GetInvoiceReportAsync(long invoiceNumber, InvoiceType invoiceType,
         CancellationToken cancellationToken = default)
@@ -38,8 +44,56 @@ internal class ReportingService(IInvoiceRepository invoiceRepository, ISettingSe
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
+            .Include(x => x.PriceUnit)
+            .Include(x => x.UnpaidPriceUnit)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        return mapper.Map<GetInvoiceDetailResponse>(item);
+        var unpaid = item.TotalUnpaidAmount;
+        var impact = unpaid * (item.InvoiceType == InvoiceType.Sell ? 1m : -1m); // Sell: + (بدهکار مثبت), Purchase: - (بستانکار منفی)
+
+        // مانده قبلی (قبل از CreatedAt)
+        var previousRemaining = await transactionRepository.GetCustomerRemainingListAsync(item.CustomerId, item.CreatedAt, cancellationToken);
+
+        // مانده پس از فاکتور (previous + impact)
+        var afterRemaining = new Dictionary<PriceUnit, decimal>(previousRemaining);
+        afterRemaining[item.PriceUnit] = afterRemaining.GetValueOrDefault(item.PriceUnit, 0m) + impact; // مستقیم set
+
+        var previousFormatted = FormatRemaining(previousRemaining, item.PriceUnit, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
+        var afterFormatted = FormatRemaining(afterRemaining, item.PriceUnit, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
+
+        var mapped = mapper.Map<GetInvoiceDetailResponse>(item);
+        mapped = mapped with
+        {
+            PreviousRemaining = previousFormatted,
+            AfterRemaining = afterFormatted,
+        };
+
+        return mapped;
+    }
+
+    private static string FormatRemaining(Dictionary<PriceUnit, decimal> remaining, PriceUnit mainUnit, PriceUnit? secondaryUnit, decimal? exchangeRate)
+    {
+        var mainAmount = remaining.GetValueOrDefault(mainUnit, 0m);
+
+        var absAmount = Math.Abs(mainAmount);
+        var formatted = $"{absAmount.ToCurrencyFormat(mainUnit.Title)}";
+
+        if (mainAmount < 0)
+        {
+            formatted += " (بس)";
+        }
+
+        if (secondaryUnit != null && exchangeRate.HasValue)
+        {
+            var secondaryAmount = mainAmount * exchangeRate.Value;
+            var absSecondary = Math.Abs(secondaryAmount);
+            var secondaryFormatted = $"{absSecondary.ToCurrencyFormat(secondaryUnit.Title)}";
+            if (secondaryAmount < 0)
+                secondaryFormatted += " (بس)";
+
+            formatted += $" (معادل {secondaryFormatted})";
+        }
+
+        return formatted;
     }
 }

@@ -20,9 +20,20 @@
         @if (!Selectable)
         {
             <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                <MudDateRangePicker DateRange="@_filterDateRange" DateRangeChanged="OnDateRangeChanged"
-                                    Margin="Margin.Dense" Variant="Variant.Outlined" Class="ml-3"
-                                    PlaceholderStart="از" PlaceholderEnd="تا" Label="@DateRangeFilterLabel" Clearable="true" />
+                <MudDateRangePicker DateRange="@_filterDateRange" 
+                                    DateRangeChanged="OnDateRangeChanged"
+                                    Margin="Margin.Dense" 
+                                    Variant="Variant.Outlined"
+                                    Class="ml-3"
+                                    MaxMonthColumns="1"
+                                    DisplayMonths="1"
+                                    Rounded="true"
+                                    ShowToolbar="false"
+                                    Style="max-width: 320px;"
+                                    PlaceholderStart="از"
+                                    PlaceholderEnd="تا"
+                                    Label="@DateRangeFilterLabel"
+                                    Clearable="true" />
             </MudHidden>
 
             <MudButtonGroup Size="Size.Small" Color="@ItemTypeColor" Variant="Variant.Filled" Class="ml-3">

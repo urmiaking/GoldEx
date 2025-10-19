@@ -2,7 +2,7 @@
 
 @if (ShowTitle)
 {
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center w-100">
         <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">فاکتورها</MudText>
     </div>
     <MudDivider />
@@ -21,6 +21,11 @@
                                 Margin="Margin.Dense"
                                 Variant="Variant.Outlined"
                                 Class="ml-3"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Rounded="true"
+                                ShowToolbar="false"
+                                Style="max-width: 320px;"
                                 PlaceholderStart="از"
                                 PlaceholderEnd="تا"
                                 Elevation="24"
@@ -28,7 +33,7 @@
                                 Label="تاریخ فاکتور"
                                 Clearable="true" />
         </MudHidden>
-        
+
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButtonGroup Size="Size.Small" Color="@TradeScaleColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@TradeScaleIcon">
