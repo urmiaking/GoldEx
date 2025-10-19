@@ -14,7 +14,7 @@ internal class TransactionService(IMapper mapper,
 {
     public async Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId, CancellationToken cancellationToken = default)
     {
-        var balances = await repository.GetCustomerRemainingListAsync(new CustomerId(customerId), cancellationToken);
+        var balances = await repository.GetCustomerRemainingListAsync(new CustomerId(customerId), cancellationToken: cancellationToken);
 
         return balances
             .Select(x => new GetCustomerRemainingResponse(mapper.Map<GetPriceUnitTitleResponse>(x.Key), x.Value))
