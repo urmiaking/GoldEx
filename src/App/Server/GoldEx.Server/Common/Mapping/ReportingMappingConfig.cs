@@ -45,7 +45,7 @@ public class ReportingMappingConfig : IRegister
                     ? $"{src.TotalDiscountAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"
                     : null)
             .Map(dest => dest.TotalExtraCostAmount,
-                src => src.TotalExtraCostAmount != 0 
+                src => src.TotalExtraCostAmount != 0
                     ? $"{src.TotalExtraCostAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"
                     : null)
             .Map(dest => dest.TotalUnpaidAmount,
@@ -68,7 +68,7 @@ public class ReportingMappingConfig : IRegister
                 src => src.DueDate.HasValue
                     ? new DateTime(src.DueDate.Value, TimeOnly.MinValue)
                     : (DateTime?)null)
-            .Map(dest => dest.TotalUsedProductsAmount, src => src.TotalUsedProductsAmount != 0 
+            .Map(dest => dest.TotalUsedProductsAmount, src => src.TotalUsedProductsAmount != 0
                 ? $"{src.TotalUsedProductsAmount.ToCurrencyReportFormat(src.PriceUnit!.Title)}"
                 : null)
             .Map(dest => dest.InvoiceProductItems, src => src.ProductItems)
