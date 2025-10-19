@@ -64,7 +64,7 @@ public class LocalBankAccountValidator : AbstractValidator<LocalBankAccountVm>
             .MaximumLength(20).WithMessage("شماره کارت نباید بیشتر از 20 کاراکتر باشد.");
 
         RuleFor(x => x.ShabaNumber)
-            .MaximumLength(26).WithMessage("شماره شبا نباید بیشتر از 26 کاراکتر باشد.");
+            .MaximumLength(40).WithMessage("شماره شبا نباید بیشتر از 40 کاراکتر باشد.");
     }
 }
 
@@ -77,9 +77,9 @@ public class InternationalBankAccountValidator : AbstractValidator<International
             .MaximumLength(20).WithMessage("شماره حساب نباید بیشتر از 20 کاراکتر باشد.");
 
         RuleFor(x => x.SwiftBicCode)
-            .MaximumLength(11).WithMessage("کد سوئیفت نباید بیشتر از 11 کاراکتر باشد.");
+            .MaximumLength(20).WithMessage("کد سوئیفت نباید بیشتر از 20 کاراکتر باشد.");
 
         RuleFor(x => x.IbanNumber)
-            .MaximumLength(34).WithMessage("شماره IBAN نباید بیشتر از 34 کاراکتر باشد.");
+            .MaximumLength(45).WithMessage("شماره IBAN نباید بیشتر از 45 کاراکتر باشد.");
     }
 }

@@ -121,7 +121,7 @@ public class LocalBankAccountRequestDtoValidator : AbstractValidator<LocalBankAc
             .MaximumLength(20).WithMessage("حداکثر طول شماره کارت 20 کاراکتر می باشد");
 
         RuleFor(x => x.ShabaNumber)
-            .MaximumLength(26).WithMessage("حداکثر طول شماره شبا 26 کاراکتر می باشد");
+            .MaximumLength(40).WithMessage("حداکثر طول شماره شبا 40 کاراکتر می باشد");
     }
 }
 
