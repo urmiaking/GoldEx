@@ -11,10 +11,12 @@ public static class NumberHelper
         if (string.IsNullOrEmpty(unit))
             return number.ToString("#,##0.##");
 
-        if (unit is "ریال" or "تومان")
-            return number.ToString("#,##0") + " " + unit;
-
-        return number.ToString("#,##0.##") + " " + unit;
+        return unit switch
+        {
+            "ریال" or "تومان" => number.ToString("#,##0") + " " + unit,
+            "گرم" => number.ToString("#,##0.###") + " " + unit,
+            _ => number.ToString("#,##0.##") + " " + unit
+        };
     }
 
     public static string ToWeightFormat(this decimal number, GoldUnitType unitType)
@@ -31,12 +33,12 @@ public static class NumberHelper
         if (string.IsNullOrEmpty(unit))
             return number.ToString("#,##0.##", nfi);
 
-        if (unit is "ریال" or "تومان")
+        return unit switch
         {
-            return number.ToString("#,##0", nfi) + " " + unit;
-        }
-
-        return number.ToString("#,##0.##", nfi) + " " + unit;
+            "ریال" or "تومان" => number.ToString("#,##0", nfi) + " " + unit,
+            "گرم" => number.ToString("#,##0.###", nfi) + " " + unit,
+            _ => number.ToString("#,##0.##", nfi) + " " + unit
+        };
     }
 
     public static string FormatUnpaidAmount(this decimal amount, string? unitTitle)
