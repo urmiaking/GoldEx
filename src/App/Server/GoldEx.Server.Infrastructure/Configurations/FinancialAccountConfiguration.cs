@@ -39,6 +39,9 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
         builder.OwnsOne(x => x.InternationalAccount, Configure);
         builder.OwnsOne(x => x.CashAccount, Configure);
 
+        builder.Navigation(x => x.LocalAccount).AutoInclude();
+        builder.Navigation(x => x.InternationalAccount).AutoInclude();
+        builder.Navigation(x => x.CashAccount).AutoInclude();
         builder.Navigation(x => x.PriceUnit).AutoInclude();
     }
 
@@ -51,11 +54,11 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
     private void Configure(OwnedNavigationBuilder<FinancialAccount, InternationalBankAccount> builder)
     {
         builder.Property(x => x.SwiftBicCode)
-            .HasMaxLength(11)
+            .HasMaxLength(20)
             .IsRequired();
 
         builder.Property(x => x.IbanNumber)
-            .HasMaxLength(34)
+            .HasMaxLength(45)
             .IsRequired();
 
         builder.Property(x => x.AccountNumber)
@@ -70,7 +73,7 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
             .IsRequired();
 
         builder.Property(x => x.ShabaNumber)
-            .HasMaxLength(26)
+            .HasMaxLength(40)
             .IsRequired();
 
         builder.Property(x => x.AccountNumber)
