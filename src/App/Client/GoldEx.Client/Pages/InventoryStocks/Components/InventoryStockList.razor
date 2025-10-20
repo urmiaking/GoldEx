@@ -20,9 +20,9 @@
         @if (!Selectable)
         {
             <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                <MudDateRangePicker DateRange="@_filterDateRange" 
+                <MudDateRangePicker DateRange="@_filterDateRange"
                                     DateRangeChanged="OnDateRangeChanged"
-                                    Margin="Margin.Dense" 
+                                    Margin="Margin.Dense"
                                     Variant="Variant.Outlined"
                                     Class="ml-3"
                                     MaxMonthColumns="1"
@@ -35,6 +35,28 @@
                                     Label="@DateRangeFilterLabel"
                                     Clearable="true" />
             </MudHidden>
+
+            @if (ItemType is ItemType.Product)
+            {
+                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                    <MudButtonGroup Size="Size.Small" Color="@(_categoryFilter is null ? Color.Info: Color.Success)" Variant="Variant.Filled" Class="ml-3">
+                        <MudButton Size="Size.Small">
+                            @(_categoryFilter?.Title ?? "دسته بندی")
+                        </MudButton>
+                        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                            <MudMenuItem Icon="@Icons.Material.Filled.List" IconColor="Color.Info"
+                                         OnClick="() => SetCategoryFilterText(null)">همه دسته بندی ها</MudMenuItem>
+                            @foreach (var category in _categories)
+                            {
+                                <MudMenuItem Icon="@Icons.Material.Filled.ArrowBackIos" IconColor="Color.Primary"
+                                             OnClick="() => SetCategoryFilterText(category)">
+                                    @category.Title
+                                </MudMenuItem>
+                            }
+                        </MudMenu>
+                    </MudButtonGroup>
+                </MudHidden>
+            }
 
             <MudButtonGroup Size="Size.Small" Color="@ItemTypeColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@ItemTypeIcon" Class="@(ItemType == ItemType.MoltenGold ? "black-text" : "")">
@@ -133,7 +155,7 @@
                 <MudTh><MudTableSortLabel SortLabel="CurrentQuantity" T="InventoryStockVm">موجود</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="SoldQuantity" T="InventoryStockVm">فروخته شده</MudTableSortLabel></MudTh>
                 break;
-           
+
             case ItemType.Coin:
                 <MudTh><MudTableSortLabel SortLabel="Coin.Title" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="CurrentAmount" T="InventoryStockVm">تعداد موجود</MudTableSortLabel></MudTh>

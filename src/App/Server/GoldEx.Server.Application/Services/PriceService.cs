@@ -390,7 +390,7 @@ internal class PriceService(
         var exchangeRate = primaryValue / secondaryValue;
 
         return new GetExchangeRateResponse(
-            ConvertFromRial(exchangeRate ?? 0, defaultPriceUnit?.UnitType)
+            exchangeRate
         );
     }
 

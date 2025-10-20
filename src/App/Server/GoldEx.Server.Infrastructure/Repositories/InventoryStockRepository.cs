@@ -135,6 +135,11 @@ internal class InventoryStockRepository(
                         _ => throw new ArgumentOutOfRangeException(nameof(inventoryFilter.ItemType))
                     };
 
+                    if (inventoryFilter.CategoryId.HasValue)
+                    {
+                        baseQuery = baseQuery.Where(x => x.Product!.ProductCategoryId == new ProductCategoryId(inventoryFilter.CategoryId.Value));
+                    }
+
                     var aggregationQuery = baseQuery
                         .Include(x => x.Product)
                         .Where(x => x.ProductId != null && productTypes.Contains(x.Product!.ProductType))

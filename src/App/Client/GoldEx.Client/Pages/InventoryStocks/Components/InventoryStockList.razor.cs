@@ -1,9 +1,10 @@
 ﻿using System.Globalization;
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
-using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
@@ -36,6 +37,8 @@ public partial class InventoryStockList
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
     private bool _inventoryStatus;
+    private List<ProductCategoryVm> _categories = [];
+    private ProductCategoryVm? _categoryFilter;
 
     private string DateRangeFilterLabel => ItemStatus switch
     {
@@ -81,6 +84,29 @@ public partial class InventoryStockList
         _ => Color.Default
     };
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadCategoriesAsync();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        await SendRequestAsync<IProductCategoryService, List<GetProductCategoryResponse>>(
+            action: (s, token) => s.GetListAsync(token),
+            afterSend: response =>
+            {
+                _categories = response.Select(ProductCategoryVm.CreateFrom).ToList();
+            },
+            createScope: false
+        );
+
+        StateHasChanged();
+    }
+
     private async Task<TableData<InventoryStockVm>> LoadInventoryAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<InventoryStockVm>();
@@ -94,7 +120,7 @@ public partial class InventoryStockList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var inventoryFilter = new InventoryFilter(_actionType, ItemType, _filterDateRange.Start, _filterDateRange.End);
+        var inventoryFilter = new InventoryFilter(_actionType, ItemType, _categoryFilter?.Id, _filterDateRange.Start, _filterDateRange.End);
 
         await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
             action: (s, token) => s.GetListAsync(filter, inventoryFilter, token),
@@ -109,7 +135,7 @@ public partial class InventoryStockList
                 };
             },
             createScope: true,
-            cancelPrevious: true
+            cancelPrevious: false
         );
 
         return result;
@@ -201,5 +227,11 @@ public partial class InventoryStockList
         }
 
         return null;
+    }
+
+    private async Task SetCategoryFilterText(ProductCategoryVm? category)
+    {
+        _categoryFilter = category;
+        await RefreshAsync();
     }
 }
