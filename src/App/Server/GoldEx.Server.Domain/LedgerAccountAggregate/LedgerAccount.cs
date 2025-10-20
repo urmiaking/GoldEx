@@ -24,7 +24,7 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
     public CustomerId? CustomerId { get; private set; }
     public Customer? Customer { get; private set; }
 
-    public static LedgerAccount CreateSystemAccount(string title, LedgerAccountType accountType, LedgerAccountId? parentAccountId = null)
+    public static LedgerAccount CreateSystemAccount(string title, LedgerAccountType accountType, LedgerAccountId? parentAccountId = null, PriceUnitId? priceUnitId = null)
     {
         return new LedgerAccount
         {
@@ -32,6 +32,7 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
             Title = title,
             AccountType = accountType,
             ParentAccountId = parentAccountId,
+            PriceUnitId = priceUnitId,
             IsSystemAccount = true
         };
     }
@@ -56,6 +57,7 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
 
     public void SetTitle(string title) => Title = title;
     public void SetParentAccount(LedgerAccountId? parentAccountId) => ParentAccountId = parentAccountId;
+    public void SetPriceUnitId(PriceUnitId? priceUnitId) => PriceUnitId = priceUnitId;
 
 #pragma warning disable CS8618
     private LedgerAccount() { }

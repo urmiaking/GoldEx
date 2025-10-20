@@ -42,8 +42,8 @@ public static class ServiceProviderExtensions
     private static async Task EnsureDatabasePopulated(IServiceProvider serviceProvider)
     {
         await PopulateDefaultSettingsAsync(serviceProvider);
-        await PopulateDefaultLedgerAccountsAsync(serviceProvider);
         await PopulateDefaultPriceUnitsAsync(serviceProvider);
+        await PopulateDefaultLedgerAccountsAsync(serviceProvider);
         await PopulateDefaultProductCategoriesAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
@@ -68,20 +68,43 @@ public static class ServiceProviderExtensions
     private static async Task PopulateDefaultLedgerAccountsAsync(IServiceProvider serviceProvider)
     {
         var repository = serviceProvider.GetRequiredService<ILedgerAccountRepository>();
+        var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
 
         // متد کمکی برای جلوگیری از تکرار کد
-        async Task<LedgerAccount> GetOrCreateAccount(string title, LedgerAccountType type, LedgerAccount? parent = null)
+        async Task<LedgerAccount> GetOrCreateAccount(string title, LedgerAccountType type, LedgerAccount? parent = null, UnitType? unitType = null)
         {
             var existingAccount = await repository
                 .Get(new LedgerAccountsByTitleSpecification(title))
+                .Include(x => x.PriceUnit)
                 .FirstOrDefaultAsync();
 
             if (existingAccount is not null)
             {
+                if (unitType.HasValue && existingAccount.PriceUnit?.UnitType != unitType)
+                {
+                    var priceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(unitType.Value))
+                        .FirstOrDefaultAsync();
+
+                    existingAccount.SetPriceUnitId(priceUnit?.Id);
+
+                    await repository.UpdateAsync(existingAccount);
+                }
+
                 return existingAccount;
             }
 
-            var newAccount = LedgerAccount.CreateSystemAccount(title, type, parent?.Id);
+            PriceUnitId? priceUnitId = null;
+
+            if (unitType.HasValue)
+            {
+                var priceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(unitType.Value))
+                    .FirstOrDefaultAsync();
+
+                if (priceUnit is not null)
+                    priceUnitId = priceUnit.Id;
+            }
+
+            var newAccount = LedgerAccount.CreateSystemAccount(title, type, parent?.Id, priceUnitId);
             await repository.CreateAsync(newAccount);
             return newAccount;
         }
@@ -105,9 +128,9 @@ public static class ServiceProviderExtensions
         await GetOrCreateAccount(SystemLedgerAccounts.AccountsReceivable, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.PrepaymentsToSuppliers, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset, currentAssets);
-        await GetOrCreateAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset, currentAssets, UnitType.Gold18K);
         await GetOrCreateAccount(SystemLedgerAccounts.CoinInventory, LedgerAccountType.Asset, currentAssets);
-        await GetOrCreateAccount(SystemLedgerAccounts.MoltenGoldInventory, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.MoltenGoldInventory, LedgerAccountType.Asset, currentAssets, UnitType.Gold18K);
         await GetOrCreateAccount(SystemLedgerAccounts.Banks, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.DepositsWithOthers, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.LoansToOthers, LedgerAccountType.Asset, currentAssets);
@@ -147,7 +170,7 @@ public static class ServiceProviderExtensions
             ProductCategory.Create("سرویس کامل", "05"),
             ProductCategory.Create("گردنبند", "06"),
             ProductCategory.Create("نیم‌ست", "07")
-        };
+        }; 
 
         await repository.CreateRangeAsync(defaultCategories);
     }
@@ -156,10 +179,27 @@ public static class ServiceProviderExtensions
     {
         var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
 
-        var priceUnitsExists = await priceUnitRepository.ExistsAsync(new PriceUnitsWithoutSpecification());
+        var existingPriceUnits = await priceUnitRepository.Get(new PriceUnitsWithoutSpecification()).ToListAsync();
 
-        if (priceUnitsExists)
+        if (existingPriceUnits.Any())
+        {
+            foreach (var existingPriceUnit in existingPriceUnits)
+            {
+                switch (existingPriceUnit.UnitType)
+                {
+                    case UnitType.Gold18K when existingPriceUnit.Title == UnitType.Gold18K.GetDisplayName():
+                        existingPriceUnit.SetTitle("گرم");
+                        await priceUnitRepository.UpdateAsync(existingPriceUnit);
+                        break;
+                    case UnitType.Mesghal when existingPriceUnit.Title == UnitType.Mesghal.GetDisplayName():
+                        existingPriceUnit.SetTitle("مثقال");
+                        await priceUnitRepository.UpdateAsync(existingPriceUnit);
+                        break;
+                }
+            }
+
             return;
+        }
 
         var priceUnitsToCreate = Enum.GetValues<UnitType>()
             .Select(unitType => PriceUnit.Create(
