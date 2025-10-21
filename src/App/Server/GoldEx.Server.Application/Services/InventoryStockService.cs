@@ -6,13 +6,13 @@ using GoldEx.Server.Application.Validators.InventoryStocks;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Shared.DTOs.InventoryStocks;
-using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
@@ -197,6 +197,42 @@ internal class InventoryStockService(
                 usedProduct.Weight,
                 WarehouseActionType.In,
                 invoice.Id)));
+
+        foreach (var invoicePayment in invoice.InvoicePayments ?? [])
+        {
+            switch (invoicePayment.PaymentType)
+            {
+                case PaymentType.MoltenGoldInventory:
+                {
+                    var fineness = invoicePayment.GoldFineness ?? 750m;
+
+                    var moltenGoldProduct = await productService.FindOrCreateMoltenGoldProductAsync(fineness, cancellationToken);
+
+                    newStockItems.Add(InventoryStock.CreateProduct(
+                        moltenGoldProduct.Id,
+                        invoicePayment.Amount,
+                        invoice.InvoiceType is InvoiceType.Purchase ? WarehouseActionType.Out : WarehouseActionType.In,
+                        invoice.Id));
+                    break;
+                }
+
+                case PaymentType.UsedGoldInventory:
+                {
+                    //var fineness = invoicePayment.GoldFineness ?? 750m;
+
+                    //// پیدا کردن یا ساخت کالای "طلای شکسته" (دست دوم)
+                    //var usedGoldProduct = await productService.FindOrCreateUsedGoldProductAsync(fineness, cancellationToken);
+
+                    //// خروج از انبار
+                    //newStockItems.Add(InventoryStock.CreateProduct(
+                    //    usedGoldProduct.Id,
+                    //    invoicePayment.Amount,
+                    //    WarehouseActionType.Out,
+                    //    invoice.Id));
+                    break;
+                }
+            }
+        }
 
         if (newStockItems.Any())
         {

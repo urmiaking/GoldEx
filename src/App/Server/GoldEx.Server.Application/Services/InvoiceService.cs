@@ -34,6 +34,7 @@ internal class InvoiceService(
     IPriceUnitRepository priceUnitRepository,
     IAccountingTransactionService transactionService,
     IServerInventoryStockService inventoryStockService,
+    IServerInvoicePaymentService invoicePaymentService,
     IMapper mapper,
     ILogger<InvoiceService> logger,
     InvoiceRequestDtoValidator validator,
@@ -110,21 +111,7 @@ internal class InvoiceService(
 
                 #region InvoicePayments (Create invoice payments)
 
-                var paymentsToCreate = request.InvoicePayments
-                    .Select(dto => InvoicePayment.Create(
-                        dto.PaymentDate,
-                        dto.Amount,
-                        dto.ExchangeRate,
-                        invoice.Id,
-                        new PriceUnitId(dto.PriceUnitId),
-                        dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null,
-                        dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null,
-                        dto.ReferenceNumber,
-                        dto.Note))
-                    .ToList();
-
-                if (paymentsToCreate.Any())
-                    await paymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
+                await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
 
                 #endregion
 
@@ -152,7 +139,8 @@ internal class InvoiceService(
 
                 var invoice = await invoiceRepository
                     .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
-                    .Include(x => x.InvoicePayments)
+                    .Include(x => x.InvoicePayments!)
+                        .ThenInclude(x => x.LedgerAccount!.Customer)
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
                 invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
@@ -212,27 +200,7 @@ internal class InvoiceService(
 
                 #region InvoicePayments (Update invoice payments)
 
-                var existingPayments = await paymentRepository
-                    .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
-                    .ToListAsync(cancellationToken);
-
-                await paymentRepository.DeleteRangeAsync(existingPayments, cancellationToken);
-
-                var paymentsToCreate = request.InvoicePayments
-                    .Select(dto => InvoicePayment.Create(
-                        dto.PaymentDate,
-                        dto.Amount,
-                        dto.ExchangeRate,
-                        invoice.Id,
-                        new PriceUnitId(dto.PriceUnitId),
-                        dto.FinancialAccountId.HasValue ? new FinancialAccountId(dto.FinancialAccountId.Value) : null,
-                        dto.VoucherId.HasValue ? new PaymentVoucherId(dto.VoucherId.Value) : null,
-                        dto.ReferenceNumber,
-                        dto.Note))
-                    .ToList();
-
-                if (paymentsToCreate.Any())
-                    await paymentRepository.CreateRangeAsync(paymentsToCreate, cancellationToken);
+                await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
 
                 #endregion
 
@@ -292,6 +260,9 @@ internal class InvoiceService(
                 .ThenInclude(x => x.Product)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount!)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.LedgerAccount!)
+                    .ThenInclude(x => x.Customer)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)
@@ -316,6 +287,9 @@ internal class InvoiceService(
                 .ThenInclude(x => x.Product)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount!)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.LedgerAccount!)
+                    .ThenInclude(x => x.Customer)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)

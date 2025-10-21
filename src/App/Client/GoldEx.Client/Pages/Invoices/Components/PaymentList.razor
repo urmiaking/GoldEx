@@ -1,4 +1,5 @@
-﻿@using GoldEx.Shared.DTOs.FinancialAccounts
+﻿@using GoldEx.Shared.DTOs.Customers
+@using GoldEx.Shared.DTOs.FinancialAccounts
 @inherits GoldExComponentBase
 
 <div>
@@ -28,6 +29,7 @@
                                          T="decimal"
                                          HideSpinButtons="true"
                                          Format="#,##0.##"
+                                         dir="rtl"
                                          Immediate="true"
                                          Disabled="context.Disabled"
                                          For="@(() => context.Amount)"
@@ -62,6 +64,7 @@
                     <MudNumericField For="@(() => context.ExchangeRate)"
                                      Format="#,##0.########"
                                      Immediate="true"
+                                     dir="rtl"
                                      Label="@context.ExchangeRateLabel"
                                      Margin="Margin.Dense"
                                      Disabled="context.Disabled"
@@ -71,25 +74,90 @@
                                      Variant="Variant.Outlined" />
                 </MudTd>
             }
-            <MudTd DataLabel="@FinancialAccountLabelText" Class="p-1">
-                <div class="d-flex flex-row align-center">
-                    <MudSelect @bind-Value="@context.FinancialAccount"
-                               T="GetFinancialAccountTitleResponse?"
-                               For="@(() => context.FinancialAccount)"
-                               Label="@FinancialAccountLabelText"
-                               Margin="Margin.Dense"
-                               Disabled="context.Disabled"
-                               Variant="Variant.Outlined"
-                               ToStringFunc="@(acc => acc?.Title)">
-                        @foreach (var account in context.FinancialAccounts)
+
+            <MudTd DataLabel="نحوه پرداخت">
+                <MudSelect Value="@context.PaymentType"
+                           ValueChanged="(arg) => OnPaymentTypeChanged(context, arg)"
+                           T="PaymentType"
+                           For="@(() => context.PaymentType)"
+                           Label="نحوه پرداخت"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Disabled="context.Disabled">
+                    @foreach (var paymentType in Enum.GetValues<PaymentType>())
+                    {
+                        if (context.PriceUnit?.IsGoldBased == false && paymentType == PaymentType.MoltenGoldInventory)
                         {
-                            <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
+                            continue;
                         }
-                    </MudSelect>
-                    <MudIconButton Disabled="context.Disabled" Icon="@Icons.Material.Filled.Add" 
-                                   Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount(context)"></MudIconButton>
-                </div>
+                        <MudSelectItem T="PaymentType" Value="@paymentType">@paymentType.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
             </MudTd>
+
+            @if (context.PaymentType == PaymentType.InternalCash)
+            {
+                <MudTd DataLabel="@FinancialAccountLabelText" Class="p-1">
+                    <div class="d-flex flex-row align-center">
+                        <MudSelect @bind-Value="@context.FinancialAccount"
+                                   T="GetFinancialAccountTitleResponse?"
+                                   For="@(() => context.FinancialAccount)"
+                                   Label="@FinancialAccountLabelText"
+                                   Margin="Margin.Dense"
+                                   Disabled="context.Disabled"
+                                   Variant="Variant.Outlined"
+                                   ToStringFunc="@(acc => acc?.Title)">
+                            @foreach (var account in context.FinancialAccounts)
+                            {
+                                <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudIconButton Disabled="context.Disabled" Icon="@Icons.Material.Filled.Add"
+                                       Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount(context)"></MudIconButton>
+                    </div>
+                </MudTd>
+            }
+
+            @if (context.PaymentType == PaymentType.CustomerTransfer)
+            {
+                <MudTd DataLabel="طرف حساب" Class="p-1">
+                    <div class="d-flex flex-row align-center">
+                        <MudAutocomplete T="CustomerVm"
+                                         @bind-Value="context.Endorser"
+                                         Text="@context.Endorser?.FullName"
+                                         For="@(() => context.Endorser!)"
+                                         Placeholder="جستجوی طرف حساب..."
+                                         Label="@(context.GetDisplayName(() => context.Endorser))"
+                                         ToStringFunc="@(customer => customer != null ? $"{customer.FullName}" : null)"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.Search"
+                                         Variant="Variant.Outlined"
+                                         SearchFunc="@SearchCustomers"
+                                         ResetValueOnEmptyText="true"
+                                         DebounceInterval="0"
+                                         ShowProgressIndicator="false">
+                        </MudAutocomplete>
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddCustomer(context)"></MudIconButton>
+                    </div>
+                </MudTd>
+            }
+
+            @if (context.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory)
+            {
+                <MudTd DataLabel="عیار طلا" Class="p-1">
+                    <MudTextField @bind-Value="@context.GoldFineness"
+                                  T="decimal?"
+                                  Format="G29"
+                                  dir="rtl"
+                                  Immediate="true"
+                                  For="@(() => context.GoldFineness!)"
+                                  Label="@(context.GetDisplayName(() => context.GoldFineness))"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudTd>
+            }
+
             <MudTd DataLabel="یادداشت" Class="p-1">
                 <MudTextField @bind-Value="@context.Note"
                               T="string"
@@ -104,6 +172,7 @@
             <MudTd DataLabel="کد پیگیری" Class="p-1">
                 <MudTextField @bind-Value="@context.ReferenceNumber"
                               T="string"
+                              dir="rtl"
                               For="@(() => context.ReferenceNumber!)"
                               Label="@(context.GetDisplayName(() => context.ReferenceNumber))"
                               Margin="Margin.Dense"
@@ -116,6 +185,7 @@
                 <MudDatePicker @bind-Date="context.PaymentDate"
                                Color="Color.Secondary"
                                Editable="true"
+                               dir="rtl"
                                Disabled="context.Disabled"
                                AnchorOrigin="Origin.TopCenter"
                                TransformOrigin="Origin.BottomCenter"
@@ -137,7 +207,7 @@
     </MudTable>
 
     <div class="d-flex flex-row justify-content-between">
-        <MudText>جمع کل پرداختی ها: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)</MudText>
+        <MudText>جمع کل پرداختی ها: @Items.Sum(x => x.FinalAmount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)</MudText>
         <MudText Style="cursor: pointer" @onclick="OnTotalRemainingClicked">مانده کل: @TotalRemainingCalculated.ToCurrencyFormat(PriceUnit.Title)</MudText>
     </div>
 </div>
