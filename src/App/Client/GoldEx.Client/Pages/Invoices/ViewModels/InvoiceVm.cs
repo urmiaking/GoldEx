@@ -71,7 +71,7 @@ public class InvoiceVm
                                           CurrencyItems.Sum(i => i.TaxAmount);
     public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
-    public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
+    public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
     public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
     public decimal TotalUsedProductsAmount => UsedProducts.Sum(x => x.ItemAmount);

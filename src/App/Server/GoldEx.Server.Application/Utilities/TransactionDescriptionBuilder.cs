@@ -129,6 +129,64 @@ public static class TransactionDescriptionBuilder
         return $"اعمال سند پرداخت شماره {voucher.VoucherNumber} بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
     }
 
+    #region New Descriptions for Customer Endorser Payments (حواله‌کرد)
+
+    public static string ForInvoicePaymentReceivedByEndorser(Invoice invoice, InvoicePayment payment, string endorserName)
+    {
+        return $"دریافت وجه بابت فاکتور فروش شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
+               (!string.IsNullOrWhiteSpace(payment.ReferenceNumber)
+                   ? $" (شماره پیگیری: {payment.ReferenceNumber})"
+                   : string.Empty);
+    }
+
+    public static string ForInvoicePaymentMadeByEndorser(Invoice invoice, InvoicePayment payment, string endorserName)
+    {
+        return $"پرداخت وجه بابت فاکتور خرید شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
+               (!string.IsNullOrWhiteSpace(payment.ReferenceNumber)
+                   ? $" (شماره پیگیری: {payment.ReferenceNumber})"
+                   : string.Empty);
+    }
+
+    #endregion
+
+    // ---------------------- 🟡 پرداخت‌های با طلا ----------------------
+
+    public static string ForMoltenGoldPaymentReceived(Invoice invoice, InvoicePayment payment)
+    {
+        var desc = "دریافت طلای آبشده";
+        if (payment.GoldFineness.HasValue)
+            desc += $" با عیار {payment.GoldFineness}";
+        desc += $" بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
+        return desc;
+    }
+
+    public static string ForMoltenGoldPaymentMade(Invoice invoice, InvoicePayment payment)
+    {
+        var desc = "پرداخت طلای آبشده";
+        if (payment.GoldFineness.HasValue)
+            desc += $" با عیار {payment.GoldFineness}";
+        desc += $" بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
+        return desc;
+    }
+
+    public static string ForUsedGoldPaymentReceived(Invoice invoice, InvoicePayment payment)
+    {
+        var desc = "دریافت طلای شکسته";
+        if (payment.GoldFineness.HasValue)
+            desc += $" با عیار {payment.GoldFineness}";
+        desc += $" بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
+        return desc;
+    }
+
+    public static string ForUsedGoldPaymentMade(Invoice invoice, InvoicePayment payment)
+    {
+        var desc = "پرداخت طلای شکسته";
+        if (payment.GoldFineness.HasValue)
+            desc += $" با عیار {payment.GoldFineness}";
+        desc += $" بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
+        return desc;
+    }
+
     #endregion
 
     #region Payment Voucher Descriptions (شرح‌های سند پرداخت)

@@ -66,7 +66,7 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
                     x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) +
                     x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))
                 )
-                - x.InvoicePayments!.Sum(p => p.Amount * (p.ExchangeRate ?? 1))
+                - x.InvoicePayments!.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1))
                 - (x.InvoiceType == InvoiceType.Sell ? x.UsedProducts.Sum(up => up.ItemFinalAmount) : 0);
 
             Expression<Func<Invoice, bool>> isPaidExpression = Expression.Lambda<Func<Invoice, bool>>(

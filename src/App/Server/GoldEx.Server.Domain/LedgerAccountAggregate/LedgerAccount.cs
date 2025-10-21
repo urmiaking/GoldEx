@@ -62,4 +62,13 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
 #pragma warning disable CS8618
     private LedgerAccount() { }
 #pragma warning restore CS8618
+
+    /// <summary>
+    /// This method is used to set the Customer navigation property after loading the LedgerAccount entity.
+    /// </summary>
+    /// <param name="customer"></param>
+    public void SetCustomer(Customer customer)
+    {
+        Customer = customer;
+    }
 }

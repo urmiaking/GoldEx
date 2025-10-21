@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -21,10 +23,19 @@ public class InvoicePaymentVm
     [Display(Name = "مبلغ")]
     public decimal Amount { get; set; }
 
+    [Display(Name = "نحوه پرداخت")]
+    public PaymentType PaymentType { get; set; }
+
+    [Display(Name = "عیار طلا")]
+    public decimal? GoldFineness { get; set; }
+
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
     [Display(Name = "حساب مالی")]
     public GetFinancialAccountTitleResponse? FinancialAccount { get; set; }
+
+    [Display(Name = "طرف حساب")]
+    public CustomerVm? Endorser { get; set; }
 
     public List<GetFinancialAccountTitleResponse> FinancialAccounts { get; set; } = [];
 
@@ -38,19 +49,34 @@ public class InvoicePaymentVm
 
     public Guid? VoucherId { get; set; }
 
+    public decimal FinalAmount => GoldFineness.HasValue ? Amount * GoldFineness.Value / 750m : Amount;
+
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {
         if (item.PriceUnit is null)
             throw new FluentValidation.ValidationException("واحد ارزی برای پرداختی ها مشخص نشده است");
 
-        if (item.FinancialAccount is null && !item.VoucherId.HasValue)
+        if (item.FinancialAccount is null && !item.VoucherId.HasValue && item.PaymentType is PaymentType.InternalCash)
             throw new FluentValidation.ValidationException("حساب مالی برای پرداختی ها مشخص نشده است");
+
+        if (item.PaymentType is PaymentType.CustomerTransfer && item.Endorser?.Id is null)
+            throw new FluentValidation.ValidationException("طرف حساب برای حواله کرد مشخص نشده است");
 
         if (!item.PaymentDate.HasValue)
             throw new FluentValidation.ValidationException("تاریخ پرداخت مشخص نشده است");
 
-        return new InvoicePaymentDto(item.Id, item.Amount, item.ExchangeRate, item.PaymentDate.Value, item.ReferenceNumber, item.Note,
-            item.FinancialAccount?.Id, item.VoucherId, item.PriceUnit.Id);
+        return new InvoicePaymentDto(item.Id,
+            item.Amount,
+            item.ExchangeRate,
+            item.GoldFineness,
+            item.PaymentType,
+            item.PaymentDate.Value,
+            item.ReferenceNumber,
+            item.Note,
+            item.FinancialAccount?.Id,
+            item.VoucherId,
+            item.Endorser?.Id,
+            item.PriceUnit.Id);
     }
 
     public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response, GetPriceUnitTitleResponse? priceUnit)
@@ -69,7 +95,10 @@ public class InvoicePaymentVm
             ExchangeRateLabel = response.PriceUnit != priceUnit ? $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}" : null,
             VoucherId = response.VoucherId,
             Disabled = response.VoucherId.HasValue,
-            FinancialAccounts = response.FinancialAccounts
+            FinancialAccounts = response.FinancialAccounts,
+            Endorser = response.Endorser != null ? CustomerVm.CreateFrom(response.Endorser) : null,
+            PaymentType = response.PaymentType,
+            GoldFineness = response.GoldFineness
         };
     }
 }

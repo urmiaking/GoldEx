@@ -21,6 +21,13 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
         builder.Property(x => x.ExchangeRate)
             .HasPrecision(36, 10);
 
+        builder.Property(x => x.GoldFineness)
+            .HasPrecision(9, 6);
+
+        builder.Property(x => x.FinalAmount)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
         builder.Property(x => x.ReferenceNumber)
             .HasMaxLength(100);
 
@@ -40,6 +47,11 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
         builder.HasOne(x => x.SourceFinancialAccount)
             .WithMany()
             .HasForeignKey(x => x.SourceFinancialAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.LedgerAccount)
+            .WithMany()
+            .HasForeignKey(x => x.LedgerAccountId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Invoice)

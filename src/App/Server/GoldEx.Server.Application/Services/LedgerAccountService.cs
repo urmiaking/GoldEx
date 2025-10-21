@@ -97,11 +97,13 @@ internal class LedgerAccountService(
             ? SystemLedgerAccounts.AccountsReceivable
             : SystemLedgerAccounts.AccountsPayable;
 
-        var parentLedger = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(parentTitle))
+        var parentLedger = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(parentTitle))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Parent ledger '{parentTitle}' not found.");
 
         var existingLedger = await ledgerAccountRepository
             .Get(new LedgerAccountByCustomerAndUnitSpecification(customerId, parentLedger.Id, priceUnitId))
+            .Include(x => x.Customer)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (existingLedger is not null)
@@ -125,6 +127,8 @@ internal class LedgerAccountService(
             parentLedger.Id);
 
         await ledgerAccountRepository.CreateAsync(newLedger, cancellationToken);
+
+        newLedger.SetCustomer(customer);
 
         return newLedger;
     }
