@@ -59,11 +59,14 @@ public record InvoicePaymentDto(
     Guid? Id,
     decimal Amount,
     decimal? ExchangeRate,
+    decimal? GoldFineness,
+    PaymentType PaymentType,
     DateTime PaymentDate,
     string? ReferenceNumber,
     string? Note,
     Guid? FinancialAccountId,
     Guid? VoucherId,
+    Guid? CustomerId,
     Guid PriceUnitId);
 
 public record InvoiceProductItemDto(

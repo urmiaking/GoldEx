@@ -1,8 +1,9 @@
-﻿using GoldEx.Client.Pages.Customers.Components;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.PaymentVouchers.Components;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Prices;
@@ -11,7 +12,6 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -25,10 +25,11 @@ public partial class PaymentList
     [Parameter] public Guid? CustomerId { get; set; }
 
     private List<Guid> _voucherIds = [];
+    private List<GetCustomerResponse> _customers = [];
 
     private decimal GetTotalPaid()
     {
-        return Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1));
+        return Items.Sum(x => x.FinalAmount * (x.ExchangeRate ?? 1));
     }
 
     private decimal TotalRemainingCalculated => TotalInvoiceAmount - GetTotalPaid();
@@ -193,6 +194,8 @@ public partial class PaymentList
         }
     }
 
+    #region PaymentVoucher
+
     private async Task OnAddPaymentVoucher()
     {
         DialogOptions dialogOptions = new()
@@ -242,6 +245,79 @@ public partial class PaymentList
                 ExchangeRate = paymentVoucher.ExchangeRate,
                 Disabled = true
             });
+        }
+    }
+
+    #endregion
+
+    #region Customer
+
+    private async Task<IEnumerable<CustomerVm>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(customerName))
+            return null;
+
+        await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
+            action: (s, ct) => s.GetByNameAsync(customerName, ct),
+            afterSend: response =>
+            {
+                _customers = response;
+            },
+            cancelPrevious: true);
+
+        return _customers.Select(CustomerVm.CreateFrom);
+    }
+
+    private async Task OnAddCustomer(InvoicePaymentVm context)
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+        var parameters = new DialogParameters<Customers.Components.Editor>
+        {
+            { x => x.ReturnModel, true }
+        };
+
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: CustomerVm customerVm })
+        {
+            context.Endorser = customerVm;
+            StateHasChanged();
+        }
+    }
+
+    #endregion
+
+    private void OnPaymentTypeChanged(InvoicePaymentVm item, PaymentType paymentType)
+    {
+        item.PaymentType = paymentType;
+
+        switch (paymentType)
+        {
+            case PaymentType.InternalCash:
+                item.GoldFineness = null;
+                item.Endorser = null;
+                item.FinancialAccount = null;
+                break;
+            case PaymentType.UsedGoldInventory:
+                item.Endorser = null;
+                item.FinancialAccount = null;
+                item.GoldFineness = 750m;
+                break;
+            case PaymentType.MoltenGoldInventory:
+                item.Endorser = null;
+                item.FinancialAccount = null;
+                item.GoldFineness = 750m;
+                break;
+            case PaymentType.CustomerTransfer:
+                item.Endorser = null;
+                item.FinancialAccount = null;
+                item.GoldFineness = null;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, null);
         }
     }
 }

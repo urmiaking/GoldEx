@@ -94,12 +94,15 @@ public record GetInvoiceCoinItemResponse(
 public record GetInvoicePaymentResponse(
     Guid Id,
     decimal Amount,
+    decimal? GoldFineness,
+    PaymentType PaymentType,
     DateTime PaymentDate,
     string? ReferenceNumber,
     string? Note,
     decimal? ExchangeRate,
     Guid? VoucherId,
     GetFinancialAccountTitleResponse? FinancialAccount,
+    GetCustomerResponse? Endorser,
     GetPriceUnitTitleResponse PriceUnit,
     List<GetFinancialAccountTitleResponse> FinancialAccounts);
 
