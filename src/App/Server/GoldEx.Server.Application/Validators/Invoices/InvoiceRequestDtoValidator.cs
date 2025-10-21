@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Server.Application.Validators.Customers;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -8,6 +7,7 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +20,15 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly IInventoryStockRepository _inventoryStockRepository;
+    private readonly IProductRepository _productRepository;
 
-    public InvoiceRequestDtoValidator(CustomerRequestDtoValidator customerValidator,
-        IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository,
+    public InvoiceRequestDtoValidator(ICustomerRepository customerRepository,
+        IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, 
         IFinancialAccountRepository financialAccountRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository,
         ICoinRepository coinRepository, IInventoryStockRepository inventoryStockRepository)
     {
         _priceUnitRepository = priceUnitRepository;
+        _productRepository = productRepository;
         _invoiceRepository = invoiceRepository;
         _inventoryStockRepository = inventoryStockRepository;
 
@@ -79,7 +81,12 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         RuleForEach(x => x.InvoicePayments)
             .SetValidator(new InvoicePaymentDtoValidator(priceUnitRepository,
                 financialAccountRepository,
-                paymentVoucherRepository));
+                paymentVoucherRepository,
+                customerRepository));
+
+        RuleFor(x => x)
+            .MustAsync(NotResultInNegativeMoltenGoldInventory)
+            .WithMessage("موجودی طلای آبشده برای تسویه کافی نیست.");
 
         RuleForEach(x => x.InvoiceProductItems)
             .SetValidator(new InvoiceProductItemDtoValidator(
@@ -234,6 +241,72 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
                     return false;
                 }
             }
+        }
+
+        return true;
+    }
+
+    private async Task<bool> NotResultInNegativeMoltenGoldInventory(
+    InvoiceRequestDto request,
+    CancellationToken cancellationToken = default)
+    {
+        // فقط فاکتور فروش
+        if (request.InvoiceType != InvoiceType.Purchase)
+            return true;
+
+        // جمع‌بندی تغییرات برای حالت Update
+        var moltenGoldChanges = new Dictionary<ProductId, decimal>(); // ProductId -> netChange
+
+        if (request.Id.HasValue)
+        {
+            // حالت Update: موجودی قبلی فاکتور
+            var originalInvoice = await _invoiceRepository
+                .Get(new InvoicesByIdSpecification(new InvoiceId(request.Id.Value)))
+                .Include(x => x.InvoicePayments)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (originalInvoice is null)
+                return true;
+
+            foreach (var oldPayment in originalInvoice.InvoicePayments!
+                         .Where(p => p.PaymentType == PaymentType.MoltenGoldInventory))
+            {
+                if (!oldPayment.GoldFineness.HasValue)
+                    continue;
+
+                var product = await _productRepository
+                    .Get(new ProductsByMoltenGoldSpecification(oldPayment.GoldFineness.Value))
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (product != null)
+                    moltenGoldChanges[product.Id] = moltenGoldChanges.GetValueOrDefault(product.Id, 0m) - oldPayment.Amount;
+            }
+        }
+
+        // پرداخت‌های جدید/ویرایش شده
+        foreach (var payment in request.InvoicePayments
+                     .Where(p => p.PaymentType == PaymentType.MoltenGoldInventory))
+        {
+            if (!payment.GoldFineness.HasValue)
+                throw new InvalidOperationException("عیار طلای آبشده برای پرداخت الزامی است.");
+
+            var product = await _productRepository
+                .Get(new ProductsByMoltenGoldSpecification(payment.GoldFineness.Value))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (product is null)
+                return false; // طلای آبشده با این عیار وجود ندارد
+
+            moltenGoldChanges[product.Id] = moltenGoldChanges.GetValueOrDefault(product.Id, 0m) + payment.Amount;
+        }
+
+        // بررسی موجودی خالص
+        foreach (var (productId, netChange) in moltenGoldChanges)
+        {
+            var currentStock = await _inventoryStockRepository.GetQuantityAsync(productId, cancellationToken);
+            if (currentStock + netChange < 0)
+                return false; // موجودی کافی نیست
         }
 
         return true;
