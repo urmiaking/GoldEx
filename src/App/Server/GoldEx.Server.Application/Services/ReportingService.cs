@@ -40,6 +40,8 @@ internal class ReportingService(
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
             .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.LedgerAccount!)
+                    .ThenInclude(x => x.Customer)
             .Include(x => x.CoinItems)
                 .ThenInclude(x => x.Coin)
             .Include(x => x.CurrencyItems)

@@ -17,7 +17,7 @@ public record GetInvoiceDetailResponse(
     string TotalPayableAmount,
     string? TotalUsedProductsAmount,
     string? TotalStoneAmount,
-    string DailyGramPrice,
+    string? DailyGramPrice,
     string TaxPercent,
     string ProfitPercent,
     string TotalUnpaidSecondaryAmount,
@@ -27,8 +27,15 @@ public record GetInvoiceDetailResponse(
     List<GetInvoiceCoinItemReportResponse> InvoiceCoinItems,
     List<GetInvoiceCurrencyItemReportResponse> InvoiceCurrencyItems,
     List<GetInvoiceUsedProductReportResponse> InvoiceUsedProductItems,
+    List<GetInvoicePaymentReportResponse> InvoicePayments, 
     string? PreviousRemaining,
     string? AfterRemaining);
+
+public record GetInvoicePaymentReportResponse(
+    string FinalAmount,
+    PaymentType PaymentType,
+    DateTime PaymentDate,
+    string Description);
 
 public record GetInvoiceProductItemReportResponse(
     string GramPrice,

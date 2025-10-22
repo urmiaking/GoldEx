@@ -1,4 +1,6 @@
-﻿using GoldEx.Server.Domain.InvoiceAggregate;
+﻿using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
@@ -27,7 +29,7 @@ public class ReportingMappingConfig : IRegister
                     ? $"{src.ProductItems.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit!.Title)}" +
                       (src.ExchangeRate.HasValue && src.BasePriceUnit != null
                           ? $" (معادل {src.ExchangeRate.Value.ToCurrencyReportFormat(null)} {src.BasePriceUnit.Title})"
-                          : "")
+                          : null)
                     : null)
             .Map(dest => dest.GoldUnitType,
                 src => src.ProductItems.FirstOrDefault() != null
@@ -74,7 +76,8 @@ public class ReportingMappingConfig : IRegister
             .Map(dest => dest.InvoiceProductItems, src => src.ProductItems)
             .Map(dest => dest.InvoiceCoinItems, src => src.CoinItems)
             .Map(dest => dest.InvoiceCurrencyItems, src => src.CurrencyItems)
-            .Map(dest => dest.InvoiceUsedProductItems, src => src.UsedProducts);
+            .Map(dest => dest.InvoiceUsedProductItems, src => src.UsedProducts)
+            .Map(dest => dest.InvoicePayments, src => src.InvoicePayments);
 
         config.NewConfig<InvoiceProductItem, GetInvoiceProductItemReportResponse>()
             .Map(dest => dest.Product, src => src.Product)
@@ -150,5 +153,12 @@ public class ReportingMappingConfig : IRegister
             .Map(dest => dest.Weight, src => src.Weight.ToWeightFormat(src.UnitType))
             .Map(dest => dest.TotalPrice, src =>
                 src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title));
+
+        config.NewConfig<InvoicePayment, GetInvoicePaymentReportResponse>()
+            .Map(dest => dest.FinalAmount, src => 
+                src.PriceUnit != null ? src.FinalAmount.ToCurrencyReportFormat(src.PriceUnit.Title) : string.Empty)
+            .Map(dest => dest.PaymentType, src => src.PaymentType)
+            .Map(dest => dest.PaymentDate, src => src.PaymentDate)
+            .Map(dest => dest.Description, src => PaymentDescriptionBuilder.Build(src));
     }
 }
