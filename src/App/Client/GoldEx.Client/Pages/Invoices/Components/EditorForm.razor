@@ -12,22 +12,27 @@ else
         <MudForm Model="_model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
             <MudGrid Class="align-end">
                 <MudItem xs="12" md="6" lg="4">
-                    <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="@InvoiceColor" Class="align-center d-flex gap-2">
+                        <MudIcon Icon="@InvoiceIcon" 
+                                 Color="@InvoiceColor"></MudIcon>
                         فاکتور @_model.InvoiceType.GetDisplayName()
                         @if (Id.HasValue)
                         {
                             Color color;
                             string text;
+                            string icon;
 
                             if (_model.IsCreditor)
                             {
                                 color = Color.Success;
                                 text = "بستانکار";
+                                icon = Icons.Material.Filled.TrendingUp;
                             }
                             else if (_model.IsPaid)
                             {
                                 color = Color.Success;
                                 text = "تسویه حساب شده";
+                                icon = Icons.Material.Filled.CheckCircle;
                             }
                             else
                             {
@@ -35,15 +40,17 @@ else
                                 {
                                     color = Color.Error;
                                     text = "موعد سررسید گذشته";
+                                    icon = Icons.Material.Filled.WarningAmber;
                                 }
                                 else
                                 {
                                     color = Color.Primary;
                                     text = "دارای بدهی";
+                                    icon = Icons.Material.Filled.TrendingDown;
                                 }
                             }
 
-                            <MudChip T="string" Color="@color" Variant="Variant.Filled" Size="Size.Small">@text</MudChip>
+                            <MudChip T="string" Color="@color" Variant="Variant.Filled" Size="Size.Small" Icon="@icon">@text</MudChip>
                         }
                     </MudText>
                 </MudItem>
