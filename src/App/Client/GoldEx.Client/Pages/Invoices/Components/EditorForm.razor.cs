@@ -56,6 +56,20 @@ public partial class EditorForm
         invoiceType = _model.InvoiceType.ToString()
     });
 
+    private Color InvoiceColor => _model.InvoiceType switch
+    {
+        InvoiceType.Sell => Color.Error,
+        InvoiceType.Purchase => Color.Success,
+        _ => Color.Default
+    };
+
+    private string InvoiceIcon => _model.InvoiceType switch
+    {
+        InvoiceType.Sell => Icons.Material.Filled.KeyboardArrowDown,
+        InvoiceType.Purchase => Icons.Material.Filled.KeyboardArrowUp,
+        _ => Icons.Material.Filled.Receipt
+    };
+
     protected override async Task OnParametersSetAsync()
     {
         _isLoadingInvoice = true;
@@ -826,6 +840,25 @@ public partial class EditorForm
 
     private async Task OnTradeScaleChanged(TradeScale tradeScale)
     {
+        if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
+        {
+            if (tradeScale is TradeScale.Wholesale)
+            {
+                var result = await DialogService.ShowMessageBox(
+                    "هشدار",
+                    markupMessage:
+                    new MarkupString("تغییر نوع معامله باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
+                    yesText: "بله", cancelText: "لغو");
+
+                if (result is null or false)
+                    return;
+
+                _model.ProductItems.Clear();
+                _model.CoinItems.Clear();
+                _model.CurrencyItems.Clear();
+            }
+        }
+
         _model.TradeScale = tradeScale;
 
         var priceUnit = tradeScale switch
@@ -834,21 +867,6 @@ public partial class EditorForm
             TradeScale.Wholesale => _priceUnits.FirstOrDefault(x => x.IsGoldBased),
             _ => null
         };
-
-        if (tradeScale is TradeScale.Wholesale)
-        {
-            var result = await DialogService.ShowMessageBox(
-                "هشدار",
-                markupMessage: new MarkupString("تغییر نوع معامله باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
-                yesText: "بله", cancelText: "لغو");
-
-            if (result is null or false)
-                return;
-
-            _model.ProductItems.Clear();
-            _model.CoinItems.Clear();
-            _model.CurrencyItems.Clear();
-        }
 
         await OnInvoicePriceUnitChanged(priceUnit);
     }
