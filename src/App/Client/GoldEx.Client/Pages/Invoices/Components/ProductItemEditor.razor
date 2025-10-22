@@ -442,31 +442,37 @@
             </MudGrid>
         </DialogContent>
         <DialogActions>
-            <MudButton Color="Color.Error"
-                       OnClick="Close"
-                       StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">بستن</MudButton>
+            <div class="final-price-container d-flex align-center justify-content-between w-100 flex-wrap">
+                <MudText Class="final-price-text mr-md-5" Typo="Typo.h6" Color="Color.Primary">
+                    قیمت نهایی جنس: @Model.FinalAmount.ToCurrencyFormat(PriceUnit.Title)
+                </MudText>
 
-            <MudButton Class="m-2"
-                       Color="Color.Primary"
-                       Disabled="@_isProcessing"
-                       StartIcon="@Icons.Material.Filled.Save"
-                       OnClick="@(async () => await Submit())"
-                       Variant="Variant.Filled">
-                @if (_isProcessing)
-                {
-                    <MudProgressCircular Class="ms-n1"
-                                         Size="Size.Small"
-                                         Indeterminate="true" />
-                    <MudText Class="ms-2">
-                        در حال ذخیره
-                    </MudText>
-                }
-                else
-                {
-                    <MudText>ذخیره</MudText>
-                }
-            </MudButton>
+                <div class="button-group">
+                    <MudButton Color="Color.Error"
+                               OnClick="Close"
+                               StartIcon="@Icons.Material.Filled.Close"
+                               Variant="Variant.Filled">بستن</MudButton>
+
+                    <MudButton Class="m-2"
+                               Color="Color.Primary"
+                               Disabled="@_isProcessing"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               OnClick="@(async () => await Submit())"
+                               Variant="Variant.Filled">
+                        @if (_isProcessing)
+                        {
+                            <MudProgressCircular Class="ms-n1"
+                                                 Size="Size.Small"
+                                                 Indeterminate="true"/>
+                            <MudText Class="ms-2">در حال ذخیره</MudText>
+                        }
+                        else
+                        {
+                            <MudText>ذخیره</MudText>
+                        }
+                    </MudButton>
+                </div>
+            </div>
         </DialogActions>
     </MudDialog>
 </MudForm>
