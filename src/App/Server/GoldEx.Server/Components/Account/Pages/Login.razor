@@ -1,11 +1,16 @@
-﻿@attribute [Route(ClientRoutes.Accounts.Login)]
+﻿@using System.Text.Json
+@attribute [Route(ClientRoutes.Accounts.Login)]
 
 @inject SignInManager<AppUser> SignInManager
 @inject ILogger<Login> Logger
 @inject IdentityRedirectManager RedirectManager
+@inject IHttpClientFactory HttpClientFactory
+@inject IConfiguration Config
 @layout EmptyBoxLayout
 
 <PageTitle>ورود</PageTitle>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <MudStack AlignItems="AlignItems.Center">
     <MudItem>
@@ -22,32 +27,42 @@
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
                                 Label="آدرس ایمیل" Placeholder="name@example.com"
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } })" />
         </MudItem>
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
                                 Label="رمز عبور" InputType="InputType.Password" Placeholder="رمز عبور"
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" } } )" />
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" } })" />
         </MudItem>
         <MudItem xs="12" Class="m-0 p-0">
             <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
         </MudItem>
+
+        @if (_showCaptcha)
+        {
+            <div class="cf-turnstile d-flex justify-center w-100" data-theme="light" data-sitekey="@_siteKey"></div>
+        }
+
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
             <MudItem xs="12" Class="mb-0">
                 <StatusMessage Message="@_errorMessage" Severity="Severity.Error" />
             </MudItem>
-        }   
-        <StatusMessage />
+        }
 
         <MudItem xs="12" Class="mt-0">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Login">ورود به سامانه</MudStaticButton>
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                             FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Login">
+                ورود به سامانه
+            </MudStaticButton>
         </MudItem>
     </MudGrid>
 </EditForm>
+
 <MudGrid Class="mt-1">
     <MudItem xs="6">
-        <MudButton StartIcon="@Icons.Material.Filled.Phone" Variant="Variant.Filled" FullWidth="true" Color="Color.Primary" Href="@ClientRoutes.Accounts.LoginWithPhoneNumber">ارسال پیامک</MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Phone" Variant="Variant.Filled" FullWidth="true"
+                   Color="Color.Primary" Href="@ClientRoutes.Accounts.LoginWithPhoneNumber">ارسال پیامک</MudButton>
     </MudItem>
     <MudItem xs="6">
         <ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
@@ -62,47 +77,108 @@
 
 @code {
     private string? _errorMessage;
+    private string _siteKey = string.Empty;
+    private bool _showCaptcha = false;
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
-
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        _siteKey = Config["Turnstile:SiteKey"] ?? throw new InvalidOperationException("Turnstile:SiteKey is missing");
+
+        // Check failed attempts from session
+        int failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
+        _showCaptcha = failedAttempts > 0;
+
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
-            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         }
     }
 
     private async Task LoginUser()
     {
+        int failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
+
+        // If failedAttempts > 0, require CAPTCHA
+        if (_showCaptcha)
+        {
+            var captchaResponse = HttpContext.Request.Form["cf-turnstile-response"].ToString();
+            if (string.IsNullOrWhiteSpace(captchaResponse))
+            {
+                _errorMessage = "لطفاً captcha را تکمیل کنید.";
+                return;
+            }
+
+            var captchaValid = await VerifyCaptchaAsync(captchaResponse);
+            if (!captchaValid)
+            {
+                _errorMessage = "اعتبارسنجی captcha ناموفق بود.";
+                return;
+            }
+        }
+
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+
         if (result.Succeeded)
         {
+            // reset failed attempts
+            HttpContext.Session.SetInt32("FailedLoginCount", 0);
             Logger.LogInformation("User logged in.");
             RedirectManager.RedirectTo(ReturnUrl);
         }
-        else if (result.RequiresTwoFactor)
-        {
-            RedirectManager.RedirectTo(
-                ClientRoutes.Accounts.LoginWith2Fa,
-                new Dictionary<string, object?> { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-        }
-        else if (result.IsLockedOut)
-        {
-            Logger.LogWarning("User account locked out.");
-            RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
-        }
         else
         {
-            _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
+            // increment failed attempts
+            failedAttempts++;
+            HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
+
+            // show CAPTCHA next time
+            _showCaptcha = true;
+
+            if (result.RequiresTwoFactor)
+            {
+                RedirectManager.RedirectTo(ClientRoutes.Accounts.LoginWith2Fa,
+                    new Dictionary<string, object?> { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+            }
+            else if (result.IsLockedOut)
+            {
+                Logger.LogWarning("User account locked out.");
+                RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
+            }
+            else
+            {
+                _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
+            }
+        }
+    }
+
+    private async Task<bool> VerifyCaptchaAsync(string captchaResponse)
+    {
+        try
+        {
+            var secretKey = Config["Turnstile:SecretKey"];
+            var client = HttpClientFactory.CreateClient();
+
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["secret"] = secretKey ?? "",
+                ["response"] = captchaResponse,
+                ["remoteip"] = HttpContext.Connection.RemoteIpAddress?.ToString() ?? ""
+            });
+
+            var response = await client.PostAsync("https://challenges.cloudflare.com/turnstile/v0/siteverify", content);
+            var json = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<TurnstileVerifyResponse>(json);
+            return result?.success == true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error verifying Turnstile CAPTCHA");
+            return false;
         }
     }
 
@@ -118,5 +194,11 @@
 
         [Display(Name = "مرا بخاطر بسپار")]
         public bool RememberMe { get; set; }
+    }
+
+    private sealed class TurnstileVerifyResponse
+    {
+        public bool success { get; set; }
+        public string[]? error_codes { get; set; }
     }
 }
