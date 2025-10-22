@@ -22,6 +22,8 @@ public static class DependencyInjection
             .AddSerilogUiService(configuration)
             .AddDevExpress();
 
+        services.AddHttpClient();
+
         services.DiscoverServices();
         return services;
     }
