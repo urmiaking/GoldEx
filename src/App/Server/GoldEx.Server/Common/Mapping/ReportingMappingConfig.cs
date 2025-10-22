@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Application.Utilities;
+﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -34,9 +35,9 @@ public class ReportingMappingConfig : IRegister
             .Map(dest => dest.GoldUnitType,
                 src => src.ProductItems.FirstOrDefault() != null
                     ? src.ProductItems.First().Product == null
-                        ? GoldUnitType.Gram
-                        : src.ProductItems.First().Product!.GoldUnitType
-                    : GoldUnitType.Gram)
+                        ? GoldUnitType.Gram.GetDisplayName()
+                        : src.ProductItems.First().Product!.GoldUnitType.GetDisplayName()
+                    : GoldUnitType.Gram.GetDisplayName())
             .Map(dest => dest.TotalAmount,
                 src => $"{src.TotalAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
             .Map(dest => dest.TotalPaidAmount,
