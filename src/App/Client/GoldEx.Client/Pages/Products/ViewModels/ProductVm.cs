@@ -22,7 +22,6 @@ public class ProductVm : INotifyPropertyChanged
     private string? _barcode;
 
     [Display(Name = "نام جنس")]
-    [Required(ErrorMessage = "لطفا نام را وارد کنید")]
     public string? Name
     {
         get => _name;
@@ -204,7 +203,7 @@ public class ProductVm : INotifyPropertyChanged
         return new ProductRequestDto
         (
             item.Id,
-            item.Name ?? string.Empty,
+            item.Name,
             item.Barcode,
             item.Weight ?? 0,
             item.Wage ?? 0,

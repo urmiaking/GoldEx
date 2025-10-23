@@ -87,7 +87,7 @@ internal class ProductService(
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
         var item = Product.Create(
-            request.Name,
+            request.Name ?? string.Empty,
             request.Weight,
             request.Wage,
             request.ProductType,
@@ -131,7 +131,7 @@ internal class ProductService(
         var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        item.SetName(request.Name);
+        item.SetName(request.Name ?? string.Empty);
         // item.SetWeight(request.Weight);
         item.SetWage(request.Wage);
         item.SetWageType(request.WageType);
@@ -181,44 +181,52 @@ internal class ProductService(
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var item = await repository.Get(new ProductsByIdSpecification(id))
+        var item = await repository
+            .Get(new ProductsByIdSpecification(id))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        item.SetName(request.Name);
-
-        if (invoiceType is InvoiceType.Purchase)
+        if (request.ProductType is ProductType.MoltenGold)
         {
-            item.SetWage(request.Wage);
-            item.SetWageType(request.WageType);
-        }
-
-        item.SetProductType(request.ProductType);
-        item.SetFineness(request.Fineness);
-        item.SetGoldUnitType(request.GoldUnitType);
-
-        if (request.ProductCategoryId.HasValue)
-            item.SetProductCategory(new ProductCategoryId(request.ProductCategoryId.Value));
-        else
-            item.SetProductCategory(null);
-
-        if (request.WagePriceUnitId.HasValue)
-            item.SetWagePriceUnitId(new PriceUnitId(request.WagePriceUnitId.Value));
-        else
-            item.SetWagePriceUnitId(null);
-
-        if (request.ProductType == ProductType.Jewelry)
-        {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
-                s.Type,
-                s.Color,
-                s.Cut,
-                s.Carat,
-                s.Purity,
-                s.Cost,
-                item.Id)));
+            item = await FindOrCreateMoltenGoldProductAsync(request.Fineness, cancellationToken);
         }
         else
-            item.ClearGemStones();
+        {
+            item.SetName(request.Name!);
+
+            if (invoiceType is InvoiceType.Purchase)
+            {
+                item.SetWage(request.Wage);
+                item.SetWageType(request.WageType);
+            }
+
+            item.SetProductType(request.ProductType);
+            item.SetFineness(request.Fineness);
+            item.SetGoldUnitType(request.GoldUnitType);
+
+            if (request.ProductCategoryId.HasValue)
+                item.SetProductCategory(new ProductCategoryId(request.ProductCategoryId.Value));
+            else
+                item.SetProductCategory(null);
+
+            if (request.WagePriceUnitId.HasValue)
+                item.SetWagePriceUnitId(new PriceUnitId(request.WagePriceUnitId.Value));
+            else
+                item.SetWagePriceUnitId(null);
+
+            if (request.ProductType == ProductType.Jewelry)
+            {
+                item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
+                    s.Type,
+                    s.Color,
+                    s.Cut,
+                    s.Carat,
+                    s.Purity,
+                    s.Cost,
+                    item.Id)));
+            }
+            else
+                item.ClearGemStones();
+        }
 
         await repository.UpdateAsync(item, cancellationToken);
 
@@ -250,8 +258,16 @@ internal class ProductService(
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        var item = Product.Create(
-            request.Name,
+        Product product;
+
+        if (request.ProductType is ProductType.MoltenGold)
+        {
+            product = await FindOrCreateMoltenGoldProductAsync(request.Fineness, cancellationToken);
+        }
+        else
+        {
+            var item = Product.Create(
+            request.Name!,
             request.Weight,
             request.Wage,
             request.ProductType,
@@ -262,32 +278,35 @@ internal class ProductService(
             request.StonePriceUnitId.HasValue ? new PriceUnitId(request.StonePriceUnitId.Value) : null,
             request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : null);
 
-        if (request.ProductType == ProductType.Jewelry)
-        {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
-                s.Type,
-                s.Color,
-                s.Cut,
-                s.Carat,
-                s.Purity,
-                s.Cost,
-                item.Id)));
+            if (request.ProductType == ProductType.Jewelry)
+            {
+                item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
+                    s.Type,
+                    s.Color,
+                    s.Cut,
+                    s.Carat,
+                    s.Purity,
+                    s.Cost,
+                    item.Id)));
+            }
+
+            if (string.IsNullOrEmpty(request.Barcode))
+            {
+                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(request.ProductType,
+                    request.ProductCategoryId.HasValue
+                        ? new ProductCategoryId(request.ProductCategoryId.Value)
+                        : null,
+                    cancellationToken);
+
+                item.SetBarcode(barcode);
+            }
+
+            await repository.CreateAsync(item, cancellationToken);
+
+            product = item;
         }
 
-        if (string.IsNullOrEmpty(request.Barcode))
-        {
-            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(request.ProductType,
-                request.ProductCategoryId.HasValue
-                    ? new ProductCategoryId(request.ProductCategoryId.Value)
-                    : null,
-                cancellationToken);
-
-            item.SetBarcode(barcode);
-        }
-
-        await repository.CreateAsync(item, cancellationToken);
-
-        return item;
+        return product;
     }
 
     public async Task SyncUsedProductsForInvoiceAsync(Invoice invoice, IEnumerable<InvoiceUsedProductDto> usedProductDtos, CancellationToken cancellationToken = default)
@@ -511,14 +530,14 @@ internal class ProductService(
                         itemDto.TotalWeight,
                         itemDto.CostPrice,
                         itemDto.CostPriceExchangeRate,
-                        itemDto.CostPriceUnitId.HasValue 
+                        itemDto.CostPriceUnitId.HasValue
                             ? new PriceUnitId(itemDto.CostPriceUnitId.Value)
                             : null,
                         itemDto.IsInstantProduct,
                         itemDto.Product.Wage,
                         itemDto.Product.WageType,
-                        itemDto.Product.WagePriceUnitId.HasValue 
-                            ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value) 
+                        itemDto.Product.WagePriceUnitId.HasValue
+                            ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
                             : null,
                         itemDto.WagePriceUnitExchangeRate,
                         itemDto.StonePriceUnitExchangeRate,

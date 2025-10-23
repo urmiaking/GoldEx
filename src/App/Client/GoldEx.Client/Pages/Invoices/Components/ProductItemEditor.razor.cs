@@ -247,7 +247,7 @@ public partial class ProductItemEditor
         {
             WageType.Percent => Model.TotalWeight * (Model.Product.Wage / 100m) + Model.TotalWeight,
             WageType.Fixed => Model.Product.WagePriceUnitId == PriceUnit.Id ? Model.TotalWeight + Model.Product.Wage : Model.TotalWeight + Model.WageAmount,
-            null => null,
+            null => Model.TotalWeight,
             _ => throw new ArgumentOutOfRangeException()
         };
     }

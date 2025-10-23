@@ -17,6 +17,7 @@ public class ProductItemVm
     private decimal _taxPercent;
     private decimal? _wageExchangeRate;
     private ProductVm _product = ProductVm.CreateDefaultInstance();
+    private decimal? _totalWeight;
 
     [Display(Name = "نرخ هر گرم طلا")]
     public decimal GramPrice
@@ -82,7 +83,16 @@ public class ProductItemVm
 
     [Display(Name = "وزن کل")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public decimal? TotalWeight { get; set; }
+    public decimal? TotalWeight
+    {
+        get => _totalWeight;
+        set
+        {
+            _totalWeight = value;
+
+            RecalculateAmounts();
+        }
+    }
 
     public ProductVm Product
     {

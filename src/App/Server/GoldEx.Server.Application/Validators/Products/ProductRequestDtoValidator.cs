@@ -23,7 +23,7 @@ internal class ProductRequestDtoValidator : AbstractValidator<ProductRequestDto>
         _priceUnitRepository = priceUnitRepository;
 
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("عنوان جنس نمی تواند خالی باشد")
+            .NotEmpty().When(x => x.ProductType is not ProductType.MoltenGold).WithMessage("عنوان جنس نمی تواند خالی باشد")
             .MaximumLength(50).WithMessage("طول عنوان جنس نمی تواند بیشتر از 50 کاراکتر باشد");
 
         When(x => x.WageType is WageType.Fixed, () =>
