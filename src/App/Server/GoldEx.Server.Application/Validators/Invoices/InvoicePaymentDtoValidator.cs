@@ -9,7 +9,6 @@ using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PaymentVouchers;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
-using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 

@@ -20,7 +20,7 @@ namespace GoldEx.Shared.DTOs.Products;
 /// <param name="GemStones"></param>
 public record ProductRequestDto(
     Guid? Id,
-    string Name,
+    string? Name,
     string? Barcode,
     decimal Weight,
     decimal Wage,
