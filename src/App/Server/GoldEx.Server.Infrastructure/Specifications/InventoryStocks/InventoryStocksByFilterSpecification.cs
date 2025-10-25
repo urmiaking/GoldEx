@@ -2,7 +2,6 @@
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.InventoryStockAggregate;
-using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Specifications.InventoryStocks;

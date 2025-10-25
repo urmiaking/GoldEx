@@ -13,5 +13,6 @@ public class ProductsByBarcodeSpecification : SpecificationBase<Product>
         AddInclude(x => x.ProductCategory!);
         AddInclude(x => x.WagePriceUnit!);
         AddInclude(x => x.StonePriceUnit!);
+        AddInclude(x => x.MoltenGold!.Assayer!);
     }
 }

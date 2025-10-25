@@ -178,6 +178,7 @@ internal class InventoryStockRepository(
                     var products = await dbContext.Set<Product>()
                         .AsNoTracking()
                         .Include(p => p.ProductCategory)
+                        .Include(x => x.MoltenGold!.Assayer)
                         .Where(p => productIds.Contains(p.Id))
                         .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
 

@@ -19,4 +19,5 @@ public record GetProductResponse(
     DateTime DateTime,
     GoldUnitType GoldUnitType,
     GetPriceUnitTitleResponse? StonePriceUnit,
-    List<GetGemStoneResponse>? GemStones);
+    List<GetGemStoneResponse>? GemStones,
+    GetMoltenGoldResponse? MoltenGold);

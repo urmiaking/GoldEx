@@ -24,7 +24,7 @@ public partial class ReportGenerator
             return null;
 
         await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
-            action: (s, ct) => s.GetByNameAsync(customerName, ct),
+            action: (s, ct) => s.GetByNameAsync(customerName, null, ct),
             afterSend: response => _customers = response,
             cancelPrevious: true);
 

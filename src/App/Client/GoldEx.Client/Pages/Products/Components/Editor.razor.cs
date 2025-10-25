@@ -202,7 +202,7 @@ public partial class Editor
             return null;
 
         await SendRequestAsync<IProductService, List<GetProductResponse>> (
-            action: (s, ct) => s.GetListAsync(name, ct),
+            action: (s, ct) => s.GetListAsync(name, Model.ProductType, ct),
             afterSend: response => _products = response);
 
         return _products.Select(x => x.Name);

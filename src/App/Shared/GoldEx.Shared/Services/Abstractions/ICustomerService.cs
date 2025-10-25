@@ -7,7 +7,7 @@ namespace GoldEx.Shared.Services.Abstractions;
 public interface ICustomerService
 {
     Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CustomerFilter customerFilter, CancellationToken cancellationToken = default);
-    Task<List<GetCustomerResponse>> GetByNameAsync(string? customerName, CancellationToken cancellationToken = default);
+    Task<List<GetCustomerResponse>> GetByNameAsync(string? customerName, CustomerType? type, CancellationToken cancellationToken = default);
     Task<List<GetCustomerNameResponse>> GetNamesAsync(string? name, CustomerType type, CancellationToken cancellationToken = default);
     Task<GetCustomerResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetCustomerResponse?> GetAsync(string nationalId, CancellationToken cancellationToken = default);

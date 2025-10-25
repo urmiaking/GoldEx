@@ -25,6 +25,7 @@ public partial class InventoryStockList
     [Parameter] public ItemType ItemType { get; set; } = ItemType.Product;
     [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
     [Parameter] public EventCallback<HashSet<InventoryStockVm>?> SelectedItemsChanged { get; set; }
+    [Parameter] public ItemType[] SelectableTypes { get; set; } = Enum.GetValues<ItemType>();
 
     [Parameter] public bool Selectable { get; set; }
 
@@ -81,6 +82,26 @@ public partial class InventoryStockList
         ItemStatus.Available => Color.Success,
         ItemStatus.Sold => Color.Error,
         ItemStatus.Melted => Color.Warning,
+        _ => Color.Default
+    };
+
+    private string GetItemTypeIcon(ItemType type) => type switch
+    {
+        ItemType.Product => Icons.Material.Filled.Diamond,
+        ItemType.MoltenGold => Icons.Material.Filled.Whatshot,
+        ItemType.UsedProduct => Icons.Material.Filled.DiscFull,
+        ItemType.Coin => Icons.Material.Filled.MonetizationOn,
+        ItemType.Currency => Icons.Material.Filled.AttachMoney,
+        _ => Icons.Material.Filled.Help
+    };
+
+    private Color GetItemTypeIconColor(ItemType type) => type switch
+    {
+        ItemType.Product => Color.Info,
+        ItemType.MoltenGold => Color.Warning,
+        ItemType.UsedProduct => Color.Error,
+        ItemType.Coin => Color.Primary,
+        ItemType.Currency => Color.Tertiary,
         _ => Color.Default
     };
 

@@ -6,6 +6,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.Products;
+using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -56,16 +57,18 @@ internal class ProductService(
         };
     }
 
-    public async Task<List<GetProductResponse>> GetListAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<List<GetProductResponse>> GetListAsync(string name, ProductType productType,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(name))
             return [];
 
         var products = await repository
-            .Get(new ProductsByNameSpecification(name))
+            .Get(new ProductsByNameSpecification(name, productType))
             .AsNoTracking()
             .AsSplitQuery()
             .GroupBy(x => x.Name)
+            .Take(8)
             .Select(x => x.First())
             .ToListAsync(cancellationToken);
 
@@ -185,73 +188,54 @@ internal class ProductService(
             .Get(new ProductsByIdSpecification(id))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        if (request.ProductType is ProductType.MoltenGold)
+        item.SetName(request.Name!);
+
+        if (invoiceType is InvoiceType.Purchase)
         {
-            item = await FindOrCreateMoltenGoldProductAsync(request.Fineness, cancellationToken);
+            item.SetWage(request.Wage);
+            item.SetWageType(request.WageType);
+        }
+
+        item.SetProductType(request.ProductType);
+        item.SetFineness(request.Fineness);
+        item.SetGoldUnitType(request.GoldUnitType);
+
+        if (request.ProductCategoryId.HasValue)
+            item.SetProductCategory(new ProductCategoryId(request.ProductCategoryId.Value));
+        else
+            item.SetProductCategory(null);
+
+        if (request.WagePriceUnitId.HasValue)
+            item.SetWagePriceUnitId(new PriceUnitId(request.WagePriceUnitId.Value));
+        else
+            item.SetWagePriceUnitId(null);
+
+        if (request.ProductType is ProductType.Jewelry)
+        {
+            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
+                s.Type,
+                s.Color,
+                s.Cut,
+                s.Carat,
+                s.Purity,
+                s.Cost,
+                item.Id)));
         }
         else
+            item.ClearGemStones();
+
+        if (request.MoltenGold is not null)
         {
-            item.SetName(request.Name!);
-
-            if (invoiceType is InvoiceType.Purchase)
-            {
-                item.SetWage(request.Wage);
-                item.SetWageType(request.WageType);
-            }
-
-            item.SetProductType(request.ProductType);
-            item.SetFineness(request.Fineness);
-            item.SetGoldUnitType(request.GoldUnitType);
-
-            if (request.ProductCategoryId.HasValue)
-                item.SetProductCategory(new ProductCategoryId(request.ProductCategoryId.Value));
-            else
-                item.SetProductCategory(null);
-
-            if (request.WagePriceUnitId.HasValue)
-                item.SetWagePriceUnitId(new PriceUnitId(request.WagePriceUnitId.Value));
-            else
-                item.SetWagePriceUnitId(null);
-
-            if (request.ProductType == ProductType.Jewelry)
-            {
-                item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
-                    s.Type,
-                    s.Color,
-                    s.Cut,
-                    s.Carat,
-                    s.Purity,
-                    s.Cost,
-                    item.Id)));
-            }
-            else
-                item.ClearGemStones();
+            item.SetMoltenGold(request.MoltenGold.AssayNumber,
+                request.MoltenGold.AssayDate,
+                request.MoltenGold.AssayerId.HasValue
+                    ? new CustomerId(request.MoltenGold.AssayerId.Value)
+                    : null);
         }
 
         await repository.UpdateAsync(item, cancellationToken);
 
         return item;
-    }
-
-    public async Task<ProductId> CreateUsedProductAsync(InvoiceUsedProductDto request, CancellationToken cancellationToken = default)
-    {
-        var product = Product.Create(request.Description,
-                                     request.Weight,
-                                     0,
-                                     request.ProductType,
-                                     request.FinenessDeductionRate,
-                                     request.UnitType,
-                                     null,
-                                     null,
-                                     null,
-                                     null);
-
-        var barcode = await barcodeService.GenerateNextProductBarcodeAsync(product.ProductType, null, cancellationToken);
-
-        product.SetBarcode(barcode);
-
-        await repository.CreateAsync(product, cancellationToken);
-        return product.Id;
     }
 
     public async Task<Product> CreateProductAsync(ProductRequestDto request, CancellationToken cancellationToken)
@@ -262,7 +246,25 @@ internal class ProductService(
 
         if (request.ProductType is ProductType.MoltenGold)
         {
-            product = await FindOrCreateMoltenGoldProductAsync(request.Fineness, cancellationToken);
+            product = Product.CreateMoltenGold(request.Name ?? $"طلای آبشده عیار {request.Fineness:G29}",
+                request.Weight,
+                request.Wage,
+                request.Fineness,
+                request.GoldUnitType,
+                request.WageType,
+                request.WagePriceUnitId.HasValue
+                    ? new PriceUnitId(request.WagePriceUnitId.Value)
+                    : null,
+                request.ProductCategoryId.HasValue
+                    ? new ProductCategoryId(request.ProductCategoryId.Value)
+                    : null,
+                request.MoltenGold != null
+                    ? MoltenGold.Create(request.MoltenGold.AssayNumber,
+                        request.MoltenGold.AssayDate,
+                        request.MoltenGold.AssayerId.HasValue
+                            ? new CustomerId(request.MoltenGold.AssayerId.Value)
+                            : null)
+                    : null);
         }
         else
         {
@@ -278,7 +280,7 @@ internal class ProductService(
             request.StonePriceUnitId.HasValue ? new PriceUnitId(request.StonePriceUnitId.Value) : null,
             request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : null);
 
-            if (request.ProductType == ProductType.Jewelry)
+            if (request.ProductType is ProductType.Jewelry)
             {
                 item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
                     s.Type,
@@ -290,21 +292,21 @@ internal class ProductService(
                     item.Id)));
             }
 
-            if (string.IsNullOrEmpty(request.Barcode))
-            {
-                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(request.ProductType,
-                    request.ProductCategoryId.HasValue
-                        ? new ProductCategoryId(request.ProductCategoryId.Value)
-                        : null,
-                    cancellationToken);
-
-                item.SetBarcode(barcode);
-            }
-
-            await repository.CreateAsync(item, cancellationToken);
-
             product = item;
         }
+
+        if (string.IsNullOrEmpty(request.Barcode))
+        {
+            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(request.ProductType,
+                request.ProductCategoryId.HasValue
+                    ? new ProductCategoryId(request.ProductCategoryId.Value)
+                    : null,
+                cancellationToken);
+
+            product.SetBarcode(barcode);
+        }
+
+        await repository.CreateAsync(product, cancellationToken);
 
         return product;
     }
@@ -374,16 +376,7 @@ internal class ProductService(
             }
             else
             {
-                var product = Product.Create(dto.Description,
-                    dto.Weight,
-                    0,
-                    dto.ProductType,
-                    dto.Fineness,
-                    dto.UnitType,
-                    null,
-                    null,
-                    null,
-                    null);
+                var product = Product.CreateBrokenProduct(dto.Description, dto.Weight, dto.Fineness, dto.UnitType);
 
                 var barcode = await barcodeService.GenerateNextProductBarcodeAsync(dto.ProductType, null, cancellationToken);
                 product.SetBarcode(barcode);
@@ -550,23 +543,6 @@ internal class ProductService(
     public Task DeleteRangeAsync(List<Product> productList, CancellationToken cancellationToken = default)
     {
         return repository.DeleteRangeAsync(productList, cancellationToken);
-    }
-
-    public async Task<Product> FindOrCreateMoltenGoldProductAsync(decimal fineness, CancellationToken cancellationToken = default)
-    {
-        var product = await repository
-            .Get(new ProductsByMoltenGoldSpecification(fineness))
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (product is null)
-        {
-            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(ProductType.MoltenGold, null, cancellationToken);
-
-            product = Product.CreateMoltenGold(barcode, fineness);
-            await repository.CreateAsync(product, cancellationToken);
-        }
-
-        return product;
     }
 
     #endregion
