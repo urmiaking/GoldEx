@@ -60,13 +60,14 @@ internal class CustomerService(
         };
     }
 
-    public async Task<List<GetCustomerResponse>> GetByNameAsync(string? customerName, CancellationToken cancellationToken = default)
+    public async Task<List<GetCustomerResponse>> GetByNameAsync(string? customerName, CustomerType? type,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(customerName))
             return [];
 
         var items = await repository
-            .Get(new CustomersByNameSpecification(customerName))
+            .Get(new CustomersByNameSpecification(customerName, type))
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 

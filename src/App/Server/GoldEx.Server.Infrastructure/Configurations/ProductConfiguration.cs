@@ -58,6 +58,20 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasIndex(x => x.Name);
 
         builder.OwnsMany(x => x.GemStones, Configure);
+        builder.OwnsOne(x => x.MoltenGold, Configure);
+    }
+
+    private void Configure(OwnedNavigationBuilder<Product, MoltenGold> builder)
+    {
+        builder.ToTable("MoltenGolds");
+
+        builder.Property(x => x.AssayNumber)
+            .HasMaxLength(50);
+
+        builder.HasOne(x => x.Assayer)
+            .WithMany()
+            .HasForeignKey(x => x.AssayerId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void Configure(OwnedNavigationBuilder<Product, GemStone> builder)

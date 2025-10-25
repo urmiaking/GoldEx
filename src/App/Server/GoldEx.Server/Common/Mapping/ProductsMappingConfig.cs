@@ -23,5 +23,6 @@ public class ProductsMappingConfig : IRegister
                 : 0m);
 
         config.NewConfig<GemStone, GetGemStoneResponse>();
+        config.NewConfig<MoltenGold, GetMoltenGoldResponse>();
     }
 }

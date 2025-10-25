@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
@@ -9,6 +10,59 @@ namespace GoldEx.Server.Domain.ProductAggregate;
 public readonly record struct ProductId(Guid Value);
 public class Product : EntityBase<ProductId>
 {
+    public static Product CreateBrokenProduct(
+        string name,
+        decimal weight,
+        decimal fineness,
+        GoldUnitType goldUnitType)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
+        ArgumentOutOfRangeException.ThrowIfLessThan(fineness, 0, nameof(fineness));
+
+        return new Product
+        {
+            Id = new ProductId(Guid.NewGuid()),
+            Name = name,
+            Weight = weight,
+            Fineness = fineness,
+            GoldUnitType = goldUnitType,
+            ProductType = ProductType.UsedGold
+        };
+    }
+
+    public static Product CreateMoltenGold(
+        string name,
+        decimal weight,
+        decimal wage,
+        decimal fineness,
+        GoldUnitType goldUnitType,
+        WageType? wageType,
+        PriceUnitId? wagePriceUnitId,
+        ProductCategoryId? productCategoryId,
+        MoltenGold? moltenGold)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
+        ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
+
+        if (wageType is Shared.Enums.WageType.Percent && wage > 100)
+            throw new ArgumentOutOfRangeException(nameof(wage), "درصد اجرت باید بین 0 الی 100 باشد");
+
+        return new Product
+        {
+            Id = new ProductId(Guid.NewGuid()),
+            Name = name,
+            Weight = weight,
+            Wage = wage,
+            ProductType = ProductType.MoltenGold,
+            Fineness = fineness,
+            GoldUnitType = goldUnitType,
+            WageType = wageType,
+            WagePriceUnitId = wagePriceUnitId,
+            ProductCategoryId = productCategoryId,
+            MoltenGold = moltenGold
+        };
+    }
+
     public static Product Create(
         string name,
         decimal weight,
@@ -67,6 +121,8 @@ public class Product : EntityBase<ProductId>
 
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
+
+    public MoltenGold? MoltenGold { get; private set; }
 
     public IReadOnlyList<InventoryStock>? InventoryStocks { get; private set; }
 
@@ -147,18 +203,8 @@ public class Product : EntityBase<ProductId>
         return this;
     }
 
-    public static Product CreateMoltenGold(string barcode, decimal fineness)
+    public void SetMoltenGold(string? assayNumber, DateTime? assayDate, CustomerId? assayerId)
     {
-        return new Product
-        {
-            Id = new ProductId(Guid.NewGuid()),
-            Barcode = barcode,
-            Name = $"طلای آبشده عیار {fineness:G29}",
-            Weight = 0,
-            Wage = 0,
-            ProductType = ProductType.MoltenGold,
-            Fineness = fineness,
-            GoldUnitType = GoldUnitType.Gram
-        };
+        MoltenGold = MoltenGold.Create(assayNumber, assayDate, assayerId);
     }
 }

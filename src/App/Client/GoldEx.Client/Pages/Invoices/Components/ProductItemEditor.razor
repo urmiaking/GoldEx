@@ -39,26 +39,26 @@
                         }
                     </MudSelect>
                 </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudAutocomplete T="string"
+                                     Value="Model.Product.Name"
+                                     ValueChanged="OnProductNameChanged"
+                                     @bind-Text="Model.Product.Name"
+                                     For="@(() => Model.Product.Name!)"
+                                     Label="@Model.GetDisplayName(() => Model.Product.Name)"
+                                     Margin="Margin.Dense"
+                                     Variant="Variant.Outlined"
+                                     SearchFunc="@SearchNames"
+                                     AutoFocus="true"
+                                     ResetValueOnEmptyText="true"
+                                     CoerceValue="false"
+                                     Strict="false"
+                                     DebounceInterval="0"
+                                     ShowProgressIndicator="false">
+                    </MudAutocomplete>
+                </MudItem>
                 @if (Model.Product.ProductType is not ProductType.MoltenGold)
                 {
-                    <MudItem xs="12" sm="6" md="4">
-                        <MudAutocomplete T="string"
-                                            Value="Model.Product.Name"
-                                            ValueChanged="OnProductNameChanged"
-                                            @bind-Text="Model.Product.Name"
-                                            For="@(() => Model.Product.Name!)"
-                                            Label="@Model.GetDisplayName(() => Model.Product.Name)"
-                                            Margin="Margin.Dense"
-                                            Variant="Variant.Outlined"
-                                            SearchFunc="@SearchNames"
-                                            AutoFocus="true"
-                                            ResetValueOnEmptyText="true"
-                                            CoerceValue="false"
-                                            Strict="false"
-                                            DebounceInterval="0"
-                                            ShowProgressIndicator="false">
-                        </MudAutocomplete>
-                    </MudItem>
                     <MudItem xs="12" sm="6" md="4">
                         <div class="d-flex flex-row align-center">
                             <MudSelect T="ProductCategoryVm?"
@@ -68,26 +68,28 @@
                                        For="() => Model.Product.CategoryVm"
                                        Margin="Margin.Dense"
                                        Variant="Variant.Outlined">
+                                <MudSelectItem T="ProductCategoryVm?" Value="null">ندارد</MudSelectItem>
                                 @foreach (var item in _productCategories)
                                 {
                                     <MudSelectItem Value="item">@item.Title</MudSelectItem>
                                 }
                             </MudSelect>
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" class="mt-1" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCategory"></MudIconButton>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" class="mt-1" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCategory" />
                         </div>
                     </MudItem>
-                    <MudItem xs="12" sm="6" md="4">
-                        <MudNumericField For="@(() => Model.Quantity)"
-                                         Immediate="true"
-                                         dir="ltr"
-                                         Label="@Model.GetDisplayName(() => Model.Quantity)"
-                                         Margin="Margin.Dense"
-                                         T="int"
-                                         @bind-Value="Model.Quantity"
-                                         HideSpinButtons="true"
-                                         Variant="Variant.Outlined" />
-                    </MudItem>
                 }
+                
+                <MudItem xs="12" sm="6" md="4">
+                    <MudNumericField For="@(() => Model.Quantity)"
+                                     Immediate="true"
+                                     dir="ltr"
+                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
+                                     Margin="Margin.Dense"
+                                     T="int"
+                                     @bind-Value="Model.Quantity"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
 
                 <MudItem xs="12" sm="6" md="4">
                     <MudMenu @bind-Open="_weightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
@@ -206,7 +208,7 @@
                     </MudItem>
                 }
 
-                @if (Model.InvoiceType is InvoiceType.Sell)
+                @if (Model.InvoiceType is InvoiceType.Sell && Model.Product.ProductType is not ProductType.MoltenGold)
                 {
                     <MudItem xs="12" sm="6" md="4">
                         <MudNumericField For="@(() => Model.ProfitPercent)"
@@ -292,17 +294,55 @@
                     </MudItem>
                 }
 
-                @* <MudItem xs="12" sm="6" md="4">
-                    <MudTextField @bind-Value="Model.Product.Barcode"
-                                  For="@(() => Model.Product.Barcode)"
-                                  Label="@Model.Product.GetDisplayName(() => Model.Product.Barcode)"
-                                  Margin="Margin.Dense"
-                                  Variant="Variant.Outlined"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.Refresh"
-                                  OnAdornmentClick="@(_ => GenerateBarcode())"
-                                  AdornmentColor="Color.Primary" />
-                </MudItem> *@
+                @if (Model.Product.ProductType is ProductType.MoltenGold && Model.Product.MoltenGold is not null)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudTextField @bind-Value="Model.Product.MoltenGold.AssayNumber"
+                                      For="() => Model.Product.MoltenGold.AssayNumber!"
+                                      Label="@Model.GetDisplayName(() => Model.Product.MoltenGold.AssayNumber)"
+                                      Margin="Margin.Dense"
+                                      dir="ltr"
+                                      T="string"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <div class="d-flex flex-row align-center">
+                            <MudAutocomplete T="CustomerVm"
+                                             @bind-Value="Model.Product.MoltenGold.Assayer"
+                                             Text="@Model.Product.MoltenGold.Assayer?.FullName"
+                                             For="@(() => Model.Product.MoltenGold.Assayer!)"
+                                             Placeholder="جستجوی آزمایشگاه..."
+                                             Label="@(Model.GetDisplayName(() => Model.Product.MoltenGold.Assayer))"
+                                             ToStringFunc="@(customer => customer != null ? $"{customer.FullName}" : null)"
+                                             Margin="Margin.Dense"
+                                             Adornment="Adornment.Start"
+                                             AdornmentIcon="@Icons.Material.Filled.Search"
+                                             Variant="Variant.Outlined"
+                                             SearchFunc="@SearchCustomers"
+                                             ResetValueOnEmptyText="true"
+                                             DebounceInterval="0"
+                                             ShowProgressIndicator="false">
+                            </MudAutocomplete>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer"></MudIconButton>
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudDatePicker @bind-Date="Model.Product.MoltenGold.AssayDate"
+                                       Color="Color.Secondary"
+                                       Editable="true"
+                                       AnchorOrigin="Origin.TopCenter"
+                                       TransformOrigin="Origin.BottomCenter"
+                                       For="@(() => Model.Product.MoltenGold.AssayDate)"
+                                       dir="ltr"
+                                       Label="@(Model.GetDisplayName(() => Model.Product.MoltenGold.AssayDate))"
+                                       ImmediateText="true"
+                                       Margin="Margin.Dense"
+                                       Rounded="true"
+                                       Variant="Variant.Outlined" />
+                    </MudItem>
+
+                }
 
                 @if (Model.Product.ProductType is ProductType.Jewelry)
                 {
@@ -346,10 +386,7 @@
                         </MudItem>
 
                     }
-                }
 
-                @if (Model.Product.ProductType is ProductType.Jewelry)
-                {
                     @if (Model.Product.Stones is not null)
                     {
                         @for (var i = 0; i < Model.Product.Stones.Count; i++)
@@ -446,7 +483,7 @@
                         {
                             <MudProgressCircular Class="ms-n1"
                                                  Size="Size.Small"
-                                                 Indeterminate="true"/>
+                                                 Indeterminate="true" />
                             <MudText Class="ms-2">در حال ذخیره</MudText>
                         }
                         else

@@ -244,7 +244,7 @@ public partial class Editor
             return null;
 
         await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
-            action: (s, ct) => s.GetByNameAsync(supplierName, ct),
+            action: (s, ct) => s.GetByNameAsync(supplierName, null, ct),
             afterSend: response =>
             {
                 _suppliers = response;
