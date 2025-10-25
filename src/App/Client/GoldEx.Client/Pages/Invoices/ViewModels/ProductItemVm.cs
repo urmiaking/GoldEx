@@ -4,6 +4,8 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Settings;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
@@ -17,6 +19,7 @@ public class ProductItemVm
     private decimal _taxPercent;
     private decimal? _wageExchangeRate;
     private ProductVm _product = ProductVm.CreateDefaultInstance();
+    private decimal? _totalWeight;
 
     [Display(Name = "نرخ هر گرم طلا")]
     public decimal GramPrice
@@ -82,7 +85,16 @@ public class ProductItemVm
 
     [Display(Name = "وزن کل")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public decimal? TotalWeight { get; set; }
+    public decimal? TotalWeight
+    {
+        get => _totalWeight;
+        set
+        {
+            _totalWeight = value;
+
+            RecalculateAmounts();
+        }
+    }
 
     public ProductVm Product
     {
@@ -216,5 +228,58 @@ public class ProductItemVm
             TotalWeight = response.TotalWeight,
             InvoiceType = invoiceType
         };
+    }
+
+    public void SetAsJewelry(GetPriceUnitTitleResponse priceUnit, GetSettingResponse? settings)
+    {
+        Product.WageType = WageType.Fixed;
+        Product.WagePriceUnitId = priceUnit.Id;
+        Product.WagePriceUnitTitle = priceUnit.Title;
+
+        if (InvoiceType is InvoiceType.Sell)
+        {
+            ProfitPercent = settings?.JewelryProfitPercent ?? 20;
+            TaxPercent = settings?.TaxPercent ?? 10;
+        }
+        Product.MoltenGold = null;
+    }
+
+    public void SetAsGold(GetPriceUnitTitleResponse priceUnit, GetSettingResponse? settings)
+    {
+        Product.WageType = WageType.Percent;
+        Product.WagePriceUnitId = null;
+        Product.WagePriceUnitTitle = null;
+        if (InvoiceType is InvoiceType.Sell)
+        {
+            ProfitPercent = settings?.GoldProfitPercent ?? 7;
+            TaxPercent = settings?.TaxPercent ?? 10;
+        }
+        Product.MoltenGold = null;
+    }
+
+    public void SetAsMoltenGold(GetSettingResponse? settings)
+    {
+        if (InvoiceType is InvoiceType.Sell)
+        {
+            Product.Wage = settings?.MoltenGoldCommissionPercent ?? 1.5m;
+            Product.WageType = WageType.Percent;
+        }
+        else
+        {
+            Product.Wage = null;
+            Product.WageType = null;
+        }
+
+        Product.WagePriceUnitId = null;
+        Product.WagePriceUnitTitle = null;
+
+        ProfitPercent = 0;
+        TaxPercent = 0;
+
+        Product.MoltenGold = new MoltenGoldVm();
+
+        Product.CategoryVm = null;
+        Product.ProductCategoryId = null;
+        Product.ProductCategoryTitle = null;
     }
 }

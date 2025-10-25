@@ -86,8 +86,10 @@ public class ApiUrls
         public static string GetList(RequestFilter filter, ProductFilter productFilter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList)
             .AppendQueryString(filter).AppendQueryString(productFilter);
 
-        public static string GetList(string name) =>
-            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetListByName).AppendQueryString(new { name });
+        public static string GetList(string name, ProductType productType) =>
+            BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetListByName)
+                .FormatRoute(new { productType })
+                .AppendQueryString(new { name });
 
         public static string Get(string barcode)
             => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetByBarcode)
@@ -146,8 +148,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Update).FormatRoute(new { id });
         public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.Delete).FormatRoute(new { id });
-        public static string GetByName(string? customerName) =>
-            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByName).FormatRoute(new { customerName });
+        public static string GetByName(string? customerName, CustomerType? type) =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetByName)
+                .FormatRoute(new { customerName })
+                .AppendQueryString(new { type });
 
         public static string GetNames(string? name, CustomerType type) =>
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetNames)

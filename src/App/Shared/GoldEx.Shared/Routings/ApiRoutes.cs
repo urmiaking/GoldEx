@@ -53,7 +53,7 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
-        public const string GetListByName = "search";
+        public const string GetListByName = "search/{productType}";
     }
 
     public class Settings

@@ -11,6 +11,10 @@ public class ProductValidator : AbstractValidator<ProductVm>
         RuleFor(x => x.Weight)
             .GreaterThan(0).WithMessage("لطفا وزن را وارد کنید");
 
+        RuleFor(x => x.Name)
+            .NotEmpty().When(x => x.ProductType is not ProductType.MoltenGold).WithMessage("عنوان جنس نمی تواند خالی باشد")
+            .MaximumLength(50).WithMessage("طول عنوان جنس نمی تواند بیشتر از 50 کاراکتر باشد");
+
         When(product => product.WageType is WageType.Percent, () =>
         {
             RuleFor(product => product.Wage)

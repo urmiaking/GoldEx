@@ -1,9 +1,10 @@
-﻿using GoldEx.Client.Pages.Invoices.Validators;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.Components.Categories;
 using GoldEx.Client.Pages.Settings.ViewModels;
-using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
@@ -36,6 +37,8 @@ public partial class ProductItemEditor
     private bool _wageFieldMenuOpen;
     private bool _costPriceMenuOpen;
     private bool _isProcessing;
+    private List<GetCustomerResponse> _customers = [];
+
     private string? WageFieldAdornmentText => Model.Product.WageType switch
     {
         WageType.Percent => "درصد",
@@ -136,8 +139,6 @@ public partial class ProductItemEditor
         MudDialog.Close(DialogResult.Ok(Model));
     }
 
-    private void GenerateBarcode() => Model.Product.Barcode = StringExtensions.GenerateRandomBarcode();
-
     private void Close() => MudDialog.Cancel();
 
     private void OnProductTypeChanged(ProductType productType)
@@ -147,32 +148,13 @@ public partial class ProductItemEditor
         switch (productType)
         {
             case ProductType.Jewelry:
-                Model.Product.WageType = WageType.Fixed;
-                Model.Product.WagePriceUnitId = PriceUnit.Id;
-                Model.Product.WagePriceUnitTitle = PriceUnit.Title;
-                if (Model.InvoiceType is InvoiceType.Sell)
-                {
-                    Model.ProfitPercent = _settings?.JewelryProfitPercent ?? 20;
-                    Model.TaxPercent = _settings?.TaxPercent ?? 9;
-                }
+                Model.SetAsJewelry(PriceUnit, _settings);
                 break;
             case ProductType.Gold:
-                Model.Product.WageType = WageType.Percent;
-                Model.Product.WagePriceUnitId = null;
-                Model.Product.WagePriceUnitTitle = null;
-                if (Model.InvoiceType is InvoiceType.Sell)
-                {
-                    Model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
-                    Model.TaxPercent = _settings?.TaxPercent ?? 9;
-                }
+                Model.SetAsGold(PriceUnit, _settings);  
                 break;
             case ProductType.MoltenGold:
-                Model.Product.Wage = null;
-                Model.Product.WageType = null;
-                Model.Product.WagePriceUnitId = null;
-                Model.Product.WagePriceUnitTitle = null;
-                Model.ProfitPercent = 0;
-                Model.TaxPercent = 0;
+                Model.SetAsMoltenGold(_settings);
                 break;
             case ProductType.UsedGold:
                 throw new InvalidOperationException();
@@ -199,8 +181,11 @@ public partial class ProductItemEditor
         if (string.IsNullOrEmpty(name))
             return null;
 
+        if (name.Length <= 2)
+            return null;
+
         await SendRequestAsync<IProductService, List<GetProductResponse>>(
-            action: (s, ct) => s.GetListAsync(name, ct),
+            action: (s, ct) => s.GetListAsync(name, Model.Product.ProductType, ct),
             afterSend: response => _products = response);
 
         return _products.Select(x => x.Name);
@@ -236,6 +221,7 @@ public partial class ProductItemEditor
         }
 
         SetCostPrice();
+        StateHasChanged();
     }
 
     private void SetCostPrice()
@@ -247,7 +233,7 @@ public partial class ProductItemEditor
         {
             WageType.Percent => Model.TotalWeight * (Model.Product.Wage / 100m) + Model.TotalWeight,
             WageType.Fixed => Model.Product.WagePriceUnitId == PriceUnit.Id ? Model.TotalWeight + Model.Product.Wage : Model.TotalWeight + Model.WageAmount,
-            null => null,
+            null => Model.TotalWeight,
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -267,12 +253,9 @@ public partial class ProductItemEditor
 
     private void OnProductCategoryChanged(ProductCategoryVm? category)
     {
-        if (category is null)
-            return;
-
         Model.Product.CategoryVm = category;
-        Model.Product.ProductCategoryId = category.Id;
-        Model.Product.ProductCategoryTitle = category.Title;
+        Model.Product.ProductCategoryId = category?.Id;
+        Model.Product.ProductCategoryTitle = category?.Title;
     }
 
     private void OnWageAdornmentClicked()
@@ -358,11 +341,54 @@ public partial class ProductItemEditor
     {
         Model.TotalWeight = totalWeight;
         SetCostPrice();
+        StateHasChanged();
     }
 
     private void OnWageChanged(decimal? wage)
     {
         Model.Product.Wage = wage;
         SetCostPrice();
+        StateHasChanged();
     }
+
+    #region Customer
+
+    private async Task<IEnumerable<CustomerVm>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(customerName))
+            return null;
+
+        await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
+            action: (s, ct) => s.GetByNameAsync(customerName, CustomerType.AssayingLab, ct),
+            afterSend: response =>
+            {
+                _customers = response;
+            },
+            cancelPrevious: true);
+
+        return _customers.Select(CustomerVm.CreateFrom);
+    }
+
+    private async Task OnAddCustomer()
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+        var parameters = new DialogParameters<Customers.Components.Editor>
+        {
+            { x => x.ReturnModel, true },
+            { x => x.CustomerType, CustomerType.AssayingLab }
+        };
+
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن آزمایشگاه جدید", parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: CustomerVm customerVm })
+        {
+            Model.Product.MoltenGold!.Assayer = customerVm;
+            StateHasChanged();
+        }
+    }
+
+    #endregion
 }

@@ -44,9 +44,9 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Customers.GetByName)]
-    public async Task<IActionResult> GetByNameAsync(string? customerName, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByNameAsync(string? customerName, [FromQuery] CustomerType? type, CancellationToken cancellationToken)
     {
-        var items = await service.GetByNameAsync(customerName, cancellationToken);
+        var items = await service.GetByNameAsync(customerName, type, cancellationToken);
         return Ok(items);
     }
 

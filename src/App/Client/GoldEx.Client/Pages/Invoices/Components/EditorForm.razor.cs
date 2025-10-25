@@ -191,7 +191,7 @@ public partial class EditorForm
             return null;
 
         await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
-            action: (s, ct) => s.GetByNameAsync(customerName, ct),
+            action: (s, ct) => s.GetByNameAsync(customerName, null, ct),
             afterSend: response =>
             {
                 _customers = response;
@@ -303,6 +303,7 @@ public partial class EditorForm
             { x => x.GoldProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.GoldProfitPercent ?? 7 : 0 },
             { x => x.JewelryProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.JewelryProfitPercent ?? 20 : 0 },
             { x => x.ItemType, ItemType.Product },
+            { x => x.SelectableTypes, [ItemType.Product, ItemType.MoltenGold ]},
             { x => x.PriceUnit, _model.InvoicePriceUnit },
             { x => x.ItemStatus, ItemStatus.Available }
         };
@@ -402,6 +403,7 @@ public partial class EditorForm
         var parameters = new DialogParameters<InventoryItemSelector>
         {
             { x => x.ItemType, ItemType.Coin },
+            { x => x.SelectableTypes, [ItemType.Coin ]},
             { x => x.PriceUnit, _model.InvoicePriceUnit },
             { x => x.ItemStatus, ItemStatus.Available }
         };
@@ -484,6 +486,7 @@ public partial class EditorForm
         var parameters = new DialogParameters<InventoryItemSelector>
         {
             { x => x.ItemType, ItemType.Currency },
+            { x => x.SelectableTypes, [ItemType.Currency ]},
             { x => x.PriceUnit, _model.InvoicePriceUnit },
             { x => x.ItemStatus, ItemStatus.Available },
         };

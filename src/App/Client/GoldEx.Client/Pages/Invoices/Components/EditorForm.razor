@@ -141,9 +141,7 @@ else
                 <MudItem xs="12" md="2">
                     <MudNumericField @bind-Value="_model.InvoiceNumber"
                                      For="@(() => _model.InvoiceNumber)"
-                                     HelperText="شماره یکتای فاکتور"
                                      dir="ltr"
-                                     HelperTextOnFocus="true"
                                      HideSpinButtons="true"
                                      Label="@(_model.GetDisplayName(() => _model.InvoiceNumber))"
                                      Margin="Margin.Dense"
@@ -152,23 +150,21 @@ else
                                      Variant="Variant.Outlined" />
                 </MudItem>
                 <MudSpacer />
-                <MudItem xs="12" md="2">
+                <MudItem xs="6" md="2">
                     <MudDatePicker @bind-Date="_model.InvoiceDate"
                                    Color="Color.Secondary"
                                    Editable="true"
                                    AnchorOrigin="Origin.TopCenter"
                                    TransformOrigin="Origin.BottomCenter"
                                    For="@(() => _model.InvoiceDate)"
-                                   HelperText="تاریخ ثبت فاکتور"
                                    dir="ltr"
-                                   HelperTextOnFocus="true"
                                    Label="@(_model.GetDisplayName(() => _model.InvoiceDate))"
                                    ImmediateText="true"
                                    Margin="Margin.Dense"
                                    Rounded="true"
                                    Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="@(_model.IsOverdue ? 3 : 2)">
+                <MudItem xs="6" md="@(_model.IsOverdue ? 3 : 2)">
                     <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
                         <MudDatePicker @bind-Date="_model.DueDate"
                                        Color="Color.Secondary"
@@ -196,7 +192,7 @@ else
                 </MudItem>
             </MudGrid>
 
-            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
+            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mt-4">
                 <MudText Typo="Typo.h6" GutterBottom="true">
                     طرف حساب
                     @if (_model.Customer != null)
