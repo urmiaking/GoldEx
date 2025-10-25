@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -21,6 +22,7 @@ public partial class CustomersList
     private MudTable<CustomerVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly DialogOptions _viewTransactionDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
+    private CustomerType? _customerType;
 
     private async Task<TableData<CustomerVm>> LoadCustomersAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -35,7 +37,7 @@ public partial class CustomersList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var customerFilter = new CustomerFilter(_filterDateRange.Start, _filterDateRange.End);
+        var customerFilter = new CustomerFilter(_customerType, _filterDateRange.Start, _filterDateRange.End);
 
         await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
             action: (s, token) => s.GetListAsync(filter, customerFilter, token),
@@ -158,5 +160,60 @@ public partial class CustomersList
     {
         await _table.ReloadServerData();
         StateHasChanged();
+    }
+
+    public string? CustomerTypeIcon => _customerType switch
+    {
+        CustomerType.RetailCustomer => Icons.Material.Filled.ShoppingCart,
+        CustomerType.Wholesaler => Icons.Material.Filled.Warehouse,
+        CustomerType.Workshop => Icons.Material.Filled.Build,
+        CustomerType.Retailer => Icons.Material.Filled.Store,
+        CustomerType.AssayingLab => Icons.Material.Filled.Science,
+        CustomerType.MeltedGoldDealer => Icons.Material.Filled.LocalFireDepartment,
+        null => Icons.Material.Filled.List,
+        _ => null
+    };
+
+    public Color CustomerTypeColor => _customerType switch
+    {
+        CustomerType.RetailCustomer => Color.Info,
+        CustomerType.Wholesaler => Color.Primary,
+        CustomerType.Workshop => Color.Tertiary,
+        CustomerType.Retailer => Color.Error,
+        CustomerType.AssayingLab => Color.Info,
+        CustomerType.MeltedGoldDealer => Color.Success,
+        null => Color.Info,
+        _ => Color.Default
+    };
+
+    private string? GetCustomerTypeIcon(CustomerType? type) => type switch
+    {
+        CustomerType.RetailCustomer => Icons.Material.Filled.ShoppingCart,
+        CustomerType.Wholesaler => Icons.Material.Filled.Warehouse,
+        CustomerType.Workshop => Icons.Material.Filled.Build,
+        CustomerType.Retailer => Icons.Material.Filled.Store,
+        CustomerType.AssayingLab => Icons.Material.Filled.Science,
+        CustomerType.MeltedGoldDealer => Icons.Material.Filled.LocalFireDepartment,
+        null => Icons.Material.Filled.List,
+        _ => null
+    };
+
+    private Color GetCustomerTypeIconColor(CustomerType? type) => type switch
+    {
+        CustomerType.RetailCustomer => Color.Info,
+        CustomerType.Wholesaler => Color.Primary,
+        CustomerType.Workshop => Color.Tertiary,
+        CustomerType.Retailer => Color.Error,
+        CustomerType.AssayingLab => Color.Info,
+        CustomerType.MeltedGoldDealer => Color.Success,
+        null => Color.Info,
+        _ => Color.Info
+    };
+
+    private async Task SetCustomerTypeFilterText(CustomerType? customerType)
+    {
+        _customerType = customerType;
+
+        await RefreshAsync();
     }
 }
