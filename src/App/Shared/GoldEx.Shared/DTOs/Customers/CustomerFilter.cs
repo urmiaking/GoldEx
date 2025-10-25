@@ -1,3 +1,5 @@
-﻿namespace GoldEx.Shared.DTOs.Customers;
+﻿using GoldEx.Shared.Enums;
 
-public record CustomerFilter(DateTime? Start, DateTime? End);
+namespace GoldEx.Shared.DTOs.Customers;
+
+public record CustomerFilter(CustomerType? CustomerType, DateTime? Start, DateTime? End);

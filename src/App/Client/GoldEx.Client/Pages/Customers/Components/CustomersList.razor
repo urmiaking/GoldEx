@@ -35,6 +35,34 @@
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="@CustomerTypeColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@CustomerTypeIcon">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        @(_customerType?.GetDisplayName() ?? "نوع مشتری")
+                    </MudHidden>
+                </MudButton>
+
+                <MudMenu Size="Size.Small"
+                         Icon="@Icons.Material.Filled.ArrowDropDown"
+                         Style="align-self: auto;">
+                    <MudMenuItem OnClick="() => SetCustomerTypeFilterText(null)">
+                        <MudIcon Icon="@GetCustomerTypeIcon(null)" Color="@GetCustomerTypeIconColor(null)" Class="mr-2" />
+                        همه
+                    </MudMenuItem>
+
+                    @foreach (var type in Enum.GetValues<CustomerType>())
+                    {
+                        <MudMenuItem OnClick="() => SetCustomerTypeFilterText(type)">
+                            <MudIcon Icon="@GetCustomerTypeIcon(type)" Color="@GetCustomerTypeIconColor(type)" Class="mr-2" />
+                            @type.GetDisplayName()
+                        </MudMenuItem>
+                    }
+
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">ثبت مشتری جدید</MudButton>
         </MudHidden>
 
@@ -84,7 +112,7 @@
                 </MudTooltip>
             </div>
         </MudTd>
-    </RowTemplate>  
+    </RowTemplate>
     <NoRecordsContent>
         <MudText>هیچ مشتری یافت نشد</MudText>
     </NoRecordsContent>
