@@ -27,6 +27,11 @@ public class CustomersByFilterSpecification : SpecificationBase<Customer>
                 (!string.IsNullOrEmpty(x.PhoneNumber) && x.PhoneNumber.Contains(filter.Search)));
         }
 
+        if (customerFilter.CustomerType.HasValue)
+        {
+            AddCriteria(x => x.CustomerType == customerFilter.CustomerType);
+        }
+
         // Apply sorting
         if (!string.IsNullOrEmpty(filter.SortLabel) && filter.SortDirection != null && filter.SortDirection != SortDirection.None)
         {
