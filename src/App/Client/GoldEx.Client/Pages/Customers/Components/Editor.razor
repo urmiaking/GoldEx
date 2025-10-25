@@ -30,7 +30,10 @@
                                   dir="ltr"
                                   Label="@(Model.GetDisplayName(() => Model.NationalId))"
                                   Margin="Margin.Dense"
-                                  Variant="Variant.Outlined" />
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End" 
+                                  AdornmentIcon="@Icons.Material.Filled.Refresh" 
+                                  OnAdornmentClick="RenewNationalId" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.PhoneNumber"
@@ -40,7 +43,7 @@
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="6" lg="6">
+                @* <MudItem xs="12" md="6" lg="6">
                     <MudMenu @bind-Open="Model.CreditLimitMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
                         <ActivatorContent>
                             <MudNumericField @bind-Value="Model.CreditLimit"
@@ -74,8 +77,8 @@
                             }
                         </ChildContent>
                     </MudMenu>
-                </MudItem>
-                <MudItem xs="12" lg="6">
+                </MudItem> *@
+                <MudItem xs="12">
                     <MudTextField @bind-Value="Model.Address"
                                   For="@(() => Model.Address)"
                                   AutoGrow

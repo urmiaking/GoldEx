@@ -5,6 +5,7 @@ using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -16,6 +17,7 @@ public partial class Editor
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public CustomerVm Model { get; set; } = new();
     [Parameter] public bool ReturnModel { get; set; }
+    [Parameter] public CustomerType? CustomerType { get; set; }
 
     private readonly DialogOptions _bankAccountsDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
     private readonly CustomerValidator _customerValidator = new();
@@ -35,6 +37,9 @@ public partial class Editor
         if (Model.FinancialAccounts is not null)
             foreach (var modelFinancialAccount in Model.FinancialAccounts)
                 modelFinancialAccount.CustomerId = Model.Id;
+
+        if (CustomerType.HasValue)
+            Model.CustomerType = CustomerType.Value;
 
         base.OnParametersSet();
     }
@@ -169,4 +174,6 @@ public partial class Editor
             Model.FinancialAccounts.Add(bankAccount);
         }
     }
+
+    private void RenewNationalId() => Model.NationalId = StringExtensions.GenerateRandomCode(6);
 }

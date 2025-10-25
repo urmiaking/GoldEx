@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Client.Pages.Products.ViewModels;
 
@@ -28,4 +29,23 @@ public class GemStoneVm
     [Display(Name = "نرخ")]
     [Required(ErrorMessage = "وارد كردن {0} الزامی است")]
     public decimal Cost { get; set; }
+
+    public GemStoneRequestDto ToRequest()
+    {
+        return new GemStoneRequestDto(Code, Type, Color, Cut, Carat, Cost, Purity);
+    }
+
+    public static GemStoneVm CreateFrom(GetGemStoneResponse dto)
+    {
+        return new GemStoneVm
+        {
+            Code = dto.Code,
+            Type = dto.Type,
+            Color = dto.Color,
+            Cut = dto.Cut,
+            Carat = dto.Carat,
+            Purity = dto.Purity,
+            Cost = dto.Cost
+        };
+    }
 }

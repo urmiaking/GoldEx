@@ -159,13 +159,13 @@
               <Rows>
                 <Item1 Ref="83" ControlType="XRTableRow" Name="xrTableRow5" Weight="11.5">
                   <Cells>
-                    <Item1 Ref="84" ControlType="XRTableCell" Name="xrTableCell24" Weight="0.51088978345983638" Multiline="true" Text="xrTableCell7" TextAlignment="TopCenter">
+                    <Item1 Ref="84" ControlType="XRTableCell" Name="xrTableCell24" Weight="0.630529604858709" Multiline="true" Text="xrTableCell7" TextAlignment="TopCenter">
                       <ExpressionBindings>
                         <Item1 Ref="85" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[ProductType]" />
                       </ExpressionBindings>
                       <StylePriority Ref="86" UseTextAlignment="false" />
                     </Item1>
-                    <Item2 Ref="87" ControlType="XRTableCell" Name="xrTableCell25" Weight="1.61851868104257" Multiline="true" Text="xrTableCell8" TextAlignment="TopCenter">
+                    <Item2 Ref="87" ControlType="XRTableCell" Name="xrTableCell25" Weight="1.4988788596436975" Multiline="true" Text="xrTableCell8" TextAlignment="TopCenter">
                       <ExpressionBindings>
                         <Item1 Ref="88" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[Name]" />
                       </ExpressionBindings>
@@ -214,10 +214,10 @@
               <Rows>
                 <Item1 Ref="109" ControlType="XRTableRow" Name="xrTableRow4" Weight="11.5">
                   <Cells>
-                    <Item1 Ref="110" ControlType="XRTableCell" Name="xrTableCell15" Weight="0.51088968732816409" Multiline="true" Text="نوع جنس" Font="B Nazanin, 12pt, style=Bold">
+                    <Item1 Ref="110" ControlType="XRTableCell" Name="xrTableCell15" Weight="0.63052948280723509" Multiline="true" Text="نوع جنس" Font="B Nazanin, 12pt, style=Bold">
                       <StylePriority Ref="111" UseFont="false" />
                     </Item1>
-                    <Item2 Ref="112" ControlType="XRTableCell" Name="xrTableCell16" Weight="1.6185182833900182" Multiline="true" Text="عنوان" Font="B Nazanin, 12pt, style=Bold">
+                    <Item2 Ref="112" ControlType="XRTableCell" Name="xrTableCell16" Weight="1.4988784879109471" Multiline="true" Text="عنوان" Font="B Nazanin, 12pt, style=Bold">
                       <StylePriority Ref="113" UseFont="false" />
                     </Item2>
                     <Item3 Ref="114" ControlType="XRTableCell" Name="xrTableCell18" Weight="0.75577774738679615" Multiline="true" Text="اجرت ساخت" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
@@ -348,19 +348,19 @@
       <Bands>
         <Item1 Ref="180" ControlType="DetailBand" Name="PaymentTableDetails" HeightF="23.06455">
           <Controls>
-            <Item1 Ref="181" ControlType="XRLabel" Name="xrLabel62" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" Text="xrLabel62" TextAlignment="TopCenter" SizeF="130.822311,23" LocationFloat="618.1249,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item1 Ref="181" ControlType="XRLabel" Name="xrLabel62" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" Text="xrLabel62" TextAlignment="TopCenter" SizeF="130.8223,23" LocationFloat="618.1249,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
                 <Item1 Ref="182" EventName="BeforePrint" PropertyName="Text" Expression="[PaymentDate]" />
               </ExpressionBindings>
               <StylePriority Ref="183" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="184" ControlType="XRLabel" Name="xrLabel61" Multiline="true" Text="xrLabel61" TextAlignment="TopCenter" SizeF="465.416443,23" LocationFloat="152.70845,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item2 Ref="184" ControlType="XRLabel" Name="xrLabel61" Multiline="true" Text="xrLabel61" TextAlignment="TopCenter" SizeF="465.4164,23" LocationFloat="152.7085,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
                 <Item1 Ref="185" EventName="BeforePrint" PropertyName="Text" Expression="[Description]" />
               </ExpressionBindings>
               <StylePriority Ref="186" UseBorders="false" UseTextAlignment="false" />
             </Item2>
-            <Item3 Ref="187" ControlType="XRLabel" Name="xrLabel59" Multiline="true" Text="xrLabel59" TextAlignment="TopCenter" SizeF="152.708435,23" LocationFloat="0,0" Padding="2,2,0,0,100" Borders="All">
+            <Item3 Ref="187" ControlType="XRLabel" Name="xrLabel59" Multiline="true" Text="xrLabel59" TextAlignment="TopCenter" SizeF="152.7084,23" LocationFloat="0,0" Padding="2,2,0,0,100" Borders="All">
               <ExpressionBindings>
                 <Item1 Ref="188" EventName="BeforePrint" PropertyName="Text" Expression="[FinalAmount]" />
               </ExpressionBindings>
@@ -370,7 +370,7 @@
         </Item1>
         <Item2 Ref="190" ControlType="GroupHeaderBand" Name="PaymentTableHeader" HeightF="65.70835">
           <Controls>
-            <Item1 Ref="191" ControlType="XRTable" Name="xrTable2" TextAlignment="TopCenter" SizeF="748.947266,25" LocationFloat="7.62939453E-06,40.70835" Padding="2,2,0,0,96" Borders="All">
+            <Item1 Ref="191" ControlType="XRTable" Name="xrTable2" TextAlignment="TopCenter" SizeF="748.9473,25" LocationFloat="7.629395E-06,40.70835" Padding="2,2,0,0,96" Borders="All">
               <Rows>
                 <Item1 Ref="192" ControlType="XRTableRow" Name="xrTableRow2" Weight="11.5">
                   <Cells>
@@ -388,10 +388,10 @@
               </Rows>
               <StylePriority Ref="199" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="200" ControlType="XRLabel" Name="xrLabel58" Multiline="true" Text="جزئیات پرداخت" TextAlignment="MiddleLeft" SizeF="107.291687,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
+            <Item2 Ref="200" ControlType="XRLabel" Name="xrLabel58" Multiline="true" Text="جزئیات پرداخت" TextAlignment="MiddleLeft" SizeF="107.2917,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
               <StylePriority Ref="201" UseFont="false" UseTextAlignment="false" />
             </Item2>
-            <Item3 Ref="202" ControlType="XRLine" Name="xrLine7" SizeF="637.9149,23" LocationFloat="112.084953,11.4807129" />
+            <Item3 Ref="202" ControlType="XRLine" Name="xrLine7" SizeF="637.9149,23" LocationFloat="112.085,11.48071" />
           </Controls>
         </Item2>
       </Bands>
@@ -400,9 +400,9 @@
     <Item11 Ref="204" ControlType="DetailReportBand" Name="SummaryList" Level="3">
       <Bands>
         <Item1 Ref="205" ControlType="DetailBand" Name="Detail1" HeightF="0.5956014" />
-        <Item2 Ref="206" ControlType="GroupHeaderBand" Name="SummaryTableDetails" HeightF="342.412872">
+        <Item2 Ref="206" ControlType="GroupHeaderBand" Name="SummaryTableDetails" HeightF="342.4129">
           <Controls>
-            <Item1 Ref="207" ControlType="XRLabel" Name="xrLabel83" Multiline="true" Text="* اجناس فوق با اجرت مشخص و سود [Invoice.ProfitPercent]  و مالیات ارزش افزوده  [Invoice.TaxPercent]  از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.&#xD;&#xA;* اجناس فروخته شده بدون علت پس گرفته نمی‌شود." TextAlignment="TopLeft" SizeF="750,68.43749" LocationFloat="0,273.0003" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+            <Item1 Ref="207" ControlType="XRLabel" Name="xrLabel83" Multiline="true" Text="* اجناس فوق با اجرت مشخص و سود [Invoice.ProfitPercent]  و مالیات ارزش افزوده  [Invoice.TaxPercent]  از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.&#xD;&#xA;* اجناس فروخته شده بدون علت پس گرفته نمی‌شود." TextAlignment="TopJustify" SizeF="750,68.43749" LocationFloat="0,273.0003" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
               <ExpressionBindings>
                 <Item1 Ref="208" EventName="BeforePrint" PropertyName="Text" Expression="Iif(&#xA;    [Invoice.InvoiceType] == 'Purchase',&#xA;    '',&#xA;    Iif(&#xA;        ([Invoice.InvoiceType] == 'Sell') And ([Invoice.TradeScale] == 'Wholesale'),&#xA;        'کلیه طلاجات مندرج در این قبض جهت بازاریابی به اینجانب ' + [Invoice.Customer.FullName] +&#xA;        ' به رسم امانت تحویل گردید و شرعاً و قانوناً متعهد و ملزم گردیدم هر آنچه از اقلام اجناس را بابت خود یا دیگری فاکتور نمودم بهای آن را علاوه بر اجرت نقداً به محسن یوسف‌زاده بپردازم و مابقی اجناس را عندالمطالبه به ایشان مسترد نمایم. چون اجناس مذکور نزد اینجانب امانت بوده و دین است بر ذمه اینجانب و در این خصوص هرگونه کوتاهی، بی‌احتیاطی و غیره بعمل آید ضامن و مسئول پاسخگو هستم.',&#xA;        Iif(&#xA;            ([Invoice.InvoiceType] == 'Sell') And ([Invoice.TradeScale] == 'Retail'),&#xA;            '* اجناس فوق با اجرت مشخص و سود ' + [Invoice.ProfitPercent] +&#xA;    ' و مالیات ارزش افزوده ' + [Invoice.TaxPercent] +&#xA;    ' از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.' + &#xA;'     * اجناس فروخته شده بدون علت پس گرفته نمی‌شود.',    &#xA;    '')&#xA;    )&#xA;)&#xA;" />
               </ExpressionBindings>

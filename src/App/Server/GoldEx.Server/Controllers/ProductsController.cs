@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
@@ -21,9 +22,9 @@ public class ProductsController(IProductService service) : ApiControllerBase
     }
 
     [HttpGet(ApiRoutes.Products.GetListByName)]
-    public async Task<IActionResult> GetListAsync([FromQuery] string name, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetListAsync([FromRoute] ProductType productType, [FromQuery] string name, CancellationToken cancellationToken)
     {
-        var list = await service.GetListAsync(name, cancellationToken);
+        var list = await service.GetListAsync(name, productType, cancellationToken);
         return Ok(list);
     }
 

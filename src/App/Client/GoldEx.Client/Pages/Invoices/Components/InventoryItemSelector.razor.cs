@@ -20,6 +20,7 @@ public partial class InventoryItemSelector
     [Parameter] public decimal TaxPercent { get; set; }
     [Parameter] public decimal GoldProfitPercent { get; set; }
     [Parameter] public decimal JewelryProfitPercent { get; set; }
+    [Parameter] public ItemType[] SelectableTypes { get; set; } = [];
     [Parameter, EditorRequired] public GetPriceUnitTitleResponse PriceUnit { get; set; } = null!;
     [CascadingParameter] public IMudDialogInstance Dialog { get; set; } = default!;
 

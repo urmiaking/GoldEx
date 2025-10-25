@@ -6,13 +6,13 @@ using GoldEx.Server.Application.Validators.InventoryStocks;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
-using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
@@ -200,19 +200,21 @@ internal class InventoryStockService(
 
         foreach (var invoicePayment in invoice.InvoicePayments ?? [])
         {
+            //TODO: handle molten gold inventory properly based on weight reservations
+
             switch (invoicePayment.PaymentType)
             {
                 case PaymentType.MoltenGoldInventory:
                 {
-                    var fineness = invoicePayment.GoldFineness ?? 750m;
+                    //var fineness = invoicePayment.GoldFineness ?? 750m;
 
-                    var moltenGoldProduct = await productService.FindOrCreateMoltenGoldProductAsync(fineness, cancellationToken);
+                    //var moltenGoldProduct = await productService.FindOrCreateMoltenGoldProductAsync(fineness, cancellationToken);
 
-                    newStockItems.Add(InventoryStock.CreateProduct(
-                        moltenGoldProduct.Id,
-                        invoicePayment.Amount,
-                        invoice.InvoiceType is InvoiceType.Purchase ? WarehouseActionType.Out : WarehouseActionType.In,
-                        invoice.Id));
+                    //newStockItems.Add(InventoryStock.CreateProduct(
+                    //    moltenGoldProduct.Id,
+                    //    invoicePayment.Amount,
+                    //    invoice.InvoiceType is InvoiceType.Purchase ? WarehouseActionType.Out : WarehouseActionType.In,
+                    //    invoice.Id));
                     break;
                 }
 
@@ -261,7 +263,23 @@ internal class InventoryStockService(
     {
         var moltenGoldDetail = MoltenGoldDetail.Create(weight, meltingBatch.WeightUnitType, assayNumber, fineness, meltingBatch.AssayerId!.Value);
 
-        var product = await productService.FindOrCreateMoltenGoldProductAsync(fineness, cancellationToken);
+        var product = await productService.CreateProductAsync(new ProductRequestDto(null,
+            $"طلای آبشده عیار {fineness}",
+            null,
+            weight,
+            0,
+            null,
+            ProductType.MoltenGold,
+            fineness,
+            meltingBatch.WeightUnitType,
+            null,
+            null,
+            null,
+            null,
+            new MoltenGoldDto(assayNumber,
+                moltenGoldDetail.AssayerId.Value,
+                DateTime.Now)), 
+            cancellationToken);
 
         var inventoryItem = InventoryStock.CreateMoltenGold(product.Id, meltingBatch.Id, moltenGoldDetail, weight, WarehouseActionType.In);
 

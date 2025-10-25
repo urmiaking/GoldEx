@@ -7,6 +7,7 @@ using GoldEx.Shared.Services.Abstractions;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -26,9 +27,10 @@ internal class ProductService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<List<GetProductResponse>> GetListAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<List<GetProductResponse>> GetListAsync(string name, ProductType productType,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Products.GetList(name), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Products.GetList(name, productType), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

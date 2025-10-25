@@ -21,8 +21,7 @@ public class ProductVm : INotifyPropertyChanged
     private string? _name;
     private string? _barcode;
 
-    [Display(Name = "نام جنس")]
-    [Required(ErrorMessage = "لطفا نام را وارد کنید")]
+    [Display(Name = "عنوان جنس")]
     public string? Name
     {
         get => _name;
@@ -60,7 +59,7 @@ public class ProductVm : INotifyPropertyChanged
             if (_weight != value)
             {
                 _weight = value;
-                OnPropertyChanged(); 
+                OnPropertyChanged();
             }
         }
     }
@@ -138,6 +137,7 @@ public class ProductVm : INotifyPropertyChanged
     public List<GemStoneVm>? Stones { get; set; }
     public DateTime DateTime { get; set; }
     public GoldUnitType GoldUnitType { get; set; }
+    public MoltenGoldVm? MoltenGold { get; set; }
 
     internal static ProductVm CreateDefaultInstance() => new()
     { Fineness = 750m, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
@@ -171,16 +171,8 @@ public class ProductVm : INotifyPropertyChanged
                 Id = item.ProductCategoryId.Value,
                 Title = item.ProductCategoryTitle
             } : null,
-            Stones = item.GemStones?.Select(x => new GemStoneVm
-            {
-                Type = x.Type,
-                Carat = x.Carat,
-                Code = x.Code,
-                Color = x.Color,
-                Cut = x.Cut,
-                Purity = x.Purity,
-                Cost = x.Cost
-            }).ToList()
+            Stones = item.GemStones?.Select(GemStoneVm.CreateFrom).ToList(),
+            MoltenGold = item.ProductType is ProductType.MoltenGold ? MoltenGoldVm.CreateFrom(item.MoltenGold) : null
         };
     }
 
@@ -204,7 +196,7 @@ public class ProductVm : INotifyPropertyChanged
         return new ProductRequestDto
         (
             item.Id,
-            item.Name ?? string.Empty,
+            item.Name,
             item.Barcode,
             item.Weight ?? 0,
             item.Wage ?? 0,
@@ -215,15 +207,8 @@ public class ProductVm : INotifyPropertyChanged
             item.ProductCategoryId,
             item.WagePriceUnitId,
             item.StonePriceUnit?.Id,
-            item.Stones?.Select(x => new GemStoneRequestDto(
-                    x.Code,
-                    x.Type,
-                    x.Color,
-                    x.Cut,
-                    x.Carat,
-                    x.Cost,
-                    x.Purity))
-                .ToList()
+            item.Stones?.Select(x => x.ToRequest()).ToList(),
+            item.MoltenGold?.ToRequest()
         );
     }
 
@@ -248,7 +233,9 @@ public class ProductVm : INotifyPropertyChanged
                     Id = item.ProductCategoryId.Value,
                     Title = item.ProductCategoryTitle
                 }
-                : null
+                : null,
+            Stones = item.GemStones?.Select(GemStoneVm.CreateFrom).ToList(),
+            MoltenGold = item.ProductType is ProductType.MoltenGold ? MoltenGoldVm.CreateFrom(item.MoltenGold) : null
         };
     }
 }
