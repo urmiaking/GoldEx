@@ -185,7 +185,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
 
         if (invoiceType is InvoiceType.Purchase)
         {
-            ItemRawAmount = CostPrice ?? 0;
+            ItemRawAmount = (CostPrice ?? 0) * (CostPriceExchangeRate ?? 1);
             ItemWageAmount = 0;
             ItemProfitAmount = 0;
             ItemTaxAmount = 0;

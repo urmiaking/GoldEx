@@ -13,6 +13,7 @@ using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Products;
@@ -28,6 +29,7 @@ namespace GoldEx.Server.Application.Services;
 internal class ProductService(
     IProductRepository repository,
     IBarcodeService barcodeService,
+    ICustomerRepository customerRepository,
     IMapper mapper,
     ILogger<ProductService> logger,
     ProductRequestDtoValidator validator,
@@ -188,7 +190,45 @@ internal class ProductService(
             .Get(new ProductsByIdSpecification(id))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        item.SetName(request.Name!);
+        if (item.ProductType is ProductType.MoltenGold)
+        {
+            string? assayerName = null;
+
+            if (request.MoltenGold?.AssayerId is Guid assayerId)
+            {
+                var assayer = await customerRepository
+                                  .Get(new CustomersByIdSpecification(new CustomerId(assayerId)))
+                                  .FirstOrDefaultAsync(cancellationToken)
+                              ?? throw new NotFoundException();
+
+                assayerName = assayer.FullName;
+            }
+
+            var assayNumber = request.MoltenGold?.AssayNumber;
+            string moltenGoldName;
+
+            if (!string.IsNullOrWhiteSpace(assayerName) && !string.IsNullOrWhiteSpace(assayNumber))
+                moltenGoldName = $"آبشده ({assayNumber}) - {assayerName}";
+            else if (!string.IsNullOrWhiteSpace(assayNumber))
+                moltenGoldName = $"آبشده ({assayNumber})";
+            else
+                moltenGoldName = request.Name ?? item.Name;
+
+            item.SetName(moltenGoldName);
+
+            if (request.MoltenGold is not null)
+            {
+                item.SetMoltenGold(request.MoltenGold.AssayNumber,
+                    request.MoltenGold.AssayDate,
+                    request.MoltenGold.AssayerId.HasValue
+                        ? new CustomerId(request.MoltenGold.AssayerId.Value)
+                        : null);
+            }
+        }
+        else
+        {
+            item.SetName(request.Name!);
+        }
 
         if (invoiceType is InvoiceType.Purchase)
         {
@@ -224,15 +264,6 @@ internal class ProductService(
         else
             item.ClearGemStones();
 
-        if (request.MoltenGold is not null)
-        {
-            item.SetMoltenGold(request.MoltenGold.AssayNumber,
-                request.MoltenGold.AssayDate,
-                request.MoltenGold.AssayerId.HasValue
-                    ? new CustomerId(request.MoltenGold.AssayerId.Value)
-                    : null);
-        }
-
         await repository.UpdateAsync(item, cancellationToken);
 
         return item;
@@ -246,7 +277,29 @@ internal class ProductService(
 
         if (request.ProductType is ProductType.MoltenGold)
         {
-            product = Product.CreateMoltenGold(request.Name ?? $"طلای آبشده عیار {request.Fineness:G29}",
+            string? assayerName = null;
+
+            if (request.MoltenGold is { AssayerId: not null })
+            {
+                var assayer = await customerRepository
+                    .Get(new CustomersByIdSpecification(new CustomerId(request.MoltenGold.AssayerId.Value)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                assayerName = assayer.FullName;
+            }
+
+            var assayNumber = request.MoltenGold?.AssayNumber;
+
+            string? moltenGoldName;
+
+            if (!string.IsNullOrWhiteSpace(assayerName) && !string.IsNullOrWhiteSpace(assayNumber))
+                moltenGoldName = $"آبشده ({assayNumber}) - {assayerName}";
+            else if (!string.IsNullOrWhiteSpace(assayNumber))
+                moltenGoldName = $"آبشده ({assayNumber})";
+            else
+                moltenGoldName = request.Name ?? $"طلای آبشده عیار {request.Fineness:G29}";
+
+            product = Product.CreateMoltenGold(moltenGoldName,
                 request.Weight,
                 request.Wage,
                 request.Fineness,
