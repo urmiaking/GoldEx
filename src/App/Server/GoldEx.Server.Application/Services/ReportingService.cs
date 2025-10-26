@@ -78,7 +78,7 @@ internal class ReportingService(
         var mainAmount = remaining.GetValueOrDefault(mainUnit, 0m);
 
         var absAmount = Math.Abs(mainAmount);
-        var formatted = $"{absAmount.ToCurrencyFormat(mainUnit.Title)}";
+        var formatted = $"{absAmount.ToCurrencyReportFormat(mainUnit.Title)}";
 
         if (mainAmount < 0)
         {
@@ -89,7 +89,7 @@ internal class ReportingService(
         {
             var secondaryAmount = mainAmount * exchangeRate.Value;
             var absSecondary = Math.Abs(secondaryAmount);
-            var secondaryFormatted = $"{absSecondary.ToCurrencyFormat(secondaryUnit.Title)}";
+            var secondaryFormatted = $"{absSecondary.ToCurrencyReportFormat(secondaryUnit.Title)}";
             if (secondaryAmount < 0)
                 secondaryFormatted += " (بس)";
 
