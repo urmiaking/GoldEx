@@ -1,5 +1,4 @@
-﻿using System.Data;
-using FluentValidation;
+﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Utilities;
@@ -21,6 +20,8 @@ using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Data;
+using System.Globalization;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -53,54 +54,58 @@ internal class CoinService(ICoinRepository repository,
         return mapper.Map<GetCoinResponse>(item);
     }
 
-    public async Task<GetPriceResponse?> GetPriceAsync(Guid coinId, Guid? priceUnitId, CancellationToken cancellationToken = default)
+    public async Task<GetExchangeRateResponse?> GetPriceAsync(
+        Guid coinId,
+        Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
     {
         var coin = await repository
-            .Get(new CoinsByIdSpecification(new CoinId(coinId)))
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+                       .Get(new CoinsByIdSpecification(new CoinId(coinId)))
+                       .AsNoTracking()
+                       .FirstOrDefaultAsync(cancellationToken)
+                   ?? throw new NotFoundException();
 
         if (coin.PriceId is null)
             return null;
 
-        var basePriceInRial = await priceRepository
+        var baseItem = await priceRepository
             .Get(new PricesByIdSpecification(coin.PriceId.Value))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (!priceUnitId.HasValue)
-            return basePriceInRial?.PriceHistory is null ? null : mapper.Map<GetPriceResponse>(basePriceInRial);
-
-        if (basePriceInRial?.PriceHistory == null)
+        if (baseItem?.PriceHistory == null)
             return null;
 
-        var conversionUnit = await priceUnitRepository
-            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)))
+        var defaultUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
             .AsNoTracking()
-            .Include(pu => pu.Price)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (conversionUnit?.Price?.PriceHistory != null && conversionUnit.Price.PriceHistory.CurrentValue != 0)
+        decimal valueToReturn;
+
+        if (priceUnitId.HasValue)
         {
-            var baseValueInRial = basePriceInRial.PriceHistory.CurrentValue;
-            var conversionUnitValueInRial = conversionUnit.Price.PriceHistory.CurrentValue;
+            var conversionUnit = await priceUnitRepository
+                .Get(new PriceUnitsByIdSpecification(new PriceUnitId(priceUnitId.Value)))
+                .AsNoTracking()
+                .Include(pu => pu.Price)
+                .FirstOrDefaultAsync(cancellationToken);
 
-            var convertedValue = baseValueInRial / conversionUnitValueInRial;
+            if (conversionUnit?.Price?.PriceHistory != null &&
+                conversionUnit.Price.PriceHistory.CurrentValue != 0)
+            {
+                var convertedValue = baseItem.PriceHistory.CurrentValue /
+                                     conversionUnit.Price.PriceHistory.CurrentValue;
 
-            return new GetPriceResponse(
-                Id: basePriceInRial.Id.Value,
-                Title: basePriceInRial.Title,
-                Value: convertedValue.ToString("G29"),
-                Unit: conversionUnit.Title,
-                Change: basePriceInRial.PriceHistory.DailyChangeRate,
-                LastUpdate: basePriceInRial.PriceHistory.LastUpdate,
-                HasIcon: false,
-                Type: basePriceInRial.MarketType,
-                UnitType: basePriceInRial.PriceUnit?.UnitType
-            );
+                valueToReturn = ConvertFromRial(convertedValue, defaultUnit?.UnitType);
+                return new GetExchangeRateResponse(valueToReturn);
+            }
         }
 
-        return null;
+        valueToReturn = ConvertFromRial(baseItem.PriceHistory.CurrentValue, defaultUnit?.UnitType);
+        return new GetExchangeRateResponse(valueToReturn);
     }
+
 
     public async Task CreateAsync(CoinRequestDto request, CancellationToken cancellationToken = default)
     {
@@ -195,5 +200,14 @@ internal class CoinService(ICoinRepository repository,
         coin.SetStatus(isActive);
 
         await repository.UpdateAsync(coin, cancellationToken);
+    }
+
+    private static decimal ConvertFromRial(decimal value, UnitType? defaultUnitType)
+    {
+        return defaultUnitType switch
+        {
+            UnitType.Toman => value / 10,
+            _ => value // Rial or any other non-adjusted unit
+        };
     }
 }

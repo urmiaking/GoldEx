@@ -64,15 +64,14 @@ public partial class CoinItemEditor
         if (PriceUnit is null)
             return;
 
-        await SendRequestAsync<ICoinService, GetPriceResponse?>(
+        await SendRequestAsync<ICoinService, GetExchangeRateResponse?>(
             action: (s, ct) => s.GetPriceAsync(coin.Id, PriceUnit.IsDefault ? null : PriceUnit.Id, ct),
             afterSend: response =>
             {
                 if (response is null)
                     return;
 
-                decimal.TryParse(response.Value, out var unitPrice);
-                Model.UnitPrice = unitPrice;
+                Model.UnitPrice = response.ExchangeRate ?? 0;
 
                 StateHasChanged();
             });
