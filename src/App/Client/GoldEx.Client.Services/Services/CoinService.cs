@@ -37,7 +37,8 @@ internal class CoinService(HttpClient client, JsonSerializerOptions jsonOptions)
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<GetPriceResponse?> GetPriceAsync(Guid coinId, Guid? priceUnitId, CancellationToken cancellationToken = default)
+    public async Task<GetExchangeRateResponse?> GetPriceAsync(Guid coinId, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Coins.GetPrice(coinId, priceUnitId), cancellationToken);
 
@@ -47,7 +48,7 @@ internal class CoinService(HttpClient client, JsonSerializerOptions jsonOptions)
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
-        var result = await response.Content.ReadFromJsonAsync<GetPriceResponse?>(jsonOptions, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<GetExchangeRateResponse?>(jsonOptions, cancellationToken);
 
         return result;
     }

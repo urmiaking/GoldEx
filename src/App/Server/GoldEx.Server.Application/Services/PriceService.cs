@@ -374,7 +374,7 @@ internal class PriceService(
         if (secondaryPriceUnit?.Price is null)
             return new GetExchangeRateResponse(ConvertFromRial(primaryPriceUnit.Price?.PriceHistory?.CurrentValue ?? 0, defaultPriceUnit?.UnitType));
 
-        if (primaryPriceUnit == secondaryPriceUnit)
+        if (Equals(primaryPriceUnit, secondaryPriceUnit))
             throw new InvalidOperationException("Secondary unit cannot be as same as Primary unit");
 
         if ((primaryPriceUnit.Price?.PriceHistory is null && primaryPriceUnit.Price?.PriceHistory?.CurrentValue == 0) ||
