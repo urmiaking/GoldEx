@@ -1,0 +1,77 @@
+﻿@using GoldEx.Shared.DTOs.Transactions
+@inherits GoldExComponentBase
+
+<MudCard Elevation="2" Class="@Class">
+    <MudCardContent>
+        <MudTable T="GetTransactionResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+                  Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="0">
+            <ToolBarContent>
+                <MudText Typo="Typo.body1">تراکنش‌های مرتبط با این فاکتور</MudText>
+            </ToolBarContent>
+            <ColGroup>
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>تاریخ</MudTh>
+                <MudTh>نوع تراکنش</MudTh>
+                <MudTh>مبلغ</MudTh>
+                <MudTh>شرح</MudTh>
+                <MudTh>حساب تحت تاثیر</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="تاریخ">@context.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss")</MudTd>
+                <MudTd DataLabel="نوع تراکنش">
+                    @if (context.TransactionType == TransactionType.Credit)
+                    {
+                        <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowUp">
+                            @context.TransactionType.GetDisplayName()
+                        </MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowDown">
+                            @context.TransactionType.GetDisplayName()
+                        </MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="مبلغ">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
+                <MudTd DataLabel="شرح">@context.Description</MudTd>
+                <MudTd DataLabel="حساب تحت تاثیر">@context.LedgerAccount</MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>هیچ تراکنشی یافت نشد</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <MudText>در حال بارگذاری</MudText>
+            </LoadingContent>
+            <PagerContent>
+                @{
+                    var totalItems = _table.GetFilteredItemsCount();
+                    var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+                    var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+                    var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+                    var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+                }
+
+                <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+                    <div class="mud-table-pagination-caption">
+                        @infoText
+                    </div>
+                    <MudPagination SelectedChanged="PageChanged"
+                                   Color="Color.Primary"
+                                   Count="@pageCount"
+                                   ShowFirstButton="true"
+                                   ShowLastButton="true" />
+
+                    <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                        @infoText
+                    </div>
+                </div>
+            </PagerContent>
+        </MudTable>
+    </MudCardContent>
+</MudCard>

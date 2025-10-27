@@ -59,8 +59,8 @@ public partial class InventoryItemSelector
             {
                 var stock = _selectedItems?.FirstOrDefault(x => x.Product?.Id == product.Id);
 
-                var stonePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.StonePriceUnit?.Id ?? PriceUnit.Id);
-                var wagePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.WagePriceUnitId ?? PriceUnit.Id);
+                var stonePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.StonePriceUnit?.Id);
+                var wagePriceUnitExchangeRate = await GetCurrencyPriceAsync(product.WagePriceUnitId);
 
                 return new ProductItemVm
                 {
@@ -111,12 +111,15 @@ public partial class InventoryItemSelector
             {
                 var unitPrice = await GetCurrencyPriceAsync(currency.Id);
 
+                if (!unitPrice.HasValue)
+                    return null;
+
                 return await new CurrencyItemVm
                 {
                     Currency = new GetPriceUnitTitleResponse(currency.Id, currency.Title, currency.HasIcon,
                         currency.IsDefault, false),
                     Amount = 1,
-                    UnitPrice = unitPrice
+                    UnitPrice = unitPrice.Value
                 }.RecalculateAmountsAsync();
             });
 
@@ -129,12 +132,18 @@ public partial class InventoryItemSelector
             Close();
     }
 
-    private async Task<decimal> GetCurrencyPriceAsync(Guid currencyId)
+    private async Task<decimal?> GetCurrencyPriceAsync(Guid? currencyId)
     {
+        if (!currencyId.HasValue)
+            return null;
+
+        if (currencyId.Value == PriceUnit.Id)
+            return null;
+
         decimal currencyPrice = 0;
 
         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-            action: (s, ct) => s.GetExchangeRateAsync(currencyId, PriceUnit.Id, ct),
+            action: (s, ct) => s.GetExchangeRateAsync(currencyId.Value, PriceUnit.Id, ct),
             afterSend: response =>
             {
                 currencyPrice = response.ExchangeRate ?? 0;
