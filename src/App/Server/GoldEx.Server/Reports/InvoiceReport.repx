@@ -432,7 +432,7 @@
             </Item6>
             <Item7 Ref="222" ControlType="XRLabel" Name="xrLabel66" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="مخارج جانبی:" TextAlignment="TopRight" SizeF="97.08331,25" LocationFloat="427.0835,74.99987" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
               <ExpressionBindings>
-                <Item1 Ref="223" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalDiscountAmount]), '', 'مخارج جانبی:')&#xA;" />
+                <Item1 Ref="223" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalExtraCostAmount]), '', 'مخارج جانبی:')&#xA;" />
               </ExpressionBindings>
               <StylePriority Ref="224" UseFont="false" UseBorders="false" />
             </Item7>

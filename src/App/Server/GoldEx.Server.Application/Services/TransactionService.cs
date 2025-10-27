@@ -1,10 +1,13 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -21,34 +24,23 @@ internal class TransactionService(IMapper mapper,
             .ToList();
     }
 
-    //public async Task<PagedList<GetTransactionResponse>> GetListAsync(RequestFilter filter,
-    //    TransactionFilter transactionFilter, Guid? customerId, CancellationToken cancellationToken = default)
-    //{
-    //    var skip = filter.Skip ?? 0;
-    //    var take = filter.Take ?? 100;
+    public async Task<PagedList<GetTransactionResponse>> GetListAsync(TransactionFilter transactionFilter, RequestFilter requestFilter,
+        CancellationToken cancellationToken = default)
+    {
+        var spec = new TransactionsByFilterSpecification(transactionFilter, requestFilter);
 
-    //    var data = await repository
-    //        .Get(new TransactionsByFilterSpecification(filter,
-    //            transactionFilter,
-    //            customerId.HasValue
-    //                ? new CustomerId(customerId.Value)
-    //                : null))
-    //        .ToListAsync(cancellationToken);
+        var list = await repository
+            .Get(spec)
+            .ToListAsync(cancellationToken);
 
-    //    var totalCount = await repository.CountAsync(new TransactionsByFilterSpecification(filter,
-    //            transactionFilter,
-    //            customerId.HasValue
-    //                ? new CustomerId(customerId.Value)
-    //                : null),
-    //        cancellationToken);
+        var total = await repository.CountAsync(spec, cancellationToken);
 
-    //    return new PagedList<GetTransactionResponse>
-    //    {
-    //        Data = mapper.Map<List<GetTransactionResponse>>(data),
-    //        Skip = skip,
-    //        Take = take,
-    //        Total = totalCount
-    //    };
-    //}
-
+        return new PagedList<GetTransactionResponse>
+        {
+            Data = mapper.Map<List<GetTransactionResponse>>(list),
+            Total = total,
+            Skip = requestFilter.Skip ?? 0,
+            Take = requestFilter.Take ?? 15
+        };
+    }
 }

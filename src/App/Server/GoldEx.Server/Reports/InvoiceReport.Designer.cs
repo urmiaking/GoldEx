@@ -1562,7 +1562,7 @@
             | DevExpress.XtraPrinting.BorderSide.Bottom)));
             this.xrLabel66.CanShrink = true;
             this.xrLabel66.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Iif(IsNullOrEmpty([Invoice.TotalDiscountAmount]), \'\', \'مخارج جانبی:\')\n")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Iif(IsNullOrEmpty([Invoice.TotalExtraCostAmount]), \'\', \'مخارج جانبی:\')\n")});
             this.xrLabel66.Font = new DevExpress.Drawing.DXFont("B Nazanin", 12F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel66.LocationFloat = new DevExpress.Utils.PointFloat(427.0835F, 74.99987F);
             this.xrLabel66.Multiline = true;

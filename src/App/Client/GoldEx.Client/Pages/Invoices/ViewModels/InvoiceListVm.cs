@@ -20,6 +20,8 @@ public class InvoiceListVm
     public decimal? TotalUnpaidAmountSecondary { get; set; }
     public string? SecondaryPriceUnit { get; set; }
 
+    public bool ShowDetails { get; set; }
+
     public InvoicePaymentStatus PaymentStatus { get; set; }
 
     public static InvoiceListVm CreateFrom(GetInvoiceListResponse listResponse)

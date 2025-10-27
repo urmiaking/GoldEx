@@ -9,6 +9,7 @@
 }
 
 <MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
+          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
           Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
@@ -159,6 +160,18 @@
             </div>
         </MudTd>
     </RowTemplate>
+    <ChildRowContent>
+        <MudTr Class="mud-table-row-child">  
+            <td colspan="9">  
+                <MudCollapse Expanded="@context.ShowDetails">  
+                    @if (context.ShowDetails)  
+                    {  
+                        <TransactionList InvoiceId="@context.Id" Class="m-2" />  
+                    }  
+                </MudCollapse>  
+            </td>  
+        </MudTr>
+    </ChildRowContent>
     <NoRecordsContent>
         <MudText>هیچ فاکتوری یافت نشد</MudText>
     </NoRecordsContent>

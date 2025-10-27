@@ -5,6 +5,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Sdk.Common.Data;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -19,6 +20,19 @@ internal class TransactionService(HttpClient client, JsonSerializerOptions jsonO
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<List<GetCustomerRemainingResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<PagedList<GetTransactionResponse>> GetListAsync(TransactionFilter transactionFilter, RequestFilter requestFilter,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Transactions.GetList(transactionFilter, requestFilter), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetTransactionResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }

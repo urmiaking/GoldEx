@@ -328,6 +328,12 @@ public class ApiUrls
         public static string GetRemainingList(Guid customerId) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetRemainingList)
                 .FormatRoute(new { customerId });
+
+        public static string GetList(TransactionFilter transactionFilter, RequestFilter requestFilter) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList)
+                .AppendQueryString(transactionFilter)
+                .AppendQueryString(requestFilter);
+
     }
 
     public class Notifications
