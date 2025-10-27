@@ -155,7 +155,7 @@ public static class TransactionDescriptionBuilder
     {
         var desc = "دریافت طلای آبشده";
         if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness}";
+            desc += $" با عیار {payment.GoldFineness:G29}";
         desc += $" بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
         return desc;
     }
@@ -164,7 +164,7 @@ public static class TransactionDescriptionBuilder
     {
         var desc = "پرداخت طلای آبشده";
         if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness}";
+            desc += $" با عیار {payment.GoldFineness:G29}";
         desc += $" بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
         return desc;
     }
@@ -173,7 +173,7 @@ public static class TransactionDescriptionBuilder
     {
         var desc = "دریافت طلای شکسته";
         if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness}";
+            desc += $" با عیار {payment.GoldFineness:G29}";
         desc += $" بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
         return desc;
     }
@@ -182,7 +182,7 @@ public static class TransactionDescriptionBuilder
     {
         var desc = "پرداخت طلای شکسته";
         if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness}";
+            desc += $" با عیار {payment.GoldFineness:G29}";
         desc += $" بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
         return desc;
     }

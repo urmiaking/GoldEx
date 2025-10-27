@@ -114,7 +114,7 @@ public partial class InvoicesList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await _table.ReloadServerData();
+        await RefreshAsync();
     }
 
     private void PageChanged(int i)
@@ -193,5 +193,14 @@ public partial class InvoicesList
     private string GetInvoiceDateTooltipText(InvoiceListVm context)
     {
         return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";
+    }
+
+    private void ShowDetails(TableRowClickEventArgs<InvoiceListVm> args)
+    {
+        var invoice = _table.FilteredItems.FirstOrDefault(b => b.Id == args.Item?.Id);
+        if (invoice is not null)
+        {
+            invoice.ShowDetails = !invoice.ShowDetails;
+        }
     }
 }
