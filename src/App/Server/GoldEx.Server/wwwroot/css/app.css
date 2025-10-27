@@ -264,3 +264,11 @@ h1:focus {
         margin-top: 0.5rem;
     }
 }
+
+.mud-table-row-child {
+    background-color: rgba(0, 0, 0, 0.10);
+}
+
+.mud-collapse-container {
+    transition: grid-template-rows 500ms ease-in-out !important;
+}

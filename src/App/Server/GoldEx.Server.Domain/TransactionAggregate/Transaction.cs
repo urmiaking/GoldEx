@@ -94,6 +94,7 @@ public class Transaction : EntityBase<TransactionId>
         TransactionType transactionType,
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
+        InvoiceId invoiceId,
         InvoicePaymentId invoicePaymentId)
     {
         if (string.IsNullOrWhiteSpace(description))
@@ -115,6 +116,7 @@ public class Transaction : EntityBase<TransactionId>
             LedgerAccountId = ledgerAccountId,
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
+            InvoiceId = invoiceId,
             InvoicePaymentId = invoicePaymentId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1)
         };
