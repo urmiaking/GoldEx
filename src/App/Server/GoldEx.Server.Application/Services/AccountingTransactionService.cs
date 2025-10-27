@@ -127,9 +127,9 @@ internal class AccountingTransactionService(
                             // فاکتور خریدِ همان محصول
                             var purchaseInvoice = await invoiceRepository
                                                       .Get(new InvoicesByProductIdSpecification(saleItem.ProductId))
-                                                      .Where(x => x.InvoiceType == InvoiceType.Purchase)
-                                                      .Include(x => x.ProductItems)
-                                                      .OrderByDescending(x => x.InvoiceDate) // در صورت نیاز سیاست FIFO/LIFO را اینجا اعمال کنید
+                                                      // Commented out to allow fetching instant products
+                                                      //.Where(x => x.InvoiceType == InvoiceType.Purchase)
+                                                      .OrderByDescending(x => x.InvoiceDate)
                                                       .FirstOrDefaultAsync(cancellationToken)
                                                   ?? throw new NotFoundException($"Purchase invoice for product {saleItem.ProductId.Value} not found.");
 
