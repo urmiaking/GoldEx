@@ -16,4 +16,12 @@ public interface IAccountingTransactionService
     Task SetForMoltenGoldEntryAsync(MeltingBatch meltingBatch,
         CompleteMeltingRequestDto request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delta-based Replace: تضمین ترتیب: original (00:00) => reversal (+1 tick) => repost (+2 ticks)
+    /// </summary>
+    /// <param name="invoice"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task ReplaceTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
 }

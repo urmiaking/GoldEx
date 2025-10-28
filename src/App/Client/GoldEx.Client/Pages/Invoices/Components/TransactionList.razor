@@ -3,7 +3,7 @@
 
 <MudCard Elevation="2" Class="@Class">
     <MudCardContent>
-        <MudTable T="GetTransactionResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+        <MudTable T="GetTransactionResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" GroupBy="@_groupDefinition"
                   Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="0">
             <ToolBarContent>
                 <MudText Typo="Typo.body1">تراکنش‌های مرتبط با این فاکتور</MudText>
@@ -22,8 +22,15 @@
                 <MudTh>شرح</MudTh>
                 <MudTh>حساب تحت تاثیر</MudTh>
             </HeaderContent>
+            <GroupHeaderTemplate>
+                <MudTh colspan="5" Style="background-color: var(--mud-palette-table-striped);"></MudTh>
+            </GroupHeaderTemplate>
             <RowTemplate>
-                <MudTd DataLabel="تاریخ">@context.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss")</MudTd>
+                <MudTd DataLabel="تاریخ">
+                    <MudTooltip Text="@context.PostingDate.ToString("yyyy/MM/dd HH:mm:ss")" Arrow="true" Placement="Placement.Top">
+                        @context.PostingDate.ToString("yyyy/MM/dd")
+                    </MudTooltip>
+                </MudTd>
                 <MudTd DataLabel="نوع تراکنش">
                     @if (context.TransactionType == TransactionType.Credit)
                     {
