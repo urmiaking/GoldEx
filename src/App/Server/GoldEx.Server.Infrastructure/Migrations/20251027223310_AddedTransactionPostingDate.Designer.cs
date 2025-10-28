@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251027223310_AddedTransactionPostingDate")]
+    partial class AddedTransactionPostingDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -957,9 +960,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("PriceUnitId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ReverseTransactionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("TransactionType")
                         .HasColumnType("int");
 
@@ -978,10 +978,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("PaymentVoucherId");
 
                     b.HasIndex("PriceUnitId");
-
-                    b.HasIndex("ReverseTransactionId")
-                        .IsUnique()
-                        .HasFilter("[ReverseTransactionId] IS NOT NULL");
 
                     b.ToTable("Transactions", (string)null);
                 });
@@ -2100,11 +2096,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("GoldEx.Server.Domain.TransactionAggregate.Transaction", "ReverseTransaction")
-                        .WithOne()
-                        .HasForeignKey("GoldEx.Server.Domain.TransactionAggregate.Transaction", "ReverseTransactionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Invoice");
 
                     b.Navigation("InvoicePayment");
@@ -2116,8 +2107,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("PaymentVoucher");
 
                     b.Navigation("PriceUnit");
-
-                    b.Navigation("ReverseTransaction");
                 });
 
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppRole", b =>

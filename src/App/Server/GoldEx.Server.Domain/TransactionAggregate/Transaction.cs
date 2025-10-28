@@ -20,7 +20,8 @@ public class Transaction : EntityBase<TransactionId>
         TransactionType transactionType,
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
-        InvoiceId invoiceId)
+        InvoiceId invoiceId,
+        DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -45,7 +46,8 @@ public class Transaction : EntityBase<TransactionId>
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
             InvoiceId = invoiceId,
-            BaseCurrencyAmount = amount * (exchangeRate ?? 1)
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1),
+            PostingDate = postingDate
         };
     }
 
@@ -57,7 +59,8 @@ public class Transaction : EntityBase<TransactionId>
         TransactionType transactionType,
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
-        PaymentVoucherId paymentVoucherId)
+        PaymentVoucherId paymentVoucherId,
+        DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -82,7 +85,8 @@ public class Transaction : EntityBase<TransactionId>
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
             PaymentVoucherId = paymentVoucherId,
-            BaseCurrencyAmount = amount * (exchangeRate ?? 1)
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1),
+            PostingDate = postingDate
         };
     }
 
@@ -95,7 +99,8 @@ public class Transaction : EntityBase<TransactionId>
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
         InvoiceId invoiceId,
-        InvoicePaymentId invoicePaymentId)
+        InvoicePaymentId invoicePaymentId,
+        DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -118,7 +123,8 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             InvoiceId = invoiceId,
             InvoicePaymentId = invoicePaymentId,
-            BaseCurrencyAmount = amount * (exchangeRate ?? 1)
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1),
+            PostingDate = postingDate
         };
     }
 
@@ -129,7 +135,8 @@ public class Transaction : EntityBase<TransactionId>
         TransactionType transactionType,
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId, 
-        InvoiceId invoiceId)
+        InvoiceId invoiceId,
+        DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -149,7 +156,8 @@ public class Transaction : EntityBase<TransactionId>
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
-            InvoiceId = invoiceId
+            InvoiceId = invoiceId,
+            PostingDate = postingDate
         };
     }
 
@@ -163,6 +171,7 @@ public class Transaction : EntityBase<TransactionId>
     public decimal BaseCurrencyAmount { get; private set; }
     public TransactionType TransactionType { get; private set; }
     public Guid GroupId { get; private set; }
+    public DateTime PostingDate { get; private set; }
 
     public PriceUnitId PriceUnitId { get; private set; }
     public PriceUnit? PriceUnit { get; private set; }
@@ -182,6 +191,9 @@ public class Transaction : EntityBase<TransactionId>
     public MeltingBatchId? MeltingBatchId { get; private set; }
     public MeltingBatch? MeltingBatch { get; private set; }
 
+    public TransactionId? ReverseTransactionId { get; private set; }
+    public Transaction? ReverseTransaction { get; set; }
+
     public static Transaction CreateForMeltingBatch(string description,
         decimal amount,
         decimal? exchangeRate,
@@ -191,7 +203,8 @@ public class Transaction : EntityBase<TransactionId>
         PriceUnitId priceUnitId,
         LedgerAccountId ledgerAccountId,
         InvoiceId invoiceId,
-        MeltingBatchId meltingBatchId)
+        MeltingBatchId meltingBatchId,
+        DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -212,7 +225,8 @@ public class Transaction : EntityBase<TransactionId>
             InvoiceId = invoiceId,
             PriceUnitId = priceUnitId,
             LedgerAccountId = ledgerAccountId,
-            MeltingBatchId = meltingBatchId
+            MeltingBatchId = meltingBatchId,
+            PostingDate = postingDate
         };
     }
 
@@ -224,7 +238,8 @@ public class Transaction : EntityBase<TransactionId>
         Guid groupId,
         PriceUnitId priceUnitId,
         LedgerAccountId ledgerAccountId,
-        MeltingBatchId meltingBatchId)
+        MeltingBatchId meltingBatchId,
+        DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -243,7 +258,14 @@ public class Transaction : EntityBase<TransactionId>
             GroupId = groupId,
             PriceUnitId = priceUnitId,
             LedgerAccountId = ledgerAccountId,
-            MeltingBatchId = meltingBatchId
+            MeltingBatchId = meltingBatchId,
+            PostingDate = postingDate
         };
+    }
+
+    public Transaction MarkAsReversalOf(TransactionId originalTransactionId)
+    {
+        ReverseTransactionId = originalTransactionId;
+        return this;
     }
 }

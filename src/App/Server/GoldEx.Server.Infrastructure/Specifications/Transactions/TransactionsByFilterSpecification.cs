@@ -1,7 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
-using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.DTOs.Transactions;
@@ -19,12 +18,12 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         // Apply filter
         if (transactionFilter.Start.HasValue)
         {
-            AddCriteria(x => x.CreatedAt >= transactionFilter.Start.Value);
+            AddCriteria(x => x.PostingDate >= transactionFilter.Start.Value);
         }
         if (transactionFilter.End.HasValue)
         {
             var endOfDay = transactionFilter.End.Value.Date.AddDays(1).AddTicks(-1);
-            AddCriteria(x => x.CreatedAt <= endOfDay);
+            AddCriteria(x => x.PostingDate <= endOfDay);
         }
         if (transactionFilter.InvoiceId.HasValue)
         {
@@ -38,7 +37,7 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         }
         else
         {
-            ApplySorting(nameof(InventoryStock.CreatedAt), SortDirection.Ascending);
+            ApplySorting(nameof(Transaction.PostingDate), SortDirection.Ascending);
         }
 
         // --- Paging ---

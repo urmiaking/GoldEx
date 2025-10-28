@@ -64,7 +64,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
 
         if (untilDate.HasValue)
         {
-            baseQuery = baseQuery.Where(t => t.CreatedAt < untilDate.Value);
+            baseQuery = baseQuery.Where(t => t.PostingDate < untilDate.Value);
         }
 
         var balances = await baseQuery

@@ -9,4 +9,4 @@ public record GetTransactionResponse(
     string PriceUnit,
     TransactionType TransactionType,
     string LedgerAccount,
-    DateTime CreatedAt);
+    DateTime PostingDate);

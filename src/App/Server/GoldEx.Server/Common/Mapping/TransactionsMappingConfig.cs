@@ -14,6 +14,6 @@ internal class TransactionsMappingConfig : IRegister
             .Map(dest => dest.TransactionType, src => src.TransactionType)
             .Map(dest => dest.LedgerAccount, src => src.LedgerAccount != null ? src.LedgerAccount.Title : string.Empty)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
-            .Map(dest => dest.CreatedAt, src => src.CreatedAt);
+            .Map(dest => dest.PostingDate, src => src.PostingDate);
     }
 }
