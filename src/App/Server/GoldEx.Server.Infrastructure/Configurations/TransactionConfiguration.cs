@@ -58,5 +58,15 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .WithMany(x => x.Transactions)
             .HasForeignKey(x => x.MeltingBatchId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.ReverseTransaction)
+            .WithOne()
+            .HasForeignKey<Transaction>(x => x.ReverseTransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ایندکس یکتا تا هر تراکنش فقط یک برگشت داشته باشد
+        builder.HasIndex(x => x.ReverseTransactionId)
+            .IsUnique()
+            .HasFilter("[ReverseTransactionId] IS NOT NULL");
     }
 }

@@ -129,89 +129,84 @@ internal class InvoiceService(
     public async Task UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
         await using var dbTransaction = await invoiceRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        try
         {
-            try
+            await validator.ValidateAndThrowAsync(request, cancellationToken);
+
+            var invoice = await invoiceRepository
+                .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+                .Include(x => x.InvoicePayments!)
+                    .ThenInclude(x => x.LedgerAccount!.Customer)
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException();
+
+            invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
+            invoice.SetCustomerId(new CustomerId(request.CustomerId));
+            invoice.SetInvoiceDate(DateOnly.FromDateTime(request.InvoiceDate));
+            invoice.SetDueDate(request.DueDate.HasValue ? DateOnly.FromDateTime(request.DueDate.Value) : null);
+            invoice.SetInvoiceNumber(request.InvoiceNumber);
+            invoice.SetExchangeRate(request.ExchangeRate);
+            invoice.SetUnpaidAmountExchangeRate(request.UnpaidAmountExchangeRate);
+            invoice.SetUnpaidPriceUnitId(request.UnpaidPriceUnitId.HasValue
+                ? new PriceUnitId(request.UnpaidPriceUnitId.Value)
+                : null);
+
+            invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
+                InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
+
+            invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
+                InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
+
+            #region InvoiceItems
+
+            invoice.ClearCoinItems();
+            foreach (var coinItemDto in request.InvoiceCoinItems)
             {
-                await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-                var invoice = await invoiceRepository
-                    .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
-                    .Include(x => x.InvoicePayments!)
-                        .ThenInclude(x => x.LedgerAccount!.Customer)
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-                invoice.SetPriceUnitId(new PriceUnitId(request.PriceUnitId));
-                invoice.SetCustomerId(new CustomerId(request.CustomerId));
-                invoice.SetInvoiceDate(DateOnly.FromDateTime(request.InvoiceDate));
-                invoice.SetDueDate(request.DueDate.HasValue ? DateOnly.FromDateTime(request.DueDate.Value) : null);
-                invoice.SetInvoiceNumber(request.InvoiceNumber);
-                invoice.SetExchangeRate(request.ExchangeRate);
-                invoice.SetUnpaidAmountExchangeRate(request.UnpaidAmountExchangeRate);
-                invoice.SetUnpaidPriceUnitId(request.UnpaidPriceUnitId.HasValue
-                    ? new PriceUnitId(request.UnpaidPriceUnitId.Value)
-                    : null);
-
-                invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
-                    InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
-
-                invoice.SetExtraCosts(request.InvoiceExtraCosts.Select(x =>
-                    InvoiceExtraCost.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
-
-                await transactionService.ClearTransactionsForInvoiceAsync(invoice, cancellationToken);
-                await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, null, cancellationToken);
-
-                #region InvoiceItems
-
-                invoice.ClearCoinItems();
-                foreach (var coinItemDto in request.InvoiceCoinItems)
-                {
-                    invoice.AddCoinItem(coinItemDto.Id.HasValue
-                            ? new InvoiceCoinItemId(coinItemDto.Id.Value)
-                            : null,
-                        new CoinId(coinItemDto.CoinId),
-                        coinItemDto.UnitPrice,
-                        coinItemDto.Quantity,
-                        coinItemDto.ProfitPercent);
-                }
-
-                invoice.ClearCurrencyItems();
-                foreach (var currencyItemDto in request.InvoiceCurrencyItems)
-                {
-                    invoice.AddCurrencyItem(currencyItemDto.Id.HasValue
-                            ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
-                            : null,
-                        new PriceUnitId(currencyItemDto.CurrencyId),
-                        currencyItemDto.UnitPrice,
-                        currencyItemDto.Amount,
-                        currencyItemDto.TaxPercent,
-                        currencyItemDto.ProfitPercent);
-                }
-
-                await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
-
-                await productService.SyncProductItemsAsync(invoice, request.InvoiceProductItems, cancellationToken);
-
-                #endregion
-
-                await invoiceRepository.UpdateAsync(invoice, cancellationToken);
-
-                #region InvoicePayments (Update invoice payments)
-
-                await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
-
-                #endregion
-
-                await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
-                await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
-
-                await dbTransaction.CommitAsync(cancellationToken);
+                invoice.AddCoinItem(coinItemDto.Id.HasValue
+                        ? new InvoiceCoinItemId(coinItemDto.Id.Value)
+                        : null,
+                    new CoinId(coinItemDto.CoinId),
+                    coinItemDto.UnitPrice,
+                    coinItemDto.Quantity,
+                    coinItemDto.ProfitPercent);
             }
-            catch (Exception e)
+
+            invoice.ClearCurrencyItems();
+            foreach (var currencyItemDto in request.InvoiceCurrencyItems)
             {
-                logger.LogError(e, e.Message);
-                await dbTransaction.RollbackAsync(cancellationToken);
-                throw;
+                invoice.AddCurrencyItem(currencyItemDto.Id.HasValue
+                        ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
+                        : null,
+                    new PriceUnitId(currencyItemDto.CurrencyId),
+                    currencyItemDto.UnitPrice,
+                    currencyItemDto.Amount,
+                    currencyItemDto.TaxPercent,
+                    currencyItemDto.ProfitPercent);
             }
+
+            await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
+            await productService.SyncProductItemsAsync(invoice, request.InvoiceProductItems, cancellationToken);
+
+            #endregion
+
+            await invoiceRepository.UpdateAsync(invoice, cancellationToken);
+
+            await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
+
+            // 4) Inventory: Remove/Create (TODO: Delta-based reverse inventory)
+            await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, null, cancellationToken);
+            await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
+
+            // 5) Accounting transactions: Delta-based Reverse + Re-Post
+            await transactionService.ReplaceTransactionsForInvoiceAsync(invoice, cancellationToken);
+
+            await dbTransaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+            await dbTransaction.RollbackAsync(cancellationToken);
+            throw;
         }
     }
 

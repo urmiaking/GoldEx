@@ -12,6 +12,12 @@ public partial class TransactionList
     private MudTable<GetTransactionResponse> _table = new();
     private DateRange _filterDateRange = new();
 
+    private TableGroupDefinition<GetTransactionResponse> _groupDefinition = new()
+    {
+        GroupName = nameof(GetTransactionResponse.GroupId),
+        Selector = (e) => e.GroupId
+    };
+
     [Parameter] public Guid? InvoiceId { get; set; }
     [Parameter] public string? Class { get; set; }
 
