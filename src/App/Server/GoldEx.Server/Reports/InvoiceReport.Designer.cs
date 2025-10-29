@@ -166,6 +166,7 @@
             this.xrLabel80 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel81 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel82 = new DevExpress.XtraReports.UI.XRLabel();
+            this.invoiceUrl = new DevExpress.XtraReports.Parameters.Parameter();
             ((System.ComponentModel.ISupportInitialize)(this.objectDataSource2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.xrTable3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.xrTable1)).BeginInit();
@@ -1010,7 +1011,7 @@
             // 
             this.xrBarCode2.AutoModule = true;
             this.xrBarCode2.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'https://yoursite.com/pay?invoice=\' + [Invoice.InvoiceNumber]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?invoiceUrl")});
             this.xrBarCode2.LocationFloat = new DevExpress.Utils.PointFloat(618.1249F, 22.29167F);
             this.xrBarCode2.Name = "xrBarCode2";
             this.xrBarCode2.Padding = new DevExpress.XtraPrinting.PaddingInfo(10, 10, 0, 0, 100F);
@@ -1020,7 +1021,6 @@
             qrCodeGenerator1.CompactionMode = DevExpress.XtraPrinting.BarCode.QRCodeCompactionMode.Byte;
             qrCodeGenerator1.IncludeQuietZone = false;
             this.xrBarCode2.Symbology = qrCodeGenerator1;
-            this.xrBarCode2.Text = "\'https://yoursite.com/pay?invoice=\' + [Invoice.InvoiceNumber]";
             this.xrBarCode2.TextAlignment = DevExpress.XtraPrinting.TextAlignment.BottomCenter;
             // 
             // xrPanel1
@@ -1870,6 +1870,11 @@
             this.xrLabel82.Text = "مانده نهایی:";
             this.xrLabel82.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopRight;
             // 
+            // invoiceUrl
+            // 
+            this.invoiceUrl.Description = "invoiceUrl";
+            this.invoiceUrl.Name = "invoiceUrl";
+            // 
             // InvoiceReport
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -1893,7 +1898,8 @@
             this.ParameterPanelLayoutItems.AddRange(new DevExpress.XtraReports.Parameters.ParameterPanelLayoutItem[] {
             new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.invoiceNumber, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
-            this.invoiceNumber});
+            this.invoiceNumber,
+            this.invoiceUrl});
             this.RequestParameters = false;
             this.RightToLeft = DevExpress.XtraReports.UI.RightToLeft.Yes;
             this.RightToLeftLayout = DevExpress.XtraReports.UI.RightToLeftLayout.Yes;
@@ -2047,5 +2053,6 @@
         private DevExpress.XtraReports.UI.XRLabel xrLabel80;
         private DevExpress.XtraReports.UI.XRLabel xrLabel81;
         private DevExpress.XtraReports.UI.XRLabel xrLabel82;
+        private DevExpress.XtraReports.Parameters.Parameter invoiceUrl;
     }
 }
