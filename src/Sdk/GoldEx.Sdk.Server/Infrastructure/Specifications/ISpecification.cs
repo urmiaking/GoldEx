@@ -9,6 +9,8 @@ public interface ISpecification<TEntity> : ISpecification where TEntity : Entity
     List<Expression<Func<TEntity, object>>> Includes { get; }
     Expression<Func<TEntity, object>>? OrderBy { get; }
     Expression<Func<TEntity, object>>? OrderByDescending { get; }
+    List<Expression<Func<TEntity, object>>> ThenBy { get; }
+    List<Expression<Func<TEntity, object>>> ThenByDescending { get; }
 }
 
 public interface ISpecification

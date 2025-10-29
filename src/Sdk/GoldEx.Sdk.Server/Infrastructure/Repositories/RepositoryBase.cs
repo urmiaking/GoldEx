@@ -67,16 +67,32 @@ public abstract class RepositoryBase<TEntity>(DbContext context) :
         query = specification.Includes
             .Aggregate(query, (current, include) => current.Include(include));
 
-        // Apply ordering
+        // Apply ordering with support for ThenBy chains
+        IOrderedQueryable<TEntity>? ordered = null;
+
         if (specification.OrderBy != null)
         {
-            query = query.OrderBy(specification.OrderBy);
+            ordered = query.OrderBy(specification.OrderBy);
         }
         else if (specification.OrderByDescending != null)
         {
-            query = query.OrderByDescending(specification.OrderByDescending);
+            ordered = query.OrderByDescending(specification.OrderByDescending);
         }
 
+        if (ordered != null)
+        {
+            foreach (var thenBy in specification.ThenBy)
+            {
+                ordered = ordered.ThenBy(thenBy);
+            }
+
+            foreach (var thenByDesc in specification.ThenByDescending)
+            {
+                ordered = ordered.ThenByDescending(thenByDesc);
+            }
+
+            query = ordered;
+        }
 
         // Apply paging
         if (specification.IsPagingEnabled)

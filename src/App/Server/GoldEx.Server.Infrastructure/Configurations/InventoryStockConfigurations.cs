@@ -22,6 +22,21 @@ internal class InventoryStockConfigurations : IEntityTypeConfiguration<Inventory
 
         builder.HasIndex(x => x.ActionType);
 
+        builder.Property(x => x.PostingDate)
+            .HasColumnType("datetime2")
+            .IsRequired();
+
+        builder.HasIndex(x => x.PostingDate);
+
+        builder.HasOne(x => x.ReverseInventoryStock)
+            .WithOne()
+            .HasForeignKey<InventoryStock>(x => x.ReverseInventoryStockId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.ReverseInventoryStockId)
+            .IsUnique()
+            .HasFilter("[ReverseInventoryStockId] IS NOT NULL");
+
         builder.HasOne(x => x.Coin)
             .WithMany()
             .HasForeignKey(x => x.CoinId)

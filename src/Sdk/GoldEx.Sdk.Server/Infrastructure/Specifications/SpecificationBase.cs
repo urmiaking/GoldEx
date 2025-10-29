@@ -13,6 +13,10 @@ public abstract class SpecificationBase<TEntity> : ISpecification<TEntity>
     public List<Expression<Func<TEntity, object>>> Includes { get; } = [];
     public Expression<Func<TEntity, object>>? OrderBy { get; private set; }
     public Expression<Func<TEntity, object>>? OrderByDescending { get; private set; }
+
+    public List<Expression<Func<TEntity, object>>> ThenBy { get; } = [];
+    public List<Expression<Func<TEntity, object>>> ThenByDescending { get; } = [];
+
     public int? Take { get; private set; }
     public int? Skip { get; private set; }
     public bool IsPagingEnabled { get; private set; }
@@ -93,8 +97,15 @@ public abstract class SpecificationBase<TEntity> : ISpecification<TEntity>
     /// <param name="orderByExpression">The expression representing the property to order by.</param>
     protected void ApplyOrderBy(Expression<Func<TEntity, object>> orderByExpression)
     {
-        OrderBy = orderByExpression;
-        OrderByDescending = null; // Clear descending order if ascending is set
+        // If no primary ordering yet, set it; otherwise, chain as ThenBy
+        if (OrderBy == null && OrderByDescending == null)
+        {
+            OrderBy = orderByExpression;
+        }
+        else
+        {
+            ThenBy.Add(orderByExpression);
+        }
     }
 
     /// <summary>
@@ -103,8 +114,15 @@ public abstract class SpecificationBase<TEntity> : ISpecification<TEntity>
     /// <param name="orderByDescendingExpression">The expression representing the property to order by descending.</param>
     protected void ApplyOrderByDescending(Expression<Func<TEntity, object>> orderByDescendingExpression)
     {
-        OrderByDescending = orderByDescendingExpression;
-        OrderBy = null; // Clear ascending order if descending is set
+        // If no primary ordering yet, set it; otherwise, chain as ThenByDescending
+        if (OrderBy == null && OrderByDescending == null)
+        {
+            OrderByDescending = orderByDescendingExpression;
+        }
+        else
+        {
+            ThenByDescending.Add(orderByDescendingExpression);
+        }
     }
 
     /// <summary>
@@ -155,6 +173,30 @@ public abstract class SpecificationBase<TEntity> : ISpecification<TEntity>
             else
             {
                 ApplyOrderByDescending(orderByLambda);
+            }
+
+            // If the primary sort is not by the default property (CreatedAt), chain CreatedAt as a tie-breaker
+            var isDefaultDirect = string.Equals(sortLabel, defaultSortProperty, StringComparison.OrdinalIgnoreCase);
+            var isDefaultNested = sortLabel.EndsWith("." + defaultSortProperty, StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultDirect && !isDefaultNested)
+            {
+                var defaultProp = typeof(TEntity).GetProperty(defaultSortProperty, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                if (defaultProp != null)
+                {
+                    var defaultAccess = Expression.MakeMemberAccess(parameter, defaultProp);
+                    var defaultConverted = Expression.Convert(defaultAccess, typeof(object));
+                    var thenByDefault = Expression.Lambda<Func<TEntity, object>>(defaultConverted, parameter);
+
+                    if (sortDirection == SortDirection.Ascending)
+                    {
+                        ThenBy.Add(thenByDefault);
+                    }
+                    else
+                    {
+                        ThenByDescending.Add(thenByDefault);
+                    }
+                }
             }
         }
         catch (Exception ex) // Consider more specific exception handling

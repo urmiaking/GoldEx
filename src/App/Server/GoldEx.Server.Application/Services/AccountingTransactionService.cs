@@ -26,7 +26,6 @@ using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -40,10 +39,11 @@ internal class AccountingTransactionService(
     IMeltingBatchRepository meltingBatchRepository,
     IProductRepository productRepository,
     ILedgerAccountRepository ledgerAccountRepository,
-    IServerLedgerAccountService ledgerAccountService,
-    ILogger<AccountingTransactionService> logger) : IAccountingTransactionService
+    IServerLedgerAccountService ledgerAccountService)
+    : IAccountingTransactionService
 {
-    private static DateTime ToPostingDate(DateOnly dateOnly) => dateOnly.ToDateTime(TimeOnly.MinValue);
+    private static DateTime ComposePostingDate(DateOnly businessDate, DateTime createdAt, long tickOffset = 0)
+        => businessDate.ToDateTime(TimeOnly.FromTimeSpan(createdAt.TimeOfDay)).AddTicks(tickOffset);
 
     private readonly record struct TransactionSignatureFull(
         TransactionType Type,
@@ -237,8 +237,12 @@ internal class AccountingTransactionService(
             .Get(new PriceUnitsSetAsDefaultSpecification())
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
 
-        // پایه زمان: تاریخ فاکتور + آفست
-        var postingDate = ToPostingDate(invoice.InvoiceDate).AddTicks(postingTickOffset);
+        // پایه زمان: تاریخ فاکتور + زمان ایجاد فاکتور
+        var basePosting = ComposePostingDate(invoice.InvoiceDate, invoice.CreatedAt, postingTickOffset);
+
+        // درون‌سندی: برای خطوط مختلف یک ترتیب ثابت بدهیم
+        long lineTick = 0;
+        DateTime NextLine() => basePosting.AddTicks(lineTick++);
 
         if (invoice.TotalAmountWithDiscountsAndExtraCosts != 0)
         {
@@ -265,7 +269,7 @@ internal class AccountingTransactionService(
                         foreach (var instantProduct in invoice.ProductItems.Where(x => x.IsInstantProduct))
                         {
                             var manual = await CreateTransactionForManualEntryAsync(instantProduct.Product, null, null,
-                                instantProduct.CostPrice!.Value, instantProduct.CostPriceExchangeRate, instantProduct.CostPriceUnitId, invoice.Id, postingDate,
+                                instantProduct.CostPrice!.Value, instantProduct.CostPriceExchangeRate, instantProduct.CostPriceUnitId, invoice.Id, NextLine(),
                                 cancellationToken);
                             transactions.AddRange(manual);
                         }
@@ -278,7 +282,7 @@ internal class AccountingTransactionService(
                             TransactionType.Debit,
                             customerLedger.Id,
                             invoice.PriceUnitId,
-                            invoice.Id, postingDate));
+                            invoice.Id, NextLine()));
 
                         if (invoice.TotalDiscountAmount > 0)
                             transactions.Add(Transaction.CreateForInvoice(
@@ -290,7 +294,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Debit,
                                 discountsLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id, postingDate));
+                                invoice.Id, NextLine()));
 
                         if (invoice.TotalAmount > 0)
                             transactions.Add(Transaction.CreateForInvoice(
@@ -301,7 +305,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 salesRevenueLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id, postingDate));
+                                invoice.Id, NextLine()));
 
                         if (invoice.TotalExtraCostAmount > 0)
                             transactions.Add(Transaction.CreateForInvoice(
@@ -312,7 +316,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 extraChargesLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id, postingDate));
+                                invoice.Id, NextLine()));
 
                         decimal totalCostOfGoods = 0;
 
@@ -354,7 +358,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Debit,
                                 cogsLedger.Id,
                                 basePriceUnit.Id,
-                                invoice.Id, postingDate));
+                                invoice.Id, NextLine()));
 
                             transactions.Add(Transaction.CreateForInvoice(
                                 TransactionDescriptionBuilder.ForInventoryExit(invoice),
@@ -364,7 +368,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 inventoryLedger.Id,
                                 basePriceUnit.Id,
-                                invoice.Id, postingDate));
+                                invoice.Id, NextLine()));
                         }
 
                         break;
@@ -393,7 +397,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Debit,
                                 inventoryLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id, postingDate));
+                                invoice.Id, NextLine()));
 
                         transactions.Add(Transaction.CreateForInvoice(
                             TransactionDescriptionBuilder.ForPurchasePayable(invoice, customer),
@@ -403,7 +407,7 @@ internal class AccountingTransactionService(
                             TransactionType.Credit,
                             supplierLedger.Id,
                             invoice.PriceUnitId,
-                            invoice.Id, postingDate));
+                            invoice.Id, NextLine()));
 
                         if (invoice.TotalDiscountAmount > 0)
                             transactions.Add(Transaction.CreateForInvoice(
@@ -415,7 +419,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 discountsLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id, postingDate));
+                                invoice.Id, NextLine()));
 
                         break;
                     }
@@ -430,7 +434,9 @@ internal class AccountingTransactionService(
             foreach (var payment in invoice.InvoicePayments)
             {
                 var paymentGroupId = Guid.NewGuid();
-                var paymentPostingDate = payment.PaymentDate.AddTicks(postingTickOffset); // کلید ترتیب پرداخت‌ها
+
+                long payLine = 0;
+                DateTime NextPayLine() => payment.PaymentDate.AddTicks(postingTickOffset + payLine++);
 
                 if (payment.SourceFinancialAccountId.HasValue)
                 {
@@ -455,12 +461,12 @@ internal class AccountingTransactionService(
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForInvoicePaymentReceived(invoice, payment),
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, sourceLedgerAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Debit, sourceLedgerAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForInvoicePaymentReceived(invoice, payment),
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, customerLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Credit, customerLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                     else
                     {
@@ -470,12 +476,12 @@ internal class AccountingTransactionService(
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForInvoicePaymentMade(invoice, payment),
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForInvoicePaymentMade(invoice, payment),
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, sourceLedgerAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Credit, sourceLedgerAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                 }
                 else if (payment.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory)
@@ -508,12 +514,12 @@ internal class AccountingTransactionService(
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, goldLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Debit, goldLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, customerLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Credit, customerLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                     else
                     {
@@ -533,12 +539,12 @@ internal class AccountingTransactionService(
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, goldLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Credit, goldLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                 }
                 else if (payment.PaymentType == PaymentType.CustomerTransfer)
@@ -564,11 +570,11 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
-                            TransactionType.Debit, customerReceivableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Debit, customerReceivableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
-                            TransactionType.Credit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Credit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                     else
                     {
@@ -583,11 +589,11 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
-                            TransactionType.Debit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Debit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
-                            TransactionType.Credit, customerPayableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Credit, customerPayableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                 }
                 else if (payment is { PaymentVoucherId: not null, PaymentVoucher: not null })
@@ -605,12 +611,12 @@ internal class AccountingTransactionService(
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice),
                             payment.Amount, payment.ExchangeRate, Guid.NewGuid(),
-                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice),
                             payment.Amount, payment.ExchangeRate, Guid.NewGuid(),
-                            TransactionType.Credit, prepaymentLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, paymentPostingDate));
+                            TransactionType.Credit, prepaymentLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                 }
             }
@@ -619,9 +625,10 @@ internal class AccountingTransactionService(
         // Used products
         if (invoice.UsedProducts.Any())
         {
+            long usedLineTick = 0;
             foreach (var usedProduct in invoice.UsedProducts)
             {
-                var usedTx = await CreateTransactionForUsedProductsAsync(usedProduct, postingTickOffset, cancellationToken);
+                var usedTx = await CreateTransactionForUsedProductsAsync(usedProduct, usedLineTick++, cancellationToken);
                 transactions.AddRange(usedTx);
             }
         }
@@ -694,7 +701,7 @@ internal class AccountingTransactionService(
                 throw new ArgumentOutOfRangeException(nameof(voucher.VoucherType));
         }
 
-        var postingDate = voucher.PaymentDate.ToDateTime(TimeOnly.MinValue).AddTicks(postingTickOffset);
+        var postingDate = voucher.PaymentDate.ToDateTime(TimeOnly.FromTimeSpan(voucher.CreatedAt.TimeOfDay)).AddTicks(postingTickOffset);
 
         transactions.Add(Transaction.CreateForPaymentVoucher(
             description,
@@ -1111,6 +1118,8 @@ internal class AccountingTransactionService(
         var groupId = Guid.NewGuid();
         var description = TransactionDescriptionBuilder.ForUsedProductPurchase(usedProduct, customer);
 
+        var postingDate = ComposePostingDate(usedProduct.Invoice.InvoiceDate, usedProduct.Invoice.CreatedAt, ticks);
+
         transactions.Add(Transaction.CreateForInvoice(
             description,
             usedProduct.ItemFinalAmount,
@@ -1120,7 +1129,7 @@ internal class AccountingTransactionService(
             debitLedgerAccountId,
             usedProduct.Invoice.PriceUnitId,
             usedProduct.InvoiceId,
-            ToPostingDate(usedProduct.Invoice.InvoiceDate).AddTicks(ticks)));
+            postingDate));
 
         return transactions;
     }
