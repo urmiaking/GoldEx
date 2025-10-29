@@ -110,16 +110,9 @@ internal class ReportFactory(
 
         var forwardedProto = GetFirstHeader("X-Forwarded-Proto");
         var forwardedHost = GetFirstHeader("X-Forwarded-Host");
-        var forwardedPort = GetFirstHeader("X-Forwarded-Port");
 
         var scheme = !string.IsNullOrWhiteSpace(forwardedProto) ? forwardedProto : request.Scheme;
         var host = !string.IsNullOrWhiteSpace(forwardedHost) ? forwardedHost : request.Host.Value;
-
-        // If forwarded port is present and not already part of host, append it
-        if (!string.IsNullOrWhiteSpace(forwardedPort) && !host.Contains(':'))
-        {
-            host = $"{host}:{forwardedPort}";
-        }
 
         return $"{scheme}://{host}{relativePath}";
     }
