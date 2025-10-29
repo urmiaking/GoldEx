@@ -161,22 +161,27 @@
         </MudTd>
     </RowTemplate>
     <ChildRowContent>
-        <MudTr Class="mud-table-row-child">  
-            <td colspan="9">  
-                <MudCollapse Expanded="@context.ShowDetails">  
-                    @if (context.ShowDetails)  
-                    {  
-                        <TransactionList InvoiceId="@context.Id" Class="m-2" />  
-                    }  
-                </MudCollapse>  
-            </td>  
+        <MudTr Class="mud-table-row-child">
+            <td colspan="9">
+                <MudCollapse Expanded="@context.ShowDetails">
+                    @if (context.ShowDetails)
+                    {
+                        <MudCard Elevation="2" Class="m-2">
+                            <MudCardContent>
+                                <TransactionList InvoiceId="@context.Id" />
+                                <InventoryList InvoiceId="@context.Id" />
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudCollapse>
+            </td>
         </MudTr>
     </ChildRowContent>
     <NoRecordsContent>
         <MudText>هیچ فاکتوری یافت نشد</MudText>
     </NoRecordsContent>
     <LoadingContent>
-        <MudText>در حال بارگذاری</MudText>
+        <MudText>در حال بارگیری</MudText>
     </LoadingContent>
     <PagerContent>
         @{

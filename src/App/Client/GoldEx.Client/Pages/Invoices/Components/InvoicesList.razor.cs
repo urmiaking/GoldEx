@@ -8,7 +8,6 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Globalization;
-using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 

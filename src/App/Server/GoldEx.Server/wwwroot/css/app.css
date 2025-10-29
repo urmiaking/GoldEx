@@ -196,7 +196,7 @@ h1:focus {
 }
 
     .loading-text:after {
-        content: var(--blazor-load-percentage-text, "در حال بارگذاری...");
+        content: var(--blazor-load-percentage-text, "در حال بارگیری...");
     }
 
 .loading-title {

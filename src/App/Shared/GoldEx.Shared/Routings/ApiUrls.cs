@@ -321,6 +321,11 @@ public class ApiUrls
         public static string GetInventoryWeightChart(GoldUnitType targetUnit) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetInventoryWeightChart)
                 .FormatRoute(new { targetUnit });
+
+        public static string GetInvoiceInventoryItems(Guid invoiceId, RequestFilter requestFilter) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetInvoiceInventoryItems)
+                .FormatRoute(new { invoiceId })
+                .AppendQueryString(requestFilter);
     }
 
     public class Transactions
