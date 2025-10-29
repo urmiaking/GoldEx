@@ -282,50 +282,6 @@ internal class AccountingTransactionService(
                             transactions.AddRange(manual);
                         }
 
-                        transactions.Add(Transaction.CreateForInvoice(
-                            TransactionDescriptionBuilder.ForSaleReceivable(invoice, customer),
-                            invoice.TotalAmountWithDiscountsAndExtraCosts,
-                            invoice.ExchangeRate,
-                            invoiceGroupId,
-                            TransactionType.Debit,
-                            customerLedger.Id,
-                            invoice.PriceUnitId,
-                            invoice.Id, NextLine()));
-
-                        if (invoice.TotalDiscountAmount > 0)
-                            transactions.Add(Transaction.CreateForInvoice(
-                                TransactionDescriptionBuilder.ForSaleDiscount(invoice,
-                                    invoice.Discounts.Select(x => x.Description)),
-                                invoice.TotalDiscountAmount,
-                                invoice.ExchangeRate,
-                                invoiceGroupId,
-                                TransactionType.Debit,
-                                discountsLedger.Id,
-                                invoice.PriceUnitId,
-                                invoice.Id, NextLine()));
-
-                        if (invoice.TotalAmount > 0)
-                            transactions.Add(Transaction.CreateForInvoice(
-                                TransactionDescriptionBuilder.ForSaleRevenue(invoice),
-                                invoice.TotalAmount,
-                                invoice.ExchangeRate,
-                                invoiceGroupId,
-                                TransactionType.Credit,
-                                salesRevenueLedger.Id,
-                                invoice.PriceUnitId,
-                                invoice.Id, NextLine()));
-
-                        if (invoice.TotalExtraCostAmount > 0)
-                            transactions.Add(Transaction.CreateForInvoice(
-                                TransactionDescriptionBuilder.ForSaleExtraCharges(invoice),
-                                invoice.TotalExtraCostAmount,
-                                invoice.ExchangeRate,
-                                invoiceGroupId,
-                                TransactionType.Credit,
-                                extraChargesLedger.Id,
-                                invoice.PriceUnitId,
-                                invoice.Id, NextLine()));
-
                         decimal totalCostOfGoods = 0;
 
                         foreach (var saleItem in invoice.ProductItems)
@@ -378,6 +334,50 @@ internal class AccountingTransactionService(
                                 basePriceUnit.Id,
                                 invoice.Id, NextLine()));
                         }
+
+                        if (invoice.TotalAmount > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForSaleRevenue(invoice),
+                                invoice.TotalAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Credit,
+                                salesRevenueLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id, NextLine()));
+
+                        if (invoice.TotalExtraCostAmount > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForSaleExtraCharges(invoice),
+                                invoice.TotalExtraCostAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Credit,
+                                extraChargesLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id, NextLine()));
+
+                        if (invoice.TotalDiscountAmount > 0)
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForSaleDiscount(invoice,
+                                    invoice.Discounts.Select(x => x.Description)),
+                                invoice.TotalDiscountAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Debit,
+                                discountsLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id, NextLine()));
+
+                        transactions.Add(Transaction.CreateForInvoice(
+                            TransactionDescriptionBuilder.ForSaleReceivable(invoice, customer),
+                            invoice.TotalAmountWithDiscountsAndExtraCosts,
+                            invoice.ExchangeRate,
+                            invoiceGroupId,
+                            TransactionType.Debit,
+                            customerLedger.Id,
+                            invoice.PriceUnitId,
+                            invoice.Id, NextLine()));
 
                         break;
                     }
@@ -1031,8 +1031,7 @@ internal class AccountingTransactionService(
         var groupId = Guid.NewGuid();
 
         var description = product != null
-            ? TransactionDescriptionBuilder.ForManualProductEntry(product.Name,
-                product.Barcode)
+            ? TransactionDescriptionBuilder.ForManualProductEntry(product.Name)
             : coin != null
                 ? TransactionDescriptionBuilder.ForManualCoinEntry(coin.Title)
                 : currency != null
