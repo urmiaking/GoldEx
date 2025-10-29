@@ -31,80 +31,166 @@ internal class InventoryStockService(
 {
     #region Server Service
 
-    public async Task SetForProductAsync(ProductId productId, int quantity, WarehouseActionType actionType, InvoiceId? invoiceId,
-       CancellationToken cancellationToken = default)
+    private static DateTime ComposePostingDate(Invoice invoice, long tickOffset = 0)
+        => invoice.InvoiceDate.ToDateTime(TimeOnly.FromTimeSpan(invoice.CreatedAt.TimeOfDay)).AddTicks(tickOffset);
+
+    // Active = نه رکورد برگشتی و نه اصلی که قبلاً برگشت خورده
+    private async Task<List<InventoryStock>> GetActiveStocksForInvoiceAsync(Invoice invoice, CancellationToken ct)
     {
-        // TODO: add validation for product existence and availability
+        var all = await repository
+            .Get(new InventoryStocksByInvoiceIdSpecification(invoice.Id, null))
+            .AsNoTracking()
+            .ToListAsync(ct);
 
-        if (invoiceId.HasValue)
-        {
-            var inventoryItems = await repository
-                .Get(new InventoryStocksByInvoiceIdSpecification(invoiceId.Value, ItemType.Product))
-                .ToListAsync(cancellationToken);
+        var reversedOriginalIds = all
+            .Where(x => x.ReverseInventoryStockId != null)
+            .Select(x => x.ReverseInventoryStockId!.Value)
+            .ToHashSet();
 
-            var inventoryItem = inventoryItems.FirstOrDefault(x => x.ProductId == productId);
-
-            if (inventoryItem != null)
-            {
-                await repository.DeleteAsync(inventoryItem, cancellationToken);
-                await repository.CreateAsync(InventoryStock.CreateProduct(productId, quantity, actionType, invoiceId), cancellationToken);
-            }
-        }
-        else
-        {
-            // TODO: after implementing warehousing, this method should be changed
-            await repository.CreateAsync(InventoryStock.CreateProduct(productId, quantity, actionType), cancellationToken);
-        }
-
+        return all
+            .Where(x => x.ReverseInventoryStockId == null && !reversedOriginalIds.Contains(x.Id))
+            .ToList();
     }
 
-    public async Task SetForCoinAsync(CoinId coinId, int quantity, WarehouseActionType actionType, InvoiceId? invoiceId,
-        CancellationToken cancellationToken = default)
+    private static WarehouseActionType Invert(WarehouseActionType t) =>
+        t == WarehouseActionType.In ? WarehouseActionType.Out : WarehouseActionType.In;
+
+    private static (ItemType type, Guid id) KeyOf(InventoryStock s)
     {
-        // TODO: add validation for coin existence and availability
-
-        if (invoiceId.HasValue)
-        {
-            var inventoryItems = await repository
-                .Get(new InventoryStocksByInvoiceIdSpecification(invoiceId.Value, ItemType.Coin))
-                .ToListAsync(cancellationToken);
-
-            var inventoryItem = inventoryItems.FirstOrDefault(x => x.CoinId == coinId);
-
-            if (inventoryItem != null)
-            {
-                await repository.DeleteAsync(inventoryItem, cancellationToken);
-                await repository.CreateAsync(InventoryStock.CreateCoin(coinId, quantity, actionType, invoiceId), cancellationToken);
-            }
-        }
-        else
-        {
-            await repository.CreateAsync(InventoryStock.CreateCoin(coinId, quantity, actionType, invoiceId), cancellationToken);
-        }
+        if (s.ProductId is { } p) return (ItemType.Product, p.Value);
+        if (s.CoinId is { } c) return (ItemType.Coin, c.Value);
+        if (s.CurrencyId is { } u) return (ItemType.Currency, u.Value);
+        throw new InvalidOperationException("Unknown inventory stock item type.");
     }
 
-    public async Task SetForCurrencyAsync(PriceUnitId currencyId, decimal amount, WarehouseActionType actionType, InvoiceId? invoiceId,
-        CancellationToken cancellationToken = default)
+    private readonly record struct StockSignature(
+        ItemType ItemType,
+        Guid ItemId,
+        decimal Amount,
+        WarehouseActionType ActionType,
+        InvoiceId? InvoiceId
+    );
+
+    private static StockSignature Sig(InventoryStock s)
     {
-        // TODO: add validation for currency existence and availability
+        var (t, id) = KeyOf(s);
+        return new StockSignature(t, id, s.ChangeAmount, s.ActionType, s.InvoiceId);
+    }
 
-        if (invoiceId.HasValue)
+    // Builder: رکوردهای مطلوب جدید را می‌سازد (Persist نمی‌کند)
+    private static List<InventoryStock> BuildStocksForInvoice(Invoice invoice, long tickOffset)
+    {
+        var postingDate = ComposePostingDate(invoice, tickOffset); ;
+
+        var action = invoice.InvoiceType == InvoiceType.Purchase ? WarehouseActionType.In : WarehouseActionType.Out;
+
+        // Product items
+        var list = invoice.ProductItems.Select(pi => InventoryStock.CreateProduct(pi.ProductId,
+                pi.TotalWeight,
+                action,
+                invoice.Id,
+                postingDate))
+            .ToList();
+
+        // Instant products → ورود
+        list.AddRange(invoice.ProductItems.Where(x => x.IsInstantProduct)
+            .Select(pi => InventoryStock.CreateProduct(pi.ProductId,
+                pi.TotalWeight,
+                WarehouseActionType.In,
+                invoice.Id,
+                postingDate)));
+
+        // Coins
+        list.AddRange(invoice.CoinItems.Select(ci => InventoryStock.CreateCoin(ci.CoinId,
+            ci.Quantity,
+            action,
+            invoice.Id,
+            postingDate)));
+
+        // Currencies
+        list.AddRange(invoice.CurrencyItems.Select(cu => InventoryStock.CreateCurrency(cu.CurrencyId,
+            cu.Amount,
+            action,
+            invoice.Id,
+            postingDate)));
+
+        // Used products → ورود
+        list.AddRange(invoice.UsedProducts.Where(x => x.ProductId != null)
+            .Select(up => InventoryStock.CreateProduct(up.ProductId!.Value,
+                up.Weight,
+                WarehouseActionType.In,
+                invoice.Id,
+                postingDate)));
+
+        return list;
+    }
+
+    // Build reversals: PostingDate = original.PostingDate + 1 tick
+    private static List<InventoryStock> BuildReversalStocks(IEnumerable<InventoryStock> originals)
+    {
+        var res = new List<InventoryStock>();
+        foreach (var s in originals)
         {
-            var inventoryItems = await repository
-                .Get(new InventoryStocksByInvoiceIdSpecification(invoiceId.Value, ItemType.Currency))
-                .ToListAsync(cancellationToken);
+            var revDate = s.PostingDate.AddTicks(1);
+            InventoryStock rev;
 
-            var inventoryItem = inventoryItems.FirstOrDefault(x => x.CurrencyId == currencyId);
+            if (s.ProductId is { } p)
+                rev = InventoryStock.CreateProduct(p, s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
+            else if (s.CoinId is { } c)
+                rev = InventoryStock.CreateCoin(c, (int)s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
+            else if (s.CurrencyId is { } u)
+                rev = InventoryStock.CreateCurrency(u, s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
+            else
+                continue;
 
-            if (inventoryItem != null)
-            {
-                await repository.DeleteAsync(inventoryItem, cancellationToken);
-                await repository.CreateAsync(InventoryStock.CreateCurrency(currencyId, amount, actionType, invoiceId), cancellationToken);
-            }
+            rev.MarkAsReversalOf(s.Id);
+            res.Add(rev);
         }
-        else
+        return res;
+    }
+
+    public async Task CreateInvoiceInventoryAsync(Invoice invoice, CancellationToken cancellationToken = default)
+    {
+        var stocks = BuildStocksForInvoice(invoice, tickOffset: 0);
+        if (stocks.Count > 0)
+            await repository.CreateRangeAsync(stocks, cancellationToken);
+    }
+
+    // Delta-based Replace (برای Update)
+    public async Task ReplaceInventoryForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
+    {
+        var active = await GetActiveStocksForInvoiceAsync(invoice, cancellationToken);
+        var preview0 = BuildStocksForInvoice(invoice, tickOffset: 0);
+
+        var activeSet = active.Select(Sig).ToHashSet();
+        var previewSet = preview0.Select(Sig).ToHashSet();
+
+        var toReverse = active.Where(x => !previewSet.Contains(Sig(x))).ToList();
+        var toPost = preview0.Where(x => !activeSet.Contains(Sig(x))).ToList();
+
+        if (toReverse.Count == 0 && toPost.Count == 0) return;
+
+        if (toReverse.Count > 0)
         {
-            await repository.CreateAsync(InventoryStock.CreateCurrency(currencyId, amount, actionType, invoiceId), cancellationToken);
+            var reversals = BuildReversalStocks(toReverse);
+            await repository.CreateRangeAsync(reversals, cancellationToken);
+        }
+
+        if (toPost.Count > 0)
+        {
+            // ثبت مجدد: +2 ticks برای نمایش بعد از برگشت‌ها
+            var preview2 = BuildStocksForInvoice(invoice, tickOffset: 2);
+            // فیلتر به اقلام واقعی جدید
+            var preview2Map = preview2.GroupBy(Sig).ToDictionary(g => g.Key, g => g.ToList());
+            var realToPost = new List<InventoryStock>();
+            foreach (var s in toPost)
+            {
+                if (preview2Map.TryGetValue(Sig(s), out var list))
+                    realToPost.AddRange(list);
+            }
+
+            if (realToPost.Count > 0)
+                await repository.CreateRangeAsync(realToPost, cancellationToken);
         }
     }
 
@@ -116,130 +202,6 @@ internal class InventoryStockService(
             .ToListAsync(cancellationToken);
 
         await repository.DeleteRangeAsync(inventoryItems, cancellationToken);
-    }
-
-    public async Task UpdateInvoiceInventoryAsync(Invoice invoice, CancellationToken cancellationToken = default)
-    {
-        var oldStockItems = await repository
-            .Get(new InventoryStocksByInvoiceIdSpecification(invoice.Id))
-            .ToListAsync(cancellationToken);
-
-        if (oldStockItems.Any())
-        {
-            await repository.DeleteRangeAsync(oldStockItems, cancellationToken);
-        }
-
-        var warehouseActionType = invoice.InvoiceType == InvoiceType.Purchase
-            ? WarehouseActionType.In
-            : WarehouseActionType.Out;
-
-        var newStockItems = invoice.ProductItems.Select(productItem => InventoryStock.CreateProduct(
-                productItem.ProductId,
-                1,
-                warehouseActionType,
-                invoice.Id))
-            .ToList();
-
-        newStockItems.AddRange(invoice.CoinItems.Select(coinItem => InventoryStock.CreateCoin(coinItem.CoinId,
-            coinItem.Quantity,
-            warehouseActionType,
-            invoice.Id)));
-
-        newStockItems.AddRange(invoice.CurrencyItems.Select(currencyItem => InventoryStock.CreateCurrency(
-            currencyItem.CurrencyId,
-            currencyItem.Amount,
-            warehouseActionType,
-            invoice.Id)));
-
-        if (newStockItems.Any())
-        {
-            await repository.CreateRangeAsync(newStockItems, cancellationToken);
-        }
-    }
-
-    public async Task CreateInvoiceInventoryAsync(Invoice invoice, CancellationToken cancellationToken = default)
-    {
-        var warehouseActionType = invoice.InvoiceType == InvoiceType.Purchase
-            ? WarehouseActionType.In
-            : WarehouseActionType.Out;
-
-        var newStockItems = invoice.ProductItems.Select(productItem => InventoryStock.CreateProduct(
-                productItem.ProductId,
-                productItem.TotalWeight,
-                warehouseActionType,
-                invoice.Id))
-            .ToList();
-
-        if (invoice.ProductItems.Any(x => x.IsInstantProduct))
-        {
-            newStockItems.AddRange(invoice.ProductItems
-                .Where(x => x.IsInstantProduct)
-                .Select(productItem => InventoryStock.CreateProduct(productItem.ProductId,
-                    productItem.TotalWeight,
-                    WarehouseActionType.In,
-                    invoice.Id)));
-        }
-
-        newStockItems.AddRange(invoice.CoinItems.Select(coinItem => InventoryStock.CreateCoin(coinItem.CoinId,
-            coinItem.Quantity,
-            warehouseActionType,
-            invoice.Id)));
-
-        newStockItems.AddRange(invoice.CurrencyItems.Select(currencyItem => InventoryStock.CreateCurrency(
-            currencyItem.CurrencyId,
-            currencyItem.Amount,
-            warehouseActionType,
-            invoice.Id)));
-
-        newStockItems.AddRange(invoice.UsedProducts
-            .Where(usedProduct => usedProduct is { ProductId: not null })
-            .Select(usedProduct => InventoryStock.CreateProduct(usedProduct.ProductId!.Value,
-                usedProduct.Weight,
-                WarehouseActionType.In,
-                invoice.Id)));
-
-        foreach (var invoicePayment in invoice.InvoicePayments ?? [])
-        {
-            //TODO: handle molten gold inventory properly based on weight reservations
-
-            switch (invoicePayment.PaymentType)
-            {
-                case PaymentType.MoltenGoldInventory:
-                {
-                    //var fineness = invoicePayment.GoldFineness ?? 750m;
-
-                    //var moltenGoldProduct = await productService.FindOrCreateMoltenGoldProductAsync(fineness, cancellationToken);
-
-                    //newStockItems.Add(InventoryStock.CreateProduct(
-                    //    moltenGoldProduct.Id,
-                    //    invoicePayment.Amount,
-                    //    invoice.InvoiceType is InvoiceType.Purchase ? WarehouseActionType.Out : WarehouseActionType.In,
-                    //    invoice.Id));
-                    break;
-                }
-
-                case PaymentType.UsedGoldInventory:
-                {
-                    //var fineness = invoicePayment.GoldFineness ?? 750m;
-
-                    //// پیدا کردن یا ساخت کالای "طلای شکسته" (دست دوم)
-                    //var usedGoldProduct = await productService.FindOrCreateUsedGoldProductAsync(fineness, cancellationToken);
-
-                    //// خروج از انبار
-                    //newStockItems.Add(InventoryStock.CreateProduct(
-                    //    usedGoldProduct.Id,
-                    //    invoicePayment.Amount,
-                    //    WarehouseActionType.Out,
-                    //    invoice.Id));
-                    break;
-                }
-            }
-        }
-
-        if (newStockItems.Any())
-        {
-            await repository.CreateRangeAsync(newStockItems, cancellationToken);
-        }
     }
 
     public async Task MeltProductsAsync(MeltingBatchId meltingBatchId, List<ProductId> productIds, CancellationToken cancellationToken = default)
@@ -264,7 +226,7 @@ internal class InventoryStockService(
         var moltenGoldDetail = MoltenGoldDetail.Create(weight, meltingBatch.WeightUnitType, assayNumber, fineness, meltingBatch.AssayerId!.Value);
 
         var product = await productService.CreateProductAsync(new ProductRequestDto(null,
-            $"طلای آبشده عیار {fineness}",
+            null,
             null,
             weight,
             0,
@@ -316,9 +278,9 @@ internal class InventoryStockService(
             if (item.Product is null)
                 continue;
 
-            var rawPrice = CalculatorHelper.Product.CalculateRawPrice(item.CurrentQuantity, calculatorFilter.GramPrice, item.Product.Fineness,
+            var rawPrice = CalculatorHelper.Product.CalculateRawPrice(item.CurrentAmount, calculatorFilter.GramPrice, item.Product.Fineness,
                 1, item.Product.ProductType);
-            var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.CurrentQuantity, item.Product.Wage, item.Product.WageType, null);
+            var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.CurrentAmount, item.Product.Wage, item.Product.WageType, null);
             var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, item.Product.ProductType, calculatorFilter.ProfitPercent);
             var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, calculatorFilter.TaxPercent, item.Product.ProductType, null);
 

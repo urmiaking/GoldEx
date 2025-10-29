@@ -32,13 +32,19 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
     public MoltenGoldDetail? MoltenGoldDetail { get; private set; }
 
+    public DateTime PostingDate { get; private set; }
+
+    public InventoryStockId? ReverseInventoryStockId { get; private set; }
+    public InventoryStock? ReverseInventoryStock { get; private set; }
+
     // TODO: add warehousingId when implemented
 
     public static InventoryStock CreateMeltingBatchProduct(
         ProductId productId,
         int changeAmount,
         WarehouseActionType actionType,
-        MeltingBatchId batchId)
+        MeltingBatchId batchId,
+        DateTime? postingDate = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -48,7 +54,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ProductId = productId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
-            MeltingBatchId = batchId
+            MeltingBatchId = batchId,
+            PostingDate = postingDate ?? DateTime.UtcNow
         };
     }
 
@@ -56,7 +63,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         ProductId productId,
         decimal changeAmount,
         WarehouseActionType actionType,
-        InvoiceId? invoiceId = null)
+        InvoiceId? invoiceId = null,
+        DateTime? postingDate = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -66,7 +74,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ProductId = productId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
-            InvoiceId = invoiceId
+            InvoiceId = invoiceId,
+            PostingDate = postingDate ?? DateTime.UtcNow
         };
     }
 
@@ -74,7 +83,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         CoinId coinId,
         int changeAmount,
         WarehouseActionType actionType,
-        InvoiceId? invoiceId = null)
+        InvoiceId? invoiceId = null,
+        DateTime? postingDate = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -84,7 +94,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             CoinId = coinId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
-            InvoiceId = invoiceId
+            InvoiceId = invoiceId,
+            PostingDate = postingDate ?? DateTime.UtcNow
         };
     }
 
@@ -92,7 +103,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         PriceUnitId currencyId,
         decimal changeAmount,
         WarehouseActionType actionType,
-        InvoiceId? invoiceId = null)
+        InvoiceId? invoiceId = null,
+        DateTime? postingDate = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -102,7 +114,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             CurrencyId = currencyId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
-            InvoiceId = invoiceId
+            InvoiceId = invoiceId,
+            PostingDate = postingDate ?? DateTime.UtcNow
         };
     }
 
@@ -112,10 +125,12 @@ public class InventoryStock : EntityBase<InventoryStockId>
         MoltenGoldDetail moltenGoldDetail,
         decimal changeAmount,
         WarehouseActionType actionType,
-        InvoiceId? invoiceId = null)
+        InvoiceId? invoiceId = null,
+        DateTime? postingDate = null)
     {
         ArgumentNullException.ThrowIfNull(moltenGoldDetail);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+
         return new InventoryStock
         {
             Id = new InventoryStockId(Guid.NewGuid()),
@@ -124,8 +139,16 @@ public class InventoryStock : EntityBase<InventoryStockId>
             MeltingBatchId = meltingBatchId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
-            InvoiceId = invoiceId
+            InvoiceId = invoiceId,
+            PostingDate = postingDate ?? DateTime.UtcNow
         };
+    }
+
+    // NEW: Mark this record as a reversal of another record
+    public InventoryStock MarkAsReversalOf(InventoryStockId originalId)
+    {
+        ReverseInventoryStockId = originalId;
+        return this;
     }
 
     private InventoryStock() { }
