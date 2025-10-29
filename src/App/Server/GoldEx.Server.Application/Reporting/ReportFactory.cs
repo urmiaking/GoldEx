@@ -5,9 +5,12 @@ using DevExpress.XtraReports.Services;
 using DevExpress.XtraReports.UI;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace GoldEx.Server.Application.Reporting;
 
@@ -15,7 +18,8 @@ namespace GoldEx.Server.Application.Reporting;
 internal class ReportFactory(
     IWebHostEnvironment hostingEnvironment,
     IIconService iconService,
-    IReportingService reportingService)
+    IReportingService reportingService,
+    IHttpContextAccessor httpContextAccessor)
     : IReportProviderAsync, IReportProvider
 {
     public async Task<XtraReport> GetReportAsync(string id, ReportProviderContext context)
@@ -42,6 +46,8 @@ internal class ReportFactory(
                 Enum.TryParse<InvoiceType>(queryParams["invoiceType"], out var invoiceType))
             {
                 var response = await reportingService.GetInvoiceReportAsync(invoiceNumber, invoiceType);
+
+                var invoiceUrl = GenerateInvoiceUrl(invoiceNumber, invoiceType); // {schema}://{domain}/invoices/viewer/{invoiceNumber}/{invoiceType}
 
                 var dataSource = new ObjectDataSource
                 {
@@ -77,6 +83,7 @@ internal class ReportFactory(
                 if (report.Parameters["invoiceNumber"] != null)
                 {
                     report.Parameters["invoiceNumber"].Value = invoiceNumber;
+                    report.Parameters["invoiceUrl"].Value = invoiceUrl;
                 }
             }
         }
@@ -87,5 +94,33 @@ internal class ReportFactory(
     public XtraReport GetReport(string id, ReportProviderContext context)
     {
         return GetReportAsync(id, context).GetAwaiter().GetResult();
+    }
+
+    private string GenerateInvoiceUrl(long invoiceNumber, InvoiceType invoiceType)
+    {
+        var relativePath = ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = invoiceNumber, invoiceType });
+
+        var request = httpContextAccessor.HttpContext?.Request;
+        if (request is null || !request.Host.HasValue)
+            return relativePath;
+
+        // Respect reverse proxy headers if present
+        string GetFirstHeader(string key)
+            => request.Headers.TryGetValue(key, out var values) ? values.ToString().Split(',')[0].Trim() : string.Empty;
+
+        var forwardedProto = GetFirstHeader("X-Forwarded-Proto");
+        var forwardedHost = GetFirstHeader("X-Forwarded-Host");
+        var forwardedPort = GetFirstHeader("X-Forwarded-Port");
+
+        var scheme = !string.IsNullOrWhiteSpace(forwardedProto) ? forwardedProto : request.Scheme;
+        var host = !string.IsNullOrWhiteSpace(forwardedHost) ? forwardedHost : request.Host.Value;
+
+        // If forwarded port is present and not already part of host, append it
+        if (!string.IsNullOrWhiteSpace(forwardedPort) && !host.Contains(':'))
+        {
+            host = $"{host}:{forwardedPort}";
+        }
+
+        return $"{scheme}://{host}{relativePath}";
     }
 }
