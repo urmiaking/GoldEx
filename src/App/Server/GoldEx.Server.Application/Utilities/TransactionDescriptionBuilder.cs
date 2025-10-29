@@ -18,7 +18,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForSaleReceivable(Invoice invoice, Customer customer)
     {
-        return $"ثبت بدهی {customer.FullName} بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
+        return $"بدهی {customer.FullName} بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForSaleRevenue(Invoice invoice)
     {
-        return $"ثبت درآمد فروش طبق فاکتور شماره {invoice.InvoiceNumber}";
+        return $"درآمد فروش طبق فاکتور شماره {invoice.InvoiceNumber}";
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForSaleDiscount(Invoice invoice, IEnumerable<string?> descriptions)
     {
-        var desc = $"ثبت تخفیف فروش مربوط به فاکتور شماره {invoice.InvoiceNumber}";
+        var desc = $"تخفیف فروش مربوط به فاکتور شماره {invoice.InvoiceNumber}";
         foreach (var description in descriptions)
             if (!string.IsNullOrWhiteSpace(description))
                 desc += $" (بابت: {description})";
@@ -47,7 +47,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForSaleExtraCharges(Invoice invoice)
     {
-        return $"ثبت درآمد هزینه‌های اضافی فاکتور شماره {invoice.InvoiceNumber}";
+        return $"درآمد هزینه‌های اضافی فاکتور شماره {invoice.InvoiceNumber}";
     }
 
     #endregion
@@ -59,7 +59,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForPurchaseInventoryEntry(Invoice invoice)
     {
-        return $"ثبت ورود کالا به انبار طبق فاکتور خرید شماره {invoice.InvoiceNumber}";
+        return $"ورود کالا به انبار طبق فاکتور خرید شماره {invoice.InvoiceNumber}";
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForPurchasePayable(Invoice invoice, Customer supplier)
     {
-        return $"ثبت بدهی به {supplier.FullName} بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
+        return $"بدهی به {supplier.FullName} بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForPurchaseDiscount(Invoice invoice, Customer supplier, IEnumerable<string?> descriptions)
     {
-        var desc = $"ثبت تخفیف دریافتی از {supplier.FullName} بابت فاکتور شماره {invoice.InvoiceNumber}";
+        var desc = $"تخفیف دریافتی از {supplier.FullName} بابت فاکتور شماره {invoice.InvoiceNumber}";
 
         foreach (var description in descriptions)
             if (!string.IsNullOrWhiteSpace(description))
@@ -93,7 +93,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForCostOfGoodsSold(Invoice invoice)
     {
-        return $"ثبت بهای تمام شده کالاهای فاکتور فروش شماره {invoice.InvoiceNumber}";
+        return $"بهای تمام شده اجناس فاکتور فروش شماره {invoice.InvoiceNumber}";
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForInventoryExit(Invoice invoice)
     {
-        return $"خروج کالا از انبار بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
+        return $"خروج اجناس از انبار بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
     }
 
     #endregion
@@ -196,7 +196,7 @@ public static class TransactionDescriptionBuilder
     /// </summary>
     public static string ForPrepaymentToCustomer(PaymentVoucher voucher, Customer customer)
     {
-        return $"ثبت طلب از {customer.FullName} بابت سند پرداخت شماره {voucher.VoucherNumber}";
+        return $"طلب از {customer.FullName} بابت سند پرداخت شماره {voucher.VoucherNumber}";
     }
 
     /// <summary>
@@ -252,19 +252,19 @@ public static class TransactionDescriptionBuilder
 
     #region Manual Entry Descriptions (شرح‌های ورود دستی)
 
-    public static string ForManualProductEntry(string productName, string barcode)
+    public static string ForManualProductEntry(string productName)
     {
-        return $"ثبت ورود دستی محصول '{productName}' در سیستم با شماره سریال {barcode}";
+        return $"ورود دستی جنس '{productName}' به موجودی";
     }
 
     public static string ForManualCoinEntry(string coinName)
     {
-        return $"ثبت ورود دستی سکه '{coinName}' در سیستم";
+        return $"ورود دستی سکه '{coinName}' به موجودی";
     }
 
     public static string ForManualCurrencyEntry(string currencyName)
     {
-        return $"ثبت ورود دستی ارز '{currencyName}' در سیستم";
+        return $"ورود دستی ارز '{currencyName}' به موجودی";
     }
 
     #endregion
