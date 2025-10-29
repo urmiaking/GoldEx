@@ -258,6 +258,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         CostPrice = costPrice;
         CostPriceExchangeRate = costPriceExchangeRate;
         CostPriceUnitId = costPriceUnitId;
+        TotalWeight = totalWeight;
     }
 
     public void UpdateSaleItem(decimal gramPrice,

@@ -181,7 +181,7 @@ internal class InvoiceService(
                     currencyItemDto.UnitPrice,
                     currencyItemDto.Amount,
                     currencyItemDto.TaxPercent,
-                    currencyItemDto.ProfitPercent);
+                    currencyItemDto.ProfitPercent); 
             }
 
             await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
@@ -193,11 +193,7 @@ internal class InvoiceService(
 
             await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
 
-            // 4) Inventory: Remove/Create (TODO: Delta-based reverse inventory)
-            await inventoryStockService.RemoveInventoryByInvoiceIdAsync(invoice.Id, null, cancellationToken);
-            await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
-
-            // 5) Accounting transactions: Delta-based Reverse + Re-Post
+            await inventoryStockService.ReplaceInventoryForInvoiceAsync(invoice, cancellationToken);
             await transactionService.ReplaceTransactionsForInvoiceAsync(invoice, cancellationToken);
 
             await dbTransaction.CommitAsync(cancellationToken);
