@@ -1,28 +1,21 @@
 ﻿using GoldEx.Sdk.Common.Data;
-using GoldEx.Shared.DTOs.Transactions;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
-public partial class TransactionList
+public partial class InventoryList
 {
     private string? _searchString;
-    private MudTable<GetTransactionResponse> _table = new();
-    private DateRange _filterDateRange = new();
+    private MudTable<GetInventoryStockItemResponse> _table = new();
 
-    private TableGroupDefinition<GetTransactionResponse> _groupDefinition = new()
+    [Parameter, EditorRequired] public Guid InvoiceId { get; set; }
+
+    private async Task<TableData<GetInventoryStockItemResponse>> LoadItemsAsync(TableState state, CancellationToken cancellationToken)
     {
-        GroupName = nameof(GetTransactionResponse.GroupId),
-        Selector = (e) => e.GroupId
-    };
-
-    [Parameter] public Guid? InvoiceId { get; set; }
-
-    private async Task<TableData<GetTransactionResponse>> LoadTransactionsAsync(TableState state, CancellationToken cancellationToken)
-    {
-        var result = new TableData<GetTransactionResponse>();
+        var result = new TableData<GetInventoryStockItemResponse>();
 
         var requestFilter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch
@@ -33,13 +26,11 @@ public partial class TransactionList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var transactionFilter = new TransactionFilter(InvoiceId, _filterDateRange.Start, _filterDateRange.End);
-
-        await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
-            action: (s, ct) => s.GetListAsync(transactionFilter, requestFilter, ct),
+        await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockItemResponse>>(
+            action: (s, ct) => s.GetInvoiceInventoryItemsAsync(InvoiceId, requestFilter, ct),
             afterSend: response =>
             {
-                result = new TableData<GetTransactionResponse>
+                result = new TableData<GetInventoryStockItemResponse>
                 {
                     TotalItems = response.Total,
                     Items = response.Data

@@ -1,13 +1,12 @@
-﻿@using GoldEx.Shared.DTOs.Transactions
+﻿@using GoldEx.Shared.DTOs.InventoryStocks
 @inherits GoldExComponentBase
 
-<MudTable T="GetTransactionResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" GroupBy="@_groupDefinition"
-          Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="0">
+<MudTable T="GetInventoryStockItemResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+          Dense="true" ServerData="LoadItemsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="0">
     <ToolBarContent>
-        <MudText Typo="Typo.body1">تراکنش‌های مرتبط با این فاکتور</MudText>
+        <MudText Typo="Typo.body1">اثر فاکتور بر موجودی</MudText>
     </ToolBarContent>
     <ColGroup>
-        <col />
         <col />
         <col />
         <col />
@@ -15,40 +14,38 @@
     </ColGroup>
     <HeaderContent>
         <MudTh>تاریخ</MudTh>
-        <MudTh>نوع تراکنش</MudTh>
-        <MudTh>مبلغ</MudTh>
+        <MudTh>نوع عملیات انبار</MudTh>
+        <MudTh>حجم</MudTh>
         <MudTh>شرح</MudTh>
-        <MudTh>حساب تحت تاثیر</MudTh>
     </HeaderContent>
     <GroupHeaderTemplate>
         <MudTh colspan="5" Style="background-color: var(--mud-palette-table-striped);"></MudTh>
     </GroupHeaderTemplate>
     <RowTemplate>
         <MudTd DataLabel="تاریخ">
-            <MudTooltip Text="@context.PostingDate.ToString("yyyy/MM/dd HH:mm:ss")" Arrow="true" Placement="Placement.Top">
-                @context.PostingDate.ToString("yyyy/MM/dd")
+            <MudTooltip Text="@context.DateTime.ToString("yyyy/MM/dd HH:mm:ss")" Arrow="true" Placement="Placement.Top">
+                @context.DateTime.ToString("yyyy/MM/dd")
             </MudTooltip>
         </MudTd>
-        <MudTd DataLabel="نوع تراکنش">
-            @if (context.TransactionType == TransactionType.Credit)
+        <MudTd DataLabel="نوع عملیات انبار">
+            @if (context.ActionType == WarehouseActionType.In)
             {
-                <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowUp">
-                    @context.TransactionType.GetDisplayName()
+                <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowDown">
+                    @context.ActionType.GetDisplayName()
                 </MudChip>
             }
             else
             {
-                <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowDown">
-                    @context.TransactionType.GetDisplayName()
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.KeyboardArrowUp">
+                    @context.ActionType.GetDisplayName()
                 </MudChip>
             }
         </MudTd>
-        <MudTd DataLabel="مبلغ">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
+        <MudTd DataLabel="حجم">@(context.GoldUnitType.HasValue ? $"{context.Amount.ToWeightFormat(context.GoldUnitType.Value)}" : context.Amount.ToCurrencyFormat(context.PriceUnit))</MudTd>
         <MudTd DataLabel="شرح">@context.Description</MudTd>
-        <MudTd DataLabel="حساب تحت تاثیر">@context.LedgerAccount</MudTd>
     </RowTemplate>
     <NoRecordsContent>
-        <MudText>هیچ تراکنشی یافت نشد</MudText>
+        <MudText>هیچ عملیات انباری یافت نشد</MudText>
     </NoRecordsContent>
     <LoadingContent>
         <MudText>در حال بارگذاری</MudText>

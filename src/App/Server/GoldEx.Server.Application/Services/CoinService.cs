@@ -81,8 +81,6 @@ internal class CoinService(ICoinRepository repository,
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
-        decimal valueToReturn;
-
         if (priceUnitId.HasValue)
         {
             var conversionUnit = await priceUnitRepository
@@ -97,12 +95,11 @@ internal class CoinService(ICoinRepository repository,
                 var convertedValue = baseItem.PriceHistory.CurrentValue /
                                      conversionUnit.Price.PriceHistory.CurrentValue;
 
-                valueToReturn = ConvertFromRial(convertedValue, defaultUnit?.UnitType);
-                return new GetExchangeRateResponse(valueToReturn);
+                return new GetExchangeRateResponse(convertedValue);
             }
         }
 
-        valueToReturn = ConvertFromRial(baseItem.PriceHistory.CurrentValue, defaultUnit?.UnitType);
+        var valueToReturn = ConvertFromRial(baseItem.PriceHistory.CurrentValue, defaultUnit?.UnitType);
         return new GetExchangeRateResponse(valueToReturn);
     }
 
