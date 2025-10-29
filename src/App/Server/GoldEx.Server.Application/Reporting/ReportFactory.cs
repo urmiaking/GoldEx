@@ -108,12 +108,12 @@ internal class ReportFactory(
         string GetFirstHeader(string key)
             => request.Headers.TryGetValue(key, out var values) ? values.ToString().Split(',')[0].Trim() : string.Empty;
 
-        var forwardedProto = GetFirstHeader("X-Forwarded-Proto");
+        //var forwardedProto = GetFirstHeader("X-Forwarded-Proto");
         var forwardedHost = GetFirstHeader("X-Forwarded-Host");
 
-        var scheme = !string.IsNullOrWhiteSpace(forwardedProto) ? forwardedProto : request.Scheme;
+        //var scheme = !string.IsNullOrWhiteSpace(forwardedProto) ? forwardedProto : request.Scheme;
         var host = !string.IsNullOrWhiteSpace(forwardedHost) ? forwardedHost : request.Host.Value;
 
-        return $"{scheme}://{host}{relativePath}";
+        return $"https://{host}{relativePath}";
     }
 }
