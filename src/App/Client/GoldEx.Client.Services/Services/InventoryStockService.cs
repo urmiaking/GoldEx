@@ -51,4 +51,17 @@ internal class InventoryStockService(HttpClient client, JsonSerializerOptions js
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<PagedList<GetInventoryStockItemResponse>> GetInvoiceInventoryItemsAsync(Guid invoiceId,
+        RequestFilter requestFilter, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.InventoryStocks.GetInvoiceInventoryItems(invoiceId, requestFilter), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<PagedList<GetInventoryStockItemResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

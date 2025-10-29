@@ -310,5 +310,23 @@ internal class InventoryStockService(
         return mapper.Map<List<GetInventoryWeightChartResponse>>(summary);
     }
 
+    public async Task<PagedList<GetInventoryStockItemResponse>> GetInvoiceInventoryItemsAsync(Guid invoiceId,
+        RequestFilter requestFilter, CancellationToken cancellationToken = default)
+    {
+        var spec = new InventoryStocksByInvoiceFilterSpecification(new InvoiceId(invoiceId), requestFilter);
+
+        var items = await repository.Get(spec).ToListAsync(cancellationToken);
+
+        var total = await repository.CountAsync(spec, cancellationToken);
+
+        return new PagedList<GetInventoryStockItemResponse>
+        {
+            Data = mapper.Map<List<GetInventoryStockItemResponse>>(items),
+            Total = total,
+            Skip = requestFilter.Skip ?? 0,
+            Take = requestFilter.Take ?? 100
+        };
+    }
+
     #endregion
 }

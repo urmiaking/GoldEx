@@ -181,6 +181,7 @@ public static class ApiRoutes
         public const string GetList = "";
         public const string GetAvailableProducts = "available";
         public const string GetInventoryWeightChart = "{targetUnit}/weight-chart";
+        public const string GetInvoiceInventoryItems = "invoice/{invoiceId}/items";
     }
 
     public class Notifications
