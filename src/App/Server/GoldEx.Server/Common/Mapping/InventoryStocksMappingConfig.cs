@@ -13,8 +13,8 @@ public class InventoryStocksMappingConfig : IRegister
             .Map(dest => dest.CurrentAmount, src => src.ChangeAmount);
             
         config.NewConfig<InventorySummaryData, GetInventoryStockResponse>()
-            .Map(dest => dest.CurrentAmount, src => src.CurrentQuantity)
-            .Map(dest => dest.SoldAmount, src => src.SoldQuantity)
+            .Map(dest => dest.CurrentAmount, src => src.CurrentAmount)
+            .Map(dest => dest.SoldAmount, src => src.SoldAmount)
             .Map(dest => dest.DateTime, src => src.DateTime);
 
         config.NewConfig<InventoryWeightChartData, GetInventoryWeightChartResponse>();
