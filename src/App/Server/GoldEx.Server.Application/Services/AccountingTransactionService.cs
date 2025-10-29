@@ -265,7 +265,7 @@ internal class AccountingTransactionService(
                         foreach (var instantProduct in invoice.ProductItems.Where(x => x.IsInstantProduct))
                         {
                             var manual = await CreateTransactionForManualEntryAsync(instantProduct.Product, null, null,
-                                instantProduct.CostPrice!.Value, instantProduct.CostPriceExchangeRate, invoice.Id, postingDate,
+                                instantProduct.CostPrice!.Value, instantProduct.CostPriceExchangeRate, instantProduct.CostPriceUnitId, invoice.Id, postingDate,
                                 cancellationToken);
                             transactions.AddRange(manual);
                         }
@@ -988,7 +988,7 @@ internal class AccountingTransactionService(
     }
 
     private async Task<List<Transaction>> CreateTransactionForManualEntryAsync(Product? product, Coin? coin, PriceUnit? currency,
-        decimal costPrice, decimal? costPriceExchangeRate, InvoiceId triggeringInvoiceId, DateTime postingDate,
+        decimal costPrice, decimal? costPriceExchangeRate, PriceUnitId? costPriceUnitId, InvoiceId triggeringInvoiceId, DateTime postingDate,
         CancellationToken cancellationToken = default)
     {
         if (costPrice < 0)
@@ -1069,7 +1069,7 @@ internal class AccountingTransactionService(
             groupId,
             TransactionType.Debit,
             debitLedgerAccountId,
-            basePriceUnit.Id,
+            costPriceUnitId ?? basePriceUnit.Id,
             triggeringInvoiceId,
             postingDate));
 
@@ -1080,7 +1080,7 @@ internal class AccountingTransactionService(
             groupId,
             TransactionType.Credit,
             openingBalanceLedgerAccount.Id,
-            basePriceUnit.Id,
+            costPriceUnitId ?? basePriceUnit.Id,
             triggeringInvoiceId,
             postingDate));
 
