@@ -45,6 +45,14 @@ internal class AccountingTransactionService(
     private static DateTime ComposePostingDate(DateOnly businessDate, DateTime createdAt, long tickOffset = 0)
         => businessDate.ToDateTime(TimeOnly.FromTimeSpan(createdAt.TimeOfDay)).AddTicks(tickOffset);
 
+    private static DateTime ComposePaymentPostingDate(DateTime paymentDateTime, DateTime paymentCreatedAt, long tickOffset, long innerIndex)
+    {
+        var time = paymentDateTime.TimeOfDay == TimeSpan.Zero ? paymentCreatedAt.TimeOfDay : paymentDateTime.TimeOfDay;
+        var basePosting = new DateTime(paymentDateTime.Year, paymentDateTime.Month, paymentDateTime.Day,
+            time.Hours, time.Minutes, time.Seconds, time.Milliseconds, paymentDateTime.Kind);
+        return basePosting.AddTicks(tickOffset + innerIndex);
+    }
+
     private readonly record struct TransactionSignatureFull(
         TransactionType Type,
         LedgerAccountId LedgerId,
@@ -434,9 +442,12 @@ internal class AccountingTransactionService(
             foreach (var payment in invoice.InvoicePayments)
             {
                 var paymentGroupId = Guid.NewGuid();
-
+               
                 long payLine = 0;
-                DateTime NextPayLine() => payment.PaymentDate.AddTicks(postingTickOffset + payLine++);
+                DateTime NextPayLine()
+                    => payment.PaymentDate.Date == invoice.InvoiceDate.ToDateTime(TimeOnly.MinValue).Date
+                        ? basePosting.AddTicks(1000 + payLine++)
+                        : ComposePaymentPostingDate(payment.PaymentDate, payment.CreatedAt, postingTickOffset, payLine++);
 
                 if (payment.SourceFinancialAccountId.HasValue)
                 {
