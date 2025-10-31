@@ -202,4 +202,11 @@ public static class ApiRoutes
         public const string SendToLab = "{id}/send-to-lab";
         public const string CompleteMelting = "{id}/complete-melting";
     }
+
+    public class BarcodeInquiries
+    {
+        public const string Base = "/api/BarcodeInquiries";
+        public const string GetList = "";
+        public const string Inquiry = "{barcode}";
+    }
 }

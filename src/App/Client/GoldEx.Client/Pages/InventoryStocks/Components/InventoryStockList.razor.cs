@@ -260,7 +260,7 @@ public partial class InventoryStockList
     {
         if (!Selectable)
         {
-            var inventoryItem = _table.FilteredItems.FirstOrDefault(b => b.DateTime == args.Item?.DateTime);
+            var inventoryItem = _table.FilteredItems.FirstOrDefault(b => b.Equals(args.Item));
             if (inventoryItem is not null)
             {
                 inventoryItem.ShowDetails = !inventoryItem.ShowDetails;

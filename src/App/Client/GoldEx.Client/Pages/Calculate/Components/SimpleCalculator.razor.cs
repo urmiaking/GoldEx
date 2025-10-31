@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Pages.Calculate.Validators;
 using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.BarcodeInquiries;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -156,7 +157,8 @@ public partial class SimpleCalculator
                 _model.GramPrice = gramPriceValue;
 
                 StateHasChanged();
-            });
+            },
+            createScope: true);
     }
 
     #endregion
@@ -444,6 +446,8 @@ public partial class SimpleCalculator
                      await SelectWagePriceUnit(_model.WagePriceUnit!);
                      await SelectStonePriceUnit(_model.StonePriceUnit!);
                      OnProductTypeChanged(_model.ProductType);
+
+                     await InquiryBarcodeAsync(barcode);
                  },
                  cancelPrevious: true);
         }
@@ -453,6 +457,8 @@ public partial class SimpleCalculator
         }
     }
 
+    private Task InquiryBarcodeAsync(string barcode) => SendRequestAsync<IBarcodeInquiryService>(action: (service, ct) => service.InquiryAsync(barcode, ct));
+
     private void OnBarcodeCleared()
     {
         _barcode = null;
@@ -461,7 +467,7 @@ public partial class SimpleCalculator
         ResetCalculations();
     }
 
-    private async void ResetModel()
+    private void ResetModel()
     {
         _model.Weight = 1;
         _model.Fineness = 750m;
@@ -473,7 +479,6 @@ public partial class SimpleCalculator
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
 
         _applySafetyMargin = true;
-        await LoadGramPriceAsync();
     }
 
     private void ResetCalculations()
@@ -525,4 +530,19 @@ public partial class SimpleCalculator
     }
 
     #endregion
+
+    private async Task<IEnumerable<string>?> SearchBarcodes(string? barcode, CancellationToken cancellationToken)
+    {
+        var result = await SendRequestAsync<IBarcodeInquiryService, List<GetBarcodeInquiryResponse>>(
+            action: (service, ct) => service.GetListAsync(barcode, ct));
+
+        if (!string.IsNullOrEmpty(barcode))
+        {
+            await OnBarcodeChanged(barcode);
+        }
+
+        return result != null && result.Any() 
+            ? result.Select(x => x.Barcode) 
+            : [];
+    }
 }
