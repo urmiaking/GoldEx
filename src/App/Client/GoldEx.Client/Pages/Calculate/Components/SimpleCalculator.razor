@@ -6,20 +6,22 @@
         <Authorized>
             <MudGrid Justify="Justify.SpaceBetween">
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudTextField Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.QrCode"
-                                  Clearable="true"
-                                  HelperText="@_barcodeFieldHelperText"
-                                  Label="بارکد جنس"
-                                  dir="ltr"
-                                  Immediate="true"
-                                  Margin="Margin.Dense"
-                                  OnClearButtonClick="OnBarcodeCleared"
-                                  T="string"
-                                  Value="_barcode"
-                                  DebounceInterval="200"
-                                  ValueChanged="OnBarcodeChanged"
-                                  Variant="Variant.Outlined"></MudTextField>
+                    <MudAutocomplete T="string"  
+                                     Adornment="Adornment.End"  
+                                     AdornmentIcon="@Icons.Material.Filled.QrCode"  
+                                     Clearable="true"  
+                                     HelperText="@_barcodeFieldHelperText"  
+                                     Label="بارکد جنس"  
+                                     dir="ltr"  
+                                     Margin="Margin.Dense"  
+                                     OnClearButtonClick="OnBarcodeCleared"  
+                                     Value="_barcode"  
+                                     ValueChanged="OnBarcodeChanged"  
+                                     SearchFunc="SearchBarcodes"  
+                                     Variant="Variant.Outlined"  
+                                     DebounceInterval="200"  
+                                     CoerceValue="false"  
+                                     ResetValueOnEmptyText="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudSelect T="GetPriceUnitTitleResponse?"
