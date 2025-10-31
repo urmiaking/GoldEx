@@ -326,6 +326,11 @@ public class ApiUrls
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetInvoiceInventoryItems)
                 .FormatRoute(new { invoiceId })
                 .AppendQueryString(requestFilter);
+
+        public static string GetTraces(Guid itemId, ItemType itemType, RequestFilter requestFilter) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetTraces)
+                .FormatRoute(new { itemId, itemType })
+                .AppendQueryString(requestFilter);
     }
 
     public class Transactions

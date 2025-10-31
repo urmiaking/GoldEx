@@ -255,4 +255,56 @@ public partial class InventoryStockList
         _categoryFilter = category;
         await RefreshAsync();
     }
+
+    private void ShowDetails(TableRowClickEventArgs<InventoryStockVm> args)
+    {
+        if (!Selectable)
+        {
+            var inventoryItem = _table.FilteredItems.FirstOrDefault(b => b.DateTime == args.Item?.DateTime);
+            if (inventoryItem is not null)
+            {
+                inventoryItem.ShowDetails = !inventoryItem.ShowDetails;
+            }
+        }
+    }
+
+    private Guid GetItemId(InventoryStockVm context)
+    {
+        if (context.Product is not null)
+        {
+            return context.Product.Id ?? throw new InvalidOperationException("Product ID is null.");
+        }
+
+        if (context.Coin is not null)
+        {
+            return context.Coin.Id ?? throw new InvalidOperationException("Coin ID is null.");
+        }
+
+        if (context.Currency is not null)
+        {
+            return context.Currency.Id;
+        }
+
+        throw new InvalidOperationException("Item ID could not be determined.");
+    }
+
+    private ItemType GetItemType(InventoryStockVm context)
+    {
+        if (context.Product is not null)
+        {
+            return ItemType.Product;
+        }
+
+        if (context.Coin is not null)
+        {
+            return ItemType.Coin;
+        }
+
+        if (context.Currency is not null)
+        {
+            return ItemType.Currency;
+        }
+
+        throw new InvalidOperationException("Item Type could not be determined.");
+    }
 }

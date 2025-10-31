@@ -50,4 +50,6 @@ public class PriceUnit : EntityBase<PriceUnitId>
     }
 
     public override int GetHashCode() => Id.GetHashCode();
+
+    public bool IsGoldBased => UnitType is Shared.Enums.UnitType.Gold18K or Shared.Enums.UnitType.Mesghal;
 }

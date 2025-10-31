@@ -51,6 +51,10 @@ internal class InvoiceService(
                     .Get(new PriceUnitsSetAsDefaultSpecification())
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException("Base price unit not found");
 
+                var targetPriceUnit = await priceUnitRepository
+                    .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Target price unit not found");
+
                 var invoice = Invoice.Create(request.InvoiceNumber,
                     request.UnpaidAmountExchangeRate,
                     request.ExchangeRate,
@@ -70,6 +74,8 @@ internal class InvoiceService(
 
                 invoice.SetDiscounts(request.InvoiceDiscounts.Select(x =>
                     InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
+
+                invoice.SetPriceUnit(targetPriceUnit);
 
                 #endregion
 
