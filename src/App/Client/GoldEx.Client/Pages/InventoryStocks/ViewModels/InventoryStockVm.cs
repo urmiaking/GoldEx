@@ -19,6 +19,8 @@ public class InventoryStockVm
 
     public DateTime DateTime { get; set; }
 
+    public bool ShowDetails { get; set; }
+
     public static InventoryStockVm CreateFrom(GetInventoryStockResponse response)
     {
         return new InventoryStockVm
