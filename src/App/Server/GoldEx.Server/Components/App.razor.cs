@@ -16,6 +16,6 @@ public partial class App
         if (HttpContext.Request.Path.StartsWithSegments("/ssr"))
             return RenderMode.InteractiveServer;
 
-        return new InteractiveWebAssemblyRenderMode(false);
+        return new InteractiveAutoRenderMode(true);
     }
 }
