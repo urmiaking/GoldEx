@@ -87,7 +87,8 @@ public partial class ReverseCalculator
                     _model.PriceUnit = response.FirstOrDefault(x => x.IsDefault);
                     await OnPriceUnitChanged(_model.PriceUnit);
                 }
-            });
+            },
+            createScope: true);
     }
 
     private async Task LoadSettingsAsync()
@@ -105,7 +106,8 @@ public partial class ReverseCalculator
 
                 _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 _model.TaxPercent = _settings?.TaxPercent ?? 10;
-            });
+            },
+            createScope: true);
     }
 
     private async Task LoadGramPriceAsync()
@@ -119,7 +121,8 @@ public partial class ReverseCalculator
                 _model.GramPrice = gramPriceValue;
 
                 StateHasChanged();
-            });
+            },
+            createScope: true);
     }
 
     #endregion
@@ -187,7 +190,8 @@ public partial class ReverseCalculator
                 {
                     item.FinalPrice = await CalculateFinalPriceAsync(item, _model.PriceUnit);
                 }
-            });
+            },
+            createScope: true);
         return result;
     }
 

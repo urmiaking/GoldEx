@@ -374,4 +374,15 @@ public class ApiUrls
         public static string CompleteMelting(Guid id) =>
             BuildUrl(ApiRoutes.MeltingBatches.Base, ApiRoutes.MeltingBatches.CompleteMelting).FormatRoute(new { id });
     }
+
+    public class BarcodeInquiries
+    {
+        public static string GetList(string? barcode) =>
+            BuildUrl(ApiRoutes.BarcodeInquiries.Base, ApiRoutes.BarcodeInquiries.GetList)
+                .AppendQueryString(new { barcode });
+
+        public static string Inquiry(string barcode) =>
+            BuildUrl(ApiRoutes.BarcodeInquiries.Base, ApiRoutes.BarcodeInquiries.Inquiry)
+                .FormatRoute(new { barcode });
+    }
 }
