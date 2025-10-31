@@ -9,6 +9,7 @@
 }
 
 <MudTable T="InventoryStockVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
           MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
@@ -195,7 +196,7 @@
                                     WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                                }
+                            }
                             else
                             {
                                 @(context.Product.WageType switch
@@ -204,7 +205,7 @@
                                     WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                                }
+                            }
                         }
 
                     </MudTooltip>
@@ -258,6 +259,22 @@
                 break;
         }
     </RowTemplate>
+    <ChildRowContent>
+        <MudTr Class="mud-table-row-child">
+            <td colspan="10">
+                <MudCollapse Expanded="@context.ShowDetails">
+                    @if (context.ShowDetails)
+                    {
+                        <MudCard Elevation="2" Class="m-2">
+                            <MudCardContent>
+                                <InventoryStockTraceList ItemId="@GetItemId(context)" ItemType="@GetItemType(context)" />
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudCollapse>
+            </td>
+        </MudTr>
+    </ChildRowContent>
     <NoRecordsContent>
         <MudText>هیچ جنسی در انبار یافت نشد</MudText>
     </NoRecordsContent>

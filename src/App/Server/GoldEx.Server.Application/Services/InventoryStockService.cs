@@ -328,5 +328,23 @@ internal class InventoryStockService(
         };
     }
 
+    public async Task<PagedList<GetInventoryStockTraceResponse>> GetInventoryStockTracesAsync(Guid itemId, ItemType itemType, RequestFilter requestFilter,
+        CancellationToken cancellationToken = default)
+    {
+        var spec = new InventoryStocksForTraceSpecification(itemId, itemType, requestFilter);
+
+        var items = await repository.Get(spec).ToListAsync(cancellationToken);
+
+        var total = await repository.CountAsync(spec, cancellationToken);
+
+        return new PagedList<GetInventoryStockTraceResponse>
+        {
+            Data = mapper.Map<List<GetInventoryStockTraceResponse>>(items),
+            Total = total,
+            Skip = requestFilter.Skip ?? 0,
+            Take = requestFilter.Take ?? 100
+        };
+    }
+
     #endregion
 }

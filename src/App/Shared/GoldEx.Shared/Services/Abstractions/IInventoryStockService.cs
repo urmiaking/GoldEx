@@ -19,4 +19,9 @@ public interface IInventoryStockService
     Task<PagedList<GetInventoryStockItemResponse>> GetInvoiceInventoryItemsAsync(Guid invoiceId,
         RequestFilter requestFilter,
         CancellationToken cancellationToken = default);
+
+    Task<PagedList<GetInventoryStockTraceResponse>> GetInventoryStockTracesAsync(Guid itemId,
+        ItemType itemType,
+        RequestFilter requestFilter,
+        CancellationToken cancellationToken = default);
 }
