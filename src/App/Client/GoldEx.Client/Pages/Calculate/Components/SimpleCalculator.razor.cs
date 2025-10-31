@@ -156,7 +156,8 @@ public partial class SimpleCalculator
                 _model.GramPrice = gramPriceValue;
 
                 StateHasChanged();
-            });
+            },
+            createScope: true);
     }
 
     #endregion
@@ -461,7 +462,7 @@ public partial class SimpleCalculator
         ResetCalculations();
     }
 
-    private async void ResetModel()
+    private void ResetModel()
     {
         _model.Weight = 1;
         _model.Fineness = 750m;
@@ -473,7 +474,6 @@ public partial class SimpleCalculator
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
 
         _applySafetyMargin = true;
-        await LoadGramPriceAsync();
     }
 
     private void ResetCalculations()
