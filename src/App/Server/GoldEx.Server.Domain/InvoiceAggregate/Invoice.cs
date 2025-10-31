@@ -392,4 +392,9 @@ public class Invoice : EntityBase<InvoiceId>
     {
         InvoicePayments = finalPayments;
     }
+
+    public void SetPriceUnit(PriceUnit priceUnit)
+    {
+        PriceUnit = priceUnit;
+    }
 }
