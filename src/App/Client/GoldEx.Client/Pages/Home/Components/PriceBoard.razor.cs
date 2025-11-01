@@ -73,7 +73,7 @@ public partial class PriceBoard
     private async void TimerCallback(object? state)
     {
         await LoadPricesAsync();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     public override async ValueTask DisposeAsync()

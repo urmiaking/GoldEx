@@ -68,6 +68,7 @@ public class Setting : EntityBase<SettingsId>
     public decimal UsedGoldFinenessDeductionRate { get; private set; }
     public decimal GramPerMesghal { get; private set; }
     public TimeSpan PriceUpdateInterval { get; private set; }
+    public BarcodePrintSettings? BarcodePrintSettings { get; private set; }
 
     public void SetInstitutionName(string institutionName) => InstitutionName = institutionName;
     public void SetAddress(string address) => Address = address;
@@ -117,5 +118,15 @@ public class Setting : EntityBase<SettingsId>
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0, nameof(gramPerMesghal));
         GramPerMesghal = gramPerMesghal;
+    }
+
+    public void UpdateBarcodePrintSettings(BarcodePrintSettings barcodePrintSettings)
+    {
+        BarcodePrintSettings = barcodePrintSettings ?? throw new ArgumentNullException(nameof(barcodePrintSettings));
+    }
+
+    public void InitializeBarcodePrintSettings()
+    {
+        BarcodePrintSettings ??= BarcodePrintSettings.CreateDefault();
     }
 }
