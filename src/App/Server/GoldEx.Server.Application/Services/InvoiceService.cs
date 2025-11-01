@@ -32,6 +32,7 @@ internal class InvoiceService(
     IAccountingTransactionService transactionService,
     IServerInventoryStockService inventoryStockService,
     IServerInvoicePaymentService invoicePaymentService,
+    IFinancialAccountService financialAccountService,
     IMapper mapper,
     ILogger<InvoiceService> logger,
     InvoiceRequestDtoValidator validator,
@@ -266,7 +267,19 @@ internal class InvoiceService(
             .Include(x => x.PriceUnit!.Price!)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        return mapper.Map<GetInvoiceResponse>(item);
+        var result = mapper.Map<GetInvoiceResponse>(item);
+
+        var updatedPayments = new List<GetInvoicePaymentResponse>();
+        foreach (var payment in result.InvoicePayments)
+        {
+            var priceUnitId = payment.PriceUnit.Id;
+            var financialAccounts = await financialAccountService
+                .GetTitlesAsync(null, priceUnitId, cancellationToken);
+
+            updatedPayments.Add(payment with { FinancialAccounts = financialAccounts });
+        }
+
+        return result with { InvoicePayments = updatedPayments };
     }
 
     public async Task<GetInvoiceResponse> GetAsync(long invoiceNumber, InvoiceType invoiceType,
