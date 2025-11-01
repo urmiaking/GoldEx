@@ -79,10 +79,7 @@ public class InvoicesMappingConfig : IRegister
             .Map(dest => dest.VoucherId, src =>
                 src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
             .Map(dest => dest.FinancialAccount, src => src.SourceFinancialAccount)
-            .Map(dest => dest.Endorser, src => 
-                src.LedgerAccount != null && src.LedgerAccount.Customer != null ? src.LedgerAccount.Customer : null)
-            .Map(dest => dest.FinancialAccounts,
-                src => MapContext.Current.GetService<IFinancialAccountService>()
-                    .GetTitlesAsync(null, src.PriceUnitId.Value, CancellationToken.None).GetAwaiter().GetResult());
+            .Map(dest => dest.Endorser, src =>
+                src.LedgerAccount != null && src.LedgerAccount.Customer != null ? src.LedgerAccount.Customer : null);
     }
 }
