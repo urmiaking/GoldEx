@@ -108,6 +108,9 @@ public class ApiUrls
     {
         public static string Get() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Get);
         public static string Update() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.Update);
+
+        public static string GetBarcodePrintSettings() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.GetBarcodePrintSettings);
+        public static string UpdateBarcodePrintSettings() => BuildUrl(ApiRoutes.Settings.Base, ApiRoutes.Settings.UpdateBarcodePrintSettings);
     }
 
     public class ProductCategories

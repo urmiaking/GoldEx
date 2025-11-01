@@ -61,6 +61,8 @@ public static class ApiRoutes
         public const string Base = "/api/Settings";
         public const string Get = "";
         public const string Update = "";
+        public const string GetBarcodePrintSettings = "barcode-print";
+        public const string UpdateBarcodePrintSettings = "barcode-print";
     }
 
     public class ProductCategories

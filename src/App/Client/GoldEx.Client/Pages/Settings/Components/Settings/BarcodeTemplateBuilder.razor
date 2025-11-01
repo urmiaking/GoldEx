@@ -1,0 +1,292 @@
+﻿@inherits GoldExComponentBase
+
+@if (_isLoading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+<MudGrid>
+    <!-- پنل تنظیمات -->
+    <MudItem xs="12" md="3">
+        <MudPaper Elevation="24" Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-4">تنظیمات برچسب</MudText>
+
+            <MudNumericField @bind-Value="_settings.LabelWidth"
+                             Label="عرض برچسب (پیکسل)"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Min="100"
+                             Max="1000" 
+                             Class="mb-3" />
+
+            <MudNumericField @bind-Value="_settings.LabelHeight"
+                             Label="ارتفاع برچسب (پیکسل)"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Min="50"
+                             Max="500"
+                             Class="mb-4" />
+
+            <MudDivider Class="mb-4" />
+
+            <MudText Typo="Typo.subtitle1" Class="mb-2">حاشیه خارجی (Margin)</MudText>
+            <MudGrid Spacing="2" Class="mb-4">
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.MarginTop"
+                                     Label="بالا"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.MarginRight"
+                                     Label="راست"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.MarginBottom"
+                                     Label="پایین"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.MarginLeft"
+                                     Label="چپ"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="mb-4" />
+
+            <MudText Typo="Typo.subtitle1" Class="mb-2">فاصله داخلی (Padding)</MudText>
+            <MudGrid Spacing="2" Class="mb-4">
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.PaddingTop"
+                                     Label="بالا"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.PaddingRight"
+                                     Label="راست"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.PaddingBottom"
+                                     Label="پایین"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_settings.PaddingLeft"
+                                     Label="چپ"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="mb-4" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Success"
+                       FullWidth="true"
+                       OnClick="SaveSettings"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_isLoading">
+                ذخیره تنظیمات
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <!-- محیط طراحی - سمت چپ -->
+    <MudItem xs="12" md="9">
+        <MudDropContainer T="BarcodePositionItemVm"
+                          Items="_allItems"
+                          ItemsSelector="ItemSelector"
+                          ItemDropped="OnItemDropped"
+                          CanDrop="CanDrop"
+                          CanDropClass="can-drop"
+                          NoDropClass="no-drop">
+
+            <ChildContent>
+                <MudGrid>
+                    <!-- Toolbox - سمت راست -->
+                    <MudItem xs="12" md="3">
+                        <MudPaper Elevation="24" Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-3">آیتم‌های قابل چاپ</MudText>
+                            <MudText Typo="Typo.caption" Class="mb-3" Color="Color.Secondary">
+                                آیتم را انتخاب کرده و به سمت چپ بکشید
+                            </MudText>
+
+                            <MudDropZone T="BarcodePositionItemVm"
+                                         Identifier="Toolbox"
+                                         Class="toolbox-zone pa-3">
+                                <MudStack Spacing="2">
+                                </MudStack>
+                            </MudDropZone>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Preview - سمت چپ -->
+                    <MudItem xs="12" md="9">
+                        <MudPaper Elevation="24" Class="pa-4">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                                <MudText Typo="Typo.h6">پیش‌نمایش</MudText>
+
+                                <!-- کنترل زوم -->
+                                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ZoomOut"
+                                                   Size="Size.Small"
+                                                   OnClick="() => AdjustZoom(-0.1)"
+                                                   Disabled="_zoomLevel <= 0.5"
+                                                   Title="کوچک‌تر" />
+
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                        @((_zoomLevel * 100).ToString("F0"))%
+                                    </MudChip>
+
+                                    <MudIconButton Icon="@Icons.Material.Filled.ZoomIn"
+                                                   Size="Size.Small"
+                                                   OnClick="() => AdjustZoom(0.1)"
+                                                   Disabled="_zoomLevel >= 2.0"
+                                                   Title="بزرگ‌تر" />
+
+                                    <MudIconButton Icon="@Icons.Material.Filled.FitScreen"
+                                                   Size="Size.Small"
+                                                   OnClick="ResetZoom"
+                                                   Title="بازنشانی" />
+                                </MudStack>
+                            </MudStack>
+
+                            <MudText Typo="Typo.caption" Class="mb-2" Color="Color.Secondary">
+                                ابعاد واقعی: @_settings.LabelWidth × @_settings.LabelHeight پیکسل
+                            </MudText>
+
+                            <!-- Preview Area -->
+                            <div class="preview-scroll-container d-flex justify-content-center">
+                                <div class="preview-content" style="transform: scale(@_zoomLevel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)); transform-origin: top center;">
+                                    <div class="label-preview-box" style="width: 600px; height: auto; min-height: 213px; border: 2px dashed #999; position: relative; background: white; padding: @(_settings.PaddingTop)px @(_settings.PaddingRight)px @(_settings.PaddingBottom)px @(_settings.PaddingLeft)px;">
+
+                                        <!-- Top Left Zone -->
+                                        <div style="position: absolute; top: @(_settings.PaddingTop)px; left: @(_settings.PaddingLeft)px; max-width: 45%;">
+                                            <MudDropZone T="BarcodePositionItemVm"
+                                                         Identifier="@BarcodePosition.TopLeft.ToString()"
+                                                         Class="drop-zone-compact"
+                                                         AllowReorder="true">
+                                                <MudText Typo="Typo.caption" Class="position-label-compact">
+                                                    @GetPositionLabel(BarcodePosition.TopLeft)
+                                                </MudText>
+                                            </MudDropZone>
+                                        </div>
+
+                                        <!-- Top Right Zone -->
+                                        <div style="position: absolute; top: @(_settings.PaddingTop)px; right: @(_settings.PaddingRight)px; max-width: 45%;">
+                                            <MudDropZone T="BarcodePositionItemVm"
+                                                         Identifier="@BarcodePosition.TopRight.ToString()"
+                                                         Class="drop-zone-compact"
+                                                         AllowReorder="true">
+                                                <MudText Typo="Typo.caption" Class="position-label-compact">
+                                                    @GetPositionLabel(BarcodePosition.TopRight)
+                                                </MudText>
+                                            </MudDropZone>
+                                        </div>
+
+                                        <!-- Bottom Left Zone -->
+                                        <div style="position: absolute; bottom: @(_settings.PaddingBottom)px; left: @(_settings.PaddingLeft)px; max-width: 45%;">
+                                            <MudDropZone T="BarcodePositionItemVm"
+                                                         Identifier="@BarcodePosition.BottomLeft.ToString()"
+                                                         Class="drop-zone-compact"
+                                                         AllowReorder="true">
+                                                <MudText Typo="Typo.caption" Class="position-label-compact">
+                                                    @GetPositionLabel(BarcodePosition.BottomLeft)
+                                                </MudText>
+                                            </MudDropZone>
+                                        </div>
+
+                                        <!-- Bottom Right Zone -->
+                                        <div style="position: absolute; bottom: @(_settings.PaddingBottom)px; right: @(_settings.PaddingRight)px; max-width: 45%;">
+                                            <MudDropZone T="BarcodePositionItemVm"
+                                                         Identifier="@BarcodePosition.BottomRight.ToString()"
+                                                         Class="drop-zone-compact"
+                                                         AllowReorder="true">
+                                                <MudText Typo="Typo.caption" Class="position-label-compact">
+                                                    @GetPositionLabel(BarcodePosition.BottomRight)
+                                                </MudText>
+                                            </MudDropZone>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       FullWidth="true"
+                                       OnClick="PrintTestBarcode"
+                                       StartIcon="@Icons.Material.Filled.Print"
+                                       Class="mt-3"
+                                       Disabled="_isLoading">
+                                چاپ تست
+                            </MudButton>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </ChildContent>
+
+            <ItemRenderer>
+                <div @key="@context.UniqueKey">
+                    @if (context.IsInToolbox)
+                    {
+                        <MudPaper Elevation="1" Class="pa-3 mb-2 toolbox-item">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@context.GetIcon()" Color="@context.GetColor()" />
+                                <MudText Typo="Typo.body2">@context.GetLabel()</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Size="Size.Small" Class="mr-auto" />
+                            </MudStack>
+                        </MudPaper>
+                    }
+                    else
+                    {
+                        <MudPaper Elevation="2" Class="pa-2 mb-2 preview-item">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@context.GetIcon()" Size="Size.Small" Color="Color.Primary" />
+                                    <MudText Typo="Typo.caption">@context.GetLabel()</MudText>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@context.FontSize px</MudChip>
+                                </MudStack>
+
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                                                   Size="Size.Small"
+                                                   OnClick="() => ConfigureItem(context)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="() => RemoveItem(context)" />
+                                </MudStack>
+                            </MudStack>
+                        </MudPaper>
+                    }
+                </div>
+            </ItemRenderer>
+        </MudDropContainer>
+    </MudItem>
+</MudGrid>

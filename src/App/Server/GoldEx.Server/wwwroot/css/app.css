@@ -295,3 +295,106 @@ h1:focus {
 .mud-collapse-container {
     transition: grid-template-rows 500ms ease-in-out !important;
 }
+
+/* Barcode Template Builder */
+.preview-scroll-container {
+    width: 100%;
+    max-height: 600px;
+    overflow: auto;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.preview-content {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.label-preview-box {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 4px;
+}
+
+.toolbox-zone {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e3e8ef 100%);
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+}
+
+    .toolbox-zone.mud-drop-zone-drag-over {
+        background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+        border-color: #00acc1;
+    }
+
+.toolbox-item {
+    cursor: grab;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+    .toolbox-item:hover {
+        transform: translateX(-4px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .toolbox-item:active {
+        cursor: grabbing;
+    }
+
+.drop-zone-compact {
+    min-height: 40px;
+    padding: 8px;
+    border: 1px dashed #999;
+    border-radius: 4px;
+    background: rgba(33, 150, 243, 0.03);
+}
+
+    .drop-zone-compact.mud-drop-zone-drag-over {
+        background: rgba(33, 150, 243, 0.15);
+        border-color: #2196f3;
+        border-width: 2px;
+    }
+
+.position-label-compact {
+    font-size: 9px;
+    opacity: 0.6;
+    user-select: none;
+}
+
+.preview-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: grab;
+}
+
+    .preview-item:active {
+        cursor: grabbing;
+    }
+
+.can-drop {
+    cursor: copy !important;
+}
+
+.no-drop {
+    cursor: no-drop !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .barcode-preview-wrapper {
+        width: 100% !important;
+        max-width: 500px;
+    }
+
+    .position-wrapper {
+        max-width: 45% !important;
+        min-width: 100px !important; /* ✅ جدید */
+    }
+
+    .drop-zone {
+        min-height: 50px;
+        padding: 6px;
+    }
+}
+/* End Barcode template builder */

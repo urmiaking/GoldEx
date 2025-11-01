@@ -1,0 +1,17 @@
+﻿@attribute [Route(ClientRoutes.Settings.BarcodeBuilder)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@using GoldEx.Client.Pages.Settings.Components.Settings
+@inherits GoldExComponentBase
+
+<PageTitle>طراحی قالب بارکد</PageTitle>
+
+<div class="d-flex align-center justify-space-between">
+    <MudText Typo="Typo.h6" GutterBottom="true">طراحی قالب بارکد</MudText>
+</div>
+<MudDivider Class="my-2" />
+
+<BarcodeTemplateBuilder />
+
+<script src="/js/libs/jsbarcode.all.min.js"></script>
+<script src="/js/print.js?v=@_jsVersion"></script>
