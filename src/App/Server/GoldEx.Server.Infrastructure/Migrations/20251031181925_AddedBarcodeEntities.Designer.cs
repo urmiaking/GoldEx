@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251031181925_AddedBarcodeEntities")]
+    partial class AddedBarcodeEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2185,54 +2188,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                                     b2.WithOwner()
                                         .HasForeignKey("BarcodePrintSettingsId");
-
-                                    b2.OwnsOne("GoldEx.Server.Domain.SettingAggregate.ValueObjects.BarcodeDisplaySettings", "BarcodeSettings", b3 =>
-                                        {
-                                            b3.Property<Guid>("BarcodePositionItemId")
-                                                .HasColumnType("uniqueidentifier");
-
-                                            b3.Property<DateTime>("CreatedAt")
-                                                .HasColumnType("datetime2");
-
-                                            b3.Property<bool>("DisplayValue")
-                                                .ValueGeneratedOnAdd()
-                                                .HasColumnType("bit")
-                                                .HasDefaultValue(true)
-                                                .HasColumnName("BarcodeDisplayValue");
-
-                                            b3.Property<int>("FontSize")
-                                                .ValueGeneratedOnAdd()
-                                                .HasColumnType("int")
-                                                .HasDefaultValue(14)
-                                                .HasColumnName("BarcodeFontSize");
-
-                                            b3.Property<int>("Height")
-                                                .ValueGeneratedOnAdd()
-                                                .HasColumnType("int")
-                                                .HasDefaultValue(50)
-                                                .HasColumnName("BarcodeHeight");
-
-                                            b3.Property<int>("Margin")
-                                                .ValueGeneratedOnAdd()
-                                                .HasColumnType("int")
-                                                .HasDefaultValue(0)
-                                                .HasColumnName("BarcodeMargin");
-
-                                            b3.Property<int>("Width")
-                                                .ValueGeneratedOnAdd()
-                                                .HasColumnType("int")
-                                                .HasDefaultValue(2)
-                                                .HasColumnName("BarcodeWidth");
-
-                                            b3.HasKey("BarcodePositionItemId");
-
-                                            b3.ToTable("BarcodePositionItems");
-
-                                            b3.WithOwner()
-                                                .HasForeignKey("BarcodePositionItemId");
-                                        });
-
-                                    b2.Navigation("BarcodeSettings");
                                 });
 
                             b1.OwnsOne("GoldEx.Server.Domain.SettingAggregate.ValueObjects.BarcodeMargin", "Margin", b2 =>

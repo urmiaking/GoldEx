@@ -1,10 +1,10 @@
-﻿using System.Globalization;
-using GoldEx.Client.Pages.InventoryStocks.ViewModels;
+﻿using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.ProductCategories;
+using GoldEx.Shared.DTOs.Settings.Barcodes;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
@@ -12,6 +12,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
+using System.Globalization;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -40,6 +41,7 @@ public partial class InventoryStockList
     private bool _inventoryStatus;
     private List<ProductCategoryVm> _categories = [];
     private ProductCategoryVm? _categoryFilter;
+    private GetBarcodePrintSettingsResponse? _settings;
 
     private string DateRangeFilterLabel => ItemStatus switch
     {
@@ -110,8 +112,18 @@ public partial class InventoryStockList
         if (firstRender)
         {
             await LoadCategoriesAsync();
+            await LoadBarcodeSettingsAsync();
         }
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task LoadBarcodeSettingsAsync()
+    {
+        await SendRequestAsync<IBarcodePrintSettingsService, GetBarcodePrintSettingsResponse>(
+            action: (s, token) => s.GetAsync(token),
+            afterSend: response => _settings = response,
+            createScope: true
+        );
     }
 
     private async Task LoadCategoriesAsync()
@@ -187,20 +199,61 @@ public partial class InventoryStockList
 
     private async Task OnPrintBarcode(InventoryStockVm item)
     {
-        var labelData = new
+        if (_settings is null)
         {
-            text = item.Product?.Barcode,
-            name = item.Product?.Name,
-            weight = "وزن: " + item.CurrentAmount.ToString("G29") + $"{(item.Product?.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: " + item.Product?.WageType switch
+            AddWarningToast("تنظیمات بارکد لود نشده است");
+            return;
+        }
+
+        // تبدیل به فرمت JavaScript
+        var settingsForJs = new
+        {
+            labelWidth = _settings.LabelWidth,
+            labelHeight = _settings.LabelHeight,
+            marginTop = _settings.MarginTop,
+            marginRight = _settings.MarginRight,
+            marginBottom = _settings.MarginBottom,
+            marginLeft = _settings.MarginLeft,
+            paddingTop = _settings.PaddingTop,
+            paddingRight = _settings.PaddingRight,
+            paddingBottom = _settings.PaddingBottom,
+            paddingLeft = _settings.PaddingLeft,
+            positionItems = _settings.PositionItems.Select(x => new
             {
-                WageType.Fixed => $"{item.Product?.Wage?.ToCurrencyFormat(item.Product?.WagePriceUnitTitle)}",
-                WageType.Percent => item.Product?.Wage?.ToString("G29") + "%",
-                _ => "ندارد"
-            }
+                position = x.Position.ToString(),
+                itemType = x.ItemType.ToString(),
+                order = x.Order,
+                isVisible = x.IsVisible,
+                fontSize = x.FontSize,
+                itemSpacing = x.ItemSpacing,
+                barcodeSettings = x.BarcodeSettings != null
+                    ? new
+                    {
+                        width = x.BarcodeSettings.Width,
+                        height = x.BarcodeSettings.Height,
+                        displayValue = x.BarcodeSettings.DisplayValue,
+                        fontSize = x.BarcodeSettings.FontSize,
+                        margin = x.BarcodeSettings.Margin
+                    }
+                    : null
+            }).ToArray()
         };
 
-        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
+        // داده‌های واقعی محصول
+        var data = new
+        {
+            barcode = item.Product?.Barcode ?? "",
+            productName = item.Product?.Name ?? "",
+            weight = $"وزن: {item.CurrentAmount:G29}{(item.Product?.GoldUnitType == GoldUnitType.Gram ? "g" : "m")}",
+            wage = "اجرت: " + (item.Product?.WageType switch
+            {
+                WageType.Fixed => $"{item.Product?.Wage?.ToCurrencyFormat(item.Product?.WagePriceUnitTitle)}",
+                WageType.Percent => $"{item.Product?.Wage:G29}%",
+                _ => "ندارد"
+            })
+        };
+
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", settingsForJs, data);
     }
 
     private async Task SetStatusFilterText(ItemStatus filterType)
