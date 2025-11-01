@@ -124,11 +124,11 @@ internal static class ServiceCollectionExtensions
         services.AddSqlServer<GoldExDbContext>(connectionString, options =>
         {
             options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            options.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorNumbersToAdd: null
-            );
+            //options.EnableRetryOnFailure(
+            //    maxRetryCount: 5,
+            //    maxRetryDelay: TimeSpan.FromSeconds(10),
+            //    errorNumbersToAdd: null
+            //);
         });
 
         return services;
