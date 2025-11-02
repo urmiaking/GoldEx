@@ -158,8 +158,7 @@ internal class InventoryStockRepository(
                             // Sold = فقط خروج‌های فروش و نه برگشتی‌ها
                             SoldQuantity = g.Where(s =>
                                     s.ActionType == WarehouseActionType.Out &&
-                                    s.InvoiceId != null &&
-                                    s.Invoice!.InvoiceType == InvoiceType.Sell &&
+                                    ((s.InvoiceId != null && s.Invoice!.InvoiceType == InvoiceType.Sell) || s.MeltingBatchId != null) &&
                                     s.ReverseInventoryStockId == null
                                 )
                                 .Sum(s =>

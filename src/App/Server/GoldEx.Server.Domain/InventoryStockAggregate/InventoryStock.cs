@@ -41,7 +41,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
     public static InventoryStock CreateMeltingBatchProduct(
         ProductId productId,
-        int changeAmount,
+        decimal changeAmount,
         WarehouseActionType actionType,
         MeltingBatchId batchId,
         DateTime? postingDate = null)

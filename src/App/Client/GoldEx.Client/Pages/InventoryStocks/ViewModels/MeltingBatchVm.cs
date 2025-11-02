@@ -82,41 +82,6 @@ public class MeltingBatchVm
         };
     }
 
-    public (GoldUnitType selectedUnit, decimal totalWeight) GetWeightParams(decimal? gramPerMesghal)
-    {
-        decimal? totalWeight;
-        GoldUnitType selectedUnit;
-
-        var gramBasedProducts = Products.Where(p => p.GoldUnitType == GoldUnitType.Gram).ToList();
-        var mesghalBasedProducts = Products.Where(p => p.GoldUnitType == GoldUnitType.Mesghal).ToList();
-
-        var mesghalToGramFactor = gramPerMesghal ?? 4.6083m;
-
-        if (gramBasedProducts.Count > mesghalBasedProducts.Count)
-        {
-            selectedUnit = GoldUnitType.Gram;
-            var gramWeights = gramBasedProducts.Sum(p => p.Weight);
-            var convertedMesghalWeights = mesghalBasedProducts.Sum(p => p.Weight * mesghalToGramFactor);
-            totalWeight = gramWeights + convertedMesghalWeights;
-        }
-        else if (mesghalBasedProducts.Count > gramBasedProducts.Count)
-        {
-            selectedUnit = GoldUnitType.Mesghal;
-            var mesghalWeights = mesghalBasedProducts.Sum(p => p.Weight);
-            var convertedGramWeights = gramBasedProducts.Sum(p => p.Weight / mesghalToGramFactor);
-            totalWeight = mesghalWeights + convertedGramWeights;
-        }
-        else
-        {
-            selectedUnit = GoldUnitType.Gram;
-            var gramWeights = gramBasedProducts.Sum(p => p.Weight);
-            var convertedMesghalWeights = mesghalBasedProducts.Sum(p => p.Weight * mesghalToGramFactor);
-            totalWeight = gramWeights + convertedMesghalWeights;
-        }
-
-        return (selectedUnit, totalWeight ?? 0);
-    }
-
     public MeltingBatchRequestDto ToMeltingRequest()
     {
         return new MeltingBatchRequestDto(Products.Select(x => x.Id!.Value).ToList());

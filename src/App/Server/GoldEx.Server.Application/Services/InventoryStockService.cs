@@ -3,11 +3,9 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.InventoryStocks;
-using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
-using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
@@ -212,7 +210,9 @@ internal class InventoryStockService(
 
         foreach (var productId in productIds)
         {
-            var inventoryStocks = InventoryStock.CreateMeltingBatchProduct(productId, 1, WarehouseActionType.Out, meltingBatchId);
+            var currentQuantity = await repository.GetQuantityAsync(productId, cancellationToken);
+
+            var inventoryStocks = InventoryStock.CreateMeltingBatchProduct(productId, currentQuantity, WarehouseActionType.Out, meltingBatchId);
             inventoryItems.Add(inventoryStocks);
         }
 

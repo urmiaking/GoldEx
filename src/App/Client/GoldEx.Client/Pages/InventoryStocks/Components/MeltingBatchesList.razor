@@ -83,21 +83,23 @@
             @switch (context.CurrentStatus)
             {
                 case MeltingBatchStatus.Melting:
-                    <MudTooltip Text="ارسال به آزمایشگاه" Placement="Placement.Top">
-                        <MudIconButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Science"
-                                       OnClick="() => OnProcessBatch(context.Id)"></MudIconButton>
-                    </MudTooltip>
+                    <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.Science"
+                               OnClick="() => OnProcessBatch(context.Id)">
+                        ارسال به آزمایشگاه
+                    </MudButton>
                     break;
                 case MeltingBatchStatus.SentToLab:
-                    <MudTooltip Text="برآورد وزن نهایی" Placement="Placement.Top">
-                        <MudIconButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Check"
-                                       OnClick="() => OnProcessBatch(context.Id)"></MudIconButton>
-                    </MudTooltip>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" StartIcon="@Icons.Material.Filled.Check"
+                               OnClick="() => OnProcessBatch(context.Id)">
+                        برآورد وزن نهایی
+                    </MudButton>
                     break;
                 case MeltingBatchStatus.Completed:
                     <MudTooltip Text="مشاهده جزئیات" Placement="Placement.Top">
-                        <MudIconButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.RemoveRedEye"
-                                       OnClick="() => context.ShowDetails = !context.ShowDetails"></MudIconButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.RemoveRedEye"
+                                       OnClick="() => context.ShowDetails = !context.ShowDetails">
+                            مشاهده جزئیات
+                        </MudButton>
                     </MudTooltip>
                     break;
                 default:
@@ -142,7 +144,7 @@
                                     <MudTd DataLabel="بارکد">@ProductContext.Barcode</MudTd>
                                     <MudTd DataLabel="نوع جنس">@ProductContext.ProductType.GetDisplayName()</MudTd>
                                     <MudTd DataLabel="عنوان">@ProductContext.Name</MudTd>
-                                    <MudTd DataLabel="وزن">@ProductContext.Weight.ToWeightFormat(context.WeightUnitType)</MudTd>
+                                    <MudTd DataLabel="وزن">@Math.Abs(ProductContext.Weight).ToWeightFormat(context.WeightUnitType)</MudTd>
                                     <MudTd DataLabel="عیار">@ProductContext.Fineness.ToString("G29")</MudTd>
                                 </RowTemplate>
                             </MudTable>
@@ -196,7 +198,7 @@
                                     <MudText>کسری ذوب: @context.WasteWeight?.ToWeightFormat(context.WeightUnitType) (@context.WastePercentage?.ToString("0.##")%)</MudText>
                                 </div>
                             }
-                            @if(context.Transactions is not null && context.Transactions.Any())
+                            @if (context.Transactions is not null && context.Transactions.Any())
                             {
                                 <MudTable Items="context.Transactions" Context="TransactionContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Class="w-100 mt-4">
                                     <ToolBarContent>
