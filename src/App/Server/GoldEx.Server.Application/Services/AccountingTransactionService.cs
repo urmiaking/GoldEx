@@ -855,7 +855,7 @@ internal class AccountingTransactionService(
             // تراکنش Debit: ثبت در COGS (هزینه خروج برای محاسبه کسر ذوب)
             var debitTransaction = Transaction.CreateForMeltingBatch(
                 description: TransactionDescriptionBuilder.ForMeltingBatchCogs(meltingBatch, product, invoice),
-                amount: amount,
+                amount: baseCurrencyAmount,
                 exchangeRate: invoice.ExchangeRate,
                 baseCurrencyAmount: baseCurrencyAmount,
                 transactionType: TransactionType.Debit,
@@ -869,7 +869,7 @@ internal class AccountingTransactionService(
             // تراکنش Credit: کاهش موجودی Inventory
             var creditTransaction = Transaction.CreateForMeltingBatch(
                 description: TransactionDescriptionBuilder.ForMeltingBatchInventoryExit(meltingBatch, product, invoice),
-                amount: amount,
+                amount: baseCurrencyAmount,
                 exchangeRate: invoice.ExchangeRate,
                 baseCurrencyAmount: baseCurrencyAmount,
                 transactionType: TransactionType.Credit,
