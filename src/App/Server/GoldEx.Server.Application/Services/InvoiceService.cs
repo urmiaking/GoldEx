@@ -18,6 +18,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 
 namespace GoldEx.Server.Application.Services;
@@ -99,6 +100,9 @@ internal class InvoiceService(
                             ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
                             : null,
                         new PriceUnitId(currencyItemDto.CurrencyId),
+                        currencyItemDto.FinancialAccountId.HasValue
+                            ? new FinancialAccountId(currencyItemDto.FinancialAccountId.Value)
+                            : null,
                         currencyItemDto.UnitPrice,
                         currencyItemDto.Amount,
                         currencyItemDto.TaxPercent,
@@ -185,10 +189,13 @@ internal class InvoiceService(
                         ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
                         : null,
                     new PriceUnitId(currencyItemDto.CurrencyId),
+                    currencyItemDto.FinancialAccountId.HasValue
+                        ? new FinancialAccountId(currencyItemDto.FinancialAccountId.Value)
+                        : null,
                     currencyItemDto.UnitPrice,
                     currencyItemDto.Amount,
                     currencyItemDto.TaxPercent,
-                    currencyItemDto.ProfitPercent); 
+                    currencyItemDto.ProfitPercent);
             }
 
             await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
@@ -265,6 +272,8 @@ internal class InvoiceService(
             .Include(x => x.UsedProducts)
                 .ThenInclude(x => x.Product)
             .Include(x => x.PriceUnit!.Price!)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.FinancialAccount)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         var result = mapper.Map<GetInvoiceResponse>(item);

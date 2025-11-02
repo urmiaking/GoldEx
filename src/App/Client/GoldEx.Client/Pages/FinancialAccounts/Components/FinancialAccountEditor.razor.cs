@@ -25,6 +25,8 @@ public partial class FinancialAccountEditor
     [Parameter] public bool SubmitIndependently { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
     [Parameter] public bool IsSystemAccount { get; set; }
+    [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
+    [Parameter] public FinancialAccountType? AccountType { get; set; }
 
     private readonly FinancialAccountValidator _financialAccountValidator = new();
     private MudForm _form = default!;
@@ -41,6 +43,9 @@ public partial class FinancialAccountEditor
         if (IsSystemAccount)
             Model.IsSystemAccount = true;
 
+        if (AccountType.HasValue)
+            OnAccountTypeChanged(AccountType.Value);
+
         base.OnParametersSet();
     }
 
@@ -49,7 +54,7 @@ public partial class FinancialAccountEditor
         if (!PriceUnits.Any())
             await LoadPriceUnitsAsync();
 
-        Model.PriceUnit ??= PriceUnits.FirstOrDefault(x => x.IsDefault);
+        Model.PriceUnit ??= PriceUnit ??= PriceUnits.FirstOrDefault(x => x.IsDefault);
 
         await base.OnParametersSetAsync();
     }
@@ -111,13 +116,13 @@ public partial class FinancialAccountEditor
                 Model.InternationalBankAccount = new InternationalBankAccountVm();
                 Model.LocalBankAccount = null;
                 Model.CashAccount = null;
-                Model.PriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault);
+                Model.PriceUnit = PriceUnit ?? PriceUnits.FirstOrDefault(x => x.IsDefault);
                 break;
             case FinancialAccountType.Cash:
                 Model.CashAccount = new CashAccountVm();
                 Model.InternationalBankAccount = null;
                 Model.LocalBankAccount = null;
-                Model.PriceUnit = PriceUnits.FirstOrDefault(x => x.IsDefault);
+                Model.PriceUnit = PriceUnit ?? PriceUnits.FirstOrDefault(x => x.IsDefault);
                 break;
             case FinancialAccountType.Gold:
                 Model.CashAccount = null;

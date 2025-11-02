@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Helpers;
 
@@ -7,7 +8,7 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceCurrencyItemId(Guid Value);
 public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
 {
-    private InvoiceCurrencyItem(InvoiceCurrencyItemId id, PriceUnitId currencyId, decimal unitPrice, decimal amount,
+    private InvoiceCurrencyItem(InvoiceCurrencyItemId id, PriceUnitId currencyId, FinancialAccountId? financialAccountId, decimal unitPrice, decimal amount,
         decimal taxPercent, decimal profitPercent)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0, nameof(unitPrice));
@@ -18,6 +19,7 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
 
         Id = id;
         CurrencyId = currencyId;
+        FinancialAccountId = financialAccountId;
         UnitPrice = unitPrice;
         Amount = amount;
         ProfitPercent = profitPercent;
@@ -30,16 +32,20 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
 
     internal static InvoiceCurrencyItem Create(InvoiceCurrencyItemId? id,
         PriceUnitId currencyId,
+        FinancialAccountId? financialAccountId,
         decimal unitPrice,
         decimal amount,
         decimal taxPercent,
         decimal profitPercent)
     {
-        return new InvoiceCurrencyItem(id ?? new InvoiceCurrencyItemId(Guid.NewGuid()), currencyId, unitPrice, amount, taxPercent, profitPercent);
+        return new InvoiceCurrencyItem(id ?? new InvoiceCurrencyItemId(Guid.NewGuid()), currencyId, financialAccountId, unitPrice, amount, taxPercent, profitPercent);
     }
 
     public PriceUnitId CurrencyId { get; private set; }
     public PriceUnit? Currency { get; private set; }
+
+    public FinancialAccountId? FinancialAccountId { get; private set; }
+    public FinancialAccount? FinancialAccount { get; private set; }
 
     public decimal UnitPrice { get; private set; }
     public decimal Amount { get; private set; }

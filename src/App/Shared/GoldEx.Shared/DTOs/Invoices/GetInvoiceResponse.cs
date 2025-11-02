@@ -82,7 +82,8 @@ public record GetInvoiceCurrencyItemResponse(
     decimal Amount,
     decimal TaxPercent,
     decimal ProfitPercent,
-    GetPriceUnitTitleResponse Currency);
+    GetPriceUnitTitleResponse Currency,
+    GetFinancialAccountTitleResponse? FinancialAccount);
 
 public record GetInvoiceCoinItemResponse(
     Guid Id,

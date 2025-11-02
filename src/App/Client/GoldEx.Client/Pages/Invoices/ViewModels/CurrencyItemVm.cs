@@ -2,6 +2,7 @@
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -72,6 +73,10 @@ public class CurrencyItemVm
     public decimal FinalAmount { get; set; }
     public decimal TotalAmount { get; set; }
 
+    [Display(Name = "واریز به حساب")]
+    [Required(ErrorMessage = "لطفا {0} را مشخص کنید")]
+    public GetFinancialAccountTitleResponse? FinancialAccount { get; set; }
+
     /// <summary>
     /// This method performs the client-side calculation and updates the display properties.
     /// It's called whenever an input property changes.
@@ -106,7 +111,8 @@ public class CurrencyItemVm
             currencyItem.Amount,
             currencyItem.ProfitPercent,
             currencyItem.TaxPercent,
-            currencyItem.Currency.Id);
+            currencyItem.Currency.Id,
+            currencyItem.FinancialAccount?.Id);
     }
 
     public static CurrencyItemVm CreateFrom(GetInvoiceCurrencyItemResponse response)
@@ -118,7 +124,8 @@ public class CurrencyItemVm
             ProfitPercent = response.ProfitPercent,
             TaxPercent = response.TaxPercent,
             Amount = response.Amount,
-            Currency = response.Currency
+            Currency = response.Currency,
+            FinancialAccount = response.FinancialAccount
         };
     }
 
@@ -129,6 +136,7 @@ public class CurrencyItemVm
         ProfitPercent = coinItem.ProfitPercent;
         Amount = coinItem.Amount;
         Currency = coinItem.Currency;
+        FinancialAccount = coinItem.FinancialAccount;
         TaxPercent = coinItem.TaxPercent;
         ShowDetails = coinItem.ShowDetails;
     }
