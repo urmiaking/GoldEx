@@ -1,137 +1,144 @@
 ﻿<MudDialog>
     <DialogContent>
-        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
-
-            @if (Item.ItemType == BarcodePrintableItem.Barcode)
-            {
-                <!-- تنظیمات خاص بارکد -->
-                <MudAlert Severity="Severity.Info"
-                          Dense="true"
-                          Class="mb-4"
-                          ContentAlignment="HorizontalAlignment.Start">
-                    <MudText Typo="Typo.subtitle2">تنظیمات ظاهری بارکد</MudText>
-                </MudAlert>
-
-                <MudGrid Spacing="3">
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="Item.BarcodeWidth"
-                                         Label="عرض خط بارکد"
-                                         Variant="Variant.Outlined"
-                                         Margin="Margin.Dense"
-                                         Min="1"
-                                         Max="5"
-                                         HelperText="پیشنهاد: 2"
-                                         Adornment="Adornment.End"
-                                         AdornmentText="px" />
-                    </MudItem>
-
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="Item.BarcodeHeight"
-                                         Label="ارتفاع بارکد"
-                                         Variant="Variant.Outlined"
-                                         Margin="Margin.Dense"
-                                         Min="20"
-                                         Max="200"
-                                         HelperText="پیشنهاد: 50"
-                                         Adornment="Adornment.End"
-                                         AdornmentText="px" />
-                    </MudItem>
-
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="Item.BarcodeFontSize"
-                                         Label="اندازه فونت متن"
-                                         Variant="Variant.Outlined"
-                                         Margin="Margin.Dense"
-                                         Min="8"
-                                         Max="24"
-                                         Disabled="!Item.BarcodeDisplayValue"
-                                         HelperText="پیشنهاد: 14"
-                                         Adornment="Adornment.End"
-                                         AdornmentText="px" />
-                    </MudItem>
-
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="Item.BarcodeMargin"
-                                         Label="حاشیه داخلی"
-                                         Variant="Variant.Outlined"
-                                         Margin="Margin.Dense"
-                                         Min="0"
-                                         Max="50"
-                                         HelperText="پیشنهاد: 0"
-                                         Adornment="Adornment.End"
-                                         AdornmentText="px" />
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <MudSwitch @bind-Value="Item.BarcodeDisplayValue"
-                                   Label="نمایش متن زیر بارکد"
-                                   Color="Color.Primary"
-                                   Class="mt-2" />
-                    </MudItem>
-                </MudGrid>
-
-                <MudDivider Class="my-4" />
-            }
-
-            <!-- تنظیمات عمومی -->
-            <MudAlert Severity="Severity.Normal"
+        @if (Item.ItemType == BarcodePrintableItem.Barcode)
+        {
+            <!-- تنظیمات خاص بارکد -->
+            <MudAlert Severity="Severity.Info"
                       Dense="true"
                       Class="mb-4"
                       ContentAlignment="HorizontalAlignment.Start">
-                <MudText Typo="Typo.subtitle2">تنظیمات عمومی</MudText>
+                <MudText Typo="Typo.subtitle2">تنظیمات ظاهری بارکد</MudText>
             </MudAlert>
 
             <MudGrid Spacing="3">
                 <MudItem xs="12" sm="6">
-                    <MudNumericField @bind-Value="Item.FontSize"
-                                     Label="اندازه فونت"
+                    <MudNumericField @bind-Value="Item.BarcodeWidth"
+                                     Label="عرض خط بارکد"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Min="1"
+                                     Max="5"
+                                     dir="ltr"
+                                     HelperText="پیشنهاد: 2"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudNumericField @bind-Value="Item.BarcodeHeight"
+                                     Label="ارتفاع بارکد"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Min="20"
+                                     Max="200"
+                                     dir="ltr"
+                                     HelperText="پیشنهاد: 50"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudNumericField @bind-Value="Item.BarcodeFontSize"
+                                     Label="اندازه فونت متن"
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Min="8"
                                      Max="24"
-                                     Disabled="@(Item.ItemType == BarcodePrintableItem.Barcode)"
+                                     dir="ltr"
+                                     Disabled="!Item.BarcodeDisplayValue"
+                                     HelperText="پیشنهاد: 14"
                                      Adornment="Adornment.End"
                                      AdornmentText="px" />
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudNumericField @bind-Value="Item.ItemSpacing"
-                                     Label="فاصله از آیتم بعدی"
+                    <MudNumericField @bind-Value="Item.BarcodeMargin"
+                                     Label="حاشیه داخلی"
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Min="0"
-                                     Max="20"
+                                     Max="50"
+                                     dir="ltr"
+                                     HelperText="پیشنهاد: 0"
                                      Adornment="Adornment.End"
                                      AdornmentText="px" />
                 </MudItem>
 
-                <MudItem xs="12" sm="6">
-                    <MudNumericField @bind-Value="Item.Order"
-                                     Label="ترتیب نمایش"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Min="0"
-                                     Max="10"
-                                     HelperText="عدد کوچکتر بالاتر نمایش داده می‌شود" />
-                </MudItem>
-
-                <MudItem xs="12" sm="6" Class="d-flex align-center">
-                    <MudSwitch @bind-Value="Item.IsVisible"
-                               Label="نمایش در برچسب"
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="Item.BarcodeDisplayValue"
+                               Label="نمایش متن زیر بارکد"
                                Color="Color.Primary"
                                Class="mt-2" />
                 </MudItem>
             </MudGrid>
 
-        </MudContainer>
+            <MudDivider Class="my-4" />
+        }
+
+        <!-- تنظیمات عمومی -->
+        <MudAlert Severity="Severity.Normal"
+                  Dense="true"
+                  Class="mb-4"
+                  ContentAlignment="HorizontalAlignment.Start">
+            <MudText Typo="Typo.subtitle2">تنظیمات عمومی</MudText>
+        </MudAlert>
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="Item.FontSize"
+                                 Label="اندازه فونت"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Min="8"
+                                 Max="24"
+                                 dir="ltr"
+                                 Disabled="@(Item.ItemType == BarcodePrintableItem.Barcode)"
+                                 Adornment="Adornment.End"
+                                 AdornmentText="px" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="Item.ItemSpacing"
+                                 Label="فاصله از آیتم بعدی"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Min="0"
+                                 Max="20"
+                                 dir="ltr"
+                                 Adornment="Adornment.End"
+                                 AdornmentText="px" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="Item.Order"
+                                 Label="ترتیب نمایش"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Min="0"
+                                 Max="10"
+                                 dir="ltr"
+                                 HelperText="عدد کوچکتر بالاتر نمایش داده می‌شود" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6" Class="d-flex align-center">
+                <MudSwitch @bind-Value="Item.IsVisible"
+                           Label="نمایش در برچسب"
+                           Color="Color.Primary"
+                           Class="mt-2" />
+            </MudItem>
+        </MudGrid>
+
     </DialogContent>
 
     <DialogActions>
         <MudButton OnClick="Cancel"
-                   Variant="Variant.Text">
+                   Variant="Variant.Text"
+                   Color="Color.Error"
+                   StartIcon="@Icons.Material.Filled.Close">
             لغو
         </MudButton>
         <MudButton Color="Color.Primary"
+                   Class="m-2"
                    Variant="Variant.Filled"
                    OnClick="Submit"
                    StartIcon="@Icons.Material.Filled.Check">

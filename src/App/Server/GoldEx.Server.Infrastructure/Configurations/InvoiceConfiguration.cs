@@ -149,6 +149,11 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .WithMany()
             .HasForeignKey(x => x.CurrencyId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.FinancialAccount)
+            .WithMany()
+            .HasForeignKey(x => x.FinancialAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceCoinItem> builder)

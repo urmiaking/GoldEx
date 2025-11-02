@@ -15,6 +15,7 @@
                              Margin="Margin.Dense"
                              Label="@($"نرخ {_model.UnitType.GetDisplayName()}")"
                              T="decimal"
+                             dir="ltr"
                              Value="@_model.GramPrice"
                              ValueChanged="OnGramPriceChanged"
                              Variant="Variant.Outlined"></MudNumericField>
