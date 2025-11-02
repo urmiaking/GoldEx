@@ -12,17 +12,23 @@
             <MudText Typo="Typo.h6" Class="mb-4">تنظیمات برچسب</MudText>
 
             <MudNumericField @bind-Value="_settings.LabelWidth"
-                             Label="عرض برچسب (پیکسل)"
+                             Label="عرض برچسب"
                              Variant="Variant.Outlined"
                              Margin="Margin.Dense"
+                             Adornment="Adornment.End"
+                             AdornmentText="px"
+                             dir="ltr"
                              Min="100"
                              Max="1000" 
                              Class="mb-3" />
 
             <MudNumericField @bind-Value="_settings.LabelHeight"
-                             Label="ارتفاع برچسب (پیکسل)"
+                             Label="ارتفاع برچسب"
                              Variant="Variant.Outlined"
                              Margin="Margin.Dense"
+                             Adornment="Adornment.End"
+                             AdornmentText="px"
+                             dir="ltr"
                              Min="50"
                              Max="500"
                              Class="mb-4" />
@@ -37,6 +43,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
                 <MudItem xs="6">
@@ -45,6 +54,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
                 <MudItem xs="6">
@@ -53,6 +65,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
                 <MudItem xs="6">
@@ -61,6 +76,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
             </MudGrid>
@@ -75,6 +93,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
                 <MudItem xs="6">
@@ -83,6 +104,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
                 <MudItem xs="6">
@@ -91,6 +115,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
                 <MudItem xs="6">
@@ -99,6 +126,9 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Immediate="true"
+                                     dir="ltr"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="px"
                                      Min="0" />
                 </MudItem>
             </MudGrid>
@@ -183,7 +213,7 @@
                             <!-- Preview Area -->
                             <div class="preview-scroll-container d-flex justify-content-center">
                                 <div class="preview-content" style="transform: scale(@_zoomLevel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)); transform-origin: top center;">
-                                    <div class="label-preview-box" style="width: 600px; height: auto; min-height: 213px; border: 2px dashed #999; position: relative; background: white; padding: @(_settings.PaddingTop)px @(_settings.PaddingRight)px @(_settings.PaddingBottom)px @(_settings.PaddingLeft)px;">
+                                    <div class="label-preview-box" style="width: 450px; height: auto; min-height: 213px; border: 2px dashed #999; position: relative; background: white; padding: @(_settings.PaddingTop)px @(_settings.PaddingRight)px @(_settings.PaddingBottom)px @(_settings.PaddingLeft)px;">
 
                                         <!-- Top Left Zone -->
                                         <div style="position: absolute; top: @(_settings.PaddingTop)px; left: @(_settings.PaddingLeft)px; max-width: 45%;">
