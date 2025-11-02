@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.NotificationAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -197,12 +198,13 @@ public class Invoice : EntityBase<InvoiceId>
 
     public void AddCurrencyItem(InvoiceCurrencyItemId? id,
         PriceUnitId currencyId,
+        FinancialAccountId? financialAccountId,
         decimal unitPrice,
         decimal amount,
         decimal taxPercent,
         decimal profitPercent)
     {
-        _currencies.Add(InvoiceCurrencyItem.Create(id, currencyId, unitPrice, amount, taxPercent, profitPercent));
+        _currencies.Add(InvoiceCurrencyItem.Create(id, currencyId, financialAccountId, unitPrice, amount, taxPercent, profitPercent));
     }
 
     public void ClearCurrencyItems() => _currencies.Clear();

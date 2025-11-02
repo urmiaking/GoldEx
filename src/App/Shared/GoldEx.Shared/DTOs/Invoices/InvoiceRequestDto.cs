@@ -97,7 +97,8 @@ public record InvoiceCurrencyItemDto(
     decimal Amount,
     decimal ProfitPercent,
     decimal TaxPercent,
-    Guid CurrencyId);
+    Guid CurrencyId,
+    Guid? FinancialAccountId);
 
 public record InvoiceExtraCostsDto(decimal Amount, decimal? ExchangeRate, string? Description, Guid PriceUnitId);
 

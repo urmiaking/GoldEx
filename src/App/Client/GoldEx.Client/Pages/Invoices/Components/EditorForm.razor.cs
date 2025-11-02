@@ -525,7 +525,8 @@ public partial class EditorForm
     {
         var parameters = new DialogParameters<CurrencyItemEditor>
         {
-            { x => x.PriceUnit, _model.InvoicePriceUnit }
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.InvoiceType, _model.InvoiceType }
         };
 
         var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("افزودن ارز جدید", parameters, _dialogOptions);
@@ -545,7 +546,8 @@ public partial class EditorForm
         var parameters = new DialogParameters<CurrencyItemEditor>
         {
             { x => x.Model, currencyItemVm },
-            { x => x.PriceUnit, _model.InvoicePriceUnit }
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.InvoiceType, _model.InvoiceType }
         };
         var dialog = await DialogService.ShowAsync<CurrencyItemEditor>("ویرایش ارز", parameters, _dialogOptions);
         var result = await dialog.Result;
