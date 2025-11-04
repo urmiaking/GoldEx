@@ -334,6 +334,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetTraces)
                 .FormatRoute(new { itemId, itemType })
                 .AppendQueryString(requestFilter);
+
+        public static string GetAvailableItemAmount(Guid itemId, ItemType itemType) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableItemAmount)
+                .FormatRoute(new { itemId, itemType });
     }
 
     public class Transactions
@@ -347,6 +351,9 @@ public class ApiUrls
                 .AppendQueryString(transactionFilter)
                 .AppendQueryString(requestFilter);
 
+        public static string GetFinancialAccountBalance(Guid financialAccountId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetFinancialAccountBalance)
+                .FormatRoute(new { financialAccountId });
     }
 
     public class Notifications

@@ -3,12 +3,16 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.InventoryStocks;
+using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
@@ -315,7 +319,10 @@ internal class InventoryStockService(
     {
         var spec = new InventoryStocksByInvoiceFilterSpecification(new InvoiceId(invoiceId), requestFilter);
 
-        var items = await repository.Get(spec).ToListAsync(cancellationToken);
+        var items = await repository.Get(spec)
+            .Include(x => x.Invoice!.CurrencyItems)
+                .ThenInclude(x => x.FinancialAccount)
+            .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
 
@@ -333,7 +340,10 @@ internal class InventoryStockService(
     {
         var spec = new InventoryStocksForTraceSpecification(itemId, itemType, requestFilter);
 
-        var items = await repository.Get(spec).ToListAsync(cancellationToken);
+        var items = await repository.Get(spec)
+            .Include(x => x.Invoice!.CurrencyItems)
+                .ThenInclude(x => x.FinancialAccount)
+            .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
 
@@ -344,6 +354,25 @@ internal class InventoryStockService(
             Skip = requestFilter.Skip ?? 0,
             Take = requestFilter.Take ?? 100
         };
+    }
+
+    public async Task<GetInventoryStockAmountResponse> GetAvailableItemAmountAsync(Guid itemId, ItemType itemType, CancellationToken cancellationToken = default)
+    {
+        var amount = 0m;
+
+        switch (itemType)
+        {
+            case ItemType.Coin:
+                amount = await repository.GetQuantityAsync(new CoinId(itemId), cancellationToken);
+                break;
+            case ItemType.Currency:
+                amount = await repository.GetQuantityAsync(new PriceUnitId(itemId), cancellationToken);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
+        }
+
+        return new GetInventoryStockAmountResponse(amount);
     }
 
     #endregion

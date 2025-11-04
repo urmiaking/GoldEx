@@ -3,10 +3,12 @@ using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -78,5 +80,27 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
             .ToDictionaryAsync(result => result.PriceUnit!, result => result.Balance, cancellationToken);
 
         return balances;
+    }
+
+    public async Task<(decimal qty, decimal baseAmount, decimal avgRate)> GetLedgerPositionSummaryAsync(LedgerAccountId ledgerAccountId,
+        CancellationToken cancellationToken = default)
+    {
+        var q = Query
+            .Where(x => x.LedgerAccountId == ledgerAccountId && x.ReverseTransactionId == null)
+            .OrderByDescending(x => x.PostingDate)
+            .AsNoTracking();
+
+        // Qty: بدهکار + ، بستانکار -
+        var qtySum = await q
+            .Select(t => t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount)
+            .SumAsync(cancellationToken);
+
+        // Base: از BaseCurrencyAmount جمع با علامت مشابه
+        var baseSum = await q
+            .Select(t => (t.TransactionType == TransactionType.Debit ? t.BaseCurrencyAmount : -t.BaseCurrencyAmount))
+            .SumAsync(cancellationToken);
+
+        var avg = qtySum != 0 ? baseSum / qtySum : 0;
+        return (qtySum, baseSum, avg);
     }
 }

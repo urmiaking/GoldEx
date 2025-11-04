@@ -27,6 +27,9 @@ internal class InvoiceCurrencyItemDtoValidator : AbstractValidator<InvoiceCurren
         RuleFor(x => x.CurrencyId)
             .NotEmpty().WithMessage("لطفا ارز را انتخاب کنید")
             .MustAsync(BeValidCurrency).WithMessage("ارز انتخابی نامعتبر است");
+
+        RuleFor(x => x.FinancialAccountId)
+            .NotEmpty().WithMessage("لطفا حساب مالی را انتخاب کنید");
     }
 
     private async Task<bool> BeValidCurrency(Guid priceUnitId, CancellationToken cancellationToken = default)
