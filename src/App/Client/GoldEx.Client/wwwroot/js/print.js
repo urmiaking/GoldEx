@@ -225,7 +225,7 @@ function generateDynamicBarcodeHtml(settings, data) {
                 }
                 
                 body {
-                    font-family: 'Tahoma', sans-serif;
+                    font-family: "IRANSans", "B Homa", "B Nazanin" Tahoma, sans-serif;
                     direction: rtl;
                     background: white;
                     display: flex;

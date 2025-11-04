@@ -39,33 +39,26 @@ public static class ColorPalettes
         {
             Black = "#1C2526",
             AppbarText = "#1C2526",
-            AppbarBackground = "#FDF5E6",
-            DrawerBackground = "#FAF0E6",
+            AppbarBackground = "#FAF9F6",
+            DrawerBackground = "#F7F5F0",
             GrayLight = "#D3D3D3",
-            GrayLighter = "#F5F5F5",
-
-            Primary = "#DAA520",
-            Secondary = "#DAA520",
-
-            Background = "#FAF0E6",
-            Surface = "#FDF5E6",
-
+            GrayLighter = "#F8F8F8",
+            Primary = "#C9A227",           
+            Secondary = "#C9A227",
+            Background = "#FAFAF8",        
+            Surface = "#F9F8F5",           
             TextPrimary = "#1C2526",
-            TextSecondary = "#B8860B",
+            TextSecondary = "#B8860B",     
             TextDisabled = "#B8860B80",
-
-            ActionDefault = "#DAA520",
-            ActionDisabled = "#DAA52080",
-            ActionDisabledBackground = "#FDF5E680",
-
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#FFD700",
-            Error = "#ff3f5f",
-
-            Divider = "#B8860B"
+            ActionDefault = "#C9A227",
+            ActionDisabled = "#C9A22780",
+            ActionDisabledBackground = "#F9F8F580",
+            Info = "#4A86FF",
+            Success = "#3DCB6C",
+            Warning = "#EACD2F",           
+            Error = "#FF3F5F",
+            Divider = "#D8CBA0"            
         };
-
         theme.PaletteDark = new PaletteDark
         {
             Primary = "#DAA520",
@@ -79,14 +72,11 @@ public static class ColorPalettes
             ActionDefault = "#DAA520",
             ActionDisabled = "#DAA52080",
             ActionDisabledBackground = "#B8860B80",
-
             TextPrimary = "#FDF5E6",
             TextSecondary = "#E6B800",
             TextDisabled = "#E6B80080",
-
             DrawerIcon = "#FDF5E6",
             DrawerText = "#FDF5E6",
-
             GrayLight = "#4A4F50",
             GrayLighter = "#2A2A2A",
             Info = "#4a86ff",
@@ -105,40 +95,58 @@ public static class ColorPalettes
         var theme = CreateBaseTheme();
         theme.PaletteLight = new PaletteLight
         {
-            Primary = "#1565c0",
-            Secondary = "#4fc3f7",
-            Background = "#e8f0fe",
-            Surface = "#edf5fd",
-            AppbarBackground = "#90caf9",
-            AppbarText = "#0d1b2a",
-            DrawerBackground = "#e3f2fd",
-            TextPrimary = "#0d1b2a",
-            TextSecondary = "#1565c0",
-            TextDisabled = "#1565c080",
-            Divider = "#1565c0",
-            Info = "#2196f3",
-            Success = "#4caf50",
-            Warning = "#ff9800",
-            Error = "#f44336"
+            Primary = "#1E88E5",         
+            Secondary = "#64B5F6",        
+            Background = "#F7FAFF",       
+            Surface = "#F3F8FE",          
+            AppbarBackground = "#E3F2FD", 
+            AppbarText = "#0D1B2A",
+            DrawerBackground = "#F1F6FC", 
+            TextPrimary = "#0D1B2A",      
+            TextSecondary = "#1E88E5",    
+            TextDisabled = "#1E88E580",   
+            Divider = "#B0C9E6",          
+            Info = "#42A5F5",             
+            Success = "#43A047",          
+            Warning = "#FFB300",          
+            Error = "#E53935"             
         };
+
         theme.PaletteDark = new PaletteDark
         {
-            Primary = "#64b5f6",
-            Secondary = "#1e88e5",
-            Background = "#1e2a44",
-            Surface = "#263559",
-            AppbarBackground = "#263559",
-            AppbarText = "#e3f2fd",
-            DrawerBackground = "#1e2a44",
-            TextPrimary = "#e3f2fd",
-            TextSecondary = "#bbdefb",
-            TextDisabled = "#bbdefb80",
-            Divider = "#64b5f6",
-            Info = "#2196f3",
-            Success = "#4caf50",
-            Warning = "#ffb74d",
-            Error = "#ef5350"
+            Primary = "#1976D2",           
+            Secondary = "#1565C0",         
+            Surface = "#1E1E1E",
+            Background = "#121212",
+            BackgroundGray = "#2A2A2A",
+
+            AppbarText = "#E3F2FD",        
+            AppbarBackground = "#1E1E1E",
+            DrawerBackground = "#121212",
+
+            ActionDefault = "#1976D2",
+            ActionDisabled = "#1976D280",
+            ActionDisabledBackground = "#1E1E1E80",
+
+            TextPrimary = "#E3F2FD",       
+            TextSecondary = "#64B5F6",     
+            TextDisabled = "#64B5F680",
+
+            DrawerIcon = "#E3F2FD",
+            DrawerText = "#E3F2FD",
+
+            GrayLight = "#4A4F50",
+            GrayLighter = "#2A2A2A",
+
+            Info = "#4A86FF",
+            Success = "#3DCB6C",
+            Warning = "#FFB74D",
+            Error = "#EF5350",
+
+            Divider = "#1976D2",
+            OverlayLight = "#12121280"
         };
+
         return theme;
     }
 
@@ -147,40 +155,59 @@ public static class ColorPalettes
         var theme = CreateBaseTheme();
         theme.PaletteLight = new PaletteLight
         {
-            Primary = "#2f6b31",
-            Secondary = "#81c784",
-            Background = "#e9f4ec",
-            Surface = "#edf7ee",
-            AppbarBackground = "#a5d6a7",
-            AppbarText = "#1b5e20",
-            DrawerBackground = "#edf7ee",
-            TextPrimary = "#1b5e20",
-            TextSecondary = "#388e3c",
-            TextDisabled = "#388e3c80",
-            Divider = "#388e3c",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#fbc02d",
-            Error = "#d32f2f"
+            Primary = "#388E3C",
+            Secondary = "#81C784",
+            Background = "#F7FBF8",
+            Surface = "#F3F8F4",
+            AppbarBackground = "#C8E6C9",
+            AppbarText = "#1C1C1C",        
+            DrawerBackground = "#F5FAF6",
+            TextPrimary = "#1C1C1C",       
+            TextSecondary = "#2E7D32",     
+            TextDisabled = "#2E7D3280",
+            Divider = "#A5D6A7",
+            Info = "#4A86FF",
+            Success = "#43A047",
+            Warning = "#FBC02D",
+            Error = "#E53935"
         };
+
         theme.PaletteDark = new PaletteDark
         {
-            Primary = "#80de88",
-            Secondary = "#388e3c",
-            Background = "#1a2f24",
-            Surface = "#2a4a38",
-            AppbarBackground = "#2a4a38",
-            AppbarText = "#c8e6c9",
-            DrawerBackground = "#1a2f24",
-            TextPrimary = "#c8e6c9",
-            TextSecondary = "#81c784",
-            TextDisabled = "#81c78480",
-            Divider = "#80de88",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#fdd835",
-            Error = "#ef5350"
+            Primary = "#43A047",            
+            Secondary = "#2E7D32",          
+            Surface = "#1E1E1E",
+            Background = "#121212",
+            BackgroundGray = "#2A2A2A",
+
+            AppbarText = "#E8F5E9",         
+            AppbarBackground = "#1E1E1E",
+            DrawerBackground = "#121212",
+
+            ActionDefault = "#43A047",
+            ActionDisabled = "#43A04780",
+            ActionDisabledBackground = "#1E1E1E80",
+
+            TextPrimary = "#E8F5E9",       
+            TextSecondary = "#66BB6A",  
+            TextDisabled = "#66BB6A80",
+
+            DrawerIcon = "#E8F5E9",
+            DrawerText = "#E8F5E9",
+
+            GrayLight = "#4A4F50",
+            GrayLighter = "#2A2A2A",
+
+            Info = "#4A86FF",
+            Success = "#3DCB6C",
+            Warning = "#FDD835",
+            Error = "#EF5350",
+
+            Divider = "#43A047",
+            OverlayLight = "#12121280"
         };
+
+
         return theme;
     }
 
@@ -189,40 +216,59 @@ public static class ColorPalettes
         var theme = CreateBaseTheme();
         theme.PaletteLight = new PaletteLight
         {
-            Primary = "#7b1fa2",
-            Secondary = "#ce93d8",
-            Background = "#f3e8fa",
-            Surface = "#f5e8fb",
-            AppbarBackground = "#d1c4e9",
-            AppbarText = "#311b92",
-            DrawerBackground = "#ede7f6",
-            TextPrimary = "#311b92",
-            TextSecondary = "#7b1fa2",
-            TextDisabled = "#7b1fa280",
-            Divider = "#7b1fa2",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#ffb300",
-            Error = "#d32f2f"
+            Primary = "#8E24AA",
+            Secondary = "#BA68C8",
+            Background = "#F9F6FB",
+            Surface = "#F5F0FA",
+            AppbarBackground = "#E1BEE7",
+            AppbarText = "#1C1C1C",        
+            DrawerBackground = "#F6F2FA",
+            TextPrimary = "#1C1C1C",       
+            TextSecondary = "#6A1B9A",     
+            TextDisabled = "#6A1B9A80",
+            Divider = "#C7A9D6",
+            Info = "#4A86FF",
+            Success = "#43A047",
+            Warning = "#FBC02D",
+            Error = "#E53935"
         };
+
         theme.PaletteDark = new PaletteDark
         {
-            Primary = "#ce93d8",
-            Secondary = "#8e24aa",
-            Background = "#23112f",
-            Surface = "#3a1e4a",
-            AppbarBackground = "#3a1e4a",
-            AppbarText = "#e1bee7",
-            DrawerBackground = "#23112f",
-            TextPrimary = "#e1bee7",
-            TextSecondary = "#ce93d8",
-            TextDisabled = "#ce93d880",
-            Divider = "#ce93d8",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#fbc02d",
-            Error = "#ef5350"
+            Primary = "#AB47BC",            
+            Secondary = "#7B1FA2",          
+            Surface = "#1E1E1E",
+            Background = "#121212",
+            BackgroundGray = "#2A2A2A",
+
+            AppbarText = "#E1BEE7",         
+            AppbarBackground = "#1E1E1E",
+            DrawerBackground = "#121212",
+
+            ActionDefault = "#AB47BC",
+            ActionDisabled = "#AB47BC80",
+            ActionDisabledBackground = "#1E1E1E80",
+
+            TextPrimary = "#F3E5F5",        
+            TextSecondary = "#AB47BC",      
+            TextDisabled = "#AB47BC80",
+
+            DrawerIcon = "#F3E5F5",
+            DrawerText = "#F3E5F5",
+
+            GrayLight = "#4A4F50",
+            GrayLighter = "#2A2A2A",
+
+            Info = "#4A86FF",
+            Success = "#3DCB6C",
+            Warning = "#FBC02D",
+            Error = "#EF5350",
+
+            Divider = "#AB47BC",
+            OverlayLight = "#12121280"
         };
+
+
         return theme;
     }
 
@@ -231,40 +277,57 @@ public static class ColorPalettes
         var theme = CreateBaseTheme();
         theme.PaletteLight = new PaletteLight
         {
-            Primary = "#d32f2f",
-            Secondary = "#ff6f60",
-            Background = "#ffe8e8",
-            Surface = "#ffefee",
-            AppbarBackground = "#ffab91",
-            AppbarText = "#b71c1c",
-            DrawerBackground = "#ffefee",
-            TextPrimary = "#b71c1c",
-            TextSecondary = "#d32f2f",
-            TextDisabled = "#d32f2f80",
-            Divider = "#d32f2f",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#ff9800",
-            Error = "#d32f2f"
+            Primary = "#D32F2F",           
+            Secondary = "#FF8A80",         
+            Background = "#FFF6F6",        
+            Surface = "#FFF9F8",           
+            AppbarBackground = "#FFCDD2",  
+            AppbarText = "#1C1C1C",        
+            DrawerBackground = "#FFF9F8",
+            TextPrimary = "#1C1C1C",       
+            TextSecondary = "#C62828",     
+            TextDisabled = "#C6282880",    
+            Divider = "#E57373",           
+            Info = "#4A86FF",
+            Success = "#43A047",
+            Warning = "#FBC02D",
+            Error = "#E53935"
         };
         theme.PaletteDark = new PaletteDark
         {
-            Primary = "#ff8a80",
-            Secondary = "#e53935",
-            Background = "#2a1b1b",
-            Surface = "#3b1e1e",
-            AppbarBackground = "#3b1e1e",
-            AppbarText = "#ffcdd2",
-            DrawerBackground = "#2a1b1b",
-            TextPrimary = "#ffcdd2",
-            TextSecondary = "#ff8a80",
-            TextDisabled = "#ff8a8080",
-            Divider = "#ff8a80",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#ffb74d",
-            Error = "#ef5350"
+            Primary = "#D32F2F",            
+            Secondary = "#B71C1C",          
+            Surface = "#1E1E1E",
+            Background = "#121212",
+            BackgroundGray = "#2A2A2A",
+
+            AppbarText = "#FFCDD2",         
+            AppbarBackground = "#1E1E1E",
+            DrawerBackground = "#121212",
+
+            ActionDefault = "#D32F2F",
+            ActionDisabled = "#D32F2F80",
+            ActionDisabledBackground = "#1E1E1E80",
+
+            TextPrimary = "#FFEBEE",        
+            TextSecondary = "#EF5350",      
+            TextDisabled = "#EF535080",
+
+            DrawerIcon = "#FFEBEE",
+            DrawerText = "#FFEBEE",
+
+            GrayLight = "#4A4F50",
+            GrayLighter = "#2A2A2A",
+
+            Info = "#4A86FF",
+            Success = "#3DCB6C",
+            Warning = "#FFB74D",
+            Error = "#EF5350",
+
+            Divider = "#D32F2F",
+            OverlayLight = "#12121280"
         };
+
         return theme;
     }
 
@@ -273,40 +336,58 @@ public static class ColorPalettes
         var theme = CreateBaseTheme();
         theme.PaletteLight = new PaletteLight
         {
-            Primary = "#f57c00",
-            Secondary = "#ffa726",
-            Background = "#fff1e6",
-            Surface = "#fff5e8",
-            AppbarBackground = "#ffcc80",
-            AppbarText = "#e65100",
-            DrawerBackground = "#fff5e8",
-            TextPrimary = "#e65100",
-            TextSecondary = "#f57c00",
-            TextDisabled = "#f57c0080",
-            Divider = "#f57c00",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#ff9800",
-            Error = "#d32f2f"
+            Primary = "#F57C00",           
+            Secondary = "#FFB74D",         
+            Background = "#FFF8F2",        
+            Surface = "#FFF9F4",           
+            AppbarBackground = "#FFE0B2",  
+            AppbarText = "#1C1C1C",        
+            DrawerBackground = "#FFF9F4",
+            TextPrimary = "#1C1C1C",       
+            TextSecondary = "#E65100",     
+            TextDisabled = "#E6510080",
+            Divider = "#FFB74D",           
+            Info = "#4A86FF",
+            Success = "#43A047",
+            Warning = "#FBC02D",
+            Error = "#E53935"
         };
+
         theme.PaletteDark = new PaletteDark
         {
-            Primary = "#ffb300",
-            Secondary = "#f57c00",
-            Background = "#2f1f0a",
-            Surface = "#3e2a12",
-            AppbarBackground = "#3e2a12",
-            AppbarText = "#ffe0b2",
-            DrawerBackground = "#2f1f0a",
-            TextPrimary = "#ffe0b2",
-            TextSecondary = "#ffb300",
-            TextDisabled = "#ffb30080",
-            Divider = "#ffb300",
-            Info = "#4a86ff",
-            Success = "#3dcb6c",
-            Warning = "#ffb300",
-            Error = "#ef5350"
+            Primary = "#FB8C00",           
+            Secondary = "#EF6C00",         
+            Surface = "#1E1E1E",
+            Background = "#121212",
+            BackgroundGray = "#2A2A2A",
+
+            AppbarText = "#FFE0B2",        
+            AppbarBackground = "#1E1E1E",
+            DrawerBackground = "#121212",
+
+            ActionDefault = "#FB8C00",
+            ActionDisabled = "#FB8C0080",
+            ActionDisabledBackground = "#1E1E1E80",
+
+            TextPrimary = "#FFF3E0",       
+            TextSecondary = "#FB8C00",     
+            TextDisabled = "#FB8C0080",
+
+            DrawerIcon = "#FFF3E0",
+            DrawerText = "#FFF3E0",
+
+            GrayLight = "#4A4F50",
+            GrayLighter = "#2A2A2A",
+
+            Info = "#4A86FF",
+            Success = "#3DCB6C",
+            Warning = "#FFB74D",
+            Error = "#EF5350",
+
+            Divider = "#FB8C00",
+            OverlayLight = "#12121280"
         };
+
         return theme;
     }
 }
