@@ -3,9 +3,11 @@ using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -18,15 +20,26 @@ public partial class CurrencyItemEditor
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    public string FinancialAccountLabel => InvoiceType is InvoiceType.Purchase ? "واریز به حساب" : "واریز از حساب";
 
     private List<GetPriceUnitTitleResponse> _currencies = [];
     private MudForm _form = default!;
     private bool _isProcessing;
     private readonly CurrencyItemValidator _currencyItemValidator = new();
     private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
+    private decimal? _maxAvailableAmount;
+    private GetFinancialAccountBalanceResponse? _financialAccountBalance;
 
     protected override async Task OnParametersSetAsync()
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (Model.Currency != null)
+        {
+            await LoadMaxAmountAsync(Model.Currency);
+        }
+
+        await LoadFinancialAccountBalanceAsync();
+
         await LoadCurrenciesAsync();
         await LoadFinancialAccountsAsync();
         await base.OnParametersSetAsync();
@@ -53,9 +66,11 @@ public partial class CurrencyItemEditor
 
         await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(null, Model.Currency.Id, ct),
-            afterSend: response =>
+            afterSend: async response =>
             {
                 _financialAccounts = response;
+                Model.FinancialAccount = _financialAccounts.FirstOrDefault() ?? null;
+                await LoadFinancialAccountBalanceAsync();
                 StateHasChanged();
             });
     }
@@ -96,7 +111,32 @@ public partial class CurrencyItemEditor
                 StateHasChanged();
             });
 
+        await LoadMaxAmountAsync(currency);
+
         await LoadFinancialAccountsAsync();
+    }
+
+    private async Task LoadMaxAmountAsync(GetPriceUnitTitleResponse currency)
+    {
+        await SendRequestAsync<IInventoryStockService, GetInventoryStockAmountResponse>(
+            action: (s, ct) => s.GetAvailableItemAmountAsync(currency.Id, ItemType.Currency, ct),
+            afterSend: response => _maxAvailableAmount = response.Amount);
+    }
+
+    private async Task LoadFinancialAccountBalanceAsync()
+    {
+        if (Model.FinancialAccount is null)
+        {
+            _financialAccountBalance = null;
+            return;
+        }
+
+        await SendRequestAsync<ITransactionService, GetFinancialAccountBalanceResponse>(
+            action: (s, ct) => s.GetFinancialAccountBalanceAsync(Model.FinancialAccount.Id, ct),
+            afterSend: response =>
+            {
+                _financialAccountBalance = response;
+            });
     }
 
     private async Task OnAddFinancialAccount()
@@ -128,5 +168,30 @@ public partial class CurrencyItemEditor
             await LoadFinancialAccountsAsync();
             StateHasChanged();
         }
+    }
+
+    private decimal GetMaxAmount()
+    {
+        if (InvoiceType is InvoiceType.Purchase)
+            return decimal.MaxValue;
+
+        return _maxAvailableAmount ?? 0m;
+    }
+
+    private string GetAvailableFinancialAccountAmountHelperText()
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_financialAccountBalance is not null && Model.Currency is not null)
+        {
+            return $"موجودی: {_financialAccountBalance.Amount.ToCurrencyFormat(Model.Currency.Title)}";
+        }
+
+        return "لطفا حساب مالی را انتخاب کنید";
+    }
+
+    private async Task OnFinancialAccountChanged(GetFinancialAccountTitleResponse financialAccount)
+    {
+        Model.FinancialAccount = financialAccount;
+        await LoadFinancialAccountBalanceAsync();
     }
 }

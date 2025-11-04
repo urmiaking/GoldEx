@@ -73,7 +73,7 @@ public class CurrencyItemVm
     public decimal FinalAmount { get; set; }
     public decimal TotalAmount { get; set; }
 
-    [Display(Name = "واریز به حساب")]
+    [Display(Name = "واریز به/از حساب")]
     [Required(ErrorMessage = "لطفا {0} را مشخص کنید")]
     public GetFinancialAccountTitleResponse? FinancialAccount { get; set; }
 
@@ -106,13 +106,16 @@ public class CurrencyItemVm
         if (currencyItem.Currency is null)
             throw new FluentValidation.ValidationException("ارز وارد نشده است");
 
+        if (currencyItem.FinancialAccount is null)
+            throw new FluentValidation.ValidationException("حساب مالی وارد نشده است");
+
         return new InvoiceCurrencyItemDto(currencyItem.Id,
             currencyItem.UnitPrice,
             currencyItem.Amount,
             currencyItem.ProfitPercent,
             currencyItem.TaxPercent,
             currencyItem.Currency.Id,
-            currencyItem.FinancialAccount?.Id);
+            currencyItem.FinancialAccount.Id);
     }
 
     public static CurrencyItemVm CreateFrom(GetInvoiceCurrencyItemResponse response)

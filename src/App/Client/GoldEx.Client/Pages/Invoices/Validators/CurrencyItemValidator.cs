@@ -23,6 +23,9 @@ public class CurrencyItemValidator : AbstractValidator<CurrencyItemVm>
         RuleFor(c => c.TaxPercent)
             .GreaterThanOrEqualTo(0).WithMessage("درصد مالیات نمی‌تواند منفی باشد")
             .LessThanOrEqualTo(100).WithMessage("درصد مالیات نمی‌تواند بیشتر از 100 باشد");
+
+        RuleFor(x => x.FinancialAccount)
+            .NotNull().WithMessage("حساب مالی الزامی است");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

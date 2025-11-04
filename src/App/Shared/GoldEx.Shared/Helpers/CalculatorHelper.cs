@@ -28,6 +28,56 @@ public class CalculatorHelper
         }
 
         /// <summary>
+        /// محاسبه نرخ خرید کل بر اساس وزن، عیار، نوع و مبلغ اجرت
+        /// 
+        /// منطق محاسبه:
+        /// 1. تبدیل وزن به معادل 750 عیار: وزن_معادل = وزن × (عیار / 750)
+        /// 2. اجرت درصدی: نرخ_خرید = وزن_معادل × (1 + درصد_اجرت / 100)
+        /// 3. اجرت ثابت: نرخ_خرید = وزن_معادل + اجرت_ثابت
+        /// </summary>
+        /// <param name="weight">وزن کل (گرم)</param>
+        /// <param name="fineness">عیار (مثال: 750، 867)</param>
+        /// <param name="wageAmount">مبلغ یا درصد اجرت</param>
+        /// <param name="wageType">نوع اجرت (درصدی یا ثابت)</param>
+        /// <param name="gramPrice"></param>
+        /// <param name="exchangeRate">نرخ تبدیل (در صورت استفاده از واحد ارزی دیگر)</param>
+        /// <returns>نرخ خرید کل (وزن معادل)</returns>
+        public static decimal CalculateCostPrice(decimal weight,
+            decimal fineness,
+            decimal? wageAmount,
+            WageType? wageType,
+            decimal gramPrice,
+            decimal? exchangeRate = null)
+        {
+            if (weight <= 0 || fineness <= 0)
+                return 0;
+
+            // 1. تبدیل وزن به معادل 750
+            var equivalentWeight = weight * (fineness / 750m);
+            var pricePerGram = equivalentWeight * gramPrice;
+
+            // 2. محاسبه اجرت
+            switch (wageType)
+            {
+                case WageType.Percent when wageAmount is > 0:
+                    // اجرت درصدی: نرخ_خرید = وزن_معادل × (1 + درصد / 100)
+                    return pricePerGram * (1 + wageAmount.Value / 100m);
+
+                case WageType.Fixed when wageAmount is > 0:
+                    // اجرت ثابت: نرخ_خرید = وزن_معادل + (اجرت_ثابت × نرخ_تبدیل × وزن)
+                    var wagePerUnit = wageAmount.Value * (exchangeRate ?? 1m);
+                    return pricePerGram + (wagePerUnit);
+
+                case null:
+                    // بدون اجرت: نرخ_خرید = وزن_معادل
+                    return pricePerGram;
+
+                default:
+                    return pricePerGram;
+            }
+        }
+
+        /// <summary>
         /// محاسبه اجرت ساخت بر اساس قیمت خام، اجرت، نوع اجرت و نرخ تبدیل
         /// </summary>
         /// <param name="rawPrice">قیمت خام طلا</param>

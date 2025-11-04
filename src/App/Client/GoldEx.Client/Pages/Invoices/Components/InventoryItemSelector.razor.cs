@@ -109,6 +109,8 @@ public partial class InventoryItemSelector
         {
             var currencyItemTasks = _currencies.Select(async currency =>
             {
+                var stock = _selectedItems?.FirstOrDefault(x => x.Currency?.Id == currency.Id);
+
                 var unitPrice = await GetCurrencyPriceAsync(currency.Id);
 
                 if (!unitPrice.HasValue)
@@ -118,7 +120,7 @@ public partial class InventoryItemSelector
                 {
                     Currency = new GetPriceUnitTitleResponse(currency.Id, currency.Title, currency.HasIcon,
                         currency.IsDefault, false),
-                    Amount = 1,
+                    Amount = stock?.CurrentAmount ?? 1,
                     UnitPrice = unitPrice.Value
                 }.RecalculateAmountsAsync();
             });

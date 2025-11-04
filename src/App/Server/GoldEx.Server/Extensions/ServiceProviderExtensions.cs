@@ -148,6 +148,7 @@ public static class ServiceProviderExtensions
         await GetOrCreateAccount(SystemLedgerAccounts.SalesDiscounts, LedgerAccountType.Expense, expenses);
         await GetOrCreateAccount(SystemLedgerAccounts.PurchaseDiscounts, LedgerAccountType.Expense, expenses);
         await GetOrCreateAccount(SystemLedgerAccounts.ServiceExpenses, LedgerAccountType.Expense, operatingExpenses);
+        await GetOrCreateAccount(SystemLedgerAccounts.PurchaseOverheads, LedgerAccountType.Expense, expenses);
 
         await GetOrCreateAccount(SystemLedgerAccounts.OwnerDraw, LedgerAccountType.Equity, equity);
     }

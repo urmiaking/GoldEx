@@ -50,6 +50,11 @@ public static class TransactionDescriptionBuilder
         return $"درآمد هزینه‌های اضافی فاکتور شماره {invoice.InvoiceNumber}";
     }
 
+    public static string ForSaleCurrency(long invoiceNumber, string currencyTitle)
+    {
+        return $"فروش ارز '{currencyTitle}' طبق فاکتور فروش شماره {invoiceNumber}";
+    }
+
     #endregion
 
     #region Purchase Invoice Descriptions (شرح‌های فاکتور خرید)
@@ -60,6 +65,16 @@ public static class TransactionDescriptionBuilder
     public static string ForPurchaseInventoryEntry(Invoice invoice)
     {
         return $"ورود کالا به انبار طبق فاکتور خرید شماره {invoice.InvoiceNumber}";
+    }
+
+    public static string ForPurchaseCurrencyEntry(string currencyTitle, long invoiceNumber)
+    {
+        return $"ورود ارز '{currencyTitle}' به موجودی طبق فاکتور خرید شماره {invoiceNumber}";
+    }
+
+    public static string ForPurchaseCoinEntry(long invoiceNumber, string coinTitle)
+    {
+        return $"ورود {coinTitle} به موجودی طبق فاکتور خرید شماره {invoiceNumber}";
     }
 
     /// <summary>
@@ -76,6 +91,17 @@ public static class TransactionDescriptionBuilder
     public static string ForPurchaseDiscount(Invoice invoice, Customer supplier, IEnumerable<string?> descriptions)
     {
         var desc = $"تخفیف دریافتی از {supplier.FullName} بابت فاکتور شماره {invoice.InvoiceNumber}";
+
+        foreach (var description in descriptions)
+            if (!string.IsNullOrWhiteSpace(description))
+                desc += $" (بابت: {description})";
+
+        return desc;
+    }
+
+    public static string ForPurchaseOverheadCharges(Invoice invoice, IEnumerable<string?> descriptions)
+    {
+        var desc = $"هزینه‌های اضافی خرید طبق فاکتور شماره {invoice.InvoiceNumber}";
 
         foreach (var description in descriptions)
             if (!string.IsNullOrWhiteSpace(description))
@@ -102,6 +128,14 @@ public static class TransactionDescriptionBuilder
     public static string ForInventoryExit(Invoice invoice)
     {
         return $"خروج اجناس از انبار بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
+    }
+
+    /// <summary>
+    /// شرح برای بستانکار کردن موجودی سکه بابت خروج سکه
+    /// </summary>
+    public static string ForSellCoin(long invoiceNumber)
+    {
+        return $"خروج سکه از موجودی بابت فاکتور فروش شماره {invoiceNumber}";
     }
 
     #endregion
@@ -288,6 +322,21 @@ public static class TransactionDescriptionBuilder
     public static string ForMeltingBatchInventoryExit(MeltingBatch meltingBatch, Product product, Invoice invoice)
     {
         return $"ثبت خروج از انبار بابت ذوب به شماره {meltingBatch.BatchNumber} (محصول: {product.Name}, فاکتور: {invoice.InvoiceNumber})";
+    }
+
+    #endregion
+
+    #region Exchange gain and loss (تسعیر ارز)
+
+    public static string ForExchangeGain(long invoiceNumber, string currencyTitle)
+    {
+        return $"سود ناشی از تسعیر ارز '{currencyTitle}' طبق فاکتور فروش شماره {invoiceNumber}";
+    }
+
+
+    public static string ForExchangeLoss(long invoiceNumber, string currencyTitle)
+    {
+        return $"زیان ناشی از تسعیر ارز '{currencyTitle}' طبق فاکتور فروش شماره {invoiceNumber}";
     }
 
     #endregion

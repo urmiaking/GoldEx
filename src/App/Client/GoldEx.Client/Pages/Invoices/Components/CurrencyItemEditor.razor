@@ -6,7 +6,7 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Purchase ? 4 : 6)">
+                <MudItem xs="12" md="6" lg="4">
                     <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="Model.Currency"
                                ValueChanged="OnCurrencyChanged"
@@ -28,7 +28,7 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Purchase ? 4 : 6)">
+                <MudItem xs="12" md="6" lg="4">
                     <MudNumericField T="decimal"
                                      @bind-Value="Model.Amount"
                                      Label="@Model.GetDisplayName(() => Model.Amount)"
@@ -37,6 +37,8 @@
                                      Immediate="true"
                                      Format="#,##0.##"
                                      HideSpinButtons="true"
+                                     Min="0"
+                                     Max="GetMaxAmount()"
                                      Margin="Margin.Dense"
                                      Variant="Variant.Outlined"
                                      InputMode="InputMode.numeric" />
@@ -56,28 +58,31 @@
                                      Adornment="Adornment.End"
                                      AdornmentText="@PriceUnit?.Title" />
                 </MudItem>
-                @if (InvoiceType is InvoiceType.Purchase)
-                {
-                    <MudItem xs="12" md="6" lg="4">
-                        <div class="d-flex flex-row align-center">
-                            <MudSelect @bind-Value="@Model.FinancialAccount"
-                                       T="GetFinancialAccountTitleResponse?"
-                                       For="@(() => Model.FinancialAccount)"
-                                       Label="@Model.GetDisplayName(() => Model.FinancialAccount)"
-                                       Margin="Margin.Dense"
-                                       Variant="Variant.Outlined"
-                                       OuterClass="w-50"
-                                       ToStringFunc="@(acc => acc?.Title)">
-                                @foreach (var account in _financialAccounts)
-                                {
-                                    <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
-                                }
-                            </MudSelect>
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
-                                           Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
-                        </div>
-                    </MudItem>
-                }
+
+                <MudItem xs="12" md="6" lg="4">
+                    <div class="d-flex flex-row align-center">  
+                        <MudSelect Value="@Model.FinancialAccount"  
+                                   ValueChanged="OnFinancialAccountChanged"
+                                   T="GetFinancialAccountTitleResponse?"  
+                                   For="@(() => Model.FinancialAccount)"  
+                                   Label="@FinancialAccountLabel"  
+                                   Margin="Margin.Dense"  
+                                   Variant="Variant.Outlined"  
+                                   HelperText="@GetAvailableFinancialAccountAmountHelperText()"  
+                                   OuterClass="w-50"  
+                                   ToStringFunc="@(acc => acc?.Title)">  
+                            @foreach (var account in _financialAccounts)  
+                            {  
+                                <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>  
+                            }  
+                        </MudSelect>  
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"   
+                                       Variant="Variant.Outlined"  
+                                       Color="Color.Primary"   
+                                       Class="align-self-start mt-2"  
+                                       OnClick="OnAddFinancialAccount"></MudIconButton>  
+                    </div>
+                </MudItem>
                 <MudItem xs="12" md="6" lg="4">
                     <MudNumericField T="decimal"
                                      @bind-Value="Model.ProfitPercent"

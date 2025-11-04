@@ -1,13 +1,17 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
+using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -21,16 +25,20 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly IInventoryStockRepository _inventoryStockRepository;
     private readonly IProductRepository _productRepository;
+    private readonly IFinancialAccountRepository _financialAccountRepository;
+    private readonly ITransactionRepository _transactionRepository;
 
     public InvoiceRequestDtoValidator(ICustomerRepository customerRepository,
         IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, 
         IFinancialAccountRepository financialAccountRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository,
-        ICoinRepository coinRepository, IInventoryStockRepository inventoryStockRepository)
+        ICoinRepository coinRepository, IInventoryStockRepository inventoryStockRepository, ITransactionRepository transactionRepository)
     {
         _priceUnitRepository = priceUnitRepository;
         _productRepository = productRepository;
+        _financialAccountRepository = financialAccountRepository;
         _invoiceRepository = invoiceRepository;
         _inventoryStockRepository = inventoryStockRepository;
+        _transactionRepository = transactionRepository;
 
         RuleFor(x => x.InvoiceNumber)
             .GreaterThan(0)
@@ -95,6 +103,11 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .MustAsync(ProductAvailable)
             .WithMessage("این جنس قبلا فروخته شده است");
 
+        RuleFor(x => x)
+            .MustAsync(NotResultInNegativeLedgerBalances)
+            .When(x => x.InvoiceType == InvoiceType.Sell && x.InvoiceCurrencyItems.Any())
+            .WithMessage("موجودی حساب مالی ارز کافی نیست.");
+
         RuleForEach(x => x.InvoiceDiscounts)
             .SetValidator(new InvoiceDiscountDtoValidator(priceUnitRepository));
 
@@ -113,6 +126,105 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
                 .Must(NewProductsHaveCostPrice)
                 .WithMessage("وارد کردن نرخ خرید جنس الزامی است.");
         });
+    }
+
+    private async Task<bool> NotResultInNegativeLedgerBalances(InvoiceRequestDto request, CancellationToken cancellationToken)
+    {
+        if (request.InvoiceType != InvoiceType.Sell)
+            return true;
+
+        if (!request.Id.HasValue)
+        {
+            foreach (var currencyItem in request.InvoiceCurrencyItems)
+            {
+                var fin = await _financialAccountRepository
+                    .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(currencyItem.FinancialAccountId)))
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (fin?.LedgerAccountId == null)
+                    return false;
+
+                var ledgerId = fin.LedgerAccountId.Value;
+
+                var currentBalance = await GetActiveLedgerBalanceAsync(ledgerId, cancellationToken);
+
+                if (currentBalance < currencyItem.Amount)
+                    return false;
+            }
+
+            return true;
+        }
+
+        // Update
+        var originalInvoice = await _invoiceRepository
+            .Get(new InvoicesByIdSpecification(new InvoiceId(request.Id.Value)))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (originalInvoice is null)
+            return true;
+
+        // key: (LedgerAccountId, PriceUnitId)
+        var oldOut = new Dictionary<LedgerAccountId, decimal>();
+        var newOut = new Dictionary<LedgerAccountId, decimal>();
+
+        // قدیمی‌ها: ممکن است فیلد FinancialAccountId قبلاً اجباری نبوده باشد
+        foreach (var oldCi in originalInvoice.CurrencyItems)
+        {
+            if (!oldCi.FinancialAccountId.HasValue)
+                continue;
+
+            var fin = await _financialAccountRepository
+                .Get(new FinancialAccountsByIdSpecification(oldCi.FinancialAccountId.Value))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (fin?.LedgerAccountId == null)
+                continue;
+
+            var key = fin.LedgerAccountId.Value;
+            oldOut[key] = oldOut.GetValueOrDefault(key, 0m) + oldCi.Amount;
+        }
+
+        // جدیدها
+        foreach (var newCi in request.InvoiceCurrencyItems)
+        {
+            var fin = await _financialAccountRepository
+                .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(newCi.FinancialAccountId)))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (fin?.LedgerAccountId == null)
+                return false;
+
+            var key = fin.LedgerAccountId.Value;
+            newOut[key] = newOut.GetValueOrDefault(key, 0m) + newCi.Amount;
+        }
+
+        // بررسی بر اساس Δ خروج = new - old
+        var allKeys = newOut.Keys.Union(oldOut.Keys).ToList();
+        foreach (var key in allKeys)
+        {
+            var newAmt = newOut.GetValueOrDefault(key, 0m);
+            var oldAmt = oldOut.GetValueOrDefault(key, 0m);
+            var deltaOut = newAmt - oldAmt; // نیاز خروج اضافه نسبت به قبل
+
+            if (deltaOut <= 0)
+                continue;
+
+            var currentBalance = await GetActiveLedgerBalanceAsync(key, cancellationToken);
+            if (currentBalance < deltaOut)
+                return false;
+        }
+
+        return true;
+    }
+
+    private Task<decimal> GetActiveLedgerBalanceAsync(LedgerAccountId ledgerAccountId, CancellationToken ct)
+    {
+        return _transactionRepository
+            .Get(new TransactionsByLedgerAccountIdSpecification(ledgerAccountId, skipReversed: true))
+            .AsNoTracking()
+            .Select(t => t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount)
+            .SumAsync(ct);
     }
 
     private bool NewProductsHaveCostPrice(InvoiceProductItemDto invoiceProductItem)
