@@ -52,4 +52,11 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
         var list = await service.GetInventoryStockTracesAsync(itemId, itemType, requestFilter, cancellationToken);
         return Ok(list);
     }
+
+    [HttpGet(ApiRoutes.InventoryStocks.GetAvailableItemAmount)]
+    public async Task<IActionResult> GetAvailableItemAmountAsync(Guid itemId, ItemType itemType, CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetAvailableItemAmountAsync(itemId, itemType, cancellationToken);
+        return Ok(result);
+    }
 }

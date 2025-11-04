@@ -442,7 +442,8 @@ public partial class EditorForm
     {
         var parameters = new DialogParameters<CoinItemEditor>
         {
-            { x => x.PriceUnit, _model.InvoicePriceUnit }
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.InvoiceType, _model.InvoiceType }
         };
 
         var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
@@ -462,7 +463,8 @@ public partial class EditorForm
         var parameters = new DialogParameters<CoinItemEditor>
         {
             { x => x.Model, coinItemVm },
-            { x => x.PriceUnit, _model.InvoicePriceUnit }
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.InvoiceType, _model.InvoiceType }
         };
 
         var dialog = await DialogService.ShowAsync<CoinItemEditor>("ویرایش سکه", parameters, _dialogOptions);

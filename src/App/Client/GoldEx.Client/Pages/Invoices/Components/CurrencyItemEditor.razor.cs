@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
@@ -25,9 +26,14 @@ public partial class CurrencyItemEditor
     private bool _isProcessing;
     private readonly CurrencyItemValidator _currencyItemValidator = new();
     private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
+    private decimal? _maxAvailableAmount;
 
     protected override async Task OnParametersSetAsync()
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (Model.Currency != null) 
+            await LoadMaxAmountAsync(Model.Currency);
+
         await LoadCurrenciesAsync();
         await LoadFinancialAccountsAsync();
         await base.OnParametersSetAsync();
@@ -98,7 +104,16 @@ public partial class CurrencyItemEditor
                 StateHasChanged();
             });
 
+        await LoadMaxAmountAsync(currency);
+
         await LoadFinancialAccountsAsync();
+    }
+
+    private async Task LoadMaxAmountAsync(GetPriceUnitTitleResponse currency)
+    {
+        await SendRequestAsync<IInventoryStockService, GetInventoryStockAmountResponse>(
+            action: (s, ct) => s.GetAvailableItemAmountAsync(currency.Id, ItemType.Currency, ct),
+            afterSend: response => _maxAvailableAmount = response.Amount);
     }
 
     private async Task OnAddFinancialAccount()
@@ -130,5 +145,13 @@ public partial class CurrencyItemEditor
             await LoadFinancialAccountsAsync();
             StateHasChanged();
         }
+    }
+
+    private decimal GetMaxAmount()
+    {
+        if (InvoiceType is InvoiceType.Purchase)
+            return decimal.MaxValue;
+
+        return _maxAvailableAmount ?? 0m;
     }
 }
