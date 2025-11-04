@@ -128,12 +128,29 @@ public class ProductItemVm
     public decimal FinalAmount { get; set; }
     public decimal StoneAmount { get; set; }
 
+    private void CalculateAndSetCostPrice()
+    {
+        CostPrice = CalculatorHelper.Product.CalculateCostPrice(
+            weight: TotalWeight ?? 0,
+            fineness: Product.Fineness,
+            wageAmount: Product.Wage,
+            wageType: Product.WageType,
+            gramPrice: GramPrice,
+            exchangeRate: WageExchangeRate
+        );
+    }
+
     /// <summary>
     /// This method performs the client-side calculation and updates the display properties.
     /// It's called whenever an input property changes.
     /// </summary>
     public ProductItemVm RecalculateAmounts()
     {
+        if (InvoiceType is InvoiceType.Purchase || IsInstantProduct)
+        {
+            CalculateAndSetCostPrice();
+        }
+
         if (InvoiceType is InvoiceType.Purchase)
         {
             RawAmount = (CostPrice * (CostPriceExchangeRate ?? 1)) ?? 0;

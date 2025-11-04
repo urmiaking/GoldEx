@@ -100,9 +100,7 @@ internal class InvoiceService(
                             ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
                             : null,
                         new PriceUnitId(currencyItemDto.CurrencyId),
-                        currencyItemDto.FinancialAccountId.HasValue
-                            ? new FinancialAccountId(currencyItemDto.FinancialAccountId.Value)
-                            : null,
+                        new FinancialAccountId(currencyItemDto.FinancialAccountId),
                         currencyItemDto.UnitPrice,
                         currencyItemDto.Amount,
                         currencyItemDto.TaxPercent,
@@ -189,9 +187,7 @@ internal class InvoiceService(
                         ? new InvoiceCurrencyItemId(currencyItemDto.Id.Value)
                         : null,
                     new PriceUnitId(currencyItemDto.CurrencyId),
-                    currencyItemDto.FinancialAccountId.HasValue
-                        ? new FinancialAccountId(currencyItemDto.FinancialAccountId.Value)
-                        : null,
+                    new FinancialAccountId(currencyItemDto.FinancialAccountId),
                     currencyItemDto.UnitPrice,
                     currencyItemDto.Amount,
                     currencyItemDto.TaxPercent,

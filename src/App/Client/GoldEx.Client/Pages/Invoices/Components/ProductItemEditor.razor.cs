@@ -151,7 +151,7 @@ public partial class ProductItemEditor
                 Model.SetAsJewelry(PriceUnit, _settings);
                 break;
             case ProductType.Gold:
-                Model.SetAsGold(PriceUnit, _settings);  
+                Model.SetAsGold(PriceUnit, _settings);
                 break;
             case ProductType.MoltenGold:
                 Model.SetAsMoltenGold(_settings);
@@ -220,22 +220,8 @@ public partial class ProductItemEditor
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
         }
 
-        SetCostPrice();
+        // منطق محاسبه CostPrice اکنون در ProductItemVm.RecalculateAmounts() است
         StateHasChanged();
-    }
-
-    private void SetCostPrice()
-    {
-        if (!PriceUnit.IsGoldBased)
-            return;
-
-        Model.CostPrice = Model.Product.WageType switch
-        {
-            WageType.Percent => Model.TotalWeight * (Model.Product.Wage / 100m) + Model.TotalWeight,
-            WageType.Fixed => Model.Product.WagePriceUnitId == PriceUnit.Id ? Model.TotalWeight + Model.Product.Wage : Model.TotalWeight + Model.WageAmount,
-            null => Model.TotalWeight,
-            _ => throw new ArgumentOutOfRangeException()
-        };
     }
 
     private void OnAddGemStone()
@@ -321,8 +307,9 @@ public partial class ProductItemEditor
         Model.Product.GoldUnitType = unitType;
         await LoadGramPriceAsync();
     }
-	private async Task OnProductStonePriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
-	{
+
+    private async Task OnProductStonePriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
+    {
         Model.Product.StonePriceUnit = priceUnit;
 
         if (Model.Product.StonePriceUnit != null && PriceUnit.Id != Model.Product.StonePriceUnit.Id)
@@ -340,14 +327,12 @@ public partial class ProductItemEditor
     private void OnTotalWeightChanged(decimal? totalWeight)
     {
         Model.TotalWeight = totalWeight;
-        SetCostPrice();
         StateHasChanged();
     }
 
     private void OnWageChanged(decimal? wage)
     {
         Model.Product.Wage = wage;
-        SetCostPrice();
         StateHasChanged();
     }
 
@@ -391,4 +376,14 @@ public partial class ProductItemEditor
     }
 
     #endregion
+
+    private void OnCostPriceChanged(decimal? costPrice)
+    {   
+        Model.CostPrice = costPrice;
+
+        if (Model.IsInstantProduct || Model.InvoiceType is InvoiceType.Purchase)
+        {
+            Model.FinalAmount = Model.CostPrice ?? 0;
+        }
+    }
 }

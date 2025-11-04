@@ -13,6 +13,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Coins;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
@@ -39,6 +40,7 @@ internal class AccountingTransactionService(
     IMeltingBatchRepository meltingBatchRepository,
     IProductRepository productRepository,
     ILedgerAccountRepository ledgerAccountRepository,
+    ICoinRepository coinRepository,
     IServerLedgerAccountService ledgerAccountService)
     : IAccountingTransactionService
 {
@@ -259,8 +261,8 @@ internal class AccountingTransactionService(
             {
                 case InvoiceType.Sell:
                     {
-                        var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(customer.Id,
-                            invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
+                        var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+                            customer.Id, invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
                         var salesRevenueLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.SalesRevenue))
@@ -276,75 +278,146 @@ internal class AccountingTransactionService(
 
                         foreach (var instantProduct in invoice.ProductItems.Where(x => x.IsInstantProduct))
                         {
-                            var manual = await CreateTransactionForManualEntryAsync(instantProduct.Product, null, null,
-                                instantProduct.CostPrice!.Value, instantProduct.CostPriceExchangeRate, instantProduct.CostPriceUnitId, invoice.Id, NextLine(),
-                                cancellationToken);
+                            var manual = await CreateTransactionForManualEntryAsync(
+                                instantProduct.Product, null, null,
+                                instantProduct.CostPrice!.Value, instantProduct.CostPriceExchangeRate, instantProduct.CostPriceUnitId,
+                                invoice.Id, NextLine(), cancellationToken);
                             transactions.AddRange(manual);
                         }
 
+                        // COGS برای کالا
                         decimal totalCostOfGoods = 0;
-
                         foreach (var saleItem in invoice.ProductItems)
                         {
                             var purchaseInvoice = await invoiceRepository
                                 .Get(new InvoicesByProductIdSpecification(saleItem.ProductId))
-                                .OrderByDescending(x => x.InvoiceDate)
                                 .FirstOrDefaultAsync(cancellationToken)
-                                ?? throw new NotFoundException($"Purchase invoice for product {saleItem.ProductId.Value} not found.");
+                                    ?? throw new NotFoundException($"Purchase invoice for product {saleItem.ProductId.Value} not found.");
 
                             var purchaseItem = purchaseInvoice.ProductItems
                                 .FirstOrDefault(i => i.ProductId == saleItem.ProductId)
-                                ?? throw new NotFoundException($"Purchase invoice item for product {saleItem.ProductId.Value} not found.");
+                                    ?? throw new NotFoundException($"Purchase invoice item for product {saleItem.ProductId.Value} not found.");
 
                             var purchaseItemBaseAmount = purchaseItem.ItemFinalAmount * (purchaseInvoice.ExchangeRate ?? 1);
-
-                            var unitCost = purchaseItemBaseAmount / purchaseItem.TotalWeight;
-                            var cogsForThisItem = unitCost * saleItem.TotalWeight;
-
-                            totalCostOfGoods += cogsForThisItem;
+                            var unitCost = purchaseItem.TotalWeight == 0 ? 0 : purchaseItemBaseAmount / purchaseItem.TotalWeight;
+                            totalCostOfGoods += unitCost * saleItem.TotalWeight;
                         }
 
                         if (totalCostOfGoods > 0)
                         {
                             var cogsGroupId = Guid.NewGuid();
+
                             var cogsLedger = await ledgerAccountRepository
                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CostOfGoodsSold))
                                 .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Cost of Goods Sold ledger account not found.");
+
                             var inventoryLedger = await ledgerAccountRepository
                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
                                 .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
 
                             transactions.Add(Transaction.CreateForInvoice(
                                 TransactionDescriptionBuilder.ForCostOfGoodsSold(invoice),
-                                totalCostOfGoods,
-                                null,
-                                cogsGroupId,
-                                TransactionType.Debit,
-                                cogsLedger.Id,
-                                basePriceUnit.Id,
-                                invoice.Id, NextLine()));
+                                totalCostOfGoods, null, cogsGroupId, TransactionType.Debit,
+                                cogsLedger.Id, basePriceUnit.Id, invoice.Id, NextLine()));
 
                             transactions.Add(Transaction.CreateForInvoice(
                                 TransactionDescriptionBuilder.ForInventoryExit(invoice),
-                                totalCostOfGoods,
-                                null,
-                                cogsGroupId,
-                                TransactionType.Credit,
-                                inventoryLedger.Id,
-                                basePriceUnit.Id,
-                                invoice.Id, NextLine()));
+                                totalCostOfGoods, null, cogsGroupId, TransactionType.Credit,
+                                inventoryLedger.Id, basePriceUnit.Id, invoice.Id, NextLine()));
                         }
 
-                        if (invoice.TotalAmount > 0)
+                        // فروش ارز: خروج از Ledger ارزی با میانگین بهای دفتری + سود/زیان تسعیر
+                        var currencyLinesTotal = 0m;
+                        if (invoice.CurrencyItems.Any())
+                        {
+                            var gainLossLedger = await ledgerAccountRepository
+                                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.ExchangeGainLoss))
+                                .FirstOrDefaultAsync(cancellationToken) 
+                                                 ?? throw new NotFoundException("Exchange Gain/Loss ledger account not found.");
+
+                            foreach (var ci in invoice.CurrencyItems)
+                            {
+                                currencyLinesTotal += ci.ItemFinalAmount;
+
+                                if (!ci.FinancialAccountId.HasValue)
+                                    throw new NotFoundException("برای فروش ارز، انتخاب حساب مالی الزامی است.");
+
+                                var fin = await financialAccountRepository
+                                    .Get(new FinancialAccountsByIdSpecification(ci.FinancialAccountId.Value))
+                                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب مالی یافت نشد.");
+
+                                if (!fin.LedgerAccountId.HasValue)
+                                    throw new NotFoundException("حساب دفتری متناظر برای حساب مالی موجود نیست.");
+
+                                var ledgerId = fin.LedgerAccountId.Value;
+
+                                // میانگین بهای حساب دفتری ارز
+                                var (_, _, avgRate) = await repository.GetLedgerPositionSummaryAsync(ledgerId, cancellationToken);
+
+                                // خروج از حساب ارزی
+                                transactions.Add(Transaction.CreateForInvoice(
+                                    TransactionDescriptionBuilder.ForSaleCurrency(invoice.InvoiceNumber, ci.Currency?.Title ?? string.Empty),
+                                    ci.Amount, avgRate, invoiceGroupId, TransactionType.Credit,
+                                    ledgerId, ci.CurrencyId, invoice.Id, NextLine()));
+
+                                // سود/زیان تسعیر (به ارز پایه)
+                                var saleBase = ci.ItemFinalAmount * (invoice.ExchangeRate ?? 1);
+                                var carryBase = ci.Amount * avgRate;
+                                var diff = saleBase - carryBase;
+
+                                if (diff > 0)
+                                {
+                                    transactions.Add(Transaction.CreateForInvoice(
+                                        TransactionDescriptionBuilder.ForExchangeGain(invoice.InvoiceNumber, ci.Currency?.Title ?? string.Empty),
+                                        diff, null, invoiceGroupId, TransactionType.Credit,
+                                        gainLossLedger.Id, basePriceUnit.Id, invoice.Id, NextLine()));
+                                }
+                                else if (diff < 0)
+                                {
+                                    transactions.Add(Transaction.CreateForInvoice(
+                                        TransactionDescriptionBuilder.ForExchangeLoss(invoice.InvoiceNumber, ci.Currency?.Title ?? string.Empty),
+                                        Math.Abs(diff), null, invoiceGroupId, TransactionType.Debit,
+                                        gainLossLedger.Id, basePriceUnit.Id, invoice.Id, NextLine()));
+                                }
+                            }
+                        }
+
+                        var coinLinesTotal = 0m;
+                        if (invoice.CoinItems.Any())
+                        {
+                            var coinInventoryLedger = await ledgerAccountRepository
+                                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
+                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Coin inventory ledger account not found.");
+
+                            var coinSum = invoice.CoinItems.Sum(ci => ci.ItemFinalAmount);
+                            if (coinSum > 0)
+                            {
+                                transactions.Add(Transaction.CreateForInvoice(
+                                    TransactionDescriptionBuilder.ForSellCoin(invoice.InvoiceNumber),
+                                    coinSum,
+                                    invoice.ExchangeRate,
+                                    invoiceGroupId,
+                                    TransactionType.Credit,
+                                    coinInventoryLedger.Id,
+                                    invoice.PriceUnitId,
+                                    invoice.Id, NextLine()));
+                            }
+                        }
+
+                        // درآمد فروش: فقط اقلام غیرارزی (کالا + سکه + هزینه‌های اضافی)
+                        var nonCurrencySalesAmount = invoice.TotalAmount - currencyLinesTotal - coinLinesTotal;
+                        if (nonCurrencySalesAmount > 0)
+                        {
                             transactions.Add(Transaction.CreateForInvoice(
                                 TransactionDescriptionBuilder.ForSaleRevenue(invoice),
-                                invoice.TotalAmount,
+                                nonCurrencySalesAmount,
                                 invoice.ExchangeRate,
                                 invoiceGroupId,
                                 TransactionType.Credit,
                                 salesRevenueLedger.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id, NextLine()));
+                        }
 
                         if (invoice.TotalExtraCostAmount > 0)
                             transactions.Add(Transaction.CreateForInvoice(
@@ -369,6 +442,7 @@ internal class AccountingTransactionService(
                                 invoice.PriceUnitId,
                                 invoice.Id, NextLine()));
 
+                        // دریافتنی مشتری (کل فاکتور)
                         transactions.Add(Transaction.CreateForInvoice(
                             TransactionDescriptionBuilder.ForSaleReceivable(invoice, customer),
                             invoice.TotalAmountWithDiscountsAndExtraCosts,
@@ -390,44 +464,125 @@ internal class AccountingTransactionService(
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
 
+                        var coinInventoryLedger = await ledgerAccountRepository
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Coin inventory ledger account not found.");
+
                         var discountsLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.PurchaseDiscounts))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Purchase Discounts ledger account not found.");
 
-                        var totalInventoryValue = invoice.TotalAmount + invoice.TotalExtraCostAmount;
+                        var purchaseOverheadsLedger = await ledgerAccountRepository
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.PurchaseOverheads))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Purchase Overheads account not found.");
 
-                        if (totalInventoryValue > 0)
+                        foreach (var ci in invoice.CurrencyItems)
+                        {
+                            if (!ci.FinancialAccountId.HasValue)
+                                throw new NotFoundException("برای آیتم ارزی، انتخاب «حساب مالی» الزامی است.");
+
+                            var fin = await financialAccountRepository
+                                .Get(new FinancialAccountsByIdSpecification(ci.FinancialAccountId.Value))
+                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Financial account {ci.FinancialAccountId.Value} not found.");
+
+                            if (!fin.LedgerAccountId.HasValue)
+                                throw new NotFoundException($"Financial account {fin.Id.Value} has no linked ledger account.");
+
+                            var destLedger = await ledgerAccountRepository
+                                .Get(new LedgerAccountsByIdSpecification(fin.LedgerAccountId.Value))
+                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Ledger account {fin.LedgerAccountId.Value} not found.");
+
+                            // بدهکار به واحد ارز؛ نرخ = UnitPrice آیتم ارزی
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForPurchaseCurrencyEntry(fin.PriceUnit?.Title ?? string.Empty, invoice.InvoiceNumber),
+                                ci.Amount,
+                                ci.UnitPrice,
+                                invoiceGroupId,
+                                TransactionType.Debit,
+                                destLedger.Id,
+                                ci.CurrencyId,
+                                invoice.Id, NextLine()));
+                        }
+
+                        // 2) Debit: سکه‌ها → CoinInventory
+                        foreach (var coinItem in invoice.CoinItems)
+                        {
+                            var coin = await coinRepository
+                                .Get(new CoinsByIdSpecification(coinItem.CoinId))
+                                .FirstOrDefaultAsync(cancellationToken)
+                                       ?? throw new NotFoundException($"Coin {coinItem.CoinId.Value} not found.");
+
+                            var destLedger = await ledgerAccountRepository
+                                .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
+                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Coin '{coin.Title}' ledger account not found.");
+
+                            // بدهکار به حساب دفتری سکه
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForPurchaseCoinEntry(invoice.InvoiceNumber, coin.Title),
+                                coinItem.ItemFinalAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Debit,
+                                destLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id, NextLine()));
+                        }
+
+                        // 3) Debit: کالاها → Inventory
+                        var productSum = invoice.ProductItems.Sum(pi => pi.ItemFinalAmount);
+                        if (productSum > 0)
+                        {
                             transactions.Add(Transaction.CreateForInvoice(
                                 TransactionDescriptionBuilder.ForPurchaseInventoryEntry(invoice),
-                                totalInventoryValue,
+                                productSum,
                                 invoice.ExchangeRate,
-                                Guid.NewGuid(),
+                                invoiceGroupId,
                                 TransactionType.Debit,
                                 inventoryLedger.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id, NextLine()));
+                        }
 
+                        // 4) Debit: هزینه‌های اضافی خرید → حساب جداگانه
+                        if (invoice.TotalExtraCostAmount > 0)
+                        {
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForPurchaseOverheadCharges(invoice, 
+                                    invoice.ExtraCosts.Select(x => x.Description)),
+                                invoice.TotalExtraCostAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Debit,
+                                purchaseOverheadsLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id, NextLine()));
+                        }
+
+                        // 5) Credit: حساب پرداختنی تأمین‌کننده
                         transactions.Add(Transaction.CreateForInvoice(
                             TransactionDescriptionBuilder.ForPurchasePayable(invoice, customer),
                             invoice.TotalAmountWithDiscountsAndExtraCosts,
                             invoice.ExchangeRate,
-                            Guid.NewGuid(),
+                            invoiceGroupId,
                             TransactionType.Credit,
                             supplierLedger.Id,
                             invoice.PriceUnitId,
                             invoice.Id, NextLine()));
 
+                        // 6) Credit: تخفیفات خرید (در صورت وجود)
                         if (invoice.TotalDiscountAmount > 0)
+                        {
                             transactions.Add(Transaction.CreateForInvoice(
                                 TransactionDescriptionBuilder.ForPurchaseDiscount(invoice, customer,
                                     invoice.Discounts.Select(x => x.Description)),
                                 invoice.TotalDiscountAmount,
                                 invoice.ExchangeRate,
-                                Guid.NewGuid(),
+                                invoiceGroupId,
                                 TransactionType.Credit,
                                 discountsLedger.Id,
                                 invoice.PriceUnitId,
                                 invoice.Id, NextLine()));
+                        }
 
                         break;
                     }
@@ -442,7 +597,7 @@ internal class AccountingTransactionService(
             foreach (var payment in invoice.InvoicePayments)
             {
                 var paymentGroupId = Guid.NewGuid();
-               
+
                 long payLine = 0;
                 DateTime NextPayLine()
                     => payment.PaymentDate.Date == invoice.InvoiceDate.ToDateTime(TimeOnly.MinValue).Date
@@ -834,7 +989,7 @@ internal class AccountingTransactionService(
         var basePriceUnit = await priceUnitRepository
             .Get(new PriceUnitsSetAsDefaultSpecification())
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
-        
+
         var transactions = new List<Transaction>();
 
         var groupId = Guid.NewGuid();
@@ -843,7 +998,7 @@ internal class AccountingTransactionService(
         {
             var invoice = await invoiceRepository
                 .Get(new InvoicesByUsedProductIdSpecification(product.Id))
-                .FirstOrDefaultAsync(cancellationToken) 
+                .FirstOrDefaultAsync(cancellationToken)
                           ?? throw new NotFoundException($"Invoice for product {product.Id.Value} not found.");
 
             var invoiceItem = invoice.UsedProducts.FirstOrDefault(x => x.ProductId == product.Id)
@@ -934,7 +1089,7 @@ internal class AccountingTransactionService(
             groupId: groupId,
             priceUnitId: priceUnit.Id,
             ledgerAccountId: cogsLedgerAccount.Id,
-            meltingBatchId: meltingBatch.Id, 
+            meltingBatchId: meltingBatch.Id,
             postingDate: DateTime.Now);
 
         transactions.Add(entryDebit);
@@ -981,7 +1136,7 @@ internal class AccountingTransactionService(
                 groupId: feeGroupId,
                 priceUnitId: feePriceUnit.Id,
                 ledgerAccountId: expensesAccount.Id,
-                meltingBatchId: meltingBatch.Id, 
+                meltingBatchId: meltingBatch.Id,
                 postingDate: DateTime.Now);
 
             // تراکنش Credit: پرداخت هزینه ری‌گیری
