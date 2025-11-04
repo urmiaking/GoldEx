@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -55,7 +56,7 @@ internal class TransactionService(IMapper mapper,
             .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(financialAccountId)))
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken)
-                              ?? throw new InvalidOperationException("Financial account not found.");
+                              ?? throw new NotFoundException("Financial account not found.");
 
         if (!financialAccount.LedgerAccountId.HasValue)
             return new GetFinancialAccountBalanceResponse(0);
