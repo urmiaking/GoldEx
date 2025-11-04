@@ -315,7 +315,10 @@ internal class InventoryStockService(
     {
         var spec = new InventoryStocksByInvoiceFilterSpecification(new InvoiceId(invoiceId), requestFilter);
 
-        var items = await repository.Get(spec).ToListAsync(cancellationToken);
+        var items = await repository.Get(spec)
+            .Include(x => x.Invoice!.CurrencyItems)
+                .ThenInclude(x => x.FinancialAccount)
+            .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
 
