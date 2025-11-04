@@ -60,6 +60,10 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 COPY ./fonts /usr/local/share/fonts/custom/
+
+USER root
+RUN mkdir -p /var/cache/fontconfig && chmod -R 777 /var/cache/fontconfig && fc-cache -fv
+USER $APP_UID
 RUN fc-cache -fv
 
 USER root
