@@ -351,6 +351,9 @@ public class ApiUrls
                 .AppendQueryString(transactionFilter)
                 .AppendQueryString(requestFilter);
 
+        public static string GetFinancialAccountBalance(Guid financialAccountId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetFinancialAccountBalance)
+                .FormatRoute(new { financialAccountId });
     }
 
     public class Notifications

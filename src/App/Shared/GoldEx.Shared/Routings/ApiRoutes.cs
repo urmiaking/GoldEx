@@ -95,6 +95,7 @@ public static class ApiRoutes
         public const string Base = "/api/Transactions";
         public const string GetList = "";
         public const string GetRemainingList = "customer/{customerId}/remaining-list";
+        public const string GetFinancialAccountBalance = "financial-account/{financialAccountId}/balance";
     }
 
     public class PriceUnits
@@ -186,7 +187,7 @@ public static class ApiRoutes
         public const string GetInvoiceInventoryItems = "invoice/{invoiceId}/items";
         public const string GetTraces = "{itemType}/{itemId}/traces";
         public const string GetAvailableItemAmount = "{itemType}/{itemId}/available-amount";
-    }
+    }   
 
     public class Notifications
     {

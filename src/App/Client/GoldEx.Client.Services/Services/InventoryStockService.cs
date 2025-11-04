@@ -7,6 +7,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 
 namespace GoldEx.Client.Services.Services;
 

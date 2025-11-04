@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
 

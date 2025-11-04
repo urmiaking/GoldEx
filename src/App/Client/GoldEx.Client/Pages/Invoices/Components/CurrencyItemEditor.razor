@@ -60,22 +60,27 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6" lg="4">
-                    <div class="d-flex flex-row align-center">
-                        <MudSelect @bind-Value="@Model.FinancialAccount"
-                                   T="GetFinancialAccountTitleResponse?"
-                                   For="@(() => Model.FinancialAccount)"
-                                   Label="@FinancialAccountLabel"
-                                   Margin="Margin.Dense"
-                                   Variant="Variant.Outlined"
-                                   OuterClass="w-50"
-                                   ToStringFunc="@(acc => acc?.Title)">
-                            @foreach (var account in _financialAccounts)
-                            {
-                                <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
-                            }
-                        </MudSelect>
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
-                                       Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
+                    <div class="d-flex flex-row align-center">  
+                        <MudSelect Value="@Model.FinancialAccount"  
+                                   ValueChanged="OnFinancialAccountChanged"
+                                   T="GetFinancialAccountTitleResponse?"  
+                                   For="@(() => Model.FinancialAccount)"  
+                                   Label="@FinancialAccountLabel"  
+                                   Margin="Margin.Dense"  
+                                   Variant="Variant.Outlined"  
+                                   HelperText="@GetAvailableFinancialAccountAmountHelperText()"  
+                                   OuterClass="w-50"  
+                                   ToStringFunc="@(acc => acc?.Title)">  
+                            @foreach (var account in _financialAccounts)  
+                            {  
+                                <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>  
+                            }  
+                        </MudSelect>  
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"   
+                                       Variant="Variant.Outlined"  
+                                       Color="Color.Primary"   
+                                       Class="align-self-start mt-2"  
+                                       OnClick="OnAddFinancialAccount"></MudIconButton>  
                     </div>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="4">
