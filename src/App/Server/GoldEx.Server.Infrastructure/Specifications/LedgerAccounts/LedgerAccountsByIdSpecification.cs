@@ -8,5 +8,6 @@ public class LedgerAccountsByIdSpecification : SpecificationBase<LedgerAccount>
     public LedgerAccountsByIdSpecification(LedgerAccountId id)
     {
         AddCriteria(x => x.Id == id);
+        AddInclude(x => x.PriceUnit!);
     }
 }

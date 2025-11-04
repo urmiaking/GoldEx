@@ -45,5 +45,6 @@ public static class SystemLedgerAccounts
     public static string CostOfGoodsSold => "بهای تمام شده کالای فروش رفته";
     public static string OperatingExpenses => "هزینه‌های عملیاتی";
     public static string ServiceExpenses => "هزینه‌های خدمات";
+    public static string PurchaseOverheads => "هزینه‌های اضافی خرید";
     #endregion
 }

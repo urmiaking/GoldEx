@@ -253,7 +253,8 @@
                                              Margin="Margin.Dense"
                                              Label="@(Model.GetDisplayName(() => Model.CostPrice))"
                                              T="decimal?"
-                                             @bind-Value="Model.CostPrice"
+                                             Value="Model.CostPrice"
+                                             ValueChanged="OnCostPriceChanged"
                                              Variant="Variant.Outlined"
                                              OnAdornmentClick="OnCostPriceAdornmentClicked"></MudNumericField>
                         </ActivatorContent>

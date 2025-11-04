@@ -8,5 +8,6 @@ public class FinancialAccountsByIdSpecification : SpecificationBase<FinancialAcc
     public FinancialAccountsByIdSpecification(FinancialAccountId id)
     {
         AddCriteria(x => x.Id == id);
+        AddInclude(x => x.LedgerAccount!); 
     }
 }

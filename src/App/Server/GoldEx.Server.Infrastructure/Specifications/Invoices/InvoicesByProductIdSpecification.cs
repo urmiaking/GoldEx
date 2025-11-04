@@ -9,5 +9,6 @@ public class InvoicesByProductIdSpecification : SpecificationBase<Invoice>
     public InvoicesByProductIdSpecification(ProductId productId)
     {
         AddCriteria(x => x.ProductItems.Any(i => i.ProductId == productId));
+        ApplyOrderByDescending(x => x.InvoiceDate);
     }
 }

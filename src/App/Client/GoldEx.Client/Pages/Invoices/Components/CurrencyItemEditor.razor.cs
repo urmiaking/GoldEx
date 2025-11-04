@@ -18,6 +18,7 @@ public partial class CurrencyItemEditor
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    public string FinancialAccountLabel => InvoiceType is InvoiceType.Purchase ? "واریز به حساب" : "واریز از حساب";
 
     private List<GetPriceUnitTitleResponse> _currencies = [];
     private MudForm _form = default!;
@@ -56,6 +57,7 @@ public partial class CurrencyItemEditor
             afterSend: response =>
             {
                 _financialAccounts = response;
+                Model.FinancialAccount ??= _financialAccounts.FirstOrDefault() ?? null;
                 StateHasChanged();
             });
     }
