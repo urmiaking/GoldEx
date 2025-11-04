@@ -334,6 +334,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetTraces)
                 .FormatRoute(new { itemId, itemType })
                 .AppendQueryString(requestFilter);
+
+        public static string GetAvailableItemAmount(Guid itemId, ItemType itemType) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableItemAmount)
+                .FormatRoute(new { itemId, itemType });
     }
 
     public class Transactions
