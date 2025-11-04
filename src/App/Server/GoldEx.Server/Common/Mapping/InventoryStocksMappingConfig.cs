@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Domain.FinancialAccountAggregate.Extensions;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Shared.DTOs.InventoryStocks;
@@ -80,7 +81,20 @@ public class InventoryStocksMappingConfig : IRegister
 
         if (src.Currency != null)
         {
-            return $"{prefix}{action} {src.ChangeAmount.ToCurrencyFormat(src.Currency.Title)} {extraInfo}";
+            var currencyDescription = $"{prefix}{action} {src.ChangeAmount.ToCurrencyFormat(src.Currency.Title)}";
+
+            // اضافه کردن اطلاعات حساب مالی فقط برای ارز
+            var currencyItem = src.Invoice?.CurrencyItems
+                .FirstOrDefault(ci => ci.CurrencyId == src.CurrencyId);
+
+            if (currencyItem?.FinancialAccount is not null)
+            {
+                var accountAction = src.ActionType == WarehouseActionType.In ? "واریز به" : "برداشت از";
+                var accountText = currencyItem.FinancialAccount.GetAccountDisplayText();
+                currencyDescription += $" - {accountAction} {accountText}";
+            }
+
+            return $"{currencyDescription} {extraInfo}";
         }
 
         return $"{prefix}{action} {src.ChangeAmount:G29} واحد نامشخص {extraInfo}";

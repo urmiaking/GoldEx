@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="FinancialAccountAggregate\Extensions\" />
     <Folder Include="PaymentVoucherAggregate\" />
     <Folder Include="TransactionAggregate\" />
   </ItemGroup>
