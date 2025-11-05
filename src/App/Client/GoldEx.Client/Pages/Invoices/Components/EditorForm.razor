@@ -112,7 +112,7 @@ else
                             {
                                 <MudSelectItem Value="invoiceType">
                                     <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                        <MudText>@invoiceType.GetDisplayName()</MudText>
+                                        <MudText Color="@(invoiceType == InvoiceType.Purchase ? Color.Success : Color.Error)">@invoiceType.GetDisplayName()</MudText>
                                     </MudStack>
                                 </MudSelectItem>
                             }
@@ -193,14 +193,14 @@ else
             </MudGrid>
 
             <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mt-4">
-                <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudText Typo="Typo.h6" GutterBottom="true" Class="d-none d-md-block">
                     طرف حساب
                     @if (_model.Customer != null)
                     {
                         <span class="d-none d-sm-inline">(@_model.Customer.CustomerType.GetDisplayName())</span>
                     }
                 </MudText>
-                <MudSpacer />
+                <div Class="flex-fill d-none d-md-block"></div>
 
                 <MudAutocomplete T="CustomerVm"
                                  @bind-Value="_model.Customer"
@@ -255,7 +255,7 @@ else
 
             <div class="my-2">
                 <MudTabs Elevation="2" Rounded="true" Centered="true">
-                    <MudTabPanel Text="طلا و جواهر" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
+                    <MudTabPanel Text="طلا، جواهر و آبشده" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
                         <ProductItemsList Items="_model.ProductItems"
                                           PriceUnit="_model.InvoicePriceUnit"
                                           OnEditItem="OnEditProductItem"
@@ -290,7 +290,7 @@ else
                                            OnAddItem="OnAddCurrencyItem"
                                            OnOpenSelector="OnOpenCurrencySelector" />
                     </MudTabPanel>
-                    <MudTabPanel Text="طلای دست دوم" Icon="@Icons.Material.Filled.Recycling" IconColor="Color.Error">
+                    <MudTabPanel Text="طلای مستعمل" Icon="@Icons.Material.Filled.Recycling" IconColor="Color.Error">
                         <UsedProductsList Items="_model.UsedProducts"
                                           PriceUnit="_model.InvoicePriceUnit"
                                           OnEditItem="OnEditUsedProduct"

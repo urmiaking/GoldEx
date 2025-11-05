@@ -28,7 +28,7 @@ public class ProductValidator : AbstractValidator<ProductVm>
             .InclusiveBetween(0, 1000)
             .WithMessage("عیار باید بین 0 تا 1000 باشد");
 
-        When(x => x.ProductType == ProductType.Jewelry, () => 
+        When(x => x.ProductType is ProductType.Jewelry && x.Stones is not null && x.Stones.Any(), () => 
         {
             RuleFor(x => x.StonePriceUnit)
                 .NotNull().WithMessage("لطفا واحد قیمت سنگ را انتخاب کنید");
