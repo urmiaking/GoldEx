@@ -367,6 +367,7 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: ProductItemVm productItem })
         {
             productItem.RecalculateAmounts();
+            //productItem.Product.Barcode = await GetProductBarcodeAsync(productItem); 
             _model.AddProductItem(productItem);
             StateHasChanged();
         }
@@ -404,6 +405,12 @@ public partial class EditorForm
             return;
 
         _model.RemoveProductItem(productItem);
+    }
+
+    private async Task<string?> GetProductBarcodeAsync(ProductItemVm productItem)
+    {
+        // TODO; implement barcode generation based on reservation
+        return null;
     }
 
     #endregion
@@ -861,7 +868,7 @@ public partial class EditorForm
     {
         if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
         {
-            if (tradeScale is TradeScale.Wholesale)
+            if (tradeScale != TradeScale)
             {
                 var result = await DialogService.ShowMessageBox(
                     "هشدار",

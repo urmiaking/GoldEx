@@ -144,7 +144,7 @@ public static class TransactionDescriptionBuilder
 
     public static string ForInvoicePaymentReceived(Invoice invoice, InvoicePayment payment)
     {
-        var desc = $"دریافت وجه بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
+        var desc = $"تسویه فاکتور فروش شماره {invoice.InvoiceNumber}";
         if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
             desc += $" (شماره پیگیری: {payment.ReferenceNumber})";
         return desc;
@@ -152,7 +152,7 @@ public static class TransactionDescriptionBuilder
 
     public static string ForInvoicePaymentMade(Invoice invoice, InvoicePayment payment)
     {
-        var desc = $"پرداخت وجه بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
+        var desc = $"تسویه فاکتور خرید شماره {invoice.InvoiceNumber}";
         if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
             desc += $" (شماره پیگیری: {payment.ReferenceNumber})";
         return desc;
@@ -167,7 +167,7 @@ public static class TransactionDescriptionBuilder
 
     public static string ForInvoicePaymentReceivedByEndorser(Invoice invoice, InvoicePayment payment, string endorserName)
     {
-        return $"دریافت وجه بابت فاکتور فروش شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
+        return $"تسویه فاکتور فروش شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
                (!string.IsNullOrWhiteSpace(payment.ReferenceNumber)
                    ? $" (شماره پیگیری: {payment.ReferenceNumber})"
                    : string.Empty);
@@ -175,7 +175,7 @@ public static class TransactionDescriptionBuilder
 
     public static string ForInvoicePaymentMadeByEndorser(Invoice invoice, InvoicePayment payment, string endorserName)
     {
-        return $"پرداخت وجه بابت فاکتور خرید شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
+        return $"تسویه فاکتور خرید شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
                (!string.IsNullOrWhiteSpace(payment.ReferenceNumber)
                    ? $" (شماره پیگیری: {payment.ReferenceNumber})"
                    : string.Empty);
