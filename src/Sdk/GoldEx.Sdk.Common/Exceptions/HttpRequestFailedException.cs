@@ -45,25 +45,40 @@ public class HttpRequestValidationException : HttpRequestFailedException
 
     private void TryReadValidationProblems(HttpResponseMessage response)
     {
+        string? content = null;
+
         try
         {
             using var stream = response.Content.ReadAsStream();
             using var reader = new StreamReader(stream);
-            var content = reader.ReadToEnd();
+            content = reader.ReadToEnd();
 
             var jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
+
             var problems = JsonSerializer.Deserialize<ValidationProblemDetails>(content, jsonOptions);
 
-            if (problems != null)
+            if (problems is not null && problems.Errors.Any())
+            {
                 Errors = problems.Errors;
+                return;
+            }
         }
-        catch (Exception)
+        catch
         {
-            // ignored
+            // ignored - fall back below
+        }
+
+        // Fallback: if server sent plain text (e.g., InvalidOperationException.Message), surface it as a general error
+        if (!string.IsNullOrWhiteSpace(content))
+        {
+            Errors = new Dictionary<string, string[]>
+            {
+                { string.Empty, [content] }
+            };
         }
     }
 }

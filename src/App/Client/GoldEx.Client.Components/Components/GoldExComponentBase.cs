@@ -448,6 +448,9 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
             case HttpRequestFailedException or HttpRequestException:
                 AddErrorToast("عدم امکان برقراری ارتباط با سرور");
                 break;
+            case InvalidOperationException invalidOperationException:
+                AddErrorToast($"{invalidOperationException.GetType()}. {Localizer[invalidOperationException.Message]}");
+                break;
             default:
                 AddErrorToast($"{ex.GetType()}. {Localizer[ex.Message]}");
                 break;

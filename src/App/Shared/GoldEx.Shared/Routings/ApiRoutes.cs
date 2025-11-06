@@ -27,11 +27,11 @@ public static class ApiRoutes
 
     public class Price
     {
-        public const string Base = "/api/Price";
+        public const string Base = "/api/price";
 
         public const string Get = "";
-        public const string GetMarket = "Market/{marketType}";
-        public const string GetUnit = "Unit/{unitType}/{priceUnitId?}";
+        public const string GetMarket = "market/{marketType}";
+        public const string GetUnit = "unit/{unitType}/{priceUnitId?}";
         public const string GetSettings = "settings";
         public const string UpdateStatus = "status/{id}";
         public const string GetTitles = "titles";
@@ -47,7 +47,7 @@ public static class ApiRoutes
 
     public class Products
     {
-        public const string Base = "/api/Products";
+        public const string Base = "/api/products";
         public const string GetList = "";
         public const string GetByBarcode = "barcode/{barcode}";
         public const string Create = "";
@@ -58,7 +58,7 @@ public static class ApiRoutes
 
     public class Settings
     {
-        public const string Base = "/api/Settings";
+        public const string Base = "/api/settings";
         public const string Get = "";
         public const string Update = "";
         public const string GetBarcodePrintSettings = "barcode-print";
@@ -67,7 +67,7 @@ public static class ApiRoutes
 
     public class ProductCategories
     {
-        public const string Base = "/api/ProductCategories";
+        public const string Base = "/api/product-categories";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string Create = "";
@@ -78,7 +78,7 @@ public static class ApiRoutes
 
     public class Customers
     {
-        public const string Base = "/api/Customers";
+        public const string Base = "/api/customers";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string GetByNationalId = "national-id/{nationalId}";
@@ -92,7 +92,7 @@ public static class ApiRoutes
 
     public class Transactions
     {
-        public const string Base = "/api/Transactions";
+        public const string Base = "/api/transactions";
         public const string GetList = "";
         public const string GetRemainingList = "customer/{customerId}/remaining-list";
         public const string GetFinancialAccountBalance = "financial-account/{financialAccountId}/balance";
@@ -100,7 +100,7 @@ public static class ApiRoutes
 
     public class PriceUnits
     {
-        public const string Base = "/api/PriceUnits";
+        public const string Base = "/api/price-units";
         public const string GetList = "";
         public const string GetAll = "all";
         public const string GetTitles = "titles";
@@ -114,7 +114,7 @@ public static class ApiRoutes
 
     public class Invoices
     {
-        public const string Base = "/api/Invoices";
+        public const string Base = "/api/invoices";
         public const string Create = "";
         public const string Update = "{id}";
         public const string GetList = "";
@@ -127,13 +127,13 @@ public static class ApiRoutes
 
     public class Reports
     {
-        public const string Base = "/api/Reports";
+        public const string Base = "/api/reports";
         public const string GetList = "";
     }
 
     public class FinancialAccounts
     {
-        public const string Base = "/api/FinancialAccounts";
+        public const string Base = "/api/financial-accounts";
         public const string GetAll = "";
         public const string GetList = "list";
         public const string Get = "{id}";
@@ -145,7 +145,7 @@ public static class ApiRoutes
 
     public class PaymentVouchers
     {
-        public const string Base = "/api/PaymentVouchers";
+        public const string Base = "/api/payment-vouchers";
         public const string GetList = "";
         public const string GetPendingList = "pending/{customerId}";
         public const string Get = "{id}";
@@ -158,7 +158,7 @@ public static class ApiRoutes
 
     public class LedgerAccounts
     {
-        public const string Base = "/api/LedgerAccounts";
+        public const string Base = "/api/ledger-accounts";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string Create = "";
@@ -169,7 +169,7 @@ public static class ApiRoutes
 
     public class Coins
     {
-        public const string Base = "/api/Coins";
+        public const string Base = "/api/coins";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string Create = "";
@@ -180,7 +180,7 @@ public static class ApiRoutes
 
     public class InventoryStocks
     {
-        public const string Base = "/api/InventoryStocks";
+        public const string Base = "/api/inventory-stocks";
         public const string GetList = "";
         public const string GetAvailableProducts = "available";
         public const string GetInventoryWeightChart = "{targetUnit}/weight-chart";
@@ -191,7 +191,7 @@ public static class ApiRoutes
 
     public class Notifications
     {
-        public const string Base = "/api/Notifications";
+        public const string Base = "/api/notifications";
         public const string GetList = "";
         public const string MarkAsRead = "{id}/read";
         public const string MarkAllAsRead = "read-all";
@@ -199,7 +199,7 @@ public static class ApiRoutes
 
     public class MeltingBatches
     {
-        public const string Base = "/api/MeltingBatches";
+        public const string Base = "/api/melting-batches";
         public const string GetList = "";
         public const string Get = "{id}";
         public const string Create = "";
@@ -209,8 +209,16 @@ public static class ApiRoutes
 
     public class BarcodeInquiries
     {
-        public const string Base = "/api/BarcodeInquiries";
+        public const string Base = "/api/barcode-inquiries";
         public const string GetList = "";
         public const string Inquiry = "{barcode}";
+    }
+
+    public class BarcodeReservations
+    {
+        public const string Base = "/api/barcode-reservations";
+        public const string IssueNext = "issue-next";           
+        public const string Release = "{barcode}/release";      
+
     }
 }

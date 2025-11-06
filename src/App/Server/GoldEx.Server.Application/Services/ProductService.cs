@@ -12,7 +12,6 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Invoices;
@@ -28,37 +27,13 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class ProductService(
     IProductRepository repository,
-    IBarcodeService barcodeService,
+    IBarcodeGeneratorService barcodeGenerator,
+    IServerBarcodeReservationService barcodeReservationService,
     ICustomerRepository customerRepository,
     IMapper mapper,
     ILogger<ProductService> logger,
-    ProductRequestDtoValidator validator,
-    DeleteProductValidator deleteValidator) : IProductService, IServerProductService
+    ProductRequestDtoValidator validator) : IProductService, IServerProductService
 {
-    public async Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter,
-        CancellationToken cancellationToken = default)
-    {
-        var skip = filter.Skip ?? 0;
-        var take = filter.Take ?? 100;
-
-        var spec = new ProductsByFilterSpecification(filter, productFilter);
-
-        var data = await repository
-            .Get(spec)
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
-
-        var totalCount = await repository.CountAsync(spec, cancellationToken);
-
-        return new PagedList<GetProductResponse>
-        {
-            Data = mapper.Map<List<GetProductResponse>>(data),
-            Skip = skip,
-            Take = take,
-            Total = totalCount
-        };
-    }
-
     public async Task<List<GetProductResponse>> GetListAsync(string name, ProductType productType,
         CancellationToken cancellationToken = default)
     {
@@ -87,97 +62,25 @@ internal class ProductService(
         return item is null ? null : mapper.Map<GetProductResponse>(item);
     }
 
-    public async Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default)
+    public Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter,
+        CancellationToken cancellationToken = default)
     {
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-        var item = Product.Create(
-            request.Name ?? string.Empty,
-            request.Weight,
-            request.Wage,
-            request.ProductType,
-            request.Fineness,
-            request.GoldUnitType,
-            request.WageType,
-            request.WagePriceUnitId.HasValue ? new PriceUnitId(request.WagePriceUnitId.Value) : null,
-            request.StonePriceUnitId.HasValue ? new PriceUnitId(request.StonePriceUnitId.Value) : null,
-            request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : null);
-
-        if (request.ProductType == ProductType.Jewelry)
-        {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
-                s.Type,
-                s.Color,
-                s.Cut,
-                s.Carat,
-                s.Purity,
-                s.Cost,
-                item.Id)));
-        }
-
-        if (string.IsNullOrEmpty(request.Barcode))
-        {
-            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(request.ProductType,
-                request.ProductCategoryId.HasValue
-                    ? new ProductCategoryId(request.ProductCategoryId.Value)
-                    : null,
-                cancellationToken);
-
-            item.SetBarcode(barcode);
-        }
-
-        await repository.CreateAsync(item, cancellationToken);
+        throw new NotImplementedException();
     }
 
-    public async Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default)
+    public Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default)
     {
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
-
-        var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-        item.SetName(request.Name ?? string.Empty);
-        // item.SetWeight(request.Weight);
-        item.SetWage(request.Wage);
-        item.SetWageType(request.WageType);
-        item.SetProductType(request.ProductType);
-        item.SetFineness(request.Fineness);
-        item.SetGoldUnitType(request.GoldUnitType);
-
-        if (request.ProductCategoryId.HasValue)
-            item.SetProductCategory(new ProductCategoryId(request.ProductCategoryId.Value));
-        else
-            item.SetProductCategory(null);
-
-        if (request.WagePriceUnitId.HasValue)
-            item.SetWagePriceUnitId(new PriceUnitId(request.WagePriceUnitId.Value));
-        else
-            item.SetWagePriceUnitId(null);
-
-        if (request.ProductType == ProductType.Jewelry)
-        {
-            item.SetGemStones(request.GemStones?.Select(s => GemStone.Create(StringExtensions.GenerateRandomCode(5),
-                s.Type,
-                s.Color,
-                s.Cut,
-                s.Carat,
-                s.Purity,
-                s.Cost,
-                item.Id)));
-        }
-        else
-            item.ClearGemStones();
-
-        await repository.UpdateAsync(item, cancellationToken);
+        throw new NotImplementedException();
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+        throw new NotImplementedException();
+    }
 
-        await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
-        await repository.DeleteAsync(item, cancellationToken);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     #region Server side services
@@ -269,7 +172,8 @@ internal class ProductService(
         return item;
     }
 
-    public async Task<Product> CreateProductAsync(ProductRequestDto request, CancellationToken cancellationToken)
+    public async Task<Product> CreateProductAsync(ProductRequestDto request, InvoiceId? invoiceId,
+        CancellationToken cancellationToken)
     {
         await validator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -350,13 +254,16 @@ internal class ProductService(
 
         if (string.IsNullOrEmpty(request.Barcode))
         {
-            var barcode = await barcodeService.GenerateNextProductBarcodeAsync(request.ProductType,
-                request.ProductCategoryId.HasValue
-                    ? new ProductCategoryId(request.ProductCategoryId.Value)
-                    : null,
-                cancellationToken);
-
-            product.SetBarcode(barcode);
+            // Generate directly (standalone product creation scenario)
+            var categoryId = request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : (ProductCategoryId?)null;
+            var barcode = await barcodeGenerator.GenerateNextAsync(request.ProductType, categoryId, cancellationToken);
+            product.SetBarcode(barcode); // or item.Barcode = barcode;
+        }
+        else
+        {
+            // Attempt to commit reservation. If not found, validate uniqueness.
+            await barcodeReservationService.CommitAsync(request.Barcode, invoiceId?.Value, cancellationToken);
+            product.SetBarcode(request.Barcode);
         }
 
         await repository.CreateAsync(product, cancellationToken);
@@ -420,7 +327,7 @@ internal class ProductService(
                     null,
                     null);
 
-                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(ProductType.Gold, null, cancellationToken);
+                var barcode = await barcodeGenerator.GenerateNextAsync(ProductType.Gold, null, cancellationToken);
                 product.SetBarcode(barcode);
 
                 await repository.CreateAsync(product, cancellationToken);
@@ -431,7 +338,7 @@ internal class ProductService(
             {
                 var product = Product.CreateBrokenProduct(dto.Description, dto.Weight, dto.Fineness, dto.UnitType);
 
-                var barcode = await barcodeService.GenerateNextProductBarcodeAsync(dto.ProductType, null, cancellationToken);
+                var barcode = await barcodeGenerator.GenerateNextAsync(dto.ProductType, null, cancellationToken);
                 product.SetBarcode(barcode);
 
                 await repository.CreateAsync(product, cancellationToken);
@@ -533,7 +440,7 @@ internal class ProductService(
                 if (invoice.InvoiceType is InvoiceType.Purchase)
                 {
                     // always create the product
-                    product = await CreateProductAsync(itemDto.Product, cancellationToken);
+                    product = await CreateProductAsync(itemDto.Product, null, cancellationToken);
 
                     // Add product to invoice
                     invoice.AddPurchaseProductItem(
@@ -563,7 +470,7 @@ internal class ProductService(
                     else
                     {
                         // new product: we should create product
-                        product = await CreateProductAsync(itemDto.Product, cancellationToken);
+                        product = await CreateProductAsync(itemDto.Product, null, cancellationToken);
                     }
 
                     // Add product to invoice
