@@ -395,4 +395,14 @@ public class ApiUrls
             BuildUrl(ApiRoutes.BarcodeInquiries.Base, ApiRoutes.BarcodeInquiries.Inquiry)
                 .FormatRoute(new { barcode });
     }
+
+    public static class BarcodeReservations
+    {
+        public static string IssueNext() =>
+            BuildUrl(ApiRoutes.BarcodeReservations.Base, ApiRoutes.BarcodeReservations.IssueNext);
+
+        public static string Release(string barcode) =>
+            BuildUrl(ApiRoutes.BarcodeReservations.Base, ApiRoutes.BarcodeReservations.Release)
+                .FormatRoute(new { barcode });
+    }
 }
