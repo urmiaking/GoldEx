@@ -38,6 +38,10 @@ public class ExceptionHandlerMiddleware(ILogger<ExceptionHandlerMiddleware> logg
                 code = HttpStatusCode.BadRequest;
                 message = GetMessage(validationException);
                 break;
+            case InvalidOperationException invalidOperationException:
+                code = HttpStatusCode.BadRequest;
+                message = invalidOperationException.Message;
+                break;
 
             default:
                 code = HttpStatusCode.InternalServerError;

@@ -123,4 +123,12 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
+
+    public async Task UpdateAsync(Guid id, UpdatePriceSettingRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PutAsJsonAsync(ApiUrls.Price.UpdateSetting(id), request, jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
 }

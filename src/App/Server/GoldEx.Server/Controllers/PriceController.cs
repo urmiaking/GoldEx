@@ -87,4 +87,12 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         await priceService.SetPinnedAsync(id, isPinned, cancellationToken);
         return NoContent();
     }
+
+    [HttpPut(ApiRoutes.Price.UpdateSetting)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+    public async Task<IActionResult> UpdateSettingAsync(Guid id, UpdatePriceSettingRequest request, CancellationToken cancellationToken = default)
+    {
+        await priceService.UpdateAsync(id, request, cancellationToken);
+        return NoContent();
+    }
 }

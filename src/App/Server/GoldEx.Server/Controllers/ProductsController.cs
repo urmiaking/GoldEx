@@ -1,7 +1,5 @@
 ﻿using GoldEx.Sdk.Common;
-using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
-using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -14,13 +12,6 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class ProductsController(IProductService service) : ApiControllerBase
 {
-    [HttpGet(ApiRoutes.Products.GetList)]
-    public async Task<IActionResult> GetListAsync([FromQuery] RequestFilter filter, [FromQuery] ProductFilter productFilter, CancellationToken cancellationToken)
-    {
-        var list = await service.GetListAsync(filter, productFilter, cancellationToken);
-        return Ok(list);
-    }
-
     [HttpGet(ApiRoutes.Products.GetListByName)]
     public async Task<IActionResult> GetListAsync([FromRoute] ProductType productType, [FromQuery] string name, CancellationToken cancellationToken)
     {
@@ -33,26 +24,5 @@ public class ProductsController(IProductService service) : ApiControllerBase
     {
         var product = await service.GetAsync(barcode, cancellationToken);
         return product is null ? NotFound() : Ok(product);
-    }
-
-    [HttpPost(ApiRoutes.Products.Create)]
-    public async Task<IActionResult> CreateAsync(ProductRequestDto request, CancellationToken cancellationToken)
-    {
-        await service.CreateAsync(request, cancellationToken);
-        return Created();
-    }
-
-    [HttpPut(ApiRoutes.Products.Update)]
-    public async Task<IActionResult> UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken)
-    {
-        await service.UpdateAsync(id, request, cancellationToken);
-        return Ok();
-    }
-
-    [HttpDelete(ApiRoutes.Products.Delete)]
-    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        await service.DeleteAsync(id, cancellationToken);
-        return Ok();
     }
 }

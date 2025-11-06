@@ -21,3 +21,4 @@ public class IconsController(IIconService iconService) : ApiControllerBase
         return File(icon, "image/png");
     }
 }
+

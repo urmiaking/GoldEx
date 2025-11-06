@@ -74,6 +74,9 @@ public class ApiUrls
 
         public static string SetPinned(Guid id, bool isPinned) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.SetPinned).FormatRoute(new { id, isPinned });
+
+        public static string UpdateSetting(Guid id) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.UpdateSetting).FormatRoute(new { id });
     }
 
     public class Health
@@ -393,6 +396,16 @@ public class ApiUrls
 
         public static string Inquiry(string barcode) =>
             BuildUrl(ApiRoutes.BarcodeInquiries.Base, ApiRoutes.BarcodeInquiries.Inquiry)
+                .FormatRoute(new { barcode });
+    }
+
+    public static class BarcodeReservations
+    {
+        public static string IssueNext() =>
+            BuildUrl(ApiRoutes.BarcodeReservations.Base, ApiRoutes.BarcodeReservations.IssueNext);
+
+        public static string Release(string barcode) =>
+            BuildUrl(ApiRoutes.BarcodeReservations.Base, ApiRoutes.BarcodeReservations.Release)
                 .FormatRoute(new { barcode });
     }
 }
