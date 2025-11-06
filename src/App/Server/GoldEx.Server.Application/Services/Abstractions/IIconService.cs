@@ -12,4 +12,12 @@ public interface IIconService
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The icon as a byte array.</returns>
     Task<byte[]?> GetIconAsync(IconType iconType, Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the icon path for the specified type.
+    /// </summary>
+    /// <param name="iconType"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    string? GetIconPath(IconType iconType, Guid id);
 }

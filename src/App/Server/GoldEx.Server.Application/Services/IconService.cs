@@ -14,7 +14,6 @@ internal class IconService(IWebHostEnvironment environment) : IIconService
         switch (iconType)
         {
             case IconType.Price:
-                if (environment.PriceHistoryIconExists(id))
                 {
                     var path = environment.GetPriceHistoryIconPath(id, null);
 
@@ -23,7 +22,6 @@ internal class IconService(IWebHostEnvironment environment) : IIconService
                 }
                 break;
             case IconType.PriceUnit:
-                if (environment.PriceUnitIconExists(id))
                 {
                     var path = environment.GetPriceUnitIconPath(id, null);
                     if (File.Exists(path))
@@ -31,7 +29,6 @@ internal class IconService(IWebHostEnvironment environment) : IIconService
                 }
                 break;
             case IconType.App:
-                if (environment.AppIconExists())
                 {
                     var path = environment.GetAppIconPath();
                     if (File.Exists(path))
@@ -43,5 +40,18 @@ internal class IconService(IWebHostEnvironment environment) : IIconService
         }
 
         return null;
+    }
+
+    public string? GetIconPath(IconType iconType, Guid id)
+    {
+        var path = iconType switch
+        {
+            IconType.Price => environment.GetPriceHistoryIconPath(id, null),
+            IconType.PriceUnit => environment.GetPriceUnitIconPath(id, null),
+            IconType.App => environment.GetAppIconPath(),
+            _ => throw new ArgumentOutOfRangeException(nameof(iconType), iconType, null)
+        };
+
+        return File.Exists(path) ? path : null;
     }
 }
