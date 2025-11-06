@@ -1,26 +1,19 @@
 ﻿@inherits GoldExComponentBase
 
-<EditForm Model="Model" OnValidSubmit="Submit">
+<EditForm Model="_model" OnValidSubmit="Submit">
     <DataAnnotationsValidator />
 
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="8" lg="8">
-                    <MudTextField @bind-Value="Model.Title"
-                                  For="@(() => Model.Title)"
-                                  Label="عنوان"
-                                  Margin="Margin.Dense"
-                                  Variant="Variant.Outlined" />
-                </MudItem>
                 <MudItem xs="12" md="4" lg="4" Class="mt-2">
-                    <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="Model.IconFile" For="() => Model.IconFile!">
+                    <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!">
                         <ActivatorContent>
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Success"
                                        FullWidth="true"
                                        StartIcon="@Icons.Material.Filled.AttachFile">
-                                انتخاب لوگو
+                                تغییر لوگو
                             </MudButton>
                         </ActivatorContent>
                         <SelectedTemplate Context="ctx">
@@ -32,22 +25,8 @@
                     </MudFileUpload>
                 </MudItem>
                 <MudItem xs="12" md="12" lg="12">
-                    <MudSelect T="PriceVm?"
-                               Value="Model.PriceVm"
-                               ValueChanged="OnPriceVmChanged"
-                               For="@(() => Model.PriceVm)"
-                               Label="قیمت وابسته"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined">
-                        @foreach (var price in _prices)
-                        {
-                            <MudSelectItem Value="@price">@price.Title</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="12" lg="12">
                     <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Start">
-                        هنگام انتخاب این واحد ارزی، قیمت وابسته ای که برای آن انتخاب شود در نرخ تبدیل ارزها لحاظ خواهد شد
+                        با تغییر این لوگو، در صورت وجود لوگوی قبلی، جایگزین خواهد شد.
                     </MudAlert>
                 </MudItem>
             </MudGrid>

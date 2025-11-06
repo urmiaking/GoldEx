@@ -40,7 +40,7 @@ internal class PriceService(
     IMapper mapper,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment) : IServerPriceService,
-    IPriceService
+    IPriceService 
 {
     #region ServerPriceService
 
@@ -49,151 +49,265 @@ internal class PriceService(
         if (!incomingPriceList.Any())
             return;
 
-        var localPrices = await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken);
+        var localPricesLookup = (await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken))
+            .ToDictionary(p => p.Title);
 
+        var (pricesToCreate, pricesToUpdate, downloadTasks) =
+            ClassifyPricesAndPrepareDownloads(incomingPriceList, localPricesLookup, cancellationToken);
+
+        if (pricesToCreate.Any())
+        {
+            await repository.CreateRangeAsync(pricesToCreate, cancellationToken);
+            await ProcessCreatedPricesAsync(pricesToCreate, cancellationToken);
+        }
+
+        if (pricesToUpdate.Any()) 
+            await repository.UpdateRangeAsync(pricesToUpdate, cancellationToken);
+
+        await ProcessImageDownloadsAsync(downloadTasks, cancellationToken);
+    }
+
+    #region Helper methods
+
+    /// <summary>
+    /// Sorts incoming prices into create/update lists and creates image download tasks.
+    /// </summary>
+    private (List<Price> PricesToCreate, List<Price> PricesToUpdate, List<Task<(Price price, byte[]? imageData, string? imageFormat)>> DownloadTasks)
+        ClassifyPricesAndPrepareDownloads(
+            List<PriceResponse> incomingPriceList,
+            Dictionary<string, Price> localPricesLookup,
+            CancellationToken cancellationToken)
+    {
         var pricesToCreate = new List<Price>();
         var pricesToUpdate = new List<Price>();
         var downloadTasks = new List<Task<(Price price, byte[]? imageData, string? imageFormat)>>();
 
         foreach (var incomingPrice in incomingPriceList)
         {
-            var existingPrice = localPrices.FirstOrDefault(p => p.Title == incomingPrice.Title);
-            if (existingPrice is not null)
+            if (localPricesLookup.TryGetValue(incomingPrice.Title, out var existingPrice))
             {
-                if (existingPrice.PriceHistory is null)
+                // Update existing price logic
+                if (UpdateExistingPriceHistory(existingPrice, incomingPrice))
                 {
-                    existingPrice.CreatePriceHistory(PriceHistory.Create(incomingPrice.CurrentValue, incomingPrice.LastUpdate, incomingPrice.Change, incomingPrice.Unit));
+                    pricesToUpdate.Add(existingPrice);
                 }
-                else
-                {
-                    if (existingPrice.PriceHistory.CurrentValue == incomingPrice.CurrentValue && existingPrice.PriceHistory.LastUpdate == incomingPrice.LastUpdate)
-                        continue;
-
-                    existingPrice.SetPriceHistory(incomingPrice.CurrentValue, incomingPrice.LastUpdate, incomingPrice.Change, incomingPrice.Unit);
-                }
-
-                pricesToUpdate.Add(existingPrice);
             }
             else
             {
-                var price = Price.Create(incomingPrice.Title,
-                    incomingPrice.MarketType,
-                    PriceHistory.Create(incomingPrice.CurrentValue,
-                        incomingPrice.LastUpdate,
-                        incomingPrice.Change,
-                        incomingPrice.Unit));
-
-                pricesToCreate.Add(price);
+                // Create new price logic
+                var newPrice = CreateNewPrice(incomingPrice);
+                pricesToCreate.Add(newPrice);
 
                 if (!string.IsNullOrEmpty(incomingPrice.IconUrl))
                 {
-                    downloadTasks.Add(Task.Run(async () =>
-                    {
-                        var result = await ImageConverter.ToByteArrayAsync(incomingPrice.IconUrl);
-                        return (price, result.ByteArray, result.ImageFormat);
-                    }, cancellationToken));
+                    downloadTasks.Add(
+                        CreateIconDownloadTask(newPrice, incomingPrice.IconUrl, cancellationToken)
+                    );
                 }
             }
         }
 
-        if (pricesToCreate.Any())
+        return (pricesToCreate, pricesToUpdate, downloadTasks);
+    }
+
+    /// <summary>
+    /// Updates an existing price's history. Returns true if an update was made, false otherwise.
+    /// </summary>
+    private bool UpdateExistingPriceHistory(Price existingPrice, PriceResponse incomingPrice)
+    {
+        if (existingPrice.PriceHistory is null)
         {
-            await repository.CreateRangeAsync(pricesToCreate, cancellationToken);
+            existingPrice.CreatePriceHistory(PriceHistory.Create(incomingPrice.CurrentValue, incomingPrice.LastUpdate, incomingPrice.Change, incomingPrice.Unit));
+            return true; // Price was updated
+        }
 
-            var emptyPriceUnits = await priceUnitRepository.Get(new PriceUnitsWithoutPriceIdSpecification())
-                .ToListAsync(cancellationToken);
+        // Continue if data is identical
+        if (existingPrice.PriceHistory.CurrentValue == incomingPrice.CurrentValue &&
+            existingPrice.PriceHistory.LastUpdate == incomingPrice.LastUpdate)
+        {
+            return false; // No change
+        }
 
-            var priceTitleToIdMap = pricesToCreate
-                .GroupBy(p => p.Title)
-                .ToDictionary(g => g.Key, g => g.First().Id);
+        existingPrice.SetPriceHistory(incomingPrice.CurrentValue, incomingPrice.LastUpdate, incomingPrice.Change, incomingPrice.Unit);
+        return true; // Price was updated
+    }
 
-            var updatedPriceUnits = new List<PriceUnit>();
+    /// <summary>
+    /// Creates a new Price entity from an incoming DTO.
+    /// </summary>
+    private Price CreateNewPrice(PriceResponse incomingPrice)
+    {
+        return Price.Create(incomingPrice.Title,
+            incomingPrice.MarketType,
+            PriceHistory.Create(incomingPrice.CurrentValue,
+                incomingPrice.LastUpdate,
+                incomingPrice.Change,
+                incomingPrice.Unit));
+    }
 
-            foreach (var priceUnit in emptyPriceUnits)
+    /// <summary>
+    /// Creates and starts a task to download a price icon.
+    /// </summary>
+    private Task<(Price price, byte[]? imageData, string? imageFormat)> CreateIconDownloadTask(
+        Price price, string iconUrl, CancellationToken cancellationToken)
+    {
+        return Task.Run(async () =>
+        {
+            var result = await ImageConverter.ToByteArrayAsync(iconUrl);
+            return (price, result.ByteArray, result.ImageFormat);
+        }, cancellationToken);
+    }
+
+    // --- 2. Post-Creation Logic Helpers ---
+
+    /// <summary>
+    /// Coordinates all logic that must run *after* new prices are saved to the DB.
+    /// </summary>
+    private async Task ProcessCreatedPricesAsync(List<Price> createdPrices, CancellationToken cancellationToken)
+    {
+        // 2a. Link any existing PriceUnits that were waiting for these prices
+        await LinkPriceUnitsToNewPricesAsync(createdPrices, cancellationToken);
+
+        // 2b. Create initial Coin entities if they don't exist
+        await EnsureInitialCoinsExistAsync(createdPrices, cancellationToken);
+
+        // 2c. Ensure critical system financial accounts (Gold, Cash) exist
+        await EnsureSystemFinancialAccountsExistAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Finds PriceUnits with no PriceId and links them to the newly created prices by Title.
+    /// </summary>
+    private async Task LinkPriceUnitsToNewPricesAsync(List<Price> createdPrices, CancellationToken cancellationToken)
+    {
+        var emptyPriceUnits = await priceUnitRepository
+            .Get(new PriceUnitsWithoutPriceIdSpecification())
+            .ToListAsync(cancellationToken);
+
+        if (!emptyPriceUnits.Any()) return;
+
+        var priceTitleToIdMap = createdPrices
+            .GroupBy(p => p.Title)
+            .ToDictionary(g => g.Key, g => g.First().Id);
+
+        var updatedPriceUnits = new List<PriceUnit>();
+        foreach (var priceUnit in emptyPriceUnits)
+        {
+            if (priceTitleToIdMap.TryGetValue(priceUnit.Title, out var matchingPriceId) &&
+                priceUnit.PriceId != matchingPriceId)
             {
-                if (priceTitleToIdMap.TryGetValue(priceUnit.Title, out var matchingPriceId) &&
-                    priceUnit.PriceId != matchingPriceId)
-                {
-                    priceUnit.SetPriceId(matchingPriceId);
-                    updatedPriceUnits.Add(priceUnit);
-                }
-            }
-
-            if (updatedPriceUnits.Any())
-                await priceUnitRepository.UpdateRangeAsync(updatedPriceUnits, cancellationToken);
-
-            var coins = await coinService.GetListAsync(null, cancellationToken);
-
-            if (!coins.Any())
-            {
-                var coinPrices = pricesToCreate.Where(x => x.MarketType is MarketType.Coin).ToList();
-
-                foreach (var coinPrice in coinPrices)
-                    await coinService.CreateAsync(new CoinRequestDto(null, coinPrice.Title, coinPrice.Id.Value), cancellationToken);
-            }
-
-            var goldAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold), cancellationToken);
-
-            if (!goldAccountExists)
-            {
-                var goldPriceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Gold price unit is not initialized");
-
-                var inventoryLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Molten Gold Inventory ledger account is not initialized");
-
-                var goldAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Gold, goldPriceUnit.Id, inventoryLedgerAccount.Id);
-                await financialAccountRepository.CreateAsync(goldAccount, cancellationToken);
-            }
-
-            var cashAccountExists = await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash), cancellationToken);
-
-            if (!cashAccountExists)
-            {
-                var irrPriceUnit = await priceUnitRepository.Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName()))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("IRR price unit is not initialized");
-
-                var internalCashLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Internal Cash Accounts ledger account is not initialized");
-
-                var cashAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Cash, irrPriceUnit.Id, internalCashLedgerAccount.Id,
-                    cashAccount: CashAccount.Create(null, CashAccountType.Internal));
-
-                await financialAccountRepository.CreateAsync(cashAccount, cancellationToken);
+                priceUnit.SetPriceId(matchingPriceId);
+                updatedPriceUnits.Add(priceUnit);
             }
         }
 
-        if (pricesToUpdate.Any()) await repository.UpdateRangeAsync(pricesToUpdate, cancellationToken);
+        if (updatedPriceUnits.Any())
+            await priceUnitRepository.UpdateRangeAsync(updatedPriceUnits, cancellationToken);
+    }
+
+    /// <summary>
+    /// If no coins exist in the system, creates them from the newly added 'Coin' market type prices.
+    /// </summary>
+    private async Task EnsureInitialCoinsExistAsync(List<Price> createdPrices, CancellationToken cancellationToken)
+    {
+        var coins = await coinService.GetListAsync(null, cancellationToken);
+        if (coins.Any()) return; // Coins already exist
+
+        var coinPrices = createdPrices.Where(x => x.MarketType is MarketType.Coin).ToList();
+        foreach (var coinPrice in coinPrices)
+        {
+            // Assuming Id is not null after CreateRangeAsync and is required
+            await coinService.CreateAsync(new CoinRequestDto(null, coinPrice.Title, coinPrice.Id.Value), cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Checks for and creates system-critical financial accounts if they are missing.
+    /// </summary>
+    private async Task EnsureSystemFinancialAccountsExistAsync(CancellationToken cancellationToken)
+    {
+        await EnsureGoldAccountExistsAsync(cancellationToken);
+        await EnsureCashAccountExistsAsync(cancellationToken);
+    }
+
+    private async Task EnsureGoldAccountExistsAsync(CancellationToken cancellationToken)
+    {
+        if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold), cancellationToken))
+            return;
+
+        var goldPriceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Gold price unit is not initialized");
+
+        var inventoryLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Molten Gold Inventory ledger account is not initialized");
+
+        var goldAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Gold, goldPriceUnit.Id, inventoryLedgerAccount.Id);
+        await financialAccountRepository.CreateAsync(goldAccount, cancellationToken);
+    }
+
+    private async Task EnsureCashAccountExistsAsync(CancellationToken cancellationToken)
+    {
+        if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash), cancellationToken))
+            return;
+
+        var irrPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName()))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("IRR price unit is not initialized");
+
+        var internalCashLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Internal Cash Accounts ledger account is not initialized");
+
+        var cashAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Cash, irrPriceUnit.Id, internalCashLedgerAccount.Id,
+            cashAccount: CashAccount.Create(null, CashAccountType.Internal));
+
+        await financialAccountRepository.CreateAsync(cashAccount, cancellationToken);
+    }
+
+
+    // --- 3. Image Download Processing Helper ---
+
+    /// <summary>
+    /// Awaits all pending image downloads and saves the results to the file system
+    /// for both the Price and its related PriceUnits.
+    /// </summary>
+    private async Task ProcessImageDownloadsAsync(
+        List<Task<(Price price, byte[]? imageData, string? imageFormat)>> downloadTasks,
+        CancellationToken cancellationToken)
+    {
+        if (!downloadTasks.Any()) return;
 
         await Task.WhenAll(downloadTasks);
 
-        foreach (var taskResult in downloadTasks)
+        foreach (var task in downloadTasks)
         {
-            var downloaded = await taskResult;
-            if (downloaded.imageData is not null)
+            var (price, imageData, imageFormat) = await task; // Get completed task result
+
+            if (imageData is not null && imageFormat is not null)
             {
-                await fileService.SaveLocalFileAsync(webHostEnvironment.GetPriceHistoryIconPath(
-                        downloaded.price.Id.Value,
-                        downloaded.imageFormat),
-                    downloaded.imageData,
+                // Save icon for the Price (History)
+                await fileService.SaveLocalFileAsync(
+                    webHostEnvironment.GetPriceHistoryIconPath(price.Id.Value, imageFormat),
+                    imageData,
                     cancellationToken);
 
+                // Save icon for all related PriceUnits
                 var relatedPriceUnits = await priceUnitRepository.Get(
-                        new PriceUnitsByPriceIdSpecification(downloaded.price.Id))
+                        new PriceUnitsByPriceIdSpecification(price.Id))
                     .ToListAsync(cancellationToken);
 
                 foreach (var priceUnit in relatedPriceUnits)
                 {
                     await fileService.SaveLocalFileAsync(
-                        webHostEnvironment.GetPriceUnitIconPath(
-                            priceUnit.Id.Value,
-                            downloaded.imageFormat),
-                        downloaded.imageData,
+                        webHostEnvironment.GetPriceUnitIconPath(priceUnit.Id.Value, imageFormat),
+                        imageData,
                         cancellationToken);
                 }
             }
         }
     }
+
+    #endregion
 
     #endregion
 
@@ -444,6 +558,19 @@ internal class PriceService(
         item.SetPinned(isPinned);
 
         await repository.UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task UpdateAsync(Guid id, UpdatePriceSettingRequest request, CancellationToken cancellationToken = default)
+    {
+        var item = await repository
+            .Get(new PricesByIdSpecification(new PriceId(id)))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (item is null)
+            throw new NotFoundException();
+
+        await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetPriceHistoryIconPath(id, null), request.IconContent, cancellationToken);
     }
 
     #endregion
