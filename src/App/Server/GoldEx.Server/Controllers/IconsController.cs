@@ -12,12 +12,13 @@ public class IconsController(IIconService iconService) : ApiControllerBase
 {
     [AllowAnonymous]
     [HttpGet(ApiRoutes.Icons.GetIcon)]
-    public IActionResult GetIcon(IconType iconType, Guid id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetIconAsync(IconType iconType, Guid id, CancellationToken cancellationToken = default)
     {
-        var path = iconService.GetIconPath(iconType, id);
-        if (path == null)
+        var icon = await iconService.GetIconAsync(iconType, id, cancellationToken);
+        if (icon == null)
             return NotFound();
 
-        return PhysicalFile(path, "image/png");
+        return File(icon, "image/png");
     }
 }
+

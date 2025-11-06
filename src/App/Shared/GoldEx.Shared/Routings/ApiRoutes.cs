@@ -38,6 +38,7 @@ public static class ApiRoutes
         public const string GetByPriceUnit = "price-unit/{priceUnitId}";
         public const string GetExchange = "exchange-rate/{primaryPriceUnitId}/{secondaryPriceUnitId}";
         public const string SetPinned = "{id}/pin/{isPinned}";
+        public const string UpdateSetting = "setting/{id}";
     }
 
     public class Health

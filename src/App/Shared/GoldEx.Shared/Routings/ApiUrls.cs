@@ -74,6 +74,9 @@ public class ApiUrls
 
         public static string SetPinned(Guid id, bool isPinned) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.SetPinned).FormatRoute(new { id, isPinned });
+
+        public static string UpdateSetting(Guid id) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.UpdateSetting).FormatRoute(new { id });
     }
 
     public class Health

@@ -26,4 +26,5 @@ public interface IPriceService
     Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default);
     Task SetStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default);
     Task SetPinnedAsync(Guid id, bool isPinned, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Guid id, UpdatePriceSettingRequest request, CancellationToken cancellationToken = default);
 }
