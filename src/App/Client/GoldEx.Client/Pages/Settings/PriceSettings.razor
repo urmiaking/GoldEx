@@ -33,12 +33,17 @@ else
                     @foreach (var price in response.SelectMany(r => r.Prices ?? []))    
                     {    
                         <MudTreeViewItem T="object"     
-                                         Value="price"     
+                                         Value="price"  
                                          Selected="price.IsActive"  
                                          SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)">  
                             <BodyContent>  
-                                <div class="d-flex align-items-center justify-space-between" style="width: 100%;">  
+                                <div class="d-flex align-items-center justify-space-between w-100">  
                                     <MudText>@price.Title</MudText>  
+                                    <MudSpacer />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"  
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => OnEditPrice(price))" />
                                     <MudIconButton Icon="@(price.IsPinned ? Icons.Material.Filled.PushPin : Icons.Material.Outlined.PushPin)"  
                                                    Color="@(price.IsPinned ? Color.Primary : Color.Default)"  
                                                    Size="Size.Small"  

@@ -4,6 +4,7 @@ using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.BarcodeReservations;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Prices;
@@ -51,6 +52,39 @@ public partial class EditorForm
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
+
+    private object SettingsForJs => new
+    {
+        labelWidth = _barcodeSettings?.LabelWidth,
+        labelHeight = _barcodeSettings?.LabelHeight,
+        marginTop = _barcodeSettings?.MarginTop,
+        marginRight = _barcodeSettings?.MarginRight,
+        marginBottom = _barcodeSettings?.MarginBottom,
+        marginLeft = _barcodeSettings?.MarginLeft,
+        paddingTop = _barcodeSettings?.PaddingTop,
+        paddingRight = _barcodeSettings?.PaddingRight,
+        paddingBottom = _barcodeSettings?.PaddingBottom,
+        paddingLeft = _barcodeSettings?.PaddingLeft,
+        positionItems = _barcodeSettings?.PositionItems.Select(x => new
+        {
+            position = x.Position.ToString(),
+            itemType = x.ItemType.ToString(),
+            order = x.Order,
+            isVisible = x.IsVisible,
+            fontSize = x.FontSize,
+            itemSpacing = x.ItemSpacing,
+            barcodeSettings = x.BarcodeSettings != null
+                ? new
+                {
+                    width = x.BarcodeSettings.Width,
+                    height = x.BarcodeSettings.Height,
+                    displayValue = x.BarcodeSettings.DisplayValue,
+                    fontSize = x.BarcodeSettings.FontSize,
+                    margin = x.BarcodeSettings.Margin
+                }
+                : null
+        }).ToArray()
+    };
 
     private string PrintUrl => ClientRoutes.Invoices.ViewInvoice.FormatRoute(new
     {
@@ -366,8 +400,10 @@ public partial class EditorForm
 
         if (result is { Canceled: false, Data: ProductItemVm productItem })
         {
+            // Reserve and assign barcode for brand-new items
+            await AssignReservedBarcodeIfNeeded(productItem);
+
             productItem.RecalculateAmounts();
-            //productItem.Product.Barcode = await GetProductBarcodeAsync(productItem); 
             _model.AddProductItem(productItem);
             StateHasChanged();
         }
@@ -390,6 +426,10 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: ProductItemVm resultItem })
         {
             productItemVm.UpdateFrom(resultItem);
+
+            // Reserve and assign barcode if needed
+            await AssignReservedBarcodeIfNeeded(productItemVm);
+
             StateHasChanged();
         }
     }
@@ -404,13 +444,44 @@ public partial class EditorForm
         if (result is null)
             return;
 
+        // Release reservation if this was a brand-new item with a reserved barcode
+        await ReleaseReservedBarcodeIfNeeded(productItem);
+
         _model.RemoveProductItem(productItem);
     }
 
-    private async Task<string?> GetProductBarcodeAsync(ProductItemVm productItem)
+    private async Task AssignReservedBarcodeIfNeeded(ProductItemVm item)
     {
-        // TODO; implement barcode generation based on reservation
-        return null;
+        // Only for brand-new products (no Id) and missing barcode
+        if (item.Product.Id.HasValue)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(item.Product.Barcode))
+            return;
+
+        var request = new IssueNextBarcodeRequest(item.Product.ProductType, item.Product.ProductCategoryId, _model.InvoiceId);
+
+        // Issue a reservation based on product type and optional category
+        await SendRequestAsync<IBarcodeReservationService, IssueNextBarcodeResponse>(
+            action: (svc, ct) => svc.IssueNextAsync(request, ct),
+            afterSend: resp =>
+            {
+                item.Product.Barcode = resp.Barcode;
+            });
+    }
+
+    // Helper: release reservation if the item is removed before submit
+    private async Task ReleaseReservedBarcodeIfNeeded(ProductItemVm item)
+    {
+        // Only release if it's a new product (no Id) and has a reserved barcode
+        if (item.Product.Id.HasValue)
+            return;
+
+        if (string.IsNullOrWhiteSpace(item.Product.Barcode))
+            return;
+
+        await SendRequestAsync<IBarcodeReservationService>(
+            action: (svc, ct) => svc.ReleaseAsync(item.Product.Barcode, ct));
     }
 
     #endregion
@@ -998,39 +1069,6 @@ public partial class EditorForm
             return;
         }
 
-        var settingsForJs = new
-        {
-            labelWidth = _barcodeSettings.LabelWidth,
-            labelHeight = _barcodeSettings.LabelHeight,
-            marginTop = _barcodeSettings.MarginTop,
-            marginRight = _barcodeSettings.MarginRight,
-            marginBottom = _barcodeSettings.MarginBottom,
-            marginLeft = _barcodeSettings.MarginLeft,
-            paddingTop = _barcodeSettings.PaddingTop,
-            paddingRight = _barcodeSettings.PaddingRight,
-            paddingBottom = _barcodeSettings.PaddingBottom,
-            paddingLeft = _barcodeSettings.PaddingLeft,
-            positionItems = _barcodeSettings.PositionItems.Select(x => new
-            {
-                position = x.Position.ToString(),
-                itemType = x.ItemType.ToString(),
-                order = x.Order,
-                isVisible = x.IsVisible,
-                fontSize = x.FontSize,
-                itemSpacing = x.ItemSpacing,
-                barcodeSettings = x.BarcodeSettings != null
-                    ? new
-                    {
-                        width = x.BarcodeSettings.Width,
-                        height = x.BarcodeSettings.Height,
-                        displayValue = x.BarcodeSettings.DisplayValue,
-                        fontSize = x.BarcodeSettings.FontSize,
-                        margin = x.BarcodeSettings.Margin
-                    }
-                    : null
-            }).ToArray()
-        };
-
         var data = new
         {
             barcode = item.Product?.Barcode ?? "",
@@ -1044,19 +1082,25 @@ public partial class EditorForm
             })
         };
 
-        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", settingsForJs, data);
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
     }
 
     private async Task OnPrintUsedBarcode(UsedProductVm item)
     {
-        var labelData = new
+        if (_barcodeSettings is null)
         {
-            text = item.Barcode,
-            name = item.Description,
-            weight = "وزن: " + item.Weight?.ToString("G29") + $"{(item.UnitType is GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: ندارد"
+            AddErrorToast("تنظیمات چاپ بارکد لود نشده است");
+            return;
+        }
+
+        var data = new
+        {
+            barcode = item.Barcode ?? "",
+            productName = item.Description ?? "",
+            weight = $"وزن: {item.Weight:G29}{(item.UnitType == GoldUnitType.Gram ? "g" : "m")}",
+            wage = "اجرت: " + "ندارد"
         };
 
-        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
     }
 }
