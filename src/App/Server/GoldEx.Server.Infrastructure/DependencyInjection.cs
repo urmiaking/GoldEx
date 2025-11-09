@@ -1,8 +1,11 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
+using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Infrastructure.Services.Price;
 using GoldEx.Shared;
+using GoldEx.Shared.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace GoldEx.Server.Infrastructure;
 
@@ -10,24 +13,52 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
+        // --- TalaIr ---
         services.AddHttpClient("TalaIrApi");
-        services.AddScoped<IPriceFetcher, TalaIrPriceFetcher>(sp =>
+        services.AddScoped<TalaIrPriceFetcher>(sp =>
         {
-            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            var httpClient = httpClientFactory.CreateClient("TalaIrApi");
+            var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("TalaIrApi");
             return new TalaIrPriceFetcher(httpClient);
         });
+        services.AddScoped<IPriceFetcher, TalaIrPriceFetcher>(sp => sp.GetRequiredService<TalaIrPriceFetcher>());
 
+        // --- Signal ---
         services.AddHttpClient("SignalApi");
-
-        services.AddScoped<IPriceFetcher, SignalPriceFetcher>(sp =>
+        services.AddScoped<SignalPriceFetcher>(sp =>
         {
-            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            var httpClient = httpClientFactory.CreateClient("SignalApi");
+            var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("SignalApi");
             return new SignalPriceFetcher(httpClient, Utilities.GetJsonOptions());
         });
+        services.AddScoped<IPriceFetcher, SignalPriceFetcher>(sp => sp.GetRequiredService<SignalPriceFetcher>());
 
+        // --- Brs ---
+        services.AddHttpClient("BrsApi");
+        services.AddScoped<BrsApiPriceFetcher>(sp =>
+        {
+            var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("BrsApi");
+            var options = sp.GetRequiredService<IOptions<PriceProviderSetting>>();
+            return new BrsApiPriceFetcher(httpClient, Utilities.GetJsonOptions(), options);
+        });
+        services.AddScoped<IPriceFetcher, BrsApiPriceFetcher>(sp => sp.GetRequiredService<BrsApiPriceFetcher>());
+
+        // --- Tjgu ---
+        services.AddHttpClient("TjguApi");
+        services.AddScoped<TjguPriceFetcher>(sp =>
+        {
+            var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("TjguApi");
+            return new TjguPriceFetcher(httpClient, Utilities.GetJsonOptions());
+        });
+        services.AddScoped<IPriceFetcher, TjguPriceFetcher>(sp => sp.GetRequiredService<TjguPriceFetcher>());
+
+        // --- Discovery (if you have dynamic registrations) ---
         services.DiscoverServices();
+
+        // --- Generic Batch Providers ---
+        //services.AddScoped<GenericBatchPriceProvider<SignalPriceFetcher>>();
+        //services.AddScoped<GenericBatchPriceProvider<TalaIrPriceFetcher>>();
+        //services.AddScoped<GenericBatchPriceProvider<BrsApiPriceFetcher>>();
+        //services.AddScoped<GenericBatchPriceProvider<TjguPriceFetcher>>();
+        services.AddScoped(typeof(GenericBatchPriceProvider<>));
 
         return services;
     }

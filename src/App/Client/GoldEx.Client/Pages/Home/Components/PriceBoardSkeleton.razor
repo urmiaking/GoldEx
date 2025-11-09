@@ -9,10 +9,8 @@
         <col />
         <col />
         <col />
-        <col />
     </ColGroup>
     <HeaderContent>
-        <MudTh></MudTh>
         <MudTh>عنوان</MudTh>
         <MudTh>قیمت</MudTh>
         <MudTh>تغییرات</MudTh>
@@ -24,9 +22,6 @@
         </MudTh>
     </GroupHeaderTemplate>
     <RowTemplate>
-        <MudTd DataLabel="">
-            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="40" Height="40" Class="w-50" />
-        </MudTd>
         <MudTd DataLabel="عنوان">
             <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Text" Width="150" Height="20" Class="w-50" />
         </MudTd>
@@ -68,7 +63,7 @@
             Value: "123,456",
             Unit: "تومان",
             Change: "+1,234 (0.99%)",
-            LastUpdate: DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
+            LastUpdate: DateTime.Now,
             Type: MarketType.Gold,
             HasIcon: true,
             UnitType: UnitType.AED

@@ -1,7 +1,8 @@
 ﻿using System.Globalization;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Sdk.Server.Infrastructure.DTOs;
+using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Services.Price.DTOs.TalaIr;
 
@@ -33,9 +34,9 @@ public static class TalaIrApiResponseMapper
                 {
                     priceResponses.Add(new PriceResponse(
                         coin.Value.Title.ToPersianChars(), // Title (Coin Name)
-                        currentValue, // Current Value
-                        "تومان",
-                        coin.Value.LastUpdate, // Last Update
+                        currentValue * 10, // Current Value
+                        UnitType.IRR.GetDisplayName(),
+                        coin.Value.LastUpdate.ToGregorianDateTime(), // Last Update
                         coin.Value.Change, // Daily Change Rate
                         "",
                         MarketType.Coin // Market Type
@@ -63,15 +64,14 @@ public static class TalaIrApiResponseMapper
                     priceResponses.Add(new PriceResponse(
                         gold.Value.Title.ToPersianChars(), // Title (Gold Name)
                         currentValue, // Current Value
-                        "تومان",
-                        gold.Value.LastUpdate, // Last Update
+                        UnitType.IRR.GetDisplayName(),
+                        gold.Value.LastUpdate.ToGregorianDateTime(), // Last Update
                         gold.Value.Change, // Daily Change Rate
                         "",
                         MarketType.Gold // Market Type
                     ));
                 }
             }
-
         }
 
         return priceResponses;
@@ -93,8 +93,8 @@ public static class TalaIrApiResponseMapper
                     priceResponses.Add(new PriceResponse(
                         currency.Value.Title.ToPersianChars(), // Title (Currency Name)
                         currentValue, // Current Value
-                        "تومان",
-                        currency.Value.LastUpdate, // Last Update
+                        UnitType.IRR.GetDisplayName(),
+                        currency.Value.LastUpdate.ToGregorianDateTime(), // Last Update
                         currency.Value.Change, // Daily Change Rate
                         "",
                         MarketType.Currency // Price Type
@@ -118,8 +118,8 @@ public static class TalaIrApiResponseMapper
             return new PriceResponse(
                 gold18.Title.ToPersianChars(), // Title
                 currentValue, // Current Value
-                "تومان",
-                gold18.LastUpdate, // Last Update
+                UnitType.IRR.GetDisplayName(),
+                gold18.LastUpdate.ToGregorianDateTime(), // Last Update
                 gold18.Change, // Daily Change Rate
                 "",
                 MarketType.Gold // Market Type
@@ -141,8 +141,8 @@ public static class TalaIrApiResponseMapper
             return new PriceResponse(
                 dollar.Title.ToPersianChars(), // Title
                 currentValue, // Current Value
-                "تومان",
-                dollar.LastUpdate, // Last Update
+                UnitType.IRR.GetDisplayName(),
+                dollar.LastUpdate.ToGregorianDateTime(), // Last Update
                 dollar.Change, // Daily Change Rate
                 "",
                 MarketType.Currency // Price Type

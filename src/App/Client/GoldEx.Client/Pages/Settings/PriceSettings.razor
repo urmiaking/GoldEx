@@ -19,14 +19,14 @@ else
 {
     @if (_showAlert)
     {
-        <MudAlert Class="mb-4" ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Info" Elevation="24"
+        <MudAlert Class="mb-4 w-md-50" ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Info" Elevation="24"
                   Variant="Variant.Filled" ShowCloseIcon="true" CloseIconClicked="() => CloseAlert(true)">
             با انتخاب هر کدام از آیتم های زیر، قیمت آن در تابلوی قیمت ها نمایش داده می شود.
         </MudAlert>
     }
 
-    <MudPaper Elevation="24">
-        <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection">    
+    <MudPaper Elevation="24" Class="w-md-50">
+        <MudTreeView T="object" SelectionMode="SelectionMode.MultiSelection" Hover="true">    
             @foreach (var response in _priceSettings.GroupBy(r => r.MarketType))    
             {    
                 <MudTreeViewItem T="object" Value="response.Key" Text="@response.Key.GetDisplayName()">    
@@ -37,8 +37,8 @@ else
                                          Selected="price.IsActive"  
                                          SelectedChanged="context => OnPriceItemSelectionChanged(price.Id, context)">  
                             <BodyContent>  
-                                <div class="d-flex align-items-center justify-space-between w-100">  
-                                    <MudText>@price.Title</MudText>  
+                                <div class="d-flex align-items-center justify-space-between w-100">
+                                    <MudText>@price.Title</MudText>
                                     <MudSpacer />
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"  
                                                    Color="Color.Info"

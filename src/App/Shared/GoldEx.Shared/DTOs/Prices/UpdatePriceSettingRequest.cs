@@ -1,3 +1,8 @@
-﻿namespace GoldEx.Shared.DTOs.Prices;
+﻿using GoldEx.Shared.Enums;
 
-public record UpdatePriceSettingRequest(byte[] IconContent);
+namespace GoldEx.Shared.DTOs.Prices;
+
+public record UpdatePriceSettingRequest(byte[] IconContent,
+    PriceProviderType ProviderType,
+    string? ProviderSymbol,
+    bool IsProviderEnabled);

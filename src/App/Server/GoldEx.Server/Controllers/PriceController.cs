@@ -72,6 +72,29 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
         return Ok(settings);
     }
 
+    [HttpGet(ApiRoutes.Price.ProviderCatalog)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+    public async Task<ActionResult<GetPriceProviderCatalogResponse>> GetProviderCatalogAsync(
+        [FromQuery] PriceProviderType providerType,
+        [FromQuery] MarketType? marketType,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await priceService.GetProviderCatalogAsync(providerType, marketType, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Price.ProviderValidate)]
+    [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+    public async Task<ActionResult<ValidatePriceProviderResponse>> ValidateProviderSymbolAsync(
+        Guid priceId,
+        PriceProviderType providerType,
+        string providerSymbol,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await priceService.ValidateProviderSymbolAsync(priceId, providerType, providerSymbol, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpPut(ApiRoutes.Price.UpdateStatus)]
     [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> UpdateStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default)

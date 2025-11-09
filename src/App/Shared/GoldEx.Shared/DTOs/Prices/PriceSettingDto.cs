@@ -1,3 +1,14 @@
-﻿namespace GoldEx.Shared.DTOs.Prices;
+﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.Enums;
 
-public record PriceSettingDto(Guid Id, string Title, bool IsActive, bool IsPinned);
+namespace GoldEx.Shared.DTOs.Prices;
+
+public record PriceSettingDto(
+    Guid Id,
+    string Title,
+    MarketType MarketType,
+    bool IsActive,
+    bool IsPinned,
+    PriceProviderType? ProviderType,
+    string? ProviderSymbol,
+    bool? IsProviderEnabled);

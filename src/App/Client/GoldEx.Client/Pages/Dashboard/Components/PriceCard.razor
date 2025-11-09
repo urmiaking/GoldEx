@@ -33,7 +33,7 @@
             <!-- Bottom Row: Price and DateTime -->
             <div class="d-flex justify-space-between align-center mt-2">
                 <!-- DateTime Stamp -->
-                <MudText Typo="Typo.caption">@DateTime</MudText>
+                <MudText Typo="Typo.caption">@DateTime?.ToString("yyyy/MM/dd HH:mm:ss")</MudText>
                 
                 <!-- Price and Unit -->
                 <div class="d-flex align-baseline gap-1">
@@ -62,7 +62,7 @@
     /// The date and time stamp.
     /// </summary>
     [Parameter]
-    public string? DateTime { get; set; }
+    public DateTime? DateTime { get; set; }
 
     /// <summary>
     /// The current price value.

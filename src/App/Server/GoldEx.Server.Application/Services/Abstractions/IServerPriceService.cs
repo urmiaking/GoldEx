@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.DTOs;
+﻿using GoldEx.Shared.DTOs.Prices;
 
 namespace GoldEx.Server.Application.Services.Abstractions;
 

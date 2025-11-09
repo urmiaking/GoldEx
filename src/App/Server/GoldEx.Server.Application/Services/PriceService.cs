@@ -3,23 +3,19 @@ using FluentValidation.Results;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Application.Extensions;
-using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Application.Services.PriceProviders;
 using GoldEx.Server.Application.Utilities;
-using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
+using GoldEx.Server.Domain.PriceProviderMappingAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
-using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Server.Infrastructure.Specifications.PriceProviderMappings;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
-using GoldEx.Shared.Constants;
-using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -34,12 +30,11 @@ internal class PriceService(
     IPriceRepository repository,
     IPriceUnitRepository priceUnitRepository,
     ISettingRepository settingRepository,
-    ICoinService coinService,
-    IFinancialAccountRepository financialAccountRepository,
-    ILedgerAccountRepository ledgerAccountRepository,
+    IPriceProviderMappingRepository providerMappingRepository,
     IMapper mapper,
     IFileService fileService,
-    IWebHostEnvironment webHostEnvironment) : IServerPriceService,
+    IWebHostEnvironment webHostEnvironment,
+    PriceProviderRegistry providerRegistry) : IServerPriceService,
     IPriceService 
 {
     #region ServerPriceService
@@ -52,62 +47,32 @@ internal class PriceService(
         var localPricesLookup = (await repository.Get(new PricesWithoutSpecification()).ToListAsync(cancellationToken))
             .ToDictionary(p => p.Title);
 
-        var (pricesToCreate, pricesToUpdate, downloadTasks) =
-            ClassifyPricesAndPrepareDownloads(incomingPriceList, localPricesLookup, cancellationToken);
+        var pricesToUpdate = GetPricesToUpdate(incomingPriceList, localPricesLookup);
 
-        if (pricesToCreate.Any())
-        {
-            await repository.CreateRangeAsync(pricesToCreate, cancellationToken);
-            await ProcessCreatedPricesAsync(pricesToCreate, cancellationToken);
-        }
-
-        if (pricesToUpdate.Any()) 
+        if (pricesToUpdate.Any())
             await repository.UpdateRangeAsync(pricesToUpdate, cancellationToken);
-
-        await ProcessImageDownloadsAsync(downloadTasks, cancellationToken);
     }
 
     #region Helper methods
 
-    /// <summary>
-    /// Sorts incoming prices into create/update lists and creates image download tasks.
-    /// </summary>
-    private (List<Price> PricesToCreate, List<Price> PricesToUpdate, List<Task<(Price price, byte[]? imageData, string? imageFormat)>> DownloadTasks)
-        ClassifyPricesAndPrepareDownloads(
+    private List<Price> GetPricesToUpdate(
             List<PriceResponse> incomingPriceList,
-            Dictionary<string, Price> localPricesLookup,
-            CancellationToken cancellationToken)
+            Dictionary<string, Price> localPricesLookup)
     {
-        var pricesToCreate = new List<Price>();
         var pricesToUpdate = new List<Price>();
-        var downloadTasks = new List<Task<(Price price, byte[]? imageData, string? imageFormat)>>();
 
         foreach (var incomingPrice in incomingPriceList)
         {
             if (localPricesLookup.TryGetValue(incomingPrice.Title, out var existingPrice))
             {
-                // Update existing price logic
                 if (UpdateExistingPriceHistory(existingPrice, incomingPrice))
                 {
                     pricesToUpdate.Add(existingPrice);
                 }
             }
-            else
-            {
-                // Create new price logic
-                var newPrice = CreateNewPrice(incomingPrice);
-                pricesToCreate.Add(newPrice);
-
-                if (!string.IsNullOrEmpty(incomingPrice.IconUrl))
-                {
-                    downloadTasks.Add(
-                        CreateIconDownloadTask(newPrice, incomingPrice.IconUrl, cancellationToken)
-                    );
-                }
-            }
         }
 
-        return (pricesToCreate, pricesToUpdate, downloadTasks);
+        return pricesToUpdate;
     }
 
     /// <summary>
@@ -133,19 +98,6 @@ internal class PriceService(
     }
 
     /// <summary>
-    /// Creates a new Price entity from an incoming DTO.
-    /// </summary>
-    private Price CreateNewPrice(PriceResponse incomingPrice)
-    {
-        return Price.Create(incomingPrice.Title,
-            incomingPrice.MarketType,
-            PriceHistory.Create(incomingPrice.CurrentValue,
-                incomingPrice.LastUpdate,
-                incomingPrice.Change,
-                incomingPrice.Unit));
-    }
-
-    /// <summary>
     /// Creates and starts a task to download a price icon.
     /// </summary>
     private Task<(Price price, byte[]? imageData, string? imageFormat)> CreateIconDownloadTask(
@@ -158,114 +110,7 @@ internal class PriceService(
         }, cancellationToken);
     }
 
-    // --- 2. Post-Creation Logic Helpers ---
-
-    /// <summary>
-    /// Coordinates all logic that must run *after* new prices are saved to the DB.
-    /// </summary>
-    private async Task ProcessCreatedPricesAsync(List<Price> createdPrices, CancellationToken cancellationToken)
-    {
-        // 2a. Link any existing PriceUnits that were waiting for these prices
-        await LinkPriceUnitsToNewPricesAsync(createdPrices, cancellationToken);
-
-        // 2b. Create initial Coin entities if they don't exist
-        await EnsureInitialCoinsExistAsync(createdPrices, cancellationToken);
-
-        // 2c. Ensure critical system financial accounts (Gold, Cash) exist
-        await EnsureSystemFinancialAccountsExistAsync(cancellationToken);
-    }
-
-    /// <summary>
-    /// Finds PriceUnits with no PriceId and links them to the newly created prices by Title.
-    /// </summary>
-    private async Task LinkPriceUnitsToNewPricesAsync(List<Price> createdPrices, CancellationToken cancellationToken)
-    {
-        var emptyPriceUnits = await priceUnitRepository
-            .Get(new PriceUnitsWithoutPriceIdSpecification())
-            .ToListAsync(cancellationToken);
-
-        if (!emptyPriceUnits.Any()) return;
-
-        var priceTitleToIdMap = createdPrices
-            .GroupBy(p => p.Title)
-            .ToDictionary(g => g.Key, g => g.First().Id);
-
-        var updatedPriceUnits = new List<PriceUnit>();
-        foreach (var priceUnit in emptyPriceUnits)
-        {
-            if (priceTitleToIdMap.TryGetValue(priceUnit.Title, out var matchingPriceId) &&
-                priceUnit.PriceId != matchingPriceId)
-            {
-                priceUnit.SetPriceId(matchingPriceId);
-                updatedPriceUnits.Add(priceUnit);
-            }
-        }
-
-        if (updatedPriceUnits.Any())
-            await priceUnitRepository.UpdateRangeAsync(updatedPriceUnits, cancellationToken);
-    }
-
-    /// <summary>
-    /// If no coins exist in the system, creates them from the newly added 'Coin' market type prices.
-    /// </summary>
-    private async Task EnsureInitialCoinsExistAsync(List<Price> createdPrices, CancellationToken cancellationToken)
-    {
-        var coins = await coinService.GetListAsync(null, cancellationToken);
-        if (coins.Any()) return; // Coins already exist
-
-        var coinPrices = createdPrices.Where(x => x.MarketType is MarketType.Coin).ToList();
-        foreach (var coinPrice in coinPrices)
-        {
-            // Assuming Id is not null after CreateRangeAsync and is required
-            await coinService.CreateAsync(new CoinRequestDto(null, coinPrice.Title, coinPrice.Id.Value), cancellationToken);
-        }
-    }
-
-    /// <summary>
-    /// Checks for and creates system-critical financial accounts if they are missing.
-    /// </summary>
-    private async Task EnsureSystemFinancialAccountsExistAsync(CancellationToken cancellationToken)
-    {
-        await EnsureGoldAccountExistsAsync(cancellationToken);
-        await EnsureCashAccountExistsAsync(cancellationToken);
-    }
-
-    private async Task EnsureGoldAccountExistsAsync(CancellationToken cancellationToken)
-    {
-        if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold), cancellationToken))
-            return;
-
-        var goldPriceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Gold price unit is not initialized");
-
-        var inventoryLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Molten Gold Inventory ledger account is not initialized");
-
-        var goldAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Gold, goldPriceUnit.Id, inventoryLedgerAccount.Id);
-        await financialAccountRepository.CreateAsync(goldAccount, cancellationToken);
-    }
-
-    private async Task EnsureCashAccountExistsAsync(CancellationToken cancellationToken)
-    {
-        if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash), cancellationToken))
-            return;
-
-        var irrPriceUnit = await priceUnitRepository
-            .Get(new PriceUnitsByTitleSpecification(UnitType.IRR.GetDisplayName()))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("IRR price unit is not initialized");
-
-        var internalCashLedgerAccount = await ledgerAccountRepository
-            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Internal Cash Accounts ledger account is not initialized");
-
-        var cashAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Cash, irrPriceUnit.Id, internalCashLedgerAccount.Id,
-            cashAccount: CashAccount.Create(null, CashAccountType.Internal));
-
-        await financialAccountRepository.CreateAsync(cashAccount, cancellationToken);
-    }
-
-
-    // --- 3. Image Download Processing Helper ---
+    // --- 2. Image Download Processing Helper ---
 
     /// <summary>
     /// Awaits all pending image downloads and saves the results to the file system
@@ -327,9 +172,9 @@ internal class PriceService(
 
         foreach (var price in list.Where(price => price.MarketType is not MarketType.Ounce))
         {
-            price.PriceHistory!.SetCurrentValue(ConvertFromRial(price.PriceHistory.CurrentValue, defaultPriceUnit?.UnitType));
-            price.PriceHistory!.SetUnit(defaultPriceUnit?.Title ?? price.PriceHistory.Unit);
-            price.PriceHistory!.SetDailyChangeRate(ConvertFormattedPrice(
+            price.PriceHistory?.SetCurrentValue(ConvertFromRial(price.PriceHistory.CurrentValue, defaultPriceUnit?.UnitType));
+            price.PriceHistory?.SetUnit(defaultPriceUnit?.Title ?? price.PriceHistory.Unit);
+            price.PriceHistory?.SetDailyChangeRate(ConvertFormattedPrice(
                 price.PriceHistory.DailyChangeRate,
                 defaultPriceUnit?.UnitType
             ));
@@ -515,21 +360,41 @@ internal class PriceService(
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
+        // Collect price ids
+        var priceIds = items.Select(p => p.Id).ToList();
+
+        // Load mappings for these prices
+        var mappings = await providerMappingRepository
+            .Get(new PriceProviderMappingsByPriceIdsSpecification(priceIds))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var mapByPriceId = mappings.ToDictionary(m => m.PriceId, m => m);
+
         var priceSettings = items
             .GroupBy(p => p.MarketType)
             .Select(group => new GetPriceSettingResponse(
                 group.Key,
-                group.Select(price => new PriceSettingDto(
-                    price.Id.Value,
-                    price.Title,
-                    price.IsActive,
-                    price.IsPinned
-                )).ToList()
+                group.Select(price =>
+                {
+                    mapByPriceId.TryGetValue(price.Id, out var mapping);
+                    return new PriceSettingDto(
+                        price.Id.Value,
+                        price.Title,
+                        price.MarketType,
+                        price.IsActive,
+                        price.IsPinned,
+                        mapping?.ProviderType,
+                        mapping?.ProviderSymbol,
+                        mapping?.IsEnabled
+                    );
+                }).ToList()
             ))
             .ToList();
 
         return priceSettings;
     }
+
 
     public async Task SetStatusAsync(Guid id, UpdatePriceStatusRequest request,
         CancellationToken cancellationToken = default)
@@ -560,6 +425,64 @@ internal class PriceService(
         await repository.UpdateAsync(item, cancellationToken);
     }
 
+    public async Task<GetPriceProviderCatalogResponse> GetProviderCatalogAsync(PriceProviderType providerType, MarketType? marketType, CancellationToken cancellationToken = default)
+    {
+        if (providerType == PriceProviderType.Manual)
+            return new GetPriceProviderCatalogResponse([]);
+
+        var provider = providerRegistry.Resolve(providerType);
+        if (provider is null)
+            return new GetPriceProviderCatalogResponse([]);
+
+        // Fetch all (empty symbols list means "provider returns its full known list" in GenericBatch)
+        var all = await provider.FetchAsync(Array.Empty<string>(), cancellationToken);
+
+        var filtered = all
+            .Where(p => marketType is null || p.MarketType == marketType)
+            .Select(p => new PriceProviderSymbolDto(p.Title, p.Title, p.MarketType))
+            .GroupBy(x => x.Symbol)
+            .Select(g => g.First())
+            .OrderBy(x => x.Title)
+            .ToList();
+
+        return new GetPriceProviderCatalogResponse(filtered);
+    }
+
+    // Validation
+    public async Task<ValidatePriceProviderResponse> ValidateProviderSymbolAsync(Guid priceId, PriceProviderType providerType, string providerSymbol, CancellationToken cancellationToken = default)
+    {
+        var price = await repository
+            .Get(new PricesByIdSpecification(new PriceId(priceId)))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (price is null)
+            return new ValidatePriceProviderResponse(false, false, "قیمت یافت نشد.", null, null);
+
+        if (providerType == PriceProviderType.Manual)
+            return new ValidatePriceProviderResponse(true, true, "حالت دستی انتخاب شده است.", price.MarketType, null);
+
+        var provider = providerRegistry.Resolve(providerType);
+        if (provider is null)
+            return new ValidatePriceProviderResponse(false, false, "سرویس‌دهنده معتبر نیست.", null, null);
+
+        if (string.IsNullOrWhiteSpace(providerSymbol))
+            return new ValidatePriceProviderResponse(false, false, "نماد وارد نشده است.", null, null);
+
+        var list = await provider.FetchAsync(new[] { providerSymbol }, cancellationToken);
+        var sample = list.FirstOrDefault(x => x.Title == providerSymbol);
+        if (sample is null)
+            return new ValidatePriceProviderResponse(false, false, "نماد در سرویس‌دهنده یافت نشد.", null, null);
+
+        var marketMatch = sample.MarketType == price.MarketType;
+        var msg = marketMatch
+            ? "سرویس دهنده قیمت و نماد معتبر است."
+            : "هشدار: بازار نماد با بازار نرخ متفاوت است.";
+
+        return new ValidatePriceProviderResponse(true, marketMatch, msg, sample.MarketType, sample);
+    }
+
+    // Enhanced Update: icon + provider mapping upsert
     public async Task UpdateAsync(Guid id, UpdatePriceSettingRequest request, CancellationToken cancellationToken = default)
     {
         var item = await repository
@@ -570,8 +493,46 @@ internal class PriceService(
         if (item is null)
             throw new NotFoundException();
 
-        await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetPriceHistoryIconPath(id, null), request.IconContent, cancellationToken);
+        // Replace icon if provided
+        if (request.IconContent.Length > 0)
+        {
+            await fileService.ReplaceLocalFileAsync(
+                webHostEnvironment.GetPriceHistoryIconPath(id, null),
+                request.IconContent,
+                cancellationToken);
+        }
+
+        // Upsert provider mapping logic
+        var mapping = await providerMappingRepository
+            .Get(new PriceProviderMappingsByPriceIdSpecification(new PriceId(id)))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (!request.IsProviderEnabled || request.ProviderType == PriceProviderType.Manual)
+        {
+            // Disable mapping if exists
+            if (mapping is not null && mapping.IsEnabled)
+            {
+                mapping.SetEnabled(false);
+                await providerMappingRepository.UpdateAsync(mapping, cancellationToken);
+            }
+            return;
+        }
+
+        if (mapping is null)
+        {
+            var newMapping = PriceProviderMapping.Create(new PriceId(id),
+                request.ProviderType,
+                request.ProviderSymbol ?? string.Empty);
+            await providerMappingRepository.CreateAsync(newMapping, cancellationToken);
+        }
+        else
+        {
+            mapping.SetProvider(request.ProviderType, request.ProviderSymbol ?? string.Empty);
+            mapping.SetEnabled(true);
+            await providerMappingRepository.UpdateAsync(mapping, cancellationToken);
+        }
     }
+
 
     #endregion
 

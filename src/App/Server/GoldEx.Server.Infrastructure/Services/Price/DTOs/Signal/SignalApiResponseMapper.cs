@@ -1,6 +1,6 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Sdk.Server.Infrastructure.DTOs;
+using GoldEx.Shared.DTOs.Prices;
 
 namespace GoldEx.Server.Infrastructure.Services.Price.DTOs.Signal;
 
@@ -24,7 +24,7 @@ public static class SignalApiResponseMapper
                 select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
-                    lastUpdate,
+                    lastUpdate.ToGregorianDateTime(),
                     change,
                     iconUrl,
                     GetMarketType(nameof(response.Data.Gold))));
@@ -42,7 +42,7 @@ public static class SignalApiResponseMapper
                 select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
-                    lastUpdate,
+                    lastUpdate.ToGregorianDateTime(),
                     change,
                     iconUrl,
                     GetMarketType(nameof(response.Data.Currency))));
@@ -60,7 +60,7 @@ public static class SignalApiResponseMapper
                 select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
-                    lastUpdate,
+                    lastUpdate.ToGregorianDateTime(),
                     change,
                     iconUrl,
                     GetMarketType(nameof(response.Data.Coin))));
@@ -77,7 +77,7 @@ public static class SignalApiResponseMapper
                 select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
-                    lastUpdate,
+                    lastUpdate.ToGregorianDateTime(),
                     change,
                     iconUrl,
                     GetMarketType(nameof(response.Data.ParsianCoin))));
@@ -94,7 +94,7 @@ public static class SignalApiResponseMapper
                 select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                     currentValue,
                     item.Unit,
-                    lastUpdate,
+                    lastUpdate.ToGregorianDateTime(),
                     change,
                     iconUrl,
                     GetMarketType(nameof(response.Data.BubbleCoin))));
@@ -110,7 +110,7 @@ public static class SignalApiResponseMapper
                                     select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
                                         currentValue,
                                         item.Unit,
-                                        lastUpdate,
+                                        lastUpdate.ToGregorianDateTime(),
                                         change,
                                         iconUrl,
                                         GetMarketType(nameof(response.Data.Ounce))));
@@ -136,7 +136,7 @@ public static class SignalApiResponseMapper
         var currentValue = ParseDecimal(item.Close);
         var unit = item.Unit;
         var change = FormatChange(item.Change, item.PercentChange);
-        var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}";
+        var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}".ToGregorianDateTime();
         var iconUrl = item.IconUrl;
 
         return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Gold.Market));
@@ -159,7 +159,7 @@ public static class SignalApiResponseMapper
         var currentValue = ParseDecimal(item.Close);
         var unit = item.Unit;
         var change = FormatChange(item.Change, item.PercentChange);
-        var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}";
+        var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}".ToGregorianDateTime();
         var iconUrl = item.IconUrl;
 
         return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Currency.Market));
