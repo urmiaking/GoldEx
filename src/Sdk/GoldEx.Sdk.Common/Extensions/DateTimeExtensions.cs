@@ -132,4 +132,68 @@ public static class DateTimeExtensions
 
         return age;
     }
+
+    public static DateTime ToGregorianDateTime(this string persianDateTime)
+    {
+        if (string.IsNullOrWhiteSpace(persianDateTime))
+            throw new ArgumentNullException(nameof(persianDateTime));
+
+        var input = persianDateTime.Trim();
+        var pc = new PersianCalendar();
+
+        // Split parts
+        var parts = input.Split(' ');
+        string datePart;
+        string? timePart = null;
+
+        // Detect format:
+        // "1404/08/18 18:07" or "18:07 1404/08/18"
+        if (parts.Length == 2)
+        {
+            if (parts[0].Contains("/"))
+            {
+                datePart = parts[0];
+                timePart = parts[1];
+            }
+            else if (parts[1].Contains("/"))
+            {
+                datePart = parts[1];
+                timePart = parts[0];
+            }
+            else
+            {
+                throw new FormatException("Invalid Persian datetime format.");
+            }
+        }
+        else if (parts.Length == 1 && parts[0].Contains("/"))
+        {
+            datePart = parts[0];
+        }
+        else
+        {
+            throw new FormatException("Invalid Persian datetime format.");
+        }
+
+        // Parse date
+        var date = datePart.Split('/');
+        if (date.Length != 3)
+            throw new FormatException("Invalid Persian date format.");
+
+        var year = int.Parse(date[0]);
+        var month = int.Parse(date[1]);
+        var day = int.Parse(date[2]);
+
+        // Parse time (optional)
+        int hour = 0, minute = 0, second = 0;
+        if (!string.IsNullOrEmpty(timePart))
+        {
+            var time = timePart.Split(':');
+            hour = int.Parse(time[0]);
+            minute = int.Parse(time[1]);
+            if (time.Length > 2)
+                second = int.Parse(time[2]);
+        }
+
+        return pc.ToDateTime(year, month, day, hour, minute, second, 0);
+    }
 }

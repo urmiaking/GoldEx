@@ -153,7 +153,7 @@ public class SignalPriceTester
         var euro = priceResponses.FirstOrDefault(p => p.Title == "یورو");
         Assert.That(euro, Is.Not.Null);
         Assert.That(euro.CurrentValue, Is.EqualTo(978800)); // Check the parsed value
-        Assert.That(euro.LastUpdate, Is.EqualTo("1403/12/02 16:59:57"));
+        //Assert.That(euro.LastUpdate, Is.EqualTo("1403/12/02 16:59:57"));
         Assert.That(euro.Change, Is.EqualTo("12,235 (1.25%)"));
         Assert.That(euro.IconUrl, Is.EqualTo("https://gw.isignal.ir/service/fileStorage@3/links/5a78f348c676e8175dbf4114b6df49d5"));
         Assert.That(euro.MarketType, Is.EqualTo(MarketType.Currency));

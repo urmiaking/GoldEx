@@ -1,5 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
-using GoldEx.Server.Application.Services.Abstractions;
+﻿using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,27 +20,36 @@ public class PriceUpdaterBackgroundService(
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                var now = DateTime.Now.TimeOfDay;
+                var startBlock = new TimeSpan(22, 0, 0);
+                var endBlock = new TimeSpan(8, 0, 0);
+
+                // Check if current time is between 22:00 and 08:00
+                if (now >= startBlock || now < endBlock)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                    continue;
+                }
+
                 using var scope = serviceScopeFactory.CreateScope();
 
-                var priceService = scope.ServiceProvider.GetRequiredService<IServerPriceService>();
-                var priceFetcher = scope.ServiceProvider.GetRequiredService<IPriceFetcher>();
+                var orchestrator = scope.ServiceProvider.GetRequiredService<IPriceUpdateOrchestrator>();
                 var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
 
                 var setting = await settingService.GetAsync(stoppingToken);
                 var updateInterval = TimeSpan.FromMinutes(1);
 
-                if (setting is not null) 
+                if (setting is not null)
                     updateInterval = setting.PriceUpdateInterval;
 
-                var apiPrices = await priceFetcher.GetPriceAsync(stoppingToken);
-                await priceService.AddOrUpdateAsync(apiPrices, stoppingToken);
+                await orchestrator.UpdateAllAsync(stoppingToken);
 
                 await Task.Delay(updateInterval, stoppingToken);
             }
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"{ClassName} got an exception");
+            logger.LogError(e, "{Name} got an exception", ClassName);
         }
     }
 

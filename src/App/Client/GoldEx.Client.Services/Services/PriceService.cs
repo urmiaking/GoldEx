@@ -131,4 +131,31 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
+
+    public async Task<GetPriceProviderCatalogResponse> GetProviderCatalogAsync(PriceProviderType providerType,
+        MarketType? marketType,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Price.ProviderCatalog(providerType, marketType), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetPriceProviderCatalogResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<ValidatePriceProviderResponse> ValidateProviderSymbolAsync(Guid priceId, PriceProviderType providerType, string providerSymbol,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Price.ProviderValidate(priceId, providerType, providerSymbol), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<ValidatePriceProviderResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

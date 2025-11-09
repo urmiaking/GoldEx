@@ -9,7 +9,7 @@ public record GetPriceResponse(
     string Value,
     string Unit,
     string Change,
-    string LastUpdate,
+    DateTime? LastUpdate,
     bool HasIcon,
     MarketType Type,
     UnitType? UnitType);

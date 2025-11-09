@@ -77,6 +77,14 @@ public class ApiUrls
 
         public static string UpdateSetting(Guid id) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.UpdateSetting).FormatRoute(new { id });
+
+        public static string ProviderCatalog(PriceProviderType providerType, MarketType? marketType) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.ProviderCatalog)
+                .AppendQueryString(new { providerType, marketType });
+
+        public static string ProviderValidate(Guid priceId, PriceProviderType providerType, string providerSymbol) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.ProviderValidate)
+                .FormatRoute(new { priceId, providerType, providerSymbol });
     }
 
     public class Health
@@ -407,5 +415,20 @@ public class ApiUrls
         public static string Release(string barcode) =>
             BuildUrl(ApiRoutes.BarcodeReservations.Base, ApiRoutes.BarcodeReservations.Release)
                 .FormatRoute(new { barcode });
+    }
+
+    public static class PriceProviders
+    {
+        public static string Validate(Guid priceId) =>
+            BuildUrl(ApiRoutes.PriceProviders.Base, ApiRoutes.PriceProviders.Validate)
+                .FormatRoute(new { priceId });
+
+        public static string GetCatalog(PriceProviderType providerType, MarketType? marketType, bool? live = null) =>
+            BuildUrl(ApiRoutes.PriceProviders.Base, ApiRoutes.PriceProviders.GetCatalog)
+                .AppendQueryString(new { providerType, marketType, live });
+
+        public static string Upsert(Guid priceId) =>
+            BuildUrl(ApiRoutes.PriceProviders.Base, ApiRoutes.PriceProviders.Upsert)
+                .FormatRoute(new { priceId });
     }
 }

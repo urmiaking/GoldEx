@@ -83,4 +83,22 @@ public partial class PriceBoard
 
         await base.DisposeAsync();
     }
+
+    private Color GetRandomColor()
+    {
+        var colors = new[]
+        {
+            Color.Primary,
+            Color.Secondary,
+            Color.Tertiary,
+            Color.Info,
+            Color.Success,
+            Color.Warning,
+            Color.Error,
+            Color.Dark
+        };
+
+        var random = new Random();
+        return colors[random.Next(colors.Length)];
+    }
 }

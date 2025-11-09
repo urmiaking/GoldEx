@@ -397,3 +397,10 @@ h1:focus {
     }
 }
 /* End Barcode template builder */
+
+/* Custom responsive width utility */
+@media (min-width: 768px) { /* md breakpoint */
+    .w-md-50 {
+        width: 50% !important;
+    }
+}
