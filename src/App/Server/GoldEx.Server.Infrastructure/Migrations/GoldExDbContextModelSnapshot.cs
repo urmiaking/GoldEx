@@ -785,6 +785,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<int>("MarketType")
                         .HasColumnType("int");
 
+                    b.Property<int>("PriceCatalog")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -793,6 +796,35 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Prices", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.PriceProviderMappingAggregate.PriceProviderMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("PriceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProviderSymbol")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("ProviderType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PriceId");
+
+                    b.ToTable("PriceProviderMappings", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", b =>
@@ -2024,10 +2056,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasMaxLength(50)
                                 .HasColumnType("nvarchar(50)");
 
-                            b1.Property<string>("LastUpdate")
-                                .IsRequired()
+                            b1.Property<DateTime>("LastUpdate")
                                 .HasMaxLength(50)
-                                .HasColumnType("nvarchar(50)");
+                                .HasColumnType("datetime2");
 
                             b1.Property<string>("Unit")
                                 .IsRequired()
@@ -2043,6 +2074,17 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         });
 
                     b.Navigation("PriceHistory");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.PriceProviderMappingAggregate.PriceProviderMapping", b =>
+                {
+                    b.HasOne("GoldEx.Server.Domain.PriceAggregate.Price", "Price")
+                        .WithMany()
+                        .HasForeignKey("PriceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Price");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.PriceUnitAggregate.PriceUnit", b =>

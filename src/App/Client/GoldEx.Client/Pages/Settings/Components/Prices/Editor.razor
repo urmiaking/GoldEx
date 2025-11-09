@@ -5,37 +5,94 @@
 
     <MudDialog>
         <DialogContent>
-            <MudGrid>
-                <MudItem xs="12" md="4" lg="4" Class="mt-2">
-                    <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!">
-                        <ActivatorContent>
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Success"
-                                       FullWidth="true"
-                                       StartIcon="@Icons.Material.Filled.AttachFile">
-                                تغییر لوگو
-                            </MudButton>
-                        </ActivatorContent>
-                        <SelectedTemplate Context="ctx">
-                            @if (ctx != null)
+            @if (_loadingCatalogs)
+            {
+                <div class="align-center d-flex flex-column gap-3 justify-content-center">
+                    <MudProgressLinear Color="Color.Info" Indeterminate="true" />
+                    <div>در حال بارگیری اطلاعات</div>
+                </div>
+            }
+            else
+            {
+                <MudGrid Justify="Justify.Center" Class="align-center">
+                    <MudItem xs="12" md="6" Class="mt-2">
+                        <MudSelect Value="_model.ProviderType"
+                                   Label="سرویس دهنده قیمت"
+                                   Variant="Variant.Outlined"
+                                   T="PriceProviderType"
+                                   Dense="true"
+                                   Margin="Margin.Dense"
+                                   ValueChanged="OnProviderTypeChanged">
+                            @foreach (var item in Enum.GetValues<PriceProviderType>())
                             {
-                                <MudText>@ctx.Name</MudText>
+                                <MudSelectItem Value="@item">@item.GetDisplayName()</MudSelectItem>
                             }
-                        </SelectedTemplate>
-                    </MudFileUpload>
-                </MudItem>
-                <MudItem xs="12" md="12" lg="12">
-                    <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Start">
-                        با تغییر این لوگو، در صورت وجود لوگوی قبلی، جایگزین خواهد شد.
-                    </MudAlert>
-                </MudItem>
-            </MudGrid>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6" Class="mt-2">
+                        <MudAutocomplete T="string"
+                                         Label="نماد در سرویس دهنده"
+                                         Variant="Variant.Outlined"
+                                         Dense="true"
+                                         Margin="Margin.Dense"
+                                         Value="@_model.ProviderSymbol"
+                                         ValueChanged="OnSymbolChanged"
+                                         ToStringFunc="s => s"
+                                         ResetValueOnEmptyText="true"
+                                         SearchFunc="SearchSymbols"
+                                         CoerceText="true" />
+                    </MudItem>
+                </MudGrid>
+            }
+
+            @if (_lastValidation is not null)
+            {
+                <MudAlert Severity="@(_lastValidation.IsSupported? Severity.Success: Severity.Error)" ContentAlignment="HorizontalAlignment.Start">
+                    @_lastValidation.Message
+                </MudAlert>
+
+                @if (_lastValidation.Sample is not null)
+                {
+                    <MudPaper Class="align-items-center d-flex flex-column gap-2 justify-content-center my-4 pa-3">
+                        <MudText Typo="Typo.h6">نماد: @_model.ProviderSymbol</MudText>
+                        <MudText>نرخ: @_lastValidation.Sample.CurrentValue.ToCurrencyFormat(_lastValidation.Sample.Unit)</MudText>
+                        <MudText>به‌روزرسانی: @_lastValidation.Sample.LastUpdate</MudText>
+                    </MudPaper>
+                }
+            }
         </DialogContent>
+
         <DialogActions>
+            <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!" Class="align-center d-flex justify-content-center">
+                <ActivatorContent>
+                    <MudIconButton Variant="Variant.Filled"
+                                   Color="Color.Success"
+                                   Size="Size.Medium"
+                                   Class="m-2"
+                                   Icon="@Icons.Material.Filled.AttachFile" />
+                </ActivatorContent>
+                <SelectedTemplate Context="ctx">
+                    @if (ctx != null)
+                    {
+                        <MudText class="mt-1">@ctx.Name</MudText>
+                    }
+                </SelectedTemplate>
+            </MudFileUpload>
+
+            <MudSpacer />
+
             <MudButton Color="Color.Error"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
                        Variant="Variant.Filled">بستن</MudButton>
+
+            <MudButton Class="m-2"
+                       Variant="Variant.Filled"
+                       Color="Color.Info"
+                       Disabled="@IsBusy"
+                       StartIcon="@Icons.Material.Filled.Sync"
+                       OnClick="ValidateAsync">اعتبارسنجی</MudButton>
 
             <MudButton Class="m-2"
                        Color="Color.Primary"
@@ -43,19 +100,7 @@
                        StartIcon="@Icons.Material.Filled.Save"
                        ButtonType="ButtonType.Submit"
                        Variant="Variant.Filled">
-                @if (IsBusy)
-                {
-                    <MudProgressCircular Class="ms-n1"
-                                         Size="Size.Small"
-                                         Indeterminate="true" />
-                    <MudText Class="ms-2">
-                        در حال ذخیره
-                    </MudText>
-                }
-                else
-                {
-                    <MudText>ذخیره</MudText>
-                }
+                ذخیره
             </MudButton>
         </DialogActions>
     </MudDialog>

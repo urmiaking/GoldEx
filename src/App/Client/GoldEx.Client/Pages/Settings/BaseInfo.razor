@@ -142,6 +142,7 @@
                               AdornmentIcon="@Icons.Material.Outlined.Timer"
                               @bind-Value="_model.PriceUpdateInterval"
                               Variant="Variant.Outlined"
+                              InputType="InputType.Time"
                               Label="@(_model.GetDisplayName(() => _model.PriceUpdateInterval))"
                               For="() => _model.PriceUpdateInterval"></MudTextField>
             </MudItem>

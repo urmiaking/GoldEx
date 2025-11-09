@@ -15,10 +15,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\App\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
 		<ProjectReference Include="..\GoldEx.Sdk.Common\GoldEx.Sdk.Common.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Infrastructure\DTOs\" />
 		<Folder Include="Infrastructure\Extensions\Configurations\" />
 	</ItemGroup>
 

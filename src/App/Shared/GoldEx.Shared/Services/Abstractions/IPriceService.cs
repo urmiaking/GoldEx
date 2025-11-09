@@ -27,4 +27,9 @@ public interface IPriceService
     Task SetStatusAsync(Guid id, UpdatePriceStatusRequest request, CancellationToken cancellationToken = default);
     Task SetPinnedAsync(Guid id, bool isPinned, CancellationToken cancellationToken = default);
     Task UpdateAsync(Guid id, UpdatePriceSettingRequest request, CancellationToken cancellationToken = default);
+
+    Task<GetPriceProviderCatalogResponse> GetProviderCatalogAsync(PriceProviderType providerType,
+        MarketType? marketType, CancellationToken cancellationToken = default);
+    Task<ValidatePriceProviderResponse> ValidateProviderSymbolAsync(Guid priceId, PriceProviderType providerType, string providerSymbol, CancellationToken cancellationToken = default);
+
 }

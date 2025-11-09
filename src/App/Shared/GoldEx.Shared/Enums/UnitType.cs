@@ -7,21 +7,6 @@ public enum UnitType
     [Display(Name = "ریال")]
     IRR = 0,
 
-    [Display(Name = "دلار سنگاپور")]
-    SGD = 1,
-
-    [Display(Name = "دلار هنگ کنگ")]
-    HKD = 2,
-
-    [Display(Name = "کرون نروژ")]
-    NOK = 3,
-
-    [Display(Name = "کرون دانمارک")]
-    DKK = 4,
-
-    [Display(Name = "دلار نیوزیلند")]
-    NZD = 5,
-
     [Display(Name = "لاری گرجستان")]
     GEL = 6,
 

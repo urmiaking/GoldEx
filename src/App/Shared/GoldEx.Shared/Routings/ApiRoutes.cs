@@ -39,6 +39,8 @@ public static class ApiRoutes
         public const string GetExchange = "exchange-rate/{primaryPriceUnitId}/{secondaryPriceUnitId}";
         public const string SetPinned = "{id}/pin/{isPinned}";
         public const string UpdateSetting = "setting/{id}";
+        public const string ProviderCatalog = "provider/catalog";
+        public const string ProviderValidate = "{priceId}/provider/validate/{providerType}/{providerSymbol}";
     }
 
     public class Health
@@ -188,7 +190,7 @@ public static class ApiRoutes
         public const string GetInvoiceInventoryItems = "invoice/{invoiceId}/items";
         public const string GetTraces = "{itemType}/{itemId}/traces";
         public const string GetAvailableItemAmount = "{itemType}/{itemId}/available-amount";
-    }   
+    }
 
     public class Notifications
     {
@@ -218,8 +220,16 @@ public static class ApiRoutes
     public class BarcodeReservations
     {
         public const string Base = "/api/barcode-reservations";
-        public const string IssueNext = "issue-next";           
-        public const string Release = "{barcode}/release";      
+        public const string IssueNext = "issue-next";
+        public const string Release = "{barcode}/release";
 
+    }
+
+    public class PriceProviders
+    {
+        public const string Base = "/api/price-providers";
+        public const string GetCatalog = "catalog";
+        public const string Validate = "validate/{priceId}";
+        public const string Upsert = "{priceId}";
     }
 }

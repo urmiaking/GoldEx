@@ -4,7 +4,7 @@ namespace GoldEx.Server.Domain.PriceAggregate;
 
 public class PriceHistory : EntityBase
 {
-    public static PriceHistory Create(decimal currentValue, string lastUpdate, string dailyChangeRate, string unit)
+    public static PriceHistory Create(decimal currentValue, DateTime? lastUpdate, string dailyChangeRate, string unit)
     {
         return new PriceHistory
         {
@@ -20,12 +20,17 @@ public class PriceHistory : EntityBase
 #pragma warning restore CS8618
 
     public decimal CurrentValue { get; private set; }
-    public string LastUpdate { get; private set; }
+    public DateTime? LastUpdate { get; private set; }
     public string Unit { get; private set; }
     public string DailyChangeRate { get; private set; }
 
     public void SetCurrentValue(decimal currentValue) => CurrentValue = currentValue;
-    public void SetLastUpdate(string lastUpdate) => LastUpdate = lastUpdate;
+    public void SetLastUpdate(DateTime lastUpdate) => LastUpdate = lastUpdate;
     public void SetDailyChangeRate(string dailyChangeRate) => DailyChangeRate = dailyChangeRate;
     public void SetUnit(string unit) => Unit = unit;
+
+    public static PriceHistory CreateDefault()
+    {
+        return Create(0m, null, string.Empty, string.Empty);
+    }
 }

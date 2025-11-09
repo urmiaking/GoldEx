@@ -5,4 +5,5 @@ namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
 public interface IPriceUnitRepository : IRepository<PriceUnit>,
     ICreateRepository<PriceUnit>,
-    IUpdateRepository<PriceUnit>;
+    IUpdateRepository<PriceUnit>,
+    IDeleteRepository<PriceUnit>;

@@ -1,7 +1,7 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.DTOs;
-using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using GoldEx.Shared.DTOs.Prices;
 
 namespace GoldEx.Server.Application.Utilities;
 

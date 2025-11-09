@@ -16,7 +16,7 @@ public class PricesMappingConfig : IRegister
             .Map(dest => dest.Value,
                 src => src.PriceHistory != null ? src.PriceHistory.CurrentValue.ToString("N0") : "-")
             .Map(dest => dest.Change, src => src.PriceHistory != null ? src.PriceHistory.DailyChangeRate : "-")
-            .Map(dest => dest.LastUpdate, src => src.PriceHistory != null ? src.PriceHistory.LastUpdate : "-")
+            .Map(dest => dest.LastUpdate, src => src.PriceHistory != null ? src.PriceHistory.LastUpdate : null)
             .Map(dest => dest.Unit, src => src.PriceHistory != null ? src.PriceHistory.Unit : "-")
             .Map(dest => dest.Type, src => src.MarketType)
             .Map(dest => dest.HasIcon,

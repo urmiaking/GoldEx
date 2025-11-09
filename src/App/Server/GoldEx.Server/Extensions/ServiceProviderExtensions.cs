@@ -1,19 +1,27 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Authorization;
+using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
+using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Shared.Constants;
+using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using GoldEx.Shared.Settings;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -43,7 +51,14 @@ public static class ServiceProviderExtensions
     {
         await PopulateDefaultSettingsAsync(serviceProvider);
         await PopulateDefaultPriceUnitsAsync(serviceProvider);
+        var newPrices = await MigrateAndSeedPriceCatalogsAsync(serviceProvider);
         await PopulateDefaultLedgerAccountsAsync(serviceProvider);
+
+        var coinPrices = newPrices.Where(x => x.MarketType is MarketType.Coin).ToList();
+
+        await PopulateDefaultCoinsAsync(coinPrices, serviceProvider);
+        await EnsureSystemFinancialAccountsExistAsync(serviceProvider);
+
         await PopulateDefaultProductCategoriesAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
@@ -63,6 +78,214 @@ public static class ServiceProviderExtensions
             await accountService.CreateUserAsync(new AppUser("مدیر سامانه", adminUser.UserName, adminUser.Email, adminUser.PhoneNumber),
                 adminUser.Password, [BuiltinRoles.Administrators]);
         }
+    }
+
+    private static async Task EnsureSystemFinancialAccountsExistAsync(IServiceProvider serviceProvider)
+    {
+        await EnsureGoldAccountExistsAsync(serviceProvider);
+        await EnsureCashAccountExistsAsync(serviceProvider);
+    }
+
+    private static async Task EnsureGoldAccountExistsAsync(IServiceProvider serviceProvider)
+    {
+        var financialAccountRepository = serviceProvider.GetRequiredService<IFinancialAccountRepository>();
+        var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
+        var ledgerAccountRepository = serviceProvider.GetRequiredService<ILedgerAccountRepository>();
+
+        if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold)))
+            return;
+
+        var goldPriceUnit = await priceUnitRepository.Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Gold price unit is not initialized");
+
+        var inventoryLedgerAccount = await ledgerAccountRepository.Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Molten Gold Inventory ledger account is not initialized");
+
+        var goldAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Gold, goldPriceUnit.Id, inventoryLedgerAccount.Id);
+        await financialAccountRepository.CreateAsync(goldAccount);
+    }
+
+    private static async Task EnsureCashAccountExistsAsync(IServiceProvider serviceProvider)
+    {
+        var financialAccountRepository = serviceProvider.GetRequiredService<IFinancialAccountRepository>();
+        var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
+        var ledgerAccountRepository = serviceProvider.GetRequiredService<ILedgerAccountRepository>();
+
+        if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash)))
+            return;
+
+        var tomanPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByTitleSpecification(UnitType.Toman.GetDisplayName()))
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Toman price unit is not initialized");
+
+        var internalCashLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Internal Cash Accounts ledger account is not initialized");
+
+        var cashAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Cash, tomanPriceUnit.Id, internalCashLedgerAccount.Id,
+            cashAccount: CashAccount.Create(null, CashAccountType.Internal));
+
+        await financialAccountRepository.CreateAsync(cashAccount);
+    }
+
+    private static async Task PopulateDefaultCoinsAsync(List<Price> coinPrices, IServiceProvider serviceProvider)
+    {
+        var coinService = serviceProvider.GetRequiredService<ICoinService>();
+
+        var existingCoins = await coinService.GetListAsync(null);
+
+        var newCoins = coinPrices
+            .Where(price => existingCoins.All(c => c.PriceId != price.Id.Value))
+            .Select(price => new CoinRequestDto(null, price.Title, price.Id.Value))
+            .ToList();
+
+        foreach (var newCoin in newCoins) 
+            await coinService.CreateAsync(newCoin);
+    }
+
+    private static async Task<List<Price>> MigrateAndSeedPriceCatalogsAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
+    {
+        var priceRepository = serviceProvider.GetRequiredService<IPriceRepository>();
+        var priceUnitRepository = serviceProvider.GetRequiredService<IPriceUnitRepository>();
+        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("PriceCatalogSeeder");
+
+        // 1. Load all existing prices
+        var existingPrices = await priceRepository
+            .Get(new PricesWithoutSpecification())
+            .ToListAsync(cancellationToken);
+
+        // 2. Migrate: assign PriceCatalog to existing rows that don’t have it (or were default)
+        // Define what "unassigned" means. If the enum is non-nullable and default(PriceCatalog) is a valid value,
+        // you may need a sentinel or check Title mismatch. Adjust below accordingly.
+        var migratedPrices = new List<Price>();
+        foreach (var price in existingPrices)
+        {
+            var hasCatalog = price.PriceCatalog != default; // adjust if default is valid
+            if (hasCatalog)
+                continue;
+
+            // Try map by title
+            if (PriceCatalogHelper.TryGetByTitle(price.Title, out var catalog))
+            {
+                price.SetCatalog(catalog);
+                migratedPrices.Add(price);
+            }
+            else
+            {
+                // If mapping fails, log & skip (will not duplicate later because we won't seed anything with same Title)
+                logger.LogWarning("Could not map existing Price '{Title}' to any PriceCatalog.", price.Title);
+            }
+        }
+
+        if (migratedPrices.Count > 0)
+        {
+            // Persist migration
+            await priceRepository.UpdateRangeAsync(migratedPrices, cancellationToken);
+            logger.LogInformation("Migrated {Count} existing prices to PriceCatalog.", migratedPrices.Count);
+        }
+
+        // 3. Recompute existing catalogs after migration
+        var existingCatalogSet = existingPrices
+            .Where(p => p.PriceCatalog != default)
+            .Select(p => p.PriceCatalog)
+            .ToHashSet();
+
+        // 4. Determine catalogs still missing
+        var allCatalogs = Enum.GetValues<PriceCatalog>();
+        var catalogsToCreate = allCatalogs
+            .Where(c => !existingCatalogSet.Contains(c))
+            .ToList();
+
+        if (catalogsToCreate.Count == 0)
+        {
+            logger.LogInformation("No new catalogs to seed. All PriceCatalog values already represented.");
+        }
+
+        // 5. Create new Prices for missing catalogs
+        var newlyCreatedPrices = new List<Price>();
+        foreach (var catalog in catalogsToCreate)
+        {
+            var newPrice = Price.Create(
+                catalog,
+                PriceHistory.Create(
+                    currentValue: 0m,
+                    lastUpdate: null,
+                    dailyChangeRate: "0 (0.00%)",
+                    unit: UnitType.IRR.GetDisplayName()
+                )
+            );
+            newlyCreatedPrices.Add(newPrice);
+        }
+
+        if (newlyCreatedPrices.Count > 0)
+        {
+            await priceRepository.CreateRangeAsync(newlyCreatedPrices, cancellationToken);
+            logger.LogInformation("Seeded {Count} new prices from missing PriceCatalog entries.", newlyCreatedPrices.Count);
+        }
+
+        // 5. Remove (or disable) invalid PriceUnits (not in UnitType enum) before linking
+        {
+            var allPriceUnitsQuery = priceUnitRepository.Get(new PriceUnitsWithoutSpecification());
+
+            var validUnitTypes = Enum.GetValues(typeof(UnitType))
+                .Cast<int>()
+                .ToList();
+
+            var invalidUnits = await allPriceUnitsQuery
+                .Where(pu => !pu.UnitType.HasValue || !validUnitTypes.Contains((int)pu.UnitType.Value))
+                .ToListAsync(cancellationToken);
+
+
+            if (invalidUnits.Count > 0)
+            {
+                // Choose one option:
+
+                // OPTION A: Hard delete (ensure no FK references!)
+                await priceUnitRepository.DeleteRangeAsync(invalidUnits, cancellationToken);
+
+                // OPTION B: Disable (safer)
+                //foreach (var pu in invalidUnits)
+                //    pu.SetStatus(false);
+
+                //await priceUnitRepository.UpdateRangeAsync(invalidUnits, cancellationToken);
+
+                logger.LogInformation("Handled {Count} invalid PriceUnits (not in UnitType enum).", invalidUnits.Count);
+            }
+        }
+
+        // 6. Link PriceUnits without PriceId
+        var priceUnitsWithoutPrice = await priceUnitRepository
+            .Get(new PriceUnitsWithoutPriceIdSpecification())
+            .ToListAsync(cancellationToken);
+
+        if (priceUnitsWithoutPrice.Count > 0)
+        {
+            // Refresh prices (include newly created)
+            var allPrices = await priceRepository
+                .Get(new PricesWithoutSpecification())
+                .ToListAsync(cancellationToken);
+
+            var priceByTitle = allPrices.ToDictionary(p => p.Title, p => p.Id, StringComparer.Ordinal);
+            var dirtyUnits = new List<PriceUnit>();
+
+            foreach (var pu in priceUnitsWithoutPrice)
+            {
+                if (priceByTitle.TryGetValue(pu.Title, out var foundId) && pu.PriceId != foundId)
+                {
+                    pu.SetPriceId(foundId);
+                    dirtyUnits.Add(pu);
+                }
+            }
+
+            if (dirtyUnits.Count > 0)
+            {
+                await priceUnitRepository.UpdateRangeAsync(dirtyUnits, cancellationToken);
+                logger.LogInformation("Linked {Count} PriceUnits to their Prices.", dirtyUnits.Count);
+            }
+        }
+
+        // Return only newly created prices (for any follow‑up logic)
+        return newlyCreatedPrices;
     }
 
     private static async Task PopulateDefaultLedgerAccountsAsync(IServiceProvider serviceProvider)
@@ -171,7 +394,7 @@ public static class ServiceProviderExtensions
             ProductCategory.Create("سرویس کامل", "05"),
             ProductCategory.Create("گردنبند", "06"),
             ProductCategory.Create("نیم‌ست", "07")
-        }; 
+        };
 
         await repository.CreateRangeAsync(defaultCategories);
     }
