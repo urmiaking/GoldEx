@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
@@ -8,16 +9,14 @@ namespace GoldEx.Server.Domain.PriceAggregate;
 public readonly record struct PriceId(Guid Value);
 public class Price : EntityBase<PriceId>
 {
-    public static Price Create(
-        string title,
-        MarketType marketType,
-        PriceHistory priceHistory)
+    public static Price Create(PriceCatalog priceCatalog, PriceHistory? priceHistory = null)
     {
         return new Price
         {
             Id = new PriceId(Guid.NewGuid()),
-            Title = title,
-            MarketType = marketType,
+            Title = priceCatalog.GetDisplayName(),
+            PriceCatalog = priceCatalog,
+            MarketType = priceCatalog.GetMarketType(),
             PriceHistory = priceHistory,
             IsActive = true
         };
@@ -31,13 +30,14 @@ public class Price : EntityBase<PriceId>
     public bool IsActive { get; private set; }
     public bool IsPinned { get; private set; }
     public MarketType MarketType { get; private set; }
+    public PriceCatalog PriceCatalog { get; private set; }
 
     public PriceHistory? PriceHistory { get; private set; }
     public PriceUnit? PriceUnit { get; private set; }
 
     public void CreatePriceHistory(PriceHistory priceHistory) => PriceHistory = priceHistory;
 
-    public void SetPriceHistory(decimal currentValue, string lastUpdate, string dailyChangeRate, string unit)
+    public void SetPriceHistory(decimal currentValue, DateTime lastUpdate, string dailyChangeRate, string unit)
     {
         if (PriceHistory is null)
             throw new InvalidOperationException("Price history is not initialized.");
@@ -52,4 +52,6 @@ public class Price : EntityBase<PriceId>
     public void SetMarketType(MarketType marketType) => MarketType = marketType;
     public void SetStatus(bool isActive) => IsActive = isActive;
     public void SetPinned(bool isPinned) => IsPinned = isPinned;
+
+    public void SetCatalog(PriceCatalog priceCatalog) => PriceCatalog = priceCatalog;
 }

@@ -100,6 +100,7 @@ internal static class ServiceCollectionExtensions
         services.Configure<SmsSettings>(configuration.GetSection(nameof(SmsSettings)));
         services.Configure<DefaultSetting>(configuration.GetSection(nameof(DefaultSetting)));
         services.Configure<UserSetting>(configuration.GetSection(nameof(UserSetting)));
+        services.Configure<PriceProviderSetting>(configuration.GetSection(nameof(PriceProviderSetting)));
 
         return services;
     }

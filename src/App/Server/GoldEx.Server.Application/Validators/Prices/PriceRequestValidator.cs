@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Sdk.Server.Infrastructure.DTOs;
+using GoldEx.Shared.DTOs.Prices;
 
 namespace GoldEx.Server.Application.Validators.Prices;
 

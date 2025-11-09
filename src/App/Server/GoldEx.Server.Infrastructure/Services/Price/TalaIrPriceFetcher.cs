@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Json;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
-using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Infrastructure.Services.Price.DTOs.TalaIr;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Routings;
 
 namespace GoldEx.Server.Infrastructure.Services.Price;

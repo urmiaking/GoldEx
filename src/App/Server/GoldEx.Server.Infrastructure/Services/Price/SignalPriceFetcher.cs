@@ -1,10 +1,10 @@
 ﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
-using GoldEx.Sdk.Server.Infrastructure.DTOs;
 using GoldEx.Server.Infrastructure.Services.Price.DTOs.Signal;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.DTOs.Prices;
 
 namespace GoldEx.Server.Infrastructure.Services.Price;
 
@@ -22,8 +22,6 @@ public class SignalPriceFetcher(
 
             if (!response.IsSuccessStatusCode)
                 throw new BadHttpRequestException("bad request");
-
-            var temp = await response.Content.ReadAsStringAsync(cancellationToken);
 
             var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
 
@@ -53,7 +51,6 @@ public class SignalPriceFetcher(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
             throw;
         }
     }
@@ -75,7 +72,6 @@ public class SignalPriceFetcher(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
             throw;
         }
     }
@@ -97,7 +93,6 @@ public class SignalPriceFetcher(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
             throw;
         }
     }
@@ -119,7 +114,6 @@ public class SignalPriceFetcher(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
             throw;
         }
     }
@@ -141,7 +135,6 @@ public class SignalPriceFetcher(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
             throw;
         }
     }

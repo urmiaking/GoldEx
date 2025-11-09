@@ -1,12 +1,12 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 
-namespace GoldEx.Sdk.Server.Infrastructure.DTOs;
+namespace GoldEx.Shared.DTOs.Prices;
 
 public record PriceResponse(
     string Title,
     decimal CurrentValue,
     string Unit,
-    string LastUpdate,
+    DateTime LastUpdate,
     string Change,
     string? IconUrl,
     MarketType MarketType);

@@ -23,7 +23,6 @@ internal class BarcodePrintSettingsService(
     {
         var settings = await repository
             .Get(new SettingsDefaultSpecification())
-            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (settings is null)
@@ -38,7 +37,7 @@ internal class BarcodePrintSettingsService(
 
         var bps = settings.BarcodePrintSettings;
 
-        return mapper.Map<GetBarcodePrintSettingsResponse>(bps);
+        return mapper.Map<GetBarcodePrintSettingsResponse>(bps!);
     }
 
     public async Task UpdateAsync(UpdateBarcodePrintSettingsRequest request, CancellationToken cancellationToken = default)
