@@ -17,10 +17,10 @@
 else
 {
     <MudGrid>
-        @if (!_items.Any())
+        @if (!_items.Any()) 
         {
             <MudItem xs="12">
-                <MudAlert Severity="Severity.Info">اطلاعاتی برای نمایش وجود ندارد.</MudAlert>
+                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Start">اطلاعاتی برای نمایش وجود ندارد.</MudAlert>
             </MudItem>
         }
         else

@@ -205,6 +205,7 @@ function generateDynamicBarcodeHtml(settings, data) {
             <title>چاپ بارکد</title>
             <script src="${window.location.origin}/js/libs/jsbarcode.all.min.js"></script>
             <style>
+                @import '../fonts/IRANSANS/IRANSANS-font-face.css';
                 @page {
                     size: ${settings.labelWidth}px ${settings.labelHeight}px;
                     margin: 0;
@@ -225,7 +226,7 @@ function generateDynamicBarcodeHtml(settings, data) {
                 }
                 
                 body {
-                    font-family: "IRANSans", "B Homa", "B Nazanin" Tahoma, sans-serif;
+                    font-family: "IRANSans", "B Homa", "B Nazanin", Tahoma, sans-serif;
                     direction: rtl;
                     background: white;
                     display: flex;
