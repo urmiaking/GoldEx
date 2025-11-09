@@ -21,7 +21,7 @@ public static class BrsApiResponseMapper
                     Title: item.Name.ToPersianChars(),
                     CurrentValue: item.Price * 10,
                     Unit: UnitType.IRR.GetDisplayName(),
-                    LastUpdate: $"{item.Date.FormatDateString()} {item.Time}".ToGregorianDateTime(),
+                    LastUpdate: $"{item.Date} {item.Time}".ToGregorianDateTime(),
                     Change: FormatChange(item.ChangeValue, item.ChangePercent),
                     IconUrl: null,
                     MarketType: GetMarketType(item.Symbol)
@@ -36,7 +36,7 @@ public static class BrsApiResponseMapper
                     Title: item.Name.ToPersianChars(),
                     CurrentValue: item.Price,
                     Unit: UnitType.IRR.GetDisplayName(),
-                    LastUpdate: $"{item.Date.FormatDateString()} {item.Time}".ToGregorianDateTime(),
+                    LastUpdate: $"{item.Date} {item.Time}".ToGregorianDateTime(),
                     Change: FormatChange(item.ChangeValue, item.ChangePercent),
                     IconUrl: null,
                     MarketType: MarketType.Currency

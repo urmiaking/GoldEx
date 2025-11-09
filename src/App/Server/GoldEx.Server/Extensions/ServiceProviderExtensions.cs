@@ -206,13 +206,7 @@ public static class ServiceProviderExtensions
         foreach (var catalog in catalogsToCreate)
         {
             var newPrice = Price.Create(
-                catalog,
-                PriceHistory.Create(
-                    currentValue: 0m,
-                    lastUpdate: null,
-                    dailyChangeRate: "0 (0.00%)",
-                    unit: UnitType.IRR.GetDisplayName()
-                )
+                catalog
             );
             newlyCreatedPrices.Add(newPrice);
         }
