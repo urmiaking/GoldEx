@@ -63,7 +63,7 @@ public static class TalaIrApiResponseMapper
                 {
                     priceResponses.Add(new PriceResponse(
                         gold.Value.Title.ToPersianChars(), // Title (Gold Name)
-                        currentValue, // Current Value
+                        currentValue * 10, // Current Value
                         UnitType.IRR.GetDisplayName(),
                         gold.Value.LastUpdate.ToGregorianDateTime(), // Last Update
                         gold.Value.Change, // Daily Change Rate
@@ -92,7 +92,7 @@ public static class TalaIrApiResponseMapper
                 {
                     priceResponses.Add(new PriceResponse(
                         currency.Value.Title.ToPersianChars(), // Title (Currency Name)
-                        currentValue, // Current Value
+                        currentValue * 10, // Current Value
                         UnitType.IRR.GetDisplayName(),
                         currency.Value.LastUpdate.ToGregorianDateTime(), // Last Update
                         currency.Value.Change, // Daily Change Rate
@@ -117,7 +117,7 @@ public static class TalaIrApiResponseMapper
         {
             return new PriceResponse(
                 gold18.Title.ToPersianChars(), // Title
-                currentValue, // Current Value
+                currentValue * 10, // Current Value
                 UnitType.IRR.GetDisplayName(),
                 gold18.LastUpdate.ToGregorianDateTime(), // Last Update
                 gold18.Change, // Daily Change Rate
@@ -140,7 +140,7 @@ public static class TalaIrApiResponseMapper
         {
             return new PriceResponse(
                 dollar.Title.ToPersianChars(), // Title
-                currentValue, // Current Value
+                currentValue * 10, // Current Value
                 UnitType.IRR.GetDisplayName(),
                 dollar.LastUpdate.ToGregorianDateTime(), // Last Update
                 dollar.Change, // Daily Change Rate
