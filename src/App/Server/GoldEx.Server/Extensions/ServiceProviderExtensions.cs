@@ -401,20 +401,20 @@ public static class ServiceProviderExtensions
 
         if (existingPriceUnits.Any())
         {
-            foreach (var existingPriceUnit in existingPriceUnits)
-            {
-                switch (existingPriceUnit.UnitType)
-                {
-                    case UnitType.Gold18K when existingPriceUnit.Title == UnitType.Gold18K.GetDisplayName():
-                        existingPriceUnit.SetTitle("گرم");
-                        await priceUnitRepository.UpdateAsync(existingPriceUnit);
-                        break;
-                    case UnitType.Mesghal when existingPriceUnit.Title == UnitType.Mesghal.GetDisplayName():
-                        existingPriceUnit.SetTitle("مثقال");
-                        await priceUnitRepository.UpdateAsync(existingPriceUnit);
-                        break;
-                }
-            }
+            //foreach (var existingPriceUnit in existingPriceUnits)
+            //{
+            //    switch (existingPriceUnit.UnitType)
+            //    {
+            //        case UnitType.Gold18K when existingPriceUnit.Title == UnitType.Gold18K.GetDisplayName():
+            //            existingPriceUnit.SetTitle("گرم");
+            //            await priceUnitRepository.UpdateAsync(existingPriceUnit);
+            //            break;
+            //        case UnitType.Mesghal when existingPriceUnit.Title == UnitType.Mesghal.GetDisplayName():
+            //            existingPriceUnit.SetTitle("مثقال");
+            //            await priceUnitRepository.UpdateAsync(existingPriceUnit);
+            //            break;
+            //    }
+            //}
 
             return;
         }
