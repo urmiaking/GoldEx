@@ -482,7 +482,6 @@ internal class PriceService(
         return new ValidatePriceProviderResponse(true, marketMatch, msg, sample.MarketType, sample);
     }
 
-    // Enhanced Update: icon + provider mapping upsert
     public async Task UpdateAsync(Guid id, UpdatePriceSettingRequest request, CancellationToken cancellationToken = default)
     {
         var item = await repository
