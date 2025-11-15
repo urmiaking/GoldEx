@@ -16,15 +16,14 @@ public class PriceUpdaterBackgroundService(
     {
         logger.LogInformation("{Name} is running.", ClassName);
 
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
                 var now = DateTime.Now.TimeOfDay;
                 var startBlock = new TimeSpan(22, 0, 0);
                 var endBlock = new TimeSpan(8, 0, 0);
 
-                // Check if current time is between 22:00 and 08:00
                 if (now >= startBlock || now < endBlock)
                 {
                     await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
@@ -37,19 +36,16 @@ public class PriceUpdaterBackgroundService(
                 var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
 
                 var setting = await settingService.GetAsync(stoppingToken);
-                var updateInterval = TimeSpan.FromMinutes(1);
-
-                if (setting is not null)
-                    updateInterval = setting.PriceUpdateInterval;
+                var updateInterval = setting?.PriceUpdateInterval ?? TimeSpan.FromMinutes(1);
 
                 await orchestrator.UpdateAllAsync(stoppingToken);
-
                 await Task.Delay(updateInterval, stoppingToken);
             }
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "{Name} got an exception", ClassName);
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "{Name} iteration failed due to: ({Message}). Will retry.", ClassName, ex.Message);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
         }
     }
 
