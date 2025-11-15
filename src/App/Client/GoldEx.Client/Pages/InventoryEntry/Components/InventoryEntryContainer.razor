@@ -1,0 +1,25 @@
+﻿@inherits GoldExComponentBase
+
+<MudPaper Class="@Class" Elevation="24">
+    <MudTabs Elevation="2" Rounded="true" Centered="true">
+        <MudTabPanel Text="طلا، جواهر و آبشده" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
+            <ProductList PriceUnit="_priceUnit" Model="_model" />
+        </MudTabPanel>
+        <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
+            <CoinList PriceUnit="_priceUnit" Model="_model" />
+        </MudTabPanel>
+        <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Success">
+            <CurrencyList PriceUnit="_priceUnit" Model="_model" />
+        </MudTabPanel>
+    </MudTabs>
+    <div class="align-items-end d-flex flex-column p-3">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   StartIcon="@Icons.Material.Filled.CloudUpload" 
+                   Size="Size.Medium"
+                   OnClick="OnSubmitAsync">بارگذاری</MudButton>
+    </div>
+</MudPaper>
+
+<script src="/js/libs/jsbarcode.all.min.js"></script>
+<script src="/js/print.js?v=@_jsVersion"></script>
