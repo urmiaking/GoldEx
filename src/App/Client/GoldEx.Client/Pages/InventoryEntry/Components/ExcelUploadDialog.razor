@@ -1,0 +1,43 @@
+﻿@inherits GoldExComponentBase
+
+<MudDialog>
+    <DialogContent>
+        <MudAlert Severity="Severity.Info" Elevation="0" Dense="true" Class="mb-3" ContentAlignment="HorizontalAlignment.Start">
+            لطفاً فایل اکسل را مطابق قالب نمونه دانلود کرده و پس از تکمیل، آن را آپلود کنید.
+        </MudAlert>
+
+        <EditForm Model="@this" OnValidSubmit="HandleUpload">
+            <MudStack Spacing="2" Row Wrap="Wrap.Wrap" Justify="Justify.SpaceBetween" Class="my-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudDownload" OnClick="DownloadTemplate">
+                    دانلود قالب
+                </MudButton>
+
+                <MudFileUpload @bind-Files="_files"
+                               Accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                               OnFilesChanged="HandleFilesChanged" MaximumFileCount="1" Required="true">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                            انتخاب فایل
+                        </MudButton>
+                    </ActivatorContent>
+                </MudFileUpload>
+
+                @if (_fileName is not null)
+                {
+                    <MudText Typo="Typo.caption" >
+                        فایل انتخاب شده: @_fileName
+                    </MudText>
+                }
+
+            </MudStack>
+        </EditForm>
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Error" Variant="Variant.Filled">انصراف</MudButton>
+        <MudButton Disabled="@(!_fileReady)" OnClick="HandleUpload" Color="Color.Success" Variant="Variant.Filled">پردازش فایل</MudButton>
+    </DialogActions>
+</MudDialog>

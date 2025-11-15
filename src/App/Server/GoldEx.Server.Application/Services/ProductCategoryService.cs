@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.ProductCategories;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -18,7 +19,7 @@ internal class ProductCategoryService(
     IMapper mapper,
     CreateProductCategoryRequestValidator createValidator,
     UpdateProductCategoryRequestValidator updateValidator,
-    DeleteProductCategoryValidator deleteValidator) : IProductCategoryService
+    DeleteProductCategoryValidator deleteValidator) : IProductCategoryService, IServerProductCategoryService
 {
     public async Task<List<GetProductCategoryResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
@@ -105,5 +106,26 @@ internal class ProductCategoryService(
             throw new InvalidOperationException("Invalid prefix code format.");
 
         return new GetProductCategoryNumberResponse(lastCode);
+    }
+
+    public async Task<ProductCategory> GetOrCreateAsync(string? categoryTitle, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(categoryTitle))
+            categoryTitle = "سایر";
+
+        var category = await repository
+            .Get(new ProductCategoriesByTitleSpecification(categoryTitle))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (category is not null)
+            return category;
+
+        var categoryPrefix = await GetLastCodeAsync(cancellationToken);
+
+        category = ProductCategory.Create(categoryTitle, prefixCode: categoryPrefix.Number);
+
+        await repository.CreateAsync(category, cancellationToken);
+
+        return category;
     }
 }
