@@ -232,4 +232,10 @@ public static class ApiRoutes
         public const string Validate = "validate/{priceId}";
         public const string Upsert = "{priceId}";
     }
+
+    public class InventoryEntries
+    {
+        public const string Base = "/api/inventory-entries";
+        public const string Create = "";
+    }
 }

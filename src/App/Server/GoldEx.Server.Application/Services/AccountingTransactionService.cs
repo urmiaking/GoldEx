@@ -4,6 +4,8 @@ using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -23,6 +25,7 @@ using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.Constants;
+using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
@@ -1297,5 +1300,208 @@ internal class AccountingTransactionService(
             postingDate));
 
         return transactions;
+    }
+
+    public async Task CreateForInventoryEntryAsync(
+        InventoryEntry inventoryEntry,
+        InventoryStock inventoryStock,
+        Product product,
+        CreateProductItemRequest productItemRequest,
+        CancellationToken cancellationToken = default)
+    {
+        if (productItemRequest.CostPrice < 0)
+            throw new ArgumentOutOfRangeException(nameof(productItemRequest.CostPrice), "مبلغ بهای خرید نمی‌تواند منفی باشد.");
+
+        if (productItemRequest.CostPriceExchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(productItemRequest.CostPriceExchangeRate), "نرخ تبدیل باید بزرگتر از صفر باشد.");
+
+        var basePriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("واحد ارزی پایه یافت نشد.");
+
+        // Determine debit ledger based on product type
+        LedgerAccountId debitLedgerId;
+        if (product.ProductType == ProductType.MoltenGold)
+        {
+            var moltenInventory = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب موجودی طلای آبشده یافت نشد.");
+            debitLedgerId = moltenInventory.Id;
+        }
+        else
+        {
+            var inventoryLedger = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب موجودی کالا یافت نشد.");
+            debitLedgerId = inventoryLedger.Id;
+        }
+
+        var openingEquity = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب سرمایه افتتاحیه - تعدیلات یافت نشد.");
+
+        var priceUnitId = new PriceUnitId(productItemRequest.CostPriceUnitId);
+        var description = TransactionDescriptionBuilder.ForManualProductEntry(product.Name);
+        var groupId = Guid.NewGuid();
+        var postingDate = inventoryStock.PostingDate;
+
+        var amount = productItemRequest.CostPrice;
+        var exchangeRate = productItemRequest.UnitPrice * (productItemRequest.CostPriceExchangeRate ?? 1);
+        var baseCurrencyAmount = amount * exchangeRate;
+
+        var debit = Transaction.CreateForInventoryEntry(
+            description,
+            amount,
+            baseCurrencyAmount,
+            exchangeRate,
+            groupId,
+            TransactionType.Debit,
+            debitLedgerId,
+            priceUnitId,
+            inventoryEntry.Id,
+            postingDate);
+
+        var credit = Transaction.CreateForInventoryEntry(
+            description,
+            amount,
+            baseCurrencyAmount,
+            exchangeRate,
+            groupId,
+            TransactionType.Credit,
+            openingEquity.Id,
+            priceUnitId,
+            inventoryEntry.Id,
+            postingDate);
+
+        await repository.CreateRangeAsync([debit, credit], cancellationToken);
+    }
+
+    public async Task CreateForInventoryEntryAsync(
+        InventoryEntry inventoryEntry,
+        InventoryStock inventoryStock,
+        CreateCoinItemRequest coinItem,
+        CancellationToken cancellationToken = default)
+    {
+        if (coinItem.Quantity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(coinItem.Quantity), "تعداد سکه باید بزرگتر از صفر باشد.");
+
+        if (coinItem.UnitPrice < 0)
+            throw new ArgumentOutOfRangeException(nameof(coinItem.UnitPrice), "قیمت واحد نمی‌تواند منفی باشد.");
+
+        var coinId = new CoinId(coinItem.CoinId);
+        var coin = await coinRepository
+            .Get(new CoinsByIdSpecification(coinId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"سکه {coinId.Value} یافت نشد.");
+
+        var coinLedger = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"حساب دفتری سکه '{coin.Title}' یافت نشد.");
+
+        var openingEquity = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب سرمایه افتتاحیه - تعدیلات یافت نشد.");
+
+        var basePriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("واحد ارزی پایه یافت نشد.");
+
+        var description = TransactionDescriptionBuilder.ForManualCoinEntry(coin.Title);
+        var groupId = Guid.NewGuid();
+        var postingDate = inventoryStock.PostingDate;
+
+        // Valuation in base currency: UnitPrice * Quantity
+        var amount = coinItem.UnitPrice * coinItem.Quantity;
+        var baseCurrencyAmount = amount; // Since UnitPrice is already in base currency
+
+        var debit = Transaction.CreateForInventoryEntry(
+            description,
+            amount,
+            baseCurrencyAmount,
+            null,
+            groupId,
+            TransactionType.Debit,
+            coinLedger.Id,
+            basePriceUnit.Id,
+            inventoryEntry.Id,
+            postingDate);
+
+        var credit = Transaction.CreateForInventoryEntry(
+            description,
+            amount,
+            baseCurrencyAmount,
+            null,
+            groupId,
+            TransactionType.Credit,
+            openingEquity.Id,
+            basePriceUnit.Id,
+            inventoryEntry.Id,
+            postingDate);
+
+        await repository.CreateRangeAsync([debit, credit], cancellationToken);
+    }
+
+    public async Task CreateForInventoryEntryAsync(
+        InventoryEntry inventoryEntry,
+        InventoryStock inventoryStock,
+        CreateCurrencyItemRequest currencyItem,
+        CancellationToken cancellationToken = default)
+    {
+        if (currencyItem.Amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(currencyItem.Amount), "مقدار ارز باید بزرگتر از صفر باشد.");
+        if (currencyItem.UnitPrice <= 0)
+            throw new ArgumentOutOfRangeException(nameof(currencyItem.UnitPrice), "قیمت واحد ارز باید بزرگتر از صفر باشد.");
+
+        var currencyId = new PriceUnitId(currencyItem.CurrencyId);
+        var currency = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(currencyId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"واحد ارزی '{currencyId.Value}' یافت نشد.");
+
+        // Ledger account is determined by financial account provided
+        var financialAccount = await financialAccountRepository
+            .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(currencyItem.FinancialAccountId)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"حساب مالی {currencyItem.FinancialAccountId} یافت نشد.");
+
+        var currencyLedgerId = financialAccount.LedgerAccountId
+                               ?? throw new NotFoundException($"برای حساب مالی {financialAccount.Id.Value} حساب دفتری متناظر تعریف نشده است.");
+
+        var openingEquity = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب سرمایه افتتاحیه - تعدیلات یافت نشد.");
+
+        var description = TransactionDescriptionBuilder.ForManualCurrencyEntry(currency.Title);
+        var groupId = Guid.NewGuid();
+        var postingDate = inventoryStock.PostingDate;
+
+        // Amount = currency units, ExchangeRate = unit price
+        var amount = currencyItem.Amount;
+        var exchangeRate = currencyItem.UnitPrice;
+
+        var baseCurrencyAmount = amount * exchangeRate;
+
+        var debit = Transaction.CreateForInventoryEntry(
+            description,
+            amount,
+            baseCurrencyAmount,
+            exchangeRate,
+            groupId,
+            TransactionType.Debit,
+            currencyLedgerId,
+            currencyId,
+            inventoryEntry.Id,
+            postingDate);
+
+        var credit = Transaction.CreateForInventoryEntry(
+            description,
+            amount,
+            baseCurrencyAmount,
+            exchangeRate,
+            groupId,
+            TransactionType.Credit,
+            openingEquity.Id,
+            currencyId,
+            inventoryEntry.Id,
+            postingDate);
+
+        await repository.CreateRangeAsync([debit, credit], cancellationToken);
     }
 }

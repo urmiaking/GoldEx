@@ -4,6 +4,7 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Settings;
 using ValidationException = FluentValidation.ValidationException;
@@ -223,6 +224,26 @@ public class ProductItemVm
             productItem.Quantity,
             productItem.TotalWeight.Value,
             ProductVm.ToRequest(productItem.Product));
+    }
+
+    public static CreateProductItemRequest ToInventoryEntryRequest(ProductItemVm productItem, decimal unitPrice)
+    {
+        if (!productItem.TotalWeight.HasValue)
+            throw new ValidationException("وزن کل جنس وارد نشده است");
+
+        if (unitPrice <= 0)
+            throw new ValidationException("قیمت واحد باید بزرگتر از صفر باشد");
+
+        return new CreateProductItemRequest(
+            productItem.Quantity,
+            unitPrice,
+            productItem.CostPrice ?? throw new ValidationException("قیمت خرید مشخص نشده است"),
+            productItem.CostPriceUnitId ?? throw new ValidationException("واحد قیمت خرید مشخص نشده است"),
+            productItem.CostPriceExchangeRate,
+            productItem.WageExchangeRate,
+            productItem.StonePriceUnitExchangeRate,
+            ProductVm.ToRequest(productItem.Product)
+        );
     }
 
     public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response, InvoiceType invoiceType)

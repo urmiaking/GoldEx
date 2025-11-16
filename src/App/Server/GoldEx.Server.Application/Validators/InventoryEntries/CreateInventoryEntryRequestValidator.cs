@@ -9,10 +9,17 @@ internal class CreateInventoryEntryRequestValidator : AbstractValidator<CreateIn
 {
     public CreateInventoryEntryRequestValidator()
     {
-        RuleForEach(x => x.Stocks)
-            .NotEmpty()
-            .WithMessage("لیست اجناس نمی تواند خالی باشد");
+        RuleFor(x => x)
+            .Must(AtLeastContainOneItem)
+            .WithMessage("باید حداقل یک قلم کالا، سکه یا ارز وجود داشته باشد.");
 
         // TODO: Add more validation rules as needed
+    }
+
+    private bool AtLeastContainOneItem(CreateInventoryEntryRequest request)
+    {
+        return request.Products.Count > 0 ||
+               request.Coins.Count > 0 ||
+               request.Currencies.Count > 0;
     }
 }

@@ -57,9 +57,10 @@ public partial class ProductList
     };
 
     [Parameter, EditorRequired] public GetPriceUnitResponse? PriceUnit { get; set; }
-    [Parameter, EditorRequired] public InventoryEntryVm Model { get; set; } = default!;
+    [Parameter, EditorRequired] public InventoryEntryVm Model { get; set; } = null!;
+    [Parameter] public EventCallback<decimal> GramPriceChanged { get; set; }
 
-    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
+    [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,10 +74,11 @@ public partial class ProductList
     {
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(GoldUnitType.Gram, null, false, ct),
-            afterSend: response =>
+            afterSend: async response =>
             {
                 decimal.TryParse(response?.Value, out var gramPrice);
                 _gramPrice = gramPrice;
+                await GramPriceChanged.InvokeAsync(_gramPrice);
             });
     }
 
@@ -100,7 +102,7 @@ public partial class ProductList
         );
     }
 
-    private void OnGramPriceChanged(decimal value)
+    private async Task OnGramPriceChanged(decimal value)
     {
         _gramPrice = value;
 
@@ -109,6 +111,8 @@ public partial class ProductList
             item.GramPrice = _gramPrice;
             item.RecalculateAmounts();
         }
+
+        await GramPriceChanged.InvokeAsync(value);
     }
 
     private async Task PrintBarcode(ProductItemVm item)

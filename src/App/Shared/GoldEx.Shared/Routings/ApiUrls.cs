@@ -431,4 +431,9 @@ public class ApiUrls
             BuildUrl(ApiRoutes.PriceProviders.Base, ApiRoutes.PriceProviders.Upsert)
                 .FormatRoute(new { priceId });
     }
+
+    public class InventoryEntries
+    {
+        public static string Create() => BuildUrl(ApiRoutes.InventoryEntries.Base, ApiRoutes.InventoryEntries.Create);
+    }
 }

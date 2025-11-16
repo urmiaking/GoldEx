@@ -1,14 +1,13 @@
-﻿using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.DTOs.Products;
 
 namespace GoldEx.Shared.DTOs.InventoryEntries;
 
 public record CreateProductItemRequest(
-    ProductType Type,
-    string? Barcode,
-    string? Name,
-    string? Category,
-    decimal Fineness,
-    WageType? WageType,
-    decimal Wage,
-    string? WagePriceUnitTitle,
-    CreateMoltenGoldItemRequest? MoltenGold);
+    decimal Quantity,
+    decimal UnitPrice,
+    decimal CostPrice,
+    Guid CostPriceUnitId,
+    decimal? CostPriceExchangeRate,
+    decimal? WagePriceUnitExchangeRate,
+    decimal? StonePriceUnitExchangeRate,
+    ProductRequestDto Product);

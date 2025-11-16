@@ -3,7 +3,7 @@
 <MudPaper Class="@Class" Elevation="24">
     <MudTabs Elevation="2" Rounded="true" Centered="true">
         <MudTabPanel Text="طلا، جواهر و آبشده" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
-            <ProductList PriceUnit="_priceUnit" Model="_model" />
+            <ProductList PriceUnit="_priceUnit" Model="_model" GramPriceChanged="OnGramPriceChanged" />
         </MudTabPanel>
         <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
             <CoinList PriceUnit="_priceUnit" Model="_model" />
@@ -15,9 +15,24 @@
     <div class="align-items-end d-flex flex-column p-3">
         <MudButton Variant="Variant.Filled"
                    Color="Color.Success"
-                   StartIcon="@Icons.Material.Filled.CloudUpload" 
+                   StartIcon="@Icons.Material.Filled.CloudUpload"
                    Size="Size.Medium"
-                   OnClick="OnSubmitAsync">بارگذاری</MudButton>
+                   Disabled="@IsBusy"
+                   OnClick="OnSubmitAsync">
+            @if (IsBusy)
+            {
+                <MudProgressCircular Class="ms-n1"
+                                     Size="Size.Small"
+                                     Indeterminate="true" />
+                <MudText Class="ms-2">
+                    در حال بارگذاری
+                </MudText>
+            }
+            else
+            {
+                <MudText>بارگذاری</MudText>
+            }
+        </MudButton>
     </div>
 </MudPaper>
 
