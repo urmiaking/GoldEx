@@ -1,5 +1,6 @@
 ﻿using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 
@@ -9,7 +10,8 @@ public partial class InventoryEntryContainer
 {
     private readonly InventoryEntryVm _model = new();
     private GetPriceUnitResponse? _priceUnit;
-    private string _jsVersion = new Random().Next(1, 1000).ToString();
+    private decimal? _gramPrice;
+    private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
 
     [Parameter] public string? Class { get; set; }
 
@@ -28,6 +30,22 @@ public partial class InventoryEntryContainer
 
     private async Task OnSubmitAsync()
     {
+        if (_priceUnit is null)
+        {
+            AddErrorToast("واحد قیمت پیش فرض بارگذاری نشده است.");
+            return;
+        }
+
+        try
+        {
+            _model.ToRequest(_gramPrice ?? 0);
+        }
+        catch(Exception ex)
+        {
+            AddErrorToast(ex.Message);
+            return;
+        }
+
         var parts = new List<string>();
 
         if (_model.ProductItems.Count > 0)
@@ -39,8 +57,7 @@ public partial class InventoryEntryContainer
         if (_model.CurrencyItems.Count > 0)
             parts.Add($"{_model.CurrencyItems.Count} ارز");
 
-        var promptDescription =
-            $"آیا از ثبت ورود موجودی {string.Join("، ", parts)} اطمینان دارید؟";
+        var promptDescription = $"آیا از ثبت ورود موجودی {string.Join("، ", parts)} اطمینان دارید؟";
 
         var result = await DialogService.ShowMessageBox(
             "تأیید نهایی",
@@ -49,7 +66,20 @@ public partial class InventoryEntryContainer
 
         if (result is true)
         {
-            // TODO: Submit the inventory entry
+            var request = _model.ToRequest(_gramPrice ?? 0);
+            await SendRequestAsync<IInventoryEntryService>(
+                action: (s, ct) => s.CreateAsync(request, ct),
+                afterSend: () =>
+                {
+                    AddSuccessToast("ورود موجودی با موفقیت انجام شد.");
+                    Navigation.NavigateTo(ClientRoutes.InventoryStocks.List);
+                    return Task.CompletedTask;
+                });
         }
+    }
+
+    private void OnGramPriceChanged(decimal gramPrice)
+    {
+        _gramPrice = gramPrice;
     }
 }
