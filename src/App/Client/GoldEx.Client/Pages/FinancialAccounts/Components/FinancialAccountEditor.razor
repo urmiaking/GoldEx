@@ -7,30 +7,26 @@
         <DialogContent>
             <MudGrid>
                 <MudItem xs="12">
-                    <MudGrid Justify="Justify.Center" Class="align-center">
-                        <MudItem xs="12" sm="3">
-                            <MudText>نوع حساب:</MudText>
-                        </MudItem>
-                        <MudItem xs="12" sm="9">
-                            <MudRadioGroup T="FinancialAccountType" Required="true" For="() => Model.FinancialAccountType" Value="Model.FinancialAccountType"
-                                           ValueChanged="OnAccountTypeChanged">
-                                <MudGrid Spacing="0">
-                                    <MudItem xs="12" sm="6">
-                                        <MudRadio Value="@(FinancialAccountType.LocalBankAccount)">@FinancialAccountType.LocalBankAccount.GetDisplayName()</MudRadio>
-                                    </MudItem>
-                                    <MudItem xs="12" sm="6">
-                                        <MudRadio Value="@(FinancialAccountType.InternationalBankAccount)">@FinancialAccountType.InternationalBankAccount.GetDisplayName()</MudRadio>
-                                    </MudItem>
-                                    <MudItem xs="12" sm="6">
-                                        <MudRadio Value="@(FinancialAccountType.Cash)">@FinancialAccountType.Cash.GetDisplayName()</MudRadio>
-                                    </MudItem>
-                                    <MudItem xs="12" sm="6">
-                                        <MudRadio Value="@(FinancialAccountType.Gold)">@FinancialAccountType.Gold.GetDisplayName()</MudRadio>
-                                    </MudItem>
-                                </MudGrid>
-                            </MudRadioGroup>
-                        </MudItem>
-                    </MudGrid>
+                    <MudChipSet T="FinancialAccountType"
+                                SelectionMode="SelectionMode.SingleSelection"
+                                Variant="Variant.Outlined"
+                                CheckMark="true"
+                                Class="d-flex flex-wrap justify-content-center"
+                                SelectedValue="Model.FinancialAccountType"
+                                SelectedValueChanged="OnAccountTypeChanged">
+                        <MudChip Color="Color.Success" Value="@(FinancialAccountType.LocalBankAccount)">
+                            @FinancialAccountType.LocalBankAccount.GetDisplayName()
+                        </MudChip>
+                        <MudChip Color="Color.Error" Value="@(FinancialAccountType.InternationalBankAccount)">
+                            @FinancialAccountType.InternationalBankAccount.GetDisplayName()
+                        </MudChip>
+                        <MudChip Color="Color.Info" Value="@(FinancialAccountType.Cash)">
+                            @FinancialAccountType.Cash.GetDisplayName()
+                        </MudChip>
+                        <MudChip Color="Color.Primary" Value="@(FinancialAccountType.Gold)">
+                            @FinancialAccountType.Gold.GetDisplayName()
+                        </MudChip>
+                    </MudChipSet>
                 </MudItem>
                 @if (Model.FinancialAccountType != FinancialAccountType.Gold)
                 {
@@ -57,8 +53,8 @@
                         </MudSelect>
                     </MudItem>
                 }
-                
-                @if(Model.CashAccount?.AccountType != CashAccountType.Internal && Model.FinancialAccountType != FinancialAccountType.Gold)
+
+                @if (Model.CashAccount?.AccountType != CashAccountType.Internal && Model.FinancialAccountType != FinancialAccountType.Gold)
                 {
                     <MudItem xs="12" md="6">
                         <MudTextField @bind-Value="Model.BrokerName"
@@ -158,9 +154,9 @@
                         </MudItem>
                         break;
                     case FinancialAccountType.Gold:
-                    {
-                        break;
-                    }
+                        {
+                            break;
+                        }
                 }
             </MudGrid>
         </DialogContent>
