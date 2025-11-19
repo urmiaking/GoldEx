@@ -267,6 +267,16 @@ h1:focus {
     }
 }
 
+.responsive-table-import {
+    height: calc(100vh - 390px);
+}
+
+@media (min-width: 960px) {
+    .responsive-table-import {
+        height: calc(100vh - 428px);
+    }
+}
+
 @media (max-width: 768px) {
     .final-price-container {
         flex-direction: column;

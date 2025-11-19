@@ -1,8 +1,12 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Shared.DTOs.InventoryEntries;
+using GoldEx.Shared.Routings;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.InventoryEntry.Components;
 
@@ -12,7 +16,8 @@ public partial class ExcelUploadDialog
     private IBrowserFile? _selectedFile;
     private string? _fileName;
     private bool _fileReady;
-
+    private bool _processing;
+    private ProcessExcelResponse? _response;
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -32,11 +37,10 @@ public partial class ExcelUploadDialog
         StateHasChanged();
     }
 
-    private void DownloadTemplate()
+    private async Task DownloadTemplate()
     {
-        // If you have a static template file in wwwroot/templates
-        var url = "/templates/product-import-template.xlsx";
-        JsRuntime.InvokeVoidAsync("open", url, "_blank");
+        var url = ApiUrls.Files.GetInventoryEntryTemplate();
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
     }
 
     private async Task HandleUpload()
@@ -44,17 +48,52 @@ public partial class ExcelUploadDialog
         if (_selectedFile is null)
             return;
 
-        await using var stream = _selectedFile.OpenReadStream(long.MaxValue);
-        var items = await ParseExcelAsync(stream);
+        _processing = true;
 
-        MudDialog.Close(DialogResult.Ok(items));
+        await using var ms = new MemoryStream();
+        await _selectedFile.OpenReadStream().CopyToAsync(ms);
+        var bytes = ms.ToArray();
+
+        await ProcessExcelAsync(bytes);
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Close() => MudDialog.Close();
 
-    private Task<List<ProductItemVm>> ParseExcelAsync(Stream stream)
+    private async Task ProcessExcelAsync(byte[] bytes)
     {
-        // TODO: Implement EPPlus or NPOI parser
-        return Task.FromResult(new List<ProductItemVm>());
+        var request = new ProcessExcelRequest(bytes);
+
+        await SendRequestAsync<IInventoryEntryService, ProcessExcelResponse>(
+            action: (s, ct) => s.ProcessExcelAsync(request, ct),
+            afterSend: response =>
+            {
+                _response = response;
+                _processing = false;
+            },
+            onFailure: () => _processing = false
+        );
+    }
+
+    private void OnBack()
+    {
+        _response = null;
+        _fileReady = false;
+        _fileName = null;
+        _selectedFile = null;
+        _files = null;
+    }
+
+    private void OnConfirmImport()
+    {
+        if (_response is null)
+            return;
+
+        _processing = true;
+
+        var result = _response.Items.Select(ProductItemVm.CreateFromItem).ToList();
+
+        _processing = false;
+
+        MudDialog.Close(DialogResult.Ok(result));
     }
 }

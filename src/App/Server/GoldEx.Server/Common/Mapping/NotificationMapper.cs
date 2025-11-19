@@ -4,7 +4,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class NotificationsMappingConfig : IRegister
+internal class NotificationMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

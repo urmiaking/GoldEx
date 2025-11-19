@@ -4,7 +4,6 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.InventoryStocks;
 using GoldEx.Server.Domain.CoinAggregate;
-using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
@@ -12,7 +11,6 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
-using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
@@ -323,6 +321,8 @@ internal class InventoryStockService(
         var items = await repository.Get(spec)
             .Include(x => x.Invoice!.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
+            .Include(x => x.InventoryEntry)
+            .Include(x => x.MeltingBatch)
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
@@ -359,7 +359,7 @@ internal class InventoryStockService(
 
     public async Task<GetInventoryStockAmountResponse> GetAvailableItemAmountAsync(Guid itemId, ItemType itemType, CancellationToken cancellationToken = default)
     {
-        var amount = 0m;
+        decimal amount;
 
         switch (itemType)
         {

@@ -17,9 +17,9 @@
                    Color="Color.Success"
                    StartIcon="@Icons.Material.Filled.CloudUpload"
                    Size="Size.Medium"
-                   Disabled="@IsBusy"
+                   Disabled="@_processing"
                    OnClick="OnSubmitAsync">
-            @if (IsBusy)
+            @if (_processing)
             {
                 <MudProgressCircular Class="ms-n1"
                                      Size="Size.Small"

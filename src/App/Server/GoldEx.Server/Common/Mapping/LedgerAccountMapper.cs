@@ -4,7 +4,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class LedgerAccountsMappingConfig : IRegister
+internal class LedgerAccountMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

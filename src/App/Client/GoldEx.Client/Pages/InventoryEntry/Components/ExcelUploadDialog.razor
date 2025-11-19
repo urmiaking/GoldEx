@@ -2,42 +2,160 @@
 
 <MudDialog>
     <DialogContent>
-        <MudAlert Severity="Severity.Info" Elevation="0" Dense="true" Class="mb-3" ContentAlignment="HorizontalAlignment.Start">
-            لطفاً فایل اکسل را مطابق قالب نمونه دانلود کرده و پس از تکمیل، آن را آپلود کنید.
-        </MudAlert>
 
-        <EditForm Model="@this" OnValidSubmit="HandleUpload">
-            <MudStack Spacing="2" Row Wrap="Wrap.Wrap" Justify="Justify.SpaceBetween" Class="my-4">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudDownload" OnClick="DownloadTemplate">
-                    دانلود قالب
-                </MudButton>
+        @if (_processing)
+        {
+            <div class="align-center d-flex flex-column gap-3 justify-content-center">
+                <MudProgressLinear Color="Color.Info" Indeterminate="true" />
+                <div>در حال آماده سازی اطلاعات...</div>
+            </div>
+        }
+        else if (_response is null)
+        {
+            <MudAlert Severity="Severity.Info" Elevation="0" Dense="true" Class="mb-3" ContentAlignment="HorizontalAlignment.Start">
+                لطفاً فایل اکسل را مطابق قالب نمونه دانلود کرده و پس از تکمیل، آن را آپلود کنید.
+            </MudAlert>
 
-                <MudFileUpload @bind-Files="_files"
-                               Accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                               OnFilesChanged="HandleFilesChanged" MaximumFileCount="1" Required="true">
-                    <ActivatorContent>
-                        <MudButton Variant="Variant.Filled" 
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.CloudUpload">
-                            انتخاب فایل
-                        </MudButton>
-                    </ActivatorContent>
-                </MudFileUpload>
+            <EditForm Model="@this" OnValidSubmit="HandleUpload">
+                <MudStack Spacing="2" Row Wrap="Wrap.Wrap" Justify="Justify.SpaceBetween" Class="my-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.CloudDownload" OnClick="DownloadTemplate">
+                        دانلود قالب
+                    </MudButton>
 
-                @if (_fileName is not null)
-                {
-                    <MudText Typo="Typo.caption" >
-                        فایل انتخاب شده: @_fileName
-                    </MudText>
-                }
+                    <MudFileUpload @bind-Files="_files"
+                                   Accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                   OnFilesChanged="HandleFilesChanged" MaximumFileCount="1" Required="true">
+                        <ActivatorContent>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload">
+                                انتخاب فایل
+                            </MudButton>
+                        </ActivatorContent>
+                    </MudFileUpload>
 
-            </MudStack>
-        </EditForm>
+                    @if (_fileName is not null)
+                    {
+                        <MudText Typo="Typo.caption">
+                            فایل انتخاب شده: @_fileName
+                        </MudText>
+                    }
 
+                </MudStack>
+            </EditForm>
+        }
+        else
+        {
+            <div class="d-flex flex-column overflow-auto">
+                <div class="d-flex flex-column flex-fill gap-3 h-100 my-3 overflow-x-hidden">
+
+                    <div class="text-center">
+                        نتیجه پردازش فایل اکسل
+                    </div>
+
+                    <!-- Summary cards -->
+                    <MudGrid Class="mb-2">
+                        <MudItem xs="6" sm="4">
+                            <MudPaper Class="pa-4 d-flex align-center" Elevation="1">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="w-100">
+                                    <MudIcon Icon="@Icons.Material.Filled.FormatListNumbered" Color="Color.Info" />
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.body2">تعداد کل</MudText>
+                                        <MudText Typo="Typo.h6">@_response.TotalRows</MudText>
+                                    </div>
+                                </MudStack>
+                            </MudPaper>
+                        </MudItem>
+
+                        <MudItem xs="6" sm="4">
+                            <MudPaper Class="pa-4 d-flex align-center" Elevation="1">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="w-100">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.body2">ثبت شده</MudText>
+                                        <MudText Typo="Typo.h6">@_response.Items.Count</MudText>
+                                    </div>
+                                </MudStack>
+                            </MudPaper>
+                        </MudItem>
+
+                        <MudItem xs="6" sm="4">
+                            <MudPaper Class="pa-4 d-flex align-center" Elevation="1">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="w-100">
+                                    <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Color="Color.Warning" />
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.body2">رد شده</MudText>
+                                        <MudText Typo="Typo.h6">@_response.SkippedRows</MudText>
+                                    </div>
+                                </MudStack>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (_response.SkippedRowDetails is null or { Count: 0 })
+                    {
+                        <MudAlert Severity="Severity.Success" Elevation="0" Dense="true" Class="mt-3" ContentAlignment="HorizontalAlignment.Start">
+                            همه ردیف‌ها با موفقیت نگاشت شده‌اند. در صورت تأیید، داده‌ها به مرحله بعدی منتقل خواهند شد.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="mt-3 text-center">
+                            جزئیات خطاهای ردیف‌های رد شده
+                        </div>
+
+                        <div class="d-flex flex-column flex-fill h-100 overflow-auto p-2" style="max-height: 300px; border: 1px solid var(--mud-palette-table-lines); border-radius: 4px;">
+                            <MudList T="string" Dense="true">
+                                @foreach (var skipped in _response.SkippedRowDetails)
+                                {
+                                    <MudListItem Icon="@Icons.Material.Filled.Error" IconColor="Color.Error">
+                                        <div class="d-flex gap-2">
+                                            <MudText Color="Color.Error"><b>ردیف @skipped.RowIndex:</b></MudText>
+                                            <MudText>@skipped.Reason</MudText>
+                                        </div>
+                                    </MudListItem>
+                                    <MudDivider />
+                                }
+                            </MudList>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        }
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="Cancel" Color="Color.Error" Variant="Variant.Filled">انصراف</MudButton>
-        <MudButton Disabled="@(!_fileReady)" OnClick="HandleUpload" Color="Color.Success" Variant="Variant.Filled">پردازش فایل</MudButton>
+        @if (_response is null)
+        {
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">انصراف</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@(!_fileReady || _processing)"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="HandleUpload"
+                       Variant="Variant.Filled">پردازش فایل</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.ArrowForward" OnClick="OnBack">
+                بازگشت
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" Class="m-2" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" OnClick="OnConfirmImport">
+                ادامه
+            </MudButton>
+        }
     </DialogActions>
 </MudDialog>
+
+<style>
+    .mud-dialog-content {
+        display: flex;
+        flex-direction: column;
+    }
+</style>

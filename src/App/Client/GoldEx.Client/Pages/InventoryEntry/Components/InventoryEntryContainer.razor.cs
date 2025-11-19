@@ -12,6 +12,7 @@ public partial class InventoryEntryContainer
     private GetPriceUnitResponse? _priceUnit;
     private decimal? _gramPrice;
     private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
+    private bool _processing;
 
     [Parameter] public string? Class { get; set; }
 
@@ -66,11 +67,16 @@ public partial class InventoryEntryContainer
 
         if (result is true)
         {
+            _processing = true;
+            StateHasChanged();
+
             var request = _model.ToRequest(_gramPrice ?? 0);
             await SendRequestAsync<IInventoryEntryService>(
                 action: (s, ct) => s.CreateAsync(request, ct),
                 afterSend: () =>
                 {
+                    _processing = false;
+                    StateHasChanged();
                     AddSuccessToast("ورود موجودی با موفقیت انجام شد.");
                     Navigation.NavigateTo(ClientRoutes.InventoryStocks.List);
                     return Task.CompletedTask;

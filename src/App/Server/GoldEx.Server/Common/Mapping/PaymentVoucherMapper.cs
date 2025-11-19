@@ -8,7 +8,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class PaymentVouchersMappingConfig : IRegister
+internal class PaymentVoucherMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

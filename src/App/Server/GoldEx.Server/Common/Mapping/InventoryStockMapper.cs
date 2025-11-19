@@ -10,7 +10,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class InventoryStocksMappingConfig : IRegister
+internal class InventoryStockMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
@@ -67,6 +67,10 @@ public class InventoryStocksMappingConfig : IRegister
             {
                 extraInfo = $"طبق ذوب شماره {src.MeltingBatch.BatchNumber}";
             }
+            else if (src.InventoryEntryId.HasValue)
+            {
+                extraInfo = "طبق ثبت موجودی اولیه";
+            }
         }
 
         if (src.Product != null)
@@ -110,6 +114,12 @@ public class InventoryStocksMappingConfig : IRegister
         if (src.InvoiceId.HasValue)
         {
             return ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = src.InvoiceId.Value.Value });
+        }
+
+        if (src.InventoryEntryId.HasValue)
+        {
+            // TODO: Update this when inventory entry detail page is created
+            return string.Empty;
         }
 
         return string.Empty;

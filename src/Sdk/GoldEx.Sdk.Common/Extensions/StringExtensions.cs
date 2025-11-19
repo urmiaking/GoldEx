@@ -207,4 +207,10 @@ public static class StringExtensions
 
         return randomNumber.ToString();
     }
+
+    public static string GenerateRandomPhoneNumber()
+    {
+        var randomNumber = IntExtensions.GenerateRandomNumber(100000000, 999999999);
+        return "09" + randomNumber;
+    }
 }

@@ -6,7 +6,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class FinancialAccountsMappingConfig : IRegister
+internal class FinancialAccountMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

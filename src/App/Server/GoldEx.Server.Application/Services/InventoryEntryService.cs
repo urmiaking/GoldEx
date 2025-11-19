@@ -7,11 +7,14 @@ using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Services.Mappers;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using MapsterMapper;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -21,7 +24,10 @@ internal class InventoryEntryService(
     IInventoryStockRepository inventoryStockRepository,
     IServerProductService productService,
     IAccountingTransactionService transactionService,
+    ISpreadsheetService spreadsheetService,
+    IExcelProductProcessor excelProductProcessor,
     CreateInventoryEntryRequestValidator createValidator,
+    IMapper mapper,
     ILogger<InventoryEntryService> logger) : IInventoryEntryService
 {
     public async Task CreateAsync(CreateInventoryEntryRequest request, CancellationToken cancellationToken = default)
@@ -88,5 +94,14 @@ internal class InventoryEntryService(
                 throw;
             }
         }
+    }
+
+    public async Task<ProcessExcelResponse> ProcessExcelAsync(ProcessExcelRequest request, CancellationToken cancellationToken = default)
+    {
+        var parsedResult = await spreadsheetService.ParseAsync(request.FileContent, new ExcelProductItemMapper(), cancellationToken: cancellationToken);
+
+        var result = await excelProductProcessor.ProcessAsync(parsedResult, cancellationToken);
+
+        return result;
     }
 }
