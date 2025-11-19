@@ -10,7 +10,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class ReportingMappingConfig : IRegister
+internal class ReportingMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

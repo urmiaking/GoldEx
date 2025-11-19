@@ -18,4 +18,11 @@ public class InventoryEntriesController(IInventoryEntryService service) : ApiCon
         await service.CreateAsync(request, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost(ApiRoutes.InventoryEntries.ProcessExcel)]
+    public async Task<ActionResult<List<GetProductItemResponse>>> ProcessExcelAsync([FromBody] ProcessExcelRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await service.ProcessExcelAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }

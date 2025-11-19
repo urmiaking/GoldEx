@@ -199,6 +199,7 @@ public partial class ProductList
         {
             foreach (var item in items)
             {
+                item.GramPrice = 1;
                 item.RecalculateAmounts();
                 item.Index = GetLastItemIndexNumber() + 1;
                 Model.ProductItems.Add(item);

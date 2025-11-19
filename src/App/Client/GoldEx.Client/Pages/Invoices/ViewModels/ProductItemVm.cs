@@ -320,4 +320,14 @@ public class ProductItemVm
         Product.ProductCategoryId = null;
         Product.ProductCategoryTitle = null;
     }
+
+    public static ProductItemVm CreateFromItem(GetProductItemResponse response)
+    {
+        return new ProductItemVm
+        {
+            Product = ProductVm.CreateFrom(response.Product),
+            Quantity = response.Quantity,
+            TotalWeight = response.Product.Weight
+        };
+    }
 }

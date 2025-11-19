@@ -4,7 +4,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class CoinsMappingConfig : IRegister
+internal class CoinMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

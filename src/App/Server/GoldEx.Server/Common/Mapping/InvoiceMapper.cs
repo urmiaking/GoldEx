@@ -2,12 +2,11 @@
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.Services.Abstractions;
 using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class InvoicesMappingConfig : IRegister
+internal class InvoiceMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

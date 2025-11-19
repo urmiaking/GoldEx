@@ -18,4 +18,16 @@ internal class InventoryEntryService(HttpClient client, JsonSerializerOptions js
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
+
+    public async Task<ProcessExcelResponse> ProcessExcelAsync(ProcessExcelRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PostAsJsonAsync(ApiUrls.InventoryEntries.ProcessExcel(), request, jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<ProcessExcelResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

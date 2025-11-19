@@ -6,7 +6,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class PriceUnitsMappingConfig : IRegister
+internal class PriceUnitMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

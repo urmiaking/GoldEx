@@ -9,7 +9,7 @@ using MapsterMapper;
 
 namespace GoldEx.Server.Common.Mapping;
 
-public class MeltingBatchMappingConfig : IRegister
+internal class MeltingBatchMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

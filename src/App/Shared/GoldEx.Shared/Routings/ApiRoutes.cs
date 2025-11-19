@@ -237,5 +237,12 @@ public static class ApiRoutes
     {
         public const string Base = "/api/inventory-entries";
         public const string Create = "";
+        public const string ProcessExcel = "process-excel";
+    }
+
+    public class Files
+    {
+        public const string Base = "/api/files";
+        public const string GetInventoryEntryTemplate = "inventory-entry-template";
     }
 }

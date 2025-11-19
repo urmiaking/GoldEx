@@ -46,13 +46,16 @@
         <MudTd DataLabel="حجم">@(context.GoldUnitType.HasValue ? $"{context.Amount.ToWeightFormat(context.GoldUnitType.Value)}" : context.Amount.ToCurrencyFormat(context.PriceUnit))</MudTd>
         <MudTd DataLabel="شرح">@context.Description</MudTd>
         <MudTd DataLabel="عملیات">
-            <div class="d-flex gap-2">
-                <MudButton Size="@Size.Small" Variant="@Variant.Filled" EndIcon="@Icons.Material.Filled.ArrowBack"
+            @if (!string.IsNullOrEmpty(context.SourceUrl))
+            {
+                <div class="d-flex gap-2">
+                    <MudButton Size="@Size.Small" Variant="@Variant.Filled" EndIcon="@Icons.Material.Filled.ArrowBack"
                                OnClick="_ => OnViewSource(context.SourceUrl)"
                                Color="@Color.Info">
-                    مشاهده فاکتور
-                </MudButton>
-            </div>
+                        مشاهده فاکتور
+                    </MudButton>
+                </div>
+            }
         </MudTd>
     </RowTemplate>
     <NoRecordsContent>

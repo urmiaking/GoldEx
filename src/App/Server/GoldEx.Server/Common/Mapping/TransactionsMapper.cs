@@ -4,7 +4,7 @@ using Mapster;
 
 namespace GoldEx.Server.Common.Mapping;
 
-internal class TransactionsMappingConfig : IRegister
+internal class TransactionsMapper : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
