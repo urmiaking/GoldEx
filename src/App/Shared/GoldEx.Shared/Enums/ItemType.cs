@@ -16,6 +16,6 @@ public enum ItemType
     [Display(Name = "ارز")]
     Currency = 4,
 
-    [Display(Name = "طلای دست دوم")]
+    [Display(Name = "طلای مستعمل")]
     UsedProduct = 5
 }

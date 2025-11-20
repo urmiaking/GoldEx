@@ -189,7 +189,7 @@ public partial class CurrencyItemEditor
         return "لطفا حساب مالی را انتخاب کنید";
     }
 
-    private async Task OnFinancialAccountChanged(GetFinancialAccountTitleResponse financialAccount)
+    private async Task OnFinancialAccountChanged(GetFinancialAccountTitleResponse? financialAccount)
     {
         Model.FinancialAccount = financialAccount;
         await LoadFinancialAccountBalanceAsync();

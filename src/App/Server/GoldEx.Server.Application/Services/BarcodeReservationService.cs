@@ -45,7 +45,7 @@ internal sealed class BarcodeReservationService(
             .FirstOrDefaultAsync(cancellationToken);
 
         if (active is null)
-            throw new InvalidOperationException("رزرو معتبر برای این بارکد یافت نشد");
+            return;
 
         active.Commit(invoiceId.HasValue ? new InvoiceId(invoiceId.Value) : null);
         await reservationRepository.UpdateAsync(active, cancellationToken);

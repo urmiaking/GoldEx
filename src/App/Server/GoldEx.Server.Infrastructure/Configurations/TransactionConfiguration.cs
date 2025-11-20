@@ -64,6 +64,11 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .HasForeignKey<Transaction>(x => x.ReverseTransactionId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.InventoryEntry)
+            .WithMany(x => x.Transactions)
+            .HasForeignKey(x => x.InventoryEntryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // ایندکس یکتا تا هر تراکنش فقط یک برگشت داشته باشد
         builder.HasIndex(x => x.ReverseTransactionId)
             .IsUnique()

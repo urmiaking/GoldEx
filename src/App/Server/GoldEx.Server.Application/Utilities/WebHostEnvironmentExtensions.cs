@@ -25,4 +25,6 @@ public static class WebHostEnvironmentExtensions
     public static string GetAppIconDirectory(this IWebHostEnvironment environment)
         => Path.Combine(environment.ContentRootPath, "uploads", "icons", "app");
 
+    public static string GetInventoryEntryTemplateFilePath(this IWebHostEnvironment environment)
+        => Path.Combine(environment.WebRootPath, "templates", "inventory-entry-template.xlsx");
 }

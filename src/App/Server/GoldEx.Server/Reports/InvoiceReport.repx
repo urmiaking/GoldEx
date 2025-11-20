@@ -307,7 +307,7 @@
               </ExpressionBindings>
               <StylePriority Ref="161" UseFont="false" />
             </Item9>
-            <Item10 Ref="162" ControlType="XRLabel" Name="xrLabel11" Multiline="true" Text="کد یکتا:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="393.3335,44.64427" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+            <Item10 Ref="162" ControlType="XRLabel" Name="xrLabel11" Multiline="true" Text="کد مشتری:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="393.3335,44.64427" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
               <StylePriority Ref="163" UseFont="false" UseTextAlignment="false" />
             </Item10>
           </Controls>

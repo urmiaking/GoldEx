@@ -3,6 +3,7 @@ using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.InventoryEntries;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -115,6 +116,21 @@ public class CurrencyItemVm
             currencyItem.ProfitPercent,
             currencyItem.TaxPercent,
             currencyItem.Currency.Id,
+            currencyItem.FinancialAccount.Id);
+    }
+
+    public static CreateCurrencyItemRequest ToInventoryEntryRequest(CurrencyItemVm currencyItem)
+    {
+        if (currencyItem.Currency is null)
+            throw new FluentValidation.ValidationException("ارز وارد نشده است");
+
+        if (currencyItem.FinancialAccount is null)
+            throw new FluentValidation.ValidationException("حساب مالی وارد نشده است");
+
+        return new CreateCurrencyItemRequest(
+            currencyItem.Currency.Id,
+            currencyItem.Amount,
+            currencyItem.UnitPrice,
             currencyItem.FinancialAccount.Id);
     }
 

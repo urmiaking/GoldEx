@@ -228,7 +228,7 @@ public class InvoiceVm
             throw new ValidationException("فاکتور باید حداقل دارای یک آیتم باشد.");
 
         if (model.InvoiceType == InvoiceType.Sell && hasUsedItems && !hasNewItems)
-            throw new ValidationException("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک کالای نو، سکه یا ارز باشد.");
+            throw new ValidationException("در فاکتور فروش، کالای مستعمل نمی‌تواند به تنهایی ثبت شود و باید همراه با یک کالای نو، سکه یا ارز باشد.");
 
         if (model.Customer?.Id == null)
             throw new ValidationException("لطفا طرف حساب را انتخاب کنید");

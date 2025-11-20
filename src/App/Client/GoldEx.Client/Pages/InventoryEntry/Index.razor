@@ -1,0 +1,21 @@
+﻿@using GoldEx.Client.Pages.InventoryEntry.Components
+
+@inherits GoldExComponentBase
+@attribute [Route(ClientRoutes.InventoryStocks.InventoryEntry.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+<PageTitle>ورود دستی اجناس</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+    
+    <MudText Typo="Typo.h5" GutterBottom="true">ورود دستی اجناس</MudText>
+    <MudDivider Class="mb-2" />
+
+    <InventoryEntryContainer Class="mb-4" />
+
+</MudContainer>

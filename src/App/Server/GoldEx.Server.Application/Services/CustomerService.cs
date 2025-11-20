@@ -1,8 +1,8 @@
-﻿using System.Data;
-using FluentValidation;
+﻿using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.Customers;
 using GoldEx.Server.Domain.CustomerAggregate;
@@ -22,6 +22,8 @@ using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Data;
+using GoldEx.Sdk.Common.Extensions;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -34,7 +36,7 @@ internal class CustomerService(
     IMapper mapper,
     ILogger<CustomerService> logger,
     CustomerRequestDtoValidator validator,
-    DeleteCustomerValidator deleteValidator) : ICustomerService
+    DeleteCustomerValidator deleteValidator) : ICustomerService, IServerCustomerService
 {
     public async Task<PagedList<GetCustomerResponse>> GetListAsync(RequestFilter filter, CustomerFilter customerFilter,
         CancellationToken cancellationToken = default)
@@ -443,5 +445,29 @@ internal class CustomerService(
             parentReceivableAccount.Id));
 
         await ledgerAccountRepository.CreateRangeAsync(ledgerAccounts);
+    }
+
+    public async Task<GetCustomerResponse> GetOrCreateAsync(string customerName, CustomerType type, CancellationToken cancellationToken = default)
+    {
+        var customer = await repository
+            .Get(new CustomersByNameAndTypeSpecification(customerName, type))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (customer is not null)
+            return mapper.Map<GetCustomerResponse>(customer);
+
+        var newCustomer = Customer.Create(type,
+            customerName,
+            StringExtensions.GenerateRandomCode(6),
+            StringExtensions.GenerateRandomPhoneNumber(),
+            null,
+            null,
+            null);
+
+        await repository.CreateAsync(newCustomer, cancellationToken);
+
+        await CreateLedgerAccountsAsync(newCustomer);
+
+        return mapper.Map<GetCustomerResponse>(newCustomer);
     }
 }

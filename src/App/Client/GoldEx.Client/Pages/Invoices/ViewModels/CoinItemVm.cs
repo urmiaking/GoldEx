@@ -1,6 +1,7 @@
 ﻿using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
@@ -91,6 +92,14 @@ public class CoinItemVm
             coinItem.Quantity,
             coinItem.ProfitPercent,
             coinItem.Coin.Id);
+    }
+
+    public static CreateCoinItemRequest ToInventoryEntryRequest(CoinItemVm coinItem)
+    {
+        if (coinItem.Coin is null)
+            throw new FluentValidation.ValidationException("سکه انتخاب نشده است");
+
+        return new CreateCoinItemRequest(coinItem.Coin.Id, coinItem.Quantity, coinItem.UnitPrice);
     }
 
     public static CoinItemVm CreateFrom(GetInvoiceCoinItemResponse response)

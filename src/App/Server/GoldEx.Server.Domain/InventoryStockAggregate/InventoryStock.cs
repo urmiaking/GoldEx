@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -37,7 +38,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
     public InventoryStockId? ReverseInventoryStockId { get; private set; }
     public InventoryStock? ReverseInventoryStock { get; private set; }
 
-    // TODO: add warehousingId when implemented
+    public InventoryEntryId? InventoryEntryId { get; private set; }
+    public InventoryEntry? InventoryEntry { get; private set; }
 
     public static InventoryStock CreateMeltingBatchProduct(
         ProductId productId,
@@ -64,7 +66,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         decimal changeAmount,
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
-        DateTime? postingDate = null)
+        DateTime? postingDate = null,
+        InventoryEntryId? inventoryEntryId = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -75,7 +78,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = actionType,
             InvoiceId = invoiceId,
-            PostingDate = postingDate ?? DateTime.UtcNow
+            PostingDate = postingDate ?? DateTime.Now,
+            InventoryEntryId = inventoryEntryId
         };
     }
 
@@ -84,7 +88,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         int changeAmount,
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
-        DateTime? postingDate = null)
+        DateTime? postingDate = null,
+        InventoryEntryId? inventoryEntryId = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -95,7 +100,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = actionType,
             InvoiceId = invoiceId,
-            PostingDate = postingDate ?? DateTime.UtcNow
+            PostingDate = postingDate ?? DateTime.Now,
+            InventoryEntryId = inventoryEntryId
         };
     }
 
@@ -104,7 +110,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         decimal changeAmount,
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
-        DateTime? postingDate = null)
+        DateTime? postingDate = null,
+        InventoryEntryId? inventoryEntryId = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -115,7 +122,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = actionType,
             InvoiceId = invoiceId,
-            PostingDate = postingDate ?? DateTime.UtcNow
+            PostingDate = postingDate ?? DateTime.Now,
+            InventoryEntryId = inventoryEntryId
         };
     }
 
@@ -126,7 +134,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         decimal changeAmount,
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
-        DateTime? postingDate = null)
+        DateTime? postingDate = null,
+        InventoryEntryId? inventoryEntryId = null)
     {
         ArgumentNullException.ThrowIfNull(moltenGoldDetail);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
@@ -140,7 +149,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = actionType,
             InvoiceId = invoiceId,
-            PostingDate = postingDate ?? DateTime.UtcNow
+            PostingDate = postingDate ?? DateTime.Now,
+            InventoryEntryId = inventoryEntryId
         };
     }
 

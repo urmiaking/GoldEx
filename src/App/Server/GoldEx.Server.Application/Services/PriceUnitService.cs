@@ -1,7 +1,7 @@
-﻿using System.Data;
-using FluentValidation;
+﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.PriceUnits;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -19,6 +19,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -31,7 +32,7 @@ internal class PriceUnitService(
     IMapper mapper,
     ILogger<PriceUnitService> logger,
     CreatePriceUnitRequestValidator createValidator,
-    UpdatePriceUnitRequestValidator updateValidator) : IPriceUnitService
+    UpdatePriceUnitRequestValidator updateValidator) : IPriceUnitService, IServerPriceUnitService
 {
     public async Task<GetPriceUnitResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -214,5 +215,15 @@ internal class PriceUnitService(
         defaultItems.Add(item);
 
         await repository.UpdateRangeAsync(defaultItems, cancellationToken);
+    }
+
+    public async Task<GetPriceUnitTitleResponse> GetAsync(string title, CancellationToken cancellationToken = default)
+    {
+        var item = await repository
+            .Get(new PriceUnitsByTitleSpecification(title))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        return mapper.Map<GetPriceUnitTitleResponse>(item);
     }
 }

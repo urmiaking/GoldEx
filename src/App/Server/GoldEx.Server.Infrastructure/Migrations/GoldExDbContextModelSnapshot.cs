@@ -408,6 +408,19 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.ToTable("FinancialAccounts", (string)null);
                 });
 
+            modelBuilder.Entity("GoldEx.Server.Domain.InventoryEntryAggregate.InventoryEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InventoryEntries", (string)null);
+                });
+
             modelBuilder.Entity("GoldEx.Server.Domain.InventoryStockAggregate.InventoryStock", b =>
                 {
                     b.Property<Guid>("Id")
@@ -427,6 +440,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CurrencyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("InventoryEntryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("InvoiceId")
@@ -453,6 +469,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("CoinId");
 
                     b.HasIndex("CurrencyId");
+
+                    b.HasIndex("InventoryEntryId");
 
                     b.HasIndex("InvoiceId");
 
@@ -1044,6 +1062,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("InventoryEntryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("InvoiceId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1074,6 +1095,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("InventoryEntryId");
 
                     b.HasIndex("InvoiceId");
 
@@ -1321,6 +1344,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasForeignKey("CurrencyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("GoldEx.Server.Domain.InventoryEntryAggregate.InventoryEntry", "InventoryEntry")
+                        .WithMany("InventoryStocks")
+                        .HasForeignKey("InventoryEntryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", "Invoice")
                         .WithMany()
                         .HasForeignKey("InvoiceId")
@@ -1389,6 +1417,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("Coin");
 
                     b.Navigation("Currency");
+
+                    b.Navigation("InventoryEntry");
 
                     b.Navigation("Invoice");
 
@@ -2436,6 +2466,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .WithMany("Transactions")
                         .HasForeignKey("CustomerId");
 
+                    b.HasOne("GoldEx.Server.Domain.InventoryEntryAggregate.InventoryEntry", "InventoryEntry")
+                        .WithMany("Transactions")
+                        .HasForeignKey("InventoryEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", "Invoice")
                         .WithMany("Transactions")
                         .HasForeignKey("InvoiceId")
@@ -2472,6 +2507,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .WithOne()
                         .HasForeignKey("GoldEx.Server.Domain.TransactionAggregate.Transaction", "ReverseTransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("InventoryEntry");
 
                     b.Navigation("Invoice");
 
@@ -2513,6 +2550,13 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("LedgerAccounts");
 
                     b.Navigation("PaymentVouchers");
+
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.InventoryEntryAggregate.InventoryEntry", b =>
+                {
+                    b.Navigation("InventoryStocks");
 
                     b.Navigation("Transactions");
                 });
