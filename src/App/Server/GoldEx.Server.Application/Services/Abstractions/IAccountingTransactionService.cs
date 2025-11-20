@@ -1,7 +1,13 @@
-﻿using GoldEx.Server.Domain.InvoiceAggregate;
+﻿using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.MeltingBatches;
 
 namespace GoldEx.Server.Application.Services.Abstractions;
@@ -24,4 +30,8 @@ public interface IAccountingTransactionService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task ReplaceTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
+
+    Task CreateForInventoryEntryAsync(InventoryEntry inventoryEntry, InventoryStock inventoryStock, Product product, CreateProductItemRequest productItemRequest, CancellationToken cancellationToken = default);
+    Task CreateForInventoryEntryAsync(InventoryEntry inventoryEntry, InventoryStock inventoryStock, CreateCoinItemRequest coinItem, CancellationToken cancellationToken = default);
+    Task CreateForInventoryEntryAsync(InventoryEntry inventoryEntry, InventoryStock inventoryStock, CreateCurrencyItemRequest currencyItem, CancellationToken cancellationToken = default);
 }

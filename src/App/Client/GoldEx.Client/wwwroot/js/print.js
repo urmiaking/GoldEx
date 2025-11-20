@@ -188,7 +188,7 @@ window.printDynamicBarcode = function (settings, data) {
             printWindow.focus();
             printWindow.print();
 
-            // بستن خودکار پنجره
+            // انصراف خودکار پنجره
             setTimeout(() => {
                 printWindow.close();
             }, 100);

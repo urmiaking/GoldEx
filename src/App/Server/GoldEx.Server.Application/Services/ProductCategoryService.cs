@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.ProductCategories;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -18,7 +20,7 @@ internal class ProductCategoryService(
     IMapper mapper,
     CreateProductCategoryRequestValidator createValidator,
     UpdateProductCategoryRequestValidator updateValidator,
-    DeleteProductCategoryValidator deleteValidator) : IProductCategoryService
+    DeleteProductCategoryValidator deleteValidator) : IProductCategoryService, IServerProductCategoryService
 {
     public async Task<List<GetProductCategoryResponse>> GetListAsync(CancellationToken cancellationToken = default)
     {
@@ -105,5 +107,36 @@ internal class ProductCategoryService(
             throw new InvalidOperationException("Invalid prefix code format.");
 
         return new GetProductCategoryNumberResponse(lastCode);
+    }
+
+    public async Task<ProductCategory> GetOrCreateAsync(
+        string? categoryTitle,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(categoryTitle))
+            categoryTitle = "سایر";
+
+        var normalized = categoryTitle.NormalizeText();
+
+        var spec = new ProductCategoriesByLooseMatchSpecification(normalized);
+
+        var candidates = await repository
+            .Get(spec)
+            .ToListAsync(cancellationToken);
+
+        // In-memory strict comparison (only on small candidate list)
+        var exact = candidates.FirstOrDefault(c => c.Title.Normalize() == normalized);
+
+        if (exact is not null)
+            return exact;
+
+        // Create new category
+        var categoryPrefix = await GetLastCodeAsync(cancellationToken);
+
+        var category = ProductCategory.Create(categoryTitle, prefixCode: categoryPrefix.Number);
+
+        await repository.CreateAsync(category, cancellationToken);
+
+        return category;
     }
 }

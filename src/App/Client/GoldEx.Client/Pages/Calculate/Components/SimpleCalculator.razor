@@ -6,21 +6,21 @@
         <Authorized>
             <MudGrid Justify="Justify.SpaceBetween">
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudAutocomplete T="string"  
-                                     Adornment="Adornment.End"  
-                                     AdornmentIcon="@Icons.Material.Filled.QrCode"  
-                                     Clearable="true"  
-                                     HelperText="@_barcodeFieldHelperText"  
-                                     Label="بارکد جنس"  
-                                     dir="ltr"  
-                                     Margin="Margin.Dense"  
-                                     OnClearButtonClick="OnBarcodeCleared"  
-                                     Value="_barcode"  
-                                     ValueChanged="OnBarcodeChanged"  
-                                     SearchFunc="SearchBarcodes"  
-                                     Variant="Variant.Outlined"  
-                                     DebounceInterval="200"  
-                                     CoerceValue="false"  
+                    <MudAutocomplete T="string"
+                                     Adornment="Adornment.End"
+                                     AdornmentIcon="@Icons.Material.Filled.QrCode"
+                                     Clearable="true"
+                                     HelperText="@_barcodeFieldHelperText"
+                                     Label="بارکد جنس"
+                                     dir="ltr"
+                                     Margin="Margin.Dense"
+                                     OnClearButtonClick="OnBarcodeCleared"
+                                     Value="_barcode"
+                                     ValueChanged="OnBarcodeChanged"
+                                     SearchFunc="SearchBarcodes"
+                                     Variant="Variant.Outlined"
+                                     DebounceInterval="200"
+                                     CoerceValue="false"
                                      ResetValueOnEmptyText="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4" lg="3">
@@ -49,16 +49,18 @@
     </AuthorizeView>
 
     <MudForm Model="_model" @ref="@_form" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
-        <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
-            <MudRadioGroup For="() => _model.ProductType"
-                           T="ProductType"
-                           Value="_model.ProductType"
-                           ValueChanged="OnProductTypeChanged">
-                <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
-                <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
-                <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
-                <MudRadio Value="ProductType.UsedGold" Class="ml-8" Color="Color.Tertiary">طلای کهنه</MudRadio>
-            </MudRadioGroup>
+        <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">
+            <MudChipSet T="ProductType" 
+                        SelectionMode="SelectionMode.SingleSelection"
+                        Variant="Variant.Outlined"
+                        CheckMark="true"
+                        SelectedValue="_model.ProductType"
+                        SelectedValueChanged="OnProductTypeChanged">
+                <MudChip Color="Color.Primary" Value="ProductType.Gold">طلا</MudChip>
+                <MudChip Color="Color.Error" Value="ProductType.Jewelry">جواهر</MudChip>
+                <MudChip Color="Color.Success" Value="ProductType.MoltenGold">آب شده</MudChip>
+                <MudChip Color="Color.Info" Value="ProductType.UsedGold">مستعمل</MudChip>
+            </MudChipSet>
         </div>
 
         <MudGrid Spacing="4">
@@ -343,7 +345,11 @@
                                         var parts = new List<string>();
                                         if (fineness != 750) parts.Add($"(750 / {fineness:G29})");
                                         if (deduction > 0) parts.Add($"(750 / {750m - deduction:G29})");
-                                        if (parts.Any()) { <text> × @string.Join(" × ", parts)</text>; }
+                                        if (parts.Any())
+                                        {
+                                            <text> × @string.Join(" × ", parts)</text>
+                                            ;
+                                        }
                                     }
                                 </MudText>
 

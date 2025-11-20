@@ -3,77 +3,58 @@
 @if (ShowTitle)
 {
     <div class="d-flex justify-content-center">
-        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">تابلوی قیمت ها</MudText>
+        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">نرخ لحظه ای</MudText>
     </div>
     <MudDivider />
 }
 
 @if (_items is null)
 {
-    <PriceBoardSkeleton Class="@Class" Elevation="@Elevation" ContainerClass="@ContainerClass" />
+    <div class="@Class">
+        @for (var g = 0; g < 2; g++)
+        {
+            <div class="d-flex justify-content-center mt-4 mb-2">
+                <MudSkeleton Width="150px" Height="40px" SkeletonType="SkeletonType.Rectangle" />
+            </div>
+
+            <MudDivider Class="mb-2" DividerType="DividerType.Middle" />
+
+            <MudGrid Class="mb-8" Spacing="8">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="2">
+                        <PriceCardSkeleton />
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </div>
 }
 else
 {
-    <MudTable Hover="true" Dense="true" Breakpoint="Breakpoint.Xs" ContainerClass="@ContainerClass" FixedHeader="true" Elevation="@Elevation"
-              Items="@_items" Class="@($"{Class} p-2")"
-              GroupBy="@_groupDefinition"
-              GroupFooterClass="mb-4">
-        <ColGroup>
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-        </ColGroup>
-        <HeaderContent>
-            <MudTh>عنوان</MudTh>
-            <MudTh>قیمت</MudTh>
-            <MudTh>تغییرات</MudTh>
-            <MudTh>تاریخ بروزرسانی</MudTh>
-        </HeaderContent>
-        <GroupHeaderTemplate>
-            <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.Key}")</MudTh>
-        </GroupHeaderTemplate>
-        <RowTemplate>
-            <MudTd DataLabel="عنوان">
-                <div class="align-center d-flex gap-1">
-                    @if (context.HasIcon)
-                    {
-                        <MudAvatar Size="Size.Small">
-                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.Price, context.Id))" Alt="img"/>
-                        </MudAvatar>
-                    }
-                    else
-                    {
-                        <MudAvatar Size="Size.Small" Color="GetRandomColor()">
-                            @context.Title.GetInitialsWithPeriods()
-                        </MudAvatar>
-                    }
-                    @context.Title
-                </div>
-            </MudTd>
-            <MudTd DataLabel="قیمت">@context.Value @context.Unit</MudTd>
-            <MudTd DataLabel="تغییرات">
-                @if (context.Change.Contains("-"))
-                {
-                    <div class="red-text">
-                        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon> @context.Change
-                    </div>
-                }
-                else if (!context.Change.Contains("(0.00%)"))
-                {
-                    <div class="green-text">
-                        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp"></MudIcon> @context.Change
-                    </div>
-                }
-                else
-                {
-                    <MudIcon Icon="@Icons.Material.Filled.Remove"></MudIcon> 
-                    @context.Change
-                }
-            </MudTd>
-            <MudTd DataLabel="تاریخ بروزرسانی">@context.LastUpdate</MudTd>
-        </RowTemplate>
-    </MudTable>
-}
+    <div class="@Class">
+        @foreach (var group in _items.GroupBy(x => x.Type.GetDisplayName()))
+        {
+            @* Group Header *@
+            <MudText Typo="Typo.h4" Class="mt-4 mb-2 ml-2 text-center">
+                @group.Key
+            </MudText>
+            <MudDivider Class="mb-2" DividerType="DividerType.Middle" />
 
+            @* Grid for Items in this Group *@
+            <MudGrid Class="mb-8" Spacing="8">
+                @foreach (var item in group)
+                {
+                    <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="2">
+                        <PriceCard Title="@item.Title"
+                                   ImageUrl="@(ApiUrls.Icons.Get(IconType.Price, item.Id))"
+                                   ChangePercent="@ExtractPercentChange(item.Change)"
+                                   Price="@item.Value"
+                                   PriceUnit="@item.Unit"
+                                   DateTime="@item.LastUpdate" />
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </div>
+}

@@ -33,9 +33,9 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
             .IsInEnum().WithMessage("نوع مشتری نامعتبر است");
 
         RuleFor(x => x.NationalId)
-            .NotEmpty().WithMessage("وارد کردن شناسه یکتا الزامی است")
-            .MaximumLength(25).WithMessage("حداکثر طول شناسه یکتا 25 کاراکتر می باشد")
-            .MustAsync(BeUniqueNationalId).WithMessage("شناسه یکتا نمی تواند تکراری باشد");
+            .NotEmpty().WithMessage("وارد کردن کد مشتری الزامی است")
+            .MaximumLength(25).WithMessage("حداکثر طول کد مشتری 25 کاراکتر می باشد")
+            .MustAsync(BeUniqueNationalId).WithMessage("کد مشتری نمی تواند تکراری باشد");
 
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("وارد کردن نام الزامی است")

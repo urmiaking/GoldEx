@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -194,6 +195,9 @@ public class Transaction : EntityBase<TransactionId>
     public TransactionId? ReverseTransactionId { get; private set; }
     public Transaction? ReverseTransaction { get; set; }
 
+    public InventoryEntryId? InventoryEntryId { get; private set; }
+    public InventoryEntry? InventoryEntry { get; private set; }
+
     public static Transaction CreateForMeltingBatch(string description,
         decimal amount,
         decimal? exchangeRate,
@@ -267,5 +271,44 @@ public class Transaction : EntityBase<TransactionId>
     {
         ReverseTransactionId = originalTransactionId;
         return this;
+    }
+
+    public static Transaction CreateForInventoryEntry(string description,
+        decimal amount,
+        decimal baseCurrencyAmount,
+        decimal? exchangeRate,
+        Guid groupId,
+        TransactionType transactionType,
+        LedgerAccountId ledgerAccountId,
+        PriceUnitId priceUnitId,
+        InventoryEntryId inventoryEntryId,
+        DateTime postingDate)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+        if (amount < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than or equal to zero.");
+
+        if (baseCurrencyAmount < 0)
+            throw new ArgumentOutOfRangeException(nameof(baseCurrencyAmount), "Base currency amount must be greater than or equal to zero.");
+
+        if (exchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate),
+                "Exchange rate must be greater than zero if provided.");
+
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            Description = description,
+            Amount = amount,
+            BaseCurrencyAmount = baseCurrencyAmount,
+            GroupId = groupId,
+            TransactionType = transactionType,
+            LedgerAccountId = ledgerAccountId,
+            ExchangeRate = exchangeRate,
+            PriceUnitId = priceUnitId,
+            InventoryEntryId = inventoryEntryId
+        };
     }
 }

@@ -62,6 +62,11 @@ internal class InventoryStockConfigurations : IEntityTypeConfiguration<Inventory
             .HasForeignKey(x => x.MeltingBatchId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.InventoryEntry)
+            .WithMany(x => x.InventoryStocks)
+            .HasForeignKey(x => x.InventoryEntryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.OwnsOne(x => x.MoltenGoldDetail, Configure);
     }
 

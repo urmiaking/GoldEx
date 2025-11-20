@@ -47,15 +47,17 @@
         </AuthorizeView>
     </MudGrid>
 
-    <div class="d-flex flex-column flex-wrap align-center gap-3 mt-3">
-        <MudRadioGroup For="() => _model.ProductType"
-                       T="ProductType"
-                       Value="_model.ProductType"
-                       ValueChanged="OnProductTypeChanged">
-            <MudRadio Value="ProductType.Gold" Class="ml-8" Color="Color.Warning">طلا</MudRadio>
-            <MudRadio Value="ProductType.Jewelry" Class="ml-8" Color="Color.Primary">جواهر</MudRadio>
-            <MudRadio Value="ProductType.MoltenGold" Color="Color.Dark">طلای آب شده</MudRadio>
-        </MudRadioGroup>
+    <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">
+        <MudChipSet T="ProductType"
+                    SelectionMode="SelectionMode.SingleSelection"
+                    Variant="Variant.Outlined"
+                    CheckMark="true"
+                    SelectedValue="_model.ProductType"
+                    SelectedValueChanged="OnProductTypeChanged">
+            <MudChip Color="Color.Primary" Value="ProductType.Gold">طلا</MudChip>
+            <MudChip Color="Color.Error" Value="ProductType.Jewelry">جواهر</MudChip>
+            <MudChip Color="Color.Success" Value="ProductType.MoltenGold">آب شده</MudChip>
+        </MudChipSet>
     </div>
 
     <MudGrid Spacing="3">
@@ -93,7 +95,7 @@
                 <MudDivider Class="my-4" />
 
                 <MudText Typo="Typo.subtitle2">مشخصات فیزیکی</MudText>
-                
+
                 <MudTextField T="string?"
                               Label="@_model.GetDisplayName(() => _model.Name)"
                               For="() => _model.Name"
@@ -230,7 +232,7 @@
         <MudItem xs="12" md="9">
             <MudText Typo="Typo.h6" GutterBottom="true">نتایج جستجو</MudText>
 
-            <MudTable T="GetInventoryStockResponse" ServerData="LoadProductsAsync" RowsPerPage="20" 
+            <MudTable T="GetInventoryStockResponse" ServerData="LoadProductsAsync" RowsPerPage="20"
                       Hover="true" Dense="true" Striped="true" @ref="_table">
                 <HeaderContent>
                     <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Barcode ?? string.Empty)">کد</MudTableSortLabel></MudTh>

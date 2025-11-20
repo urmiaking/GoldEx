@@ -82,6 +82,10 @@ h1:focus {
     overflow: hidden !important;
 }
 
+.mud-picker-calendar-header-switch{
+    direction: rtl;
+}
+
 /* Fullscreen overlay */
 .loading-container {
     position: fixed;
@@ -264,6 +268,16 @@ h1:focus {
 @media (min-width: 960px) {
     .responsive-table-login {
         height: calc(100vh - 310px);
+    }
+}
+
+.responsive-table-import {
+    height: calc(100vh - 390px);
+}
+
+@media (min-width: 960px) {
+    .responsive-table-import {
+        height: calc(100vh - 428px);
     }
 }
 

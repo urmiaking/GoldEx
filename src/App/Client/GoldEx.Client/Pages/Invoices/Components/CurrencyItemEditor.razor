@@ -6,7 +6,7 @@
     <MudDialog>
         <DialogContent>
             <MudGrid>
-                <MudItem xs="12" md="6" lg="4">
+                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
                     <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="Model.Currency"
                                ValueChanged="OnCurrencyChanged"
@@ -28,7 +28,7 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="4">
+                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
                     <MudNumericField T="decimal"
                                      @bind-Value="Model.Amount"
                                      Label="@Model.GetDisplayName(() => Model.Amount)"
@@ -43,7 +43,7 @@
                                      Variant="Variant.Outlined"
                                      InputMode="InputMode.numeric" />
                 </MudItem>
-                <MudItem xs="12" md="12" lg="4">
+                <MudItem xs="12" md="12" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
                     <MudNumericField T="decimal"
                                      @bind-Value="Model.UnitPrice"
                                      Label="@Model.GetDisplayName(() => Model.UnitPrice)"
@@ -59,7 +59,7 @@
                                      AdornmentText="@PriceUnit?.Title" />
                 </MudItem>
 
-                <MudItem xs="12" md="6" lg="4">
+                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
                     <div class="d-flex flex-row align-center">  
                         <MudSelect Value="@Model.FinancialAccount"  
                                    ValueChanged="OnFinancialAccountChanged"
@@ -83,43 +83,46 @@
                                        OnClick="OnAddFinancialAccount"></MudIconButton>  
                     </div>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="4">
-                    <MudNumericField T="decimal"
-                                     @bind-Value="Model.ProfitPercent"
-                                     Label="@Model.GetDisplayName(() => Model.ProfitPercent)"
-                                     For="() => Model.ProfitPercent"
-                                     dir="ltr"
-                                     Format="G29"
-                                     Immediate="true"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="درصد"
-                                     HideSpinButtons="true"
-                                     Margin="Margin.Dense"
-                                     Variant="Variant.Outlined"
-                                     InputMode="InputMode.numeric" />
-                </MudItem>
-                <MudItem xs="12" md="6" lg="4">
-                    <MudNumericField T="decimal"
-                                     @bind-Value="Model.TaxPercent"
-                                     Label="@Model.GetDisplayName(() => Model.TaxPercent)"
-                                     For="() => Model.TaxPercent"
-                                     dir="ltr"
-                                     Immediate="true"
-                                     Format="#,##0.##"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="درصد"
-                                     HideSpinButtons="true"
-                                     Margin="Margin.Dense"
-                                     Variant="Variant.Outlined"
-                                     InputMode="InputMode.numeric" />
-                </MudItem>
+                @if (InvoiceType is InvoiceType.Sell)
+                {
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="Model.ProfitPercent"
+                                         Label="@Model.GetDisplayName(() => Model.ProfitPercent)"
+                                         For="() => Model.ProfitPercent"
+                                         dir="ltr"
+                                         Format="G29"
+                                         Immediate="true"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="درصد"
+                                         HideSpinButtons="true"
+                                         Margin="Margin.Dense"
+                                         Variant="Variant.Outlined"
+                                         InputMode="InputMode.numeric" />
+                    </MudItem>
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="Model.TaxPercent"
+                                         Label="@Model.GetDisplayName(() => Model.TaxPercent)"
+                                         For="() => Model.TaxPercent"
+                                         dir="ltr"
+                                         Immediate="true"
+                                         Format="#,##0.##"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="درصد"
+                                         HideSpinButtons="true"
+                                         Margin="Margin.Dense"
+                                         Variant="Variant.Outlined"
+                                         InputMode="InputMode.numeric" />
+                    </MudItem>
+                }
             </MudGrid>
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
                        OnClick="Close"
                        StartIcon="@Icons.Material.Filled.Close"
-                       Variant="Variant.Filled">بستن</MudButton>
+                       Variant="Variant.Filled">انصراف</MudButton>
 
             <MudButton Class="m-2"
                        Color="Color.Primary"

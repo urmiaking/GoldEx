@@ -10,7 +10,7 @@ public static class ClientRoutes
     public static class Accounts
     {
         private const string AccountPrefix = "/Account";
-        
+
 
         public static class Manage
         {
@@ -31,7 +31,7 @@ public static class ClientRoutes
             public const string LockUser = $"{ManagePrefix}/LockUser/{{id:guid}}";
             public const string NewUser = $"{ManagePrefix}/NewUser";
         }
-        
+
         //public const string Register = $"{AccountPrefix}/Register";
         public const string Login = $"{AccountPrefix}/Login";
         public const string LoginWithPhoneNumber = $"{AccountPrefix}/LoginWithPhoneNumber";
@@ -140,6 +140,12 @@ public static class ClientRoutes
             public const string Index = $"{MeltingBatchesPrefix}";
             public const string Create = $"{MeltingBatchesPrefix}/create";
             public const string Set = $"{MeltingBatchesPrefix}/set/{{id:guid?}}";
+        }
+
+        public static class InventoryEntry
+        {
+            private const string InventoryEntryPrefix = $"{InventoryStocksPrefix}/inventory-entry";
+            public const string Index = $"{InventoryEntryPrefix}";
         }
     }
 
