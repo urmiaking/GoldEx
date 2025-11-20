@@ -232,7 +232,7 @@ else
                         <MudText>شماره تماس: @_model.Customer.PhoneNumber</MudText>
                     </MudItem>
                     <MudItem xs="12" md="3">
-                        <MudText>کد یکتا: @_model.Customer.NationalId</MudText>
+                        <MudText>کد مشتری: @_model.Customer.NationalId</MudText>
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudText>آدرس: @_model.Customer.Address</MudText>
@@ -242,7 +242,7 @@ else
             else
             {
                 <div class="d-flex justify-content-center align-items-center m-5">
-                    <MudText>لطفا طرف حساب را از نوار بالا جستجو کرده و یا با انتخاب گزینه <MudIcon Color="Color.Primary" Icon="@Icons.Material.Filled.Add"></MudIcon> طرف حساب جدیدی تعریف کنید</MudText>
+                    <MudText Style="text-align:justify">لطفا طرف حساب را از نوار بالا جستجو کرده و یا با انتخاب گزینه <MudIcon Color="Color.Primary" Icon="@Icons.Material.Filled.Add"></MudIcon> طرف حساب جدیدی تعریف کنید</MudText>
                 </div>
             }
 
@@ -427,7 +427,7 @@ else
                     @if (_model.InvoiceType is InvoiceType.Sell && _model.UsedProducts.Any())
                     {
                         <MudItem xs="6" md="3">
-                            <MudText Typo="Typo.body2">طلای دست دوم خریداری شده</MudText>
+                            <MudText Typo="Typo.body2">طلای مستعمل خریداری شده</MudText>
                         </MudItem>
                         <MudItem xs="6" md="3">
                             <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>

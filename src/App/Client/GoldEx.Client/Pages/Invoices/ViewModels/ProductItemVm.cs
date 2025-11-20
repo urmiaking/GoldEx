@@ -327,7 +327,9 @@ public class ProductItemVm
         {
             Product = ProductVm.CreateFrom(response.Product),
             Quantity = response.Quantity,
-            TotalWeight = response.Product.Weight
+            TotalWeight = response.Product.Weight,
+            WageExchangeRate = response.WagePriceUnitExchangeRate,
+            CostPriceUnitId = response.CostPriceUnitId
         };
     }
 }

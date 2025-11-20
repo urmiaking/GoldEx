@@ -3,10 +3,15 @@ using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Server.Infrastructure.Models.Spreadsheets;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -15,7 +20,10 @@ internal class ExcelProductProcessor(
     IServerProductCategoryService productCategoryService,
     IBarcodeGeneratorService barcodeService,
     IServerCustomerService customerService,
-    IServerPriceUnitService priceUnitService)
+    IServerPriceUnitService priceUnitService,
+    IPriceUnitRepository priceUnitRepository,
+    IPriceService priceService,
+    ICategoryPredictor categoryPredictor)
     : IExcelProductProcessor
 {
     public async Task<ProcessExcelResponse> ProcessAsync(
@@ -37,7 +45,11 @@ internal class ExcelProductProcessor(
         // جلوگیری از بارکدهای تکراری داخل فایل
         var barcodeSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        var rowCounter = 1; 
+        var rowCounter = 1;
+
+        var gramPriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByUnitTypeSpecification(UnitType.Gold18K))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException("واحد قیمت گرم 18 عیار یافت نشد");
 
         foreach (var dto in parsedData.Items)
         {
@@ -60,6 +72,13 @@ internal class ExcelProductProcessor(
                     category = await productCategoryService
                         .GetOrCreateAsync(dto.ProductCategory!.Trim(), cancellationToken);
                 }
+                else
+                {
+                    var output = categoryPredictor.Predict(dto.ToAiInput());
+
+                    category = await productCategoryService
+                        .GetOrCreateAsync(output, cancellationToken);
+                }
 
                 // ====== بارکد ======
                 string barcode;
@@ -81,12 +100,19 @@ internal class ExcelProductProcessor(
                 }
 
                 // ====== واحد اجرت ======
-                GetPriceUnitTitleResponse? priceUnit = null;
+                GetPriceUnitTitleResponse? wagePriceUnit = null;
+                decimal? wagePriceUnitExchangeRate = null;
                 if (!string.IsNullOrWhiteSpace(dto.WagePriceUnit))
                 {
                     try
                     {
-                        priceUnit = await priceUnitService.GetAsync(dto.WagePriceUnit.Trim(), cancellationToken);
+                        wagePriceUnit = await priceUnitService.GetAsync(dto.WagePriceUnit, cancellationToken);
+
+                        var exchangeRateResponse = await priceService.GetExchangeRateAsync(
+                            wagePriceUnit.Id, gramPriceUnit.Id.Value, cancellationToken);
+
+                        wagePriceUnitExchangeRate = exchangeRateResponse.ExchangeRate;
+
                     }
                     catch
                     {
@@ -119,8 +145,8 @@ internal class ExcelProductProcessor(
                     Fineness: dto.Fineness,
                     ProductCategoryId: category?.Id.Value,
                     ProductCategoryTitle: category?.Title,
-                    WagePriceUnitId: priceUnit?.Id,
-                    WagePriceUnitTitle: priceUnit?.Title,
+                    WagePriceUnitId: wagePriceUnit?.Id,
+                    WagePriceUnitTitle: wagePriceUnit?.Title,
                     DateTime: DateTime.UtcNow,
                     GoldUnitType: GoldUnitType.Gram,
                     StonePriceUnit: null,
@@ -128,7 +154,7 @@ internal class ExcelProductProcessor(
                     MoltenGold: molten
                 );
 
-                resultItems.Add(new GetProductItemResponse(product, dto.Quantity));
+                resultItems.Add(new GetProductItemResponse(product, dto.Quantity, wagePriceUnitExchangeRate, gramPriceUnit.Id.Value));
             }
             catch (Exception ex)
             {

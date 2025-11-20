@@ -79,7 +79,7 @@ public class Product : EntityBase<ProductId>
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
 
         if (wageType is Shared.Enums.WageType.Percent && wage > 100)
-            throw new ArgumentOutOfRangeException(nameof(wage), "درصد اجرت باید بین 0 الی 100 باشد");
+            throw new ArgumentOutOfRangeException(nameof(wage), $"درصد اجرت برای جنس {name} باید بین 0 الی 100 باشد");
 
         return new Product
         {

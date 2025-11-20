@@ -20,7 +20,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.8" />
 		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.8" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.8" />
-		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
 		<PackageReference Include="Net.Codecrete.QrCodeGenerator" Version="2.0.7" />
 		<PackageReference Include="Serilog.Sinks.MSSqlServer" Version="8.2.2" />
@@ -50,6 +50,9 @@
 
 	<ItemGroup>
 	  <Content Update="wwwroot\app.js">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\models\ProductCategory.mlnet">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\templates\inventory-entry-template.xlsx">

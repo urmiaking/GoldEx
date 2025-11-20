@@ -208,9 +208,9 @@ public partial class ProductList
         }
     }
 
-    private Task SyncWithApi()
+    private void SyncWithApi()
     {
-        throw new NotImplementedException();
+        AddInfoToast("این قابلیت به زودی فعال خواهد شد");
     }
 
     public int GetLastItemIndexNumber()

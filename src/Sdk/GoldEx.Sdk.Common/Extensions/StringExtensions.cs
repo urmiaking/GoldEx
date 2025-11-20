@@ -164,6 +164,33 @@ public static class StringExtensions
             ;
     }
 
+    public static IEnumerable<string> ExpandVariants(this string input)
+    {
+        yield return input;                         // نیم ست
+        yield return input.Replace(" ", "");        // نیمست
+        yield return input.Replace(" ", "\u200C");  // نیم‌ست
+    }
+
+    public static string NormalizeText(this string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        var t = text.Trim();
+
+        t = t.Replace("ي", "ی")
+            .Replace("ى", "ی")
+            .Replace("ئ", "ی")
+            .Replace("ؤ", "و")
+            .Replace("ك", "ک")
+            .Replace("\u200C", " "); // remove ZWNJ
+
+        while (t.Contains("  "))
+            t = t.Replace("  ", " ");
+
+        return t;
+    }
+
     public static string FormatDateString(this string dateStr)
     {
         if (string.IsNullOrEmpty(dateStr) || dateStr.Length != 8)

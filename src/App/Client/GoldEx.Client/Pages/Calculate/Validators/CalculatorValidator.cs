@@ -20,8 +20,8 @@ public class CalculatorValidator : AbstractValidator<CalculatorVm>
 
         When(product => product.ProductType is not (ProductType.Gold or ProductType.Jewelry), () =>
         {
-            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای طلای آبشده و دست دوم نباید وارد شود");
-            RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای طلای آبشده و دست دوم نباید وارد شود");
+            RuleFor(product => product.Wage).Null().WithMessage("اجرت ساخت برای طلای آبشده و مستعمل نباید وارد شود");
+            RuleFor(product => product.WageType).Null().WithMessage("نوع اجرت برای طلای آبشده و مستعمل نباید وارد شود");
         });
 
         When(product => product.WageType is WageType.Percent, () =>
