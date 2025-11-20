@@ -1,10 +1,12 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
+using GoldEx.Server.Infrastructure.Models.Ai;
 using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Infrastructure.Services.Price;
 using GoldEx.Shared;
 using GoldEx.Shared.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ML;
 using Microsoft.Extensions.Options;
 
 namespace GoldEx.Server.Infrastructure;
@@ -50,15 +52,12 @@ public static class DependencyInjection
         });
         services.AddScoped<IPriceFetcher, TjguPriceFetcher>(sp => sp.GetRequiredService<TjguPriceFetcher>());
 
-        // --- Discovery (if you have dynamic registrations) ---
         services.DiscoverServices();
 
         // --- Generic Batch Providers ---
-        //services.AddScoped<GenericBatchPriceProvider<SignalPriceFetcher>>();
-        //services.AddScoped<GenericBatchPriceProvider<TalaIrPriceFetcher>>();
-        //services.AddScoped<GenericBatchPriceProvider<BrsApiPriceFetcher>>();
-        //services.AddScoped<GenericBatchPriceProvider<TjguPriceFetcher>>();
         services.AddScoped(typeof(GenericBatchPriceProvider<>));
+
+        services.AddPredictionEnginePool<CategoryModelInput, CategoryModelOutput>().FromFile("wwwroot/models/ProductCategory.mlnet", true);
 
         return services;
     }

@@ -1163,7 +1163,7 @@
             this.xrLabel11.SizeF = new System.Drawing.SizeF(79.79169F, 23F);
             this.xrLabel11.StylePriority.UseFont = false;
             this.xrLabel11.StylePriority.UseTextAlignment = false;
-            this.xrLabel11.Text = "کد یکتا:";
+            this.xrLabel11.Text = "کد مشتری:";
             this.xrLabel11.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopLeft;
             // 
             // xrLabel4

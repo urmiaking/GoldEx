@@ -12,8 +12,8 @@ public class CustomerValidator : AbstractValidator<CustomerVm>
             .MaximumLength(100).WithMessage("حداکثر طول نام 100 کاراکتر می باشد");
 
         RuleFor(x => x.NationalId)
-            .NotEmpty().WithMessage("لطفا کد یکتا را وارد کنید")
-            .MaximumLength(25).WithMessage("حداکثر طول شناسه یکتا 25 کاراکتر می باشد");
+            .NotEmpty().WithMessage("لطفا کد مشتری را وارد کنید")
+            .MaximumLength(25).WithMessage("حداکثر طول شناسه مشتری 25 کاراکتر می باشد");
 
         RuleFor(x => x.CustomerType).IsInEnum().WithMessage("لطفا نوع مشتری/تامین کننده را انتخاب کنید");
 

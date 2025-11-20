@@ -43,6 +43,8 @@
             <col />
             <col />
             <col />
+            <col />
+            <col />
             @if (Model.ProductItems.Any(x => x.StoneAmount > 0))
             {
                 <col/>
@@ -53,8 +55,10 @@
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
+            <MudTh>کد</MudTh>
             <MudTh>نوع جنس</MudTh>
             <MudTh>عنوان</MudTh>
+            <MudTh>دسته بندی</MudTh>
             <MudTh>تعداد</MudTh>
             <MudTh>عیار</MudTh>
             <MudTh>اجرت</MudTh>
@@ -68,8 +72,10 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
+            <MudTd DataLabel="کد">@context.Product.Barcode</MudTd>
             <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
             <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
+            <MudTd DataLabel="دسته بندی">@(context.Product.ProductCategoryTitle ?? "ندارد")</MudTd>
             <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
             <MudTd DataLabel="اجرت">

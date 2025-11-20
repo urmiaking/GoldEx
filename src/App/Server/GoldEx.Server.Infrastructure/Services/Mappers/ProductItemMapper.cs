@@ -95,6 +95,12 @@ public sealed class ExcelProductItemMapper : IExcelRowMapper<ExcelProductItem>
             if (wtNorm.Contains("درصد"))
             {
                 wageType = WageType.Percent;
+
+                if (wage is > 100 or < 0)
+                {
+                    reason = "اجرت درصدی نمی‌تواند بیشتر از 100 یا کمتر از 0 باشد.";
+                    return false;
+                }
             }
             else
             {

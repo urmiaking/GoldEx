@@ -73,7 +73,7 @@
     <HeaderContent>
         <MudTh><MudTableSortLabel SortLabel="FullName" T="CustomerVm">نام مشتری</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="CustomerType" T="CustomerVm">نوع</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="NationalId" T="CustomerVm">کد یکتا</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="NationalId" T="CustomerVm">کد مشتری</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="PhoneNumber" T="CustomerVm">شماره تماس</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="CreatedAt" T="CustomerVm">تاریخ ثبت</MudTableSortLabel></MudTh>
         <MudTh>مانده</MudTh>
@@ -82,7 +82,7 @@
     <RowTemplate>
         <MudTd DataLabel="نام مشتری">@context.FullName</MudTd>
         <MudTd DataLabel="نوع">@context.CustomerType.GetDisplayName()</MudTd>
-        <MudTd DataLabel="کد یکتا">@context.NationalId</MudTd>
+        <MudTd DataLabel="کد مشتری">@context.NationalId</MudTd>
         <MudTd DataLabel="شماره تماس">@context.PhoneNumber</MudTd>
         <MudTd DataLabel="تاریخ ثبت">
             <MudTooltip Text="@context.CreatedAt.ToString(CultureInfo.CurrentUICulture)" Placement="Placement.Top" Arrow="true">

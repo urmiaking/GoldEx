@@ -20,7 +20,7 @@ public class CustomerVm
     [Display(Name = "نوع مشتری")]
     public CustomerType CustomerType { get; set; } = CustomerType.RetailCustomer;
 
-    [Display(Name = "شناسه یکتا")]
+    [Display(Name = "کد مشتری")]
     [Required(ErrorMessage = "{0} الزامی است")]
     [StringLength(25, ErrorMessage = "{0} باید حداکثر {1} کاراکتر باشد")]
     public string NationalId { get; set; } = default!;

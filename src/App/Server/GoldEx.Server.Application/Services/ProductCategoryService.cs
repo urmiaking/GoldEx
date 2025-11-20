@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.ProductCategories;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
@@ -108,21 +109,31 @@ internal class ProductCategoryService(
         return new GetProductCategoryNumberResponse(lastCode);
     }
 
-    public async Task<ProductCategory> GetOrCreateAsync(string? categoryTitle, CancellationToken cancellationToken = default)
+    public async Task<ProductCategory> GetOrCreateAsync(
+        string? categoryTitle,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(categoryTitle))
             categoryTitle = "سایر";
 
-        var category = await repository
-            .Get(new ProductCategoriesByTitleSpecification(categoryTitle))
-            .FirstOrDefaultAsync(cancellationToken);
+        var normalized = categoryTitle.NormalizeText();
 
-        if (category is not null)
-            return category;
+        var spec = new ProductCategoriesByLooseMatchSpecification(normalized);
 
+        var candidates = await repository
+            .Get(spec)
+            .ToListAsync(cancellationToken);
+
+        // In-memory strict comparison (only on small candidate list)
+        var exact = candidates.FirstOrDefault(c => c.Title.Normalize() == normalized);
+
+        if (exact is not null)
+            return exact;
+
+        // Create new category
         var categoryPrefix = await GetLastCodeAsync(cancellationToken);
 
-        category = ProductCategory.Create(categoryTitle, prefixCode: categoryPrefix.Number);
+        var category = ProductCategory.Create(categoryTitle, prefixCode: categoryPrefix.Number);
 
         await repository.CreateAsync(category, cancellationToken);
 

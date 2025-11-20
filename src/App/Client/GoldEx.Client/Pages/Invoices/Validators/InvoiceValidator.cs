@@ -27,7 +27,7 @@ public class InvoiceValidator : AbstractValidator<InvoiceVm>
                 invoice.CurrencyItems.Any() ||
                 invoice.CoinItems.Any() ||
                 invoice.UsedProducts.Any())
-            .WithMessage("فاکتور باید حداقل دارای یک آیتم (کالا، ارز، سکه یا جنس دست دوم) باشد.");
+            .WithMessage("فاکتور باید حداقل دارای یک آیتم (کالا، ارز، سکه یا جنس مستعمل) باشد.");
 
         RuleFor(x => x)
             .Must(invoice =>
@@ -37,7 +37,7 @@ public class InvoiceValidator : AbstractValidator<InvoiceVm>
             .When(invoice =>
                 invoice.InvoiceType == InvoiceType.Sell &&
                 invoice.UsedProducts.Any())
-            .WithMessage("در فاکتور فروش، کالای دست دوم نمی‌تواند به تنهایی ثبت شود و باید همراه با یک آیتم دیگر باشد.");
+            .WithMessage("در فاکتور فروش، کالای مستعمل نمی‌تواند به تنهایی ثبت شود و باید همراه با یک آیتم دیگر باشد.");
 
         RuleFor(x => x.Customer!)
             .NotNull().WithMessage("اطلاعات مشتری الزامی است")

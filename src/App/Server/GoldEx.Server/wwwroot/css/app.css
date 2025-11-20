@@ -82,6 +82,10 @@ h1:focus {
     overflow: hidden !important;
 }
 
+.mud-picker-calendar-header-switch{
+    direction: rtl;
+}
+
 /* Fullscreen overlay */
 .loading-container {
     position: fixed;

@@ -46,10 +46,10 @@ internal class InventoryEntryService(
                 // Step 3. Create the inventory stock records
                 foreach (var productItem in request.Products)
                 {
-                    var product = await productService.CreateProductAsync(productItem.Product, null, cancellationToken);
+                    var product = await productService.CreateProductAsync(productItem.Product with { Id = null }, null, cancellationToken);
 
                     var inventoryStock = InventoryStock.CreateProduct(product.Id,
-                        productItem.Quantity,
+                        productItem.Product.Weight,
                         WarehouseActionType.In,
                         inventoryEntryId: inventoryEntry.Id);
 
