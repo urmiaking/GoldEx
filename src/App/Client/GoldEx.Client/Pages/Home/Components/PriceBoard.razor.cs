@@ -101,4 +101,26 @@ public partial class PriceBoard
         var random = new Random();
         return colors[random.Next(colors.Length)];
     }
+
+    /// <summary>
+    /// Parses the change string (e.g., "(0.05%)" or "-1.2%") into a double.
+    /// </summary>
+    private double ExtractPercentChange(string change)
+    {
+        if (string.IsNullOrWhiteSpace(change))
+            return 0;
+
+        // Remove parentheses, percent signs, and whitespace
+        var cleanString = change.Replace("(", "")
+            .Replace(")", "")
+            .Replace("%", "")
+            .Trim();
+
+        if (double.TryParse(cleanString, out var result))
+        {
+            return result;
+        }
+
+        return 0;
+    }
 }
