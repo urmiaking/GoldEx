@@ -6,5 +6,5 @@ public record BlogCategoryResponse(Guid Id,
     string Title,
     bool IsActive,
     Guid? ParentCategoryId,
-    List<BlogPostTitleResponse> Posts,
+    List<BlogPostTitleResponse>? Posts,
     List<BlogCategoryResponse>? SubCategories);

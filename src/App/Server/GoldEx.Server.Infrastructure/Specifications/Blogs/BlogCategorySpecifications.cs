@@ -8,7 +8,7 @@ public class BlogCategoriesDefaultSpecifications : SpecificationBase<BlogCategor
     public BlogCategoriesDefaultSpecifications(bool? isActive)
     {
         ApplyOrderBy(x => x.Title);
-        AddInclude(x => x.BlogPosts!);
+        AddCriteria(x => x.ParentCategoryId == null);
 
         if (isActive.HasValue)
         {

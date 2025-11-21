@@ -1,0 +1,105 @@
+﻿@using GoldEx.Shared.DTOs.Blogs.BlogCategories
+@using GoldEx.Shared.DTOs.Blogs.BlogPosts
+
+<MudTreeViewItem Value="@Category" CanExpand="@HasChildren()" >
+    <BodyContent>
+        <div class="d-flex align-center justify-space-between w-100">
+            <MudIcon Icon="@Icons.Material.Outlined.Folder" Color="Color.Primary" Class="ml-2" />
+            <MudText>@Category.Title</MudText>
+            <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                <Authorized Context="authContext">
+                    <MudSpacer />
+                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" Dense="true"
+                             AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Edit"
+                                     OnClick="@(() => OnEditCategory.InvokeAsync(Category))">ویرایش</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" 
+                                     OnClick="@(() => OnDeleteCategory.InvokeAsync(Category))">حذف</MudMenuItem>
+                        <MudMenuItem Icon="@(Category.IsActive? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                     OnClick="@(() => OnSetCategoryStatus.InvokeAsync(Category))">
+                            @(Category.IsActive ? "عدم نمایش" : "نمایش")
+                        </MudMenuItem>
+                        <MudDivider />
+                        <MudMenuItem Icon="@Icons.Material.Filled.NoteAdd" 
+                                     OnClick="@(() => OnCreatePost.InvokeAsync(Category))">افزودن پست</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.CreateNewFolder"
+                                     OnClick="@(() => OnCreateSubCategory.InvokeAsync(Category))">افزودن زیردسته</MudMenuItem>
+                    </MudMenu>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </BodyContent>
+    <ChildContent>
+        @if (HasChildren())
+        {
+            @if (Category.SubCategories != null)
+            {
+                @foreach (var subCategory in Category.SubCategories)
+                {
+                    <CategoryTreeItem Category="subCategory"
+                                      OnEditCategory="OnEditCategory"
+                                      OnDeleteCategory="OnDeleteCategory"
+                                      OnSetCategoryStatus="OnSetCategoryStatus"
+                                      OnCreatePost="OnCreatePost"
+                                      OnCreateSubCategory="OnCreateSubCategory"
+                                      OnViewPost="OnViewPost"
+                                      OnEditPost="OnEditPost"
+                                      OnDeletePost="OnDeletePost"
+                                      OnSetPostStatus="OnSetPostStatus" />
+                }
+            }
+
+            @if (Category.Posts != null && Category.Posts.Any())
+            {
+                @foreach (var post in Category.Posts)
+                {
+                    <MudTreeViewItem Value="@post" CanExpand="false" OnClick="() => OnViewPost.InvokeAsync(post)">
+                        <BodyContent>
+                            <div class="d-flex align-center justify-space-between w-100">
+                                <MudIcon Icon="@Icons.Material.Outlined.Article" Color="Color.Primary" Class="ml-2"/>
+                                <MudText>@post.Title</MudText>
+                                <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                                    <Authorized Context="authContext">
+                                        <MudSpacer />
+                                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" Dense="true"
+                                                 AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Edit"
+                                                         OnClick="@(() => OnEditPost.InvokeAsync(post))">ویرایش</MudMenuItem>
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error"
+                                                         OnClick="@(() => OnDeletePost.InvokeAsync(post))">حذف</MudMenuItem>
+                                            <MudDivider />
+                                            <MudMenuItem Icon="@(post.IsActive ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                                         OnClick="@(() => OnSetPostStatus.InvokeAsync(post))">
+                                                @(post.IsActive ? "عدم نمایش" : "نمایش")
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </Authorized>
+                                </AuthorizeView>
+                            </div>
+                        </BodyContent>
+                    </MudTreeViewItem>
+                }
+            }
+        }
+    </ChildContent>
+</MudTreeViewItem>
+
+@code {
+    [Parameter] public BlogCategoryResponse Category { get; set; } = null!;
+    [Parameter] public EventCallback<BlogCategoryResponse> OnEditCategory { get; set; }
+    [Parameter] public EventCallback<BlogCategoryResponse> OnDeleteCategory { get; set; }
+    [Parameter] public EventCallback<BlogCategoryResponse> OnCreateSubCategory { get; set; }
+    [Parameter] public EventCallback<BlogCategoryResponse> OnSetCategoryStatus { get; set; }
+
+    [Parameter] public EventCallback<BlogCategoryResponse> OnCreatePost { get; set; }
+    [Parameter] public EventCallback<BlogPostTitleResponse> OnViewPost { get; set; }
+    [Parameter] public EventCallback<BlogPostTitleResponse> OnEditPost { get; set; }
+    [Parameter] public EventCallback<BlogPostTitleResponse> OnDeletePost { get; set; }
+    [Parameter] public EventCallback<BlogPostTitleResponse> OnSetPostStatus { get; set; }
+
+    private bool HasChildren()  
+    {  
+        return (Category.SubCategories != null && Category.SubCategories.Count > 0)   
+               || (Category.Posts != null && Category.Posts.Count > 0);  
+    }  
+}

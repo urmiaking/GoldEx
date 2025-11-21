@@ -369,11 +369,11 @@ public class ApiUrls
 
     public class Notifications
     {
-        public static string GetList() 
+        public static string GetList()
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.GetList);
-        public static string MarkAsRead(Guid id) 
+        public static string MarkAsRead(Guid id)
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAsRead).FormatRoute(new { id });
-        public static string MarkAllAsRead() 
+        public static string MarkAllAsRead()
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAllAsRead);
     }
 
@@ -444,5 +444,46 @@ public class ApiUrls
     {
         public static string GetInventoryEntryTemplate() =>
             BuildUrl(ApiRoutes.Files.Base, ApiRoutes.Files.GetInventoryEntryTemplate);
+    }
+
+    public class BlogCategories
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.BlogCategories.Base, ApiRoutes.BlogCategories.GetList);
+
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.BlogCategories.Base, ApiRoutes.BlogCategories.Get)
+            .FormatRoute(new { id });
+
+        public static string Create() => BuildUrl(ApiRoutes.BlogCategories.Base, ApiRoutes.BlogCategories.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.BlogCategories.Base, ApiRoutes.BlogCategories.Update).FormatRoute(new { id });
+
+        public static string SetStatus(Guid id, bool isActive) =>
+            BuildUrl(ApiRoutes.BlogCategories.Base, ApiRoutes.BlogCategories.SetStatus).FormatRoute(new { id, isActive });
+
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.BlogCategories.Base, ApiRoutes.BlogCategories.Delete).FormatRoute(new { id });
+    }
+
+    public class BlogPosts
+    {
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.Get)
+            .FormatRoute(new { id });
+
+        public static string Get(string slug) => BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.GetSlug)
+            .FormatRoute(new { slug });
+
+        public static string Create() => BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.Update).FormatRoute(new { id });
+
+        public static string SetStatus(Guid id, bool isActive) =>
+            BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.SetStatus).FormatRoute(new { id, isActive });
+
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.Delete).FormatRoute(new { id });
+
+        public static string UploadFiles() => BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.UploadFiles);
     }
 }
