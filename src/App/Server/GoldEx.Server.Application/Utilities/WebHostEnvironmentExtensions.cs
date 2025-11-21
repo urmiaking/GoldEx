@@ -27,4 +27,13 @@ public static class WebHostEnvironmentExtensions
 
     public static string GetInventoryEntryTemplateFilePath(this IWebHostEnvironment environment)
         => Path.Combine(environment.WebRootPath, "templates", "inventory-entry-template.xlsx");
+
+    public static string GetBlogPostDirectoryPath(this IWebHostEnvironment environment, Guid blogId)
+        => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", blogId.ToString());
+
+    public static string GetBlogsTempDirectoryPath(this IWebHostEnvironment environment)
+        => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", "temp");
+
+    public static string GetBlogPostFilePath(this IWebHostEnvironment environment, Guid blogId, string fileName)
+        => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", blogId.ToString(), fileName);
 }
