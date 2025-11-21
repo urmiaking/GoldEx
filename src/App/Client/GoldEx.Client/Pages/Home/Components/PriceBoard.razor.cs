@@ -4,6 +4,8 @@ using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace GoldEx.Client.Pages.Home.Components;
 
@@ -102,25 +104,16 @@ public partial class PriceBoard
         return colors[random.Next(colors.Length)];
     }
 
-    /// <summary>
-    /// Parses the change string (e.g., "(0.05%)" or "-1.2%") into a double.
-    /// </summary>
-    private double ExtractPercentChange(string change)
+    private static double ExtractPercentChange(string input)
     {
-        if (string.IsNullOrWhiteSpace(change))
-            return 0;
-
-        // Remove parentheses, percent signs, and whitespace
-        var cleanString = change.Replace("(", "")
-            .Replace(")", "")
-            .Replace("%", "")
-            .Trim();
-
-        if (double.TryParse(cleanString, out var result))
+        var match = Regex.Match(input, @"([-+]?\d+(?:[.,]\d+)?)\s*%");
+        if (match.Success && double.TryParse(match.Groups[1].Value,
+                NumberStyles.Any,
+                CultureInfo.InvariantCulture,
+                out var result))
         {
             return result;
         }
-
         return 0;
     }
 }
