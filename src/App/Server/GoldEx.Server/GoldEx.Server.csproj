@@ -45,6 +45,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="uploads\content\blogs\" />
 	  <Folder Include="uploads\icons\" />
 	</ItemGroup>
 
