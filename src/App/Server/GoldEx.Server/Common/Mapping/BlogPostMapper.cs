@@ -9,7 +9,8 @@ internal class BlogPostMapper : IRegister
     public void Register(TypeAdapterConfig config)
     {
         config.NewConfig<BlogPost, BlogPostResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.BlogCategoryId, src => src.BlogCategoryId.Value);
 
         config.NewConfig<BlogPost, BlogPostTitleResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);

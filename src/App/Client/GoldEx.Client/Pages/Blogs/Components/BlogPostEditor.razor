@@ -1,0 +1,54 @@
+﻿@inherits GoldExComponentBase
+
+<EditForm Model="Model" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem xs="12" lg="6">
+            <MudTextField @bind-Value="Model.Title"
+                          For="@(() => Model.Title)"
+                          Label="@Model.GetDisplayName(() => Model.Title)"
+                          Margin="Margin.Dense"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" lg="6">
+            <MudTextField @bind-Value="Model.Slug"
+                          For="@(() => Model.Slug)"
+                          dir="ltr"
+                          Label="@Model.GetDisplayName(() => Model.Slug)"
+                          Margin="Margin.Dense"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12">
+            <TinyMCE.Blazor.Editor LicenseKey="gpl"
+                                   Field="() => Model.Content"
+                                   @bind-Value="Model.Content"
+                                   ScriptSrc="/js/tinymce/tinymce.min.js"
+                                   JsConfSrc="createBlogEditorConfig" />
+        </MudItem>
+    </MudGrid>
+    <MudButton Color="Color.Error"
+               OnClick="GoBack"
+               StartIcon="@Icons.Material.Filled.Close"
+               Variant="Variant.Filled">بازگشت</MudButton>
+    <MudButton Class="m-2"
+               Color="Color.Primary"
+               Disabled="@IsBusy"
+               StartIcon="@Icons.Material.Filled.Save"
+               ButtonType="ButtonType.Submit"
+               Variant="Variant.Filled">
+        @if (IsBusy)
+        {
+            <MudProgressCircular Class="ms-n1"
+                                 Size="Size.Small"
+                                 Indeterminate="true" />
+            <MudText Class="ms-2">
+                در حال ذخیره
+            </MudText>
+        }
+        else
+        {
+            <MudText>ذخیره</MudText>
+        }
+    </MudButton>
+</EditForm>

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using Serilog.Ui.Web.Extensions;
 using System.Reflection;
+using Microsoft.Extensions.FileProviders;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 var logger = GetStartupLogger();
@@ -147,6 +148,14 @@ void SetupPipeline()
             }
         }
         await next();
+    });
+
+    var uploads = Path.Combine(app.Environment.ContentRootPath, "uploads");
+    if (!Directory.Exists(uploads))
+        Directory.CreateDirectory(uploads); app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(uploads),
+        RequestPath = "/uploads"
     });
 
     app.UseSerilogUi();

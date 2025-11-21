@@ -1,0 +1,49 @@
+﻿@inherits GoldExComponentBase
+
+@if (Item is null && !IsCreate)
+{
+    // 1. EMPTY STATE: Show this when page loads or nothing is selected
+    <div class="d-flex flex-column align-center justify-center" style="height: 80vh; opacity: 0.5;">
+        <MudIcon Icon="@Icons.Material.TwoTone.LibraryBooks" Size="Size.Large" Style="width: 100px; height: 100px;" />
+        <MudText Typo="Typo.h5" Class="mt-4">هیچ مطلبی انتخاب نشده است</MudText>
+        <MudText Typo="Typo.body1">لطفاً از منوی سمت راست یک مطلب را برای مشاهده انتخاب کنید.</MudText>
+    </div>
+}
+else
+{
+    // 2. ACTIVE STATE: Header logic
+    <div class="d-flex justify-space-between align-center px-1">
+        <MudText Typo="Typo.h5" GutterBottom="true">
+            @GetHeaderTitle()
+        </MudText>
+    </div>
+    <MudDivider Class="mb-4" />
+
+    <MudPaper Elevation="24" Class="p-4 pa-6">
+        @if (IsLoading)
+        {
+            // 3. LOADING STATE
+            <div class="d-flex justify-center align-center py-10">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+            </div>
+        }
+        else if (IsEdit)
+        {
+            // 4. EDIT MODE
+            <BlogPostEditor Model="_blogPost" OnSaved="HandlePostSaved" OnCancelled="HandleEditCancelled" />
+        }
+        else if (IsCreate)
+        {
+            // 5. CREATE MODE
+            // We pass the CategoryId to the new model so it saves in the right place
+            <BlogPostEditor Model="_newPostModel" OnSaved="HandlePostSaved" OnCancelled="HandleEditCancelled" />
+        }
+        else
+        {
+            // 6. VIEW MODE
+            <MudText Typo="Typo.body1" Style="text-align: justify; line-height: 2.0;">
+                @((MarkupString)(_blogPost?.Content ?? string.Empty))
+            </MudText>
+        }
+    </MudPaper>
+}

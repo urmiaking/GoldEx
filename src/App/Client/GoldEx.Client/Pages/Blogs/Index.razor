@@ -1,0 +1,34 @@
+﻿@attribute [Route(ClientRoutes.Blogs.Index)]
+
+@using GoldEx.Client.Pages.Blogs.Components
+
+@inherits GoldExComponentBase
+
+<PageTitle>راهنمای استفاده</PageTitle>
+
+<input type="hidden" id="upload-route" value="@ApiUrls.BlogPosts.UploadFiles()" />
+<script src="/js/tinymce-config.js?v=@_jsVersion"></script>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <MudGrid>
+        <MudItem xs="12" md="3">
+            <BlogCategories @ref="_blogCategoriesRef" 
+                            OnPostView="HandlePostSelection"
+                            OnPostEdit="HandlePostEdit"
+                            OnPostCreate="HandlePostCreate" />
+        </MudItem>
+        <MudItem xs="12" md="9">
+            <BlogPostItem Item="@_selectedPost" 
+                          SelectedCategoryId="@_selectedCategoryId"
+                          IsEdit="@_isEditMode" 
+                          IsCreate="@_isCreateMode"
+                          OnPostSaved="ReloadCategories" />
+        </MudItem>
+    </MudGrid>
+</MudContainer>

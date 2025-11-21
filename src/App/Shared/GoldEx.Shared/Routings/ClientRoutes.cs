@@ -154,4 +154,10 @@ public static class ClientRoutes
         private const string DashboardPrefix = "/dashboard";
         public const string Index = $"{DashboardPrefix}";
     }
+
+    public static class Blogs
+    {
+        private const string BlogsPrefix = "/blogs";
+        public const string Index = $"{BlogsPrefix}";
+    }
 }
