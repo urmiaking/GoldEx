@@ -245,4 +245,27 @@ public static class ApiRoutes
         public const string Base = "/api/files";
         public const string GetInventoryEntryTemplate = "inventory-entry-template";
     }
+
+    public class BlogCategories
+    {
+        public const string Base = "/api/blog-categories";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string SetStatus = "status/{id}/{isActive}";
+        public const string Delete = "{id}";
+    }
+
+    public class BlogPosts
+    {
+        public const string Base = "/api/blog-posts";
+        public const string Get = "{id}";
+        public const string GetSlug = "slug/{slug}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string SetStatus = "status/{id}/{isActive}";
+        public const string Delete = "{id}";
+        public const string UploadFiles = "upload";
+    }
 }
