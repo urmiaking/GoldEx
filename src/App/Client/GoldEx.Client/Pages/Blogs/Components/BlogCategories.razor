@@ -1,0 +1,28 @@
+﻿@inherits GoldExComponentBase
+
+<div class="d-flex justify-content-between align-center mb-2">
+    <MudText Typo="Typo.h6">دسته بندی</MudText>
+    <AuthorizeView Roles="@BuiltinRoles.Administrators">
+        <Authorized>
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Size="Size.Small" OnClick="OnAddCategory" Variant="Variant.Filled" />
+        </Authorized>
+    </AuthorizeView>
+</div>
+<MudDivider Class="mb-4" />
+<MudCard Elevation="24">
+    <MudTreeView T="object" Hover="true">  
+        @foreach (var category in _categories)  
+        {  
+            <CategoryTreeItem Category="category"  
+                              OnEditCategory="OnEditCategory"  
+                              OnDeleteCategory="OnDeleteCategory"
+                              OnSetCategoryStatus="OnSetCategoryStatus"
+                              OnDeletePost="OnDeletePost"
+                              OnSetPostStatus="OnSetPostStatus"
+                              OnCreateSubCategory="OnCreateSubCategory"
+                              OnCreatePost="(arg) => OnPostCreate.InvokeAsync(arg)"
+                              OnEditPost="(arg) => OnPostEdit.InvokeAsync(arg)"
+                              OnViewPost="arg => OnPostView.InvokeAsync(arg)" />
+        }  
+    </MudTreeView>
+</MudCard>

@@ -48,7 +48,7 @@ public class BlogPostsController(
         return NoContent();
     }
 
-    [HttpPut(ApiRoutes.BlogPosts.SetStatus)]
+    [HttpPatch(ApiRoutes.BlogPosts.SetStatus)]
     [Authorize(Roles = BuiltinRoles.Administrators)]
     public async Task<IActionResult> SetStatusAsync([FromRoute] Guid id, [FromRoute] bool isActive, CancellationToken cancellationToken)
     {
@@ -77,7 +77,7 @@ public class BlogPostsController(
             return BadRequest("Only images and videos are allowed.");
 
         var safeName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
-        var path = Path.Combine(hostEnvironment.GetBlogsTempDirectoryPath(), safeName).Replace('\\', '/');
+        var path = Path.Combine(hostEnvironment.GetBlogsTempDirectoryRelativePath(safeName)).Replace('\\', '/');
 
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms, cancellationToken);
