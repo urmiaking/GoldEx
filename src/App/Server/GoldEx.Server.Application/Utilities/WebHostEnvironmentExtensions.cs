@@ -34,6 +34,9 @@ public static class WebHostEnvironmentExtensions
     public static string GetBlogsTempDirectoryPath(this IWebHostEnvironment environment)
         => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", "temp");
 
+    public static string GetBlogsTempDirectoryRelativePath(this IWebHostEnvironment environment, string fileName)
+        => Path.Combine("uploads", "content", "blogs", "temp", fileName);
+
     public static string GetBlogPostFilePath(this IWebHostEnvironment environment, Guid blogId, string fileName)
         => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", blogId.ToString(), fileName);
 }

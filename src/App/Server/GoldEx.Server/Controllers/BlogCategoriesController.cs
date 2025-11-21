@@ -43,7 +43,7 @@ public class BlogCategoriesController(IBlogCategoryService service) : ApiControl
         return NoContent();
     }
 
-    [HttpPut(ApiRoutes.BlogCategories.SetStatus)]
+    [HttpPatch(ApiRoutes.BlogCategories.SetStatus)]
     [Authorize(Roles = BuiltinRoles.Administrators)]
     public async Task<IActionResult> SetStatusAsync([FromRoute] Guid id, [FromRoute] bool isActive, CancellationToken cancellationToken)
     {

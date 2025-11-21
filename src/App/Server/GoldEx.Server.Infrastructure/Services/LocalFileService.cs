@@ -1,11 +1,12 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Infrastructure.Services;
 
 [ScopedService]
-internal class LocalFileService(ILogger<LocalFileService> logger) : IFileService
+internal class LocalFileService(ILogger<LocalFileService> logger, IWebHostEnvironment environment) : IFileService
 {
     private readonly ILogger<LocalFileService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -17,8 +18,13 @@ internal class LocalFileService(ILogger<LocalFileService> logger) : IFileService
         if (content == null || content.Length == 0)
             throw new ArgumentException("File content cannot be empty.", nameof(content));
 
-        var rootFilePath = Path.Combine("wwwroot", filePath);
-        var directory = Path.GetDirectoryName(filePath);
+        // FIX 1: Use ContentRootPath. If your uploads folder is at the project root, use ContentRootPath.
+        // If you actually wanted it in wwwroot, use WebRootPath. 
+        // Based on your description, you want ContentRootPath.
+        var absolutePath = Path.Combine(environment.ContentRootPath, filePath);
+
+        // FIX 2: Get the directory from the ABSOLUTE path, not the relative 'filePath'
+        var directory = Path.GetDirectoryName(absolutePath);
 
         if (string.IsNullOrEmpty(directory))
             throw new InvalidOperationException("Invalid file directory path.");
@@ -28,11 +34,11 @@ internal class LocalFileService(ILogger<LocalFileService> logger) : IFileService
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            await File.WriteAllBytesAsync(rootFilePath, content, cancellationToken);
+            await File.WriteAllBytesAsync(absolutePath, content, cancellationToken);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
         {
-            _logger.LogError(ex, "Failed to save file: {rootFilePath}", rootFilePath);
+            _logger.LogError(ex, "Failed to save file: {absolutePath}", absolutePath);
             throw new ApplicationException("Failed to save file.", ex);
         }
     }

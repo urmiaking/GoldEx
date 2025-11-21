@@ -30,6 +30,10 @@ internal sealed class BlogCategoryService(
 
         var list = await repository
             .Get(new BlogCategoriesDefaultSpecifications(isActive))
+            .AsNoTracking()
+            .Include(x => x.BlogPosts!)
+            .Include(x => x.SubCategories!)
+            .ThenInclude(x => x.BlogPosts!)
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<BlogCategoryResponse>>(list);

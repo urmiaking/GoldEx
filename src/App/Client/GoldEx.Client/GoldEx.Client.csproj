@@ -11,10 +11,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="wwwroot\NewFolder\**" />
-	  <Content Remove="wwwroot\NewFolder\**" />
-	  <EmbeddedResource Remove="wwwroot\NewFolder\**" />
-	  <None Remove="wwwroot\NewFolder\**" />
+		<Compile Remove="wwwroot\NewFolder\**" />
+		<Content Remove="wwwroot\NewFolder\**" />
+		<EmbeddedResource Remove="wwwroot\NewFolder\**" />
+		<None Remove="wwwroot\NewFolder\**" />
 	</ItemGroup>
 
 
@@ -34,7 +34,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.2.7" />
+		<PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.2.7" />
+		<PackageReference Include="TinyMCE.Blazor" Version="2.2.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="wwwroot\js\tinymce-config.js">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 </Project>
