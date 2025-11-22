@@ -11,7 +11,10 @@ internal class BlogCategoryMapper : IRegister
         config.NewConfig<BlogCategory, BlogCategoryResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.ParentCategoryId,
-                src => src.ParentCategoryId.HasValue ? src.ParentCategoryId.Value.Value : (Guid?)null)
-            .Map(dest => dest.Posts, src => src.BlogPosts);
+                src => src.ParentCategoryId.HasValue
+                    ? src.ParentCategoryId.Value.Value
+                    : (Guid?)null)
+            .Map(dest => dest.Posts,
+                src => src.BlogPosts != null ? src.BlogPosts.OrderBy(p => p.Title) : null);
     }
 }
