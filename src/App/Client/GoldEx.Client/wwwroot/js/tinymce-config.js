@@ -41,5 +41,6 @@ window.createBlogEditorConfig = {
     trim_span_elements: false,
     verify_html: false,
     cleanup: false,
-    convert_urls: false
+    convert_urls: false,
+    height: 550
 };
