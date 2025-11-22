@@ -18,7 +18,6 @@ public class BlogPostsController(
     IWebHostEnvironment hostEnvironment) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.BlogPosts.Get)]
-    [Authorize(Roles = BuiltinRoles.Administrators)]
     public async Task<IActionResult> GetAsync([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var result = await service.GetAsync(id, cancellationToken);
