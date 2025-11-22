@@ -6,9 +6,9 @@
         <div class="d-flex align-center justify-space-between w-100">
             <MudIcon Icon="@Icons.Material.Outlined.Folder" Color="Color.Primary" Class="ml-2" />
             <MudText>@Category.Title</MudText>
+            <MudSpacer />
             <AuthorizeView Roles="@BuiltinRoles.Administrators">
                 <Authorized Context="authContext">
-                    <MudSpacer />
                     <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" Dense="true"
                              AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
                         <MudMenuItem Icon="@Icons.Material.Filled.Edit"
@@ -58,9 +58,9 @@
                             <div class="d-flex align-center justify-space-between w-100">
                                 <MudIcon Icon="@Icons.Material.Outlined.Article" Color="Color.Primary" Class="ml-2"/>
                                 <MudText>@post.Title</MudText>
+                                <MudSpacer />
                                 <AuthorizeView Roles="@BuiltinRoles.Administrators">
                                     <Authorized Context="authContext">
-                                        <MudSpacer />
                                         <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" Dense="true"
                                                  AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
                                             <MudMenuItem Icon="@Icons.Material.Filled.Edit"
