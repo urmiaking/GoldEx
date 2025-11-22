@@ -1,4 +1,5 @@
 ﻿@attribute [Route(ClientRoutes.Blogs.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @using GoldEx.Client.Pages.Blogs.Components
 
