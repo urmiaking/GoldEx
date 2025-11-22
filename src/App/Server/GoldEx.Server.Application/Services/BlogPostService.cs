@@ -31,9 +31,6 @@ internal sealed class BlogPostService(
 
     public async Task<BlogPostResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        if (!IsAdminUser())
-            throw new ForbiddenException();
-
         var item = await repository
             .Get(new BlogPostsByIdSpecification(new BlogPostId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
