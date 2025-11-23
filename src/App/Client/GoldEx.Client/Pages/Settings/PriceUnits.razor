@@ -28,21 +28,21 @@
     <RowTemplate>
         <MudTd DataLabel="ردیف">@context.Index</MudTd>
         <MudTd DataLabel="عنوان">
-            @context.Title
-            @if (context.IsDefault)
-            {
-                <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="ml-2">پیش فرض</MudChip>
-            }
-        </MudTd>
-        <MudTd>
-            @if (context.HasIcon)
-            {
-                <span class="mr-2">
-                    <MudAvatar Size="Size.Small">
-                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, context.Id))" Alt="img" />
-                    </MudAvatar>
-                </span>
-            }
+            <div class="d-flex align-items-center">
+                @if (context.HasIcon)
+                {
+                    <span class="ml-2">
+                        <MudAvatar Size="Size.Small">
+                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, context.Id))" Alt="img" />
+                        </MudAvatar>
+                    </span>
+                } 
+                @context.Title
+                @if (context.IsDefault)
+                {
+                    <MudIcon Color="Color.Info" Size="Size.Small" Class="mr-2" Icon="@Icons.Material.Filled.Verified" />
+                }
+            </div>
         </MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
