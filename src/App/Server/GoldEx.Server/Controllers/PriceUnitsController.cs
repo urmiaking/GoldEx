@@ -55,6 +55,7 @@ public class PriceUnitsController(IPriceUnitService service) : ApiControllerBase
         return Created();
     }
 
+    [RequestSizeLimit(2_000_000)]
     [HttpPut(ApiRoutes.PriceUnits.Update)]
     public async Task<IActionResult> UpdateAsync(Guid id, UpdatePriceUnitRequest request, CancellationToken cancellationToken = default)
     {
