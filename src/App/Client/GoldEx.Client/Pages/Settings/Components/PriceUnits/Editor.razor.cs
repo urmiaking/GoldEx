@@ -37,7 +37,7 @@ public partial class Editor
 
         if (Model.IconFile is not null)
         {
-            await using var stream = Model.IconFile.OpenReadStream();
+            await using var stream = Model.IconFile.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024);
             using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream);
             uploadedFile = memoryStream.ToArray();

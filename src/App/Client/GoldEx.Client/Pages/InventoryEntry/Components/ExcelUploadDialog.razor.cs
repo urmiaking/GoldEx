@@ -54,7 +54,7 @@ public partial class ExcelUploadDialog
         _processing = true;
 
         await using var ms = new MemoryStream();
-        await _selectedFile.OpenReadStream().CopyToAsync(ms);
+        await _selectedFile.OpenReadStream(maxAllowedSize: 15 * 1024 * 1024).CopyToAsync(ms);
         var bytes = ms.ToArray();
 
         await ProcessExcelAsync(bytes);
