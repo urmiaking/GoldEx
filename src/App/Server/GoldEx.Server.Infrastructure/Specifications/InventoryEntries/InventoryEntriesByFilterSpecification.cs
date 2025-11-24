@@ -15,6 +15,8 @@ public class InventoryEntriesByFilterSpecification : SpecificationBase<Inventory
         var skip = requestFilter.Skip ?? 0;
         var take = requestFilter.Take ?? 100;
 
+        AddInclude(x => x.InventoryStocks!);
+
         // Apply sorting
         if (!string.IsNullOrEmpty(requestFilter.SortLabel) && requestFilter.SortDirection != null && requestFilter.SortDirection != SortDirection.None)
         {
