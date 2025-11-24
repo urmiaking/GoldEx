@@ -20,6 +20,7 @@ public class SettingsController(ISettingService service, IBarcodePrintSettingsSe
         return Ok(item);
     }
 
+    [RequestSizeLimit(5_000_000)]
     [HttpPut(ApiRoutes.Settings.Update)]
     [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
     public async Task<IActionResult> Update(UpdateSettingRequest request, CancellationToken cancellationToken = default)

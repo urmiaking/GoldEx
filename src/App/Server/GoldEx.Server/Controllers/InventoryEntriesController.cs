@@ -19,6 +19,7 @@ public class InventoryEntriesController(IInventoryEntryService service) : ApiCon
         return NoContent();
     }
 
+    [RequestSizeLimit(15_000_000)]
     [HttpPost(ApiRoutes.InventoryEntries.ProcessExcel)]
     public async Task<ActionResult<List<GetProductItemResponse>>> ProcessExcelAsync([FromBody] ProcessExcelRequest request, CancellationToken cancellationToken = default)
     {
