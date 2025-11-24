@@ -32,32 +32,37 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudMenu @bind-Open="_weightMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                        <ActivatorContent>
-                            <MudNumericField Adornment="Adornment.End"
-                                             AdornmentText="@Model.UnitType.GetDisplayName()"
-                                             For="() => Model.Weight"
-                                             dir="ltr"
-                                             Format="G29"
-                                             HideSpinButtons="true"
-                                             Margin="Margin.Dense"
-                                             Label="@(Model.GetDisplayName(() => Model.Weight))"
-                                             T="decimal?"
-                                             @bind-Value="Model.Weight"
-                                             Variant="Variant.Outlined"
-                                             OnAdornmentClick="() => _weightMenuOpen = !_weightMenuOpen"></MudNumericField>
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (var item in Enum.GetValues<GoldUnitType>())
-                            {
-                                <MudMenuItem OnClick="() => OnUnitTypeSelected(item)">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        @item.GetDisplayName()
-                                    </div>
-                                </MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
+                    <div style="display: flex; gap: 8px; align-items: center;">  
+                        <MudNumericField Adornment="Adornment.End"  
+                                         AdornmentText="@Model.UnitType.GetDisplayName()"  
+                                         For="() => Model.Weight"  
+                                         dir="ltr"  
+                                         Format="G29"  
+                                         HideSpinButtons="true"  
+                                         Margin="Margin.Dense"  
+                                         Label="@(Model.GetDisplayName(() => Model.Weight))"  
+                                         T="decimal?"  
+                                         @bind-Value="Model.Weight"  
+                                         Variant="Variant.Outlined"  
+                                         Class="flex-grow-1" />  
+      
+                        <MudMenu @bind-Open="_weightMenuOpen"   
+                                 ActivationEvent="@MouseEvent.LeftClick">  
+                            <ActivatorContent>  
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                            </ActivatorContent>  
+                            <ChildContent>  
+                                @foreach (var item in Enum.GetValues<GoldUnitType>())  
+                                {  
+                                    <MudMenuItem OnClick="() => OnUnitTypeSelected(item)">  
+                                        <div style="display: flex; align-items: center; gap: 8px;">  
+                                            @item.GetDisplayName()  
+                                        </div>  
+                                    </MudMenuItem>  
+                                }  
+                            </ChildContent>  
+                        </MudMenu>  
+                    </div>
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudNumericField For="@(() => Model.Fineness)"
