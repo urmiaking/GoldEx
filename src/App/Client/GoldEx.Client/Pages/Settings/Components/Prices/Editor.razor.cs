@@ -129,7 +129,7 @@ public partial class Editor
         byte[] iconBytes;
         if (_model.IconFile is not null)
         {
-            await using var stream = _model.IconFile.OpenReadStream();
+            await using var stream = _model.IconFile.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
             iconBytes = ms.ToArray();

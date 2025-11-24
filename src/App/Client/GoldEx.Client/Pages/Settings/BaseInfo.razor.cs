@@ -36,7 +36,7 @@ public partial class BaseInfo
     {
         if (_model.IconFile is not null)
         {
-            await using var stream = _model.IconFile.OpenReadStream();
+            await using var stream = _model.IconFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // 5 MB
             using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream);
             _model.IconContent = memoryStream.ToArray();
