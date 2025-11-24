@@ -150,20 +150,45 @@ void SetupPipeline()
         await next();
     });
 
-    var uploads = Path.Combine(app.Environment.ContentRootPath, "uploads");
-    if (!Directory.Exists(uploads))
-        Directory.CreateDirectory(uploads); app.UseStaticFiles(new StaticFileOptions
+    var sharedPath = Path.Combine(app.Environment.ContentRootPath, "shared");
+    var localUploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+    var sharedBlogContentPath = Path.Combine(sharedPath, "content", "blogs");
+
+    // Ensure directories exist
+    if (!Directory.Exists(sharedPath)) Directory.CreateDirectory(sharedPath);
+    if (!Directory.Exists(localUploadsPath)) Directory.CreateDirectory(localUploadsPath);
+    if (!Directory.Exists(sharedBlogContentPath)) Directory.CreateDirectory(sharedBlogContentPath);
+
+    // ---------------------------------------------------------
+    // RULE 1: Blog Content (Specific Override)
+    // ---------------------------------------------------------
+    // When browser asks for: /uploads/content/blogs/xyz.jpg
+    // Server looks in:       /shared/content/blogs/xyz.jpg
+    app.UseStaticFiles(new StaticFileOptions
     {
-        FileProvider = new PhysicalFileProvider(uploads),
+        FileProvider = new PhysicalFileProvider(sharedBlogContentPath),
+        RequestPath = "/uploads/content/blogs"
+    });
+
+    // ---------------------------------------------------------
+    // RULE 2: General Uploads (Fallback)
+    // ---------------------------------------------------------
+    // When browser asks for: /uploads/icons/favicon.ico
+    // Server looks in:       /uploads/icons/favicon.ico
+    // (It won't find blogs here anymore, but Rule 1 handled that)
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(localUploadsPath),
         RequestPath = "/uploads"
     });
 
-    var shared = Path.Combine(app.Environment.ContentRootPath, "shared");
-    if (!Directory.Exists(shared))
-        Directory.CreateDirectory(shared);
+    // ---------------------------------------------------------
+    // RULE 3: Shared Folder (Optional direct access)
+    // ---------------------------------------------------------
+    // When browser asks for: /shared/...
     app.UseStaticFiles(new StaticFileOptions
     {
-        FileProvider = new PhysicalFileProvider(shared),
+        FileProvider = new PhysicalFileProvider(sharedPath),
         RequestPath = "/shared"
     });
 

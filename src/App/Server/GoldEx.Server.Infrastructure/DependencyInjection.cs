@@ -62,7 +62,7 @@ public static class DependencyInjection
 
         services.AddPredictionEnginePool<CategoryModelInput, CategoryModelOutput>().FromFile("wwwroot/models/ProductCategory.mlnet", true);
 
-        services.AddSingleton<IBlogFileRepository>(sp => new BlogFileRepository(configuration["BlogSync:ContentRoot"] ?? "shared"));
+        services.AddSingleton<IBlogFileRepository>(sp => new BlogFileRepository("shared"));
 
         return services;
     }
