@@ -59,7 +59,7 @@ public static class ServiceProviderExtensions
         await PopulateDefaultCoinsAsync(coinPrices, serviceProvider);
         await EnsureSystemFinancialAccountsExistAsync(serviceProvider);
 
-        await PopulateDefaultProductCategoriesAsync(serviceProvider);
+        // await PopulateDefaultProductCategoriesAsync(serviceProvider);
 
         var accountService = serviceProvider.GetRequiredService<IAccountService>();
         var policyProviders = serviceProvider.GetServices<IApplicationPolicyProvider>();

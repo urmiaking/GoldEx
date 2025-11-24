@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.Routings;
@@ -12,6 +13,13 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class InventoryEntriesController(IInventoryEntryService service) : ApiControllerBase
 {
+    [HttpGet(ApiRoutes.InventoryEntries.GetList)]
+    public async Task<ActionResult<List<InventoryEntryResponse>>> GetListAsync([FromQuery] RequestFilter filter, CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetListAsync(filter, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpPost(ApiRoutes.InventoryEntries.Create)]
     public async Task<IActionResult> CreateAsync([FromBody] CreateInventoryEntryRequest request, CancellationToken cancellationToken = default)
     {
@@ -25,5 +33,12 @@ public class InventoryEntriesController(IInventoryEntryService service) : ApiCon
     {
         var result = await service.ProcessExcelAsync(request, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpDelete(ApiRoutes.InventoryEntries.Rollback)]
+    public async Task<IActionResult> RollbackAsync([FromRoute] Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.RollbackAsync(id, cancellationToken);
+        return NoContent();
     }
 }
