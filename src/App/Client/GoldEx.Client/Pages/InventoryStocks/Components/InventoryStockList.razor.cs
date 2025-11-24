@@ -32,7 +32,7 @@ public partial class InventoryStockList
 
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
-    private string _jsVersion = new Random().Next(1, 1000).ToString();
+    private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<InventoryStockVm> _table = default!;
 
     private string? _searchString;

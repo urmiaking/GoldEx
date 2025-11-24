@@ -146,6 +146,7 @@ public static class ClientRoutes
         {
             private const string InventoryEntryPrefix = $"{InventoryStocksPrefix}/inventory-entry";
             public const string Index = $"{InventoryEntryPrefix}";
+            public const string List = $"{InventoryEntryPrefix}/list";
         }
     }
 
