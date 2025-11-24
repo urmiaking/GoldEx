@@ -299,7 +299,7 @@ internal class InventoryStockService(
         return new PagedList<GetInventoryStockResponse>
         {
             Data = mapper.Map<List<GetInventoryStockResponse>>(results),
-            Total = results.Count,
+            Total = candidateProducts.Total,
             Skip = filter.Skip ?? 0,
             Take = filter.Take ?? 100
         };

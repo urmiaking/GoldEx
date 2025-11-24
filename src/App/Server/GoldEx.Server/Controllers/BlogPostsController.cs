@@ -71,17 +71,41 @@ public class BlogPostsController(
         if (file.Length is 0)
             return BadRequest("File is empty.");
 
-        if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
-            !file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
-            return BadRequest("Only images and videos are allowed.");
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".webm" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
-        var safeName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
-        var path = Path.Combine(hostEnvironment.GetBlogsTempDirectoryRelativePath(safeName)).Replace('\\', '/');
+        if (!allowedExtensions.Contains(extension))
+            return BadRequest("Invalid file type.");
 
-        using var ms = new MemoryStream();
-        await file.CopyToAsync(ms, cancellationToken);
-        await fileService.SaveLocalFileAsync(path, ms.ToArray(), cancellationToken);
+        // 1. Generate Names and Paths
+        var fileName = Path.GetRandomFileName() + extension;
 
-        return Json(new { location = $"/{path}" });
+        // PHYSICAL PATH: /app/shared/content/blogs/temp/xy82.jpg
+        // We use this to Write to disk
+        var physicalDir = hostEnvironment.GetBlogsTempDirectoryPath();
+        var physicalPath = Path.Combine(physicalDir, fileName);
+
+        // VIRTUAL URL: uploads/content/blogs/temp/xy82.jpg
+        // We use this for the Browser
+        var virtualUrl = hostEnvironment.GetBlogsTempDirectoryRelativePath(fileName).Replace('\\', '/');
+
+        // 2. Ensure Shared Directory Exists
+        if (!Directory.Exists(physicalDir))
+            Directory.CreateDirectory(physicalDir);
+
+        // 3. Write Directly to Shared Volume (No MemoryStream)
+        try
+        {
+            await using var stream = new FileStream(physicalPath, FileMode.Create, FileAccess.Write);
+            await file.CopyToAsync(stream, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            // Log this error
+            return StatusCode(500, "Could not save file to shared storage.");
+        }
+
+        // 4. Return the URL that maps to the shared folder via Middleware
+        return Json(new { location = $"/{virtualUrl}" });
     }
 }

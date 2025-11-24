@@ -29,14 +29,20 @@ public static class WebHostEnvironmentExtensions
         => Path.Combine(environment.WebRootPath, "templates", "inventory-entry-template.xlsx");
 
     public static string GetBlogPostDirectoryPath(this IWebHostEnvironment environment, Guid blogId)
-        => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", blogId.ToString());
+        => Path.Combine(environment.ContentRootPath, "shared", "content", "blogs", blogId.ToString());
 
     public static string GetBlogsTempDirectoryPath(this IWebHostEnvironment environment)
-        => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", "temp");
-
-    public static string GetBlogsTempDirectoryRelativePath(this IWebHostEnvironment environment, string fileName)
-        => Path.Combine("uploads", "content", "blogs", "temp", fileName);
+        => Path.Combine(environment.ContentRootPath, "shared", "content", "blogs", "temp");
 
     public static string GetBlogPostFilePath(this IWebHostEnvironment environment, Guid blogId, string fileName)
-        => Path.Combine(environment.ContentRootPath, "uploads", "content", "blogs", blogId.ToString(), fileName);
+        => Path.Combine(environment.ContentRootPath, "shared", "content", "blogs", blogId.ToString(), fileName);
+
+    // URL / RELATIVE PATHS: Keep "uploads"
+    // Used for saving src="..." in DB and returning JSON to Frontend
+
+    public static string GetBlogsTempDirectoryRelativePath(this IWebHostEnvironment environment, string fileName)
+    {
+        // Must match the RequestPath in Rule 1 of Middleware
+        return Path.Combine("uploads", "content", "blogs", "temp", fileName).Replace("\\", "/");
+    }
 }

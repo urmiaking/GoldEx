@@ -1,10 +1,13 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Infrastructure.Models.Ai;
+using GoldEx.Server.Infrastructure.Repositories;
+using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Infrastructure.Services.Price;
 using GoldEx.Shared;
 using GoldEx.Shared.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ML;
 using Microsoft.Extensions.Options;
@@ -13,7 +16,7 @@ namespace GoldEx.Server.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // --- TalaIr ---
         services.AddHttpClient("TalaIrApi");
@@ -58,6 +61,8 @@ public static class DependencyInjection
         services.AddScoped(typeof(GenericBatchPriceProvider<>));
 
         services.AddPredictionEnginePool<CategoryModelInput, CategoryModelOutput>().FromFile("wwwroot/models/ProductCategory.mlnet", true);
+
+        services.AddSingleton<IBlogFileRepository>(sp => new BlogFileRepository("shared"));
 
         return services;
     }

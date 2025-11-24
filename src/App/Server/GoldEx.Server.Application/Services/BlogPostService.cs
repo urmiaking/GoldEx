@@ -93,7 +93,7 @@ internal sealed class BlogPostService(
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        if (!IsAdminUser())
+        if (!IsAdminUser()) 
             throw new ForbiddenException();
 
         var post = await repository
