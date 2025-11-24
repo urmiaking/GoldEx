@@ -18,38 +18,43 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="مبلغ" Class="p-1">
-                <MudMenu @bind-Open="context.AmountMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                    <ActivatorContent>
-                        <MudNumericField @bind-Value="context.Amount"
-                                         T="decimal"
-                                         HideSpinButtons="true"
-                                         Format="#,##0.##"
-                                         Immediate="true"
-                                         For="@(() => context.Amount)"
-                                         Label="@(context.GetDisplayName(() => context.Amount))"
-                                         Margin="Margin.Dense"
-                                         Variant="Variant.Outlined"
-                                         Adornment="Adornment.End"
-                                         AdornmentText="@context.AmountAdornmentText"
-                                         OnAdornmentClick="() => context.AmountMenuOpen = true" />
-                    </ActivatorContent>
-                    <ChildContent>
-                        @foreach (var item in PriceUnits)
-                        {
-                            <MudMenuItem OnClick="() => SelectPriceUnit(item, context)">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    @if (item.HasIcon)
-                                    {
-                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                        </MudAvatar>
-                                    }
-                                    @item.Title
-                                </div>
-                            </MudMenuItem>
-                        }
-                    </ChildContent>
-                </MudMenu>
+                <div style="display: flex; gap: 8px; align-items: center;">  
+                    <MudNumericField @bind-Value="context.Amount"  
+                                     T="decimal"  
+                                     HideSpinButtons="true"  
+                                     Format="#,##0.##"  
+                                     Immediate="true"  
+                                     For="@(() => context.Amount)"  
+                                     Label="@(context.GetDisplayName(() => context.Amount))"  
+                                     Margin="Margin.Dense"  
+                                     Variant="Variant.Outlined"  
+                                     Adornment="Adornment.End"  
+                                     AdornmentText="@context.AmountAdornmentText"  
+                                     Class="flex-grow-1" />  
+      
+                    <MudMenu @bind-Open="context.AmountMenuOpen"   
+                             ActivationEvent="@MouseEvent.LeftClick">  
+                        <ActivatorContent>  
+                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                        </ActivatorContent>  
+                        <ChildContent>  
+                            @foreach (var item in PriceUnits)  
+                            {  
+                                <MudMenuItem OnClick="() => SelectPriceUnit(item, context)">  
+                                    <div style="display: flex; align-items: center; gap: 8px;">  
+                                        @if (item.HasIcon)  
+                                        {  
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>  
+                                            </MudAvatar>  
+                                        }  
+                                        @item.Title  
+                                    </div>  
+                                </MudMenuItem>  
+                            }  
+                        </ChildContent>  
+                    </MudMenu>  
+                </div>
             </MudTd>
             @if (context.PriceUnit != PriceUnit)
             {

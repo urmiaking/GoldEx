@@ -28,7 +28,10 @@ public static class ServiceCollectionExtensions
                 NumberDecimalSeparator = ".",
                 CurrencySymbol = "ریال",
                 CurrencyPositivePattern = 3, // Symbol on the left with a space  
-                CurrencyNegativePattern = 8 // Symbol on the left with a space for negative values  
+                CurrencyNegativePattern = 8, // Symbol on the left with a space for negative values  
+                NumberGroupSeparator = ",",     // Explicitly set this
+                CurrencyDecimalSeparator = ".", // Explicitly set this (was defaulting to /)
+                CurrencyGroupSeparator = ",",   // Explicitly set this
             },
             DateTimeFormat =
             {
