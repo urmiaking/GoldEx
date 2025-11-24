@@ -104,61 +104,71 @@
                               Margin="Margin.Dense" />
 
                 <MudGrid Spacing="0">
-                    <MudItem xs="12" md="6">
-                        <MudMenu @bind-Open="_minWeightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                            <ActivatorContent>
-                                <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@_model.UnitType.GetDisplayName()"
-                                                 For="() => _model.MinWeight"
-                                                 Format="G29"
-                                                 dir="ltr"
-                                                 HideSpinButtons="true"
-                                                 Margin="Margin.Dense"
-                                                 Label="@(_model.GetDisplayName(() => _model.MinWeight))"
-                                                 T="decimal?"
-                                                 @bind-Value="_model.MinWeight"
-                                                 Variant="Variant.Outlined"
-                                                 OnAdornmentClick="() => _minWeightFieldMenuOpen = !_minWeightFieldMenuOpen"></MudNumericField>
-                            </ActivatorContent>
-                            <ChildContent>
-                                @foreach (var item in Enum.GetValues<GoldUnitType>())
-                                {
-                                    <MudMenuItem OnClick="() => SelectUnitType(item)">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            @item.GetDisplayName()
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                            </ChildContent>
-                        </MudMenu>
+                    <MudItem xs="12">
+                        <div style="display: flex; gap: 8px; align-items: center;">  
+                            <MudNumericField Adornment="Adornment.End"  
+                                             AdornmentText="@_model.UnitType.GetDisplayName()"  
+                                             For="() => _model.MinWeight"  
+                                             Format="G29"  
+                                             dir="ltr"  
+                                             HideSpinButtons="true"  
+                                             Margin="Margin.Dense"  
+                                             Label="@(_model.GetDisplayName(() => _model.MinWeight))"  
+                                             T="decimal?"  
+                                             @bind-Value="_model.MinWeight"  
+                                             Variant="Variant.Outlined"  
+                                             Class="flex-grow-1" />  
+      
+                            <MudMenu @bind-Open="_minWeightFieldMenuOpen"   
+                                     ActivationEvent="@MouseEvent.LeftClick">  
+                                <ActivatorContent>  
+                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                                </ActivatorContent>  
+                                <ChildContent>  
+                                    @foreach (var item in Enum.GetValues<GoldUnitType>())  
+                                    {  
+                                        <MudMenuItem OnClick="() => SelectUnitType(item)">  
+                                            <div style="display: flex; align-items: center; gap: 8px;">  
+                                                @item.GetDisplayName()  
+                                            </div>  
+                                        </MudMenuItem>  
+                                    }  
+                                </ChildContent>  
+                            </MudMenu>  
+                        </div>
                     </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudMenu @bind-Open="_maxWeightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                            <ActivatorContent>
-                                <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@_model.UnitType.GetDisplayName()"
-                                                 For="() => _model.MaxWeight"
-                                                 Format="G29"
-                                                 dir="ltr"
-                                                 HideSpinButtons="true"
-                                                 Margin="Margin.Dense"
-                                                 Label="@(_model.GetDisplayName(() => _model.MaxWeight))"
-                                                 T="decimal?"
-                                                 @bind-Value="_model.MaxWeight"
-                                                 Variant="Variant.Outlined"
-                                                 OnAdornmentClick="() => _maxWeightFieldMenuOpen = !_maxWeightFieldMenuOpen"></MudNumericField>
-                            </ActivatorContent>
-                            <ChildContent>
-                                @foreach (var item in Enum.GetValues<GoldUnitType>())
-                                {
-                                    <MudMenuItem OnClick="() => SelectUnitType(item)">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            @item.GetDisplayName()
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                            </ChildContent>
-                        </MudMenu>
+                    <MudItem xs="12">
+                        <div style="display: flex; gap: 8px; align-items: center;">  
+                            <MudNumericField Adornment="Adornment.End"  
+                                             AdornmentText="@_model.UnitType.GetDisplayName()"  
+                                             For="() => _model.MaxWeight"  
+                                             Format="G29"  
+                                             dir="ltr"  
+                                             HideSpinButtons="true"  
+                                             Margin="Margin.Dense"  
+                                             Label="@(_model.GetDisplayName(() => _model.MaxWeight))"
+                                             T="decimal?"  
+                                             @bind-Value="_model.MaxWeight"
+                                             Variant="Variant.Outlined"  
+                                             Class="flex-grow-1" />  
+      
+                            <MudMenu @bind-Open="_maxWeightFieldMenuOpen"   
+                                     ActivationEvent="@MouseEvent.LeftClick">  
+                                <ActivatorContent>  
+                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                                </ActivatorContent>  
+                                <ChildContent>  
+                                    @foreach (var item in Enum.GetValues<GoldUnitType>())  
+                                    {  
+                                        <MudMenuItem OnClick="() => SelectUnitType(item)">  
+                                            <div style="display: flex; align-items: center; gap: 8px;">  
+                                                @item.GetDisplayName()  
+                                            </div>  
+                                        </MudMenuItem>  
+                                    }  
+                                </ChildContent>  
+                            </MudMenu>  
+                        </div>
                     </MudItem>
                 </MudGrid>
 

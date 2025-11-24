@@ -59,39 +59,44 @@
                           Margin="Margin.Dense" />
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudMenu @bind-Open="_feeFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                <ActivatorContent>
-                    <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="@Model.FeePriceUnit?.Title"
-                                     For="() => Model.FeeAmount"
-                                     dir="ltr"
-                                     Format="#,##0.##"
-                                     HideSpinButtons="true"
-                                     Immediate="true"
-                                     Margin="Margin.Dense"
-                                     Label="@(Model.GetDisplayName(() => Model.FeeAmount))"
-                                     T="decimal?"
-                                     @bind-Value="Model.FeeAmount"
-                                     Variant="Variant.Outlined"
-                                     OnAdornmentClick="() => _feeFieldMenuOpen = !_feeFieldMenuOpen" />
-                </ActivatorContent>
-                <ChildContent>
-                    @foreach (var item in PriceUnits)
-                    {
-                        <MudMenuItem OnClick="() => OnSelectFeePriceUnit.InvokeAsync(item)">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                @if (item.HasIcon)
-                                {
-                                    <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" />
-                                    </MudAvatar>
-                                }
-                                @item.Title
-                            </div>
-                        </MudMenuItem>
-                    }
-                </ChildContent>
-            </MudMenu>
+            <div style="display: flex; gap: 8px; align-items: center;">  
+                <MudNumericField Adornment="Adornment.End"  
+                                 AdornmentText="@Model.FeePriceUnit?.Title"  
+                                 For="() => Model.FeeAmount"  
+                                 dir="ltr"  
+                                 Format="#,##0.##"  
+                                 HideSpinButtons="true"  
+                                 Immediate="true"  
+                                 Margin="Margin.Dense"  
+                                 Label="@(Model.GetDisplayName(() => Model.FeeAmount))"  
+                                 T="decimal?"  
+                                 @bind-Value="Model.FeeAmount"  
+                                 Variant="Variant.Outlined"  
+                                 Class="flex-grow-1" />  
+      
+                <MudMenu @bind-Open="_feeFieldMenuOpen"   
+                         ActivationEvent="@MouseEvent.LeftClick">  
+                    <ActivatorContent>  
+                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                    </ActivatorContent>  
+                    <ChildContent>  
+                        @foreach (var item in PriceUnits)  
+                        {  
+                            <MudMenuItem OnClick="() => OnSelectFeePriceUnit.InvokeAsync(item)">  
+                                <div style="display: flex; align-items: center; gap: 8px;">  
+                                    @if (item.HasIcon)  
+                                    {  
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary">  
+                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" />  
+                                        </MudAvatar>  
+                                    }  
+                                    @item.Title  
+                                </div>  
+                            </MudMenuItem>  
+                        }  
+                    </ChildContent>  
+                </MudMenu>  
+            </div>
         </MudItem>
 
         @if (Model.FeePriceUnit?.Id != Model.PriceUnit?.Id)
