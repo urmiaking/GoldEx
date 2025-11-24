@@ -14,6 +14,8 @@ public class BlogCategory : EntityBase<BlogCategoryId>
     public string Title { get; private set; }
     public bool IsActive { get; private set; }
 
+    public DateTime? LastUpdated { get; private set; } = DateTime.Now;
+
     public BlogCategory? ParentCategory { get; private set; }
     public BlogCategoryId? ParentCategoryId { get; private set; }
 
@@ -33,7 +35,33 @@ public class BlogCategory : EntityBase<BlogCategoryId>
     private BlogCategory() { }
 #pragma warning restore CS8618
 
-    public void SetTitle(string title) => Title = title;
-    public void SetParent(BlogCategoryId categoryId) => ParentCategoryId = categoryId;
-    public void SetStatus(bool active) => IsActive = active;
+    public void SetTitle(string title)
+    {
+        Title = title;
+        LastUpdated = DateTime.Now;
+    }
+
+    public void SetStatus(bool active)
+    {
+        IsActive = active;
+        LastUpdated = DateTime.Now;
+    }
+
+    public static BlogCategory Hydrate(Guid id, string title, BlogCategoryId? parentCategoryId, DateTime createdAt, DateTime lastUpdated)
+    {
+        var category = new BlogCategory
+        {
+            Id = new BlogCategoryId(id),
+            Title = title,
+            LastUpdated = lastUpdated,
+            ParentCategoryId = parentCategoryId
+        };
+        return category;
+    }
+
+    public void SetParent(BlogCategoryId? blogCategoryId)
+    {
+        ParentCategoryId = blogCategoryId;
+        LastUpdated = DateTime.Now;
+    }
 }

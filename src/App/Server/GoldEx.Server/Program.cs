@@ -78,7 +78,7 @@ bool SetupServices()
             .AddClientServerServices()
             .AddServer(configuration)
             .AddApplication()
-            .AddInfrastructure();
+            .AddInfrastructure(configuration);
 
         return true;
     }
@@ -156,6 +156,15 @@ void SetupPipeline()
     {
         FileProvider = new PhysicalFileProvider(uploads),
         RequestPath = "/uploads"
+    });
+
+    var shared = Path.Combine(app.Environment.ContentRootPath, "shared");
+    if (!Directory.Exists(shared))
+        Directory.CreateDirectory(shared);
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(shared),
+        RequestPath = "/shared"
     });
 
     app.UseSerilogUi();
