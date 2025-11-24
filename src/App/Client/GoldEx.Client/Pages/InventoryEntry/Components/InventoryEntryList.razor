@@ -1,0 +1,123 @@
+﻿@using GoldEx.Shared.DTOs.InventoryEntries
+@inherits GoldExComponentBase
+
+<div style="position: relative;">
+
+    <!-- 2. Add the Overlay here -->
+    <MudOverlay Visible="_isProcessing" DarkBackground="true" Absolute="true" ZIndex="200">
+        <MudPaper Elevation="4" Class="pa-8 d-flex flex-column align-center justify-center gap-3"
+                  Width="340px" Style="border-radius: 20px; background: var(--mud-palette-surface);">
+
+            <!-- Animated Icon (Red for Delete) -->
+            <div class="pulse-icon-error mb-3 d-flex align-center justify-center pa-4">
+                <MudIcon Icon="@Icons.Material.Filled.DeleteForever"
+                         Color="Color.Error"
+                         Style="width: 60px; height: 60px;" />
+            </div>
+
+            <!-- Main Title -->
+            <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Error">
+                <b>در حال حذف عملیات</b>
+            </MudText>
+
+            <!-- Explanation Message -->
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="px-2" Color="Color.Primary">
+                سیستم در حال بازگردانی موجودی انبار است. لطفا صفحه را نبندید.
+            </MudText>
+
+            <!-- Indeterminate Progress Bar -->
+            <div class="w-100 mt-4">
+                <MudProgressLinear Color="Color.Error"
+                                   Indeterminate="true"
+                                   Rounded="true"
+                                   Size="Size.Large"
+                                   Striped="true"
+                                   Class="my-1" />
+            
+                <!-- Time Warning -->
+                <div class="d-flex justify-center mt-2">
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="d-flex align-center gap-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small"/>
+                        ممکن است تا چند ثانیه طول بکشد
+                    </MudText>
+                </div>
+            </div>
+        </MudPaper>
+    </MudOverlay>
+
+    <MudTable T="InventoryEntryResponse" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+              ContainerClass="@ContainerClass" Dense="true" ServerData="LoadInventoryEntryAsync"
+              SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+        <ToolBarContent>
+            <div class="d-flex justify-between">
+                <MudText>
+                    تاریخچه ورود دستی اجناس
+                </MudText>
+            </div>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>تاریخ عملیات</MudTh>
+            <MudTh>تعداد کل طلا، جواهر و آبشده</MudTh>
+            <MudTh>تعداد کل سکه ها</MudTh>
+            <MudTh>حجم کل ارزها</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.OperationDate.ToString("HH:mm:ss yyyy/MM/dd")</MudTd>
+            <MudTd>@context.ProductsAmount.ToCurrencyFormat("گرم")</MudTd>
+            <MudTd>@context.CoinsAmount.ToCurrencyFormat()</MudTd>
+            <MudTd>@context.CurrenciesAmount.ToCurrencyFormat()</MudTd>
+            <MudTd>
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="بازگردانی عملیات" Color="Color.Error" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled"
+                                       Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteEntry(context))" />
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>هیچ ورود دستی ثبت نشده است</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText>در حال بارگیری</MudText>
+        </LoadingContent>
+        <PagerContent>
+            @{
+                var totalItems = _table.GetFilteredItemsCount();
+                var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+                var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+                var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+                var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+            }
+
+            <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+                <div class="mud-table-pagination-caption">
+                    @infoText
+                </div>
+                <MudPagination SelectedChanged="PageChanged"
+                               Color="Color.Primary"
+                               Count="@pageCount"
+                               ShowFirstButton="true"
+                               ShowLastButton="true" />
+
+                <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                    @infoText
+                </div>
+            </div>
+        </PagerContent>
+    </MudTable>
+</div>
+
+<style>
+    /* Simple pulse animation for the delete icon */
+    @@keyframes pulse-error {
+        0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); transform: scale(1); }
+        70% { box-shadow: 0 0 0 15px rgba(244, 67, 54, 0); transform: scale(1.1); }
+        100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); transform: scale(1); }
+    }
+    .pulse-icon-error {
+        border-radius: 50%;
+        animation: pulse-error 2s infinite;
+    }
+</style>

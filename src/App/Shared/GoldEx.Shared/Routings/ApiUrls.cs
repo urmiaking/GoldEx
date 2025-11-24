@@ -438,6 +438,14 @@ public class ApiUrls
 
         public static string ProcessExcel() =>
             BuildUrl(ApiRoutes.InventoryEntries.Base, ApiRoutes.InventoryEntries.ProcessExcel);
+
+        public static string GetList(RequestFilter filter) =>
+            BuildUrl(ApiRoutes.InventoryEntries.Base, ApiRoutes.InventoryEntries.GetList)
+                .AppendQueryString(filter);
+
+        public static string Rollback(Guid id) =>
+            BuildUrl(ApiRoutes.InventoryEntries.Base, ApiRoutes.InventoryEntries.Rollback)
+                .FormatRoute(new { id });
     }
 
     public class Files

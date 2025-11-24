@@ -308,7 +308,8 @@ public class Transaction : EntityBase<TransactionId>
             LedgerAccountId = ledgerAccountId,
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
-            InventoryEntryId = inventoryEntryId
+            InventoryEntryId = inventoryEntryId,
+            PostingDate = postingDate
         };
     }
 }

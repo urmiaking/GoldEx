@@ -1,0 +1,20 @@
+﻿@attribute [Route(ClientRoutes.InventoryStocks.InventoryEntry.List)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@using GoldEx.Client.Pages.InventoryEntry.Components
+@inherits GoldExComponentBase
+
+<PageTitle>تاریخچه</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <MudText Typo="Typo.h5" GutterBottom="true">تاریخچه ورود دستی اجناس</MudText>
+    <MudDivider Class="mb-2" />
+
+    <InventoryEntryList Class="mb-4" ContainerClass="responsive-table-toolbar" />
+
+</MudContainer>

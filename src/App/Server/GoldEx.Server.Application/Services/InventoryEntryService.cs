@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.InventoryEntries;
 using GoldEx.Server.Domain.CoinAggregate;
@@ -9,12 +11,14 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Mappers;
+using GoldEx.Server.Infrastructure.Specifications.InventoryEntries;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using MapsterMapper;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -27,9 +31,26 @@ internal class InventoryEntryService(
     ISpreadsheetService spreadsheetService,
     IExcelProductProcessor excelProductProcessor,
     CreateInventoryEntryRequestValidator createValidator,
+    RollbackInventoryEntryValidator rollbackValidator,
     IMapper mapper,
     ILogger<InventoryEntryService> logger) : IInventoryEntryService
 {
+    public async Task<PagedList<InventoryEntryResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default)
+    {
+        var spec = new InventoryEntriesByFilterSpecification(filter);
+
+        var list = await inventoryEntryRepository.Get(spec).ToListAsync(cancellationToken);
+        var total = await inventoryEntryRepository.CountAsync(spec, cancellationToken);
+
+        return new PagedList<InventoryEntryResponse>
+        {
+            Data = mapper.Map<List<InventoryEntryResponse>>(list),
+            Total = total,
+            Skip = filter.Skip ?? 0,
+            Take = filter.Take ?? 100
+        };
+    }
+
     public async Task CreateAsync(CreateInventoryEntryRequest request, CancellationToken cancellationToken = default)
     {
         await using var transaction = await inventoryEntryRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
@@ -103,5 +124,40 @@ internal class InventoryEntryService(
         var result = await excelProductProcessor.ProcessAsync(parsedResult, cancellationToken);
 
         return result;
+    }
+
+    public async Task RollbackAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await inventoryEntryRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                await rollbackValidator.ValidateAndThrowAsync(new InventoryEntryId(id), cancellationToken);
+
+                var inventoryEntry =
+                    await inventoryEntryRepository
+                        .Get(new InventoryEntriesByIdSpecification(new InventoryEntryId(id)))
+                        .Include(x => x.InventoryStocks!)
+                        .ThenInclude(x => x.Product)
+                        .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                var productList = inventoryEntry.InventoryStocks?
+                    .Where(x => x.Product != null)
+                    .Select(x => x.Product!)
+                    .ToList() ?? [];
+
+                if (productList.Any()) 
+                    await productService.DeleteRangeAsync(productList, cancellationToken);
+
+                await inventoryEntryRepository.DeleteAsync(inventoryEntry, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 }
