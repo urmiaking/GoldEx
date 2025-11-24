@@ -11,6 +11,8 @@ public class BlogPost : EntityBase<BlogPostId>
     public string Content { get; private set; }
     public bool IsActive { get; private set; }
 
+    public DateTime? LastUpdated { get; private set; } = DateTime.Now;
+
     public BlogCategory? BlogCategory { get; private set; }
     public BlogCategoryId BlogCategoryId { get; private set; }
 
@@ -42,7 +44,30 @@ public class BlogPost : EntityBase<BlogPostId>
         Title = title;
         Slug = slug;
         Content = content;
+        LastUpdated = DateTime.Now;
     }
 
-    public void SetStatus(bool isActive) => IsActive = isActive;
+    public void SetStatus(bool isActive)
+    {
+        IsActive = isActive;
+        LastUpdated = DateTime.Now;
+    }
+
+    public static BlogPost Hydrate(Guid id, string title, string slug, string
+        content, BlogCategoryId categoryId, DateTime createdAt, DateTime lastUpdated, bool
+        isActive)
+    {
+        return new BlogPost
+        {
+            Id = new BlogPostId(id),
+            Title = title,
+            Slug = slug,
+            Content = content,
+            BlogCategoryId = categoryId,
+            CreatedAt = createdAt,
+            LastUpdated = lastUpdated,
+            IsActive = isActive
+        };
+    }
+
 }
