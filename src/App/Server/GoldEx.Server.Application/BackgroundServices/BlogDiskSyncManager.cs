@@ -21,7 +21,7 @@ public class BlogDiskSyncManager(
 { 
     // Config
     private readonly TimeSpan _pollInterval = TimeSpan.FromSeconds(config.GetValue<int?>("BlogSync:PollSeconds") ?? 30);
-    private readonly string _rootPath = config["BlogSync:ContentRoot"] ?? "shared";
+    private const string RootPath = "shared";
     private readonly TimeSpan _debounceDelay = TimeSpan.FromSeconds(2); // Increased debounce to be safe
 
     // State
@@ -349,7 +349,7 @@ public class BlogDiskSyncManager(
     {
         try
         {
-            var root = Path.Combine(hostEnvironment.ContentRootPath, _rootPath);
+            var root = Path.Combine(hostEnvironment.ContentRootPath, RootPath);
 
             if (!Directory.Exists(root))
                 Directory.CreateDirectory(root);
