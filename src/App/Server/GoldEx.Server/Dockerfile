@@ -5,10 +5,13 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 
 RUN mkdir -p /app/uploads && \
     mkdir -p /app/Reports && \
+    mkdir -p /app/shared && \
     chown -R $APP_UID:$APP_UID /app/uploads && \
     chmod -R u+rwX /app/uploads && \
     chown -R $APP_UID:$APP_UID /app/Reports && \
-    chmod -R u+rwX /app/Reports
+    chmod -R u+rwX /app/Reports && \
+    chown -R $APP_UID:$APP_UID /app/shared && \
+    chmod -R u+rwX /app/shared
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -68,7 +71,9 @@ RUN fc-cache -fv
 
 USER root
 RUN chown -R $APP_UID:$APP_UID /app/uploads && \
-    chown -R $APP_UID:$APP_UID /app/Reports
+    chown -R $APP_UID:$APP_UID /app/Reports && \
+    mkdir -p /app/shared && \
+    chown -R $APP_UID:$APP_UID /app/shared
 
 USER $APP_UID
 
