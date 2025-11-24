@@ -10,11 +10,13 @@ public class BlogCategoriesDefaultSpecifications : SpecificationBase<BlogCategor
         ApplyOrderBy(x => x.Title);
         AddCriteria(x => x.ParentCategoryId == null);
 
-        if (isActive.HasValue)
+        if (isActive.HasValue) 
         {
             AddCriteria(x => x.IsActive == isActive.Value);
-        }
+        } 
     }
 }
+
+public class BlogCategoriesEmptySpecifications : SpecificationBase<BlogCategory>;
 
 public class BlogCategoriesByIdSpecifications(BlogCategoryId id) : SpecificationBase<BlogCategory>(x => x.Id == id);

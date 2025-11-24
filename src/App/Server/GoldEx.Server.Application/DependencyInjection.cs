@@ -15,6 +15,7 @@ public static class DependencyInjection
     {
         services.AddHostedService<PriceUpdaterBackgroundService>();
         services.AddHostedService<NotificationBackgroundService>();
+        services.AddHostedService<BlogDiskSyncManager>();
 
         services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
         services.AddScoped<ReportStorageWebExtension, ReportStorageExtension>();
