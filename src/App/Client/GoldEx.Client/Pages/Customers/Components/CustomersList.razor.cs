@@ -21,7 +21,6 @@ public partial class CustomersList
     private DateRange _filterDateRange = new();
     private MudTable<CustomerVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
-    private readonly DialogOptions _viewTransactionDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
     private CustomerType? _customerType;
 
     private async Task<TableData<CustomerVm>> LoadCustomersAsync(TableState state, CancellationToken cancellationToken = default)
@@ -93,7 +92,7 @@ public partial class CustomersList
             { x => x.CustomerName, model.FullName }
         };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف مشتری", parameters, _dialogOptions);
+        var dialog = await DialogService.ShowAsync<Remove>("حذف مشتری", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
 
         var result = await dialog.Result;
 
@@ -128,7 +127,7 @@ public partial class CustomersList
         //{
         //    { nameof(TransactionsList.CustomerId), customerVm.Id }
         //};
-        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", _viewTransactionDialogOptions);
+        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", _dialogOptions with { MaxWidth = MaxWidth.Large });
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
@@ -142,7 +141,7 @@ public partial class CustomersList
         {
             { nameof(InvoicesList.CustomerId), customerVm.Id }
         };
-        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای های {customerVm.FullName}", parameters, _viewTransactionDialogOptions);
+        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای های {customerVm.FullName}", parameters, _dialogOptions with { MaxWidth = MaxWidth.Large });
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {

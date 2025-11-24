@@ -329,6 +329,7 @@ public partial class SimpleCalculator
     {
         _model.GoldUnitType = unitType;
         await LoadGramPriceAsync();
+        await Calculate();
     }
 
     private async void OnProductTypeChanged(ProductType productType)
