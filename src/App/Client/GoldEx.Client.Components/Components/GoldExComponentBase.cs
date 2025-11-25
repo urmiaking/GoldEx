@@ -374,10 +374,12 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected async Task SendRequestAsync<TService>(Func<TService, CancellationToken, Task> action,
-                                                    Func<Task>? afterSend = null,
-                                                    Func<Task>? onFailure = null,
-                                                    bool cancelPrevious = false)
+    protected async Task SendRequestAsync<TService>(
+        Func<TService, CancellationToken, Task> action,
+        Func<Task>? afterSend = null,
+        Func<Task>? onFailure = null,
+        bool cancelPrevious = false,
+        bool ignoreCancellation = false)
         where TService : notnull
     {
         if (IsDisposed)
@@ -387,21 +389,23 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
         {
             if (cancelPrevious)
                 CancelToken();
+
             SetBusy();
             var service = GetRequiredService<TService>();
 
-            await action.Invoke(service, CancellationToken);
+            // IMPORTANT:
+            // Use CancellationToken.None if ignoreCancellation = true
+            var token = ignoreCancellation ? CancellationToken.None : CancellationToken;
+
+            await action.Invoke(service, token);
+
             if (afterSend != null)
-            {
                 await afterSend.Invoke();
-            }
         }
         catch (Exception ex)
         {
             if (onFailure != null)
-            {
                 await onFailure.Invoke();
-            }
 
             HandleRequestException(ex);
         }

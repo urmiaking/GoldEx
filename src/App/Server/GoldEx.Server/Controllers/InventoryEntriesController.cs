@@ -23,7 +23,7 @@ public class InventoryEntriesController(IInventoryEntryService service) : ApiCon
     [HttpPost(ApiRoutes.InventoryEntries.Create)]
     public async Task<IActionResult> CreateAsync([FromBody] CreateInventoryEntryRequest request, CancellationToken cancellationToken = default)
     {
-        await service.CreateAsync(request, cancellationToken);
+        await service.CreateAsync(request);
         return NoContent();
     }
 

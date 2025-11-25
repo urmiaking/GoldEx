@@ -90,7 +90,7 @@ public partial class InventoryEntryContainer
             var request = _model.ToRequest(_gramPrice ?? 0);
 
             await SendRequestAsync<IInventoryEntryService>(
-                action: (s, ct) => s.CreateAsync(request, CancellationToken.None),
+                action: (s, ct) => s.CreateAsync(request),
                 afterSend: async () =>
                 {
                     await _simCts.CancelAsync();
@@ -112,7 +112,8 @@ public partial class InventoryEntryContainer
                     _simCts.Cancel();
                     _processing = false;
                     return Task.CompletedTask;
-                });
+                },
+                ignoreCancellation: true);
         }
     }
 
@@ -152,8 +153,8 @@ public partial class InventoryEntryContainer
                     lastUpdate = DateTime.Now;
                 }
 
-                // Now this 10ms delay will actually happen because we aren't waiting for the UI render every time
-                await Task.Delay(5, ct);
+                // Now this 50ms delay will actually happen because we aren't waiting for the UI render every time
+                await Task.Delay(50, ct);
             }
 
             // Wait here until the API cancels this task
