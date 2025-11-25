@@ -94,6 +94,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped(sp =>
         {
             var client = Utilities.GetHttpClient(baseAddress);
+            client.Timeout = new TimeSpan(0, 10, 0);
             return client;
         });
 

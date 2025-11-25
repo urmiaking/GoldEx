@@ -52,7 +52,7 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasOne(x => x.InvoicePayment)
             .WithMany()
             .HasForeignKey(x => x.InvoicePaymentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.MeltingBatch)
             .WithMany(x => x.Transactions)

@@ -25,7 +25,7 @@
                                      ResetValueOnEmptyText="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudSelect T="GetPriceUnitTitleResponse?"
+                    <MudSelect T="GetPriceUnitTitleResponse ?"
                                Value="_model.PriceUnit"
                                ValueChanged="OnPriceUnitChanged"
                                Label="@_model.GetDisplayName(() => _model.PriceUnit)"
@@ -82,39 +82,39 @@
             </MudItem>
 
             <MudItem xs="12" sm="6" md="4" lg="3">
-                <div style="display: flex; gap: 8px; align-items: center;">  
-                    <MudNumericField Adornment="Adornment.End"  
-                                     AdornmentText="@_model.GoldUnitType.GetDisplayName()"  
-                                     For="() => _model.Weight"  
-                                     Format="G29"  
-                                     HideSpinButtons="true"  
-                                     Immediate="true"  
-                                     Margin="Margin.Dense"  
-                                     Label="@(_model.GetDisplayName(() => _model.Weight))"  
-                                     dir="ltr"  
-                                     T="decimal"  
-                                     Value="_model.Weight"  
-                                     ValueChanged="OnWeightChanged"  
-                                     Variant="Variant.Outlined"  
-                                     OnAdornmentClick="OnWeightAdornmentClicked"  
-                                     Class="flex-grow-1" />  
-      
-                    <MudMenu @bind-Open="_weightFieldMenuOpen"   
-                             ActivationEvent="@MouseEvent.LeftClick">  
-                        <ActivatorContent>  
-                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
-                        </ActivatorContent>  
-                        <ChildContent>  
-                            @foreach (var item in Enum.GetValues<GoldUnitType>())  
-                            {  
-                                <MudMenuItem OnClick="() => SelectGoldUnitType(item)">  
-                                    <div style="display: flex; align-items: center; gap: 8px;">  
-                                        @item.GetDisplayName()  
-                                    </div>  
-                                </MudMenuItem>  
-                            }  
-                        </ChildContent>  
-                    </MudMenu>  
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentText="@_model.GoldUnitType.GetDisplayName()"
+                                     For="() => _model.Weight"
+                                     Format="G29"
+                                     HideSpinButtons="true"
+                                     Immediate="true"
+                                     Margin="Margin.Dense"
+                                     Label="@(_model.GetDisplayName(() => _model.Weight))"
+                                     dir="ltr"
+                                     T="decimal"
+                                     Value="_model.Weight"
+                                     ValueChanged="OnWeightChanged"
+                                     Variant="Variant.Outlined"
+                                     OnAdornmentClick="OnWeightAdornmentClicked"
+                                     Class="flex-grow-1" />
+
+                    <MudMenu @bind-Open="_weightFieldMenuOpen"
+                             ActivationEvent="@MouseEvent.LeftClick">
+                        <ActivatorContent>
+                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in Enum.GetValues<GoldUnitType>())
+                            {
+                                <MudMenuItem OnClick="() => SelectGoldUnitType(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @item.GetDisplayName()
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
                 </div>
             </MudItem>
 
@@ -156,7 +156,7 @@
                                Immediate="true"
                                Margin="Margin.Dense"
                                Label="@(_model.GetDisplayName(() => _model.WageType))"
-                               T="WageType?"
+                               T="WageType ?"
                                Value="_model.WageType"
                                ValueChanged="OnWageTypeChanged"
                                Variant="Variant.Outlined"
@@ -192,7 +192,7 @@
                                 <MudMenu @bind-Open="_wageFieldMenuOpen"
                                          ActivationEvent="@MouseEvent.LeftClick">
                                     <ActivatorContent>
-                                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
                                     </ActivatorContent>
                                     <ChildContent>
                                         @foreach (var item in _priceUnits)
@@ -271,40 +271,46 @@
             @if (_model.ProductType is ProductType.Jewelry)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudMenu @bind-Open="_stoneFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                        <ActivatorContent>
-                            <MudNumericField Adornment="Adornment.End"
-                                             AdornmentText="@StoneFieldAdornmentText"
-                                             For="() => _model.StonePrice"
-                                             Format="#,##0.##"
-                                             HideSpinButtons="true"
-                                             Immediate="true"
-                                             Margin="Margin.Dense"
-                                             Label="@(_model.GetDisplayName(() => _model.StonePrice))"
-                                             dir="ltr"
-                                             T="decimal?"
-                                             Value="_model.StonePrice"
-                                             ValueChanged="OnStonePriceChanged"
-                                             Variant="Variant.Outlined"
-                                             OnAdornmentClick="OnStoneAdornmentClicked"></MudNumericField>
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (var item in _priceUnits)
-                            {
-                                <MudMenuItem OnClick="() => SelectStonePriceUnit(item)">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        @if (item.HasIcon)
-                                        {
-                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                            </MudAvatar>
-                                        }
-                                        @item.Title
-                                    </div>
-                                </MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <MudNumericField Adornment="Adornment.End"
+                                         AdornmentText="@StoneFieldAdornmentText"
+                                         For="() => _model.StonePrice"
+                                         Format="#,##0.##"
+                                         HideSpinButtons="true"
+                                         Immediate="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(_model.GetDisplayName(() => _model.StonePrice))"
+                                         dir="ltr"
+                                         T="decimal?"
+                                         Value="_model.StonePrice"
+                                         ValueChanged="OnStonePriceChanged"
+                                         Variant="Variant.Outlined"
+                                         OnAdornmentClick="OnStoneAdornmentClicked"
+                                         Class="flex-grow-1" />
+
+                        <MudMenu @bind-Open="_stoneFieldMenuOpen"
+                                 ActivationEvent="@MouseEvent.LeftClick">
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in _priceUnits)
+                                {
+                                    <MudMenuItem OnClick="() => SelectStonePriceUnit(item)">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            @if (item.HasIcon)
+                                            {
+                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                </MudAvatar>
+                                            }
+                                            @item.Title
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </div>
                 </MudItem>
                 @if (_model.PriceUnit != _model.StonePriceUnit)
                 {

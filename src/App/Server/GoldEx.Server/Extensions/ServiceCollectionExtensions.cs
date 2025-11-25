@@ -130,6 +130,7 @@ internal static class ServiceCollectionExtensions
             //    maxRetryDelay: TimeSpan.FromSeconds(10),
             //    errorNumbersToAdd: null
             //);
+            options.CommandTimeout(1800);
         });
 
         return services;

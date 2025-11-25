@@ -24,9 +24,9 @@ internal class InventoryEntryService(HttpClient client, JsonSerializerOptions js
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task CreateAsync(CreateInventoryEntryRequest request, CancellationToken cancellationToken = default)
+    public async Task CreateAsync(CreateInventoryEntryRequest request)
     {
-        using var response = await client.PostAsJsonAsync(ApiUrls.InventoryEntries.Create(), request, jsonOptions, cancellationToken);
+        using var response = await client.PostAsJsonAsync(ApiUrls.InventoryEntries.Create(), request, jsonOptions);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
