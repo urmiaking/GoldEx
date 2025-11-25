@@ -19,6 +19,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using System.Diagnostics;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -51,32 +52,54 @@ internal class InventoryEntryService(
         };
     }
 
-    public async Task CreateAsync(CreateInventoryEntryRequest request, CancellationToken cancellationToken = default)
+    public async Task CreateAsync(CreateInventoryEntryRequest request)
     {
-        await using var transaction = await inventoryEntryRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await using var transaction = await inventoryEntryRepository.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         {
             try
             {
+                logger.LogInformation(
+                    $"Start creating inventory entry with {request.Products.Count} products, {request.Coins.Count} coins, {request.Currencies.Count} currencies.");
+
                 // Step 1. Validate the request
-                await createValidator.ValidateAndThrowAsync(request, cancellationToken);
+                await createValidator.ValidateAndThrowAsync(request);
 
                 // Step 2. Create the opening inventory
                 var inventoryEntry = InventoryEntry.Create();
-                await inventoryEntryRepository.CreateAsync(inventoryEntry, cancellationToken);
+                await inventoryEntryRepository.CreateAsync(inventoryEntry);
 
                 // Step 3. Create the inventory stock records
+                var total = request.Products.Count;
+                var index = 0;
+                var sw = Stopwatch.StartNew();
+
                 foreach (var productItem in request.Products)
                 {
-                    var product = await productService.CreateProductAsync(productItem.Product with { Id = null }, null, cancellationToken);
+                    index++;
 
-                    var inventoryStock = InventoryStock.CreateProduct(product.Id,
+                    var product = await productService.CreateProductAsync(productItem.Product with { Id = null }, null);
+
+                    var inventoryStock = InventoryStock.CreateProduct(
+                        product.Id,
                         productItem.Product.Weight,
                         WarehouseActionType.In,
                         inventoryEntryId: inventoryEntry.Id);
 
-                    await inventoryStockRepository.CreateAsync(inventoryStock, cancellationToken);
-                    await transactionService.CreateForInventoryEntryAsync(inventoryEntry, inventoryStock, product, productItem, cancellationToken);
+                    await inventoryStockRepository.CreateAsync(inventoryStock);
+                    await transactionService.CreateForInventoryEntryAsync(inventoryEntry, inventoryStock, product, productItem);
+
+                    // Log every 100 items
+                    if (index % 100 == 0 || index == total)
+                    {
+                        logger.LogInformation(
+                            "Processed {Index}/{Total} products in {Seconds:n2} seconds",
+                            index,
+                            total,
+                            sw.Elapsed.TotalSeconds);
+                    }
                 }
+
+                logger.LogInformation("Finished processing all {Total} products in {Seconds:n2} seconds", total, sw.Elapsed.TotalSeconds);
 
                 foreach (var currencyItem in request.Currencies)
                 {
@@ -86,13 +109,14 @@ internal class InventoryEntryService(
                         WarehouseActionType.In,
                         inventoryEntryId: inventoryEntry.Id);
 
-                    await inventoryStockRepository.CreateAsync(inventoryStock, cancellationToken);
+                    await inventoryStockRepository.CreateAsync(inventoryStock);
 
                     await transactionService.CreateForInventoryEntryAsync(inventoryEntry,
                         inventoryStock,
-                        currencyItem,
-                        cancellationToken);
+                        currencyItem);
                 }
+
+                logger.LogInformation($"Processing {request.Currencies.Count} currencies done...");
 
                 foreach (var coinItem in request.Coins)
                 {
@@ -101,17 +125,21 @@ internal class InventoryEntryService(
                         WarehouseActionType.In,
                         inventoryEntryId: inventoryEntry.Id);
 
-                    await inventoryStockRepository.CreateAsync(inventoryStock, cancellationToken);
+                    await inventoryStockRepository.CreateAsync(inventoryStock);
 
-                    await transactionService.CreateForInventoryEntryAsync(inventoryEntry, inventoryStock, coinItem, cancellationToken);
+                    await transactionService.CreateForInventoryEntryAsync(inventoryEntry, inventoryStock, coinItem);
                 }
 
-                await transaction.CommitAsync(cancellationToken);
+                logger.LogInformation($"Processing {request.Coins.Count} coins done...");
+
+                await transaction.CommitAsync();
+
+                logger.LogInformation($"Inventory entry {inventoryEntry.Id.Value} created successfully.");
             }
             catch (Exception e)
             {
                 logger.LogError(e, e.Message);
-                await transaction.RollbackAsync(cancellationToken);
+                await transaction.RollbackAsync();
                 throw;
             }
         }

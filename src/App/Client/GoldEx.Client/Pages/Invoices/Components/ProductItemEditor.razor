@@ -111,7 +111,7 @@
                         <MudMenu @bind-Open="_weightFieldMenuOpen"
                                  ActivationEvent="@MouseEvent.LeftClick">
                             <ActivatorContent>
-                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
                             </ActivatorContent>
                             <ChildContent>
                                 @foreach (var item in Enum.GetValues<GoldUnitType>())
@@ -178,7 +178,7 @@
                                 <MudMenu @bind-Open="_wageFieldMenuOpen"
                                          ActivationEvent="@MouseEvent.LeftClick">
                                     <ActivatorContent>
-                                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
                                     </ActivatorContent>
                                     <ChildContent>
                                         @foreach (var item in PriceUnits)
@@ -272,7 +272,7 @@
                         <MudMenu @bind-Open="_costPriceMenuOpen"
                                  ActivationEvent="@MouseEvent.LeftClick">
                             <ActivatorContent>
-                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
                             </ActivatorContent>
                             <ChildContent>
                                 @foreach (var item in PriceUnits)
