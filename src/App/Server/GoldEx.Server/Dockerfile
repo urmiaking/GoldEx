@@ -62,6 +62,20 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Create a template copy of initial Reports for volume initialization
+RUN cp -r /app/Reports /app/reports-template
+
+# Create entrypoint wrapper to init Reports if empty
+RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
+    echo 'set -e' >> /app/entrypoint.sh && \
+    echo 'if [ ! "$(ls -A /app/Reports 2>/dev/null)" ]; then' >> /app/entrypoint.sh && \
+    echo '  echo "Initializing Reports from template..."' >> /app/entrypoint.sh && \
+    echo '  cp -r /app/reports-template/* /app/Reports/' >> /app/entrypoint.sh && \
+    echo '  echo "Reports initialized."' >> /app/entrypoint.sh && \
+    echo 'fi' >> /app/entrypoint.sh && \
+    echo 'exec dotnet GoldEx.Server.dll "$@"' >> /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
+
 COPY ./fonts /usr/local/share/fonts/custom/
 
 USER root
