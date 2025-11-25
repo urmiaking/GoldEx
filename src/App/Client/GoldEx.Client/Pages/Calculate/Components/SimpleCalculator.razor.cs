@@ -239,17 +239,10 @@ public partial class SimpleCalculator
         await Calculate();
     }
 
-    private void OnWageAdornmentClicked()
-    {
-        if (_model.WageType is WageType.Fixed)
-        {
-            _wageFieldMenuOpen = !_wageFieldMenuOpen;
-        }
-    }
-
-    private void OnWageExchangeRateChanged(decimal? exchangeRate)
+    private async Task OnWageExchangeRateChanged(decimal? exchangeRate)
     {
         _model.WageExchangeRate = exchangeRate;
+        await Calculate();
     }
 
     private async Task OnStonePriceChanged(decimal? stonePrice)
@@ -263,9 +256,10 @@ public partial class SimpleCalculator
         _stoneFieldMenuOpen = !_stoneFieldMenuOpen;
     }
 
-    private void OnStoneExchangeRateChanged(decimal? exchangeRate)
+    private async Task OnStoneExchangeRateChanged(decimal? exchangeRate)
     {
         _model.StoneExchangeRate = exchangeRate;
+        await Calculate();
     }
 
     private async Task SelectStonePriceUnit(GetPriceUnitTitleResponse priceUnit)

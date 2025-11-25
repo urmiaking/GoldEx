@@ -122,7 +122,7 @@
                             <MudMenu @bind-Open="_minWeightFieldMenuOpen"   
                                      ActivationEvent="@MouseEvent.LeftClick">  
                                 <ActivatorContent>  
-                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />  
                                 </ActivatorContent>  
                                 <ChildContent>  
                                     @foreach (var item in Enum.GetValues<GoldUnitType>())  
@@ -155,7 +155,7 @@
                             <MudMenu @bind-Open="_maxWeightFieldMenuOpen"   
                                      ActivationEvent="@MouseEvent.LeftClick">  
                                 <ActivatorContent>  
-                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />  
                                 </ActivatorContent>  
                                 <ChildContent>  
                                     @foreach (var item in Enum.GetValues<GoldUnitType>())  

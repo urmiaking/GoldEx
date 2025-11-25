@@ -49,7 +49,7 @@
                         <MudMenu @bind-Open="_weightMenuOpen"   
                                  ActivationEvent="@MouseEvent.LeftClick">  
                             <ActivatorContent>  
-                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" />  
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />  
                             </ActivatorContent>  
                             <ChildContent>  
                                 @foreach (var item in Enum.GetValues<GoldUnitType>())  
