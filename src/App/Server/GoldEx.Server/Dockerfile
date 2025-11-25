@@ -1,32 +1,13 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-
-RUN mkdir -p /app/uploads && \
-    mkdir -p /app/Reports && \
-    mkdir -p /app/shared && \
-    chown -R $APP_UID:$APP_UID /app/uploads && \
-    chmod -R u+rwX /app/uploads && \
-    chown -R $APP_UID:$APP_UID /app/Reports && \
-    chmod -R u+rwX /app/Reports && \
-    chown -R $APP_UID:$APP_UID /app/shared && \
-    chmod -R u+rwX /app/shared
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        fontconfig \
-        libgdiplus \
-        fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
-
-USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fontconfig \
+    libgdiplus \
+    fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
 
-
-# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
@@ -45,50 +26,36 @@ COPY ["src/App/Server/GoldEx.Server.Infrastructure/GoldEx.Server.Infrastructure.
 COPY ["src/App/Server/GoldEx.Server.Domain/GoldEx.Server.Domain.csproj", "src/App/Server/GoldEx.Server.Domain/"]
 COPY ["src/Sdk/GoldEx.Sdk.Server/GoldEx.Sdk.Server.csproj", "src/Sdk/GoldEx.Sdk.Server/"]
 RUN dotnet restore "./src/App/Server/GoldEx.Server/GoldEx.Server.csproj"
-
 RUN rm -rf ./nuget ./nuget.config
-
 COPY . .
 WORKDIR "/src/src/App/Server/GoldEx.Server"
 RUN dotnet build "./GoldEx.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./GoldEx.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-# Create a template copy of initial Reports for volume initialization
-RUN cp -r /app/Reports /app/reports-template
-
-# Create entrypoint wrapper to init Reports if empty
-RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
-    echo 'set -e' >> /app/entrypoint.sh && \
-    echo 'if [ ! "$(ls -A /app/Reports 2>/dev/null)" ]; then' >> /app/entrypoint.sh && \
-    echo '  echo "Initializing Reports from template..."' >> /app/entrypoint.sh && \
-    echo '  cp -r /app/reports-template/* /app/Reports/' >> /app/entrypoint.sh && \
-    echo '  echo "Reports initialized."' >> /app/entrypoint.sh && \
-    echo 'fi' >> /app/entrypoint.sh && \
-    echo 'exec dotnet GoldEx.Server.dll "$@"' >> /app/entrypoint.sh && \
-    chmod +x /app/entrypoint.sh
-
 COPY ./fonts /usr/local/share/fonts/custom/
 
 USER root
-RUN mkdir -p /var/cache/fontconfig && chmod -R 777 /var/cache/fontconfig && fc-cache -fv
+
+RUN mkdir -p /app/Reports_Seed && \
+    if [ -d "/app/Reports" ]; then cp -r /app/Reports/* /app/Reports_Seed/; fi
+
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'cp -rn /app/Reports_Seed/* /app/Reports/ 2>/dev/null || true' >> /app/start.sh && \
+    echo 'exec "$@"' >> /app/start.sh && \
+    chmod +x /app/start.sh
+
+RUN mkdir -p /app/uploads /app/Reports /app/shared /var/cache/fontconfig && \
+    chmod -R 777 /var/cache/fontconfig && \
+    fc-cache -fv && \
+    chown -R $APP_UID:$APP_UID /app/uploads /app/Reports /app/shared /app/Reports_Seed
+
 USER $APP_UID
-RUN fc-cache -fv
 
-USER root
-RUN chown -R $APP_UID:$APP_UID /app/uploads && \
-    chown -R $APP_UID:$APP_UID /app/Reports && \
-    mkdir -p /app/shared && \
-    chown -R $APP_UID:$APP_UID /app/shared
-
-USER $APP_UID
-
-ENTRYPOINT ["dotnet", "GoldEx.Server.dll"]
+ENTRYPOINT ["/app/start.sh"]
+CMD ["dotnet", "GoldEx.Server.dll"]
