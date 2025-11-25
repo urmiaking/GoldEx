@@ -23,7 +23,7 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
             .IsRequired();
 
         builder.Property(x => x.InstitutionName)
-            .HasMaxLength(25)
+            .HasMaxLength(50)
             .IsRequired();
 
         builder.Property(x => x.TaxPercent)
