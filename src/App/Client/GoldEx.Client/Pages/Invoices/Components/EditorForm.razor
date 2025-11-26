@@ -235,7 +235,19 @@ else
                         <MudText>کد مشتری: @_model.Customer.NationalId</MudText>
                     </MudItem>
                     <MudItem xs="12" md="3">
-                        <MudText>آدرس: @_model.Customer.Address</MudText>
+                        @if (_model.Customer.Id.HasValue)
+                        {
+                            <div class="d-flex align-items-center gap-1">
+                                <MudText>مانده: </MudText>
+                                <CustomerRemaining CustomerId="_model.Customer.Id.Value"
+                                                   TextTypo="Typo.body1" 
+                                                   PriceUnitId="@_model.InvoicePriceUnit?.Id"
+                                                   AddedValue="@(_applyCurrentInvoice && !IsEditMode ? _model.TotalUnpaidAmount : null)" />
+                                <MudTooltip Text="@RemainingTooltipText" ShowOnHover="true" Color="Color.Success" Arrow="true">
+                                    <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Success" Size="Size.Small" />
+                                </MudTooltip>
+                            </div>
+                        }
                     </MudItem>
                 </MudGrid>
             }

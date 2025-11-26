@@ -6,7 +6,7 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface ITransactionService
 {
-    Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId, CancellationToken cancellationToken = default);
+    Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId, Guid? priceUnitId, CancellationToken cancellationToken = default);
     Task<PagedList<GetTransactionResponse>> GetListAsync(TransactionFilter transactionFilter, RequestFilter requestFilter, CancellationToken cancellationToken = default);
     Task<GetFinancialAccountBalanceResponse> GetFinancialAccountBalanceAsync(Guid financialAccountId, CancellationToken cancellationToken = default);
 }
