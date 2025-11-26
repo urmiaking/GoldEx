@@ -12,20 +12,41 @@ namespace GoldEx.Client.Pages.Customers.Components;
 public partial class CustomerRemaining
 {
     [Parameter, EditorRequired] public Guid CustomerId { get; set; }
+    [Parameter] public Typo TextTypo { get; set; } = Typo.body2;
+    [Parameter] public Guid? PriceUnitId { get; set; }
+    [Parameter] public string? ItemClass { get; set; }
+    [Parameter] public decimal? AddedValue { get; set; }
 
     private List<CustomerRemainingVm>? _remainingList;
     private bool _isLoading = true;
-    private int _currentIndex = 0;
+    private int _currentIndex;
     private Timer? _slideTimer;
 
-    protected override async Task OnInitializedAsync()
+    private Guid _previousCustomerId;
+    private Guid? _previousPriceUnitId;
+
+    private bool ShouldApplyAddedValue =>
+        AddedValue.HasValue &&
+        PriceUnitId.HasValue &&
+        _remainingList?.Count == 1;
+
+    protected override async Task OnParametersSetAsync()
     {
-        await LoadBalancesAsync();
+        if (CustomerId != _previousCustomerId || PriceUnitId != _previousPriceUnitId)
+        {
+            _previousCustomerId = CustomerId;
+            _previousPriceUnitId = PriceUnitId;
+
+            await LoadBalancesAsync();
+        }
     }
 
     private async Task LoadBalancesAsync()
     {
-        await GetCustomerBalancesAsync(CustomerId);
+         _isLoading = true; 
+         StopSlideTimer(); 
+
+        await GetCustomerBalancesAsync();
 
         if (_remainingList?.Any() == true && _remainingList.Count > 1)
         {
@@ -62,12 +83,14 @@ public partial class CustomerRemaining
         });
     }
 
-    private async Task GetCustomerBalancesAsync(Guid customerId)
+    private async Task GetCustomerBalancesAsync()
     {
         _isLoading = true;
 
+        StateHasChanged();
+
         await SendRequestAsync<ITransactionService, List<GetCustomerRemainingResponse>>(
-            action: (s, ct) => s.GetCustomerRemainingListAsync(CustomerId, ct),
+            action: (s, ct) => s.GetCustomerRemainingListAsync(CustomerId, PriceUnitId, ct),
             afterSend: response =>
             {
                 _remainingList = response.Select(CustomerRemainingVm.CreateFrom).ToList();
@@ -76,8 +99,11 @@ public partial class CustomerRemaining
         _isLoading = false;
     }
 
-    private static Color GetMudColor(decimal amount)
+    private Color GetMudColor(decimal amount)
     {
+        if (ShouldApplyAddedValue) 
+            amount += AddedValue!.Value;
+
         return amount switch
         {
             > 0 => Color.Error,
@@ -86,9 +112,14 @@ public partial class CustomerRemaining
         };
     }
 
-    private static string GetFormattedAmount(CustomerRemainingVm remaining)
+    private string GetFormattedAmount(CustomerRemainingVm remaining)
     {
-        var absoluteAmount = Math.Abs(remaining.Amount);
+        var calculationAmount = remaining.Amount;
+
+        if (ShouldApplyAddedValue) 
+            calculationAmount += AddedValue!.Value;
+
+        var absoluteAmount = Math.Abs(calculationAmount);
         return absoluteAmount.ToCurrencyFormat(remaining.PriceUnit);
     }
 

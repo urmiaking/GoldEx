@@ -353,9 +353,10 @@ public class ApiUrls
 
     public class Transactions
     {
-        public static string GetRemainingList(Guid customerId) =>
+        public static string GetRemainingList(Guid customerId, Guid? priceUnitId) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetRemainingList)
-                .FormatRoute(new { customerId });
+                .FormatRoute(new { customerId })
+                .AppendQueryString(new { priceUnitId });
 
         public static string GetList(TransactionFilter transactionFilter, RequestFilter requestFilter) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList)
