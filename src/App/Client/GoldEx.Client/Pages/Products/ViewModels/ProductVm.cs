@@ -238,4 +238,9 @@ public class ProductVm : INotifyPropertyChanged
             MoltenGold = item.ProductType is ProductType.MoltenGold ? MoltenGoldVm.CreateFrom(item.MoltenGold) : null
         };
     }
+
+    public ProductVm Clone()
+    {
+        return (ProductVm)MemberwiseClone();
+    }
 }

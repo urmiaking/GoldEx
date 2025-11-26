@@ -259,7 +259,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
                 if (productItem.Product.Id.HasValue)
                 {
                     var currentStock = await _inventoryStockRepository.GetQuantityAsync(new ProductId(productItem.Product.Id.Value), cancellationToken);
-                    if (currentStock < 1)
+                    if (currentStock < productItem.TotalWeight)
                         return false;
                 }
             }

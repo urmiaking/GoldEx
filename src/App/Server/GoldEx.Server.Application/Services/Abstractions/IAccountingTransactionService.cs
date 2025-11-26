@@ -34,4 +34,6 @@ public interface IAccountingTransactionService
     Task CreateForInventoryEntryAsync(InventoryEntry inventoryEntry, InventoryStock inventoryStock, Product product, CreateProductItemRequest productItemRequest, CancellationToken cancellationToken = default);
     Task CreateForInventoryEntryAsync(InventoryEntry inventoryEntry, InventoryStock inventoryStock, CreateCoinItemRequest coinItem, CancellationToken cancellationToken = default);
     Task CreateForInventoryEntryAsync(InventoryEntry inventoryEntry, InventoryStock inventoryStock, CreateCurrencyItemRequest currencyItem, CancellationToken cancellationToken = default);
+    Task AddWeightChangeTransactionAsync(ProductId id, decimal oldWeight, decimal newWeight,
+        InventoryStockId? outStockId, InventoryStockId? inStockId, CancellationToken cancellationToken = default);
 }

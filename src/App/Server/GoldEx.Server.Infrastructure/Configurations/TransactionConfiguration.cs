@@ -69,6 +69,11 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .HasForeignKey(x => x.InventoryEntryId)
             .OnDelete(DeleteBehavior.Cascade); // حذف تراکنش‌ها با حذف ورود به انبار
 
+        builder.HasOne(x => x.InventoryStock)
+            .WithMany(x => x.Transactions)
+            .HasForeignKey(x => x.InventoryStockId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // ایندکس یکتا تا هر تراکنش فقط یک برگشت داشته باشد
         builder.HasIndex(x => x.ReverseTransactionId)
             .IsUnique()

@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -24,5 +25,12 @@ public class ProductsController(IProductService service) : ApiControllerBase
     {
         var product = await service.GetAsync(barcode, cancellationToken);
         return product is null ? NotFound() : Ok(product);
+    }
+
+    [HttpPut(ApiRoutes.Products.Update)]
+    public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] ProductRequestDto request, CancellationToken cancellationToken)
+    {
+        await service.UpdateAsync(id, request, cancellationToken);
+        return NoContent();
     }
 }

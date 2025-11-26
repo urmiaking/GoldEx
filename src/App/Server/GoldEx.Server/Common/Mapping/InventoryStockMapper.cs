@@ -47,7 +47,7 @@ internal class InventoryStockMapper : IRegister
     private static string GenerateDescription(InventoryStock src, bool includeExtraInfo)
     {
         var prefix = src.ReverseInventoryStockId.HasValue ? "برگشت: " : string.Empty;
-        var action = src.ActionType == WarehouseActionType.In ? "خرید" : "فروش";
+        var action = src.ActionType == WarehouseActionType.In ? "ورود" : "خروج";
         var hyphen = src.ActionType == WarehouseActionType.In ? "از" : "به";
 
         string? extraInfo = null;
@@ -71,6 +71,11 @@ internal class InventoryStockMapper : IRegister
             {
                 extraInfo = "طبق ثبت موجودی اولیه";
             }
+            else if(src.Transactions != null && src.Transactions.Any())
+            {
+                extraInfo = $"طبق تراکنش : {src.Transactions.First().Description}";
+            }
+
         }
 
         if (src.Product != null)

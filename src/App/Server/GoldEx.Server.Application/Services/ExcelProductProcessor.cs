@@ -147,7 +147,7 @@ internal class ExcelProductProcessor(
                     ProductCategoryTitle: category?.Title,
                     WagePriceUnitId: wagePriceUnit?.Id,
                     WagePriceUnitTitle: wagePriceUnit?.Title,
-                    DateTime: DateTime.UtcNow,
+                    DateTime: DateTime.Now,
                     GoldUnitType: GoldUnitType.Gram,
                     StonePriceUnit: null,
                     GemStones: null,

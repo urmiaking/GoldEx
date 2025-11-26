@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
+using GoldEx.Client.Pages.Products.Components;
+using GoldEx.Client.Pages.Products.ViewModels;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -38,10 +40,10 @@ public partial class InventoryStockList
     private string? _searchString;
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
-    private bool _inventoryStatus;
     private List<ProductCategoryVm> _categories = [];
     private ProductCategoryVm? _categoryFilter;
     private GetBarcodePrintSettingsResponse? _settings;
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
     private string DateRangeFilterLabel => ItemStatus switch
     {
@@ -359,5 +361,32 @@ public partial class InventoryStockList
         }
 
         throw new InvalidOperationException("Item Type could not be determined.");
+    }
+
+    private async Task OnEditProduct(InventoryStockVm context)
+    {
+        if (context.Product is null)
+        {
+            AddErrorToast("امکان ویرایش فقط برای طلا، جواهر و آبشده وجود دارد.");
+            return;
+        }
+
+        var productModel = context.Product.Clone();
+        productModel.Weight = context.CurrentAmount;
+
+        var parameters = new DialogParameters<Editor>
+        {
+            { x => x.Model, productModel }
+        };
+
+        var dialog = await DialogService.ShowAsync<Editor>("ویرایش جنس", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("جنس با موفقیت ویرایش شد.");
+            await RefreshAsync();
+        }
     }
 }
