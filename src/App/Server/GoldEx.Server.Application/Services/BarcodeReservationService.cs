@@ -19,23 +19,41 @@ internal sealed class BarcodeReservationService(
 {
     private static readonly TimeSpan DefaultTtl = TimeSpan.FromMinutes(5);
 
+    private const int MaxRetryAttempts = 5;
+
     public async Task<IssueNextBarcodeResponse> IssueNextAsync(IssueNextBarcodeRequest request,
         CancellationToken cancellationToken = default)
     {
         var categoryId = request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : (ProductCategoryId?)null;
 
         var fullPrefix = await generator.BuildFullPrefixAsync(request.ProductType, categoryId, cancellationToken);
-        var next = await generator.GenerateNextAsync(request.ProductType, categoryId, cancellationToken);
+        DbUpdateException? lastException = null;
 
-        var reservation = BarcodeReservation.Create(
-            prefix: fullPrefix,
-            barcode: next,
-            ttl: DefaultTtl,
-            invoiceId: request.InvoiceId.HasValue ? new InvoiceId(request.InvoiceId.Value) : null);
+        for (var attempt = 1; attempt <= MaxRetryAttempts; attempt++)
+        {
+            var next = await generator.GenerateNextAsync(request.ProductType, categoryId, cancellationToken);
 
-        await reservationRepository.CreateAsync(reservation, cancellationToken);
+            var reservation = BarcodeReservation.Create(
+                prefix: fullPrefix,
+                barcode: next,
+                ttl: DefaultTtl,
+                invoiceId: request.InvoiceId.HasValue ? new InvoiceId(request.InvoiceId.Value) : null);
 
-        return new IssueNextBarcodeResponse(fullPrefix, reservation.Barcode, reservation.ExpiresAt);
+            try
+            {
+                await reservationRepository.CreateAsync(reservation, cancellationToken);
+                return new IssueNextBarcodeResponse(fullPrefix, reservation.Barcode, reservation.ExpiresAt);
+            }
+            catch (DbUpdateException ex)
+            {
+                // Race condition detected: another request reserved the same barcode.
+                lastException = ex;
+                // Continue to retry with a new barcode.
+            }
+        }
+
+        // If all retries fail, throw an exception with the last database error as inner exception
+        throw new InvalidOperationException("امکان رزرو بارکد پس از چندین تلاش وجود ندارد. لطفاً دوباره تلاش کنید.", lastException);
     }
 
     public async Task CommitAsync(string barcode, Guid? invoiceId, CancellationToken cancellationToken = default)

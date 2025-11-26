@@ -7,6 +7,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="GoldEx.Tests.Server" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="24.2.7" />
 		<PackageReference Include="DevExpress.Drawing.Skia" Version="24.2.7" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
