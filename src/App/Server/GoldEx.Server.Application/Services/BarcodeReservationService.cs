@@ -44,7 +44,7 @@ internal sealed class BarcodeReservationService(
                 await reservationRepository.CreateAsync(reservation, cancellationToken);
                 return new IssueNextBarcodeResponse(fullPrefix, reservation.Barcode, reservation.ExpiresAt);
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
             {
                 // Race condition detected: another request reserved the same barcode.
                 lastException = ex;
@@ -53,7 +53,20 @@ internal sealed class BarcodeReservationService(
         }
 
         // If all retries fail, throw an exception with the last database error as inner exception
-        throw new InvalidOperationException("امکان رزرو بارکد پس از چندین تلاش وجود ندارد. لطفاً دوباره تلاش کنید.", lastException);
+        throw new InvalidOperationException(RetryExhaustedMessage, lastException);
+    }
+
+    private const string RetryExhaustedMessage = "امکان رزرو بارکد پس از چندین تلاش وجود ندارد. لطفاً دوباره تلاش کنید.";
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+    {
+        // Check for common unique constraint violation indicators in the exception message
+        // This covers SQL Server, SQLite, PostgreSQL, and MySQL
+        var message = ex.InnerException?.Message ?? ex.Message;
+        return message.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("unique constraint", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("PRIMARY KEY", StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task CommitAsync(string barcode, Guid? invoiceId, CancellationToken cancellationToken = default)
