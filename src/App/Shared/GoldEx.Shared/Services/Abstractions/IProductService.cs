@@ -12,10 +12,6 @@ public interface IProductService
     [Obsolete]
     Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter, CancellationToken cancellationToken = default);
 
-    [Obsolete]
-    Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default);
-
-    [Obsolete]
     Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default);
 
     [Obsolete]

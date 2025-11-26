@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.InvoiceAggregate;
+﻿using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
@@ -14,4 +15,6 @@ public interface IServerInventoryStockService
     Task CreateMoltenGoldAsync(MeltingBatch meltingBatch, string assayNumber, decimal fineness, decimal weight,
         CancellationToken cancellationToken = default);
     Task ReplaceInventoryForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
+    Task<(InventoryStock? OutStock, InventoryStock? InStock)> UpdateStockAsync(ProductId id, decimal weight,
+        CancellationToken cancellationToken = default);
 }

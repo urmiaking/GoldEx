@@ -123,7 +123,7 @@ public static class DateTimeExtensions
 
     public static int CalculateAge(this DateTime birthDate)
     {
-        var today = DateTime.UtcNow;
+        var today = DateTime.Now;
 
         var age = today.Year - birthDate.Year;
 
