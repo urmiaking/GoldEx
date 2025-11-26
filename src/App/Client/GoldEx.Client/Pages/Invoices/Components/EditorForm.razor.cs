@@ -48,6 +48,7 @@ public partial class EditorForm
     private bool _processing;
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
+    private bool _applyCurrentInvoice;
     private GetBarcodePrintSettingsResponse? _barcodeSettings;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
@@ -98,6 +99,11 @@ public partial class EditorForm
         InvoiceType.Purchase => Color.Success,
         _ => Color.Default
     };
+
+    private string RemainingTooltipText =>
+        _applyCurrentInvoice
+            ? "عدم اعمال مانده فاکتور جاری در مانده مشتری"
+            : "اعمال مانده فاکتور جاری در مانده مشتری";
 
     private string InvoiceIcon => _model.InvoiceType switch
     {

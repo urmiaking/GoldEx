@@ -22,9 +22,9 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetRemainingList)]
-    public async Task<IActionResult> GetCustomerRemainingListAsync(Guid customerId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetCustomerRemainingListAsync(Guid customerId, [FromQuery] Guid? priceUnitId, CancellationToken cancellationToken = default)
     {
-        var items = await service.GetCustomerRemainingListAsync(customerId, cancellationToken);
+        var items = await service.GetCustomerRemainingListAsync(customerId, priceUnitId, cancellationToken);
         return Ok(items);
     }
 
