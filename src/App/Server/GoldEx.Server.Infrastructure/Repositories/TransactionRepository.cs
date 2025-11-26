@@ -57,12 +57,17 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         await DeleteRangeAsync(transactions, cancellationToken);
     }
 
-    public async Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, DateTime? untilDate = null, 
+    public async Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, PriceUnitId? priceUnitId, DateTime? untilDate = null, 
         CancellationToken cancellationToken = default)
     {
         var baseQuery = Query
             .Include(x => x.LedgerAccount!.PriceUnit)
             .Where(t => t.LedgerAccount != null && t.LedgerAccount.CustomerId == customerId);
+
+        if (priceUnitId.HasValue)
+        {
+            baseQuery = baseQuery.Where(t => t.LedgerAccount!.PriceUnitId == priceUnitId.Value);
+        }
 
         if (untilDate.HasValue)
         {

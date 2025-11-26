@@ -11,8 +11,8 @@
             <div class="remaining-item-container" style="transform: translateY(-@(_currentIndex * 100)%); transition: transform 0.5s ease-in-out;">    
                 @foreach (var customerRemaining in _remainingList)    
                 {   
-                    <div class="remaining-item">  
-                        <MudText Typo="Typo.body2" Color="@GetMudColor(customerRemaining.Amount)">
+                    <div class="@($"remaining-item {ItemClass}")">
+                        <MudText Typo="TextTypo" Color="@GetMudColor(customerRemaining.Amount)">
                             @GetFormattedAmount(customerRemaining)
                         </MudText>  
                     </div>    
