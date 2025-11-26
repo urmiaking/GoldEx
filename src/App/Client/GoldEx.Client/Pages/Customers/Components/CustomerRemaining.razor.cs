@@ -1,10 +1,11 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using System.Timers;
-using GoldEx.Shared.Helpers;
 using MudBlazor;
+using System.Timers;
 using Timer = System.Timers.Timer;
 
 namespace GoldEx.Client.Pages.Customers.Components;
@@ -13,7 +14,7 @@ public partial class CustomerRemaining
 {
     [Parameter, EditorRequired] public Guid CustomerId { get; set; }
     [Parameter] public Typo TextTypo { get; set; } = Typo.body2;
-    [Parameter] public Guid? PriceUnitId { get; set; }
+    [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public string? ItemClass { get; set; }
     [Parameter] public decimal? AddedValue { get; set; }
 
@@ -27,15 +28,15 @@ public partial class CustomerRemaining
 
     private bool ShouldApplyAddedValue =>
         AddedValue.HasValue &&
-        PriceUnitId.HasValue &&
+        PriceUnit != null &&
         _remainingList?.Count == 1;
 
     protected override async Task OnParametersSetAsync()
     {
-        if (CustomerId != _previousCustomerId || PriceUnitId != _previousPriceUnitId)
+        if (CustomerId != _previousCustomerId || PriceUnit?.Id != _previousPriceUnitId)
         {
             _previousCustomerId = CustomerId;
-            _previousPriceUnitId = PriceUnitId;
+            _previousPriceUnitId = PriceUnit?.Id;
 
             await LoadBalancesAsync();
         }
@@ -90,10 +91,26 @@ public partial class CustomerRemaining
         StateHasChanged();
 
         await SendRequestAsync<ITransactionService, List<GetCustomerRemainingResponse>>(
-            action: (s, ct) => s.GetCustomerRemainingListAsync(CustomerId, PriceUnitId, ct),
+            action: (s, ct) => s.GetCustomerRemainingListAsync(CustomerId, PriceUnit?.Id, ct),
             afterSend: response =>
             {
-                _remainingList = response.Select(CustomerRemainingVm.CreateFrom).ToList();
+                var list = response.Select(CustomerRemainingVm.CreateFrom).ToList();
+
+                if (!list.Any() && PriceUnit != null)
+                {
+                    list.Add(new CustomerRemainingVm
+                    {
+                        PriceUnit = PriceUnit.Title,
+                        Amount = 0
+                    });
+                }
+
+                _remainingList = list;
+
+                if (_remainingList.Count > 1) 
+                    StartSlideTimer();
+                else
+                    _currentIndex = 0;
             });
 
         _isLoading = false;
