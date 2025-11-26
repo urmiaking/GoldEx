@@ -415,7 +415,7 @@ public partial class SimpleCalculator
 
     private async Task OnBarcodeChanged(string barcode)
     {
-        //OnBarcodeCleared();
+        OnBarcodeCleared();
 
         try
         {
@@ -486,6 +486,21 @@ public partial class SimpleCalculator
         _stoneCost = null;
     }
 
+    private async Task<IEnumerable<string>?> SearchBarcodes(string? barcode, CancellationToken cancellationToken)
+    {
+        var result = await SendRequestAsync<IBarcodeInquiryService, List<GetBarcodeInquiryResponse>>(
+            action: (service, _) => service.GetListAsync(barcode, cancellationToken));
+
+        //if (!string.IsNullOrEmpty(barcode))
+        //{
+        //    await OnBarcodeChanged(barcode);
+        //}
+
+        return result != null && result.Any()
+            ? result.Select(x => x.Barcode)
+            : [];
+    }
+
     #endregion
 
     #region Timer
@@ -526,18 +541,5 @@ public partial class SimpleCalculator
 
     #endregion
 
-    private async Task<IEnumerable<string>?> SearchBarcodes(string? barcode, CancellationToken cancellationToken)
-    {
-        var result = await SendRequestAsync<IBarcodeInquiryService, List<GetBarcodeInquiryResponse>>(
-            action: (service, ct) => service.GetListAsync(barcode, ct));
-
-        if (!string.IsNullOrEmpty(barcode))
-        {   
-            await OnBarcodeChanged(barcode);
-        }
-
-        return result != null && result.Any() 
-            ? result.Select(x => x.Barcode) 
-            : [];
-    }
+    
 }
