@@ -18,13 +18,14 @@ using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
 internal class InventoryStockService(
     IInventoryStockRepository repository,
-    IServerProductService productService,
+    IServiceProvider serviceProvider,
     IMapper mapper,
     MeltUsedProductsValidator usedProductsValidator) 
     : IServerInventoryStockService, IInventoryStockService
@@ -194,6 +195,65 @@ internal class InventoryStockService(
         }
     }
 
+    public async Task<(InventoryStock? OutStock, InventoryStock? InStock)> UpdateStockAsync(ProductId id, decimal weight, CancellationToken cancellationToken = default)
+    {
+        // 1. Get current balance
+        var currentQuantity = await repository.GetQuantityAsync(id, cancellationToken);
+
+        // If no change needed, exit
+        if (currentQuantity == weight) return (null, null);
+
+        var stocksToCreate = new List<InventoryStock>();
+        var now = DateTime.Now;
+
+        InventoryStock? outStock = null;
+        InventoryStock? inStock = null;
+
+        // 2. Remove the OLD total
+        // This brings the theoretical balance to 0.
+        if (currentQuantity > 0)
+        {
+            outStock = InventoryStock.CreateProduct(
+                id,
+                currentQuantity,
+                WarehouseActionType.Out,
+                null,
+                now
+            );
+            stocksToCreate.Add(outStock);
+        }
+        else if (currentQuantity < 0)
+        {
+            // If balance was somehow negative, add to make it 0
+            stocksToCreate.Add(InventoryStock.CreateProduct(
+                id,
+                Math.Abs(currentQuantity),
+                WarehouseActionType.In,
+                null,
+                now
+            ));
+        }
+
+        // 3. Add the NEW total
+        if (weight > 0)
+        {
+            var entryDate = stocksToCreate.Any() ? now.AddTicks(1) : now;
+            inStock = InventoryStock.CreateProduct(
+                id,
+                weight,
+                WarehouseActionType.In,
+                null,
+                entryDate
+            );
+            stocksToCreate.Add(inStock);
+        }
+
+        if (stocksToCreate.Count > 0) 
+            await repository.CreateRangeAsync(stocksToCreate, cancellationToken);
+
+        return (outStock, inStock);
+    }
+
     public async Task RemoveInventoryByInvoiceIdAsync(InvoiceId invoiceId, ItemType? itemType,
         CancellationToken cancellationToken = default)
     {
@@ -226,6 +286,8 @@ internal class InventoryStockService(
         CancellationToken cancellationToken = default)
     {
         var moltenGoldDetail = MoltenGoldDetail.Create(weight, meltingBatch.WeightUnitType, assayNumber, fineness, meltingBatch.AssayerId!.Value);
+
+        var productService = serviceProvider.GetRequiredService<IServerProductService>();
 
         var product = await productService.CreateProductAsync(new ProductRequestDto(null,
                 null,
@@ -344,6 +406,7 @@ internal class InventoryStockService(
         var items = await repository.Get(spec)
             .Include(x => x.Invoice!.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
+            .Include(x => x.Transactions)
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);

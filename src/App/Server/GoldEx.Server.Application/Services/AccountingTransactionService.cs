@@ -18,6 +18,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Coins;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
+using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.MeltingBatches;
@@ -42,6 +43,7 @@ internal class AccountingTransactionService(
     IFinancialAccountRepository financialAccountRepository,
     IMeltingBatchRepository meltingBatchRepository,
     IProductRepository productRepository,
+    IInventoryStockRepository inventoryStockRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     ICoinRepository coinRepository,
     IServerLedgerAccountService ledgerAccountService)
@@ -1246,6 +1248,7 @@ internal class AccountingTransactionService(
             debitLedgerAccountId,
             costPriceUnitId ?? basePriceUnit.Id,
             triggeringInvoiceId,
+            null,
             postingDate));
 
         transactions.Add(Transaction.CreateForManualEntry(
@@ -1257,6 +1260,7 @@ internal class AccountingTransactionService(
             openingBalanceLedgerAccount.Id,
             costPriceUnitId ?? basePriceUnit.Id,
             triggeringInvoiceId,
+            null,
             postingDate));
 
         return transactions;
@@ -1359,6 +1363,7 @@ internal class AccountingTransactionService(
             debitLedgerId,
             priceUnitId,
             inventoryEntry.Id,
+            inventoryStock.Id,
             postingDate);
 
         var credit = Transaction.CreateForInventoryEntry(
@@ -1371,6 +1376,7 @@ internal class AccountingTransactionService(
             openingEquity.Id,
             priceUnitId,
             inventoryEntry.Id,
+            inventoryStock.Id,
             postingDate);
 
         await repository.CreateRangeAsync([debit, credit], cancellationToken);
@@ -1423,6 +1429,7 @@ internal class AccountingTransactionService(
             coinLedger.Id,
             basePriceUnit.Id,
             inventoryEntry.Id,
+            inventoryStock.Id,
             postingDate);
 
         var credit = Transaction.CreateForInventoryEntry(
@@ -1435,6 +1442,7 @@ internal class AccountingTransactionService(
             openingEquity.Id,
             basePriceUnit.Id,
             inventoryEntry.Id,
+            inventoryStock.Id,
             postingDate);
 
         await repository.CreateRangeAsync([debit, credit], cancellationToken);
@@ -1488,6 +1496,7 @@ internal class AccountingTransactionService(
             currencyLedgerId,
             currencyId,
             inventoryEntry.Id,
+            inventoryStock.Id,
             postingDate);
 
         var credit = Transaction.CreateForInventoryEntry(
@@ -1500,8 +1509,108 @@ internal class AccountingTransactionService(
             openingEquity.Id,
             currencyId,
             inventoryEntry.Id,
+            inventoryStock.Id,
             postingDate);
 
         await repository.CreateRangeAsync([debit, credit], cancellationToken);
+    }
+
+    public async Task AddWeightChangeTransactionAsync(ProductId id,
+        decimal oldWeight,
+        decimal newWeight,
+        InventoryStockId? outStockId,
+        InventoryStockId? inStockId,
+        CancellationToken cancellationToken = default)
+    {
+        if (oldWeight == newWeight) return;
+
+        var originStock = await inventoryStockRepository.Get(new InventoryStockOriginSpecification(id))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (originStock?.InventoryEntryId == null)
+            throw new InvalidOperationException($"Origin stock not found for product {id.Value}.");
+
+        var debitTransaction = await repository
+            .Get(new TransactionsByInventoryEntryIdSpecification(originStock.InventoryEntryId.Value))
+            .Where(t => t.InventoryStockId == originStock.Id && t.TransactionType == TransactionType.Debit)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (debitTransaction == null)
+            throw new InvalidOperationException($"Financial record not found for product {id.Value}.");
+
+        var pricePerGram = debitTransaction.ExchangeRate ?? 1;
+        var priceUnitId = debitTransaction.PriceUnitId;
+        var inventoryLedgerId = debitTransaction.LedgerAccountId;
+
+        var equityLedger = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException("Opening Balance Equity ledger account not found.");
+
+        var transactions = new List<Transaction>();
+        var groupId = Guid.NewGuid();
+        var now = DateTime.Now;
+        var description = $"تصحیح وزن محصول (تغییر از {oldWeight.ToWeightFormat(GoldUnitType.Gram)} به {newWeight.ToWeightFormat(GoldUnitType.Gram)})";
+
+        if (oldWeight > 0)
+        {
+            transactions.Add(Transaction.CreateForManualEntry(
+                "برگشت: " + description,
+                oldWeight,
+                pricePerGram,
+                groupId,
+                TransactionType.Debit,
+                equityLedger.Id,
+                priceUnitId,
+                null,
+                outStockId,
+                now));
+
+            transactions.Add(Transaction.CreateForManualEntry(
+                "برگشت: " + description,
+                oldWeight,
+                pricePerGram,
+                groupId,
+                TransactionType.Credit,
+                inventoryLedgerId,
+                priceUnitId,
+                null,
+                outStockId,
+                now));
+        }
+
+        if (newWeight > 0)
+        {
+            var entryDate = transactions.Any() ? now.AddTicks(1) : now;
+
+            transactions.Add(Transaction.CreateForManualEntry(
+                "اصلاح: " +description,
+                newWeight,
+                pricePerGram,
+                groupId,
+                TransactionType.Debit,
+                inventoryLedgerId,
+                priceUnitId,
+                default,
+                inStockId,
+                entryDate));
+
+            transactions.Add(Transaction.CreateForManualEntry(
+                "اصلاح: " +description,
+                newWeight,
+                pricePerGram,
+                groupId,
+                TransactionType.Credit,
+                equityLedger.Id,
+                priceUnitId,
+                default,
+                inStockId,
+                entryDate));
+        }
+
+        if (transactions.Count > 0)
+            await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 }

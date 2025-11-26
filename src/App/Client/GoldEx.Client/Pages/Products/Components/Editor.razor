@@ -61,7 +61,7 @@
                 {
                     <MudItem xs="12" md="6" lg="6">
                         <div class="d-flex flex-row align-center">
-                            <MudSelect T="ProductCategoryVm?"
+                            <MudSelect T="ProductCategoryVm ?"
                                        Value="Model.CategoryVm"
                                        Clearable="true"
                                        OnClearButtonClick="() => OnProductCategoryChanged(null)"
@@ -84,38 +84,41 @@
                                   For="@(() => Model.Barcode)"
                                   Label="@Model.GetDisplayName(() => Model.Barcode)"
                                   Margin="Margin.Dense"
-                                  Variant="Variant.Outlined"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.Refresh"
-                                  OnAdornmentClick="@(_ => GenerateBarcode())"
-                                  AdornmentColor="Color.Primary"/>
+                                  Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
-                    <MudMenu @bind-Open="_weightFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                        <ActivatorContent>
-                            <MudNumericField Adornment="Adornment.End"
-                                             AdornmentText="@Model.GoldUnitType.GetDisplayName()"
-                                             For="() => Model.Weight"
-                                             Format="G29"
-                                             HideSpinButtons="true"
-                                             Margin="Margin.Dense"
-                                             Label="@(Model.GetDisplayName(() => Model.Weight))"
-                                             T="decimal?"
-                                             @bind-Value="Model.Weight"
-                                             Variant="Variant.Outlined"
-                                             OnAdornmentClick="() => _weightFieldMenuOpen = !_weightFieldMenuOpen"></MudNumericField>
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (var item in Enum.GetValues<GoldUnitType>())
-                            {
-                                <MudMenuItem OnClick="() => Model.GoldUnitType = item">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        @item.GetDisplayName()
-                                    </div>
-                                </MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <MudNumericField Adornment="Adornment.End"
+                                         AdornmentText="@Model.GoldUnitType.GetDisplayName()"
+                                         For="() => Model.Weight"
+                                         dir="ltr"
+                                         Format="G29"
+                                         Immediate="true"
+                                         HideSpinButtons="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(Model.GetDisplayName(() => Model.Weight))"
+                                         T="decimal?"
+                                         @bind-Value="Model.Weight"
+                                         Variant="Variant.Outlined"
+                                         Class="flex-grow-1" />
+
+                        <MudMenu @bind-Open="_weightFieldMenuOpen"
+                                 ActivationEvent="@MouseEvent.LeftClick">
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in Enum.GetValues<GoldUnitType>())
+                                {
+                                    <MudMenuItem OnClick="() => Model.GoldUnitType = item">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            @item.GetDisplayName()
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </div>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudNumericField For="@(() => Model.Fineness)"
@@ -132,7 +135,7 @@
                     <MudSelect For="() => Model.WageType"
                                Label="@Model.GetDisplayName(() => Model.WageType)"
                                Margin="Margin.Dense"
-                               T="WageType?"
+                               T="WageType ?"
                                Value="Model.WageType"
                                ValueChanged="OnWageTypeChanged"
                                Variant="Variant.Outlined">
@@ -148,38 +151,46 @@
                 @if (Model.WageType != null)
                 {
                     <MudItem xs="12" md="6" lg="6">
-                        <MudMenu @bind-Open="_wageFieldMenuOpen" ActivationEvent="@MouseEvent.RightClick" Class="w-100">
-                            <ActivatorContent>
-                                <MudNumericField Adornment="Adornment.End"
-                                                 AdornmentText="@WageFieldAdornmentText"
-                                                 For="() => Model.Wage"
-                                                 Format="#,##0.##"
-                                                 HideSpinButtons="true"
-                                                 Immediate="true"
-                                                 Margin="Margin.Dense"
-                                                 Label="@(Model.GetDisplayName(() => Model.Wage))"
-                                                 T="decimal?"
-                                                 @bind-Value="Model.Wage"
-                                                 Variant="Variant.Outlined"
-                                                 OnAdornmentClick="OnWageAdornmentClicked"></MudNumericField>
-                            </ActivatorContent>
-                            <ChildContent>
-                                @foreach (var item in _priceUnits)
-                                {
-                                    <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            @if (item.HasIcon)
-                                            {
-                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                </MudAvatar>
-                                            }
-                                            @item.Title
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                            </ChildContent>
-                        </MudMenu>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <MudNumericField Adornment="Adornment.End"
+                                             AdornmentText="@WageFieldAdornmentText"
+                                             For="() => Model.Wage"
+                                             Format="#,##0.##"
+                                             dir="ltr"
+                                             HideSpinButtons="true"
+                                             Immediate="true"
+                                             Margin="Margin.Dense"
+                                             Label="@(Model.GetDisplayName(() => Model.Wage))"
+                                             T="decimal?"
+                                             @bind-Value="Model.Wage"
+                                             Variant="Variant.Outlined"
+                                             Class="flex-grow-1" />
+                            @if (Model.WageType is WageType.Fixed)
+                            {
+                                <MudMenu @bind-Open="_wageFieldMenuOpen"
+                                         ActivationEvent="@MouseEvent.LeftClick">
+                                    <ActivatorContent>
+                                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (var item in _priceUnits)
+                                        {
+                                            <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    @if (item.HasIcon)
+                                                    {
+                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                        </MudAvatar>
+                                                    }
+                                                    @item.Title
+                                                </div>
+                                            </MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
+                            }
+                        </div>
                     </MudItem>
                 }
                 @if (Model.ProductType is ProductType.Jewelry)
@@ -188,7 +199,7 @@
                         <MudSelect For="() => Model.StonePriceUnit"
                                    Label="@Model.GetDisplayName(() => Model.StonePriceUnit)"
                                    Margin="Margin.Dense"
-                                   T="GetPriceUnitTitleResponse?"
+                                   T="GetPriceUnitTitleResponse ?"
                                    @bind-Value="Model.StonePriceUnit"
                                    Variant="Variant.Outlined">
                             @foreach (var item in _priceUnits)
@@ -263,7 +274,7 @@
                                                  Adornment="Adornment.End"
                                                  AdornmentText="@Model.StonePriceUnit?.Title"
                                                  Variant="Variant.Outlined"></MudNumericField>
-							</MudItem>
+                            </MudItem>
                         }
                     }
 
@@ -277,6 +288,10 @@
                     </MudItem>
                 }
             </MudGrid>
+            <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Start" Class="mt-4">
+                توجه: ویرایش جنس برای ویرایش اطلاعات کلی جنس از جمله عنوان و دسته بندی می باشد و از این قابلیت صرفا باید برای ویرایش اجناسی که در هنگام ثبت موجودی اولیه اضافه شده اند استفاده شود.
+                به منظور عدم منفی شدن موجودی برای ویرایش اطلاعاتی نظیر وزن باید به فاکتور مربوطه آن مراجعه کنید
+            </MudAlert>
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"
@@ -307,3 +322,10 @@
         </DialogActions>
     </MudDialog>
 </MudForm>
+
+<style>
+    .mud-alert-message {
+        line-height: normal;
+        text-align: justify;
+    }
+</style>
