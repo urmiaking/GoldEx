@@ -415,7 +415,7 @@ public partial class SimpleCalculator
 
     private async Task OnBarcodeChanged(string barcode)
     {
-        OnBarcodeCleared();
+        //OnBarcodeCleared();
 
         try
         {
@@ -532,7 +532,7 @@ public partial class SimpleCalculator
             action: (service, ct) => service.GetListAsync(barcode, ct));
 
         if (!string.IsNullOrEmpty(barcode))
-        {
+        {   
             await OnBarcodeChanged(barcode);
         }
 
