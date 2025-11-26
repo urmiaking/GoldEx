@@ -5,6 +5,7 @@ using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.InventoryStockAggregate;
@@ -41,6 +42,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
     public InventoryEntryId? InventoryEntryId { get; private set; }
     public InventoryEntry? InventoryEntry { get; private set; }
 
+    public IReadOnlyList<Transaction>? Transactions { get; private set; }
+
     public static InventoryStock CreateMeltingBatchProduct(
         ProductId productId,
         decimal changeAmount,
@@ -57,7 +60,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = actionType,
             MeltingBatchId = batchId,
-            PostingDate = postingDate ?? DateTime.UtcNow
+            PostingDate = postingDate ?? DateTime.Now
         };
     }
 

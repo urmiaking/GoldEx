@@ -245,6 +245,11 @@
             case ItemType.Product when context.Product is not null:
                 <MudTd DataLabel="عملیات">
                     <div class="d-flex gap-2">
+                        <MudTooltip Text="ویرایش محصول">
+                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Edit"
+                                           OnClick="_ => OnEditProduct(context)"
+                                           Color="@Color.Primary"></MudIconButton>
+                        </MudTooltip>
                         <MudTooltip Text="چاپ بارکد">
                             <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
                                            OnClick="_ => OnPrintBarcode(context)"

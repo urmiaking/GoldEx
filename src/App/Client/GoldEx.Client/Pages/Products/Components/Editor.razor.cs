@@ -1,7 +1,6 @@
 ﻿using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
@@ -38,9 +37,6 @@ public partial class Editor
 
     protected override void OnParametersSet()
     {
-        if (Model.Id is null)
-            GenerateBarcode();
-
         OnWageTypeChanged(Model.WageType);
 
         base.OnParametersSet();
@@ -62,10 +58,13 @@ public partial class Editor
             {
                 _priceUnits = response;
 
-                var defaultUnit = _priceUnits.FirstOrDefault(x => x.IsDefault);
+                //var defaultUnit = _priceUnits.FirstOrDefault(x => x.IsDefault);
 
-                Model.WagePriceUnitId ??= defaultUnit?.Id;
-                Model.WagePriceUnitTitle ??= defaultUnit?.Title;
+                //if (Model.ProductType is ProductType.Jewelry)
+                //{
+                //    Model.WagePriceUnitId ??= defaultUnit?.Id;
+                //    Model.WagePriceUnitTitle ??= defaultUnit?.Title;
+                //}
             });
     }
 
@@ -89,29 +88,26 @@ public partial class Editor
 
         if (!Model.Id.HasValue)
         {
-            await SendRequestAsync<IProductService>(
-                action: (s, ct) => s.CreateAsync(request, ct),
-                afterSend: () =>
-                {
-                    MudDialog.Close(DialogResult.Ok(true));
-                    return Task.CompletedTask;
-                });
+            return;
+            //await SendRequestAsync<IProductService>(
+            //    action: (s, ct) => s.CreateAsync(request, ct),
+            //    afterSend: () =>
+            //    {
+            //        MudDialog.Close(DialogResult.Ok(true));
+            //        return Task.CompletedTask;
+            //    });
         }
-        else
-        {
-            await SendRequestAsync<IProductService>(
-                action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
-                afterSend: () =>
-                {
-                    MudDialog.Close(DialogResult.Ok(true));
-                    return Task.CompletedTask;
-                });
-        }
+
+        await SendRequestAsync<IProductService>(
+            action: (s, ct) => s.UpdateAsync(Model.Id.Value, request, ct),
+            afterSend: () =>
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+                return Task.CompletedTask;
+            });
 
         _processing = false;
     }
-
-    private void GenerateBarcode() => Model.Barcode = StringExtensions.GenerateRandomBarcode();
 
     private void Close() => MudDialog.Cancel();
 
@@ -164,12 +160,6 @@ public partial class Editor
         Model.CategoryVm = category;
         Model.ProductCategoryId = category?.Id;
         Model.ProductCategoryTitle = category?.Title;
-    }
-
-    private void OnWageAdornmentClicked()
-    {
-        if (Model.WageType is WageType.Fixed) 
-            _wageFieldMenuOpen = !_wageFieldMenuOpen;
     }
 
     private void SelectWagePriceUnit(GetPriceUnitTitleResponse item)

@@ -21,6 +21,7 @@ using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -30,9 +31,12 @@ internal class ProductService(
     IBarcodeGeneratorService barcodeGenerator,
     IServerBarcodeReservationService barcodeReservationService,
     ICustomerRepository customerRepository,
+    IAccountingTransactionService transactionService,
+    IServerInventoryStockService inventoryStockService,
     IMapper mapper,
     ILogger<ProductService> logger,
-    ProductRequestDtoValidator validator) : IProductService, IServerProductService
+    ProductRequestDtoValidator validator,
+    UpdateProductRequestValidator updateValidator) : IProductService, IServerProductService
 {
     public async Task<List<GetProductResponse>> GetListAsync(string name, ProductType productType,
         CancellationToken cancellationToken = default)
@@ -68,14 +72,42 @@ internal class ProductService(
         throw new NotImplementedException();
     }
 
-    public Task CreateAsync(ProductRequestDto request, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        {
+            try
+            {
+                await validator.ValidateAndThrowAsync(request, cancellationToken);
 
-    public Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
+                await updateValidator.ValidateAndThrowAsync(request, cancellationToken);
+
+                var item = await repository
+                    .Get(new ProductsByIdSpecification(new ProductId(id)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                var oldWeight = item.Weight;
+
+                // Step 1. Update product properties using existing UpdateAsync method
+                await UpdateAsync(item.Id, request, InvoiceType.Purchase, cancellationToken);
+
+                // Step 2. Update inventory stocks and transactions if weight has changed
+                if (oldWeight != request.Weight)
+                {
+                    var (outStock, inStock) = await inventoryStockService.UpdateStockAsync(item.Id, request.Weight, cancellationToken);
+                    await transactionService.AddWeightChangeTransactionAsync(item.Id, oldWeight, request.Weight, outStock?.Id, inStock?.Id, cancellationToken);
+                }
+
+                await repository.UpdateAsync(item, cancellationToken);
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+                await dbTransaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
     }
 
     public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -139,6 +171,7 @@ internal class ProductService(
             item.SetWageType(request.WageType);
         }
 
+        item.SetWeight(request.Weight); // TODO: check weight change impact on invoice
         item.SetProductType(request.ProductType);
         item.SetFineness(request.Fineness);
         item.SetGoldUnitType(request.GoldUnitType);
@@ -257,12 +290,13 @@ internal class ProductService(
             // Generate directly (standalone product creation scenario)
             var categoryId = request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : (ProductCategoryId?)null;
             var barcode = await barcodeGenerator.GenerateNextAsync(request.ProductType, categoryId, cancellationToken);
-            product.SetBarcode(barcode); // or item.Barcode = barcode;
+            product.SetBarcode(barcode);
         }
         else
         {
             // Attempt to commit reservation. If not found, validate uniqueness.
             await barcodeReservationService.CommitAsync(request.Barcode, invoiceId?.Value, cancellationToken);
+            await barcodeGenerator.ValidateUniquenessAsync(request.Barcode, cancellationToken);
             product.SetBarcode(request.Barcode);
         }
 

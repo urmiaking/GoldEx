@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -136,7 +137,8 @@ public class Transaction : EntityBase<TransactionId>
         TransactionType transactionType,
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId, 
-        InvoiceId invoiceId,
+        InvoiceId? invoiceId,
+        InventoryStockId? inventoryStockId,
         DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
@@ -158,6 +160,7 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
             InvoiceId = invoiceId,
+            InventoryStockId = inventoryStockId,
             PostingDate = postingDate
         };
     }
@@ -197,6 +200,9 @@ public class Transaction : EntityBase<TransactionId>
 
     public InventoryEntryId? InventoryEntryId { get; private set; }
     public InventoryEntry? InventoryEntry { get; private set; }
+
+    public InventoryStockId? InventoryStockId { get; private set; }
+    public InventoryStock? InventoryStock { get; private set; }
 
     public static Transaction CreateForMeltingBatch(string description,
         decimal amount,
@@ -282,6 +288,7 @@ public class Transaction : EntityBase<TransactionId>
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
         InventoryEntryId inventoryEntryId,
+        InventoryStockId? inventoryStockId,
         DateTime postingDate)
     {
         if (string.IsNullOrWhiteSpace(description))
@@ -309,6 +316,7 @@ public class Transaction : EntityBase<TransactionId>
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
             InventoryEntryId = inventoryEntryId,
+            InventoryStockId = inventoryStockId,
             PostingDate = postingDate
         };
     }
