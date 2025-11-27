@@ -93,7 +93,7 @@ internal class ReportingService(
             if (secondaryAmount < 0)
                 secondaryFormatted += " (بس)";
 
-            formatted += $" (معادل {secondaryFormatted})";
+            formatted += $" ({secondaryFormatted})";
         }
 
         return formatted;
