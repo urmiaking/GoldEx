@@ -21,11 +21,11 @@
                                      SearchFunc="SearchBarcodes"
                                      Variant="Variant.Outlined"
                                      DebounceInterval="200"
-                                     CoerceValue="false"
+                                     CoerceValue="true"
                                      ResetValueOnEmptyText="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudSelect T="GetPriceUnitTitleResponse ?"
+                    <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="_model.PriceUnit"
                                ValueChanged="OnPriceUnitChanged"
                                Label="@_model.GetDisplayName(() => _model.PriceUnit)"

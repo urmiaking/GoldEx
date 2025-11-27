@@ -415,14 +415,15 @@ public partial class SimpleCalculator
 
     private async Task OnBarcodeChanged(string barcode)
     {
-        OnBarcodeCleared();
-
         try
         {
             _barcode = barcode;
 
             if (string.IsNullOrWhiteSpace(barcode))
+            {
+                OnBarcodeCleared();
                 return;
+            }
 
             await SendRequestAsync<IProductService, GetProductResponse?>(
                  action: async (s, ct) => await s.GetAsync(barcode, ct),
