@@ -5,7 +5,7 @@
 <MudCard Elevation="@Elevation" Class="pa-4">
     <AuthorizeView>
         <Authorized>
-            <MudGrid Justify="Justify.SpaceBetween">
+            <MudGrid Justify="Justify.SpaceBetween" Spacing="0">
                 <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudAutocomplete T="string"
                                      Adornment="Adornment.End"
@@ -444,3 +444,9 @@
         }
     </MudForm>
 </MudCard>
+
+<style>
+    .mud-input-helper-text{
+        font-size: 1.15rem !important;
+    }
+</style>
