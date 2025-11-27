@@ -72,9 +72,8 @@ internal sealed class BarcodeGeneratorService(
     public async Task ValidateUniquenessAsync(string barcode, CancellationToken cancellationToken = default)
     {
         var existsInProducts = await productRepository.ExistsAsync(new ProductsByBarcodeSpecification(barcode), cancellationToken);
-        var existsInReservations = await reservationRepository.ExistsAsync(new BarcodeReservationsByBarcodeSpecification(barcode), cancellationToken);
 
-        if (existsInProducts || existsInReservations)
+        if (existsInProducts)
             throw new InvalidOperationException($"کد {barcode} از قبل موجود می‌باشد");
     }
 
