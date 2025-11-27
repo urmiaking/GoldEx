@@ -241,7 +241,7 @@ else
                                 <MudText>مانده: </MudText>
                                 <CustomerRemaining CustomerId="_model.Customer.Id.Value"
                                                    TextTypo="Typo.body1" 
-                                                   PriceUnitId="@_model.InvoicePriceUnit?.Id"
+                                                   PriceUnit="@_model.InvoicePriceUnit"
                                                    AddedValue="@(_applyCurrentInvoice && !IsEditMode ? _model.TotalUnpaidAmount : null)" />
                                 <MudTooltip Text="@RemainingTooltipText" ShowOnHover="true" Color="Color.Success" Arrow="true">
                                     <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Success" Size="Size.Small" />
