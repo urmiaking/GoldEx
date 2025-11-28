@@ -40,22 +40,35 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
-                    <MudAutocomplete T="string"
-                                     Value="Model.Product.Name"
-                                     ValueChanged="OnProductNameChanged"
-                                     @bind-Text="Model.Product.Name"
-                                     For="@(() => Model.Product.Name!)"
-                                     Label="@Model.GetDisplayName(() => Model.Product.Name)"
-                                     Margin="Margin.Dense"
-                                     Variant="Variant.Outlined"
-                                     SearchFunc="@SearchNames"
-                                     AutoFocus="true"
-                                     ResetValueOnEmptyText="true"
-                                     CoerceValue="false"
-                                     Strict="false"
-                                     DebounceInterval="0"
-                                     ShowProgressIndicator="false">
-                    </MudAutocomplete>
+                    @if (Model.InvoiceType is InvoiceType.Purchase)
+                    {
+                        <MudAutocomplete T="string"
+                                         Value="Model.Product.Name"
+                                         ValueChanged="OnProductNameChanged"
+                                         @bind-Text="Model.Product.Name"
+                                         For="@(() => Model.Product.Name!)"
+                                         Label="@Model.GetDisplayName(() => Model.Product.Name)"
+                                         Margin="Margin.Dense"
+                                         Variant="Variant.Outlined"
+                                         SearchFunc="@SearchNames"
+                                         AutoFocus="true"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceValue="false"
+                                         Strict="false"
+                                         DebounceInterval="0"
+                                         ShowProgressIndicator="false" />
+                    }
+                    else
+                    {
+                        <MudTextField T="string"
+                                      Value="Model.Product.Name"
+                                      ValueChanged="OnProductNameChanged"
+                                      @bind-Text="Model.Product.Name"
+                                      For="@(() => Model.Product.Name!)"
+                                      Label="@Model.GetDisplayName(() => Model.Product.Name)"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined" />
+                    }
                 </MudItem>
                 @if (Model.Product.ProductType is not ProductType.MoltenGold)
                 {

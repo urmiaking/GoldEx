@@ -165,15 +165,20 @@ public partial class ProductItemEditor
 
     private void OnProductNameChanged(string name)
     {
-        var product = _products.FirstOrDefault(x => x.Name == name);
-
-        if (product != null)
+        if (Model.InvoiceType is InvoiceType.Purchase)
         {
-            Model.Product = ProductVm.CreateFromSearch(product);
-            OnWageTypeChanged(product.WageType);
+            var product = _products.FirstOrDefault(x => x.Name == name);
+
+            if (product != null)
+            {
+                Model.Product = ProductVm.CreateFromSearch(product);
+                OnWageTypeChanged(product.WageType);
+            }
+
+            StateHasChanged();
         }
 
-        StateHasChanged();
+        Model.Product.Name = name;
     }
 
     private async Task<IEnumerable<string>?> SearchNames(string? name, CancellationToken cancellationToken = default)
