@@ -317,135 +317,194 @@ else
 
             @if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any() || _model.UsedProducts.Any())
             {
-                <MudText Class="mt-2" Typo="Typo.h6" GutterBottom="true">هزینه ها</MudText>
-                <MudDivider Class="my-2" />
+                <MudExpansionPanels Elevation="2" Class="my-2">
+                    <MudExpansionPanel Expanded="false" Icon="@Icons.Material.Filled.ExpandMore">
+                        <TitleContent>
+                            <div class="d-flex flex-wrap gap-2 justify-center">
+                                <MudText Typo="Typo.h6" Color="Color.Primary" Class="d-none d-md-block">
+                                    @($"مانده نهایی: {FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
+                                </MudText>
 
-                <MudGrid Spacing="2">
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2">ارزش خام اقلام</MudText>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsRawAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
-
-                    <MudItem xs="6" md="3" Class="d-flex align-center">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Discount" Color="Color.Success" OnClick="OnDiscountMenuToggled"></MudIconButton>
-                        <MudText Typo="Typo.body2">تخفیف</MudText>
-                        <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
-                            <div class="d-flex flex-column">
-                                <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalRemainingAmount="@_model.TotalUnpaidAmount" />
-                                <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1"
-                                           Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
+                                <MudText Typo="Typo.body1" Color="Color.Primary" Class="d-md-none">
+                                    @($"مانده نهایی: {FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
+                                </MudText>
+                                <div class="d-md-block d-none flex-grow-1"></div>
+                                <div @onclick:stopPropagation="true" class="ml-md-3">
+                                    <MudMenu Color="Color.Primary"
+                                             Variant="Variant.Filled"
+                                             EndIcon="@Icons.Material.Filled.ArrowDropUp"
+                                             Label="ثبت پرداخت"
+                                             AnchorOrigin="Origin.BottomCenter"
+                                             TransformOrigin="Origin.TopCenter">
+                                        <MudMenuItem>
+                                            <MudButton Class="ml-2" Color="Color.Success" 
+                                                       StartIcon="@Icons.Material.Filled.Payment"
+                                                       Variant="Variant.Filled" FullWidth="true"
+                                                       OnClick="() => OnAddPayment(PaymentType.InternalCash)">
+                                                <MudText>پرداخت نقدی</MudText>
+                                            </MudButton>
+                                        </MudMenuItem>
+                                        <MudMenuItem>
+                                            <MudButton Class="ml-2" Color="Color.Tertiary"
+                                                       StartIcon="@Icons.Material.Filled.SwapHoriz"
+                                                       Variant="Variant.Filled" FullWidth="true"
+                                                       OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)">
+                                                <MudText>حواله</MudText>
+                                            </MudButton>
+                                        </MudMenuItem>
+                                        <MudMenuItem>
+                                            <MudButton Class="ml-2" Color="Color.Error"
+                                                       StartIcon="@Icons.Material.Filled.Recycling"
+                                                       Variant="Variant.Filled" FullWidth="true"
+                                                       OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)">
+                                                <MudText>طلای شکسته</MudText>
+                                            </MudButton>
+                                        </MudMenuItem>
+                                        <MudMenuItem>
+                                            <MudButton Class="ml-2" Color="Color.Warning"
+                                                       StartIcon="@Icons.Material.Filled.Whatshot"
+                                                       Variant="Variant.Filled" FullWidth="true"
+                                                       OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
+                                                <MudText Color="Color.Dark">طلای آبشده</MudText>
+                                            </MudButton>
+                                        </MudMenuItem>
+                                    </MudMenu>
+                                </div>
                             </div>
-                        </MudPopover>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalDiscountsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudText Class="mt-2" Typo="Typo.h6" GutterBottom="true">هزینه ها</MudText>
+                            <MudDivider Class="my-2" />
 
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2">سود کل</MudText>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsProfitAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2">ارزش خام اقلام</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsRawAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                    <MudItem xs="6" md="3" Class="d-flex align-center">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
-                        <MudText Typo="Typo.body2">مخارج جانبی</MudText>
-                        <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
-                            <div class="d-flex flex-column">
-                                <ExtraCostList Items="_model.InvoiceExtraCosts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
-                                <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1"
-                                           Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
-                            </div>
-                        </MudPopover>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalExtraCostsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                                <MudItem xs="6" md="3" Class="d-flex align-center">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Discount" Color="Color.Success" OnClick="OnDiscountMenuToggled"></MudIconButton>
+                                    <MudText Typo="Typo.body2">تخفیف</MudText>
+                                    <MudPopover Open="@_discountMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
+                                        <div class="d-flex flex-column">
+                                            <DiscountList Items="@_model.InvoiceDiscounts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" TotalRemainingAmount="@_model.TotalUnpaidAmount" />
+                                            <MudButton OnClick="@OnDiscountMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
+                                        </div>
+                                    </MudPopover>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalDiscountsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2">مالیات کل</MudText>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsTaxAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2">سود کل</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsProfitAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                    <MudItem xs="6" md="3" Class="d-flex align-center">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Paid" Color="Color.Inherit"></MudIconButton>
-                        <MudText Typo="Typo.body2">مبلغ نهایی فاکتور</MudText>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalInvoiceAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                                <MudItem xs="6" md="3" Class="d-flex align-center">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Error" OnClick="OnExtraCostsMenuToggled"></MudIconButton>
+                                    <MudText Typo="Typo.body2">مخارج جانبی</MudText>
+                                    <MudPopover Open="@_extraCostsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
+                                        <div class="d-flex flex-column">
+                                            <ExtraCostList Items="_model.InvoiceExtraCosts" PriceUnit="_model.InvoicePriceUnit" PriceUnits="_priceUnits" />
+                                            <MudButton OnClick="@OnExtraCostsMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
+                                        </div>
+                                    </MudPopover>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalExtraCostsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2">اجرت کل</MudText>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsWageAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2">مالیات کل</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsTaxAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                    <MudItem xs="6" md="3" Class="d-flex align-center">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Payments" Color="Color.Success" OnClick="OpenPaymentsDialog"></MudIconButton>
-                        <MudText Typo="Typo.body2">جمع پرداختی</MudText>
-                        <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
-                            <div class="d-flex flex-column">
-                                <PaymentList Items="_model.InvoicePayments"
-                                             PriceUnit="_model.InvoicePriceUnit"
-                                             InvoiceType="_model.InvoiceType"
-                                             CustomerId="_model.Customer?.Id"
-                                             PriceUnits="_priceUnits"
-                                             TotalInvoiceAmount="@(_model.InvoiceType == InvoiceType.Sell ? _model.TotalInvoiceAmount - _model.TotalUsedProductsAmount : _model.TotalInvoiceAmount)" />
-                                <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
-                                           Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
-                            </div>
-                        </MudPopover>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                                <MudItem xs="6" md="3" Class="d-flex align-center">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Paid" Color="Color.Inherit"></MudIconButton>
+                                    <MudText Typo="Typo.body2">مبلغ نهایی فاکتور</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalInvoiceAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2">ارزش تمام شده اقلام</MudText>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                    </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2">اجرت کل</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsWageAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                    <MudItem xs="6" md="3" Class="d-flex align-center">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Success" OnClick="OnTotalUnpaidMenuToggled"></MudIconButton>
-                        <MudText Typo="Typo.body2">مانده حساب</MudText>
+                                <MudItem xs="6" md="3" Class="d-flex align-center">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Payments" Color="Color.Success" OnClick="OpenPaymentsDialog"></MudIconButton>
+                                    <MudText Typo="Typo.body2">جمع پرداختی</MudText>
+                                    <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
+                                        <div class="d-flex flex-column">
+                                            <PaymentList Items="_model.InvoicePayments"
+                                                         PriceUnit="_model.InvoicePriceUnit"
+                                                         InvoiceType="_model.InvoiceType"
+                                                         CustomerId="_model.Customer?.Id"
+                                                         PriceUnits="_priceUnits"
+                                                         TotalInvoiceAmount="@(_model.InvoiceType == InvoiceType.Sell ? _model.TotalInvoiceAmount - _model.TotalUsedProductsAmount : _model.TotalInvoiceAmount)" />
+                                            <MudButton OnClick="@OnPaymentsMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
+                                        </div>
+                                    </MudPopover>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
 
-                        <MudPopover Open="@_totalUnpaidMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
-                            <div class="container d-flex flex-column">
-                                <UnpaidPriceSelector PriceUnits="@_priceUnits"
-                                                     TotalUnpaidAmount="@_model.TotalUnpaidAmount"
-                                                     TotalUnpaidSecondaryAmount="@_model.TotalUnpaidSecondaryAmount"
-                                                     MainPriceUnit="@_model.InvoicePriceUnit"
-                                                     @bind-UnpaidPriceUnit="@_model.UnpaidPriceUnit"
-                                                     @bind-ExchangeRate="@_model.UnpaidExchangeRate" />
-                                <MudButton OnClick="@OnTotalUnpaidMenuToggled" Class="ml-auto mr-n3 mb-1"
-                                           Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
-                            </div>
-                        </MudPopover>
-                    </MudItem>
-                    <MudItem xs="6" md="3">
-                        <MudText Typo="Typo.body2" Align="Align.Right" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)">
-                            @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
-                        </MudText>
-                    </MudItem>
-                    @if (_model.InvoiceType is InvoiceType.Sell && _model.UsedProducts.Any())
-                    {
-                        <MudItem xs="6" md="3">
-                            <MudText Typo="Typo.body2">طلای مستعمل خریداری شده</MudText>
-                        </MudItem>
-                        <MudItem xs="6" md="3">
-                            <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                        </MudItem>
-                    }
-                </MudGrid>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2">ارزش تمام شده اقلام</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalItemsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
+
+                                <MudItem xs="6" md="3" Class="d-flex align-center">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.MonetizationOn" Color="Color.Success" OnClick="OnTotalUnpaidMenuToggled"></MudIconButton>
+                                    <MudText Typo="Typo.body2">مانده حساب</MudText>
+
+                                    <MudPopover Open="@_totalUnpaidMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
+                                        <div class="container d-flex flex-column">
+                                            <UnpaidPriceSelector PriceUnits="@_priceUnits"
+                                                                 TotalUnpaidAmount="@_model.TotalUnpaidAmount"
+                                                                 TotalUnpaidSecondaryAmount="@_model.TotalUnpaidSecondaryAmount"
+                                                                 MainPriceUnit="@_model.InvoicePriceUnit"
+                                                                 @bind-UnpaidPriceUnit="@_model.UnpaidPriceUnit"
+                                                                 @bind-ExchangeRate="@_model.UnpaidExchangeRate" />
+                                            <MudButton OnClick="@OnTotalUnpaidMenuToggled" Class="ml-auto mr-n3 mb-1"
+                                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Close">انصراف</MudButton>
+                                        </div>
+                                    </MudPopover>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body2" Align="Align.Right" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)">
+                                        @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
+                                    </MudText>
+                                </MudItem>
+                                @if (_model.InvoiceType is InvoiceType.Sell && _model.UsedProducts.Any())
+                                {
+                                    <MudItem xs="6" md="3">
+                                        <MudText Typo="Typo.body2">طلای مستعمل خریداری شده</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" md="3">
+                                        <MudText Typo="Typo.body2" Align="Align.Right">@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
             }
 
             <MudDivider Class="my-2" />

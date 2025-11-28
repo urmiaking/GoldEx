@@ -19,6 +19,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -1139,6 +1140,48 @@ public partial class EditorForm
         if (result is {Canceled: false, Data: List<InvoicePaymentVm> payments })
         {
             _model.InvoicePayments = payments;
+        }
+    }
+
+    private async Task OnAddPayment(PaymentType paymentType)
+    {
+        var priceUnit = paymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory
+            ? _priceUnits.FirstOrDefault(pu => pu.IsGoldBased)
+            : _model.InvoicePriceUnit;
+
+        var adornmentText = priceUnit?.Title ?? string.Empty;
+
+        var fineness = paymentType switch
+        {
+            PaymentType.MoltenGoldInventory => 750m,
+            PaymentType.UsedGoldInventory => 750m - _setting?.UsedGoldFinenessDeductionRate,
+            _ => null
+        };
+
+        var parameters = new DialogParameters<PaymentEditor>
+        {
+            {
+                x => x.Model, new InvoicePaymentVm
+                {
+                    PaymentType = paymentType,
+                    PriceUnit = priceUnit,
+                    AmountAdornmentText = adornmentText,
+                    GoldFineness = fineness
+                }
+            },
+            { x => x.BasePriceUnit, _model.InvoicePriceUnit },
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.InvoiceType, InvoiceType },
+            { x => x.TotalRemaining, _model.TotalUnpaidAmount }
+        };
+
+        var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: InvoicePaymentVm addedPayment })
+        {
+            _model.InvoicePayments.Add(addedPayment);
         }
     }
 }
