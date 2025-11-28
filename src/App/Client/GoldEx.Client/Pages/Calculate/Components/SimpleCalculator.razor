@@ -1,28 +1,36 @@
-﻿@using System.Globalization
-@using GoldEx.Shared.DTOs.PriceUnits
+﻿@using GoldEx.Shared.DTOs.PriceUnits
 @inherits GoldExComponentBase
 
 <MudCard Elevation="@Elevation" Class="pa-4">
     <AuthorizeView>
         <Authorized>
-            <MudGrid Justify="Justify.SpaceBetween" Spacing="0">
+            <MudGrid Justify="Justify.SpaceBetween" Spacing="4">
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudAutocomplete T="string"
-                                     Adornment="Adornment.End"
-                                     AdornmentIcon="@Icons.Material.Filled.QrCode"
-                                     Clearable="true"
-                                     HelperText="@_barcodeFieldHelperText"
-                                     Label="بارکد جنس"
-                                     dir="ltr"
-                                     Margin="Margin.Dense"
-                                     OnClearButtonClick="OnBarcodeCleared"
-                                     Value="_barcode"
-                                     ValueChanged="OnBarcodeChanged"
-                                     SearchFunc="SearchBarcodes"
-                                     Variant="Variant.Outlined"
-                                     DebounceInterval="200"
-                                     CoerceValue="true"
-                                     ResetValueOnEmptyText="true" />
+                    <div class="d-flex gap-2 align-center">
+                        <MudAutocomplete T="string"
+                                         Adornment="Adornment.End"
+                                         AdornmentIcon="@Icons.Material.Filled.QrCode"
+                                         Clearable="true"
+                                         HelperText="@_barcodeFieldHelperText"
+                                         Label="بارکد جنس"
+                                         dir="ltr"
+                                         Margin="Margin.Dense"
+                                         OnClearButtonClick="OnBarcodeCleared"
+                                         Value="_barcode"
+                                         ValueChanged="OnBarcodeChanged"
+                                         SearchFunc="SearchBarcodes"
+                                         Variant="Variant.Outlined"
+                                         DebounceInterval="200"
+                                         CoerceValue="true"
+                                         ResetValueOnEmptyText="true" />
+                        <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" OnClick="ToggleScanner" Variant="Variant.Outlined" Color="Color.Primary" />
+                    </div>
+                    <MudCollapse Expanded="_scannerOpen">
+                        @if (_scannerOpen)
+                        {
+                            <BarcodeScanner OnResult="SetBarcodeFromScanner" OnClose="ToggleScanner" />
+                        }
+                    </MudCollapse>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudSelect T="GetPriceUnitTitleResponse?"
