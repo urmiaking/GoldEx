@@ -201,10 +201,10 @@ internal class InvoiceService(
 
             await invoiceRepository.UpdateAsync(invoice, cancellationToken);
 
+            await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
+
             await transactionService.ReplaceTransactionsForInvoiceAsync(invoice, cancellationToken);
             await inventoryStockService.ReplaceInventoryForInvoiceAsync(invoice, cancellationToken);
-
-            await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
 
             await dbTransaction.CommitAsync(cancellationToken);
         }

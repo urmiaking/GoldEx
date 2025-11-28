@@ -1,11 +1,9 @@
-﻿using GoldEx.Server.Domain.CoinAggregate;
-using GoldEx.Server.Domain.FinancialAccountAggregate;
-using GoldEx.Server.Domain.InventoryEntryAggregate;
+﻿using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
-using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.MeltingBatches;
