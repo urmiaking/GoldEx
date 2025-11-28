@@ -41,6 +41,7 @@ public partial class SimpleCalculator
     private bool _wageFieldMenuOpen;
     private bool _weightFieldMenuOpen;
     private bool _stoneFieldMenuOpen;
+    private bool _scannerOpen;
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
@@ -500,6 +501,15 @@ public partial class SimpleCalculator
         return result != null && result.Any()
             ? result.Select(x => x.Barcode)
             : [];
+    }
+
+    private void ToggleScanner() => _scannerOpen = !_scannerOpen;
+
+    private async Task SetBarcodeFromScanner(string barcode)
+    {
+        _barcode = barcode;
+        await OnBarcodeChanged(barcode);
+        _scannerOpen = false;
     }
 
     #endregion
