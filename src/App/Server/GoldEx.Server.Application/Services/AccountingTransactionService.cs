@@ -66,7 +66,6 @@ internal class AccountingTransactionService(
         PriceUnitId PriceUnitId,
         decimal Amount,
         decimal? ExchangeRate,
-        DateTime PostingDate,
         InvoiceId? InvoiceId,
         InvoicePaymentId? InvoicePaymentId,
         PaymentVoucherId? PaymentVoucherId,
@@ -86,11 +85,11 @@ internal class AccountingTransactionService(
     );
 
     private static TransactionSignatureFull SigFull(Transaction t) =>
-        new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, t.Amount, t.ExchangeRate, t.PostingDate,
+        new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, Math.Round(t.Amount, 4), t.ExchangeRate.HasValue ? Math.Round(t.ExchangeRate.Value, 8) : null,
             t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId);
 
     private static TransactionSignatureMatch SigMatch(Transaction t) =>
-        new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, t.Amount, t.ExchangeRate,
+        new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, Math.Round(t.Amount, 4), t.ExchangeRate.HasValue ? Math.Round(t.ExchangeRate.Value, 8) : null,
             t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId);
 
     private static TransactionType Invert(TransactionType t) =>
@@ -740,11 +739,11 @@ internal class AccountingTransactionService(
                             invoice.CustomerId, payment.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
+                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
                             TransactionType.Debit, customerReceivableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
+                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
                             TransactionType.Credit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                     else
@@ -759,11 +758,11 @@ internal class AccountingTransactionService(
                             invoice.CustomerId, payment.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
+                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
                             TransactionType.Debit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, Guid.NewGuid(),
+                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
                             TransactionType.Credit, customerPayableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                 }
@@ -781,12 +780,12 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice),
-                            payment.Amount, payment.ExchangeRate, Guid.NewGuid(),
+                            payment.Amount, payment.ExchangeRate, paymentGroupId,
                             TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice),
-                            payment.Amount, payment.ExchangeRate, Guid.NewGuid(),
+                            payment.Amount, payment.ExchangeRate, paymentGroupId,
                             TransactionType.Credit, prepaymentLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
                     }
                 }

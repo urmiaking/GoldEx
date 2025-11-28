@@ -1,5 +1,6 @@
-﻿@using GoldEx.Client.Components.Layouts
-@attribute [Route(ClientRoutes.Reporting.DesignReport)]
+﻿@attribute [Route(ClientRoutes.Reporting.DesignReport)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
 @layout MainLayout
 
 <PageTitle>طراحی گزارش @(DisplayName ?? Name)</PageTitle>
