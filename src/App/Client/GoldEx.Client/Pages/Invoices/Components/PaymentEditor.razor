@@ -142,18 +142,21 @@
                                    Rounded="true"
                                    Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" md="@(string.IsNullOrEmpty(Model.ExchangeRateLabel) ? 6 : 12)">
-                    <MudTextField @bind-Value="@Model.ReferenceNumber"
-                                  T="string"
-                                  dir="ltr"
-                                  For="@(() => Model.ReferenceNumber!)"
-                                  Label="@(Model.GetDisplayName(() => Model.ReferenceNumber))"
-                                  Margin="Margin.Dense"
-                                  Disabled="Model.Disabled"
-                                  AdornmentIcon="@Icons.Material.Filled.Numbers"
-                                  Adornment="Adornment.End"
-                                  Variant="Variant.Outlined" />
-                </MudItem>
+                @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer)
+                {
+                    <MudItem xs="12" md="@(string.IsNullOrEmpty(Model.ExchangeRateLabel) ? 6 : 12)">
+                        <MudTextField @bind-Value="@Model.ReferenceNumber"
+                                      T="string"
+                                      dir="ltr"
+                                      For="@(() => Model.ReferenceNumber!)"
+                                      Label="@(Model.GetDisplayName(() => Model.ReferenceNumber))"
+                                      Margin="Margin.Dense"
+                                      Disabled="Model.Disabled"
+                                      AdornmentIcon="@Icons.Material.Filled.Numbers"
+                                      Adornment="Adornment.End"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                }
                 <MudItem xs="12">
                     <MudTextField @bind-Value="@Model.Note"
                                   T="string"
