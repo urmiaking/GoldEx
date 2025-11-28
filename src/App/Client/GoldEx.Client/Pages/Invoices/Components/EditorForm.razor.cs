@@ -1109,4 +1109,36 @@ public partial class EditorForm
 
         await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
     }
+
+    private async Task OpenPaymentsDialog()
+    {
+        var parameters = new DialogParameters<PaymentDialog>
+        {
+            { x => x.Items, _model.InvoicePayments.OrderBy(x => x.PaymentDate).ToList() },
+            { x => x.PriceUnit, _model.InvoicePriceUnit },
+            { x => x.InvoiceType, _model.InvoiceType },
+            { x => x.CustomerId, _model.Customer?.Id },
+            { x => x.PriceUnits, _priceUnits },
+            { x => x.TotalInvoiceAmount, _model.InvoiceType == InvoiceType.Sell ?
+                _model.TotalInvoiceAmount - _model.TotalUsedProductsAmount :
+                _model.TotalInvoiceAmount }
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<PaymentDialog>("جمع پرداختی", parameters, options);
+
+        var result = await dialog.Result;
+
+        if (result is {Canceled: false, Data: List<InvoicePaymentVm> payments })
+        {
+            _model.InvoicePayments = payments;
+        }
+    }
 }

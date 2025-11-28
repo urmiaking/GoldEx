@@ -1,0 +1,96 @@
+﻿@inherits GoldExComponentBase
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">جزئیات پرداخت ها</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTable T="InvoicePaymentVm" Hover="true" FixedHeader="true" Dense="true" Items="Items"
+                  SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="2">
+            <ToolBarContent>
+                <div class="d-flex flex-1 justify-content-center">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        <MudButton Class="ml-4" Color="Color.Success" EndIcon="@Icons.Material.Filled.Payment" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.InternalCash)">
+                            <MudText>پرداخت نقدی</MudText>
+                        </MudButton>
+                        <MudButton Class="ml-4" Color="Color.Tertiary" EndIcon="@Icons.Material.Filled.SwapHoriz" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)">
+                            <MudText>حواله</MudText>
+                        </MudButton>
+                        <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Recycling" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)">
+                            <MudText>طلای شکسته</MudText>
+                        </MudButton>
+                        <MudButton Class="ml-4" Color="Color.Warning" EndIcon="@Icons.Material.Filled.Whatshot" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
+                            <MudText Color="Color.Dark">طلای آبشده</MudText>
+                        </MudButton>
+                    </MudHidden>
+
+                    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                        <MudTooltip Color="Color.Primary" Text="پرداخت نقدی" Arrow="true">
+                            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Payment" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.InternalCash)" />
+                        </MudTooltip>
+                        <MudTooltip Color="Color.Tertiary" Text="حواله" Arrow="true">
+                            <MudIconButton Color="@Color.Tertiary" Icon="@Icons.Material.Filled.SwapHoriz" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)" />
+                        </MudTooltip>
+                        <MudTooltip Color="Color.Primary" Text="طلای شکسته" Arrow="true">
+                            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Recycling" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)" />
+                        </MudTooltip>
+                        <MudTooltip Color="Color.Warning" Text="طلای آبشده" Arrow="true">
+                            <MudIconButton Color="@Color.Warning" Icon="@Icons.Material.Filled.Whatshot" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)" />
+                        </MudTooltip>
+                    </MudHidden>
+                </div>
+                
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>مبلغ</MudTh>
+                <MudTh>توضیحات</MudTh>
+                <MudTh>تاریخ پرداخت</MudTh>
+                <MudTh>عملیات</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="مبلغ">@context.Amount.ToCurrencyFormat(context.PriceUnit?.Title)</MudTd>
+                <MudTd DataLabel="توضیحات">@context.Description</MudTd>
+                <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate?.ToShortDateString()</MudTd>
+                <MudTd DataLabel="عملیات">
+                    <div class="d-flex gap-2">
+                        <MudTooltip Text="ویرایش">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                           Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                        </MudTooltip>
+                        <MudTooltip Text="حذف">
+                            <MudIconButton OnClick="@(_ => OnDelete(context))" Size="@Size.Small" Variant="@Variant.Filled"
+                                           Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                        </MudTooltip>
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Typo="Typo.body2">
+                    هیچ پرداختی ثبت نشده است.
+                </MudText>
+            </NoRecordsContent>
+        </MudTable>
+        <MudDivider Class="mt-5" />
+    </DialogContent>
+    <DialogActions>
+        <div class="price-container d-flex align-center justify-content-between w-100 flex-wrap">
+            <div class="d-flex gap-2 mr-md-4">
+                <MudText Class="price-text" Typo="Typo.h6" Color="Color.Primary">
+                    جمع پرداختی ها: @Items.Sum(item => item.FinalAmount * (item.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)
+                </MudText>
+            </div>
+
+            <div class="button-group">
+                <MudButton Color="Color.Error"
+                           OnClick="Close"
+                           StartIcon="@Icons.Material.Filled.Close"
+                           Variant="Variant.Filled">انصراف</MudButton>
+                <MudButton Class="m-2"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           OnClick="Save"
+                           Variant="Variant.Filled">ذخیره</MudButton>
+            </div>
+        </div>
+    </DialogActions>
+</MudDialog>

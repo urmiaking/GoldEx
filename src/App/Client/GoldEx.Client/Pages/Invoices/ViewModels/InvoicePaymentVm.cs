@@ -4,6 +4,7 @@ using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -12,7 +13,7 @@ public class InvoicePaymentVm
     public Guid? Id { get; set; }
 
     [Display(Name = "تاریخ پرداخت")]
-    public DateTime? PaymentDate { get; set; }
+    public DateTime? PaymentDate { get; set; } = DateTime.Now;
 
     [Display(Name = "کد پیگیری")]
     public string? ReferenceNumber { get; set; }
@@ -50,6 +51,15 @@ public class InvoicePaymentVm
     public Guid? VoucherId { get; set; }
 
     public decimal FinalAmount => GoldFineness.HasValue ? Amount * GoldFineness.Value / 750m : Amount;
+
+    public string Description => PaymentType switch
+    {
+        PaymentType.InternalCash when FinancialAccount is not null => $"{PaymentType.GetDisplayTitle()}: {FinancialAccount.Title}",
+        PaymentType.UsedGoldInventory when GoldFineness.HasValue => $"{PaymentType.GetDisplayTitle()}: عیار {GoldFineness.Value.ToCurrencyFormat()}",
+        PaymentType.MoltenGoldInventory when GoldFineness.HasValue => $"{PaymentType.GetDisplayTitle()}: - عیار {GoldFineness.Value.ToCurrencyFormat()}",
+        PaymentType.CustomerTransfer when Endorser is not null => $"{PaymentType.GetDisplayTitle()}: {Endorser.FullName}",
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {

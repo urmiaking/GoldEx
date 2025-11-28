@@ -13,7 +13,7 @@ else
             <MudGrid Class="align-end">
                 <MudItem xs="12" md="6" lg="4">
                     <MudText Typo="Typo.h6" GutterBottom="true" Color="@InvoiceColor" Class="align-center d-flex gap-2">
-                        <MudIcon Icon="@InvoiceIcon" 
+                        <MudIcon Icon="@InvoiceIcon"
                                  Color="@InvoiceColor"></MudIcon>
                         فاکتور @_model.InvoiceType.GetDisplayName()
                         @if (Id.HasValue)
@@ -240,7 +240,7 @@ else
                             <div class="d-flex align-items-center gap-1">
                                 <MudText>مانده: </MudText>
                                 <CustomerRemaining CustomerId="_model.Customer.Id.Value"
-                                                   TextTypo="Typo.body1" 
+                                                   TextTypo="Typo.body1"
                                                    PriceUnit="@_model.InvoicePriceUnit"
                                                    AddedValue="@(_applyCurrentInvoice && !IsEditMode ? _model.TotalUnpaidAmount : null)" />
                                 <MudTooltip Text="@RemainingTooltipText" ShowOnHover="true" Color="Color.Success" Arrow="true">
@@ -388,7 +388,7 @@ else
                     </MudItem>
 
                     <MudItem xs="6" md="3" Class="d-flex align-center">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Payments" Color="Color.Success" OnClick="OnPaymentsMenuToggled"></MudIconButton>
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Payments" Color="Color.Success" OnClick="OpenPaymentsDialog"></MudIconButton>
                         <MudText Typo="Typo.body2">جمع پرداختی</MudText>
                         <MudPopover Open="@_paymentsMenuOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter" Elevation="24">
                             <div class="d-flex flex-column">
