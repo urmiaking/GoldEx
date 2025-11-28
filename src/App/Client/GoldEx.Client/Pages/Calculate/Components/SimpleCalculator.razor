@@ -6,7 +6,7 @@
         <Authorized>
             <MudGrid Justify="Justify.SpaceBetween" Spacing="4">
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <div class="d-flex gap-2 align-center">
+                    <div class="d-flex gap-2 align-start">
                         <MudAutocomplete T="string"
                                          Adornment="Adornment.End"
                                          AdornmentIcon="@Icons.Material.Filled.QrCode"
@@ -22,8 +22,16 @@
                                          Variant="Variant.Outlined"
                                          DebounceInterval="200"
                                          CoerceValue="true"
-                                         ResetValueOnEmptyText="true" />
-                        <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" OnClick="ToggleScanner" Variant="Variant.Outlined" Color="Color.Primary" />
+                                         ResetValueOnEmptyText="true" 
+                                         Class="flex-grow-1" />
+
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                            <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" 
+                                           OnClick="ToggleScanner" 
+                                           Variant="Variant.Outlined" 
+                                           Color="Color.Primary" 
+                                           Class="mt-2"/>
+                        </MudHidden>
                     </div>
                     <MudCollapse Expanded="_scannerOpen">
                         @if (_scannerOpen)
@@ -454,7 +462,7 @@
 </MudCard>
 
 <style>
-    .mud-input-helper-text{
+    .mud-input-helper-text {
         font-size: 1.15rem !important;
     }
 </style>
