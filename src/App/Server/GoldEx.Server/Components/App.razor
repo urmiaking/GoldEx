@@ -34,7 +34,14 @@
             <div class="loading-card">
                 <img src="icon-512.png" alt="GoldEx Logo" class="loading-logo" />
                 <h1 class="loading-title">
-                    سامانه جامع حسابداری طلا و جواهر 
+                    @if (string.IsNullOrEmpty(_institutionName))
+                    {
+                        <span>سامانه جامع حسابداری طلا و جواهر</span>
+                    }
+                    else
+                    {
+                        <span>@_institutionName</span>
+                    }
                     <span class="brand-text" dir="ltr">GoldEx</span>
                 </h1>
                 <div class="d-flex justify-content-center align-items-center mb-4">
