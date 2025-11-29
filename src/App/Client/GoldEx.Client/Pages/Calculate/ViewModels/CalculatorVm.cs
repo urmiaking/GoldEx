@@ -19,7 +19,7 @@ public class CalculatorVm
     [Display(Name = "نوع اجرت")]
     public WageType? WageType { get; set; } = Shared.Enums.WageType.Percent;
 
-    [Display(Name = "سود فروشنده")]
+    [Display(Name = "سود")]
     [Required(ErrorMessage = "لطفا سود را وارد کنید")]
     public decimal ProfitPercent { get; set; } = 7;
 

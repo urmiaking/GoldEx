@@ -1,322 +1,112 @@
-﻿@using GoldEx.Shared.DTOs.InventoryStocks
-@using GoldEx.Shared.DTOs.PriceUnits
-@using GoldEx.Shared.DTOs.ProductCategories
-@inherits GoldExComponentBase
+﻿@inherits GoldExComponentBase
 
 <MudCard Elevation="@Elevation" Class="pa-4">
-    <MudGrid Justify="Justify.SpaceBetween">
-        <MudItem xs="12" sm="6" md="4">
-            <MudNumericField Adornment="Adornment.End"
-                             AdornmentText="@_model.PriceUnit?.Title"
-                             For="() => _model.GramPrice"
-                             Format="#,##0.##"
-                             HideSpinButtons="true"
-                             Immediate="true"
-                             Margin="Margin.Dense"
-                             Label="@($"نرخ {_model.UnitType.GetDisplayName()}")"
-                             T="decimal"
-                             dir="ltr"
-                             Value="@_model.GramPrice"
-                             ValueChanged="OnGramPriceChanged"
-                             Variant="Variant.Outlined"></MudNumericField>
-        </MudItem>
-        <AuthorizeView>
-            <Authorized>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudSelect T="GetPriceUnitTitleResponse?"
-                               Value="_model.PriceUnit"
-                               ValueChanged="OnPriceUnitChanged"
-                               Label="@_model.GetDisplayName(() => _model.PriceUnit)"
-                               For="() => _model.PriceUnit"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined">
-                        @foreach (var item in _priceUnits)
-                        {
-                            <MudSelectItem Value="item">
-                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudAvatar Size="Size.Small">
-                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
-                                    </MudAvatar>
-                                    <MudText>@item.Title</MudText>
-                                </MudStack>
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-            </Authorized>
-        </AuthorizeView>
-    </MudGrid>
-
-    <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">
-        <MudChipSet T="ProductType"
-                    SelectionMode="SelectionMode.SingleSelection"
-                    Variant="Variant.Outlined"
-                    CheckMark="true"
-                    SelectedValue="_model.ProductType"
-                    SelectedValueChanged="OnProductTypeChanged">
-            <MudChip Color="Color.Primary" Value="ProductType.Gold">طلا</MudChip>
-            <MudChip Color="Color.Error" Value="ProductType.Jewelry">جواهر</MudChip>
-            <MudChip Color="Color.Success" Value="ProductType.MoltenGold">آبشده</MudChip>
-        </MudChipSet>
-    </div>
-
-    <MudGrid Spacing="3">
-        <MudItem xs="12" md="3">
-            <MudPaper Outlined="true" Class="pa-4">
-                <MudText Typo="Typo.h6" GutterBottom="true">فیلترها</MudText>
-
-                <MudText Typo="Typo.subtitle2" Class="mt-2">محدوده قیمت</MudText>
-                <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.MinPrice)"
-                                 For="() => _model.MinPrice"
-                                 @bind-Value="_model.MinPrice"
-                                 dir="ltr"
-                                 Immediate="true"
-                                 Format="#,##0.##"
-                                 Variant="Variant.Outlined"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true"
-                                 Adornment="Adornment.End"
-                                 AdornmentText="@_model.PriceUnit?.Title" />
-
-                <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.MaxPrice)"
-                                 For="() => _model.MaxPrice"
-                                 @bind-Value="_model.MaxPrice"
-                                 dir="ltr"
-                                 Variant="Variant.Outlined"
-                                 Immediate="true"
-                                 Format="#,##0.##"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true"
-                                 Adornment="Adornment.End"
-                                 AdornmentText="@_model.PriceUnit?.Title" />
-
-                <MudDivider Class="my-4" />
-
-                <MudText Typo="Typo.subtitle2">مشخصات فیزیکی</MudText>
-
-                <MudTextField T="string?"
-                              Label="@_model.GetDisplayName(() => _model.Name)"
-                              For="() => _model.Name"
-                              @bind-Value="_model.Name"
-                              Variant="Variant.Outlined"
-                              Margin="Margin.Dense" />
-
-                <MudGrid Spacing="0">
-                    <MudItem xs="12">
-                        <div style="display: flex; gap: 8px; align-items: center;">  
-                            <MudNumericField Adornment="Adornment.End"  
-                                             AdornmentText="@_model.UnitType.GetDisplayName()"  
-                                             For="() => _model.MinWeight"  
-                                             Format="G29"  
-                                             dir="ltr"  
-                                             HideSpinButtons="true"  
-                                             Margin="Margin.Dense"  
-                                             Label="@(_model.GetDisplayName(() => _model.MinWeight))"  
-                                             T="decimal?"  
-                                             @bind-Value="_model.MinWeight"  
-                                             Variant="Variant.Outlined"  
-                                             Class="flex-grow-1" />  
-      
-                            <MudMenu @bind-Open="_minWeightFieldMenuOpen"   
-                                     ActivationEvent="@MouseEvent.LeftClick">  
-                                <ActivatorContent>  
-                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />  
-                                </ActivatorContent>  
-                                <ChildContent>  
-                                    @foreach (var item in Enum.GetValues<GoldUnitType>())  
-                                    {  
-                                        <MudMenuItem OnClick="() => SelectUnitType(item)">  
-                                            <div style="display: flex; align-items: center; gap: 8px;">  
-                                                @item.GetDisplayName()  
-                                            </div>  
-                                        </MudMenuItem>  
-                                    }  
-                                </ChildContent>  
-                            </MudMenu>  
-                        </div>
-                    </MudItem>
-                    <MudItem xs="12">
-                        <div style="display: flex; gap: 8px; align-items: center;">  
-                            <MudNumericField Adornment="Adornment.End"  
-                                             AdornmentText="@_model.UnitType.GetDisplayName()"  
-                                             For="() => _model.MaxWeight"  
-                                             Format="G29"  
-                                             dir="ltr"  
-                                             HideSpinButtons="true"  
-                                             Margin="Margin.Dense"  
-                                             Label="@(_model.GetDisplayName(() => _model.MaxWeight))"
-                                             T="decimal?"  
-                                             @bind-Value="_model.MaxWeight"
-                                             Variant="Variant.Outlined"  
-                                             Class="flex-grow-1" />  
-      
-                            <MudMenu @bind-Open="_maxWeightFieldMenuOpen"   
-                                     ActivationEvent="@MouseEvent.LeftClick">  
-                                <ActivatorContent>  
-                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />  
-                                </ActivatorContent>  
-                                <ChildContent>  
-                                    @foreach (var item in Enum.GetValues<GoldUnitType>())  
-                                    {  
-                                        <MudMenuItem OnClick="() => SelectUnitType(item)">  
-                                            <div style="display: flex; align-items: center; gap: 8px;">  
-                                                @item.GetDisplayName()  
-                                            </div>  
-                                        </MudMenuItem>  
-                                    }  
-                                </ChildContent>  
-                            </MudMenu>  
-                        </div>
-                    </MudItem>
-                </MudGrid>
-
-                <MudNumericField T="decimal?"
-                                 Label="@_model.GetDisplayName(() => _model.Fineness)"
-                                 For="() => _model.Fineness"
-                                 @bind-Value="_model.Fineness"
-                                 Variant="Variant.Outlined"
-                                 Immediate="true"
-                                 dir="ltr"
-                                 Min="0"
-                                 Max="1000"
-                                 Margin="Margin.Dense"
-                                 HideSpinButtons="true" />
-                @if (_model.ProductType is not ProductType.MoltenGold)
-                {
-                    <MudSelect T="GetProductCategoryResponse?"
-                               @bind-Value="_model.ProductCategory"
-                               Clearable="true"
-                               OnClearButtonClick="() => OnProductCategoryCleared()"
-                               Label="@_model.GetDisplayName(() => _model.ProductCategory)"
-                               For="() => _model.ProductCategory"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined">
-                        @foreach (var item in _productCategories)
-                        {
-                            <MudSelectItem Value="item">@item.Title</MudSelectItem>
-                        }
-                    </MudSelect>
-                }
-
-                <MudDivider Class="my-4" />
-
-                <MudText Typo="Typo.subtitle2">پارامترهای فروش</MudText>
-
-                @if (_model.ProductType is ProductType.Gold or ProductType.Jewelry)
-                {
-                    <MudNumericField T="decimal?"
-                                     Label="@_model.GetDisplayName(() => _model.MaxWage)"
-                                     For="() => _model.MaxWage"
-                                     @bind-Value="_model.MaxWage"
-                                     dir="ltr"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
+    <MudForm Model="_model" @ref="@_form" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
+        <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">
+            <MudChipSet T="GoldUnitType"
+                        SelectionMode="SelectionMode.SingleSelection"
+                        Variant="Variant.Outlined"
+                        CheckMark="true"
+                        SelectedValue="_model.GoldUnitType"
+                        SelectedValueChanged="OnGoldUnitTypeChanged">
+                <MudChip Color="Color.Primary" Value="GoldUnitType.Gram">@GoldUnitType.Gram.GetDisplayName()</MudChip>
+                <MudChip Color="Color.Success" Value="GoldUnitType.Mesghal">@GoldUnitType.Mesghal.GetDisplayName()</MudChip>
+            </MudChipSet>
+        </div>
+        <MudGrid Spacing="4">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentText="@_model.PriceUnit?.Title"
+                                     For="() => _model.UnitPrice"
+                                     Format="#,##0.##"
+                                     Immediate="true"
                                      HideSpinButtons="true"
-                                     Adornment="Adornment.End"
-                                     Min="0"
-                                     Max="100"
-                                     AdornmentText="درصد" />
-                }
-
-                <MudNumericField T="decimal"
-                                 Label="@_model.GetDisplayName(() => _model.ProfitPercent)"
-                                 For="() => _model.ProfitPercent"
-                                 @bind-Value="_model.ProfitPercent"
-                                 Variant="Variant.Outlined"
-                                 dir="ltr"
-                                 Margin="Margin.Dense"
-                                 Format="G29"
-                                 Min="0"
-                                 Max="100"
-                                 HideSpinButtons="true"
+                                     Margin="Margin.Dense"
+                                     Label="@(_model.GetDisplayName(() => _model.UnitPrice))"
+                                     dir="ltr"
+                                     T="decimal"
+                                     Value="_model.UnitPrice"
+                                     ValueChanged="OnUnitPriceChanged"
+                                     Variant="Variant.Outlined"
+                                     Class="flex-grow-1" />
+                    <MudMenu @bind-Open="_priceListMenuOpen"
+                             ActivationEvent="@MouseEvent.LeftClick">
+                        <ActivatorContent>
+                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => OnPriceUnitChanged(item)">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudNumericField For="() => _model.Price"
                                  Adornment="Adornment.End"
-                                 AdornmentText="درصد" />
-                <MudStack Row Class="mt-5" Justify="Justify.SpaceBetween">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnSearch" StartIcon="@Icons.Material.Filled.Search" Disabled="@IsBusy">جستجو</MudButton>
-                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ResetModel" StartIcon="@Icons.Material.Filled.Clear">پاک کردن</MudButton>
-                </MudStack>
+                                 AdornmentText="@_model.PriceUnit?.Title"
+                                 Immediate="true"
+                                 HideSpinButtons="true"
+                                 Format="#,##0.##"
+                                 Margin="Margin.Dense"
+                                 Label="@(_model.GetDisplayName(() => _model.Price))"
+                                 dir="ltr"
+                                 T="decimal?"
+                                 Value="_model.Price"
+                                 ValueChanged="OnPriceChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudNumericField For="() => _model.Fineness"
+                                 Immediate="true"
+                                 HideSpinButtons="true"
+                                 Format="G29"
+                                 Margin="Margin.Dense"
+                                 Label="@(_model.GetDisplayName(() => _model.Fineness))"
+                                 dir="ltr"
+                                 T="decimal?"
+                                 Value="_model.Fineness"
+                                 ValueChanged="OnFinenessChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="درصد"
+                                 For="() => _model.ProfitPercent"
+                                 Format="G29"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Margin="Margin.Dense"
+                                 Label="@(_model.GetDisplayName(() => _model.ProfitPercent))"
+                                 dir="ltr"
+                                 T="decimal?"
+                                 Value="_model.ProfitPercent"
+                                 ValueChanged="OnProfitChanged"
+                                 Variant="Variant.Outlined"></MudNumericField>
+            </MudItem>
+        </MudGrid>
+        @if (_finalValue.HasValue && _finalValue.Value is not 0)
+        {
+            <MudPaper Elevation="4" Class="pa-3 mt-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <MudText Typo="Typo.h6">وزن نهایی:</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">@_finalValue?.ToWeightFormat(_model.GoldUnitType)</MudText>
+                </div>
             </MudPaper>
-        </MudItem>
-        <MudItem xs="12" md="9">
-            <MudText Typo="Typo.h6" GutterBottom="true">نتایج جستجو</MudText>
+        }
+    </MudForm>
 
-            <MudTable T="GetInventoryStockResponse" ServerData="LoadProductsAsync" RowsPerPage="20"
-                      Hover="true" Dense="true" Striped="true" @ref="_table">
-                <HeaderContent>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Barcode ?? string.Empty)">کد</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Name ?? string.Empty)">عنوان</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.ProductCategoryTitle ?? string.Empty)">دسته</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Weight ?? 0)">وزن</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Fineness ?? 0)">عیار</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Wage ?? 0)">اجرت</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.FinalPrice)">قیمت نهایی</MudTableSortLabel></MudTh>
-                    <MudTh>عملیات</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="کد">@context.Product?.Barcode</MudTd>
-                    <MudTd DataLabel="عنوان">@context.Product?.Name</MudTd>
-                    <MudTd DataLabel="دسته">@(context.Product?.ProductCategoryTitle ?? "-")</MudTd>
-                    <MudTd DataLabel="وزن">@context.CurrentAmount.ToWeightFormat(_model.UnitType)</MudTd>
-                    <MudTd DataLabel="عیار">@context.Product?.Fineness.ToString("G29")</MudTd>
-                    <MudTd DataLabel="اجرت">
-                        @if (context.Product?.WageType is WageType.Percent)
-                        {
-                            @($"{context.Product?.Wage?.ToString("G29")} درصد")
-                        }
-                        else if (context.Product?.WageType is WageType.Fixed)
-                        {
-                            @($"{context.Product?.Wage?.ToString("#,##0.##")} {context.Product?.WagePriceUnitTitle}")
-                        }
-                        else
-                        {
-                            @("ندارد")
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="قیمت نهایی">
-                        <strong>@context.FinalPrice.ToCurrencyFormat(_model.PriceUnit?.Title)</strong>
-                    </MudTd>
-                    <MudTd DataLabel="عملیات">
-                        <MudTooltip Text="فروش">
-                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.ShoppingBasket"
-                                           OnClick="_ => OnSellProduct(context.Product)"
-                                           Color="@Color.Success"></MudIconButton>
-                        </MudTooltip>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
-                    <MudText>برای مشاهده نتایج، لطفاً فیلترها را تنظیم کرده و دکمه جستجو را بزنید.</MudText>
-                </NoRecordsContent>
-                <LoadingContent>
-                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                </LoadingContent>
-                <PagerContent>
-                    @{
-                        var totalItems = _table.GetFilteredItemsCount();
-                        var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
-                        var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
-                        var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
-                        var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
-                    }
-
-                    <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
-                        <div class="mud-table-pagination-caption">
-                            @infoText
-                        </div>
-                        <MudPagination SelectedChanged="PageChanged"
-                                       Color="Color.Primary"
-                                       Count="@pageCount"
-                                       ShowFirstButton="true"
-                                       ShowLastButton="true" />
-
-                        <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
-                            @infoText
-                        </div>
-                    </div>
-                </PagerContent>
-            </MudTable>
-
-        </MudItem>
-    </MudGrid>
 </MudCard>
