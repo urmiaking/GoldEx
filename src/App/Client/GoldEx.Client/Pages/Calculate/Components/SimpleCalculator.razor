@@ -22,16 +22,27 @@
                                          Variant="Variant.Outlined"
                                          DebounceInterval="200"
                                          CoerceValue="true"
-                                         ResetValueOnEmptyText="true" 
+                                         ResetValueOnEmptyText="true"
                                          Class="flex-grow-1" />
 
                         <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                            <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" 
-                                           OnClick="ToggleScanner" 
-                                           Variant="Variant.Outlined" 
-                                           Color="Color.Primary" 
-                                           Class="mt-2"/>
+                            <MudIconButton Icon="@Icons.Material.Filled.CameraAlt"
+                                           OnClick="ToggleScanner"
+                                           Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           Class="mt-2" />
                         </MudHidden>
+
+                        @if (_searchedProduct is not null)
+                        {
+                            <MudTooltip Text="افزودن به فاکتور" Color="Color.Primary" Arrow="true">
+                                <MudIconButton Icon="@Icons.Material.Filled.AddShoppingCart"
+                                               OnClick="() => AddToInvoice(_searchedProduct)"
+                                               Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               Class="mt-2" />
+                            </MudTooltip>
+                        }
                     </div>
                     <MudCollapse Expanded="_scannerOpen">
                         @if (_scannerOpen)
@@ -347,10 +358,8 @@
             }
         </MudGrid>
 
-        @* The main check to show the results block only when there is a valid price *@
         @if (_finalPrice.HasValue && _finalPrice.Value is not 0)
         {
-            @* STEP 1: Always show the final, most important result in a prominent paper *@
             <MudPaper Elevation="4" Class="pa-3 mt-4 rounded-b-0">
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                     <MudText Typo="Typo.h6">قیمت نهایی جنس:</MudText>
@@ -358,12 +367,10 @@
                 </div>
             </MudPaper>
 
-            @* STEP 2: Put all the calculation details inside a collapsible Expansion Panel *@
             <MudExpansionPanels Class="rounded-t-0" Elevation="4">
                 <MudExpansionPanel Text="نمایش جزئیات محاسبه">
                     <div class="d-flex flex-column gap-4 mt-2">
 
-                        @* Conditionally show the converted weight if the fineness is not the standard 750 *@
                         @if (_model.Fineness != 750)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -372,7 +379,6 @@
                             </div>
                         }
 
-                        @* Gold's raw price with formula *@
                         @if (_rawPrice.HasValue && _rawPrice.Value != 0)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -399,7 +405,6 @@
                             </div>
                         }
 
-                        @* Stone price with formula *@
                         @if (_stoneCost.HasValue && _stoneCost.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -408,7 +413,6 @@
                             </div>
                         }
 
-                        @* Manufacturing cost (Wage) with formula *@
                         @if (_wage.HasValue && _wage.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -417,7 +421,6 @@
                             </div>
                         }
 
-                        @* Seller's profit / Molten gold fee with formula *@
                         @if (_profit.HasValue && _profit.Value is not 0)
                         {
                             if (_model.ProductType is ProductType.MoltenGold)
@@ -436,7 +439,6 @@
                             }
                         }
 
-                        @* Tax with formula *@
                         @if (_tax.HasValue && _tax.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -445,7 +447,6 @@
                             </div>
                         }
 
-                        @* Extra Costs *@
                         @if (_model.ExtraCosts.HasValue && _model.ExtraCosts.Value is not 0)
                         {
                             <div class="d-flex justify-content-between align-items-center flex-wrap">
