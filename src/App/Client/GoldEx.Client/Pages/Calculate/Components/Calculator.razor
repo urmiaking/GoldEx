@@ -7,8 +7,11 @@
                 <MudTabPanel Text="محاسبه گر عادی" Icon="@Icons.Material.Outlined.Calculate" IconColor="Color.Info">
                     <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
                 </MudTabPanel>
-                <MudTabPanel Text="محاسبه گر معکوس" Icon="@Icons.Material.Outlined.ShoppingBag" IconColor="Color.Success">
+                <MudTabPanel Text="محاسبه گر معکوس" Icon="@Icons.Material.Outlined.SwapHoriz" IconColor="Color.Primary">
                     <ReverseCalculator Class="@Class" Elevation="@Elevation"></ReverseCalculator>
+                </MudTabPanel>
+                <MudTabPanel Text="محاسبه گر پیشرفته" Icon="@Icons.Material.Outlined.ShoppingBag" IconColor="Color.Success">
+                    <AdvancedCalculator Class="@Class" Elevation="@Elevation"></AdvancedCalculator>
                 </MudTabPanel>
             </MudTabs>
         </Authorized>

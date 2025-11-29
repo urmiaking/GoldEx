@@ -8,6 +8,7 @@ using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -19,7 +20,7 @@ public partial class SimpleCalculator
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
 
-    private CalculatorVm _model = new();
+    private readonly CalculatorVm _model = new();
     private MudForm _form = default!;
     private readonly CalculatorValidator _calculatorValidator = new();
 
@@ -42,6 +43,7 @@ public partial class SimpleCalculator
     private bool _weightFieldMenuOpen;
     private bool _stoneFieldMenuOpen;
     private bool _scannerOpen;
+    private GetProductResponse? _searchedProduct;
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
@@ -364,7 +366,7 @@ public partial class SimpleCalculator
         await Calculate();
     }
 
-    private async void OnUsedGoldFinenessDeductionRateChanged(decimal deductionRate)
+    private async Task OnUsedGoldFinenessDeductionRateChanged(decimal deductionRate)
     {
         _model.UsedGoldFinenessDeductionRate = deductionRate;
         _model.Fineness = 750m - deductionRate;
@@ -372,28 +374,28 @@ public partial class SimpleCalculator
         await Calculate();
     }
 
-    private async void OnGramPriceChanged(decimal gramPrice)
+    private async Task OnGramPriceChanged(decimal gramPrice)
     {
         _model.GramPrice = gramPrice;
 
         await Calculate();
     }
 
-    private async void OnWeightChanged(decimal weight)
+    private async Task OnWeightChanged(decimal weight)
     {
         _model.Weight = weight;
 
         await Calculate();
     }
 
-    private async void OnProfitChanged(decimal profit)
+    private async Task OnProfitChanged(decimal profit)
     {
         _model.ProfitPercent = profit;
 
         await Calculate();
     }
 
-    private async void OnExtraCostChanges(decimal? additionalPrices)
+    private async Task OnExtraCostChanges(decimal? additionalPrices)
     {
         _model.ExtraCosts = additionalPrices;
 
@@ -434,6 +436,7 @@ public partial class SimpleCalculator
                          return;
 
                      _barcodeFieldHelperText = response.Name;
+                     _searchedProduct = response;
 
                      var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
                      var stonePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.StonePriceUnit?.Id);
@@ -460,6 +463,7 @@ public partial class SimpleCalculator
     {
         _barcode = null;
         _barcodeFieldHelperText = null;
+        _searchedProduct = null;
         ResetModel();
         ResetCalculations();
     }
@@ -542,7 +546,6 @@ public partial class SimpleCalculator
         });
     }
 
-    // Your local dispose logic now calls the base implementation
     public override async ValueTask DisposeAsync()
     {
         if (_timer is not null) await _timer.DisposeAsync();
@@ -552,5 +555,10 @@ public partial class SimpleCalculator
 
     #endregion
 
-    
+
+    private void AddToInvoice(GetProductResponse product)
+    {
+        Navigation.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { barcode = product.Barcode })
+            .AppendQueryString(new { TradeScale = TradeScale.Retail }));
+    }
 }
