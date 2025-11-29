@@ -11,7 +11,7 @@ public partial class Index
 
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
-        new BreadcrumbItem("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home)
+        new ("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home)
     ];
 
     private Position _tabPosition = Position.Top;

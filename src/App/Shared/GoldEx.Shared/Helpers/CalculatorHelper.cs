@@ -246,5 +246,16 @@ public class CalculatorHelper
 
             return weight * (fineness / 750m) * (gramPrice * (exchangeRate ?? 1));
         }
+
+        public static decimal CalculateWeight(decimal inputPrice, decimal fineness, decimal unitPrice, decimal? profitPercent)
+        {
+            if (inputPrice <= 0 || fineness <= 0 || unitPrice <= 0)
+                throw new ArgumentOutOfRangeException($"{nameof(inputPrice)}, {nameof(fineness)}, and {nameof(unitPrice)} must be greater than zero.");
+
+            var profitMultiplier = 1m + (profitPercent.HasValue ? profitPercent.Value / 100m : 0m);
+            var denominator = (fineness / 750m) * unitPrice * profitMultiplier;
+
+            return Math.Round(inputPrice / denominator, 3);
+        }
     }
 }
