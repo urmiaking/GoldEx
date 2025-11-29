@@ -22,16 +22,27 @@
                                          Variant="Variant.Outlined"
                                          DebounceInterval="200"
                                          CoerceValue="true"
-                                         ResetValueOnEmptyText="true" 
+                                         ResetValueOnEmptyText="true"
                                          Class="flex-grow-1" />
 
                         <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                            <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" 
-                                           OnClick="ToggleScanner" 
-                                           Variant="Variant.Outlined" 
-                                           Color="Color.Primary" 
-                                           Class="mt-2"/>
+                            <MudIconButton Icon="@Icons.Material.Filled.CameraAlt"
+                                           OnClick="ToggleScanner"
+                                           Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           Class="mt-2" />
                         </MudHidden>
+
+                        @if (_searchedProduct is not null)
+                        {
+                            <MudTooltip Text="افزودن به فاکتور" Color="Color.Primary" Arrow="true">
+                                <MudIconButton Icon="@Icons.Material.Filled.AddShoppingCart"
+                                               OnClick="() => AddToInvoice(_searchedProduct)"
+                                               Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               Class="mt-2" />
+                            </MudTooltip>
+                        }
                     </div>
                     <MudCollapse Expanded="_scannerOpen">
                         @if (_scannerOpen)

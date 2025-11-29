@@ -8,6 +8,7 @@ using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -42,6 +43,7 @@ public partial class SimpleCalculator
     private bool _weightFieldMenuOpen;
     private bool _stoneFieldMenuOpen;
     private bool _scannerOpen;
+    private GetProductResponse? _searchedProduct;
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
@@ -434,6 +436,7 @@ public partial class SimpleCalculator
                          return;
 
                      _barcodeFieldHelperText = response.Name;
+                     _searchedProduct = response;
 
                      var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
                      var stonePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.StonePriceUnit?.Id);
@@ -460,6 +463,7 @@ public partial class SimpleCalculator
     {
         _barcode = null;
         _barcodeFieldHelperText = null;
+        _searchedProduct = null;
         ResetModel();
         ResetCalculations();
     }
@@ -551,5 +555,10 @@ public partial class SimpleCalculator
 
     #endregion
 
-    
+
+    private void AddToInvoice(GetProductResponse product)
+    {
+        Navigation.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { barcode = product.Barcode })
+            .AppendQueryString(new { TradeScale = TradeScale.Retail }));
+    }
 }
