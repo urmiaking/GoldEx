@@ -92,11 +92,17 @@
         </NoRecordsContent>
     </MudTable>
     
-    <div class="d-flex flex-row justify-content-between">
-        <MudText>جمع کل تخفیف: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)</MudText>
+    <MudDivider Class="my-2" />
+
+    <div class="d-flex flex-row flex-wrap gap-2 justify-center justify-md-space-between">
+        <MudText Color="Color.Primary" Typo="Typo.h6">
+            جمع کل تخفیف: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)
+        </MudText>
         @if (TotalRemainingCalculated > 0)
         {
-            <MudText Style="cursor: pointer" @onclick="OnTotalRemainingClicked">مانده کل: @TotalRemainingCalculated.ToCurrencyFormat(PriceUnit.Title)</MudText>
+            <MudText Color="Color.Primary" Typo="Typo.h6" Style="cursor: pointer" @onclick="OnTotalRemainingClicked">
+                مانده کل: @TotalRemainingCalculated.ToCurrencyFormat(PriceUnit.Title)
+            </MudText>
         }
     </div>
 </div>

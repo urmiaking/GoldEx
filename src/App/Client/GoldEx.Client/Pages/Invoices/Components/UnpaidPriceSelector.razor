@@ -16,10 +16,10 @@
     @if (SelectedMode == "custom")
     {
         <MudGrid>
-            <MudItem xs="12" md="6">
+            <MudItem xs="12">
                 @* Bind directly to the property that handles the two-way binding logic *@
                 <MudSelect T="GetPriceUnitTitleResponse" Variant="Variant.Outlined"
-                           Margin="Margin.Dense" Label="واحد ارز سفارشی"
+                           Margin="Margin.Dense" Label="واحد ارز"
                            @bind-Value="BoundUnpaidPriceUnit" Dense="true">
                     @foreach (var item in PriceUnits)
                     {
@@ -34,7 +34,7 @@
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12" md="6">
+            @* <MudItem xs="12" md="6">
                 <MudNumericField @bind-Value="BoundExchangeRate"
                                  Label="نرخ تبدیل"
                                  Variant="Variant.Outlined"
@@ -44,24 +44,24 @@
                                  AdornmentText="@MainPriceUnit?.Title"
                                  Immediate="true"
                                  HideSpinButtons="true" />
-            </MudItem>
+            </MudItem> *@
         </MudGrid>
     }
 
-    <MudDivider Class="my-2" />
+    <MudDivider />
 
-    <div class="d-flex flex-column align-end">
+    <div class="d-flex flex-column align-center">
         @if (SelectedMode == "main")
         {
-            <MudText>مبلغ کل: @TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)</MudText>
+            <MudText Color="Color.Primary" Typo="Typo.h6">مبلغ کل: @TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)</MudText>
         }
         else if (UnpaidPriceUnit is not null)
         {
-            <MudText>مبلغ کل: @TotalUnpaidSecondaryAmount?.ToCurrencyFormat(UnpaidPriceUnit.Title)</MudText>
+            <MudText Color="Color.Primary" Typo="Typo.h6">مبلغ کل: @TotalUnpaidSecondaryAmount?.ToCurrencyFormat(UnpaidPriceUnit.Title)</MudText>
 
             @if (ExchangeRate is > 0)
             {
-                <MudText>(معادل @(TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)))</MudText>
+                <MudText Color="Color.Primary" Typo="Typo.body2">(معادل @(TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)))</MudText>
             }
         }
     </div>
