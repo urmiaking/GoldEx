@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using Microsoft.AspNetCore.Components;
@@ -46,4 +47,30 @@ public partial class ProductItemsList
         _barcode = null;
         return OnBarcodeChanged.InvokeAsync(null);
     }
+
+    private string GetProductDisplayName(ProductVm product)
+    {
+        if (!string.IsNullOrWhiteSpace(product.Name))
+            return product.Name;
+
+        if (product.ProductType != ProductType.MoltenGold)
+            return "-";
+
+        var molten = product.MoltenGold;
+        if (molten == null)
+            return "-";
+
+        var assayNumber = molten.AssayNumber;
+        var assayerName = molten.Assayer?.FullName;
+        var fineness = product.Fineness;
+
+        if (!string.IsNullOrWhiteSpace(assayerName) &&
+            !string.IsNullOrWhiteSpace(assayNumber))
+        {
+            return $"آبشده ({assayNumber}) - {assayerName}";
+        }
+
+        return !string.IsNullOrWhiteSpace(assayNumber) ? $"آبشده ({assayNumber})" : $"طلای آبشده عیار {fineness:G29}";
+    }
+
 }
