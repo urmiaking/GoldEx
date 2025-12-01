@@ -41,6 +41,7 @@ public partial class EditorForm
     private GetSettingResponse? _setting;
     private GetPriceResponse? _gramPrice;
     private MudForm _form = default!;
+    private ElementReference _popoverAnchor;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private List<GetCustomerResponse> _customers = [];
     private bool _discountMenuOpen;
