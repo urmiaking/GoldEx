@@ -148,13 +148,13 @@ public partial class ProductItemEditor
         switch (productType)
         {
             case ProductType.Jewelry:
-                Model.SetAsJewelry(PriceUnit, _settings);
+                Model.SetAsJewelry(PriceUnit, _settings, TradeScale);
                 break;
             case ProductType.Gold:
-                Model.SetAsGold(PriceUnit, _settings);
+                Model.SetAsGold(PriceUnit, _settings, TradeScale);
                 break;
             case ProductType.MoltenGold:
-                Model.SetAsMoltenGold(_settings);
+                Model.SetAsMoltenGold(_settings, TradeScale);
                 break;
             case ProductType.UsedGold:
                 throw new InvalidOperationException();
@@ -317,7 +317,11 @@ public partial class ProductItemEditor
     {
         Model.Product.StonePriceUnit = priceUnit;
 
-        if (Model.Product.StonePriceUnit != null && PriceUnit.Id != Model.Product.StonePriceUnit.Id)
+        if (Model.Product.StonePriceUnit?.Id == PriceUnit.Id)
+        {
+            Model.StonePriceUnitExchangeRate = null;
+        }
+        else if (Model.Product.StonePriceUnit != null && PriceUnit.Id != Model.Product.StonePriceUnit.Id)
             await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                 action: (s, ct) => s.GetExchangeRateAsync(Model.Product.StonePriceUnit.Id, PriceUnit.Id, ct),
                 afterSend: response =>

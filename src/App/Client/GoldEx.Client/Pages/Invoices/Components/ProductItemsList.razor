@@ -64,7 +64,7 @@
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
             <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
-            <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
+            <MudTd DataLabel="عنوان">@GetProductDisplayName(context.Product)</MudTd>
             <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
             <MudTd DataLabel="اجرت">
