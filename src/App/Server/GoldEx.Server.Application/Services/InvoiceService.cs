@@ -256,6 +256,8 @@ internal class InvoiceService(
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.CostPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount!)
             .Include(x => x.InvoicePayments!)
