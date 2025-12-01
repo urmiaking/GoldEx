@@ -16,12 +16,10 @@ public partial class UnpaidPriceSelector
     [Parameter] public GetPriceUnitTitleResponse? UnpaidPriceUnit { get; set; }
     [Parameter] public EventCallback<GetPriceUnitTitleResponse?> UnpaidPriceUnitChanged { get; set; }
 
+    // ExchangeRate همیشه در جهت Main -> Secondary ذخیره می‌شود.
     [Parameter] public decimal? ExchangeRate { get; set; }
     [Parameter] public EventCallback<decimal?> ExchangeRateChanged { get; set; }
 
-    /// <summary>
-    /// A computed property that determines the UI mode ("main" or "custom").
-    /// </summary>
     private string SelectedMode
     {
         get => UnpaidPriceUnit is null ? "main" : "custom";
@@ -43,23 +41,71 @@ public partial class UnpaidPriceSelector
         }
     }
 
-    /// <summary>
-    /// A property to proxy the @bind-Value of the MudSelect.
-    /// When the user selects a new currency, it updates the parent and fetches the new exchange rate.
-    /// </summary>
     private GetPriceUnitTitleResponse? BoundUnpaidPriceUnit
     {
         get => UnpaidPriceUnit;
         set => _ = SetUnpaidPriceUnitAsync(value);
     }
 
-    /// <summary>
-    /// A property to proxy the @bind-Value of the MudNumericField for the exchange rate.
-    /// </summary>
-    private decimal? BoundExchangeRate
+    private static bool IsMoney(GetPriceUnitTitleResponse? unit) =>
+        unit is not null && unit.IsGoldBased == false;
+
+    // معکوس نمایش: تومان→گرم یا پول→پول با نرخ کوچک
+    private bool ShouldReverseDisplay =>
+        (MainPriceUnit?.IsDefault == true && UnpaidPriceUnit?.IsGoldBased == true)
+        || (IsMoney(MainPriceUnit) && IsMoney(UnpaidPriceUnit) && ExchangeRate.HasValue && ExchangeRate.Value < 1m);
+
+    // نرخ نمایشی خام (با لحاظ معکوس‌سازی)
+    private decimal? RawDisplayExchangeRate =>
+        ExchangeRate.HasValue
+            ? (ShouldReverseDisplay
+                ? (ExchangeRate == 0 ? null : 1 / ExchangeRate.Value)
+                : ExchangeRate)
+            : null;
+
+    // گرد کردن هوشمند برای نمایش
+    private int RateDisplayDecimals
     {
-        get => ExchangeRate;
-        set => _ = SetExchangeRateAsync(value);
+        get
+        {
+            if (!RawDisplayExchangeRate.HasValue) return 0;
+            if (ShouldReverseDisplay) return 0; // قیمت هر گرم/دلار به تومان: بدون اعشار
+            var val = RawDisplayExchangeRate.Value;
+            if (val >= 1m) return 4;          // مقدارهای بزرگ: اعشار محدود
+            return 6;                          // مقدارهای کوچک: کمی اعشار بیشتر
+        }
+    }
+
+    private decimal? RoundedDisplayExchangeRate =>
+        RawDisplayExchangeRate.HasValue
+            ? decimal.Round(RawDisplayExchangeRate.Value, RateDisplayDecimals, MidpointRounding.AwayFromZero)
+            : null;
+
+    // پراکسی برای @bind-Value فیلد عددی
+    private decimal? BoundDisplayExchangeRate
+    {
+        get => RoundedDisplayExchangeRate;
+        set
+        {
+            if (value is null)
+            {
+                _ = SetExchangeRateAsync(null);
+                return;
+            }
+
+            if (value <= 0)
+            {
+                // نرخ نامعتبر – می‌توان پیام اعتبارسنجی اضافه کرد
+                return;
+            }
+
+            // تبدیل ورودی کاربر به نرخ داخلی Main->Secondary
+            var underlying = ShouldReverseDisplay
+                ? decimal.Round(1 / value.Value, 15, MidpointRounding.AwayFromZero)
+                : value.Value;
+
+            _ = SetExchangeRateAsync(underlying);
+        }
     }
 
     private async Task SetUnpaidPriceUnitAsync(GetPriceUnitTitleResponse? newUnit)
@@ -69,7 +115,7 @@ public partial class UnpaidPriceSelector
         UnpaidPriceUnit = newUnit;
         await UnpaidPriceUnitChanged.InvokeAsync(newUnit);
 
-        if (newUnit is not null)
+        if (newUnit is not null && MainPriceUnit is not null)
         {
             await LoadExchangeRateAsync();
         }
@@ -99,6 +145,62 @@ public partial class UnpaidPriceSelector
 
             await SetExchangeRateAsync(fetchedRate);
             StateHasChanged();
+        }
+    }
+
+    private string RateNumericFormat
+    {
+        get
+        {
+            // فرمت نمایش مطابق تعداد اعشار گرد شده
+            return RateDisplayDecimals switch
+            {
+                0 => "#,##0",
+                1 => "#,##0.0",
+                2 => "#,##0.00",
+                3 => "#,##0.000",
+                4 => "#,##0.0000",
+                5 => "#,##0.00000",
+                _ => "#,##0.000000"
+            };
+        }
+    }
+
+    private string RateLabel =>
+        ShouldReverseDisplay
+            ? $"قیمت هر 1 {UnpaidPriceUnit?.Title} به {MainPriceUnit?.Title}"
+            : $"نرخ تبدیل 1 {MainPriceUnit?.Title} به {UnpaidPriceUnit?.Title}";
+
+    private string AdornmentText =>
+        ShouldReverseDisplay ? MainPriceUnit?.Title ?? "" : UnpaidPriceUnit?.Title ?? "";
+
+    private string HelperText
+    {
+        get
+        {
+            if (UnpaidPriceUnit is null || MainPriceUnit is null) return "";
+            var disp = RoundedDisplayExchangeRate;
+            if (!disp.HasValue) return "";
+
+            if (ShouldReverseDisplay)
+                return $"هر 1 {UnpaidPriceUnit.Title} = {disp.Value.ToString(RateNumericFormat)} {MainPriceUnit.Title}";
+            else
+                return $"هر 1 {MainPriceUnit.Title} = {disp.Value.ToString(RateNumericFormat)} {UnpaidPriceUnit.Title}";
+        }
+    }
+
+    private bool ShowMainEquivalent => SelectedMode == "custom" && UnpaidPriceUnit is not null;
+
+    private string? SecondaryUnitTitle => UnpaidPriceUnit?.Title;
+
+    private decimal ComputedSecondaryDisplay
+    {
+        get
+        {
+            if (ExchangeRate is null || UnpaidPriceUnit is null || MainPriceUnit is null)
+                return TotalUnpaidAmount;
+
+            return TotalUnpaidAmount * ExchangeRate.Value;
         }
     }
 }

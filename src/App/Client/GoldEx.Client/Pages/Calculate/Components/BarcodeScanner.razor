@@ -1,16 +1,9 @@
-﻿@using BlazorBarcodeScanner.ZXing.JS
+﻿@using ZXingBlazor.Components
 
 <MudPaper Class="pa-4 my-2" Elevation="4" Outlined="true">
-    @if (_isLoading)
+    @if (!string.IsNullOrEmpty(_errorMessage))
     {
-        <div class="d-flex justify-center align-center flex-column gap-2" style="height: 200px;">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            <MudText Typo="Typo.caption">درحال آماده سازی دوربین</MudText>
-        </div>
-    }
-    else if (!string.IsNullOrEmpty(_errorMessage))
-    {
-        <div class="d-flex justify-center align-center flex-column gap-2" style="height: 200px;">
+        <div class="d-flex justify-center align-center flex-column gap-2" style="height: 300px;">
             <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" />
             <MudText Color="Color.Error">@_errorMessage</MudText>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReloadAsync">تلاش دوباره</MudButton>
@@ -18,22 +11,15 @@
     }
     else
     {
-        <div style="position: relative; background-color: black;">
-            @* The library component *@
-            <BlazorBarcodeScanner.ZXing.JS.BarcodeReader @ref="_reader"
-                                                         Title=""
-                                                         StartCameraAutomatically="true"
-                                                         ShowStart="false"
-                                                         ShowReset="false"
-                                                         ShowToggleTorch="false"
-                                                         ShowResult="false"
-                                                         ShowVideoDeviceList="false"
-                                                         StreamHeight="1080"
-                                                         StreamWidth="1080"
-                                                         OnBarcodeReceived="HandleBarcode"
-                                                         OnErrorReceived="HandleError" />
+        <div class="scanner-wrapper">
 
-            <div style="position: absolute; bottom: 10px; width: 100%; text-align: center;">
+            <BarcodeReader @ref="_reader"
+                           ScanResult="HandleBarcode"
+                           OnError="HandleError"
+                           UseBuiltinDiv="true"
+                           Options="_options" />
+
+            <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; z-index: 999;">
                 <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" OnClick="CloseScanner">بستن دوربین</MudButton>
             </div>
         </div>
@@ -45,69 +31,51 @@
     [Parameter] public EventCallback OnClose { get; set; }
 
     private BarcodeReader? _reader;
-    private bool _isLoading = true;
     private string? _errorMessage;
-    private bool _jsLoaded;
+    private string? _lastResult;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private readonly ZXingOptions _options = new ZXingOptions
     {
-        if (firstRender)
-        {
-            try
-            {
-                _jsLoaded = true;
-                _isLoading = false;
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                _errorMessage = "Could not load camera module.";
-                _isLoading = false;
-                StateHasChanged();
-            }
-        }
-    }
+        Width = 1280,
+        Height = 720,
+        DecodeAllFormats = false,
+        formats =
+        [
+            BarcodeFormat.CODE_128
+        ]
+    };
 
-    private async Task HandleBarcode(BarcodeReceivedEventArgs args)
+    private async Task HandleBarcode(string result)
     {
-        if (!string.IsNullOrWhiteSpace(args.BarcodeText))
-        {
-            await OnResult.InvokeAsync(args.BarcodeText);
-        }
+        if (string.IsNullOrWhiteSpace(result)) return;
+        if (_lastResult == result) return;
+        _lastResult = result;
+        await OnResult.InvokeAsync(result);
     }
-
-    
 
     private async Task ReloadAsync()
     {
         _errorMessage = null;
-        _isLoading = true;
-        // Re-trigger render logic
-        await Task.Delay(500);
-        _isLoading = false;
+        StateHasChanged();
+        await Task.Delay(100);
+        if (_reader != null) await _reader.Start();
     }
 
     private async Task CloseScanner()
     {
+        if (_reader != null) await _reader.Stop();
         await OnClose.InvokeAsync();
     }
 
-
-    private void HandleError(ErrorReceivedEventArgs args)
+    private Task HandleError(string message)
     {
-        _errorMessage = args.Message;
-
-        // Common User Friendly translation
+        _errorMessage = message;
         if (_errorMessage.Contains("NotAllowedError") || _errorMessage.Contains("Permission denied"))
-        {
-            _errorMessage = "Camera permission was denied. Please allow camera access.";
-        }
+            _errorMessage = "دسترسی به دوربین مجاز نیست.";
         else if (_errorMessage.Contains("NotFoundError"))
-        {
-            _errorMessage = "No camera device found.";
-        }
+            _errorMessage = "دوربینی پیدا نشد.";
 
         StateHasChanged();
+        return Task.CompletedTask;
     }
-
 }
