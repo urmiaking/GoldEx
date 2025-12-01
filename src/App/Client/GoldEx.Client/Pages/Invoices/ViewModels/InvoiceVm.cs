@@ -39,8 +39,9 @@ public class InvoiceVm
 
     public GetPriceUnitTitleResponse? UnpaidPriceUnit { get; set; }
     public decimal? UnpaidExchangeRate { get; set; }
-    public decimal TotalUnpaidSecondaryAmount => TotalUnpaidAmount * UnpaidExchangeRate ?? 1;
-
+    public decimal TotalUnpaidSecondaryAmount => UnpaidExchangeRate.HasValue
+        ? TotalUnpaidAmount * UnpaidExchangeRate.Value
+        : TotalUnpaidAmount;
 
     public List<ProductItemVm> ProductItems { get; set; } = [];
     public List<CoinItemVm> CoinItems { get; set; } = [];

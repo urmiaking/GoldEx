@@ -20,8 +20,7 @@
     {
         <div style="position: relative; background-color: black;">
             @* The library component *@
-            <BlazorBarcodeScanner.ZXing.JS.BarcodeReader @ref="_reader"
-                                                         Title=""
+            <BlazorBarcodeScanner.ZXing.JS.BarcodeReader Title=""
                                                          StartCameraAutomatically="true"
                                                          ShowStart="false"
                                                          ShowReset="false"
@@ -44,28 +43,27 @@
     [Parameter] public EventCallback<string> OnResult { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private BarcodeReader? _reader;
     private bool _isLoading = true;
     private string? _errorMessage;
-    private bool _jsLoaded;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             try
             {
-                _jsLoaded = true;
                 _isLoading = false;
                 StateHasChanged();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _errorMessage = "Could not load camera module.";
+                _errorMessage = "باز شدن دوربین با مشکل مواجه شد";
                 _isLoading = false;
                 StateHasChanged();
             }
         }
+
+        return base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task HandleBarcode(BarcodeReceivedEventArgs args)

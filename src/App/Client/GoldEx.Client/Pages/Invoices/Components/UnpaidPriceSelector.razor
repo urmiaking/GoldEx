@@ -34,34 +34,49 @@
                     }
                 </MudSelect>
             </MudItem>
-            @* <MudItem xs="12" md="6">
-                <MudNumericField @bind-Value="BoundExchangeRate"
-                                 Label="نرخ تبدیل"
-                                 Variant="Variant.Outlined"
-                                 Margin="Margin.Dense"
-                                 Format="#,##0.##########"
-                                 Adornment="Adornment.End"
-                                 AdornmentText="@MainPriceUnit?.Title"
-                                 Immediate="true"
-                                 HideSpinButtons="true" />
-            </MudItem> *@
+            @if (UnpaidPriceUnit is not null && MainPriceUnit is not null)
+            {
+                <MudItem xs="12">
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="BoundDisplayExchangeRate"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Label="@RateLabel"
+                                     Format="@RateNumericFormat"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="@AdornmentText"
+                                     Immediate="true"
+                                     HideSpinButtons="true"
+                                     dir="ltr" />
+                    <div class="d-flex justify-content-center">
+                        <MudText Typo="Typo.caption" Class="mt-1" Color="Color.Primary">
+                            @HelperText
+                        </MudText>
+                    </div>
+                </MudItem>
+            }
         </MudGrid>
     }
 
     <MudDivider />
 
-    <div class="d-flex flex-column align-center">
+    <div class="d-flex flex-column align-center mt-2">
         @if (SelectedMode == "main")
         {
-            <MudText Color="Color.Primary" Typo="Typo.h6">مبلغ کل: @TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)</MudText>
+            <MudText Color="Color.Primary" Typo="Typo.h6">
+                مبلغ کل: @TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)
+            </MudText>
         }
         else if (UnpaidPriceUnit is not null)
         {
-            <MudText Color="Color.Primary" Typo="Typo.h6">مبلغ کل: @TotalUnpaidSecondaryAmount?.ToCurrencyFormat(UnpaidPriceUnit.Title)</MudText>
-
-            @if (ExchangeRate is > 0)
+            <MudText Color="Color.Primary" Typo="Typo.h6">
+                مبلغ کل: @ComputedSecondaryDisplay.ToCurrencyFormat(SecondaryUnitTitle)
+            </MudText>
+            @if (ShowMainEquivalent)
             {
-                <MudText Color="Color.Primary" Typo="Typo.body2">(معادل @(TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title)))</MudText>
+                <MudText Color="Color.Primary" Typo="Typo.body2">
+                    (معادل @TotalUnpaidAmount.ToCurrencyFormat(MainPriceUnit?.Title))
+                </MudText>
             }
         }
     </div>
