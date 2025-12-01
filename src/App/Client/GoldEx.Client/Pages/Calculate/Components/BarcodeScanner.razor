@@ -36,13 +36,12 @@
 
     private readonly ZXingOptions _options = new ZXingOptions
     {
-        Width = 1280,
-        Height = 720,
         DecodeAllFormats = false,
         formats =
         [
             BarcodeFormat.CODE_128
-        ]
+        ],
+        TRY_HARDER = true
     };
 
     private async Task HandleBarcode(string result)
