@@ -121,9 +121,9 @@ public partial class InvoicesList
         _table.NavigateTo(i - 1);
     }
 
-    public void OnCreateInvoice()
+    public void OnCreateInvoice(TradeScale tradeScale)
     {
-        NavigationManager.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { CustomerId }));
+        NavigationManager.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { CustomerId, TradeScale = tradeScale }));
     }
 
     private async Task OnRemoveInvoice(InvoiceListVm model)

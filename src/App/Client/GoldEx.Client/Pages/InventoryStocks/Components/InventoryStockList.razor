@@ -14,13 +14,34 @@
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
-                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        <MudSpacer />
+                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+         <MudSpacer />
+        @* Desktop: show original toolbar controls exactly as before *@
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            @* Mobile: a single filter button that opens the popover *@
+            <MudTooltip Text="فیلترها">
+                <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                               Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               Size="Size.Small"
+                               OnClick="OpenMobileFilters" />
+            </MudTooltip>
+            <MobileFiltersPopover Open="@_mobileFiltersOpen"
+                                  OnClose="CloseMobileFilters"
+                                  ItemType="ItemType"
+                                  ItemStatus="ItemStatus"
+                                  CategoryFilter="_categoryFilter"
+                                  Categories="_categories"
+                                  DateRange="_filterDateRange"
+                                  Selectable="Selectable"
+                                  OnApply="ApplyMobileFilters" />
+        </MudHidden>
 
-        @if (!Selectable)
-        {
-            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        @* Desktop-only rendering of the existing controls (unchanged) *@
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            @if (!Selectable)
+            {
                 <MudDateRangePicker DateRange="@_filterDateRange"
                                     DateRangeChanged="OnDateRangeChanged"
                                     Margin="Margin.Dense"
@@ -35,11 +56,9 @@
                                     PlaceholderEnd="تا"
                                     Label="@DateRangeFilterLabel"
                                     Clearable="true" />
-            </MudHidden>
 
-            @if (ItemType is ItemType.Product)
-            {
-                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                @if (ItemType is ItemType.Product)
+                {
                     <MudButtonGroup Size="Size.Small" Color="@(_categoryFilter is null ? Color.Info : Color.Success)" Variant="Variant.Filled" Class="ml-3">
                         <MudButton Size="Size.Small">
                             @(_categoryFilter?.Title ?? "دسته بندی")
@@ -56,66 +75,65 @@
                             }
                         </MudMenu>
                     </MudButtonGroup>
-                </MudHidden>
-            }
-        }
-        <MudButtonGroup Size="Size.Small" Color="@ItemTypeColor" Variant="Variant.Filled" Class="ml-3">
-            <MudButton Size="Size.Small" StartIcon="@ItemTypeIcon"
-                       Class="@(ItemType == ItemType.MoltenGold ? "black-text" : "")">
-                <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    <div class="@(ItemType == ItemType.MoltenGold ? "black-text" : "")">
-                        @ItemType.GetDisplayName()
-                    </div>
-                </MudHidden>
-            </MudButton>
-
-            <MudMenu Size="Size.Small"
-                     Icon="@Icons.Material.Filled.ArrowDropDown"
-                     Color="@(ItemType == ItemType.MoltenGold ? Color.Dark : Color.Default)"
-                     Style="align-self: auto;">
-
-                @foreach (var type in SelectableTypes)
-                {
-                    <MudMenuItem OnClick="() => SetItemTypeFilterText(type)">
-                        <MudIcon Icon="@GetItemTypeIcon(type)" Color="@GetItemTypeIconColor(type)" Class="mr-2" />
-                        @type.GetDisplayName()
-                    </MudMenuItem>
                 }
-
-            </MudMenu>
-        </MudButtonGroup>
-        
-        @if (!Selectable)
-        {
-            <MudButtonGroup Size="Size.Small" Color="@ItemStatusColor" Variant="Variant.Filled" Class="ml-3">
-                <MudButton Size="Size.Small" StartIcon="@ItemStatusIcon" Class="@(ItemStatus == ItemStatus.Melted ? "black-text" : "")">
+            }
+            <MudButtonGroup Size="Size.Small" Color="@ItemTypeColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@ItemTypeIcon"
+                           Class="@(ItemType == ItemType.MoltenGold ? "black-text" : "")">
                     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                        @ItemStatus.GetDisplayName()
+                        <div class="@(ItemType == ItemType.MoltenGold ? "black-text" : "")">
+                            @ItemType.GetDisplayName()
+                        </div>
                     </MudHidden>
                 </MudButton>
-                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Color="@(ItemStatus == ItemStatus.Melted ? Color.Dark : Color.Default)" Style="align-self: auto;">
-                    <MudMenuItem Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Success"
-                                 OnClick="() => SetStatusFilterText(ItemStatus.Available)">
-                        @ItemStatus.Available.GetDisplayName()
-                    </MudMenuItem>
-                    @if (ItemType is not ItemType.UsedProduct)
+
+                <MudMenu Size="Size.Small"
+                         Icon="@Icons.Material.Filled.ArrowDropDown"
+                         Color="@(ItemType == ItemType.MoltenGold ? Color.Dark : Color.Default)"
+                         Style="align-self: auto;">
+
+                    @foreach (var type in SelectableTypes)
                     {
-                        <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket" IconColor="Color.Error"
-                                     OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
-                            @ItemStatus.Sold.GetDisplayName()
+                        <MudMenuItem OnClick="() => SetItemTypeFilterText(type)">
+                            <MudIcon Icon="@GetItemTypeIcon(type)" Color="@GetItemTypeIconColor(type)" Class="mr-2" />
+                            @type.GetDisplayName()
                         </MudMenuItem>
                     }
-                    @if (ItemType is ItemType.UsedProduct)
-                    {
-                        <MudMenuItem Icon="@Icons.Material.Filled.Whatshot" IconColor="Color.Warning"
-                                     OnClick="() => SetStatusFilterText(ItemStatus.Melted)">
-                            <div class="@(ItemStatus == ItemStatus.Melted ? "black-text" : "")">@ItemStatus.Melted.GetDisplayName()</div>
-                        </MudMenuItem>
-                    }
+
                 </MudMenu>
             </MudButtonGroup>
-        }
-
+            
+            @if (!Selectable)
+            {
+                <MudButtonGroup Size="Size.Small" Color="@ItemStatusColor" Variant="Variant.Filled" Class="ml-3">
+                    <MudButton Size="Size.Small" StartIcon="@ItemStatusIcon" Class="@(ItemStatus == ItemStatus.Melted ? "black-text" : "")">
+                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                            @ItemStatus.GetDisplayName()
+                        </MudHidden>
+                    </MudButton>
+                    <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Color="@(ItemStatus == ItemStatus.Melted ? Color.Dark : Color.Default)" Style="align-self: auto;">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Success"
+                                     OnClick="() => SetStatusFilterText(ItemStatus.Available)">
+                            @ItemStatus.Available.GetDisplayName()
+                        </MudMenuItem>
+                        @if (ItemType is not ItemType.UsedProduct)
+                        {
+                            <MudMenuItem Icon="@Icons.Material.Filled.ShoppingBasket" IconColor="Color.Error"
+                                         OnClick="() => SetStatusFilterText(ItemStatus.Sold)">
+                                @ItemStatus.Sold.GetDisplayName()
+                            </MudMenuItem>
+                        }
+                        @if (ItemType is ItemType.UsedProduct)
+                        {
+                            <MudMenuItem Icon="@Icons.Material.Filled.Whatshot" IconColor="Color.Warning"
+                                         OnClick="() => SetStatusFilterText(ItemStatus.Melted)">
+                                <div class="@(ItemStatus == ItemStatus.Melted ? "black-text" : "")">@ItemStatus.Melted.GetDisplayName()</div>
+                            </MudMenuItem>
+                        }
+                    </MudMenu>
+                </MudButtonGroup>
+            }
+        </MudHidden>
     </ToolBarContent>
     <HeaderContent>
         @switch (ItemType)

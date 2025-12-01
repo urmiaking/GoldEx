@@ -38,6 +38,7 @@ public partial class InventoryStockList
     private MudTable<InventoryStockVm> _table = default!;
 
     private string? _searchString;
+    private bool _mobileFiltersOpen;
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
     private List<ProductCategoryVm> _categories = [];
@@ -389,4 +390,48 @@ public partial class InventoryStockList
             await RefreshAsync();
         }
     }
+
+    // Mobile popover handlers - keep domain rules intact, reuse existing refresh
+    private void OpenMobileFilters()
+    {
+        _mobileFiltersOpen = true;
+        StateHasChanged();
+    }
+
+    private void CloseMobileFilters()
+    {
+        _mobileFiltersOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task ApplyMobileFilters(MobileFiltersResult result)
+    {
+        // Apply filters from popover
+        ItemType = result.ItemType;
+
+        // Ensure melted compatibility as in existing SetItemTypeFilterText
+        if (ItemType is not ItemType.MoltenGold && result.ItemStatus is ItemStatus.Melted)
+        {
+            ItemStatus = ItemStatus.Available;
+        }
+        else
+        {
+            ItemStatus = result.ItemStatus;
+        }
+
+        _categoryFilter = ItemType is ItemType.Product ? result.CategoryFilter : null;
+        _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
+        _actionType = ItemStatus == ItemStatus.Available ? WarehouseActionType.In : WarehouseActionType.Out;
+
+        _mobileFiltersOpen = false;
+        await RefreshAsync();
+    }
+
+    // Result model used by the popover to pass values
+    public record MobileFiltersResult(
+        ItemType ItemType,
+        ItemStatus ItemStatus,
+        ProductCategoryVm? CategoryFilter,
+        DateRange DateRange
+    );
 }
