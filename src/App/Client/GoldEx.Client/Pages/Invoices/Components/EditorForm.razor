@@ -328,13 +328,40 @@ else
                                 <MudText Typo="Typo.body1" Color="Color.Primary" Class="d-md-none">
                                     @($"مانده نهایی: {FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
                                 </MudText>
+                                <div @ref="_popoverAnchor">
+                                    <MudTooltip Color="Color.Success" Arrow="true" Text="تغییر نوع بدهی">
+                                        <MudIconButton Size="Size.Small"
+                                                       Icon="@Icons.Material.Filled.SwapHoriz"
+                                                       Color="Color.Success"
+                                                       Variant="Variant.Filled"
+                                                       OnClick="OnTotalUnpaidMenuToggled" />
+                                    </MudTooltip>
+                                    <MudPopover Open="@_totalUnpaidMenuOpen"
+                                                Fixed="true" Class="px-4 pt-4"
+                                                AnchorOrigin="Origin.TopCenter"
+                                                TransformOrigin="Origin.BottomCenter"
+                                                Elevation="24">
+                                        <div class="container d-flex flex-column">
+                                            <UnpaidPriceSelector PriceUnits="@_priceUnits"
+                                                                 TotalUnpaidAmount="@_model.TotalUnpaidAmount"
+                                                                 TotalUnpaidSecondaryAmount="@_model.TotalUnpaidSecondaryAmount"
+                                                                 MainPriceUnit="@_model.InvoicePriceUnit"
+                                                                 @bind-UnpaidPriceUnit="@_model.UnpaidPriceUnit"
+                                                                 @bind-ExchangeRate="@_model.UnpaidExchangeRate" />
+                                            <div class="d-flex justify-center">
+                                                <MudButton OnClick="@OnTotalUnpaidMenuToggled" Class="my-4" Variant="Variant.Filled"
+                                                           Color="Color.Success" StartIcon="@Icons.Material.Filled.Check">ذخیره</MudButton>
+                                            </div>
+                                        </div>
+                                    </MudPopover>
+                                </div>
                                 <div class="d-md-block d-none flex-grow-1"></div>
                                 <div @onclick:stopPropagation="true" class="ml-md-3">
                                     <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
                                         <MudIconButton Icon="@Icons.Material.Filled.Menu"
                                                        Color="Color.Primary"
                                                        Variant="Variant.Filled"
-                                                       OnClick="OpenPaymentsDialog"/>
+                                                       OnClick="OpenPaymentsDialog" />
                                         <MudMenu EndIcon="@Icons.Material.Filled.ArrowDropUp"
                                                  Label="ثبت پرداخت"
                                                  AnchorOrigin="Origin.BottomCenter"
@@ -463,34 +490,10 @@ else
                                 <MudItem xs="6" md="3">
                                     <MudText Typo="Typo.body1">مانده فاکتور</MudText>
                                 </MudItem>
-                                <MudItem xs="6" md="3" Class="d-flex align-center">
+                                <MudItem xs="6" md="3">
                                     <MudText Typo="Typo.body1" Align="Align.Right" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)">
                                         @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
                                     </MudText>
-                                    <MudTooltip Color="Color.Success" Arrow="true" Text="تغییر نوع بدهی">
-                                        <MudIconButton Size="Size.Small" 
-                                                       Icon="@Icons.Material.Filled.SwapHorizontalCircle"
-                                                       Color="Color.Success" 
-                                                       OnClick="OnTotalUnpaidMenuToggled" />
-                                    </MudTooltip>
-                                    <MudPopover Open="@_totalUnpaidMenuOpen" 
-                                                Fixed="true" Class="px-4 pt-4" 
-                                                AnchorOrigin="Origin.TopCenter" 
-                                                TransformOrigin="Origin.BottomCenter" 
-                                                Elevation="24">
-                                        <div class="container d-flex flex-column">
-                                            <UnpaidPriceSelector PriceUnits="@_priceUnits"
-                                                                 TotalUnpaidAmount="@_model.TotalUnpaidAmount"
-                                                                 TotalUnpaidSecondaryAmount="@_model.TotalUnpaidSecondaryAmount"
-                                                                 MainPriceUnit="@_model.InvoicePriceUnit"
-                                                                 @bind-UnpaidPriceUnit="@_model.UnpaidPriceUnit"
-                                                                 @bind-ExchangeRate="@_model.UnpaidExchangeRate" />
-                                            <div class="d-flex justify-center">
-                                                <MudButton OnClick="@OnTotalUnpaidMenuToggled" Class="my-4" Variant="Variant.Filled"
-                                                           Color="Color.Success" StartIcon="@Icons.Material.Filled.Check">ذخیره</MudButton>
-                                            </div>
-                                        </div>
-                                    </MudPopover>
                                 </MudItem>
                                 @if (_model.InvoiceType is InvoiceType.Sell && _model.UsedProducts.Any())
                                 {

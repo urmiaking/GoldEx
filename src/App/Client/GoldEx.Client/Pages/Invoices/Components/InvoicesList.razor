@@ -76,14 +76,33 @@
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(_ => OnCreateInvoice())" Size="Size.Small" Variant="Variant.Filled">
-                فاکتور جدید
-            </MudButton>
+            <MudMenu Class="ml-4" 
+                     Label="فاکتور جدید" 
+                     EndIcon="@Icons.Material.Filled.Add" 
+                     Color="Color.Primary" 
+                     Variant="Variant.Filled" 
+                     Size="Size.Small">
+                @foreach (var scale in Enum.GetValues<TradeScale>())
+                {
+                    <MudMenuItem OnClick="@(() => OnCreateInvoice(scale))">
+                        @scale.GetDisplayName()
+                    </MudMenuItem>
+                }
+            </MudMenu>
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreateInvoice())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
+            <MudMenu Icon="@Icons.Material.Filled.Add" 
+                     Color="Color.Primary" 
+                     Variant="Variant.Filled" 
+                     Size="Size.Small">
+                @foreach (var scale in Enum.GetValues<TradeScale>())
+                {
+                    <MudMenuItem OnClick="@(() => OnCreateInvoice(scale))">
+                        @scale.GetDisplayName()
+                    </MudMenuItem>
+                }
+            </MudMenu>
         </MudHidden>
     </ToolBarContent>
     <HeaderContent>

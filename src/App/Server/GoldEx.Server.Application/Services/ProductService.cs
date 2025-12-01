@@ -36,7 +36,8 @@ internal class ProductService(
     IMapper mapper,
     ILogger<ProductService> logger,
     ProductRequestDtoValidator validator,
-    UpdateProductRequestValidator updateValidator) : IProductService, IServerProductService
+    UpdateProductRequestValidator updateValidator,
+    DeleteProductValidator deleteValidator) : IProductService, IServerProductService
 {
     public async Task<List<GetProductResponse>> GetListAsync(string name, ProductType productType,
         CancellationToken cancellationToken = default)
@@ -110,9 +111,13 @@ internal class ProductService(
         }
     }
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
+        await repository.DeleteAsync(item, cancellationToken);
     }
 
     #region Server side services
@@ -413,14 +418,14 @@ internal class ProductService(
 
         foreach (var itemToDelete in itemsToDelete)
         {
+            invoice.RemoveProductItem(itemToDelete);
+
             // اگر این آیتم مربوط به فاکتور خرید بود و یا فاکتور فروشی که محصول به صورت آنی ایجاد شده بود
             if (invoice.InvoiceType == InvoiceType.Purchase || itemToDelete.IsInstantProduct)
             {
                 // قبل از حذف آیتم، باید محصول مرتبط با آن را حذف کنیم
                 await DeleteAsync(itemToDelete.ProductId.Value, cancellationToken);
             }
-
-            invoice.RemoveProductItem(itemToDelete);
         }
 
         // --- ۲. پردازش آیتم‌های موجود در درخواست ---
