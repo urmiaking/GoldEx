@@ -107,13 +107,26 @@
             <MudChipSet T="ProductType"
                         SelectionMode="SelectionMode.SingleSelection"
                         Variant="Variant.Outlined"
+                        Size="Size.Medium"
                         CheckMark="true"
                         SelectedValue="_model.ProductType"
                         SelectedValueChanged="OnProductTypeChanged">
-                <MudChip Color="Color.Primary" Value="ProductType.Gold">طلا</MudChip>
-                <MudChip Color="Color.Error" Value="ProductType.Jewelry">جواهر</MudChip>
-                <MudChip Color="Color.Success" Value="ProductType.MoltenGold">آبشده</MudChip>
-                <MudChip Color="Color.Info" Value="ProductType.UsedGold">کهنه</MudChip>
+                <MudChip Color="Color.Primary"
+                         Value="ProductType.Gold"
+                         Size="@(_model.ProductType == ProductType.Gold ? Size.Large : Size.Medium)"
+                         Variant="@(_model.ProductType == ProductType.Gold ? Variant.Text : Variant.Outlined)">طلا</MudChip>
+                <MudChip Color="Color.Error"
+                         Value="ProductType.Jewelry"
+                         Size="@(_model.ProductType == ProductType.Jewelry ? Size.Large : Size.Medium)"
+                         Variant="@(_model.ProductType == ProductType.Jewelry ? Variant.Text : Variant.Outlined)">جواهر</MudChip>
+                <MudChip Color="Color.Success"
+                         Value="ProductType.MoltenGold"
+                         Size="@(_model.ProductType == ProductType.MoltenGold ? Size.Large : Size.Medium)"
+                         Variant="@(_model.ProductType == ProductType.MoltenGold ? Variant.Text : Variant.Outlined)">آبشده</MudChip>
+                <MudChip Color="Color.Info"
+                         Value="ProductType.UsedGold"
+                         Size="@(_model.ProductType == ProductType.UsedGold ? Size.Large : Size.Medium)"
+                         Variant="@(_model.ProductType == ProductType.UsedGold ? Variant.Text : Variant.Outlined)">کهنه</MudChip>
             </MudChipSet>
         </div>
 

@@ -2,16 +2,22 @@
 
 <MudCard Elevation="@Elevation" Class="pa-4">
     <MudForm Model="_model" @ref="@_form" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
-        <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">
-            <MudChipSet T="GoldUnitType"
-                        SelectionMode="SelectionMode.SingleSelection"
-                        Variant="Variant.Outlined"
-                        CheckMark="true"
-                        SelectedValue="_model.GoldUnitType"
-                        SelectedValueChanged="OnGoldUnitTypeChanged">
-                <MudChip Color="Color.Primary" Value="GoldUnitType.Gram">@GoldUnitType.Gram.GetDisplayName()</MudChip>
-                <MudChip Color="Color.Success" Value="GoldUnitType.Mesghal">@GoldUnitType.Mesghal.GetDisplayName()</MudChip>
-            </MudChipSet>
+        <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">  
+            <MudChipSet T="GoldUnitType"   
+                        SelectionMode="SelectionMode.SingleSelection"   
+                        Variant="Variant.Outlined"   
+                        CheckMark="true"   
+                        SelectedValue="_model.GoldUnitType"   
+                        SelectedValueChanged="OnGoldUnitTypeChanged">  
+                <MudChip Color="Color.Primary"   
+                         Value="GoldUnitType.Gram"  
+                         Size="@(_model.GoldUnitType == GoldUnitType.Gram ? Size.Large : Size.Medium)"  
+                         Variant="@(_model.GoldUnitType == GoldUnitType.Gram ? Variant.Text : Variant.Outlined)">@GoldUnitType.Gram.GetDisplayName()</MudChip>  
+                <MudChip Color="Color.Success"   
+                         Value="GoldUnitType.Mesghal"  
+                         Size="@(_model.GoldUnitType == GoldUnitType.Mesghal ? Size.Large : Size.Medium)"  
+                         Variant="@(_model.GoldUnitType == GoldUnitType.Mesghal ? Variant.Text : Variant.Outlined)">@GoldUnitType.Mesghal.GetDisplayName()</MudChip>  
+            </MudChipSet>  
         </div>
         <MudGrid Spacing="4">
             <MudItem xs="12" sm="6" md="4" lg="3">

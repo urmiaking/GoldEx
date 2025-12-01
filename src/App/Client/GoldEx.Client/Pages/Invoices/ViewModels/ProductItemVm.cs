@@ -131,7 +131,9 @@ public class ProductItemVm
 
     private void CalculateAndSetCostPrice()
     {
-        CostPrice = CalculatorHelper.Product.CalculateCostPrice(
+        var stoneAmount = Product.Stones?.Sum(x => x.Cost * (StonePriceUnitExchangeRate ?? 1)) ?? 0;
+        
+        var costPrice = CalculatorHelper.Product.CalculateCostPrice(
             weight: TotalWeight ?? 0,
             fineness: Product.Fineness,
             wageAmount: Product.Wage,
@@ -139,6 +141,8 @@ public class ProductItemVm
             gramPrice: GramPrice,
             exchangeRate: WageExchangeRate
         );
+
+        CostPrice = costPrice + stoneAmount;
     }
 
     /// <summary>
@@ -270,13 +274,13 @@ public class ProductItemVm
         };
     }
 
-    public void SetAsJewelry(GetPriceUnitTitleResponse priceUnit, GetSettingResponse? settings)
+    public void SetAsJewelry(GetPriceUnitTitleResponse priceUnit, GetSettingResponse? settings, TradeScale tradeScale)
     {
         Product.WageType = WageType.Fixed;
         Product.WagePriceUnitId = priceUnit.Id;
         Product.WagePriceUnitTitle = priceUnit.Title;
 
-        if (InvoiceType is InvoiceType.Sell)
+        if (InvoiceType is InvoiceType.Sell && tradeScale is TradeScale.Retail)
         {
             ProfitPercent = settings?.JewelryProfitPercent ?? 20;
             TaxPercent = settings?.TaxPercent ?? 10;
@@ -284,12 +288,12 @@ public class ProductItemVm
         Product.MoltenGold = null;
     }
 
-    public void SetAsGold(GetPriceUnitTitleResponse priceUnit, GetSettingResponse? settings)
+    public void SetAsGold(GetPriceUnitTitleResponse priceUnit, GetSettingResponse? settings, TradeScale tradeScale)
     {
         Product.WageType = WageType.Percent;
         Product.WagePriceUnitId = null;
         Product.WagePriceUnitTitle = null;
-        if (InvoiceType is InvoiceType.Sell)
+        if (InvoiceType is InvoiceType.Sell && tradeScale is TradeScale.Retail)
         {
             ProfitPercent = settings?.GoldProfitPercent ?? 7;
             TaxPercent = settings?.TaxPercent ?? 10;
@@ -297,9 +301,9 @@ public class ProductItemVm
         Product.MoltenGold = null;
     }
 
-    public void SetAsMoltenGold(GetSettingResponse? settings)
+    public void SetAsMoltenGold(GetSettingResponse? settings, TradeScale tradeScale)
     {
-        if (InvoiceType is InvoiceType.Sell)
+        if (InvoiceType is InvoiceType.Sell && tradeScale is TradeScale.Retail)
         {
             Product.Wage = settings?.MoltenGoldCommissionPercent ?? 1.5m;
             Product.WageType = WageType.Percent;
