@@ -234,6 +234,8 @@ public class ProductItemVm
         if (unitPrice <= 0)
             throw new ValidationException("قیمت واحد باید بزرگتر از صفر باشد");
 
+        productItem.Product.Weight ??= productItem.TotalWeight;
+
         return new CreateProductItemRequest(
             productItem.Quantity,
             unitPrice,
