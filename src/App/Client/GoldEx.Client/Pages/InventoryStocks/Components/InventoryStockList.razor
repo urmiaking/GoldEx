@@ -144,7 +144,7 @@
                 <MudTh><MudTableSortLabel SortLabel="Product.ProductType" T="InventoryStockVm">نوع جنس</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.ProductCategory.Title" T="InventoryStockVm">دسته</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Product.Name" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Product.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh>
+                @* <MudTh><MudTableSortLabel SortLabel="Product.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh> *@
                 @if (ItemStatus is ItemStatus.Sold)
                 {
                     <MudTh>اجرت ساخت</MudTh>
@@ -154,8 +154,8 @@
                     <MudTh><MudTableSortLabel SortLabel="Product.Wage" T="InventoryStockVm">اجرت ساخت</MudTableSortLabel></MudTh>
                 }
                 <MudTh><MudTableSortLabel SortLabel="Product.Fineness" T="InventoryStockVm">عیار</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CurrentQuantity" T="InventoryStockVm">موجود</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SoldQuantity" T="InventoryStockVm">فروخته شده</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CurrentQuantity" T="InventoryStockVm">وزن موجود</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SoldQuantity" T="InventoryStockVm">وزن فروخته شده</MudTableSortLabel></MudTh>
                 break;
             case ItemType.MoltenGold:
                 <MudTh><MudTableSortLabel SortLabel="Product.Barcode" T="InventoryStockVm">بارکد</MudTableSortLabel></MudTh>
@@ -164,8 +164,8 @@
                 <MudTh>شماره انگ</MudTh>
                 <MudTh>آزمایشگاه</MudTh>
                 <MudTh>تاریخ ری گیری</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CurrentQuantity" T="InventoryStockVm">موجود</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SoldQuantity" T="InventoryStockVm">فروخته شده</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CurrentQuantity" T="InventoryStockVm">وزن موجود</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="SoldQuantity" T="InventoryStockVm">وزن فروخته شده</MudTableSortLabel></MudTh>
                 break;
 
             case ItemType.Coin:
@@ -202,7 +202,7 @@
                 <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
                 <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
-                <MudTd DataLabel="وزن">@(context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType))</MudTd>
+                @* <MudTd DataLabel="وزن">@(context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType))</MudTd> *@
                 <MudTd DataLabel="اجرت">
                     <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
                         @{
@@ -243,8 +243,8 @@
                 <MudTd DataLabel="شماره انگ">@context.Product.MoltenGold?.AssayNumber</MudTd>
                 <MudTd DataLabel="آزمایشگاه">@context.Product.MoltenGold?.Assayer?.FullName</MudTd>
                 <MudTd DataLabel="تاریخ ری گیری">@context.Product.MoltenGold?.AssayDate?.ToString("yyyy-MM-dd")</MudTd>
-                <MudTd DataLabel="موجود">@context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
-                <MudTd DataLabel="فروخته شده">@context.SoldAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
+                <MudTd DataLabel="وزن موجود">@context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
+                <MudTd DataLabel="وزن فروخته شده">@context.SoldAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
                 break;
             case ItemType.Coin when context.Coin is not null:
                 <MudTd DataLabel="عنوان">@(context.Coin.Title)</MudTd>
