@@ -5,13 +5,15 @@
     <AuthorizeView>
         <Authorized>
             <MudGrid Justify="Justify.SpaceBetween" Spacing="4">
-                <MudItem xs="12" sm="6" md="4" lg="3">
+
+                <!-- 1. Barcode Section (Left) -->
+                <!-- Adjusted width: md="3" to make room in the center -->
+                <MudItem xs="12" sm="6" md="3">
                     <div class="d-flex gap-2 align-start">
                         <MudAutocomplete T="string"
                                          Adornment="Adornment.End"
                                          AdornmentIcon="@Icons.Material.Filled.QrCode"
                                          Clearable="true"
-                                         HelperText="@_barcodeFieldHelperText"
                                          Label="بارکد جنس"
                                          dir="ltr"
                                          Margin="Margin.Dense"
@@ -23,7 +25,8 @@
                                          DebounceInterval="200"
                                          CoerceValue="true"
                                          ResetValueOnEmptyText="true"
-                                         Class="flex-grow-1" />
+                                         Class="flex-grow-1"
+                                         />
 
                         <MudHidden Breakpoint="Breakpoint.MdAndUp">
                             <MudIconButton Icon="@Icons.Material.Filled.CameraAlt"
@@ -44,6 +47,19 @@
                             </MudTooltip>
                         }
                     </div>
+
+                    <!-- Mobile View Only: Show Name below the input/buttons -->
+                    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                        @if (_searchedProduct is not null)
+                        {
+                            <div class="d-flex justify-center">
+                                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mt-1 ml-1">
+                                    @_searchedProduct.Name
+                                </MudText>
+                            </div>
+                        }
+                    </MudHidden>
+
                     <MudCollapse Expanded="_scannerOpen">
                         @if (_scannerOpen)
                         {
@@ -51,7 +67,25 @@
                         }
                     </MudCollapse>
                 </MudItem>
-                <MudItem xs="12" sm="6" md="4" lg="3">
+
+                <!-- 2. Desktop Product Name (Middle) -->
+                <!-- Visible only on Md and Up. Fills the space between inputs. -->
+                <MudItem xs="12" md="6">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        <div class="d-flex align-center justify-center h-100 w-100">
+                            @if (_searchedProduct is not null)
+                            {
+                                <MudText Typo="Typo.h5" Color="Color.Primary">
+                                    @_searchedProduct.Name
+                                </MudText>
+                            }
+                        </div>
+                    </MudHidden>
+                </MudItem>
+
+                <!-- 3. Price Unit Section (Right) -->
+                <!-- Adjusted width: md="3" -->
+                <MudItem xs="12" sm="6" md="3">
                     <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="_model.PriceUnit"
                                ValueChanged="OnPriceUnitChanged"
