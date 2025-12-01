@@ -206,7 +206,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
                                                              TotalWeight,
                                                              SaleWage.Value,
                                                              SaleWageType.Value,
-                                                             SaleWagePriceUnitExchangeRate ?? Invoice.ExchangeRate)
+                                                             SaleWagePriceUnitExchangeRate ?? (Invoice.PriceUnitId == SaleWagePriceUnitId ? null : Invoice.ExchangeRate))
                     : CalculatorHelper.Product.CalculateWage(ItemRawAmount,
                                                              TotalWeight,
                                                              product.Wage,
