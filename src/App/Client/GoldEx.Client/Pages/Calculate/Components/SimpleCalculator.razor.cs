@@ -475,7 +475,7 @@ public partial class SimpleCalculator
         _model.UsedGoldFinenessDeductionRate = 0;
         _model.ProductType = ProductType.Gold;
         _model.Wage = 0;
-        _model.WageType = null;
+        _model.WageType = WageType.Percent;
         _model.ExtraCosts = null;
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
 
