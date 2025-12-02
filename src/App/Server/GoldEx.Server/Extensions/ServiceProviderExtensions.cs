@@ -115,7 +115,7 @@ public static class ServiceProviderExtensions
             return;
 
         var tomanPriceUnit = await priceUnitRepository
-            .Get(new PriceUnitsByTitleSpecification(UnitType.Toman.GetDisplayName()))
+            .Get(new PriceUnitsByTitleSpecification(UnitType.TMN.GetDisplayName()))
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Toman price unit is not initialized");
 
         var internalCashLedgerAccount = await ledgerAccountRepository

@@ -14,6 +14,7 @@ internal class PriceUnitMapper : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.PriceId, src => src.PriceId.HasValue ? src.PriceId.Value.Value : (Guid?)null)
             .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.UnitType, src => src.UnitType)
             .Map(dest => dest.PriceTitle, src => src.Price != null ? src.Price.Title : null)
             .Map(dest => dest.HasIcon,
                 src => MapContext.Current.GetService<IWebHostEnvironment>().PriceUnitIconExists(src.Id.Value));

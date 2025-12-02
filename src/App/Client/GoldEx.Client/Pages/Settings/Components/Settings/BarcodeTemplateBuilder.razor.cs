@@ -232,42 +232,6 @@ public partial class BarcodeTemplateBuilder
         StateHasChanged();
     }
 
-    private string GetPreviewWrapperStyle()
-    {
-        // محاسبه scale اولیه
-        var scaleX = (double)PREVIEW_WIDTH / _settings.LabelWidth;
-        var scaleY = (double)PREVIEW_HEIGHT / _settings.LabelHeight;
-        var autoScale = Math.Min(scaleX, scaleY);
-        autoScale = Math.Min(autoScale, 2.0);
-
-        // اعمال زوم دستی
-        var finalScale = autoScale * _zoomLevel;
-
-        return $"width: {PREVIEW_WIDTH}px; height: {PREVIEW_HEIGHT}px; --preview-scale: {finalScale.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)};";
-    }
-
-    private string GetLabelContainerStyle()
-    {
-        return "display: flex; justify-content: center; align-items: center; min-height: 400px; background: #f5f5f5; border-radius: 8px; padding: 20px;";
-    }
-
-    private string GetLabelStyle()
-    {
-        return $"width: {_settings.LabelWidth}px; height: {_settings.LabelHeight}px; position: relative; background: white; border: 2px dashed #ccc; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);";
-    }
-
-    private string GetPositionStyle(BarcodePosition position)
-    {
-        return position switch
-        {
-            BarcodePosition.TopLeft => $"top: {_settings.PaddingTop}px; left: {_settings.PaddingLeft}px;",
-            BarcodePosition.TopRight => $"top: {_settings.PaddingTop}px; right: {_settings.PaddingRight}px;",
-            BarcodePosition.BottomLeft => $"bottom: {_settings.PaddingBottom}px; left: {_settings.PaddingLeft}px;",
-            BarcodePosition.BottomRight => $"bottom: {_settings.PaddingBottom}px; right: {_settings.PaddingRight}px;",
-            _ => string.Empty
-        };
-    }
-
     private string GetPositionLabel(BarcodePosition position)
     {
         return position switch
@@ -280,40 +244,14 @@ public partial class BarcodeTemplateBuilder
         };
     }
 
-    private string GetPositionWrapperStyle(BarcodePosition position)
-    {
-        // محاسبه حداکثر عرض/ارتفاع برای هر موقعیت
-        var maxWidth = Math.Max((_settings.LabelWidth / 2) - (_settings.PaddingLeft + _settings.PaddingRight) / 2, MIN_ZONE_SIZE);
-        var maxHeight = Math.Max((_settings.LabelHeight / 2) - (_settings.PaddingTop + _settings.PaddingBottom) / 2, MIN_ZONE_SIZE);
-
-        var baseStyle = $"max-width: {maxWidth}px; min-width: {MIN_ZONE_SIZE}px;";
-
-        return position switch
-        {
-            BarcodePosition.TopLeft => 
-                $"{baseStyle} top: {_settings.PaddingTop}px; left: {_settings.PaddingLeft}px;",
-            
-            BarcodePosition.TopRight => 
-                $"{baseStyle} top: {_settings.PaddingTop}px; right: {_settings.PaddingRight}px;",
-            
-            BarcodePosition.BottomLeft => 
-                $"{baseStyle} bottom: {_settings.PaddingBottom}px; left: {_settings.PaddingLeft}px;",
-            
-            BarcodePosition.BottomRight => 
-                $"{baseStyle} bottom: {_settings.PaddingBottom}px; right: {_settings.PaddingRight}px;",
-            
-            _ => baseStyle
-        };
-    }
-
     private async Task PrintTestBarcode()
     {
         var testData = new
         {
-            barcode = "1234567890",
+            barcode = "G0206610",
             productName = "گوشواره طلا",
-            weight = "3.5g",
-            wage = "150,000 ریال"
+            weight = "W: 3.258G",
+            wage = "F: 1,150,000 IRR"
         };
 
         var settingsForJs = new

@@ -1077,17 +1077,24 @@ public partial class EditorForm
             return;
         }
 
+        UnitType? wageUnitType = null;
+
+        if (item.Product.WagePriceUnitId != null)
+        {
+            wageUnitType = await GetPriceUnitAsync(item.Product.WagePriceUnitId.Value);
+        }
+
         var data = new
         {
-            barcode = item.Product?.Barcode ?? "",
-            productName = item.Product?.Name ?? "",
-            weight = $"وزن: {item.TotalWeight:G29}{(item.Product?.GoldUnitType == GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: " + (item.Product?.WageType switch
+            barcode = item.Product.Barcode ?? "",
+            productName = item.Product.Name ?? "",
+            weight = $"W: {item.TotalWeight:G29}{(item.Product.GoldUnitType == GoldUnitType.Gram ? "G" : "M")}",
+            wage = "F: " + item.Product.WageType switch
             {
-                WageType.Fixed => $"{item.Product?.Wage?.ToCurrencyFormat(item.Product?.WagePriceUnitTitle)}",
-                WageType.Percent => $"{item.Product?.Wage:G29}%",
-                _ => "ندارد"
-            })
+                WageType.Fixed => $"{item.Product.Wage?.ToCurrencyFormat()} {wageUnitType?.ToString()}",
+                WageType.Percent => $"{item.Product.Wage:G29}%",
+                _ => "---"
+            }
         };
 
         await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
@@ -1103,13 +1110,27 @@ public partial class EditorForm
 
         var data = new
         {
-            barcode = item.Barcode ?? "",
+            barcode = item.Barcode,
             productName = item.Description ?? "",
-            weight = $"وزن: {item.Weight:G29}{(item.UnitType == GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: " + "ندارد"
+            weight = $"W:{item.Weight:G29}{(item.UnitType == GoldUnitType.Gram ? "g" : "m")}",
+            wage = "F:" + "---"
         };
 
         await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
+    }
+
+    private async Task<UnitType?> GetPriceUnitAsync(Guid wagePriceUnitId)
+    {
+        GetPriceUnitResponse? priceUnit = null;
+
+        await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse>(
+            action: (s, ct) => s.GetAsync(wagePriceUnitId, ct),
+            afterSend: response =>
+            {
+                priceUnit = response;
+            });
+
+        return priceUnit?.UnitType;
     }
 
     private async Task OpenPaymentsDialog()
