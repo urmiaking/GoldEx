@@ -36,8 +36,8 @@ public sealed class BarcodeDisplaySettings : EntityBase
         if (width is < 1 or > 5)
             throw new ArgumentException("عرض خط بارکد باید بین 1 تا 5 باشد");
 
-        if (height is < 20 or > 200)
-            throw new ArgumentException("ارتفاع بارکد باید بین 20 تا 200 پیکسل باشد");
+        if (height is < 10 or > 150)
+            throw new ArgumentException("ارتفاع بارکد باید بین 10 تا 150 پیکسل باشد");
 
         if (fontSize is < 8 or > 24)
             throw new ArgumentException("اندازه فونت بارکد باید بین 8 تا 24 باشد");

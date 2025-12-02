@@ -15,6 +15,7 @@ using MudBlazor;
 using System.Globalization;
 using GoldEx.Client.Pages.Products.Components;
 using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -242,21 +243,42 @@ public partial class InventoryStockList
             }).ToArray()
         };
 
+        UnitType? wageUnitType = null;
+
+        if (item.Product?.WagePriceUnitId != null)
+        {
+            wageUnitType = await GetPriceUnitAsync(item.Product.WagePriceUnitId.Value);
+        }
+
         // داده‌های واقعی محصول
         var data = new
         {
             barcode = item.Product?.Barcode ?? "",
             productName = item.Product?.Name ?? "",
-            weight = $"وزن: {item.CurrentAmount:G29}{(item.Product?.GoldUnitType == GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: " + (item.Product?.WageType switch
+            weight = $"W: {item.CurrentAmount:G29}{(item.Product?.GoldUnitType == GoldUnitType.Gram ? "G" : "M")}",
+            wage = "F: " + item.Product?.WageType switch
             {
-                WageType.Fixed => $"{item.Product?.Wage?.ToCurrencyFormat(item.Product?.WagePriceUnitTitle)}",
+                WageType.Fixed => $"{item.Product?.Wage?.ToCurrencyFormat()} {wageUnitType?.ToString()}",
                 WageType.Percent => $"{item.Product?.Wage:G29}%",
-                _ => "ندارد"
-            })
+                _ => "---"
+            }
         };
 
         await JsRuntime.InvokeVoidAsync("printDynamicBarcode", settingsForJs, data);
+    }
+
+    private async Task<UnitType?> GetPriceUnitAsync(Guid wagePriceUnitId)
+    {
+        GetPriceUnitResponse? priceUnit = null;
+
+        await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse>(
+            action: (s, ct) => s.GetAsync(wagePriceUnitId, ct),
+            afterSend: response =>
+            {
+                priceUnit = response;
+            });
+
+        return priceUnit?.UnitType;
     }
 
     private async Task SetStatusFilterText(ItemStatus filterType)

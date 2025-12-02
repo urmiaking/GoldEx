@@ -95,5 +95,5 @@ public enum UnitType
     Mesghal = 34,
 
     [Display(Name = "تومان")]
-    Toman = 35
+    TMN = 35
 }
