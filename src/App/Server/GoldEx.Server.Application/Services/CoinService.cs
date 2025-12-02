@@ -202,7 +202,7 @@ internal class CoinService(ICoinRepository repository,
     {
         return defaultUnitType switch
         {
-            UnitType.Toman => value / 10,
+            UnitType.TMN => value / 10,
             _ => value // Rial or any other non-adjusted unit
         };
     }
