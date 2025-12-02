@@ -539,7 +539,7 @@ internal class PriceService(
     {
         return defaultUnitType switch
         {
-            UnitType.Toman => value / 10,
+            UnitType.TMN => value / 10,
             _ => value // Rial or any other non-adjusted unit
         };
     }
@@ -564,7 +564,7 @@ internal class PriceService(
             return formattedPrice; // if parse fails, return original
 
         // Convert if default unit is Toman
-        if (defaultUnitType == UnitType.Toman)
+        if (defaultUnitType == UnitType.TMN)
             value /= 10;
 
         // Format back with a thousand separators (using current culture)

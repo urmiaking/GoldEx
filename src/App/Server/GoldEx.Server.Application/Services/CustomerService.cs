@@ -367,7 +367,7 @@ internal class CustomerService(
             .FirstOrDefaultAsync() ?? throw new InvalidOperationException("Rial price unit not found.");
 
         var tomanPriceUnit = await priceUnitRepository
-            .Get(new PriceUnitsByUnitTypeSpecification(UnitType.Toman))
+            .Get(new PriceUnitsByUnitTypeSpecification(UnitType.TMN))
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new InvalidOperationException("Toman price unit not found.");
 
