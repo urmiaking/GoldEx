@@ -1018,7 +1018,7 @@ public partial class EditorForm
     {
         return amount switch
         {
-            0 => Color.Default,
+            0 => Color.Primary,
             > 0 => Color.Error,
             _ => Color.Success
         };
