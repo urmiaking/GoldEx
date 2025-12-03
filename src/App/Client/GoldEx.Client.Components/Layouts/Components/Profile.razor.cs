@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MudBlazor;
+using static MudBlazor.Colors;
 
 namespace GoldEx.Client.Components.Layouts.Components;
 
 public partial class Profile
 {
     private bool _isProfileOpen;
+    private bool _isDarkMode;
     private string? _currentUrl;
     private Color _color = Color.Dark;
     private string? _username;
@@ -67,6 +69,8 @@ public partial class Profile
 
     protected override void OnInitialized()
     {
+        _isDarkMode = ThemeService?.IsDarkMode ?? false;
+
         _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
         Navigation.LocationChanged += OnLocationChanged;
     }
@@ -85,9 +89,22 @@ public partial class Profile
         }
     }
 
+    
+
     public override ValueTask DisposeAsync()
     {
         Navigation.LocationChanged -= OnLocationChanged;
         return base.DisposeAsync();
+    }
+
+    private void OnDarkModeToggleChanged(bool value)
+    {
+        if (ThemeService is not null)
+        {
+            _isDarkMode = value;
+            ThemeService.ToggleMode();
+
+            StateHasChanged();
+        }
     }
 }

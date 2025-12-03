@@ -55,6 +55,17 @@
                     </div>
                 </div>  
             </div>  
+            
+            <div class="d-flex align-center justify-center">
+                <MudText Typo="Typo.subtitle2">حالت تاریک</MudText>
+                <MudSwitch Value="@_isDarkMode"
+                           ValueChanged="@OnDarkModeToggleChanged"
+                           T="bool"
+                           ThumbIcon="@(_isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)"
+                           ThumbIconColor="Color.Error"
+                           Color="Color.Inherit"
+                           Size="Size.Large" />
+            </div>
 
             <MudDivider Class="my-4" />
 

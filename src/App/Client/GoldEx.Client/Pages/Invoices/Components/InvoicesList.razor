@@ -132,30 +132,18 @@
             @switch (context.PaymentStatus)
             {
                 case InvoicePaymentStatus.Paid:
-                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Check">@context.PaymentStatus.GetDisplayName()</MudChip>
+                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Check">
+                        @context.PaymentStatus.GetDisplayName()
+                    </MudChip>
                     break;
                 case InvoicePaymentStatus.HasDebt:
-                    <MudText Color="@(context.InvoiceType is InvoiceType.Purchase ? Color.Success : Color.Error)">
-                        @if (string.IsNullOrEmpty(context.SecondaryPriceUnit) || !context.TotalUnpaidAmountSecondary.HasValue)
-                        {
-                            @(context.TotalUnpaidAmount.ToCurrencyFormat(context.PriceUnit))
-                        }
-                        else
-                        {
-                            @(context.TotalUnpaidAmountSecondary.Value.ToCurrencyFormat(context.SecondaryPriceUnit))
-                        }
+                    <MudText Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
+                        @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
                     </MudText>
                     break;
                 case InvoicePaymentStatus.Overdue:
                     <MudChip Size="Size.Small" T="string" Color="Color.Error" Variant="Variant.Filled">
-                        @if (string.IsNullOrEmpty(context.SecondaryPriceUnit) || !context.TotalUnpaidAmountSecondary.HasValue)
-                        {
-                            @(context.TotalUnpaidAmount.ToCurrencyFormat(context.PriceUnit))
-                        }
-                        else
-                        {
-                            @(context.TotalUnpaidAmountSecondary.Value.ToCurrencyFormat(context.SecondaryPriceUnit))
-                        }
+                        @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
                     </MudChip>
                     break;
                 default:
@@ -218,8 +206,9 @@
             <MudPagination SelectedChanged="PageChanged"
                            Color="Color.Primary"
                            Count="@pageCount"
-                           ShowFirstButton="true"
-                           ShowLastButton="true" />
+                           Class="justify-center"
+                           BoundaryCount="1"
+                           MiddleCount="3" />
 
             <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
                 @infoText
