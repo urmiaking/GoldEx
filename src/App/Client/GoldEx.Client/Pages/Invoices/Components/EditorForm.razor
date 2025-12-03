@@ -321,11 +321,11 @@ else
                     <MudExpansionPanel Expanded="false" Icon="@Icons.Material.Filled.ExpandMore">
                         <TitleContent>
                             <div class="d-flex flex-wrap gap-2 justify-center align-center">
-                                <MudText Typo="Typo.h6" Color="Color.Primary" Class="d-none d-md-block">
+                                <MudText Typo="Typo.h6" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)" Class="d-none d-md-block">
                                     @($"مانده نهایی: {FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
                                 </MudText>
 
-                                <MudText Typo="Typo.body1" Color="Color.Primary" Class="d-md-none">
+                                <MudText Typo="Typo.body1" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)" Class="d-md-none">
                                     @($"مانده نهایی: {FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
                                 </MudText>
                                 <div @ref="_popoverAnchor">
