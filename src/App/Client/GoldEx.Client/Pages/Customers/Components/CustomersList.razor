@@ -135,8 +135,9 @@
             <MudPagination SelectedChanged="PageChanged"
                            Color="Color.Primary"
                            Count="@pageCount"
-                           ShowFirstButton="true"
-                           ShowLastButton="true" />
+                           Class="justify-center"
+                           BoundaryCount="1"
+                           MiddleCount="3" />
 
             <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
                 @infoText
