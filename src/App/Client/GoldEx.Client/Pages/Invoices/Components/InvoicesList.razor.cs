@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -77,6 +78,28 @@ public partial class InvoicesList
     private MudTable<InvoiceListVm> _table = new();
     private DateRange _filterDateRange = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+    private string FormatCompleteUnpaidAmount(decimal totalUnpaidAmount, string? primaryUnit, decimal? totalUnpaidSecondaryAmount, string? secondaryUnit)
+    {
+        var primaryAmount = Math.Abs(totalUnpaidAmount).ToCurrencyFormat(primaryUnit);
+        var secondaryPart = !string.IsNullOrEmpty(secondaryUnit) && totalUnpaidSecondaryAmount.HasValue
+            ? $" ({Math.Abs(totalUnpaidSecondaryAmount.Value).ToCurrencyFormat(secondaryUnit)})"
+            : string.Empty;
+
+        return $"{primaryAmount}{secondaryPart}";
+    }
+
+    private Color GetUnpaidAmountColor(decimal amount, InvoiceType invoiceType)
+    {
+        return amount switch
+        {
+            > 0 when invoiceType == InvoiceType.Purchase => Color.Error,
+            < 0 when invoiceType == InvoiceType.Purchase => Color.Success,
+            > 0 when invoiceType == InvoiceType.Sell => Color.Error,
+            < 0 when invoiceType == InvoiceType.Sell => Color.Success,
+            _ => Color.Inherit
+        };
+    }
 
     private async Task<TableData<InvoiceListVm>> LoadInvoicesAsync(TableState state, CancellationToken cancellationToken = default)
     {

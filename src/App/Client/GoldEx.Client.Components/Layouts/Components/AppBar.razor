@@ -13,7 +13,6 @@
             <Notifications />
         </Authorized>
     </AuthorizeView>
-    <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
 
     <Profile />
 </MudAppBar>
@@ -26,19 +25,10 @@
 
     [Inject] private IThemeService? ThemeService { get; set; }
 
-    private string DarkLightModeButtonIcon =>
-        ThemeService?.IsDarkMode == true
-            ? Icons.Material.Filled.DarkMode
-            : Icons.Material.Filled.LightMode;
 
     private void DrawerToggle()
     {
         DrawerOpen = !DrawerOpen;
         DrawerOpenChanged.InvokeAsync(DrawerOpen);
-    }
-
-    private void DarkModeToggle(MouseEventArgs args)
-    {
-        ThemeService?.ToggleMode();
     }
 }
