@@ -172,6 +172,7 @@ public partial class ProductItemEditor
             if (product != null)
             {
                 Model.Product = ProductVm.CreateFromSearch(product);
+                Model.TotalWeight = product.Weight;
                 OnWageTypeChanged(product.WageType);
             }
 
@@ -191,7 +192,8 @@ public partial class ProductItemEditor
 
         await SendRequestAsync<IProductService, List<GetProductResponse>>(
             action: (s, ct) => s.GetListAsync(name, Model.Product.ProductType, ct),
-            afterSend: response => _products = response);
+            afterSend: response => _products = response,
+            createScope: true);
 
         return _products.Select(x => x.Name);
     }
