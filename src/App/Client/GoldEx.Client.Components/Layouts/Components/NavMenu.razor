@@ -1,7 +1,7 @@
 ﻿@using GoldEx.Shared.Routings
-@implements IDisposable
+@using Microsoft.JSInterop
 
-@inject NavigationManager NavigationManager
+@inherits GoldExComponentBase
 
 <MudNavMenu Rounded="true" Margin="Margin.Dense" Color="Color.Primary">
     <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
@@ -48,6 +48,26 @@
                         Icon="@Icons.Material.Filled.Help">
                 راهنما
             </MudNavLink>
+
+            @* فقط اگر مرورگر می‌گه «قابل نصب است» دکمه را نشان بده *@
+            @if (_canInstall)
+            {
+                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                    <MudNavLink Icon="@Icons.Material.Filled.InstallDesktop"
+                                OnClick="@InstallPwa"
+                                Match="NavLinkMatch.All">
+                        نصب اپلیکیشن
+                    </MudNavLink>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                    <MudNavLink Icon="@Icons.Material.Filled.InstallMobile"
+                                OnClick="@InstallPwa"
+                                Match="NavLinkMatch.All">
+                        نصب اپلیکیشن
+                    </MudNavLink>
+                </MudHidden>
+            }
+
             <MudNavLink Href="@ApiUrls.Account.Logout(_currentUrl)" Match="NavLinkMatch.Prefix"
                         Icon="@Icons.Material.Filled.Logout">
                 خروج
@@ -56,28 +76,69 @@
     </AuthorizeView>
 </MudNavMenu>
 
-
 @code {
     private string? _currentUrl;
+    private bool _canInstall;
 
     [Parameter] public EventCallback<bool> OnNavigate { get; set; }
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 
     protected override void OnInitialized()
     {
-        _currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // فقط از JS می‌پرسیم "آیا الان می‌تونی نصب کنی؟"
+                _canInstall = await JsRuntime.InvokeAsync<bool>("getPwaState");
+                if (_canInstall)
+                {
+                    StateHasChanged();
+                }
+            }
+            catch
+            {
+                // اگر JS خراب شد، دکمه پنهان می‌ماند
+                _canInstall = false;
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        _currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        _currentUrl = Navigation.ToBaseRelativePath(e.Location);
         await OnNavigate.InvokeAsync(false); // Close the drawer
         StateHasChanged();
     }
 
-    public void Dispose()
+    public override ValueTask DisposeAsync()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
+        return base.DisposeAsync();
+    }
+
+    private async Task InstallPwa()
+    {
+        try
+        {
+            var installed = await JsRuntime.InvokeAsync<bool>("installPwa");
+            if (installed)
+            {
+                _canInstall = false;   // بعد از نصب، دکمه را پنهان کن
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            AddErrorToast("خطایی در نصب رخ داد");
+        }
     }
 }
-

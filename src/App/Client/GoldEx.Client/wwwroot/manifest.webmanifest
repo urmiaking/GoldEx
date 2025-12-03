@@ -16,17 +16,57 @@
     {
       "src": "icon-192.png",
       "type": "image/png",
-      "sizes": "192x105"
+      "sizes": "192x192"
     }
   ],
   "screenshots": [
     {
       "src": "assets/screenshots/screenshot1.png",
-      "sizes": "640x387",
+      "sizes": "1908x894",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Wonder Widgets",
-      "description": "میز خدمات الکترونیکی گلدکس"
+      "label": "اپلیکیشن حسابداری گلدکس",
+      "description": "صفحه اصلی"
+    },
+    {
+      "src": "assets/screenshots/screenshot2.png",
+      "sizes": "1913x903",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "اپلیکیشن حسابداری گلدکس",
+      "description": "محاسبه گر جامع"
+    },
+    {
+      "src": "assets/screenshots/screenshot3.png",
+      "sizes": "1906x907",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "اپلیکیشن حسابداری گلدکس",
+      "description": "ثبت انواع فاکتور"
+    },
+    {
+      "src": "assets/screenshots/screenshot-mobile1.jpg",
+      "sizes": "1220x2712",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "اپلیکیشن حسابداری گلدکس",
+      "description": "صفحه اصلی"
+    },
+    {
+      "src": "assets/screenshots/screenshot-mobile2.jpg",
+      "sizes": "1220x2712",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "اپلیکیشن حسابداری گلدکس",
+      "description": "محاسبه گر جامع"
+    },
+    {
+      "src": "assets/screenshots/screenshot-mobile3.jpg",
+      "sizes": "1220x2712",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "اپلیکیشن حسابداری گلدکس",
+      "description": "انبارداری"
     }
   ]
 }
