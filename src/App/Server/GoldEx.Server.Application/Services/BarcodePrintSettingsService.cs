@@ -9,15 +9,13 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
 internal class BarcodePrintSettingsService(
     ISettingRepository repository,
-    IMapper mapper,
-    ILogger<BarcodePrintSettingsService> logger) : IBarcodePrintSettingsService
+    IMapper mapper) : IBarcodePrintSettingsService
 {
     public async Task<GetBarcodePrintSettingsResponse> GetAsync(CancellationToken cancellationToken = default)
     {

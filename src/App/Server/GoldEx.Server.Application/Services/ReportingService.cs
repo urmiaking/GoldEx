@@ -58,10 +58,10 @@ internal class ReportingService(
 
         // مانده پس از فاکتور (previous + impact)
         var afterRemaining = new Dictionary<PriceUnit, decimal>(previousRemaining);
-        afterRemaining[item.PriceUnit] = afterRemaining.GetValueOrDefault(item.PriceUnit, 0m) + impact; // مستقیم set
+        afterRemaining[item.PriceUnit!] = afterRemaining.GetValueOrDefault(item.PriceUnit!, 0m) + impact; // مستقیم set
 
-        var previousFormatted = FormatRemaining(previousRemaining, item.PriceUnit, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
-        var afterFormatted = FormatRemaining(afterRemaining, item.PriceUnit, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
+        var previousFormatted = FormatRemaining(previousRemaining, item.PriceUnit!, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
+        var afterFormatted = FormatRemaining(afterRemaining, item.PriceUnit!, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
 
         var mapped = mapper.Map<GetInvoiceDetailResponse>(item);
         mapped = mapped with

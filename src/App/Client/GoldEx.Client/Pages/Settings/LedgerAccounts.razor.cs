@@ -71,60 +71,58 @@ public partial class LedgerAccounts
         }
     }
 
-    private async Task OnEdit(GetLedgerAccountResponse? selectedItem)
+    private Task OnEdit(GetLedgerAccountResponse? selectedItem)
     {
-        AddErrorToast("ویرایش سرفصل ها در حال حاضر امکان پذیر نمی باشد");
-        return;
+        AddErrorToast($"ویرایش سرفصل {selectedItem?.Title} در حال حاضر امکان پذیر نمی باشد");
+        return Task.CompletedTask;
 
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (selectedItem == null)
-            return;
+        //if (selectedItem == null)
+        //    return;
 
-        var parameters = new DialogParameters<Editor>
-        {
-            { x => x.Model, LedgerAccountVm.CreateFrom(selectedItem) }
-        };
+        //var parameters = new DialogParameters<Editor>
+        //{
+        //    { x => x.Model, LedgerAccountVm.CreateFrom(selectedItem) }
+        //};
 
-        var dialog = await DialogService.ShowAsync<Editor>(
-            $"ویرایش سرفصل {selectedItem.Title}",
-            parameters,
-            _dialogOptions);
+        //var dialog = await DialogService.ShowAsync<Editor>(
+        //    $"ویرایش سرفصل {selectedItem.Title}",
+        //    parameters,
+        //    _dialogOptions);
 
-        var result = await dialog.Result;
+        //var result = await dialog.Result;
 
-        if (result is { Canceled: false })
-        {
-            AddSuccessToast("سرفصل با موفقیت ویرایش شد");
-            await LoadLedgerAccountsAsync();
-        }
+        //if (result is { Canceled: false })
+        //{
+        //    AddSuccessToast("سرفصل با موفقیت ویرایش شد");
+        //    await LoadLedgerAccountsAsync();
+        //}
     }
 
-    private async Task OnRemove(GetLedgerAccountResponse? selectedItem)
+    private Task OnRemove(GetLedgerAccountResponse? selectedItem)
     {
-        AddErrorToast("حذف سرفصل ها در حال حاضر امکان پذیر نمی باشد");
-        return;
+        AddErrorToast($"حذف سرفصل {selectedItem?.Title} در حال حاضر امکان پذیر نمی باشد");
+        return Task.CompletedTask;
 
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (selectedItem == null)
-        {
-            return;
-        }
-        var result = await DialogService.ShowMessageBox(
-            "حذف سرفصل",
-            $"آیا از حذف سرفصل '{selectedItem.Title}' مطمئن هستید؟",
-            yesText: "حذف",
-            cancelText: "لغو",
-            options: _dialogOptions);
+        //if (selectedItem == null)
+        //{
+        //    return;
+        //}
+        //var result = await DialogService.ShowMessageBox(
+        //    "حذف سرفصل",
+        //    $"آیا از حذف سرفصل '{selectedItem.Title}' مطمئن هستید؟",
+        //    yesText: "حذف",
+        //    cancelText: "لغو",
+        //    options: _dialogOptions);
 
-        if (result is true)
-        {
-            await SendRequestAsync<ILedgerAccountService>(
-                action: (s, ct) => s.DeleteAsync(selectedItem.Id, ct),
-                afterSend: () =>
-                {
-                    AddSuccessToast("سرفصل با موفقیت حذف شد");
-                    return LoadLedgerAccountsAsync();
-                });
-        }
+        //if (result is true)
+        //{
+        //    await SendRequestAsync<ILedgerAccountService>(
+        //        action: (s, ct) => s.DeleteAsync(selectedItem.Id, ct),
+        //        afterSend: () =>
+        //        {
+        //            AddSuccessToast("سرفصل با موفقیت حذف شد");
+        //            return LoadLedgerAccountsAsync();
+        //        });
+        //}
     }
 }
