@@ -75,6 +75,7 @@ public partial class InvoicesList
     private InvoiceType? _invoiceType;
     private TradeScale? _tradeScale;
     private string? _searchString;
+    private bool _mobileFiltersOpen;
     private MudTable<InvoiceListVm> _table = new();
     private DateRange _filterDateRange = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
@@ -225,4 +226,38 @@ public partial class InvoicesList
             invoice.ShowDetails = !invoice.ShowDetails;
         }
     }
+
+    #region Mobile filters
+
+    public record InvoicesMobileFiltersResult(
+            DateRange DateRange,
+            InvoiceType? InvoiceType,
+            TradeScale? TradeScale,
+            InvoicePaymentStatus? PaymentStatus
+    );
+
+    private void OpenMobileFilters()
+    {
+        _mobileFiltersOpen = true;
+        StateHasChanged();
+    }
+
+    private void CloseMobileFilters()
+    {
+        _mobileFiltersOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task ApplyMobileFilters(InvoicesMobileFiltersResult result)
+    {
+        _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
+        _invoiceType = result.InvoiceType;
+        _tradeScale = result.TradeScale;
+        _invoicePaymentStatus = result.PaymentStatus;
+
+        _mobileFiltersOpen = false;
+        await RefreshAsync();
+    }
+
+    #endregion
 }

@@ -14,31 +14,27 @@
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
-                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
-                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
-         <MudSpacer />
-        @* Desktop: show original toolbar controls exactly as before *@
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+        <MudSpacer />
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            @* Mobile: a single filter button that opens the popover *@
-            <MudTooltip Text="فیلترها">
-                <MudIconButton Icon="@Icons.Material.Filled.Tune"
-                               Color="Color.Primary"
-                               Variant="Variant.Filled"
-                               Size="Size.Small"
-                               OnClick="OpenMobileFilters" />
-            </MudTooltip>
-            <MobileFiltersPopover Open="@_mobileFiltersOpen"
-                                  OnClose="CloseMobileFilters"
-                                  ItemType="ItemType"
-                                  ItemStatus="ItemStatus"
-                                  CategoryFilter="_categoryFilter"
-                                  Categories="_categories"
-                                  DateRange="_filterDateRange"
-                                  Selectable="Selectable"
-                                  OnApply="ApplyMobileFilters" />
+            <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                           Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           Class="mr-3"
+                           Size="Size.Small"
+                           OnClick="OpenMobileFilters" />
+            <InventoryFiltersPopover Open="@_mobileFiltersOpen"
+                                     OnClose="CloseMobileFilters"
+                                     ItemType="ItemType"
+                                     ItemStatus="ItemStatus"
+                                     CategoryFilter="_categoryFilter"
+                                     Categories="_categories"
+                                     DateRange="_filterDateRange"
+                                     Selectable="Selectable"
+                                     OnApply="ApplyMobileFilters" />
         </MudHidden>
 
-        @* Desktop-only rendering of the existing controls (unchanged) *@
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             @if (!Selectable)
             {
@@ -102,7 +98,7 @@
 
                 </MudMenu>
             </MudButtonGroup>
-            
+
             @if (!Selectable)
             {
                 <MudButtonGroup Size="Size.Small" Color="@ItemStatusColor" Variant="Variant.Filled" Class="ml-3">
@@ -214,7 +210,7 @@
                                     WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                            }
+                                }
                             else
                             {
                                 @(context.Product.WageType switch
@@ -223,7 +219,7 @@
                                     WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                            }
+                                }
                         }
 
                     </MudTooltip>
@@ -321,7 +317,7 @@
                            Color="Color.Primary"
                            Count="@pageCount"
                            Class="justify-center"
-                           BoundaryCount="1" 
+                           BoundaryCount="1"
                            MiddleCount="3" />
 
             <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
