@@ -11,7 +11,6 @@ namespace GoldEx.Client.Pages.InventoryEntry.Components;
 public partial class CurrencyList
 {
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
-    private bool _loading;
 
     [Parameter, EditorRequired] public GetPriceUnitResponse? PriceUnit { get; set; }
     [Parameter, EditorRequired] public InventoryEntryVm Model { get; set; } = default!;

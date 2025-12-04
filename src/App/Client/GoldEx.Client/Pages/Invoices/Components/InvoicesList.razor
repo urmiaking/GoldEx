@@ -12,10 +12,39 @@
           OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
           Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
-                      Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
         <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           Class="mr-3"
+                           Size="Size.Small"
+                           OnClick="OpenMobileFilters" />
+            <MudMenu Icon="@Icons.Material.Filled.Add"
+                     Color="Color.Primary"
+                     Variant="Variant.Filled"
+                     Class="mr-3"
+                     Size="Size.Small">
+                @foreach (var scale in Enum.GetValues<TradeScale>())
+                {
+                    <MudMenuItem OnClick="@(() => OnCreateInvoice(scale))">
+                        @scale.GetDisplayName()
+                    </MudMenuItem>
+                }
+            </MudMenu>
+            <InvoiceFiltersPopover Open="@_mobileFiltersOpen"
+                                   OnClose="CloseMobileFilters"
+                                   DateRange="_filterDateRange"
+                                   InvoiceTypeParam="_invoiceType"
+                                   TradeScaleParam="_tradeScale"
+                                   PaymentStatus="_invoicePaymentStatus"
+                                   OnApply="ApplyMobileFilters" />
+        </MudHidden>
+
         <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
             <MudDateRangePicker DateRange="@_filterDateRange"
                                 DateRangeChanged="OnDateRangeChanged"
@@ -33,9 +62,7 @@
                                 RelativeWidth="DropdownWidth.Adaptive"
                                 Label="تاریخ فاکتور"
                                 Clearable="true" />
-        </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButtonGroup Size="Size.Small" Color="@TradeScaleColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@TradeScaleIcon">
                     @(_tradeScale == null ? "نوع معامله" : _tradeScale.GetDisplayName())
@@ -46,9 +73,7 @@
                     <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Square" OnClick="() => SetTradeScaleText(TradeScale.Retail)">@TradeScale.Retail.GetDisplayName()</MudMenuItem>
                 </MudMenu>
             </MudButtonGroup>
-        </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButtonGroup Size="Size.Small" Color="@InvoiceTypeColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@InvoiceTypeIcon">
                     @(_invoiceType == null ? "نوع فاکتور" : _invoiceType.GetDisplayName())
@@ -59,9 +84,7 @@
                     <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.ArrowDownward" OnClick="() => SetInvoiceTypeText(InvoiceType.Sell)">@InvoiceType.Sell.GetDisplayName()</MudMenuItem>
                 </MudMenu>
             </MudButtonGroup>
-        </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButtonGroup Size="Size.Small" Color="@InvoicePaymentStatusColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@InvoicePaymentStatusIcon">
                     @(_invoicePaymentStatus == null ? "وضعیت" : _invoicePaymentStatus.GetDisplayName())
@@ -73,28 +96,12 @@
                     <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(InvoicePaymentStatus.Paid)">@InvoicePaymentStatus.Paid.GetDisplayName()</MudMenuItem>
                 </MudMenu>
             </MudButtonGroup>
-        </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudMenu Class="ml-4" 
-                     Label="فاکتور جدید" 
-                     EndIcon="@Icons.Material.Filled.Add" 
-                     Color="Color.Primary" 
-                     Variant="Variant.Filled" 
-                     Size="Size.Small">
-                @foreach (var scale in Enum.GetValues<TradeScale>())
-                {
-                    <MudMenuItem OnClick="@(() => OnCreateInvoice(scale))">
-                        @scale.GetDisplayName()
-                    </MudMenuItem>
-                }
-            </MudMenu>
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudMenu Icon="@Icons.Material.Filled.Add" 
-                     Color="Color.Primary" 
-                     Variant="Variant.Filled" 
+            <MudMenu Class="ml-4"
+                     Label="فاکتور جدید"
+                     EndIcon="@Icons.Material.Filled.Add"
+                     Color="Color.Primary"
+                     Variant="Variant.Filled"
                      Size="Size.Small">
                 @foreach (var scale in Enum.GetValues<TradeScale>())
                 {
@@ -113,7 +120,11 @@
         <MudTh>ارزش کل</MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceDate" T="InvoiceListVm">تاریخ فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="DueDate" T="InvoiceListVm">تاریخ سررسید</MudTableSortLabel></MudTh>
-        <MudTh>مانده بدهی</MudTh>
+        <MudTh>
+            <div class="d-flex">
+                <MudText Typo="Typo.body2" Color="Color.Error">بدهکاری</MudText>&nbsp;/&nbsp;<MudText Color="Color.Success" Typo="Typo.body2">بستانکاری</MudText>
+            </div>
+        </MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -128,7 +139,7 @@
             </MudTooltip>
         </MudTd>
         <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
-        <MudTd DataLabel="مانده بدهی">
+        <MudTd DataLabel="مانده">
             @switch (context.PaymentStatus)
             {
                 case InvoicePaymentStatus.Paid:
@@ -142,9 +153,12 @@
                     </MudText>
                     break;
                 case InvoicePaymentStatus.Overdue:
-                    <MudChip Size="Size.Small" T="string" Color="Color.Error" Variant="Variant.Filled">
-                        @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
-                    </MudChip>
+                    <span class="d-flex gap-1">
+                        <MudText Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
+                            @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
+                        </MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                    </span>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

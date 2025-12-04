@@ -117,9 +117,9 @@
 
     private string DateRangeLabel => ItemStatus switch
     {
-        Shared.Enums.ItemStatus.Available => "تاریخ ثبت جنس",
-        Shared.Enums.ItemStatus.Sold => "تاریخ فروش جنس",
-        Shared.Enums.ItemStatus.Melted => "تاریخ ذوب جنس",
+        ItemStatus.Available => "تاریخ ثبت جنس",
+        ItemStatus.Sold => "تاریخ فروش جنس",
+        ItemStatus.Melted => "تاریخ ذوب جنس",
         _ => "تاریخ"
     };
 
@@ -135,7 +135,6 @@
     {
         _itemType = newType;
 
-        // هماهنگی وضعیت با نوع آیتم (قانون دامنه قبلی)
         if (_itemType is not ItemType.UsedProduct && _itemStatus == ItemStatus.Melted)
         {
             _itemStatus = ItemStatus.Available;

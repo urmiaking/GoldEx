@@ -1,172 +1,172 @@
-﻿using GoldEx.Client.Pages.Products.ViewModels;
-using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.DTOs.Products;
-using GoldEx.Shared.Enums;
-using GoldEx.Shared.Helpers;
-using GoldEx.Shared.Routings;
-using GoldEx.Shared.Services.Abstractions;
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using MudBlazor;
+﻿//using GoldEx.Client.Pages.Products.ViewModels;
+//using GoldEx.Sdk.Common.Data;
+//using GoldEx.Sdk.Common.Extensions;
+//using GoldEx.Shared.DTOs.Products;
+//using GoldEx.Shared.Enums;
+//using GoldEx.Shared.Helpers;
+//using GoldEx.Shared.Routings;
+//using GoldEx.Shared.Services.Abstractions;
+//using Microsoft.AspNetCore.Components;
+//using Microsoft.JSInterop;
+//using MudBlazor;
 
-namespace GoldEx.Client.Pages.Products.Components;
+//namespace GoldEx.Client.Pages.Products.Components;
 
-public partial class ProductsList
-{
-    [Parameter] public string Class { get; set; } = default!;
-    [Parameter] public int Elevation { get; set; } = 24;
-    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
+//public partial class ProductsList
+//{
+//    [Parameter] public string Class { get; set; } = default!;
+//    [Parameter] public int Elevation { get; set; } = 24;
+//    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
-    private string? _searchString;
-    private string _jsVersion = new Random().Next(1, 1000).ToString();
-    private MudTable<ProductVm> _table = new ();
-    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
-    private ItemStatus _itemStatus = ItemStatus.Available;
-    private DateRange _filterDateRange = new();
+//    private string? _searchString;
+//    private string _jsVersion = new Random().Next(1, 1000).ToString();
+//    private MudTable<ProductVm> _table = new ();
+//    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
+//    private ItemStatus _itemStatus = ItemStatus.Available;
+//    private DateRange _filterDateRange = new();
 
-    private string DateRangeFilterLabel => _itemStatus == ItemStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
-    private string ProductStatusIcon => _itemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
+//    private string DateRangeFilterLabel => _itemStatus == ItemStatus.Available ? "تاریخ ثبت جنس" : "تاریخ فروش جنس";
+//    private string ProductStatusIcon => _itemStatus == ItemStatus.Available ? Icons.Material.Filled.Warehouse : Icons.Material.Filled.ShoppingBasket;
 
-    private async Task RefreshAsync()
-    {
-        await _table.ReloadServerData();
-        StateHasChanged();
-    }
+//    private async Task RefreshAsync()
+//    {
+//        await _table.ReloadServerData();
+//        StateHasChanged();
+//    }
 
-    private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
-    {
-        var result = new TableData<ProductVm>();
+//    private async Task<TableData<ProductVm>> LoadProductsAsync(TableState state, CancellationToken cancellationToken = default)
+//    {
+//        var result = new TableData<ProductVm>();
 
-        var productFilter = new ProductFilter(_itemStatus, _filterDateRange.Start, _filterDateRange.End);
+//        var productFilter = new ProductFilter(_itemStatus, _filterDateRange.Start, _filterDateRange.End);
 
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
-            state.SortDirection switch
-            {
-                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
-                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
-                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
-                _ => throw new ArgumentOutOfRangeException()
-            });
+//        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+//            state.SortDirection switch
+//            {
+//                SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
+//                SortDirection.Ascending => Sdk.Common.Definitions.SortDirection.Ascending,
+//                SortDirection.Descending => Sdk.Common.Definitions.SortDirection.Descending,
+//                _ => throw new ArgumentOutOfRangeException()
+//            });
 
-        await SendRequestAsync<IProductService, PagedList<GetProductResponse>>(
-            action: (service, token) => service.GetListAsync(filter, productFilter, token),
-            afterSend: response =>
-            {
-                var items = response.Data.Select(ProductVm.CreateFrom).ToList();
-                result = new TableData<ProductVm>
-                {
-                    TotalItems = response.Total,
-                    Items = items
-                };
-            },
-            cancelPrevious: true
-        );
+//        await SendRequestAsync<IProductService, PagedList<GetProductResponse>>(
+//            action: (service, token) => service.GetListAsync(filter, productFilter, token),
+//            afterSend: response =>
+//            {
+//                var items = response.Data.Select(ProductVm.CreateFrom).ToList();
+//                result = new TableData<ProductVm>
+//                {
+//                    TotalItems = response.Total,
+//                    Items = items
+//                };
+//            },
+//            cancelPrevious: true
+//        );
 
-        return result;
-    }
+//        return result;
+//    }
 
-    private async Task OnSearch(string text)
-    {
-        _searchString = text;
-        await RefreshAsync();
-    }
+//    private async Task OnSearch(string text)
+//    {
+//        _searchString = text;
+//        await RefreshAsync();
+//    }
 
-    private void PageChanged(int i)
-    {
-        _table.NavigateTo(i - 1);
-    }
+//    private void PageChanged(int i)
+//    {
+//        _table.NavigateTo(i - 1);
+//    }
 
-    public async Task OnCreateProduct()
-    {
-        var dialog = await DialogService.ShowAsync<Editor>("افزودن جنس جدید", _dialogOptions);
+//    public async Task OnCreateProduct()
+//    {
+//        var dialog = await DialogService.ShowAsync<Editor>("افزودن جنس جدید", _dialogOptions);
 
-        var result = await dialog.Result;
+//        var result = await dialog.Result;
 
-        if (result is { Canceled: false })
-        {
-            AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
-            await RefreshAsync();
-        }
-    }
+//        if (result is { Canceled: false })
+//        {
+//            AddSuccessToast("جنس جدید با موفقیت افزوده شد.");
+//            await RefreshAsync();
+//        }
+//    }
 
-    private async Task OnRemoveProduct(ProductVm model)
-    {
-        if (!model.Id.HasValue)
-            return;
+//    private async Task OnRemoveProduct(ProductVm model)
+//    {
+//        if (!model.Id.HasValue)
+//            return;
 
-        var parameters = new DialogParameters<Remove>
-        {
-            { x => x.Id, model.Id.Value },
-            { x => x.ProductName, model.Name }
-        };
+//        var parameters = new DialogParameters<Remove>
+//        {
+//            { x => x.Id, model.Id.Value },
+//            { x => x.ProductName, model.Name }
+//        };
 
-        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+//        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
 
-        var result = await dialog.Result;
+//        var result = await dialog.Result;
 
-        if (result is { Canceled: false })
-        {
-            AddSuccessToast("جنس با موفقیت حذف شد.");
-            await RefreshAsync();
-        }
-    }
+//        if (result is { Canceled: false })
+//        {
+//            AddSuccessToast("جنس با موفقیت حذف شد.");
+//            await RefreshAsync();
+//        }
+//    }
 
-    private async Task OnEditProduct(ProductVm model)
-    {
-        var parameters = new DialogParameters<Editor>
-        {
-            { x => x.Model, model }
-        };
+//    private async Task OnEditProduct(ProductVm model)
+//    {
+//        var parameters = new DialogParameters<Editor>
+//        {
+//            { x => x.Model, model }
+//        };
 
-        var dialog = await DialogService.ShowAsync<Editor>("ویرایش جنس", parameters, _dialogOptions);
+//        var dialog = await DialogService.ShowAsync<Editor>("ویرایش جنس", parameters, _dialogOptions);
 
-        var result = await dialog.Result;
+//        var result = await dialog.Result;
 
-        if (result is { Canceled: false })
-        {
-            AddSuccessToast("جنس با موفقیت ویرایش شد.");
-            await RefreshAsync();
-        }
-    }
+//        if (result is { Canceled: false })
+//        {
+//            AddSuccessToast("جنس با موفقیت ویرایش شد.");
+//            await RefreshAsync();
+//        }
+//    }
 
-    private async Task OnPrintBarcode(ProductVm product)
-    {
-        var labelData = new
-        {
-            text = product.Barcode,
-            name = product.Name,
-            weight = "وزن: " + product.Weight?.ToString("G29") + $"{(product.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: " + product.WageType switch
-            {
-                WageType.Fixed => $"{product.Wage?.ToCurrencyFormat(product.WagePriceUnitTitle)}",
-                WageType.Percent => product.Wage?.ToString("G29") + "%",
-                _ => "ندارد"
-            }
-        };
+//    private async Task OnPrintBarcode(ProductVm product)
+//    {
+//        var labelData = new
+//        {
+//            text = product.Barcode,
+//            name = product.Name,
+//            weight = "وزن: " + product.Weight?.ToString("G29") + $"{(product.GoldUnitType is GoldUnitType.Gram ? "g" : "m")}",
+//            wage = "اجرت: " + product.WageType switch
+//            {
+//                WageType.Fixed => $"{product.Wage?.ToCurrencyFormat(product.WagePriceUnitTitle)}",
+//                WageType.Percent => product.Wage?.ToString("G29") + "%",
+//                _ => "ندارد"
+//            }
+//        };
 
-        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
-    }
+//        await JsRuntime.InvokeVoidAsync("printBarcode", labelData);
+//    }
 
-    private async Task SetStatusFilterText(ItemStatus filterType)
-    {
-        _itemStatus = filterType;
-        await RefreshAsync();
-    }
+//    private async Task SetStatusFilterText(ItemStatus filterType)
+//    {
+//        _itemStatus = filterType;
+//        await RefreshAsync();
+//    }
 
-    private async Task OnDateRangeChanged(DateRange dateRange)
-    {
-        _filterDateRange = dateRange;
-        await RefreshAsync();
-    }
+//    private async Task OnDateRangeChanged(DateRange dateRange)
+//    {
+//        _filterDateRange = dateRange;
+//        await RefreshAsync();
+//    }
 
-    private void OnViewInvoice(Guid? invoiceId)
-    {
-        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
-    }
+//    private void OnViewInvoice(Guid? invoiceId)
+//    {
+//        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
+//    }
 
-    private string GetTooltipText(ProductVm item)
-    {
-        return "DELETED";
-    }
-}
+//    private string GetTooltipText(ProductVm item)
+//    {
+//        return "DELETED";
+//    }
+//}

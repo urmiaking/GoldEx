@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
@@ -12,7 +13,7 @@ namespace GoldEx.Server.Controllers;
 
 [Route(ApiRoutes.Invoices.Base)]
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-public class InvoicesController(IInvoiceService service) : ApiControllerBase
+public class InvoicesController(IInvoiceService service, IServerInvoiceService serverService) : ApiControllerBase
 {
     [HttpPost(ApiRoutes.Invoices.Create)]
     public async Task<IActionResult> CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
@@ -69,5 +70,13 @@ public class InvoicesController(IInvoiceService service) : ApiControllerBase
     {
         await service.SendReminderAsync(id, cancellationToken);
         return NoContent();
+    }
+
+    [AllowAnonymous]
+    [HttpGet(ApiRoutes.Invoices.DownloadPdf)]
+    public async Task<IActionResult> DownloadPdfAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var pdfBytes = await serverService.GeneratePdfAsync(id, cancellationToken);
+        return File(pdfBytes, "application/pdf", $"invoice-{id}.pdf");
     }
 }

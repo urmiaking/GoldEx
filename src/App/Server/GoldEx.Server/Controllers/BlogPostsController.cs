@@ -1,7 +1,6 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Server.Application.Utilities;
-using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Shared.DTOs.Blogs.BlogPosts;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -14,7 +13,6 @@ namespace GoldEx.Server.Controllers;
 [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 public class BlogPostsController(
     IBlogPostService service,
-    IFileService fileService,
     IWebHostEnvironment hostEnvironment) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.BlogPosts.Get)]
@@ -102,7 +100,7 @@ public class BlogPostsController(
         catch (Exception ex)
         {
             // Log this error
-            return StatusCode(500, "Could not save file to shared storage.");
+            return StatusCode(500, ex.Message);
         }
 
         // 4. Return the URL that maps to the shared folder via Middleware

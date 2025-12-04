@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using Serilog.Ui.Web.Extensions;
 using System.Reflection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.FileProviders;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -93,17 +94,44 @@ void SetupPipeline()
 {
     Assembly[] additionalAssemblies = [typeof(Routes).Assembly];
 
+    var forwardedOptions = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders =
+            ForwardedHeaders.XForwardedFor |
+            ForwardedHeaders.XForwardedProto |
+            ForwardedHeaders.XForwardedHost
+    };
+
+    // Allow any proxy inside Docker
+    forwardedOptions.KnownNetworks.Clear();
+    forwardedOptions.KnownProxies.Clear();
+
+    app.UseForwardedHeaders();
+
     if (app.Environment.IsDevelopment())
     {
         app.UseWebAssemblyDebugging();
         app.UseMigrationsEndPoint();
         app.UseSwagger();
         app.UseSwaggerUI();
+        app.UseHttpsRedirection();
     }
     else
     {
         app.UseExceptionHandler("/Error", createScopeForErrors: true);
         app.UseHsts();
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var proto) &&
+                proto == "http")
+            {
+                var httpsUrl = $"https://{context.Request.Host}{context.Request.Path}{context.Request.QueryString}";
+                context.Response.Redirect(httpsUrl, permanent: true);
+                return;
+            }
+
+            await next();
+        });
     }
 
     app.Use((context, next) =>
