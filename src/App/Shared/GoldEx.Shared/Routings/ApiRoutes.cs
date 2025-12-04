@@ -126,6 +126,7 @@ public static class ApiRoutes
         public const string GetLastNumber = "last-number/{invoiceType}";
         public const string GetByNumber = "number/{number}/{invoiceType}";
         public const string SendReminder = "{id}/send-reminder";
+        public const string DownloadPdf = "{id}/download-pdf";
     }
 
     public class Reports
