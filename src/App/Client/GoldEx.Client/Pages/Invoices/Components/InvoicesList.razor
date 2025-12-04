@@ -113,7 +113,11 @@
         <MudTh>ارزش کل</MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceDate" T="InvoiceListVm">تاریخ فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="DueDate" T="InvoiceListVm">تاریخ سررسید</MudTableSortLabel></MudTh>
-        <MudTh>مانده بدهی</MudTh>
+        <MudTh>
+            <div class="d-flex">
+                <MudText Typo="Typo.body2" Color="Color.Error">بدهکاری</MudText>&nbsp;/&nbsp;<MudText Color="Color.Success" Typo="Typo.body2">بستانکاری</MudText>
+            </div>
+        </MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -128,7 +132,7 @@
             </MudTooltip>
         </MudTd>
         <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
-        <MudTd DataLabel="مانده بدهی">
+        <MudTd DataLabel="مانده">
             @switch (context.PaymentStatus)
             {
                 case InvoicePaymentStatus.Paid:
@@ -142,9 +146,12 @@
                     </MudText>
                     break;
                 case InvoicePaymentStatus.Overdue:
-                    <MudChip Size="Size.Small" T="string" Color="Color.Error" Variant="Variant.Filled">
-                        @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
-                    </MudChip>
+                    <span class="d-flex gap-1">
+                        <MudText Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
+                            @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
+                        </MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                    </span>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
