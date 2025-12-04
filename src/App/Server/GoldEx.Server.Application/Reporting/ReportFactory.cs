@@ -47,7 +47,7 @@ internal class ReportFactory(
             {
                 var response = await reportingService.GetInvoiceReportAsync(invoiceNumber, invoiceType);
 
-                var invoiceUrl = GenerateInvoiceUrl(invoiceNumber, invoiceType); // {schema}://{domain}/invoices/viewer/{invoiceNumber}/{invoiceType}
+                var reportUrl = GenerateInvoiceUrl(response.Invoice.Id);
 
                 var dataSource = new ObjectDataSource
                 {
@@ -83,7 +83,7 @@ internal class ReportFactory(
                 if (report.Parameters["invoiceNumber"] != null)
                 {
                     report.Parameters["invoiceNumber"].Value = invoiceNumber;
-                    report.Parameters["invoiceUrl"].Value = invoiceUrl;
+                    report.Parameters["invoiceUrl"].Value = reportUrl;
                 }
             }
         }
@@ -96,9 +96,9 @@ internal class ReportFactory(
         return GetReportAsync(id, context).GetAwaiter().GetResult();
     }
 
-    private string GenerateInvoiceUrl(long invoiceNumber, InvoiceType invoiceType)
+    private string GenerateInvoiceUrl(Guid invoiceId)
     {
-        var relativePath = ClientRoutes.Invoices.ViewInvoice.FormatRoute(new { number = invoiceNumber, invoiceType });
+        var relativePath = ApiUrls.Invoices.DownloadPdf(invoiceId);
 
         var request = httpContextAccessor.HttpContext?.Request;
         if (request is null || !request.Host.HasValue)
