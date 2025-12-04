@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Products.Index)]
+﻿@* @attribute [Route(ClientRoutes.Products.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 @inherits GoldExComponentBase
 
@@ -13,4 +13,4 @@
     
     <ProductsList />
 
-</MudContainer>
+</MudContainer> *@

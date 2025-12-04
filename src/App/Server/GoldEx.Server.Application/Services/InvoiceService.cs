@@ -18,6 +18,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using DevExpress.XtraReports.Services;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 
@@ -34,10 +35,11 @@ internal class InvoiceService(
     IServerInventoryStockService inventoryStockService,
     IServerInvoicePaymentService invoicePaymentService,
     IFinancialAccountService financialAccountService,
+    IReportProvider reportProvider,
     IMapper mapper,
     ILogger<InvoiceService> logger,
     InvoiceRequestDtoValidator validator,
-    DeleteInvoiceValidator deleteValidator) : IInvoiceService
+    DeleteInvoiceValidator deleteValidator) : IInvoiceService, IServerInvoiceService
 {
     public async Task CreateAsync(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
@@ -273,8 +275,8 @@ internal class InvoiceService(
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.ProductItems)
-                .ThenInclude(x => x.Product)
-                    .ThenInclude(x => x.MoltenGold)
+                .ThenInclude(x => x.Product!)
+                    .ThenInclude(x => x.MoltenGold!)
                         .ThenInclude(x => x.Assayer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
@@ -374,5 +376,28 @@ internal class InvoiceService(
     public Task SendReminderAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return reminderService.SendReminderAsync(id, cancellationToken);
+    }
+
+    public async Task<byte[]> GeneratePdfAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var reportId = await GenerateReportIdAsync(id, cancellationToken);
+
+        var report = reportProvider.GetReport(reportId, null);
+        using var ms = new MemoryStream();
+        await report.ExportToPdfAsync(ms, token: cancellationToken);
+        ms.Position = 0;
+        return ms.ToArray();
+    }
+
+    private async Task<string> GenerateReportIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var invoice = await invoiceRepository
+            .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        var reportId = $"InvoiceReport?invoiceNumber={invoice.InvoiceNumber}&invoiceType={invoice.InvoiceType}";
+
+        return reportId;
     }
 }

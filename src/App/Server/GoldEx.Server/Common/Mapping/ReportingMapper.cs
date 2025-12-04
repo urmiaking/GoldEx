@@ -15,6 +15,7 @@ internal class ReportingMapper : IRegister
     public void Register(TypeAdapterConfig config)
     {
         config.NewConfig<Invoice, GetInvoiceDetailResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Customer, src => src.Customer)
             .Map(dest => dest.InvoiceProductItems, src => src.ProductItems)
             .Map(dest => dest.TaxPercent,

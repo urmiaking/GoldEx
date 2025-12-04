@@ -11,13 +11,12 @@ namespace GoldEx.Client.Pages.Settings.Components.Settings;
 public partial class BarcodeTemplateBuilder
 {
     private BarcodePrintSettingsVm _settings = new();
-    private List<BarcodePositionItemVm> _allItems = new();
-    private bool _isLoading = false;
+    private readonly List<BarcodePositionItemVm> _allItems = [];
+    private bool _isLoading;
     private double _zoomLevel = 1.0;
 
-    private const int PREVIEW_WIDTH = 600;  // عرض ثابت پیش‌نمایش
-    private const int PREVIEW_HEIGHT = 400; // ارتفاع ثابت پیش‌نمایش
-    private const int MIN_ZONE_SIZE = 120;  // حداقل اندازه zone
+    private const int PreviewWidth = 600;  // عرض ثابت پیش‌نمایش
+    private const int PreviewHeight = 400; // ارتفاع ثابت پیش‌نمایش
 
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
@@ -168,7 +167,7 @@ public partial class BarcodeTemplateBuilder
                     var exists = _allItems.Any(x => !x.IsInToolbox &&
                                                     x.Position == position &&
                                                     x.ItemType == item.ItemType &&
-                                                    x != item);
+                                                    !Equals(x, item));
 
                     if (exists)
                     {
@@ -211,7 +210,7 @@ public partial class BarcodeTemplateBuilder
         var dialog = await DialogService.ShowAsync<BarcodeItemConfigDialog>("تنظیمات آیتم", parameters);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (result is { Canceled: false })
         {
             StateHasChanged();
         }
@@ -226,8 +225,8 @@ public partial class BarcodeTemplateBuilder
     private void ResetZoom()
     {
         // محاسبه زوم خودکار
-        var scaleX = (double)PREVIEW_WIDTH / _settings.LabelWidth;
-        var scaleY = (double)PREVIEW_HEIGHT / _settings.LabelHeight;
+        var scaleX = (double)PreviewWidth / _settings.LabelWidth;
+        var scaleY = (double)PreviewHeight / _settings.LabelHeight;
         _zoomLevel = Math.Min(Math.Min(scaleX, scaleY), 2.0);
         StateHasChanged();
     }

@@ -227,6 +227,9 @@ public class ApiUrls
         public static string Update(Guid id) => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.Update).FormatRoute(new { id });
 
         public static string SendReminder(Guid id) => BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.SendReminder).FormatRoute(new { id });
+
+        public static string DownloadPdf(Guid id) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.DownloadPdf).FormatRoute(new { id });
     }
 
     public class Reports

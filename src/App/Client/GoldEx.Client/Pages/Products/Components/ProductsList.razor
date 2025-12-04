@@ -1,4 +1,4 @@
-﻿@inherits GoldExComponentBase
+﻿@* @inherits GoldExComponentBase
 
 <MudTable T="ProductVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
           Dense="true" ServerData="LoadProductsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
@@ -139,4 +139,4 @@
 </MudTable>
 
 <script src="/js/libs/jsbarcode.all.min.js"></script>
-<script src="/js/print.js?v=@_jsVersion"></script>
+<script src="/js/print.js?v=@_jsVersion"></script> *@

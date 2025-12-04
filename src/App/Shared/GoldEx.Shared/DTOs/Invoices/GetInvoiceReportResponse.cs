@@ -4,6 +4,7 @@ using GoldEx.Shared.Enums;
 namespace GoldEx.Shared.DTOs.Invoices;
 
 public record GetInvoiceDetailResponse(
+    Guid Id,
     long InvoiceNumber,
     DateTime InvoiceDate,
     DateTime? DueDate,
