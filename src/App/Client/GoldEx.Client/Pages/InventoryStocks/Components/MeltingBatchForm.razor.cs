@@ -5,7 +5,6 @@ using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -21,13 +20,12 @@ public partial class MeltingBatchForm
     [Parameter] public Guid? Id { get; set; }
 
     private MeltingBatchVm _model = new();
-    private GetSettingResponse? _setting;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private List<GetFinancialAccountTitleResponse> _financialAccounts = [];
     private Guid? _id;
 
     private MudStepper? _stepper;
-    private int _activeIndex = 0;
+    private int _activeIndex;
     private bool _processing;
 
     protected override async Task OnParametersSetAsync()

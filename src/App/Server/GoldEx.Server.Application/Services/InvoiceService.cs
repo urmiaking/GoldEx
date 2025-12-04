@@ -275,8 +275,8 @@ internal class InvoiceService(
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.ProductItems)
-                .ThenInclude(x => x.Product)
-                    .ThenInclude(x => x.MoltenGold)
+                .ThenInclude(x => x.Product!)
+                    .ThenInclude(x => x.MoltenGold!)
                         .ThenInclude(x => x.Assayer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 

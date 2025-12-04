@@ -10,6 +10,11 @@
 		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);CS8669</NoWarn>
+		<NoWarn>$(NoWarn);MUD0002</NoWarn>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<Compile Remove="wwwroot\NewFolder\**" />
 		<Content Remove="wwwroot\NewFolder\**" />

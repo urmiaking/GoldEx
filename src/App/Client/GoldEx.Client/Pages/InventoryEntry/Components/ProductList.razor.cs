@@ -21,7 +21,6 @@ public partial class ProductList
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private GetBarcodePrintSettingsResponse? _barcodeSettings;
-    private bool _loading;
 
     private object SettingsForJs => new
     {
