@@ -53,7 +53,7 @@
             </MudButtonGroup>
         </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        @* <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
                 <MudButton StartIcon="@VoucherTypeIcon"></MudButton>
                 <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
@@ -67,7 +67,7 @@
                     </MudMenuItem>
                 </MudMenu>
             </MudButtonGroup>
-        </MudHidden>
+        </MudHidden> *@
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
@@ -78,6 +78,7 @@
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add"
                            OnClick="@(_ => OnCreate())" Size="@Size.Small"
+                           Class="mr-3"
                            Variant="@Variant.Filled"></MudIconButton>
         </MudHidden>
     </ToolBarContent>
