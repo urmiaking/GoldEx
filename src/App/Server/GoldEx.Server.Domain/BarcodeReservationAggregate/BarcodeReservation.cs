@@ -55,8 +55,8 @@ public sealed class BarcodeReservation : EntityBase<BarcodeReservationId>
     public void Commit(InvoiceId? invoiceId)
     {
         EnsureStatus(BarcodeReservationStatus.Reserved);
-        if (DateTime.Now >= ExpiresAt)
-            throw new InvalidOperationException("زمان رزرو بارکد به پایان رسیده است");
+        //if (DateTime.Now >= ExpiresAt)
+        //    throw new InvalidOperationException("زمان رزرو بارکد به پایان رسیده است");
         InvoiceId = invoiceId;
         Status = BarcodeReservationStatus.Committed;
     }
