@@ -53,6 +53,12 @@ public static class ClientRoutes
         public const string ResetPasswordConfirmation = $"{AccountPrefix}/ResetPasswordConfirmation";
     }
 
+    public static class Statics
+    {
+        public const string UnderDevelopment = "/under-development";
+        public const string NotFound = "/not-found";
+    }
+
     public static class Health
     {
         public const string Base = "/HealthCheck";
