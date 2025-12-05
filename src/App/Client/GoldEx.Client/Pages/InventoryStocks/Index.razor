@@ -5,12 +5,15 @@
 <PageTitle>انبار</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+
     <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
+    <MudText Typo="Typo.h5" GutterBottom="true">اجناس من</MudText>
+    <MudDivider Class="mb-4" />
     <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="مدیریت انبار"
@@ -18,6 +21,11 @@
                            StartIcon="@Icons.Material.Filled.Warehouse"
                            Href="@ClientRoutes.InventoryStocks.List" />
         </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">ورود جنس</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="ورود جنس با فاکتور خرید"
                            Description="ثبت فاکتور خرید و ورود جنس به انبار"
@@ -27,7 +35,7 @@
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="ورود دستی اجناس"
                            Description="ورود اجناس به صورت دستی و فایل اکسل"
-                           StartIcon="@Icons.Material.Filled.Autorenew"
+                           StartIcon="@Icons.Material.Filled.Login"
                            Href="@ClientRoutes.InventoryStocks.InventoryEntry.Index" />
         </MudItem>
         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -39,8 +47,31 @@
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="ورود آبشده از ذوب طلا"
                            Description="مدیریت فرایند ذوب طلا و ورود آبشده"
-                           StartIcon="@Icons.Material.Filled.Transform"
+                           StartIcon="@Icons.Material.Filled.Whatshot"
                            Href="@ClientRoutes.InventoryStocks.MeltingBatches.Index" />
         </MudItem>
     </MudGrid>
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">خروج جنس</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="خروج جنس با فاکتور"
+                           Description="ثبت فاکتور فروش و خروج جنس از انبار"
+                           StartIcon="@Icons.Material.Filled.ShoppingCartCheckout"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { InvoiceType = InvoiceType.Sell })" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="خروج دستی اجناس"
+                           Description="خروج اجناس به دلایلی غیر از فروش"
+                           StartIcon="@Icons.Material.Filled.Logout"
+                           Href="@ClientRoutes.Statics.UnderDevelopment" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="تاریخچه خروج دستی"
+                           Description="تاریخچه خروج اجناس از انبار"
+                           StartIcon="@Icons.Material.Filled.History"
+                           Href="@ClientRoutes.Statics.UnderDevelopment" />
+        </MudItem>
+    </MudGrid>
+
 </MudContainer>
