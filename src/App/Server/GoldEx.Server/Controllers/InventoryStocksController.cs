@@ -59,4 +59,11 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
         var result = await service.GetAvailableItemAmountAsync(itemId, itemType, cancellationToken);
         return Ok(result);
     }
+
+    [HttpDelete(ApiRoutes.InventoryStocks.DeleteProduct)]
+    public async Task<IActionResult> DeleteProductAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        await service.DeleteProductAsync(productId, cancellationToken);
+        return NoContent();
+    }
 }

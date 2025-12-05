@@ -14,6 +14,5 @@ public interface IProductService
 
     Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default);
 
-    [Obsolete]
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

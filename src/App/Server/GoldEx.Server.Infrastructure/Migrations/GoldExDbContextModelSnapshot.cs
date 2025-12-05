@@ -1347,7 +1347,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                             b1.HasKey("FinancialAccountId");
 
-                            b1.ToTable("FinancialAccounts");
+                            b1.ToTable("FinancialAccounts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("FinancialAccountId");
@@ -1378,7 +1378,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                             b1.HasKey("FinancialAccountId");
 
-                            b1.ToTable("FinancialAccounts");
+                            b1.ToTable("FinancialAccounts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("FinancialAccountId");
@@ -1409,7 +1409,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                             b1.HasKey("FinancialAccountId");
 
-                            b1.ToTable("FinancialAccounts");
+                            b1.ToTable("FinancialAccounts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("FinancialAccountId");
@@ -2455,7 +2455,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                                             b3.HasKey("BarcodePositionItemId");
 
-                                            b3.ToTable("BarcodePositionItems");
+                                            b3.ToTable("BarcodePositionItems", (string)null);
 
                                             b3.WithOwner()
                                                 .HasForeignKey("BarcodePositionItemId");
@@ -2498,7 +2498,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                                     b2.HasKey("BarcodePrintSettingsSettingId");
 
-                                    b2.ToTable("BarcodePrintSettings");
+                                    b2.ToTable("BarcodePrintSettings", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("BarcodePrintSettingsSettingId");
@@ -2538,7 +2538,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                                     b2.HasKey("BarcodePrintSettingsSettingId");
 
-                                    b2.ToTable("BarcodePrintSettings");
+                                    b2.ToTable("BarcodePrintSettings", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("BarcodePrintSettingsSettingId");

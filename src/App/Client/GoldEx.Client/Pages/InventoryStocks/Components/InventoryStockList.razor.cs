@@ -406,7 +406,31 @@ public partial class InventoryStockList
         }
     }
 
-    // Mobile popover handlers - keep domain rules intact, reuse existing refresh
+    private async Task OnRemove(InventoryStockVm context)
+    {
+        if (context.Product is null)
+        {
+            AddErrorToast("امکان حذف فقط برای طلا، جواهر و آبشده وجود دارد.");
+            return;
+        }
+
+        var parameters = new DialogParameters<Remove>
+        {
+            { x => x.Id, context.Product.Id!.Value },
+            { x => x.ProductName, context.Product.Name }
+        };
+
+        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("جنس با موفقیت حذف شد.");
+            await RefreshAsync();
+        }
+    }
+
     private void OpenMobileFilters()
     {
         _mobileFiltersOpen = true;
@@ -421,10 +445,8 @@ public partial class InventoryStockList
 
     private async Task ApplyMobileFilters(MobileFiltersResult result)
     {
-        // Apply filters from popover
         ItemType = result.ItemType;
 
-        // Ensure melted compatibility as in existing SetItemTypeFilterText
         if (ItemType is not ItemType.MoltenGold && result.ItemStatus is ItemStatus.Melted)
         {
             ItemStatus = ItemStatus.Available;

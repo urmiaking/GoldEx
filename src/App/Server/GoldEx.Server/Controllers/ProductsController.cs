@@ -33,4 +33,11 @@ public class ProductsController(IProductService service) : ApiControllerBase
         await service.UpdateAsync(id, request, cancellationToken);
         return NoContent();
     }
+
+    //[HttpDelete(ApiRoutes.Products.Delete)]
+    //public async Task<IActionResult> DeleteAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+    //{
+    //    await service.DeleteAsync(id, cancellationToken);
+    //    return NoContent();
+    //}
 }

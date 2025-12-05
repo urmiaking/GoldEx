@@ -121,12 +121,9 @@ internal class InventoryStockRepository(
         var baseQuery = Query
             .Include(x => x.Invoice)
             .Where(x => !inventoryFilter.Start.HasValue || x.PostingDate >= inventoryFilter.Start.Value)
-            .Where(x => !inventoryFilter.End.HasValue || x.PostingDate <= inventoryFilter.End.Value);
-
-        if (inventoryFilter.InventoryEntryId.HasValue)
-        {
-            baseQuery = baseQuery.Where(x => x.InventoryEntryId == new InventoryEntryId(inventoryFilter.InventoryEntryId.Value));
-        }
+            .Where(x => !inventoryFilter.End.HasValue || x.PostingDate <= inventoryFilter.End.Value)
+            .Where(x => !inventoryFilter.InventoryEntryId.HasValue
+                        || x.InventoryEntryId == new InventoryEntryId(inventoryFilter.InventoryEntryId.Value));
 
         switch (inventoryFilter.ItemType)
         {
