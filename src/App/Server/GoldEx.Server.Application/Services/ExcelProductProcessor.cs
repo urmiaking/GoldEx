@@ -30,7 +30,7 @@ internal class ExcelProductProcessor(
         ParseResult<ExcelProductItem> parsedData,
         CancellationToken cancellationToken = default)
     {
-        var resultItems = new List<GetProductItemResponse>();
+        var resultItems = new List<GetProductItemEntryResponse>();
         var skipped = new List<SkippedRowResponse>();
 
         foreach (var s in parsedData.SkippedRowDetails)
@@ -154,7 +154,7 @@ internal class ExcelProductProcessor(
                     MoltenGold: molten
                 );
 
-                resultItems.Add(new GetProductItemResponse(product, dto.Quantity, wagePriceUnitExchangeRate, gramPriceUnit.Id.Value));
+                resultItems.Add(new GetProductItemEntryResponse(product, dto.Quantity, wagePriceUnitExchangeRate, gramPriceUnit.Id.Value));
             }
             catch (Exception ex)
             {

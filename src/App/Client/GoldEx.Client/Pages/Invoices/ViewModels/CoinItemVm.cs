@@ -94,12 +94,12 @@ public class CoinItemVm
             coinItem.Coin.Id);
     }
 
-    public static CreateCoinItemRequest ToInventoryEntryRequest(CoinItemVm coinItem)
+    public static CreateCoinItemEntryRequest ToInventoryEntryRequest(CoinItemVm coinItem)
     {
         if (coinItem.Coin is null)
             throw new FluentValidation.ValidationException("سکه انتخاب نشده است");
 
-        return new CreateCoinItemRequest(coinItem.Coin.Id, coinItem.Quantity, coinItem.UnitPrice);
+        return new CreateCoinItemEntryRequest(coinItem.Coin.Id, coinItem.Quantity, coinItem.UnitPrice);
     }
 
     public static CoinItemVm CreateFrom(GetInvoiceCoinItemResponse response)

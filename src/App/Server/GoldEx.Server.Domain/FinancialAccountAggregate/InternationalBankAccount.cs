@@ -7,8 +7,13 @@ public class InternationalBankAccount : EntityBase
     public static InternationalBankAccount Create(
         string? swiftBicCode,
         string? ibanNumber,
-        string accountNumber)
+        string? accountNumber)
     {
+        if (string.IsNullOrWhiteSpace(swiftBicCode) &&
+            string.IsNullOrWhiteSpace(ibanNumber) &&
+            string.IsNullOrWhiteSpace(accountNumber))
+            throw new ArgumentException("At least one of SwiftBicCode, IbanNumber, or AccountNumber must be provided.");
+
         return new InternationalBankAccount
         {
             SwiftBicCode = swiftBicCode,
@@ -19,7 +24,7 @@ public class InternationalBankAccount : EntityBase
     
     public string? SwiftBicCode { get; private set; }
     public string? IbanNumber { get; private set; }
-    public string AccountNumber { get; private set; }
+    public string? AccountNumber { get; private set; }
 
 #pragma warning disable CS8618
     private InternationalBankAccount() { }

@@ -1,6 +1,5 @@
 ﻿using GoldEx.Client.Pages.FinancialAccounts.Validators;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
-using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -30,7 +29,6 @@ public partial class FinancialAccountEditor
 
     private readonly FinancialAccountValidator _financialAccountValidator = new();
     private MudForm _form = default!;
-    private List<GetLedgerAccountResponse> _ledgerAccounts = [];
 
     protected override void OnParametersSet()
     {

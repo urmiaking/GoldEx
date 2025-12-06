@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -42,6 +43,9 @@ public class InventoryStock : EntityBase<InventoryStockId>
     public InventoryEntryId? InventoryEntryId { get; private set; }
     public InventoryEntry? InventoryEntry { get; private set; }
 
+    public InventoryExitId? InventoryExitId { get; private set; }
+    public InventoryExit? InventoryExit { get; private set; }
+
     public IReadOnlyList<Transaction>? Transactions { get; private set; }
 
     public static InventoryStock CreateMeltingBatchProduct(
@@ -70,7 +74,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
         DateTime? postingDate = null,
-        InventoryEntryId? inventoryEntryId = null)
+        InventoryEntryId? inventoryEntryId = null,
+        InventoryExitId? inventoryExitId = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -82,7 +87,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ActionType = actionType,
             InvoiceId = invoiceId,
             PostingDate = postingDate ?? DateTime.Now,
-            InventoryEntryId = inventoryEntryId
+            InventoryEntryId = inventoryEntryId,
+            InventoryExitId = inventoryExitId
         };
     }
 
@@ -92,7 +98,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
         DateTime? postingDate = null,
-        InventoryEntryId? inventoryEntryId = null)
+        InventoryEntryId? inventoryEntryId = null,
+        InventoryExitId? inventoryExitId = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
 
@@ -104,7 +111,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ActionType = actionType,
             InvoiceId = invoiceId,
             PostingDate = postingDate ?? DateTime.Now,
-            InventoryEntryId = inventoryEntryId
+            InventoryEntryId = inventoryEntryId,
+            InventoryExitId = inventoryExitId
         };
     }
 
@@ -157,7 +165,44 @@ public class InventoryStock : EntityBase<InventoryStockId>
         };
     }
 
-    // NEW: Mark this record as a reversal of another record
+    public static InventoryStock CreateProductExit(
+        ProductId productId,
+        decimal changeAmount,
+        InventoryExitId inventoryExitId,
+        DateTime? postingDate = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+
+        return new InventoryStock
+        {
+            Id = new InventoryStockId(Guid.NewGuid()),
+            ProductId = productId,
+            ChangeAmount = changeAmount,
+            ActionType = WarehouseActionType.Out,
+            InventoryExitId = inventoryExitId,
+            PostingDate = postingDate ?? DateTime.Now
+        };
+    }
+
+    public static InventoryStock CreateCoinExit(
+        CoinId coinId,
+        int changeAmount,
+        InventoryExitId inventoryExitId,
+        DateTime? postingDate = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+
+        return new InventoryStock
+        {
+            Id = new InventoryStockId(Guid.NewGuid()),
+            CoinId = coinId,
+            ChangeAmount = changeAmount,
+            ActionType = WarehouseActionType.Out,
+            InventoryExitId = inventoryExitId,
+            PostingDate = postingDate ?? DateTime.Now
+        };
+    }
+
     public InventoryStock MarkAsReversalOf(InventoryStockId originalId)
     {
         ReverseInventoryStockId = originalId;

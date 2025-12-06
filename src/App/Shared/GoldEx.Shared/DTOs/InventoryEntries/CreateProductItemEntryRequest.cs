@@ -2,7 +2,7 @@
 
 namespace GoldEx.Shared.DTOs.InventoryEntries;
 
-public record CreateProductItemRequest(
+public record CreateProductItemEntryRequest(
     decimal Quantity,
     decimal UnitPrice,
     decimal CostPrice,

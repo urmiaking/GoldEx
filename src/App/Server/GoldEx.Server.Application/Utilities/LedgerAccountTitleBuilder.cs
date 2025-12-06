@@ -20,25 +20,36 @@ public static class LedgerAccountTitleBuilder
         return $"{SystemLedgerAccounts.CoinInventory} - {coinTitle}";
     }
 
-    public static string ForFinancialAccount(FinancialAccountType accountType, string? brokerName, string? accountNumber, string? priceUnitTitle)
+    public static string ForFinancialAccount(
+        FinancialAccountType accountType,
+        string? brokerName,
+        string? bankIdentifier,
+        string? priceUnitTitle)
     {
         return accountType switch
         {
-            FinancialAccountType.Cash when string.IsNullOrEmpty(priceUnitTitle) => throw new ArgumentException(
-                "Price unit title must be provided for cash accounts.", nameof(priceUnitTitle)),
+            FinancialAccountType.Cash when string.IsNullOrEmpty(priceUnitTitle)
+                => throw new ArgumentException("Price unit title is required for cash accounts.", nameof(priceUnitTitle)),
 
-            FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount when
-                string.IsNullOrEmpty(brokerName) || string.IsNullOrEmpty(accountNumber) => throw new ArgumentException(
-                    "Broker name and account number must both be provided for bank accounts.", nameof(accountType)),
+            // Bank accounts require at least broker or identifier to make a readable title
+            FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount
+                when string.IsNullOrEmpty(brokerName) && string.IsNullOrEmpty(bankIdentifier)
+                => throw new ArgumentException("At least one bank identifier or broker name must be provided.", nameof(accountType)),
 
             _ => accountType switch
             {
-                FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount =>
-                    $"{SystemLedgerAccounts.Banks} - {brokerName} ({accountNumber})",
+                FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount
+                    => bankIdentifier is not null
+                        ? $"{SystemLedgerAccounts.Banks} - {brokerName} ({bankIdentifier})"
+                        : $"{SystemLedgerAccounts.Banks} - {brokerName}", // No parentheses if no identifier
+
                 FinancialAccountType.Cash when string.IsNullOrEmpty(brokerName)
                     => ForCurrencyAccount(priceUnitTitle!),
-                FinancialAccountType.Cash => $"{SystemLedgerAccounts.DepositsWithOthers} - {brokerName} ({priceUnitTitle})",
-                _ => throw new ArgumentOutOfRangeException(nameof(accountType), "Unknown financial account type")
+
+                FinancialAccountType.Cash
+                    => $"{SystemLedgerAccounts.DepositsWithOthers} - {brokerName} ({priceUnitTitle})",
+
+                _ => throw new ArgumentOutOfRangeException(nameof(accountType))
             }
         };
     }
@@ -46,5 +57,20 @@ public static class LedgerAccountTitleBuilder
     public static string ForCustomer(string parentTitle, string customerName, string nationalId, string priceUnitTitle)
     {
         return $"{parentTitle} - {customerName} ({nationalId}) - {priceUnitTitle}";
+    }
+
+    public static string? BestBankIdentifier(
+        string? accountNumber,
+        string? cardNumber,
+        string? shabaNumber,
+        string? ibanNumber,
+        string? swift)
+    {
+        return accountNumber
+               ?? cardNumber
+               ?? shabaNumber
+               ?? ibanNumber
+               ?? swift
+               ?? null;
     }
 }

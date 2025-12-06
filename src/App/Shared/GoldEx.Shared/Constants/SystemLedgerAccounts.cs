@@ -46,5 +46,11 @@ public static class SystemLedgerAccounts
     public static string OperatingExpenses => "هزینه‌های عملیاتی";
     public static string ServiceExpenses => "هزینه‌های خدمات";
     public static string PurchaseOverheads => "هزینه‌های اضافی خرید";
+
+    public static string ShortageExpense => "هزینه کسری انبار";
+    public static string TheftLoss => "زیان سرقت";
+    public static string DamageExpense => "هزینه ضایعات";
+    public static string GiftExpense => "هزینه هدایا";
+
     #endregion
 }

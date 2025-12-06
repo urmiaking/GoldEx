@@ -21,7 +21,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Infrastructure.Specifications.Products;
+using GoldEx.Shared.DTOs.InventoryExits;
 using static GoldEx.Shared.Helpers.CalculatorHelper;
 
 namespace GoldEx.Server.Application.Services;
@@ -260,6 +262,33 @@ internal class InventoryStockService(
             await repository.CreateRangeAsync(stocksToCreate, cancellationToken);
 
         return (outStock, inStock);
+    }
+
+    public async Task<List<InventoryStock>> ExitInventoryAsync(InventoryExitId inventoryExitId,
+        CreateInventoryExitRequest request, CancellationToken cancellationToken = default)
+    {
+        var inventoryStocks = request.Products.Select(productRequest => InventoryStock.CreateProduct(
+                new ProductId(productRequest.ProductId),
+                productRequest.Weight,
+                WarehouseActionType.Out,
+                postingDate: request.ExitDate,
+                inventoryExitId: inventoryExitId))
+            .ToList();
+
+        inventoryStocks.AddRange(request.Coins.Select(coinRequest => InventoryStock.CreateCoin(
+            new CoinId(coinRequest.CoinId),
+            coinRequest.Quantity,
+            WarehouseActionType.Out,
+            postingDate: request.ExitDate,
+            inventoryExitId: inventoryExitId)));
+
+        if (inventoryStocks.Any())
+        {
+            await repository.CreateRangeAsync(inventoryStocks, cancellationToken);
+            return inventoryStocks;
+        }
+
+        return [];
     }
 
     public async Task RemoveInventoryByInvoiceIdAsync(InvoiceId invoiceId, ItemType? itemType,

@@ -7,8 +7,16 @@ public class LocalBankAccount : EntityBase
     public static LocalBankAccount Create(
         string? cardNumber,
         string? shabaNumber,
-        string accountNumber)
+        string? accountNumber)
     {
+        // validate at least one parameter is entered
+        if (string.IsNullOrWhiteSpace(cardNumber) &&
+            string.IsNullOrWhiteSpace(shabaNumber) &&
+            string.IsNullOrWhiteSpace(accountNumber))
+        {
+            throw new ArgumentException("At least one of card number, shaba number, or account number must be provided.");
+        }
+
         return new LocalBankAccount
         {
             CardNumber = cardNumber,
@@ -19,7 +27,7 @@ public class LocalBankAccount : EntityBase
 
     public string? CardNumber { get; private set; }
     public string? ShabaNumber { get; private set; }
-    public string AccountNumber { get; private set; }
+    public string? AccountNumber { get; private set; }
 
 #pragma warning disable CS8618
     private LocalBankAccount() { }
