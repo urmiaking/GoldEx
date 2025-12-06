@@ -1272,6 +1272,12 @@ internal class AccountingTransactionService(
                            .FirstOrDefaultAsync(cancellationToken)
                        ?? throw new NotFoundException($"Customer {usedProduct.Invoice.CustomerId.Value} not found.");
 
+        var customerReceivableLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+            usedProduct.Invoice.CustomerId,
+            usedProduct.Invoice.PriceUnitId,
+            LedgerAccountRole.Receivable,
+            cancellationToken);
+
         var inventoryLedgerAccount = await ledgerAccountRepository
                                          .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
                                          .FirstOrDefaultAsync(cancellationToken) ??
@@ -1288,7 +1294,7 @@ internal class AccountingTransactionService(
         var groupId = Guid.NewGuid();
         var description = TransactionDescriptionBuilder.ForUsedProductPurchase(usedProduct, customer);
 
-        var postingDate = ComposePostingDate(usedProduct.Invoice.InvoiceDate, usedProduct.Invoice.CreatedAt, ticks);
+        var postingDate = ComposePostingDate(usedProduct.Invoice.InvoiceDate, usedProduct.Invoice.CreatedAt, ticks + 200);
 
         transactions.Add(Transaction.CreateForInvoice(
             description,
@@ -1297,6 +1303,17 @@ internal class AccountingTransactionService(
             groupId,
             TransactionType.Debit,
             debitLedgerAccountId,
+            usedProduct.Invoice.PriceUnitId,
+            usedProduct.InvoiceId,
+            postingDate));
+
+        transactions.Add(Transaction.CreateForInvoice(
+            description,
+            usedProduct.ItemFinalAmount,
+            usedProduct.Invoice.ExchangeRate,
+            groupId,
+            TransactionType.Credit,        
+            customerReceivableLedger.Id,
             usedProduct.Invoice.PriceUnitId,
             usedProduct.InvoiceId,
             postingDate));
