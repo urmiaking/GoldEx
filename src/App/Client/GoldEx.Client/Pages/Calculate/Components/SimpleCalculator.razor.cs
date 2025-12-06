@@ -36,7 +36,6 @@ public partial class SimpleCalculator
     private decimal? _finalPrice;
     private decimal? _stoneCost;
     private string? _barcode;
-    private string? _barcodeFieldHelperText;
 
     private bool _applySafetyMargin = true;
     private bool _wageFieldMenuOpen;
@@ -435,7 +434,6 @@ public partial class SimpleCalculator
                      if (response is null)
                          return;
 
-                     _barcodeFieldHelperText = response.Name;
                      _searchedProduct = response;
 
                      var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
@@ -462,7 +460,6 @@ public partial class SimpleCalculator
     private void OnBarcodeCleared()
     {
         _barcode = null;
-        _barcodeFieldHelperText = null;
         _searchedProduct = null;
         ResetModel();
         ResetCalculations();

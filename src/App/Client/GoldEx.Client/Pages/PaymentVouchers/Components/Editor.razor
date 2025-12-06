@@ -179,6 +179,7 @@
                                    Label="@_model.GetDisplayName(() => _model.SourceFinancialAccount)"
                                    For="() => _model.SourceFinancialAccount"
                                    Margin="Margin.Dense"
+                                   OuterClass="text-truncate"
                                    Variant="Variant.Outlined">
                             @foreach (var item in _sourceFinancialAccounts)
                             {
@@ -200,6 +201,7 @@
                                    Label="@_model.GetDisplayName(() => _model.DestinationFinancialAccount)"
                                    For="() => _model.DestinationFinancialAccount"
                                    Margin="Margin.Dense"
+                                   OuterClass="text-truncate"
                                    Disabled="@(_model.Customer == null)"
                                    Variant="Variant.Outlined">
                             @foreach (var item in _destinationFinancialAccounts)

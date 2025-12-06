@@ -4,6 +4,7 @@ using GoldEx.Server.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoldEx.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(GoldExDbContext))]
-    partial class GoldExDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251205193829_AddInventoryExit")]
+    partial class AddInventoryExit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1392,19 +1395,22 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasColumnType("uniqueidentifier");
 
                             b1.Property<string>("AccountNumber")
-                                .HasMaxLength(30)
-                                .HasColumnType("nvarchar(30)");
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)");
 
                             b1.Property<DateTime>("CreatedAt")
                                 .HasColumnType("datetime2");
 
                             b1.Property<string>("IbanNumber")
-                                .HasMaxLength(34)
-                                .HasColumnType("nvarchar(34)");
+                                .IsRequired()
+                                .HasMaxLength(45)
+                                .HasColumnType("nvarchar(45)");
 
                             b1.Property<string>("SwiftBicCode")
-                                .HasMaxLength(11)
-                                .HasColumnType("nvarchar(11)");
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)");
 
                             b1.HasKey("FinancialAccountId");
 
@@ -1420,10 +1426,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasColumnType("uniqueidentifier");
 
                             b1.Property<string>("AccountNumber")
+                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("nvarchar(20)");
 
                             b1.Property<string>("CardNumber")
+                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("nvarchar(20)");
 
@@ -1431,6 +1439,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
                                 .HasColumnType("datetime2");
 
                             b1.Property<string>("ShabaNumber")
+                                .IsRequired()
                                 .HasMaxLength(40)
                                 .HasColumnType("nvarchar(40)");
 
