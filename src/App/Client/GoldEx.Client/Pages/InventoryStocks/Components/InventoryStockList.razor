@@ -259,16 +259,24 @@
             case ItemType.Product when context.Product is not null:
                 <MudTd DataLabel="عملیات">
                     <div class="d-flex gap-2">
-                        <MudTooltip Text="ویرایش محصول">
-                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Edit"
-                                           OnClick="_ => OnEditProduct(context)"
-                                           Color="@Color.Primary"></MudIconButton>
-                        </MudTooltip>
-                        <MudTooltip Text="چاپ بارکد">
+                        <MudTooltip Text="چاپ بارکد" Color="Color.Success" Arrow="true">
                             <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
                                            OnClick="_ => OnPrintBarcode(context)"
                                            Color="@Color.Success"></MudIconButton>
                         </MudTooltip>
+                        <MudTooltip Text="ویرایش محصول" Color="Color.Primary" Arrow="true">
+                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Edit"
+                                           OnClick="_ => OnEditProduct(context)"
+                                           Color="@Color.Primary"></MudIconButton>
+                        </MudTooltip>
+                        @if (context.SoldAmount == 0)
+                        {
+                            <MudTooltip Text="حذف محصول" Color="Color.Error" Arrow="true">
+                                <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete"
+                                               OnClick="_ => OnRemove(context)"
+                                               Color="@Color.Error"></MudIconButton>
+                            </MudTooltip>
+                        }
                     </div>
                 </MudTd>
                 break;

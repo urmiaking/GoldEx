@@ -1,51 +1,9 @@
-﻿@using GoldEx.Shared.DTOs.InventoryEntries
+﻿@using GoldEx.Client.Pages.InventoryEntry.ViewModels
 @inherits GoldExComponentBase
 
 <div style="position: relative;">
-
-    <!-- 2. Add the Overlay here -->
-    <MudOverlay Visible="_isProcessing" DarkBackground="true" Absolute="true" ZIndex="200">
-        <MudPaper Elevation="4" Class="pa-8 d-flex flex-column align-center justify-center gap-3"
-                  Width="340px" Style="border-radius: 20px; background: var(--mud-palette-surface);">
-
-            <!-- Animated Icon (Red for Delete) -->
-            <div class="pulse-icon-error mb-3 d-flex align-center justify-center pa-4">
-                <MudIcon Icon="@Icons.Material.Filled.DeleteForever"
-                         Color="Color.Error"
-                         Style="width: 60px; height: 60px;" />
-            </div>
-
-            <!-- Main Title -->
-            <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Error">
-                <b>در حال حذف عملیات</b>
-            </MudText>
-
-            <!-- Explanation Message -->
-            <MudText Typo="Typo.body2" Align="Align.Center" Class="px-2" Color="Color.Primary">
-                سیستم در حال بازگردانی موجودی انبار است. لطفا صفحه را نبندید.
-            </MudText>
-
-            <!-- Indeterminate Progress Bar -->
-            <div class="w-100 mt-4">
-                <MudProgressLinear Color="Color.Error"
-                                   Indeterminate="true"
-                                   Rounded="true"
-                                   Size="Size.Large"
-                                   Striped="true"
-                                   Class="my-1" />
-            
-                <!-- Time Warning -->
-                <div class="d-flex justify-center mt-2">
-                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="d-flex align-center gap-1">
-                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small"/>
-                        ممکن است تا چند ثانیه طول بکشد
-                    </MudText>
-                </div>
-            </div>
-        </MudPaper>
-    </MudOverlay>
-
-    <MudTable T="InventoryEntryResponse" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+    <MudTable T="InventoryEntryListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+              OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
               ContainerClass="@ContainerClass" Dense="true" ServerData="LoadInventoryEntryAsync"
               SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
         <ToolBarContent>
@@ -73,9 +31,29 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled"
                                        Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteEntry(context))" />
                     </MudTooltip>
+                    <MudTooltip Text="مشاهده جزئیات" Color="Color.Primary" Arrow="true">
+                        <MudIconButton Icon="@GetShowDetailsIcon(context.ShowDetails)" Variant="Variant.Filled"
+                                       Size="Size.Small" Color="Color.Primary" OnClick="@(() => context.ShowDetails = !context.ShowDetails)" />
+                    </MudTooltip>
                 </div>
             </MudTd>
         </RowTemplate>
+        <ChildRowContent>
+            <MudTr Class="mud-table-row-child">
+                <td colspan="10">
+                    <MudCollapse Expanded="@context.ShowDetails">
+                        @if (context.ShowDetails)
+                        {
+                            <MudCard Elevation="2" Class="m-2">
+                                <MudCardContent>
+                                    <InventoryStockList InventoryEntryId="context.Id" Elevation="0" />
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                    </MudCollapse>
+                </td>
+            </MudTr>
+        </ChildRowContent>
         <NoRecordsContent>
             <MudText>هیچ ورود دستی ثبت نشده است</MudText>
         </NoRecordsContent>
@@ -107,6 +85,42 @@
             </div>
         </PagerContent>
     </MudTable>
+
+    <MudOverlay Visible="_isProcessing" DarkBackground="true" Absolute="true" ZIndex="200">
+        <MudPaper Elevation="4" Class="pa-8 d-flex flex-column align-center justify-center gap-3"
+                  Width="340px" Style="border-radius: 20px; background: var(--mud-palette-surface);">
+
+            <div class="pulse-icon-error mb-3 d-flex align-center justify-center pa-4">
+                <MudIcon Icon="@Icons.Material.Filled.DeleteForever"
+                         Color="Color.Error"
+                         Style="width: 60px; height: 60px;" />
+            </div>
+
+            <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Error">
+                <b>در حال حذف عملیات</b>
+            </MudText>
+
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="px-2" Color="Color.Primary">
+                سیستم در حال بازگردانی موجودی انبار است. لطفا صفحه را نبندید.
+            </MudText>
+
+            <div class="w-100 mt-4">
+                <MudProgressLinear Color="Color.Error"
+                                   Indeterminate="true"
+                                   Rounded="true"
+                                   Size="Size.Large"
+                                   Striped="true"
+                                   Class="my-1" />
+
+                <div class="d-flex justify-center mt-2">
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="d-flex align-center gap-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" />
+                        ممکن است تا چند ثانیه طول بکشد
+                    </MudText>
+                </div>
+            </div>
+        </MudPaper>
+    </MudOverlay>
 </div>
 
 <style>

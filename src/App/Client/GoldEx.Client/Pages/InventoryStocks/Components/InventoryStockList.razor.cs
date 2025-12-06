@@ -1,21 +1,18 @@
 ﻿using GoldEx.Client.Pages.InventoryStocks.ViewModels;
+using GoldEx.Client.Pages.Products.Components;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Settings.Barcodes;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
-using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
-using GoldEx.Client.Pages.Products.Components;
-using GoldEx.Client.Pages.Products.ViewModels;
-using GoldEx.Shared.DTOs.PriceUnits;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -25,13 +22,14 @@ public partial class InventoryStockList
     [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool ShowTitle { get; set; }
+    [Parameter] public bool Selectable { get; set; }
 
     [Parameter] public ItemType ItemType { get; set; } = ItemType.Product;
     [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
+    [Parameter] public Guid? InventoryEntryId { get; set; }
     [Parameter] public EventCallback<HashSet<InventoryStockVm>?> SelectedItemsChanged { get; set; }
     [Parameter] public ItemType[] SelectableTypes { get; set; } = Enum.GetValues<ItemType>();
 
-    [Parameter] public bool Selectable { get; set; }
 
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
@@ -157,7 +155,7 @@ public partial class InventoryStockList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var inventoryFilter = new InventoryFilter(_actionType, ItemType, _categoryFilter?.Id, _filterDateRange.Start, _filterDateRange.End);
+        var inventoryFilter = new InventoryFilter(_actionType, ItemType, _categoryFilter?.Id, _filterDateRange.Start, _filterDateRange.End, InventoryEntryId);
 
         await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
             action: (s, token) => s.GetListAsync(filter, inventoryFilter, token),
@@ -303,11 +301,6 @@ public partial class InventoryStockList
         await RefreshAsync();
     }
 
-    private void OnViewInvoice(Guid? invoiceId)
-    {
-        Navigation.NavigateTo(ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = invoiceId }));
-    }
-
     private string GetBarcodeTooltipText(InventoryStockVm context)
     {
         return context.DateTime.ToString(CultureInfo.CurrentCulture);
@@ -413,7 +406,31 @@ public partial class InventoryStockList
         }
     }
 
-    // Mobile popover handlers - keep domain rules intact, reuse existing refresh
+    private async Task OnRemove(InventoryStockVm context)
+    {
+        if (context.Product is null)
+        {
+            AddErrorToast("امکان حذف فقط برای طلا، جواهر و آبشده وجود دارد.");
+            return;
+        }
+
+        var parameters = new DialogParameters<Remove>
+        {
+            { x => x.Id, context.Product.Id!.Value },
+            { x => x.ProductName, context.Product.Name }
+        };
+
+        var dialog = await DialogService.ShowAsync<Remove>("حذف جنس", parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            AddSuccessToast("جنس با موفقیت حذف شد.");
+            await RefreshAsync();
+        }
+    }
+
     private void OpenMobileFilters()
     {
         _mobileFiltersOpen = true;
@@ -428,10 +445,8 @@ public partial class InventoryStockList
 
     private async Task ApplyMobileFilters(MobileFiltersResult result)
     {
-        // Apply filters from popover
         ItemType = result.ItemType;
 
-        // Ensure melted compatibility as in existing SetItemTypeFilterText
         if (ItemType is not ItemType.MoltenGold && result.ItemStatus is ItemStatus.Melted)
         {
             ItemStatus = ItemStatus.Available;

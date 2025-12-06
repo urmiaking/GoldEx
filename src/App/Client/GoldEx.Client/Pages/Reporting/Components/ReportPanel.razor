@@ -1,4 +1,5 @@
-﻿@inherits GoldExComponentBase
+﻿@using GoldEx.Client.Pages.Statics.Components
+@inherits GoldExComponentBase
 
 @* <MudExpansionPanels Square="true" Class="@Class" Elevation="@Elevation">
     <MudExpansionPanel Text="گزارشات تراکنش ها">
@@ -15,25 +16,4 @@
     </MudExpansionPanel>
 </MudExpansionPanels> *@
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex flex-column align-center justify-center" Style="min-height: 80vh;">
-    <MudStack AlignItems="AlignItems.Center" Spacing="6">
-
-        <MudIcon Icon="@Icons.Material.Filled.Construction"
-                 Color="Color.Primary"
-                 Style="font-size: 8rem;" />
-
-        <MudText Typo="Typo.h3" Align="Align.Center" Color="Color.Primary">
-            در حال توسعه
-        </MudText>
-
-        <MudText Typo="Typo.h6" Align="Align.Center" Class="mud-text-secondary">
-            این صفحه در حال ساخت است
-        </MudText>
-
-        <MudText Typo="Typo.body1" Align="Align.Center" Class="mud-text-secondary" Style="max-width: 500px;">
-            ما در حال کار هستیم تا برنامه ای عالی برای شما آماده کنیم.
-            این قابلیت به‌زودی فعال خواهد شد. از شکیبایی شما سپاسگزاریم!
-        </MudText>
-
-    </MudStack>
-</MudContainer>
+<Development />

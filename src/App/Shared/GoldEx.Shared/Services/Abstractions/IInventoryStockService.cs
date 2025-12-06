@@ -25,5 +25,9 @@ public interface IInventoryStockService
         RequestFilter requestFilter,
         CancellationToken cancellationToken = default);
 
-    Task<GetInventoryStockAmountResponse> GetAvailableItemAmountAsync(Guid itemId, ItemType itemType, CancellationToken cancellationToken = default);
+    Task<GetInventoryStockAmountResponse> GetAvailableItemAmountAsync(Guid itemId,
+        ItemType itemType,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken = default);
 }

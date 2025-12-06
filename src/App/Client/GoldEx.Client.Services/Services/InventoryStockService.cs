@@ -90,4 +90,12 @@ internal class InventoryStockService(HttpClient client, JsonSerializerOptions js
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.DeleteAsync(ApiUrls.InventoryStocks.DeleteProduct(productId), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
 }
