@@ -54,30 +54,24 @@ internal class FinancialAccountConfiguration : IEntityTypeConfiguration<Financia
     private void Configure(OwnedNavigationBuilder<FinancialAccount, InternationalBankAccount> builder)
     {
         builder.Property(x => x.SwiftBicCode)
-            .HasMaxLength(20)
-            .IsRequired();
+            .HasMaxLength(11);
 
         builder.Property(x => x.IbanNumber)
-            .HasMaxLength(45)
-            .IsRequired();
+            .HasMaxLength(34);
 
         builder.Property(x => x.AccountNumber)
-            .HasMaxLength(20)
-            .IsRequired();
+            .HasMaxLength(30);
     }
 
     private void Configure(OwnedNavigationBuilder<FinancialAccount, LocalBankAccount> builder)
     {
         builder.Property(x => x.CardNumber)
-            .HasMaxLength(20)
-            .IsRequired();
+            .HasMaxLength(20);
 
         builder.Property(x => x.ShabaNumber)
-            .HasMaxLength(40)
-            .IsRequired();
+            .HasMaxLength(40);
 
         builder.Property(x => x.AccountNumber)
-            .HasMaxLength(20)
-            .IsRequired();
+            .HasMaxLength(20);
     }
 }

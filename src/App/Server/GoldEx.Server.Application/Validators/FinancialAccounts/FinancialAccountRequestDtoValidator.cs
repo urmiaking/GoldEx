@@ -113,15 +113,25 @@ public class LocalBankAccountRequestDtoValidator : AbstractValidator<LocalBankAc
 {
     public LocalBankAccountRequestDtoValidator()
     {
+        RuleFor(x => x)
+            .Must(AtLeastOneLocalFieldProvided)
+            .WithMessage("حداقل یکی از فیلدهای شماره حساب، شماره کارت یا شماره شبا باید پر شود.");
+
         RuleFor(x => x.AccountNumber)
-            .NotEmpty().WithMessage("شماره حساب نباید خالی باشد")
-            .MaximumLength(30).WithMessage("حداکثر طول شماره حساب 30 کاراکتر می باشد");
+            .MaximumLength(20).WithMessage("شماره حساب نباید بیشتر از 20 کاراکتر باشد.");
 
         RuleFor(x => x.CardNumber)
-            .MaximumLength(20).WithMessage("حداکثر طول شماره کارت 20 کاراکتر می باشد");
+            .MaximumLength(20).WithMessage("شماره کارت نباید بیشتر از 20 کاراکتر باشد.");
 
         RuleFor(x => x.ShabaNumber)
-            .MaximumLength(40).WithMessage("حداکثر طول شماره شبا 40 کاراکتر می باشد");
+            .MaximumLength(40).WithMessage("شماره شبا نباید بیشتر از 40 کاراکتر باشد.");
+    }
+
+    private bool AtLeastOneLocalFieldProvided(LocalBankAccountRequestDto dto)
+    {
+        return !string.IsNullOrWhiteSpace(dto.AccountNumber) ||
+               !string.IsNullOrWhiteSpace(dto.CardNumber) ||
+               !string.IsNullOrWhiteSpace(dto.ShabaNumber);
     }
 }
 
@@ -129,14 +139,24 @@ public class InternationalBankAccountRequestDtoValidator : AbstractValidator<Int
 {
     public InternationalBankAccountRequestDtoValidator()
     {
+        RuleFor(x => x)
+            .Must(AtLeastOneInternationalFieldProvided)
+            .WithMessage("حداقل یکی از فیلدهای شماره حساب، کد سوئیفت یا شماره IBAN باید پر شود.");
+
         RuleFor(x => x.AccountNumber)
-            .NotEmpty().WithMessage("شماره حساب بین المللی نباید خالی باشد")
-            .MaximumLength(30).WithMessage("حداکثر طول شماره حساب بین المللی 30 کاراکتر می باشد");
+            .MaximumLength(30).WithMessage("شماره حساب نباید بیشتر از 30 کاراکتر باشد.");
 
         RuleFor(x => x.SwiftBicCode)
-            .MaximumLength(11).WithMessage("حداکثر طول کد سوئیفت 11 کاراکتر می باشد");
+            .MaximumLength(11).WithMessage("کد سوئیفت نباید بیشتر از 11 کاراکتر باشد.");
 
         RuleFor(x => x.IbanNumber)
-            .MaximumLength(34).WithMessage("حداکثر طول شماره IBAN 34 کاراکتر می باشد");
+            .MaximumLength(34).WithMessage("شماره IBAN نباید بیشتر از 34 کاراکتر باشد.");
+    }
+
+    private bool AtLeastOneInternationalFieldProvided(InternationalBankAccountRequestDto dto)
+    {
+        return !string.IsNullOrWhiteSpace(dto.AccountNumber) ||
+               !string.IsNullOrWhiteSpace(dto.SwiftBicCode) ||
+               !string.IsNullOrWhiteSpace(dto.IbanNumber);
     }
 }

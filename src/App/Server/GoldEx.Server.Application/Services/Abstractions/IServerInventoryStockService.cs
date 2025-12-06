@@ -1,7 +1,9 @@
-﻿using GoldEx.Server.Domain.InventoryStockAggregate;
+﻿using GoldEx.Server.Domain.InventoryExitAggregate;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.DTOs.InventoryExits;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Application.Services.Abstractions;
@@ -16,5 +18,8 @@ public interface IServerInventoryStockService
         CancellationToken cancellationToken = default);
     Task ReplaceInventoryForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
     Task<(InventoryStock? OutStock, InventoryStock? InStock)> UpdateStockAsync(ProductId id, decimal weight,
+        CancellationToken cancellationToken = default);
+
+    Task<List<InventoryStock>> ExitInventoryAsync(InventoryExitId inventoryExitId, CreateInventoryExitRequest request,
         CancellationToken cancellationToken = default);
 }

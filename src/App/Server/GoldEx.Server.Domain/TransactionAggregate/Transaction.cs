@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
@@ -204,6 +205,9 @@ public class Transaction : EntityBase<TransactionId>
     public InventoryStockId? InventoryStockId { get; private set; }
     public InventoryStock? InventoryStock { get; private set; }
 
+    public InventoryExitId? InventoryExitId { get; private set; }
+    public InventoryExit? InventoryExit { get; private set; }
+
     public static Transaction CreateForMeltingBatch(string description,
         decimal amount,
         decimal? exchangeRate,
@@ -316,6 +320,42 @@ public class Transaction : EntityBase<TransactionId>
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
             InventoryEntryId = inventoryEntryId,
+            InventoryStockId = inventoryStockId,
+            PostingDate = postingDate
+        };
+    }
+
+    public static Transaction CreateForInventoryExit(
+        string description,
+        decimal amount,
+        decimal baseCurrencyAmount,
+        decimal? exchangeRate,
+        Guid groupId,
+        TransactionType transactionType,
+        LedgerAccountId ledgerAccountId,
+        PriceUnitId priceUnitId,
+        InventoryExitId inventoryExitId,
+        InventoryStockId? inventoryStockId,
+        DateTime postingDate)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+        if (amount < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than or equal to zero.");
+
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.NewGuid()),
+            Description = description,
+            Amount = amount,
+            BaseCurrencyAmount = baseCurrencyAmount,
+            GroupId = groupId,
+            TransactionType = transactionType,
+            LedgerAccountId = ledgerAccountId,
+            ExchangeRate = exchangeRate,
+            PriceUnitId = priceUnitId,
+            InventoryExitId = inventoryExitId,
             InventoryStockId = inventoryStockId,
             PostingDate = postingDate
         };

@@ -11,9 +11,9 @@ public class InventoryEntryVm
 
     public CreateInventoryEntryRequest ToRequest(decimal gramPrice)
     {
-        List<CreateProductItemRequest> productItems = [];
-        List<CreateCoinItemRequest> coinItems = [];
-        List<CreateCurrencyItemRequest> currencyItems = [];
+        List<CreateProductItemEntryRequest> productItems = [];
+        List<CreateCoinItemEntryRequest> coinItems = [];
+        List<CreateCurrencyItemEntryRequest> currencyItems = [];
 
         productItems.AddRange(ProductItems.Select(productItemVm => ProductItemVm.ToInventoryEntryRequest(productItemVm, gramPrice)));
         coinItems.AddRange(CoinItems.Select(CoinItemVm.ToInventoryEntryRequest));

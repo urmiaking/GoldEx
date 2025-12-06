@@ -67,6 +67,11 @@ internal class InventoryStockConfigurations : IEntityTypeConfiguration<Inventory
             .HasForeignKey(x => x.InventoryEntryId)
             .OnDelete(DeleteBehavior.Cascade); // حذف اقلام انبار با حذف ورود به انبار
 
+        builder.HasOne(x => x.InventoryExit)
+            .WithMany(x => x.InventoryStocks)
+            .HasForeignKey(x => x.InventoryExitId)
+            .OnDelete(DeleteBehavior.Cascade); // حذف اقلام انبار با حذف خروج از انبار
+
         builder.OwnsOne(x => x.MoltenGoldDetail, Configure);
     }
 

@@ -5,4 +5,4 @@ public record ProcessExcelResponse(
     int MappedRows,
     int SkippedRows,
     List<SkippedRowResponse> SkippedRowDetails,
-    List<GetProductItemResponse> Items);
+    List<GetProductItemEntryResponse> Items);

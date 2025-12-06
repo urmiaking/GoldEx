@@ -6,6 +6,7 @@ using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Application.Utilities;
 
@@ -125,7 +126,7 @@ public static class TransactionDescriptionBuilder
     /// <summary>
     /// شرح برای بستانکار کردن انبار بابت خروج کالا
     /// </summary>
-    public static string ForInventoryExit(Invoice invoice)
+    public static string ForInvoiceInventoryExit(Invoice invoice)
     {
         return $"خروج اجناس از انبار بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
     }
@@ -337,6 +338,15 @@ public static class TransactionDescriptionBuilder
     public static string ForExchangeLoss(long invoiceNumber, string currencyTitle)
     {
         return $"زیان ناشی از تسعیر ارز '{currencyTitle}' طبق فاکتور فروش شماره {invoiceNumber}";
+    }
+
+    #endregion
+
+    #region Inventory exit (خروج از انبار)
+
+    public static string ForInventoryExit(ExitReason reason, Product product)
+    {
+        return string.Empty;
     }
 
     #endregion

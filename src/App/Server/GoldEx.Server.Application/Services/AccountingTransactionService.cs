@@ -5,6 +5,7 @@ using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
@@ -27,9 +28,11 @@ using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.InventoryEntries;
+using GoldEx.Shared.DTOs.InventoryExits;
 using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
@@ -46,6 +49,7 @@ internal class AccountingTransactionService(
     IInventoryStockRepository inventoryStockRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     ICoinRepository coinRepository,
+    IPriceService priceService,
     IServerLedgerAccountService ledgerAccountService)
     : IAccountingTransactionService
 {
@@ -325,7 +329,7 @@ internal class AccountingTransactionService(
                                 cogsLedger.Id, basePriceUnit.Id, invoice.Id, NextLine()));
 
                             transactions.Add(Transaction.CreateForInvoice(
-                                TransactionDescriptionBuilder.ForInventoryExit(invoice),
+                                TransactionDescriptionBuilder.ForInvoiceInventoryExit(invoice),
                                 totalCostOfGoods, null, cogsGroupId, TransactionType.Credit,
                                 inventoryLedger.Id, basePriceUnit.Id, invoice.Id, NextLine()));
                         }
@@ -467,10 +471,6 @@ internal class AccountingTransactionService(
                         var inventoryLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
-
-                        var coinInventoryLedger = await ledgerAccountRepository
-                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
-                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Coin inventory ledger account not found.");
 
                         var discountsLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.PurchaseDiscounts))
@@ -925,7 +925,6 @@ internal class AccountingTransactionService(
         }
 
         // Delta محاسبه شود
-        var activeFullSet = active.Select(SigFull).ToHashSet();
         var preview0FullSet = preview0.Select(SigFull).ToHashSet();
         var toReverse = active.Where(t => !preview0FullSet.Contains(SigFull(t))).ToList();
 
@@ -1309,18 +1308,14 @@ internal class AccountingTransactionService(
         InventoryEntry inventoryEntry,
         InventoryStock inventoryStock,
         Product product,
-        CreateProductItemRequest productItemRequest,
+        CreateProductItemEntryRequest productItemEntryRequest,
         CancellationToken cancellationToken = default)
     {
-        if (productItemRequest.CostPrice < 0)
-            throw new ArgumentOutOfRangeException(nameof(productItemRequest.CostPrice), "مبلغ بهای خرید نمی‌تواند منفی باشد.");
+        if (productItemEntryRequest.CostPrice < 0)
+            throw new ArgumentOutOfRangeException(nameof(productItemEntryRequest.CostPrice), "مبلغ بهای خرید نمی‌تواند منفی باشد.");
 
-        if (productItemRequest.CostPriceExchangeRate is <= 0)
-            throw new ArgumentOutOfRangeException(nameof(productItemRequest.CostPriceExchangeRate), "نرخ تبدیل باید بزرگتر از صفر باشد.");
-
-        var basePriceUnit = await priceUnitRepository
-            .Get(new PriceUnitsSetAsDefaultSpecification())
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("واحد ارزی پایه یافت نشد.");
+        if (productItemEntryRequest.CostPriceExchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(productItemEntryRequest.CostPriceExchangeRate), "نرخ تبدیل باید بزرگتر از صفر باشد.");
 
         // Determine debit ledger based on product type
         LedgerAccountId debitLedgerId;
@@ -1343,13 +1338,13 @@ internal class AccountingTransactionService(
             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب سرمایه افتتاحیه - تعدیلات یافت نشد.");
 
-        var priceUnitId = new PriceUnitId(productItemRequest.CostPriceUnitId);
+        var priceUnitId = new PriceUnitId(productItemEntryRequest.CostPriceUnitId);
         var description = TransactionDescriptionBuilder.ForManualProductEntry(product.Name);
         var groupId = Guid.NewGuid();
         var postingDate = inventoryStock.PostingDate;
 
-        var amount = productItemRequest.CostPrice;
-        var exchangeRate = productItemRequest.UnitPrice * (productItemRequest.CostPriceExchangeRate ?? 1);
+        var amount = productItemEntryRequest.CostPrice;
+        var exchangeRate = productItemEntryRequest.UnitPrice * (productItemEntryRequest.CostPriceExchangeRate ?? 1);
         var baseCurrencyAmount = amount * exchangeRate;
 
         var debit = Transaction.CreateForInventoryEntry(
@@ -1384,16 +1379,16 @@ internal class AccountingTransactionService(
     public async Task CreateForInventoryEntryAsync(
         InventoryEntry inventoryEntry,
         InventoryStock inventoryStock,
-        CreateCoinItemRequest coinItem,
+        CreateCoinItemEntryRequest coinItemEntry,
         CancellationToken cancellationToken = default)
     {
-        if (coinItem.Quantity <= 0)
-            throw new ArgumentOutOfRangeException(nameof(coinItem.Quantity), "تعداد سکه باید بزرگتر از صفر باشد.");
+        if (coinItemEntry.Quantity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(coinItemEntry.Quantity), "تعداد سکه باید بزرگتر از صفر باشد.");
 
-        if (coinItem.UnitPrice < 0)
-            throw new ArgumentOutOfRangeException(nameof(coinItem.UnitPrice), "قیمت واحد نمی‌تواند منفی باشد.");
+        if (coinItemEntry.UnitPrice < 0)
+            throw new ArgumentOutOfRangeException(nameof(coinItemEntry.UnitPrice), "قیمت واحد نمی‌تواند منفی باشد.");
 
-        var coinId = new CoinId(coinItem.CoinId);
+        var coinId = new CoinId(coinItemEntry.CoinId);
         var coin = await coinRepository
             .Get(new CoinsByIdSpecification(coinId))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"سکه {coinId.Value} یافت نشد.");
@@ -1415,7 +1410,7 @@ internal class AccountingTransactionService(
         var postingDate = inventoryStock.PostingDate;
 
         // Valuation in base currency: UnitPrice * Quantity
-        var amount = coinItem.UnitPrice * coinItem.Quantity;
+        var amount = coinItemEntry.UnitPrice * coinItemEntry.Quantity;
         var baseCurrencyAmount = amount; // Since UnitPrice is already in base currency
 
         var debit = Transaction.CreateForInventoryEntry(
@@ -1450,23 +1445,23 @@ internal class AccountingTransactionService(
     public async Task CreateForInventoryEntryAsync(
         InventoryEntry inventoryEntry,
         InventoryStock inventoryStock,
-        CreateCurrencyItemRequest currencyItem,
+        CreateCurrencyItemEntryRequest currencyItemEntry,
         CancellationToken cancellationToken = default)
     {
-        if (currencyItem.Amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(currencyItem.Amount), "مقدار ارز باید بزرگتر از صفر باشد.");
-        if (currencyItem.UnitPrice <= 0)
-            throw new ArgumentOutOfRangeException(nameof(currencyItem.UnitPrice), "قیمت واحد ارز باید بزرگتر از صفر باشد.");
+        if (currencyItemEntry.Amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(currencyItemEntry.Amount), "مقدار ارز باید بزرگتر از صفر باشد.");
+        if (currencyItemEntry.UnitPrice <= 0)
+            throw new ArgumentOutOfRangeException(nameof(currencyItemEntry.UnitPrice), "قیمت واحد ارز باید بزرگتر از صفر باشد.");
 
-        var currencyId = new PriceUnitId(currencyItem.CurrencyId);
+        var currencyId = new PriceUnitId(currencyItemEntry.CurrencyId);
         var currency = await priceUnitRepository
             .Get(new PriceUnitsByIdSpecification(currencyId))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"واحد ارزی '{currencyId.Value}' یافت نشد.");
 
         // Ledger account is determined by financial account provided
         var financialAccount = await financialAccountRepository
-            .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(currencyItem.FinancialAccountId)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"حساب مالی {currencyItem.FinancialAccountId} یافت نشد.");
+            .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(currencyItemEntry.FinancialAccountId)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"حساب مالی {currencyItemEntry.FinancialAccountId} یافت نشد.");
 
         var currencyLedgerId = financialAccount.LedgerAccountId
                                ?? throw new NotFoundException($"برای حساب مالی {financialAccount.Id.Value} حساب دفتری متناظر تعریف نشده است.");
@@ -1480,8 +1475,8 @@ internal class AccountingTransactionService(
         var postingDate = inventoryStock.PostingDate;
 
         // Amount = currency units, ExchangeRate = unit price
-        var amount = currencyItem.Amount;
-        var exchangeRate = currencyItem.UnitPrice;
+        var amount = currencyItemEntry.Amount;
+        var exchangeRate = currencyItemEntry.UnitPrice;
 
         var baseCurrencyAmount = amount * exchangeRate;
 
@@ -1611,5 +1606,49 @@ internal class AccountingTransactionService(
 
         if (transactions.Count > 0)
             await repository.CreateRangeAsync(transactions, cancellationToken);
+    }
+
+    public async Task CreateForInventoryExitAsync(InventoryExitId inventoryExitId, CreateInventoryExitRequest request,
+        List<InventoryStock> inventoryStocks,
+        CancellationToken cancellationToken)
+    {
+        var exitReasonLedgerAccountTitle = request.ExitReason.GetLedgerAccount();
+
+        var exitLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(exitReasonLedgerAccountTitle))
+            .FirstOrDefaultAsync(cancellationToken) 
+                                ?? throw new NotFoundException($"Ledger account for exit reason '{request.ExitReason}' not found.");
+
+        var inventoryLedgerAccount = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
+
+        var basePriceUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
+
+        var transactions = new List<Transaction>();
+
+        foreach (var inventoryStock in inventoryStocks)
+        {
+            if (inventoryStock.ProductId.HasValue)
+            {
+                var product = await productRepository
+                    .Get(new ProductsByIdSpecification(inventoryStock.ProductId.Value))
+                    .FirstOrDefaultAsync(cancellationToken)
+                                ?? throw new NotFoundException($"Product {inventoryStock.ProductId.Value.Value} not found.");
+
+                var currentPrice = await priceService.GetAsync(product.GoldUnitType, basePriceUnit.Id.Value, false, cancellationToken);
+
+                decimal.TryParse(currentPrice?.Value, out var pricePerGram);
+
+                var basePriceAmount = inventoryStock.ChangeAmount * pricePerGram;
+
+                var amount = inventoryStock.ChangeAmount;
+
+                //var transaction = Transaction.CreateForInventoryExit(
+                //    TransactionDescriptionBuilder.ForInvoiceInventoryExit())
+            }
+        }
     }
 }
