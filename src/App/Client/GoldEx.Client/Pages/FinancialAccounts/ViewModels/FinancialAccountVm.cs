@@ -94,36 +94,98 @@ public class FinancialAccountVm
 
     public string GetAccountTypeText()
     {
-        return FinancialAccountType switch
+        switch (FinancialAccountType)
         {
-            FinancialAccountType.LocalBankAccount =>
-                $"{FinancialAccountType.LocalBankAccount.GetDisplayName()} - {BrokerName} - {HolderName} - {LocalBankAccount?.AccountNumber}",
-
-            FinancialAccountType.InternationalBankAccount =>
-                $"{FinancialAccountType.InternationalBankAccount.GetDisplayName()} - {BrokerName} - {HolderName} - {InternationalBankAccount?.AccountNumber}",
-
-            FinancialAccountType.Cash => CashAccount?.AccountType switch
+            case FinancialAccountType.LocalBankAccount:
             {
-                CashAccountType.DepositsWithOthers =>
-                    string.Join(" - ", new[]
-                    {
-                        CashAccount?.AccountType.GetDisplayName(),
-                        CashAccount?.Title,
-                        BrokerName,
-                        HolderName
-                    }.Where(s => !string.IsNullOrEmpty(s))),
+                var identifier = BestBankIdentifier(
+                    LocalBankAccount?.AccountNumber,
+                    LocalBankAccount?.CardNumber,
+                    LocalBankAccount?.ShabaNumber,
+                    null,
+                    null
+                );
 
-                CashAccountType.Internal =>
-                    string.Join(" - ", new[]
-                    {
-                        CashAccount?.AccountType.GetDisplayName(),
-                        CashAccount?.Title
-                    }.Where(s => !string.IsNullOrEmpty(s))),
+                return string.Join(" - ", new[]
+                {
+                    FinancialAccountType.LocalBankAccount.GetDisplayName(),
+                    BrokerName,
+                    HolderName,
+                    identifier
+                }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
 
-                _ => $"{FinancialAccountType.Cash.GetDisplayName()}"
-            },
-            FinancialAccountType.Gold => FinancialAccountType.Gold.GetDisplayName(),
-            _ => "نامشخص"
+            case FinancialAccountType.InternationalBankAccount:
+            {
+                var identifier = BestBankIdentifier(
+                    InternationalBankAccount?.AccountNumber,
+                    null,
+                    null,
+                    InternationalBankAccount?.IbanNumber,
+                    InternationalBankAccount?.SwiftBicCode
+                );
+
+                return string.Join(" - ", new[]
+                {
+                    FinancialAccountType.InternationalBankAccount.GetDisplayName(),
+                    BrokerName,
+                    HolderName,
+                    identifier
+                }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+
+            case FinancialAccountType.Cash:
+                return GetCashAccountText();
+
+            case FinancialAccountType.Gold:
+                return FinancialAccountType.Gold.GetDisplayName();
+
+            default:
+                return "نامشخص";
+        }
+    }
+
+    private string GetCashAccountText()
+    {
+        if (CashAccount == null)
+            return FinancialAccountType.Cash.GetDisplayName();
+
+        var typeText = CashAccount.AccountType.GetDisplayName();
+
+        return CashAccount.AccountType switch
+        {
+            CashAccountType.DepositsWithOthers =>
+                string.Join(" - ", new[]
+                {
+                    typeText,
+                    CashAccount.Title,
+                    BrokerName,
+                    HolderName
+                }.Where(x => !string.IsNullOrWhiteSpace(x))),
+
+            CashAccountType.Internal =>
+                string.Join(" - ", new[]
+                {
+                    typeText,
+                    CashAccount.Title
+                }.Where(x => !string.IsNullOrWhiteSpace(x))),
+
+            _ => FinancialAccountType.Cash.GetDisplayName()
         };
+    }
+
+    private static string? BestBankIdentifier(
+        string? accountNumber,
+        string? cardNumber,
+        string? shabaNumber,
+        string? ibanNumber,
+        string? swift)
+    {
+        return accountNumber
+               ?? cardNumber
+               ?? shabaNumber
+               ?? ibanNumber
+               ?? swift
+               ?? null;
     }
 }

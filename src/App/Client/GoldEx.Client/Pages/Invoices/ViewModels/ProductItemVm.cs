@@ -230,7 +230,7 @@ public class ProductItemVm
             ProductVm.ToRequest(productItem.Product));
     }
 
-    public static CreateProductItemRequest ToInventoryEntryRequest(ProductItemVm productItem, decimal unitPrice)
+    public static CreateProductItemEntryRequest ToInventoryEntryRequest(ProductItemVm productItem, decimal unitPrice)
     {
         if (!productItem.TotalWeight.HasValue)
             throw new ValidationException("وزن کل جنس وارد نشده است");
@@ -240,7 +240,7 @@ public class ProductItemVm
 
         productItem.Product.Weight ??= productItem.TotalWeight;
 
-        return new CreateProductItemRequest(
+        return new CreateProductItemEntryRequest(
             productItem.Quantity,
             unitPrice,
             productItem.CostPrice ?? throw new ValidationException("قیمت خرید مشخص نشده است"),
@@ -327,15 +327,15 @@ public class ProductItemVm
         Product.ProductCategoryTitle = null;
     }
 
-    public static ProductItemVm CreateFromItem(GetProductItemResponse response)
+    public static ProductItemVm CreateFromItem(GetProductItemEntryResponse entryResponse)
     {
         return new ProductItemVm
         {
-            Product = ProductVm.CreateFrom(response.Product),
-            Quantity = response.Quantity,
-            TotalWeight = response.Product.Weight,
-            WageExchangeRate = response.WagePriceUnitExchangeRate,
-            CostPriceUnitId = response.CostPriceUnitId
+            Product = ProductVm.CreateFrom(entryResponse.Product),
+            Quantity = entryResponse.Quantity,
+            TotalWeight = entryResponse.Product.Weight,
+            WageExchangeRate = entryResponse.WagePriceUnitExchangeRate,
+            CostPriceUnitId = entryResponse.CostPriceUnitId
         };
     }
 }

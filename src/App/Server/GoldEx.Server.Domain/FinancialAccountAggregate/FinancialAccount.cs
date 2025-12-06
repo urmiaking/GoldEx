@@ -4,6 +4,7 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
 using System.Diagnostics.CodeAnalysis;
+using GoldEx.Sdk.Common.Extensions;
 
 namespace GoldEx.Server.Domain.FinancialAccountAggregate;
 
@@ -168,5 +169,102 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
                 ArgumentException.ThrowIfNullOrEmpty(brokerName, nameof(brokerName));
             }
         }
+    }
+
+    public string GetAccountTypeText()
+    {
+        switch (AccountType)
+        {
+            case FinancialAccountType.LocalBankAccount:
+            {
+                var identifier = BestBankIdentifier(
+                    LocalAccount?.AccountNumber,
+                    LocalAccount?.CardNumber,
+                    LocalAccount?.ShabaNumber,
+                    null,
+                    null
+                );
+
+                return string.Join(" - ", new[]
+                {
+                    FinancialAccountType.LocalBankAccount.GetDisplayName(),
+                    BrokerName,
+                    HolderName,
+                    identifier
+                }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+
+            case FinancialAccountType.InternationalBankAccount:
+            {
+                var identifier = BestBankIdentifier(
+                    InternationalAccount?.AccountNumber,
+                    null,
+                    null,
+                    InternationalAccount?.IbanNumber,
+                    InternationalAccount?.SwiftBicCode
+                );
+
+                return string.Join(" - ", new[]
+                {
+                    FinancialAccountType.InternationalBankAccount.GetDisplayName(),
+                    BrokerName,
+                    HolderName,
+                    identifier
+                }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+
+            case FinancialAccountType.Cash:
+                return GetCashAccountText();
+
+            case FinancialAccountType.Gold:
+                return FinancialAccountType.Gold.GetDisplayName();
+
+            default:
+                return "نامشخص";
+        }
+    }
+
+    private string GetCashAccountText()
+    {
+        if (CashAccount == null)
+            return FinancialAccountType.Cash.GetDisplayName();
+
+        var typeText = CashAccount.AccountType.GetDisplayName();
+
+        return CashAccount.AccountType switch
+        {
+            CashAccountType.DepositsWithOthers =>
+                string.Join(" - ", new[]
+                {
+                    typeText,
+                    CashAccount.Title,
+                    BrokerName,
+                    HolderName
+                }.Where(x => !string.IsNullOrWhiteSpace(x))),
+
+            CashAccountType.Internal =>
+                string.Join(" - ", new[]
+                {
+                    typeText,
+                    CashAccount.Title
+                }.Where(x => !string.IsNullOrWhiteSpace(x))),
+
+            _ => FinancialAccountType.Cash.GetDisplayName()
+        };
+    }
+
+    private static string? BestBankIdentifier(
+        string? accountNumber,
+        string? cardNumber,
+        string? shabaNumber,
+        string? ibanNumber,
+        string? swift)
+    {
+        return accountNumber
+               ?? cardNumber
+               ?? shabaNumber
+               ?? ibanNumber
+               ?? swift
+               ?? null;
     }
 }

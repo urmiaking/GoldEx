@@ -276,106 +276,130 @@ internal class FinancialAccountService(
         }
     }
 
-    private async Task UpdateSystemLedgerAccountAsync(FinancialAccount financialAccount, FinancialAccountRequestDto request, CancellationToken cancellationToken)
+    private async Task UpdateSystemLedgerAccountAsync(
+        FinancialAccount financialAccount,
+        FinancialAccountRequestDto request,
+        CancellationToken cancellationToken)
     {
-        var ledgerAccount = financialAccount.LedgerAccount ?? throw new InvalidOperationException("System financial accounts must have a ledger account.");
+        var ledgerAccount = financialAccount.LedgerAccount
+                            ?? throw new InvalidOperationException("System financial accounts must have a ledger account.");
 
-        var priceUnit = await priceUnitRepository
-            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Price unit with ID '{request.PriceUnitId}' not found.");
+        var (title, parent) = await ResolveLedgerInfoAsync(request, cancellationToken);
 
-        switch (request.FinancialAccountType)
-        {
-            case FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount:
-                var banksLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Banks))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.Banks)}' not found.");
-
-                ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(
-                    request.FinancialAccountType,
-                    request.BrokerName,
-                    request.LocalBankAccount?.AccountNumber ?? request.InternationalBankAccount?.AccountNumber, null));
-                ledgerAccount.SetParentAccount(banksLedgerAccount.Id);
-                break;
-
-            case FinancialAccountType.Cash when financialAccount.CashAccount?.AccountType is CashAccountType.Internal:
-                var cashLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.InternalCashAccounts)}' not found.");
-
-                ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, null, null, priceUnit.Title));
-                ledgerAccount.SetParentAccount(cashLedgerAccount.Id);
-                break;
-
-            case FinancialAccountType.Cash when financialAccount.CashAccount?.AccountType is CashAccountType.DepositsWithOthers:
-                var depositsLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.DepositsWithOthers))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.DepositsWithOthers)}' not found.");
-
-                ledgerAccount.SetTitle(LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, request.BrokerName, null, priceUnit.Title));
-                ledgerAccount.SetParentAccount(depositsLedgerAccount.Id);
-                break;
-        }
+        ledgerAccount.SetTitle(title);
+        ledgerAccount.SetParentAccount(parent.Id);
 
         await ledgerAccountRepository.UpdateAsync(ledgerAccount, cancellationToken);
     }
 
-    private async Task<LedgerAccountId> GetOrCreateSystemLedgerAccountAsync(FinancialAccountRequestDto request, CancellationToken cancellationToken)
+    private async Task<LedgerAccountId> GetOrCreateSystemLedgerAccountAsync(
+        FinancialAccountRequestDto request,
+        CancellationToken cancellationToken)
     {
-        LedgerAccount parentLedgerAccount;
-        string ledgerAccountTitle;
-
-        var priceUnit = await priceUnitRepository
-            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
-            .FirstOrDefaultAsync(cancellationToken) 
-                        ?? throw new NotFoundException($"Price unit with ID '{request.PriceUnitId}' not found.");
-
-        switch (request.FinancialAccountType)
-        {
-            case FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount:
-                parentLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Banks))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.Banks)}' not found.");
-                ledgerAccountTitle = LedgerAccountTitleBuilder.ForFinancialAccount(
-                    request.FinancialAccountType,
-                    request.BrokerName,
-                    request.LocalBankAccount?.AccountNumber ?? request.InternationalBankAccount?.AccountNumber, null);
-                break;
-            case FinancialAccountType.Cash when request.CashAccount?.AccountType is CashAccountType.Internal:
-                parentLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CashAccounts))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.CashAccounts)}' not found.");
-
-                ledgerAccountTitle = LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, null, null, priceUnit.Title);
-                break;
-            case FinancialAccountType.Cash when request.CashAccount?.AccountType is CashAccountType.DepositsWithOthers:
-
-                parentLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.DepositsWithOthers))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.DepositsWithOthers)}' not found.");
-
-                ledgerAccountTitle = LedgerAccountTitleBuilder.ForFinancialAccount(request.FinancialAccountType, request.BrokerName, null, priceUnit.Title);
-                break;
-            case FinancialAccountType.Gold:
-                parentLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.MoltenGoldInventory)}' not found.");
-
-                ledgerAccountTitle = parentLedgerAccount.Title;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        var (title, parent) = await ResolveLedgerInfoAsync(request, cancellationToken);
 
         var existingAccount = await ledgerAccountRepository
-            .Get(new LedgerAccountsByTitleSpecification(ledgerAccountTitle))
+            .Get(new LedgerAccountsByTitleSpecification(title))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (existingAccount is not null)
             return existingAccount.Id;
 
-        var newLedgerAccount = LedgerAccount.CreateSystemAccount(ledgerAccountTitle, LedgerAccountType.Asset, parentLedgerAccount.Id);
-        await ledgerAccountRepository.CreateAsync(newLedgerAccount, cancellationToken);
-        return newLedgerAccount.Id;
+        var newAccount = LedgerAccount.CreateSystemAccount(
+            title,
+            LedgerAccountType.Asset,
+            parent.Id);
+
+        await ledgerAccountRepository.CreateAsync(newAccount, cancellationToken);
+        return newAccount.Id;
+    }
+
+    private async Task<(string Title, LedgerAccount Parent)> ResolveLedgerInfoAsync(
+    FinancialAccountRequestDto request,
+    CancellationToken cancellationToken)
+    {
+        LedgerAccount parent;
+        string title;
+
+        var priceUnit = await priceUnitRepository
+            .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
+            .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException($"Price unit with ID '{request.PriceUnitId}' not found.");
+
+        switch (request.FinancialAccountType)
+        {
+            case FinancialAccountType.LocalBankAccount or FinancialAccountType.InternationalBankAccount:
+                {
+                    parent = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Banks))
+                        .FirstOrDefaultAsync(cancellationToken)
+                            ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.Banks)}' not found.");
+
+                    // Identifier priority logic (cleaned)
+                    var identifier = LedgerAccountTitleBuilder.BestBankIdentifier(
+                        request.LocalBankAccount?.AccountNumber ?? request.InternationalBankAccount?.AccountNumber,
+                        request.LocalBankAccount?.CardNumber,
+                        request.LocalBankAccount?.ShabaNumber,
+                        request.InternationalBankAccount?.IbanNumber,
+                        request.InternationalBankAccount?.SwiftBicCode
+                    );
+
+                    title = LedgerAccountTitleBuilder.ForFinancialAccount(
+                        request.FinancialAccountType,
+                        request.BrokerName,
+                        identifier,
+                        null);
+
+                    break;
+                }
+
+            case FinancialAccountType.Cash when request.CashAccount?.AccountType is CashAccountType.Internal:
+                {
+                    parent = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.InternalCashAccounts))
+                        .FirstOrDefaultAsync(cancellationToken)
+                            ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.InternalCashAccounts)}' not found.");
+
+                    title = LedgerAccountTitleBuilder.ForFinancialAccount(
+                        request.FinancialAccountType,
+                        null,
+                        null,
+                        priceUnit.Title);
+
+                    break;
+                }
+
+            case FinancialAccountType.Cash when request.CashAccount?.AccountType is CashAccountType.DepositsWithOthers:
+                {
+                    parent = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.DepositsWithOthers))
+                        .FirstOrDefaultAsync(cancellationToken)
+                            ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.DepositsWithOthers)}' not found.");
+
+                    title = LedgerAccountTitleBuilder.ForFinancialAccount(
+                        request.FinancialAccountType,
+                        request.BrokerName,
+                        null,
+                        priceUnit.Title);
+
+                    break;
+                }
+
+            case FinancialAccountType.Gold:
+                {
+                    parent = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.MoltenGoldInventory))
+                        .FirstOrDefaultAsync(cancellationToken)
+                            ?? throw new NotFoundException($"System ledger account '{nameof(SystemLedgerAccounts.MoltenGoldInventory)}' not found.");
+
+                    title = parent.Title; // gold reuses system inventory title
+                    break;
+                }
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(request.FinancialAccountType));
+        }
+
+        return (title, parent);
     }
 }

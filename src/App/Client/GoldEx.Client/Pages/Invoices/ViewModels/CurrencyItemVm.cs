@@ -119,7 +119,7 @@ public class CurrencyItemVm
             currencyItem.FinancialAccount.Id);
     }
 
-    public static CreateCurrencyItemRequest ToInventoryEntryRequest(CurrencyItemVm currencyItem)
+    public static CreateCurrencyItemEntryRequest ToInventoryEntryRequest(CurrencyItemVm currencyItem)
     {
         if (currencyItem.Currency is null)
             throw new FluentValidation.ValidationException("ارز وارد نشده است");
@@ -127,7 +127,7 @@ public class CurrencyItemVm
         if (currencyItem.FinancialAccount is null)
             throw new FluentValidation.ValidationException("حساب مالی وارد نشده است");
 
-        return new CreateCurrencyItemRequest(
+        return new CreateCurrencyItemEntryRequest(
             currencyItem.Currency.Id,
             currencyItem.Amount,
             currencyItem.UnitPrice,
