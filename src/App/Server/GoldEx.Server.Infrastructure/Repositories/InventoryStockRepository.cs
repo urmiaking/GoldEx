@@ -5,6 +5,7 @@ using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -120,7 +121,9 @@ internal class InventoryStockRepository(
         var baseQuery = Query
             .Include(x => x.Invoice)
             .Where(x => !inventoryFilter.Start.HasValue || x.PostingDate >= inventoryFilter.Start.Value)
-            .Where(x => !inventoryFilter.End.HasValue || x.PostingDate <= inventoryFilter.End.Value);
+            .Where(x => !inventoryFilter.End.HasValue || x.PostingDate <= inventoryFilter.End.Value)
+            .Where(x => !inventoryFilter.InventoryEntryId.HasValue
+                        || x.InventoryEntryId == new InventoryEntryId(inventoryFilter.InventoryEntryId.Value));
 
         switch (inventoryFilter.ItemType)
         {

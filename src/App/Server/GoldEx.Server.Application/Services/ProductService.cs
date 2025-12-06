@@ -113,7 +113,8 @@ internal class ProductService(
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new ProductsByIdSpecification(new ProductId(id)))
+        var item = await repository
+            .Get(new ProductsByIdSpecification(new ProductId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);

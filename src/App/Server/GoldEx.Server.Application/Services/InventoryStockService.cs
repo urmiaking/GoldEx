@@ -19,15 +19,23 @@ using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Data;
+using GoldEx.Server.Infrastructure.Specifications.Products;
+using static GoldEx.Shared.Helpers.CalculatorHelper;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
 internal class InventoryStockService(
     IInventoryStockRepository repository,
+    IProductRepository productRepository,
+    ITransactionRepository transactionRepository,
     IServiceProvider serviceProvider,
     IMapper mapper,
-    MeltUsedProductsValidator usedProductsValidator) 
+    MeltUsedProductsValidator usedProductsValidator,
+    DeleteInventoryStockProductValidator deleteValidator,
+    ILogger<InventoryStockService> logger) 
     : IServerInventoryStockService, IInventoryStockService
 {
     #region Server Service
@@ -438,6 +446,44 @@ internal class InventoryStockService(
 
         return new GetInventoryStockAmountResponse(amount);
     }
+
+    public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        await deleteValidator.ValidateAndThrowAsync(productId, cancellationToken);
+
+        await using var dbTransaction = await repository.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+
+        try
+        {
+            var inventoryStocks = await repository
+                .Get(new InventoryStocksByProductIdSpecification(new ProductId(productId)))
+                .ToListAsync(cancellationToken);
+
+            // Collect transactions
+            var transactions = inventoryStocks
+                .SelectMany(x => x.Transactions!)
+                .ToList();
+
+            // 1. Delete transactions
+            await transactionRepository.DeleteRangeAsync(transactions, cancellationToken);
+
+            // 2. Delete inventory stocks
+            await repository.DeleteRangeAsync(inventoryStocks, cancellationToken);
+
+            // 3. Delete product
+            var product = await productRepository.Get(new ProductsByIdSpecification(new ProductId(productId))).FirstOrDefaultAsync(cancellationToken);
+            await productRepository.DeleteAsync(product!, cancellationToken);
+
+            await dbTransaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+            await dbTransaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
 
     #endregion
 }

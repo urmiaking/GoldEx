@@ -352,6 +352,10 @@ public class ApiUrls
         public static string GetAvailableItemAmount(Guid itemId, ItemType itemType) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableItemAmount)
                 .FormatRoute(new { itemId, itemType });
+
+        public static string DeleteProduct(Guid productId) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.DeleteProduct)
+                .FormatRoute(new { productId });
     }
 
     public class Transactions
