@@ -11,15 +11,36 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class PaymentDialog
 {
-    [Parameter] public List<InvoicePaymentVm> Items { get; set; } = [];
+    /// <summary>
+    /// لیست پرداخت‌های فعلی فاکتور (ویرایش روی همین لیست انجام می‌شود).
+    /// </summary>
+    [Parameter] public List<InvoicePaymentVm> Items { get; set; } = new();
+
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
-    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
-    [Parameter] public decimal TotalInvoiceAmount { get; set; }
+    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = new();
     [Parameter] public InvoiceType InvoiceType { get; set; }
+
+    /// <summary>
+    /// مانده فعلی فاکتور قبل از این‌که کاربر در این دیالوگ تغییری بدهد.
+    /// این مقدار از InvoiceVm.TotalUnpaidAmount پر می‌شود.
+    /// </summary>
+    [Parameter] public decimal TotalRemaining { get; set; }
+
     [Parameter] public Guid? CustomerId { get; set; }
+
     [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
 
-    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+    [Inject] public ISettingService SettingService { get; set; } = default!;
+    [Inject] public IDialogService DialogService { get; set; } = default!;
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        CloseButton = true,
+        FullWidth = true,
+        FullScreen = false,
+        MaxWidth = MaxWidth.Small
+    };
+
     private GetSettingResponse? _settings;
 
     private decimal TotalReceiptsAmount =>
@@ -30,11 +51,23 @@ public partial class PaymentDialog
         Items.Where(p => p.PaymentSide == PaymentSide.Pay)
             .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
 
+    private decimal GetSignedAmount(InvoicePaymentVm p)
+    {
+        var baseAmount = p.FinalAmount * (p.ExchangeRate ?? 1);
+        return p.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
+    }
+
+    /// <summary>
+    /// خالص پرداخت‌ها (فقط برای محاسبات کمکی در همین دیالوگ).
+    /// </summary>
+    private decimal TotalNetPayments => Items.Sum(GetSignedAmount);
+
     protected override async Task OnInitializedAsync()
     {
         await LoadSettingsAsync();
         await base.OnInitializedAsync();
     }
+
 
     private async Task LoadSettingsAsync()
     {
@@ -47,6 +80,17 @@ public partial class PaymentDialog
 
     private void Save() => Dialog.Close(Items);
 
+    /// <summary>
+    /// مانده قبل از اعمال پرداختی که در حال ویرایش است.
+    /// فرض: TotalRemaining = مانده فعلی فاکتور (بعد از همه پرداخت‌های ثبت‌شده).
+    /// برای رسیدن به مانده قبل از این پرداخت، مقدار امضادار خودش را برمی‌گردانیم.
+    /// </summary>
+    private decimal GetRemainingBefore(InvoicePaymentVm payment)
+    {
+        var signed = GetSignedAmount(payment);
+        return TotalRemaining + signed;
+    }
+
     private async Task OnEdit(InvoicePaymentVm payment)
     {
         var parameters = new DialogParameters<PaymentEditor>
@@ -55,7 +99,8 @@ public partial class PaymentDialog
             { x => x.BasePriceUnit, PriceUnit },
             { x => x.PriceUnits, PriceUnits },
             { x => x.InvoiceType, InvoiceType },
-            { x => x.TotalRemaining, GetTotalRemaining() }
+            // مانده قبل از این پرداخت
+            { x => x.TotalRemaining, GetRemainingBefore(payment) }
         };
 
         var dialog = await DialogService.ShowAsync<PaymentEditor>("ویرایش پرداخت", parameters, _dialogOptions);
@@ -75,7 +120,8 @@ public partial class PaymentDialog
     private async Task OnDelete(InvoicePaymentVm model)
     {
         var result = await DialogService.ShowMessageBox("حذف پرداخت",
-            $"آیا مطمئن هستید که می خواهید پرداخت با مبلغ {model.Amount.ToCurrencyFormat(model.PriceUnit?.Title)} را حذف کنید؟", yesText: "بله", noText: "خیر");
+            $"آیا مطمئن هستید که می‌خواهید پرداخت با مبلغ {model.Amount.ToCurrencyFormat(model.PriceUnit?.Title)} را حذف کنید؟",
+            yesText: "بله", noText: "خیر");
 
         if (result is true)
         {
@@ -98,24 +144,27 @@ public partial class PaymentDialog
             _ => null
         };
 
-        var paymentSide = InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay;
+        var defaultSide = InvoiceType is InvoiceType.Sell
+            ? PaymentSide.Receive
+            : PaymentSide.Pay;
+
+        var newPayment = new InvoicePaymentVm
+        {
+            PaymentType = paymentType,
+            PriceUnit = priceUnit,
+            AmountAdornmentText = adornmentText,
+            GoldFineness = fineness,
+            PaymentSide = defaultSide
+        };
 
         var parameters = new DialogParameters<PaymentEditor>
         {
-            {
-                x => x.Model, new InvoicePaymentVm
-                {
-                    PaymentType = paymentType,
-                    PriceUnit = priceUnit,
-                    AmountAdornmentText = adornmentText,
-                    GoldFineness = fineness,
-                    PaymentSide = paymentSide
-                }
-            },
+            { x => x.Model, newPayment },
             { x => x.BasePriceUnit, PriceUnit },
             { x => x.PriceUnits, PriceUnits },
             { x => x.InvoiceType, InvoiceType },
-            { x => x.TotalRemaining, GetTotalRemaining() }
+            // برای پرداخت جدید، مانده فعلی فاکتور را به‌عنوان ورودی می‌دهیم
+            { x => x.TotalRemaining, TotalRemaining }
         };
 
         var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions);
@@ -127,16 +176,4 @@ public partial class PaymentDialog
             Items.Add(addedPayment);
         }
     }
-
-    private decimal GetSignedAmount(InvoicePaymentVm p)
-    {
-        var baseAmount = p.FinalAmount * (p.ExchangeRate ?? 1);
-        return p.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
-    }
-
-    private decimal TotalNetPayments =>
-        Items.Sum(GetSignedAmount);
-
-    private decimal GetTotalRemaining() =>
-        TotalInvoiceAmount - TotalNetPayments;
 }

@@ -55,6 +55,7 @@ public partial class PaymentEditor
             : IsCreditorRemaining
                 ? "بستانکاری مشتری:"
                 : "بدهی به مشتری:";
+
     private string FinancialAccountLabelText =>
         Model.PaymentSide switch
         {
@@ -147,7 +148,6 @@ public partial class PaymentEditor
     }
 
     #endregion
-
 
     #region FinancialAccounts
 

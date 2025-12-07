@@ -1136,9 +1136,7 @@ public partial class EditorForm
             { x => x.InvoiceType, _model.InvoiceType },
             { x => x.CustomerId, _model.Customer?.Id },
             { x => x.PriceUnits, _priceUnits },
-            { x => x.TotalInvoiceAmount, _model.InvoiceType == InvoiceType.Sell ?
-                _model.TotalInvoiceAmount - _model.TotalUsedProductsAmount :
-                _model.TotalInvoiceAmount }
+            { x => x.TotalRemaining, _model.TotalUnpaidAmount }
         };
 
         var options = new DialogOptions
@@ -1153,7 +1151,7 @@ public partial class EditorForm
 
         var result = await dialog.Result;
 
-        if (result is {Canceled: false, Data: List<InvoicePaymentVm> payments })
+        if (result is { Canceled: false, Data: List<InvoicePaymentVm> payments })
         {
             _model.InvoicePayments = payments;
         }
