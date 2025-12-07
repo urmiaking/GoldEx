@@ -100,6 +100,7 @@ internal class InvoicePaymentService(
                 var newPayment = InvoicePayment.Create(
                     paymentDto.PaymentDate,
                     paymentDto.PaymentType,
+                    paymentDto.PaymentSide,
                     paymentDto.Amount,
                     paymentDto.ExchangeRate,
                     paymentDto.GoldFineness,
@@ -124,6 +125,7 @@ internal class InvoicePaymentService(
 
                 existingPayment.SetAmount(paymentDto.Amount, new PriceUnitId(paymentDto.PriceUnitId));
                 existingPayment.SetPaymentType(paymentDto.PaymentType);
+                existingPayment.SetPaymentSide(paymentDto.PaymentSide);
                 existingPayment.SetExchangeRate(paymentDto.ExchangeRate);
                 existingPayment.SetLedgerAccountId(ledgerAccountId);
                 existingPayment.SetLedgerAccount(ledgerAccount);

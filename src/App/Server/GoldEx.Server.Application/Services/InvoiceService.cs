@@ -117,12 +117,7 @@ internal class InvoiceService(
 
                 await invoiceRepository.CreateAsync(invoice, cancellationToken);
 
-                #region InvoicePayments (Create invoice payments)
-
                 await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
-
-                #endregion
-
                 await inventoryStockService.CreateInvoiceInventoryAsync(invoice, cancellationToken);
                 await transactionService.SetTransactionsForInvoiceAsync(invoice, cancellationToken);
 
@@ -204,7 +199,6 @@ internal class InvoiceService(
             await invoiceRepository.UpdateAsync(invoice, cancellationToken);
 
             await invoicePaymentService.SyncPaymentsWithInvoiceAsync(invoice, request.InvoicePayments, cancellationToken);
-
             await transactionService.ReplaceTransactionsForInvoiceAsync(invoice, cancellationToken);
             await inventoryStockService.ReplaceInventoryForInvoiceAsync(invoice, cancellationToken);
 

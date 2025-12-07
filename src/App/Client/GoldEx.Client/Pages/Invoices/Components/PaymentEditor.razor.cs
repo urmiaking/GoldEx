@@ -35,14 +35,39 @@ public partial class PaymentEditor
         MaxWidth = MaxWidth.Small
     };
 
-    private decimal TotalRemainingCalculated => TotalRemaining - (Model.FinalAmount * (Model.ExchangeRate ?? 1));
+    private decimal TotalRemainingCalculated =>
+        TotalRemaining - GetSignedAmount(Model);
 
-    private string FinancialAccountLabelText => InvoiceType switch
+    private const decimal Epsilon = 0.0001m;
+
+    private bool IsZeroRemaining => Math.Abs(TotalRemainingCalculated) < Epsilon;
+    private bool IsCreditorRemaining => TotalRemainingCalculated < -Epsilon;
+    private bool IsDebtorRemaining => TotalRemainingCalculated > Epsilon;
+
+    private Color RemainingColor =>
+        IsZeroRemaining ? Color.Info :
+        IsCreditorRemaining ? Color.Success :
+        Color.Error;
+
+    private string RemainingLabel =>
+        IsZeroRemaining
+            ? "فاکتور تسویه شده"
+            : IsCreditorRemaining
+                ? "بستانکاری مشتری:"
+                : "بدهی به مشتری:";
+    private string FinancialAccountLabelText =>
+        Model.PaymentSide switch
+        {
+            PaymentSide.Receive => "دریافت از حساب",
+            PaymentSide.Pay => "پرداخت از حساب",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+    private static decimal GetSignedAmount(InvoicePaymentVm model)
     {
-        InvoiceType.Purchase => "پرداخت از حساب",
-        InvoiceType.Sell => "پرداخت به حساب",
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        var baseAmount = model.FinalAmount * (model.ExchangeRate ?? 1);
+        return model.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
+    }
 
     private void Close() => Dialog.Cancel();
 
@@ -84,7 +109,12 @@ public partial class PaymentEditor
 
     private void ApplyTotalRemaining()
     {
-        Model.Amount = TotalRemainingCalculated;
+        var remaining = TotalRemainingCalculated;
+
+        if (Math.Abs(remaining) < Epsilon)
+            return;
+
+        Model.Amount = Math.Abs(remaining);
         Model.AmountAdornmentText = BasePriceUnit.Title;
         Model.PriceUnit = BasePriceUnit;
     }
