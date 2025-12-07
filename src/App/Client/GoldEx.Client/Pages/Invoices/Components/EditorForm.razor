@@ -474,10 +474,12 @@ else
                                 </MudItem>
 
                                 <MudItem xs="6" md="3">
-                                    <MudText Typo="Typo.body1">جمع پرداختی</MudText>
+                                    <MudText Typo="Typo.body1">جمع دریافتی</MudText>
                                 </MudItem>
                                 <MudItem xs="6" md="3">
-                                    <MudText Typo="Typo.body1" Align="Align.Right">@_model.TotalPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Right">
+                                        @_model.TotalReceivedPaymentAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)
+                                    </MudText>
                                 </MudItem>
 
                                 <MudItem xs="6" md="3">
@@ -488,6 +490,22 @@ else
                                 </MudItem>
 
                                 <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body1">جمع پرداختی</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body1" Align="Align.Right">
+                                        @_model.TotalPaidPaymentsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)
+                                    </MudText>
+                                </MudItem>
+
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body1">طلای مستعمل خریداری شده</MudText>
+                                </MudItem>
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.body1" Align="Align.Right">@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
+                                </MudItem>
+
+                                <MudItem xs="6" md="3">
                                     <MudText Typo="Typo.body1">مانده فاکتور</MudText>
                                 </MudItem>
                                 <MudItem xs="6" md="3">
@@ -495,15 +513,6 @@ else
                                         @FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)
                                     </MudText>
                                 </MudItem>
-                                @if (_model.InvoiceType is InvoiceType.Sell && _model.UsedProducts.Any())
-                                {
-                                    <MudItem xs="6" md="3">
-                                        <MudText Typo="Typo.body1">طلای مستعمل خریداری شده</MudText>
-                                    </MudItem>
-                                    <MudItem xs="6" md="3">
-                                        <MudText Typo="Typo.body1" Align="Align.Right">@_model.TotalUsedProductsAmount.ToCurrencyFormat(_model.InvoicePriceUnit?.Title)</MudText>
-                                    </MudItem>
-                                }
                             </MudGrid>
                         </ChildContent>
                     </MudExpansionPanel>

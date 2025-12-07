@@ -35,6 +35,7 @@ public record GetInvoiceDetailResponse(
 public record GetInvoicePaymentReportResponse(
     string FinalAmount,
     PaymentType PaymentType,
+    PaymentSide PaymentSide,
     DateTime PaymentDate,
     string Description);
 

@@ -4,6 +4,25 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_paymentValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
+            
+            <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">
+                <MudChipSet T="PaymentSide"
+                            SelectionMode="SelectionMode.SingleSelection"
+                            Variant="Variant.Outlined"
+                            Size="Size.Medium"
+                            CheckMark="true"
+                            @bind-SelectedValue="Model.PaymentSide">
+                    <MudChip Color="Color.Success"
+                             Value="PaymentSide.Receive"
+                             Size="@(Model.PaymentSide == PaymentSide.Receive ? Size.Large : Size.Medium)"
+                             Variant="@(Model.PaymentSide == PaymentSide.Receive ? Variant.Text : Variant.Outlined)">@PaymentSide.Receive.GetDisplayName()</MudChip>
+                    <MudChip Color="Color.Error"
+                             Value="PaymentSide.Pay"
+                             Size="@(Model.PaymentSide == PaymentSide.Pay ? Size.Large : Size.Medium)"
+                             Variant="@(Model.PaymentSide == PaymentSide.Pay ? Variant.Text : Variant.Outlined)">@PaymentSide.Pay.GetDisplayName()</MudChip>
+                </MudChipSet>
+            </div>
+
             <MudGrid>
                 <MudItem xs="12" md="6">
                     <div class="d-flex gap-2 align-items-center">
@@ -20,7 +39,7 @@
                                          Variant="Variant.Outlined"
                                          Adornment="Adornment.End"
                                          AdornmentText="@Model.AmountAdornmentText"
-                                         Class="flex-grow-1" />
+                                         Class="flex-grow-1"/>
                         @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer)
                         {
                             <MudMenu @bind-Open="Model.AmountMenuOpen"
@@ -29,7 +48,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.SyncAlt"
                                                    Disabled="Model.Disabled"
                                                    Variant="Variant.Outlined"
-                                                   Color="Color.Primary" />
+                                                   Color="Color.Primary"/>
                                 </ActivatorContent>
                                 <ChildContent>
                                     @foreach (var item in PriceUnits)
@@ -66,7 +85,7 @@
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Adornment="Adornment.End"
-                                         AdornmentText="@BasePriceUnit.Title" />
+                                         AdornmentText="@BasePriceUnit.Title"/>
                     </MudItem>
                 }
                 <MudItem xs="12" md="6">
@@ -111,7 +130,7 @@
                                                  DebounceInterval="0"
                                                  ShowProgressIndicator="false">
                                 </MudAutocomplete>
-                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer"/>
                             </div>
                             break;
                         case PaymentType.UsedGoldInventory or PaymentType.MoltenGoldInventory:
@@ -123,7 +142,7 @@
                                           For="@(() => Model.GoldFineness!)"
                                           Label="@(Model.GetDisplayName(() => Model.GoldFineness))"
                                           Margin="Margin.Dense"
-                                          Variant="Variant.Outlined" />
+                                          Variant="Variant.Outlined"/>
                             break;
                     }
                 </MudItem>
@@ -140,7 +159,7 @@
                                    ImmediateText="true"
                                    Margin="Margin.Dense"
                                    Rounded="true"
-                                   Variant="Variant.Outlined" />
+                                   Variant="Variant.Outlined"/>
                 </MudItem>
                 @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer)
                 {
@@ -154,7 +173,7 @@
                                       Disabled="Model.Disabled"
                                       AdornmentIcon="@Icons.Material.Filled.Numbers"
                                       Adornment="Adornment.End"
-                                      Variant="Variant.Outlined" />
+                                      Variant="Variant.Outlined"/>
                     </MudItem>
                 }
                 <MudItem xs="12">
@@ -167,7 +186,7 @@
                                   Adornment="Adornment.End"
                                   Lines="3"
                                   Disabled="Model.Disabled"
-                                  Variant="Variant.Outlined" />
+                                  Variant="Variant.Outlined"/>
                 </MudItem>
             </MudGrid>
         </DialogContent>
@@ -178,8 +197,8 @@
                     {
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Primary" OnClick="ApplyTotalRemaining" Variant="Variant.Outlined" />
                     }
-                    <MudText Class="price-text" Typo="Typo.h6" Color="Color.Primary">
-                        مانده کل: @TotalRemainingCalculated.ToCurrencyFormat(BasePriceUnit.Title)
+                    <MudText Class="price-text" Typo="Typo.h6" Color="@RemainingColor">
+                        @RemainingLabel @Math.Abs(TotalRemainingCalculated).ToCurrencyFormat(BasePriceUnit.Title)
                     </MudText>
                 </div>
 

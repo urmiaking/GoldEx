@@ -74,10 +74,24 @@
     </DialogContent>
     <DialogActions>
         <div class="price-container d-flex align-center justify-content-between w-100 flex-wrap">
-            <div class="d-flex gap-2 mr-md-4">
-                <MudText Class="price-text" Typo="Typo.h6" Color="Color.Primary">
-                    جمع پرداختی ها: @Items.Sum(item => item.FinalAmount * (item.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)
-                </MudText>
+            <div class="d-flex flex-column flex-md-row gap-2 mr-md-4">
+
+                @if (TotalReceiptsAmount > 0)
+                {
+                    <MudText Class="price-text" Typo="Typo.h6" Color="Color.Success">
+                        جمع دریافتی‌ها:
+                        @TotalReceiptsAmount.ToCurrencyFormat(PriceUnit.Title)
+                    </MudText>
+                }
+
+                @if (TotalPaymentsAmount > 0)
+                {
+                    <MudText Class="price-text" Typo="Typo.h6" Color="Color.Error">
+                        جمع پرداختی‌ها:
+                        @TotalPaymentsAmount.ToCurrencyFormat(PriceUnit.Title)
+                    </MudText>
+                }
+
             </div>
 
             <div class="button-group">

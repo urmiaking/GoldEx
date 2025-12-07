@@ -4,6 +4,7 @@ using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Helpers;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
@@ -26,6 +27,8 @@ public class InvoicePaymentVm
 
     [Display(Name = "نحوه پرداخت")]
     public PaymentType PaymentType { get; set; }
+
+    public PaymentSide PaymentSide { get; set; }
 
     [Display(Name = "عیار طلا")]
     public decimal? GoldFineness { get; set; }
@@ -52,14 +55,31 @@ public class InvoicePaymentVm
 
     public decimal FinalAmount => GoldFineness.HasValue ? Amount * GoldFineness.Value / 750m : Amount;
 
-    public string Description => PaymentType switch
+    public string Description
     {
-        PaymentType.InternalCash when FinancialAccount is not null => $"{PaymentType.GetDisplayTitle()}: {FinancialAccount.Title}",
-        PaymentType.UsedGoldInventory when GoldFineness.HasValue => $"{PaymentType.GetDisplayTitle()}: عیار {GoldFineness.Value.ToCurrencyFormat()}",
-        PaymentType.MoltenGoldInventory when GoldFineness.HasValue => $"{PaymentType.GetDisplayTitle()}: - عیار {GoldFineness.Value.ToCurrencyFormat()}",
-        PaymentType.CustomerTransfer when Endorser is not null => $"{PaymentType.GetDisplayTitle()}: {Endorser.FullName}",
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        get
+        {
+            var typeTitle = PaymentType.GetDisplayTitle();
+            var sideTitle = PaymentSide.GetDisplayName();
+
+            return PaymentType switch
+            {
+                PaymentType.InternalCash when FinancialAccount is not null
+                    => $"{sideTitle} - {typeTitle} از حساب {FinancialAccount.Title}",
+
+                PaymentType.UsedGoldInventory when GoldFineness.HasValue
+                    => $"{sideTitle} - {typeTitle} (عیار {GoldFineness.Value.ToCurrencyFormat()})",
+
+                PaymentType.MoltenGoldInventory when GoldFineness.HasValue
+                    => $"{sideTitle} - {typeTitle} (عیار {GoldFineness.Value.ToCurrencyFormat()})",
+
+                PaymentType.CustomerTransfer when Endorser is not null
+                    => $"{sideTitle} - {typeTitle} توسط {Endorser.FullName}",
+
+                _ => $"{sideTitle} - {typeTitle}"
+            };
+        }
+    }
 
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {
@@ -80,6 +100,7 @@ public class InvoicePaymentVm
             item.ExchangeRate,
             item.GoldFineness,
             item.PaymentType,
+            item.PaymentSide,
             item.PaymentDate.Value,
             item.ReferenceNumber,
             item.Note,
@@ -108,6 +129,7 @@ public class InvoicePaymentVm
             FinancialAccounts = response.FinancialAccounts,
             Endorser = response.Endorser != null ? CustomerVm.CreateFrom(response.Endorser) : null,
             PaymentType = response.PaymentType,
+            PaymentSide = response.PaymentSide,
             GoldFineness = response.GoldFineness
         };
     }
