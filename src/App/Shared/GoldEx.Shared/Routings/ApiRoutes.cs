@@ -244,6 +244,13 @@ public static class ApiRoutes
         public const string Rollback = "{id}";
     }
 
+    public class InventoryExits
+    {
+        public const string Base = "/api/inventory-exits";
+        public const string GetList = "";
+        public const string Exit = "";
+    }
+
     public class Files
     {
         public const string Base = "/api/files";

@@ -352,15 +352,16 @@ public class Invoice : EntityBase<InvoiceId>
         ProductItems.Sum(item => item.ItemTaxAmount) +
         CurrencyItems.Sum(item => item.ItemTaxAmount);
 
-    public decimal TotalStoneAmount => ProductItems.Sum(item => item.ItemStoneAmount);
+    public decimal TotalStoneAmount =>
+        ProductItems.Sum(item => item.ItemStoneAmount);
 
     public decimal TotalAmount =>
         ProductItems.Sum(item => item.ItemFinalAmount) + TotalStoneAmount +
-            CoinItems.Sum(item => item.ItemFinalAmount) +
-            CurrencyItems.Sum(item => item.ItemFinalAmount) +
-            (InvoiceType is InvoiceType.Purchase 
-                ? UsedProducts.Sum(item => item.ItemFinalAmount) 
-                : 0);
+        CoinItems.Sum(item => item.ItemFinalAmount) +
+        CurrencyItems.Sum(item => item.ItemFinalAmount) +
+        (InvoiceType is InvoiceType.Purchase
+            ? UsedProducts.Sum(item => item.ItemFinalAmount)
+            : 0);
 
     public decimal TotalWageAmount =>
         ProductItems.Sum(item => item.ItemWageAmount);
@@ -376,25 +377,61 @@ public class Invoice : EntityBase<InvoiceId>
         CurrencyItems.Sum(item => item.ItemRawAmount) +
         (InvoiceType is InvoiceType.Purchase ? TotalUsedProductsAmount : 0);
 
+    // --- پرداخت‌ها ---
+
+    /// <summary>
+    /// مجموع دریافتی‌ها (Receive) روی فاکتور به ارز فاکتور
+    /// </summary>
+    public decimal TotalReceivedPaymentAmount =>
+        InvoicePayments?
+            .Where(p => p.PaymentSide == PaymentSide.Receive)
+            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1)) ?? 0;
+
+    /// <summary>
+    /// مجموع پرداختی‌ها (Pay) روی فاکتور به ارز فاکتور
+    /// </summary>
+    public decimal TotalPaidPaymentsAmount =>
+        InvoicePayments?
+            .Where(p => p.PaymentSide == PaymentSide.Pay)
+            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1)) ?? 0;
+
+    /// <summary>
+    /// خالص پرداخت‌ها (Receive - Pay) - فقط در فاکتور فروش استفاده می‌شود
+    /// </summary>
+    public decimal NetPaidAmount => TotalReceivedPaymentAmount - TotalPaidPaymentsAmount;
+
+    /// <summary>
+    /// مجموع کل پرداخت‌ها بدون توجه به جهت (برای فاکتور خرید)
+    /// </summary>
     public decimal TotalPaidAmount =>
         InvoicePayments?.Sum(payment =>
-            (payment.PaymentSide == PaymentSide.Receive ? 1 : -1)
-            * payment.FinalAmount
-            * (payment.ExchangeRate ?? 1)
+            payment.FinalAmount * (payment.ExchangeRate ?? 1)
         ) ?? 0;
 
+    public decimal TotalDiscountAmount =>
+        Discounts.Sum(discount => discount.Amount * (discount.ExchangeRate ?? 1));
+
+    public decimal TotalExtraCostAmount =>
+        ExtraCosts.Sum(extraCost => extraCost.Amount * (extraCost.ExchangeRate ?? 1));
+
+    public decimal TotalAmountWithDiscountsAndExtraCosts =>
+        TotalAmount - TotalDiscountAmount + TotalExtraCostAmount;
+
+    public decimal TotalUsedProductsAmount =>
+        UsedProducts.Sum(usedProduct => usedProduct.ItemFinalAmount);
+
+    /// <summary>
+    /// مانده فاکتور:
+    /// - فروش: مبلغ نهایی - طلای مستعمل - خالص پرداخت‌ها (Receive - Pay)
+    /// - خرید: مبلغ نهایی - مجموع پرداخت‌ها
+    /// </summary>
     public decimal TotalUnpaidAmount =>
-        TotalAmountWithDiscountsAndExtraCosts
-        - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0)
-        - TotalPaidAmount;
-
-    public decimal TotalDiscountAmount => Discounts.Sum(discount => discount.Amount * (discount.ExchangeRate ?? 1));
-
-    public decimal TotalExtraCostAmount => ExtraCosts.Sum(extraCost => extraCost.Amount * (extraCost.ExchangeRate ?? 1));
-
-    public decimal TotalAmountWithDiscountsAndExtraCosts => TotalAmount - TotalDiscountAmount + TotalExtraCostAmount;
-
-    public decimal TotalUsedProductsAmount => UsedProducts.Sum(usedProduct => usedProduct.ItemFinalAmount);
+        InvoiceType is InvoiceType.Sell
+            ? TotalAmountWithDiscountsAndExtraCosts
+              - TotalUsedProductsAmount
+              - NetPaidAmount
+            : TotalAmountWithDiscountsAndExtraCosts
+              - TotalPaidAmount;
 
     #endregion
 
