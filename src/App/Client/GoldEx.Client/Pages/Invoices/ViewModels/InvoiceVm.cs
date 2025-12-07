@@ -72,9 +72,24 @@ public class InvoiceVm
                                           CurrencyItems.Sum(i => i.TaxAmount);
     public decimal TotalDiscountsAmount => InvoiceDiscounts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
     public decimal TotalExtraCostsAmount => InvoiceExtraCosts.Sum(p => p.Amount * (p.ExchangeRate ?? 1));
-    public decimal TotalPaymentsAmount => InvoicePayments.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+
+    public decimal TotalReceivedPaymentAmount =>
+        InvoicePayments
+            .Where(p => p.PaymentSide == PaymentSide.Receive)
+            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+
+    public decimal TotalPaidPaymentsAmount =>
+        InvoicePayments
+            .Where(p => p.PaymentSide == PaymentSide.Pay)
+            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+
+    public decimal TotalPaymentsAmount => TotalReceivedPaymentAmount - TotalPaidPaymentsAmount;
+
     public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
-    public decimal TotalUnpaidAmount => TotalInvoiceAmount - TotalPaymentsAmount - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
+    public decimal TotalUnpaidAmount =>
+        TotalInvoiceAmount
+        - TotalPaymentsAmount
+        - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
     public decimal TotalUsedProductsAmount => UsedProducts.Sum(x => x.ItemAmount);
 
     public bool IsPaid => Math.Abs(TotalUnpaidAmount) < Epsilon;

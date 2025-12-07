@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using GoldEx.Sdk.Server.Domain.Entities;
+﻿using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -15,6 +14,7 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
     public static InvoicePayment Create(
         DateTime paymentDate,
         PaymentType paymentType,
+        PaymentSide paymentSide,
         decimal amount,
         decimal? exchangeRate,
         decimal? goldFineness,
@@ -32,6 +32,7 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
         {
             Id = new InvoicePaymentId(Guid.NewGuid()),
             PaymentType = paymentType,
+            PaymentSide = paymentSide,
             PaymentDate = paymentDate,
             GoldFineness = goldFineness,
             Amount = amount,
@@ -50,6 +51,7 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
     private InvoicePayment() { }
 
     public PaymentType PaymentType { get; private set; }
+    public PaymentSide PaymentSide { get; private set; }
     public DateTime PaymentDate { get; private set; }
     public string? ReferenceNumber { get; private set; }
     public string? Note { get; private set; }
@@ -89,6 +91,7 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
         SourceFinancialAccountId = financialAccountId;
     public void SetLedgerAccountId(LedgerAccountId? ledgerAccountId) => LedgerAccountId = ledgerAccountId;
     public void SetPaymentType(PaymentType paymentType) => PaymentType = paymentType;
+    public void SetPaymentSide(PaymentSide paymentSide) => PaymentSide = paymentSide;
 
     public void SetFinalAmount(decimal amount, decimal? goldFineness)
     {

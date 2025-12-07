@@ -97,6 +97,7 @@ public record GetInvoicePaymentResponse(
     decimal Amount,
     decimal? GoldFineness,
     PaymentType PaymentType,
+    PaymentSide PaymentSide,
     DateTime PaymentDate,
     string? ReferenceNumber,
     string? Note,

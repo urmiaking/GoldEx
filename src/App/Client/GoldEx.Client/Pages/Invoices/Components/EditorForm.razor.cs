@@ -19,7 +19,6 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
-using static MudBlazor.CategoryTypes;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -37,7 +36,7 @@ public partial class EditorForm
     private InvoiceVm _model = InvoiceVm.CreateDefaultInstance();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
-    private string _jsVersion = new Random().Next(1, 1000).ToString();
+    private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
     private GetSettingResponse? _setting;
     private GetPriceResponse? _gramPrice;
     private MudForm _form = default!;
@@ -990,11 +989,6 @@ public partial class EditorForm
     private void OnExtraCostsMenuToggled()
     {
         _extraCostsMenuOpen = !_extraCostsMenuOpen;
-    }
-
-    private void OnPaymentsMenuToggled()
-    {
-        _paymentsMenuOpen = !_paymentsMenuOpen;
     }
 
     private void OnTotalUnpaidMenuToggled()
