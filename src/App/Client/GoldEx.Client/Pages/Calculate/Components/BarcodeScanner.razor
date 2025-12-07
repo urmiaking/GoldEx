@@ -6,7 +6,20 @@
         <div class="d-flex justify-center align-center flex-column gap-2" style="height: 300px;">
             <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" />
             <MudText Color="Color.Error">@_errorMessage</MudText>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReloadAsync">تلاش دوباره</MudButton>
+            
+            @if (_cameraDevices.Any())
+            {
+                <MudSelect T="string" Label="انتخاب دوربین" ValueChanged="ManualSelectCamera" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined" Margin="Margin.Dense">
+                    @foreach (var dev in _cameraDevices)
+                    {
+                        <MudSelectItem Value="@dev.DeviceId">@CleanLabel(dev.Label)</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReloadAsync">تلاش دوباره</MudButton>
+            }
         </div>
     }
     else
@@ -19,7 +32,26 @@
                            UseBuiltinDiv="true"
                            Options="_options" />
 
-            <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; z-index: 999;">
+            @if (_cameraDevices.Count > 1)
+            {
+                <div style="position: absolute; top: 10px; left: 10px; z-index: 10000;">
+                    <MudMenu Icon="@Icons.Material.Filled.Cameraswitch"
+                             Color="Color.Surface"
+                             Variant="Variant.Filled"
+                             Size="Size.Small"
+                             AnchorOrigin="Origin.BottomLeft"
+                             TransformOrigin="Origin.TopLeft">
+                        @foreach (var dev in _cameraDevices)
+                        {
+                            <MudMenuItem OnClick="() => ChangeCamera(dev.DeviceId)">
+                                <MudText Typo="Typo.body2">@CleanLabel(dev.Label)</MudText>
+                            </MudMenuItem>
+                        }
+                    </MudMenu>
+                </div>
+            }
+
+            <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; z-index: 9999;">
                 <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" OnClick="CloseScanner">بستن دوربین</MudButton>
             </div>
         </div>
@@ -29,12 +61,18 @@
 @code {
     [Parameter] public EventCallback<string> OnResult { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+    [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
 
     private BarcodeReader? _reader;
     private string? _errorMessage;
     private string? _lastResult;
 
-    private readonly ZXingOptions _options = new ZXingOptions
+    public class CameraDevice { public string DeviceId { get; set; } = ""; public string Label { get; set; } = ""; }
+    private List<CameraDevice> _cameraDevices = new();
+    
+    private string? _selectedDeviceId;
+
+    private readonly ZXingOptions _options = new()
     {
         DecodeAllFormats = false,
         formats =
@@ -43,6 +81,60 @@
         ],
         TRY_HARDER = true
     };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Wait 2 seconds for permissions/initialization, then fetch list
+            await Task.Delay(2000);
+            await LoadDevicesNative();
+        }
+    }
+
+    private async Task LoadDevicesNative()
+    {
+        try
+        {
+            // Call our JS helper
+            var devices = await JsRuntime.InvokeAsync<List<CameraDevice>>("GoldEx.getVideoDevices");
+
+            if (devices.Any())
+            {
+                // Remove duplicates and empty labels
+                _cameraDevices = devices
+                    .Where(x => !string.IsNullOrEmpty(x.Label))
+                    .GroupBy(x => x.DeviceId)
+                    .Select(g => g.First())
+                    .ToList();
+
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching devices: {ex.Message}");
+        }
+    }
+
+    private async Task ChangeCamera(string deviceId)
+    {
+        if (_reader == null) return;
+
+        // 1. Set the new ID
+        _selectedDeviceId = deviceId;
+        StateHasChanged();
+
+        // 2. Restart reader to apply changes
+        await Task.Delay(100); // Small UI breather
+        await _reader.Start();
+    }
+
+    private async Task ManualSelectCamera(string deviceId)
+    {
+        _errorMessage = null;
+        await ChangeCamera(deviceId);
+    }
 
     private async Task HandleBarcode(string result)
     {
@@ -56,8 +148,11 @@
     {
         _errorMessage = null;
         StateHasChanged();
-        await Task.Delay(100);
+        await Task.Delay(100); 
         if (_reader != null) await _reader.Start();
+        
+        await Task.Delay(1000);
+        await LoadDevicesNative();
     }
 
     private async Task CloseScanner()
@@ -74,7 +169,35 @@
         else if (_errorMessage.Contains("NotFoundError"))
             _errorMessage = "دوربینی پیدا نشد.";
 
+        InvokeAsync(LoadDevicesNative);
+
         StateHasChanged();
         return Task.CompletedTask;
     }
+
+    private string CleanLabel(string label)
+    {
+        if (string.IsNullOrEmpty(label)) return "دوربین";
+        // Clean up long labels like "Camera 2, facing back, telephoto..."
+        return label.Length > 25 ? label.Substring(0, 25) + "..." : label;
+    }
 }
+
+<script>
+    window.GoldEx = {
+        getVideoDevices: async function () {
+            try {
+                // Ask browser for permission first if needed
+                await navigator.mediaDevices.getUserMedia({ video: true });
+                
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                return devices
+                    .filter(device => device.kind === 'videoinput')
+                    .map(device => ({ deviceId: device.deviceId, label: device.label }));
+            } catch (err) {
+                console.error(err);
+                return [];
+            }
+        }
+    };
+</script>
