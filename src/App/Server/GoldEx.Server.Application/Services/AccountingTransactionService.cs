@@ -608,6 +608,7 @@ internal class AccountingTransactionService(
                         ? basePosting.AddTicks(1000 + payLine++)
                         : ComposePaymentPostingDate(payment.PaymentDate, payment.CreatedAt, postingTickOffset, payLine++);
 
+                // 1) پرداخت‌های مبتنی بر حساب مالی (نقدی / کارت / ... )
                 if (payment.SourceFinancialAccountId.HasValue)
                 {
                     var sourceFinancialAccount = await financialAccountRepository
@@ -623,37 +624,69 @@ internal class AccountingTransactionService(
                         .FirstOrDefaultAsync(cancellationToken)
                         ?? throw new NotFoundException($"Ledger account {sourceFinancialAccount.LedgerAccountId.Value} not found.");
 
-                    if (invoice.InvoiceType == InvoiceType.Sell)
+                    // حساب طرف مقابل: مشتری/تأمین‌کننده
+                    var counterpartyRole = invoice.InvoiceType == InvoiceType.Sell
+                        ? LedgerAccountRole.Receivable
+                        : LedgerAccountRole.Payable;
+
+                    var counterpartyLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+                        customer.Id, payment.PriceUnitId, counterpartyRole, cancellationToken);
+
+                    var description = TransactionDescriptionBuilder.ForInvoicePayment(invoice, payment);
+
+                    if (payment.PaymentSide == PaymentSide.Receive)
                     {
-                        var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
-                            customer.Id, payment.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
+                        // دریافت وجه (از مشتری / از تأمین‌کننده)
+                        // Debit: حساب مالی
+                        // Credit: حساب دریافتنی / پرداختنی طرف حساب
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            TransactionType.Debit,
+                            sourceLedgerAccount.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            TransactionDescriptionBuilder.ForInvoicePaymentReceived(invoice, payment),
+                            description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, sourceLedgerAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
-
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            TransactionDescriptionBuilder.ForInvoicePaymentReceived(invoice, payment),
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, customerLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                            TransactionType.Credit,
+                            counterpartyLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
                     }
-                    else
+                    else // PaymentSide.Pay
                     {
-                        var supplierLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
-                            customer.Id, payment.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
+                        // پرداخت وجه (به مشتری / به تأمین‌کننده)
+                        // Debit: حساب دریافتنی / پرداختنی طرف حساب
+                        // Credit: حساب مالی
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            TransactionType.Debit,
+                            counterpartyLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            TransactionDescriptionBuilder.ForInvoicePaymentMade(invoice, payment),
+                            description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
-
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            TransactionDescriptionBuilder.ForInvoicePaymentMade(invoice, payment),
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, sourceLedgerAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                            TransactionType.Credit,
+                            sourceLedgerAccount.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
                     }
                 }
+
+                // 2) پرداخت با طلای آبشده یا طلای شکسته (موجودی طلا)
                 else if (payment.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory)
                 {
                     if (!payment.GoldFineness.HasValue)
@@ -667,56 +700,68 @@ internal class AccountingTransactionService(
                         .FirstOrDefaultAsync(cancellationToken)
                         ?? throw new NotFoundException("Gold inventory ledger account not found.");
 
-                    if (invoice.InvoiceType == InvoiceType.Sell)
+                    var counterpartyRole = invoice.InvoiceType == InvoiceType.Sell
+                        ? LedgerAccountRole.Receivable
+                        : LedgerAccountRole.Payable;
+
+                    var counterpartyLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+                        customer.Id, payment.PriceUnitId, counterpartyRole, cancellationToken);
+
+                    var description = TransactionDescriptionBuilder.ForGoldPayment(invoice, payment);
+
+                    if (payment.PaymentSide == PaymentSide.Receive)
                     {
-                        var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
-                            customer.Id, payment.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
-
-                        string description = payment.PaymentType switch
-                        {
-                            PaymentType.MoltenGoldInventory => TransactionDescriptionBuilder
-                                .ForMoltenGoldPaymentReceived(invoice, payment),
-                            PaymentType.UsedGoldInventory => TransactionDescriptionBuilder
-                                .ForUsedGoldPaymentReceived(invoice, payment),
-                            _ => throw new InvalidOperationException("Invalid gold payment type for Sell invoice.")
-                        };
+                        // دریافت طلا از مشتری/تأمین‌کننده
+                        // Debit: موجودی طلا
+                        // Credit: حساب دریافتنی / پرداختنی طرف حساب
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            TransactionType.Debit,
+                            goldLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, goldLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
-
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, customerLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                            TransactionType.Credit,
+                            counterpartyLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
                     }
-                    else
+                    else // PaymentSide.Pay
                     {
-                        var supplierLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
-                            customer.Id, payment.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
-
-                        var description = payment.PaymentType switch
-                        {
-                            PaymentType.MoltenGoldInventory => TransactionDescriptionBuilder
-                                .ForMoltenGoldPaymentMade(invoice, payment),
-                            PaymentType.UsedGoldInventory => TransactionDescriptionBuilder.ForUsedGoldPaymentMade(
-                                invoice, payment),
-                            _ => throw new InvalidOperationException(
-                                "Invalid gold payment type for Purchase invoice.")
-                        };
+                        // پرداخت طلا به مشتری/تأمین‌کننده
+                        // Debit: حساب دریافتنی / پرداختنی طرف حساب
+                        // Credit: موجودی طلا
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            TransactionType.Debit,
+                            counterpartyLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
                             payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
-
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, goldLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                            TransactionType.Credit,
+                            goldLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
                     }
                 }
+
+                // 3) حواله‌کرد (CustomerTransfer)
                 else if (payment.PaymentType == PaymentType.CustomerTransfer)
                 {
                     if (payment.LedgerAccount is null)
@@ -729,45 +774,133 @@ internal class AccountingTransactionService(
 
                     if (invoice.InvoiceType == InvoiceType.Sell)
                     {
+                        // فاکتور فروش: هم مشتری اصلی و هم حواله‌کرد هر دو Receivable هستند
                         var endorserLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
                             endorserId, payment.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
-
-                        var desc = TransactionDescriptionBuilder.ForInvoicePaymentReceivedByEndorser(
-                            invoice, payment, endorserLedger.Customer!.FullName);
 
                         var customerReceivableAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
                             invoice.CustomerId, payment.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, customerReceivableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                        var desc = TransactionDescriptionBuilder.ForInvoicePaymentByEndorser(
+                            invoice, payment, endorserLedger.Customer!.FullName);
 
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                        if (payment.PaymentSide == PaymentSide.Receive)
+                        {
+                            // دریافت به نفع ما: بدهکار کردن مشتری اصلی، بستانکار کردن حواله‌کرد
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Debit,
+                                customerReceivableAccount.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Credit,
+                                endorserLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+                        else // PaymentSide.Pay
+                        {
+                            // پرداخت از سمت ما با حواله‌کرد در فروش به‌ندرت رخ می‌دهد؛
+                            // تفسیر: بدهکار کردن حواله‌کرد، بستانکار کردن مشتری اصلی
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Debit,
+                                endorserLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Credit,
+                                customerReceivableAccount.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
                     }
-                    else
+                    else // InvoiceType.Purchase
                     {
+                        // فاکتور خرید: هر دو Payable هستند
                         var endorserLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
                             endorserId, payment.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
-
-                        var desc = TransactionDescriptionBuilder.ForInvoicePaymentMadeByEndorser(
-                            invoice, payment, endorserLedger.Customer!.FullName);
 
                         var customerPayableAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
                             invoice.CustomerId, payment.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
 
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, endorserLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                        var desc = TransactionDescriptionBuilder.ForInvoicePaymentByEndorser(
+                            invoice, payment, endorserLedger.Customer!.FullName);
 
-                        transactions.Add(Transaction.CreateForInvoicePayment(
-                            desc, payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, customerPayableAccount.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                        if (payment.PaymentSide == PaymentSide.Pay)
+                        {
+                            // پرداخت از سمت ما به تأمین‌کننده با حواله‌کرد:
+                            // Debit: حساب حواله‌کرد (بدهکار به او)
+                            // Credit: حساب پرداختنی تأمین‌کننده
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Debit,
+                                endorserLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Credit,
+                                customerPayableAccount.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
+                        else // PaymentSide.Receive
+                        {
+                            // دریافت از تأمین‌کننده/حواله‌کرد در فاکتور خرید (کمتر معمول، ولی از نظر حسابداری مجاز)
+                            // Debit: حساب پرداختنی تأمین‌کننده
+                            // Credit: حساب حواله‌کرد
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Debit,
+                                customerPayableAccount.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                desc,
+                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                TransactionType.Credit,
+                                endorserLedger.Id,
+                                payment.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                NextPayLine()));
+                        }
                     }
                 }
+
+                // 4) پرداخت فاکتور از محل سند پرداخت (PaymentVoucher)
                 else if (payment is { PaymentVoucherId: not null, PaymentVoucher: not null })
                 {
+                    // در حال حاضر فقط برای فاکتور خرید طراحی شده
                     if (invoice.InvoiceType == InvoiceType.Purchase)
                     {
                         var supplierLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
@@ -778,15 +911,30 @@ internal class AccountingTransactionService(
                             .FirstOrDefaultAsync(cancellationToken)
                             ?? throw new NotFoundException("Prepayments to Suppliers ledger account not found.");
 
+                        var description = TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice);
+
+                        // استفاده از پیش‌پرداخت برای تسویه فاکتور خرید:
+                        // Debit: حساب پرداختنی تأمین‌کننده
+                        // Credit: پیش‌پرداخت به تأمین‌کننده
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice),
+                            description,
                             payment.Amount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Debit, supplierLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                            TransactionType.Debit,
+                            supplierLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
-                            TransactionDescriptionBuilder.ForPaymentVoucher(payment.PaymentVoucher, invoice),
+                            description,
                             payment.Amount, payment.ExchangeRate, paymentGroupId,
-                            TransactionType.Credit, prepaymentLedger.Id, payment.PriceUnitId, invoice.Id, payment.Id, NextPayLine()));
+                            TransactionType.Credit,
+                            prepaymentLedger.Id,
+                            payment.PriceUnitId,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
                     }
                 }
             }

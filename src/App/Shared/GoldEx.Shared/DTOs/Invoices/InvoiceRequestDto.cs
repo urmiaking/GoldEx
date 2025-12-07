@@ -61,6 +61,7 @@ public record InvoicePaymentDto(
     decimal? ExchangeRate,
     decimal? GoldFineness,
     PaymentType PaymentType,
+    PaymentSide PaymentSide,
     DateTime PaymentDate,
     string? ReferenceNumber,
     string? Note,

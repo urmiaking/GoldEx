@@ -143,82 +143,101 @@ public static class TransactionDescriptionBuilder
 
     #region Payment Descriptions (شرح‌های پرداخت)
 
-    public static string ForInvoicePaymentReceived(Invoice invoice, InvoicePayment payment)
+    /// <summary>
+    /// شرح کلی برای پرداخت‌ها و دریافت‌های نقدی/حسابی روی فاکتور
+    /// </summary>
+    public static string ForInvoicePayment(Invoice invoice, InvoicePayment payment)
     {
-        var desc = $"تسویه فاکتور فروش شماره {invoice.InvoiceNumber}";
+        var sideTitle = payment.PaymentSide == PaymentSide.Receive
+            ? "دریافت"
+            : "پرداخت";
+
+        var invoiceTitle = invoice.InvoiceType switch
+        {
+            InvoiceType.Sell => "فاکتور فروش",
+            InvoiceType.Purchase => "فاکتور خرید",
+            _ => "فاکتور"
+        };
+
+        var paymentTypeTitle = payment.PaymentType switch
+        {
+            PaymentType.InternalCash => "نقدی",
+            PaymentType.CustomerTransfer => "حواله",
+            PaymentType.UsedGoldInventory => "طلای شکسته",
+            PaymentType.MoltenGoldInventory => "طلای آبشده",
+            _ => "پرداخت"
+        };
+
+        var desc = $"{sideTitle} {paymentTypeTitle} بابت {invoiceTitle} شماره {invoice.InvoiceNumber}";
+
         if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
             desc += $" (شماره پیگیری: {payment.ReferenceNumber})";
+
         return desc;
     }
 
-    public static string ForInvoicePaymentMade(Invoice invoice, InvoicePayment payment)
-    {
-        var desc = $"تسویه فاکتور خرید شماره {invoice.InvoiceNumber}";
-        if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
-            desc += $" (شماره پیگیری: {payment.ReferenceNumber})";
-        return desc;
-    }
-
+    /// <summary>
+    /// شرح اعمال سند پرداخت روی فاکتور خرید (پیش‌پرداخت به تأمین‌کننده)
+    /// </summary>
     public static string ForPaymentVoucher(PaymentVoucher voucher, Invoice invoice)
     {
         return $"اعمال سند پرداخت شماره {voucher.VoucherNumber} بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
     }
 
-    #region New Descriptions for Customer Endorser Payments (حواله‌کرد)
+    #region Customer Endorser Payments (حواله‌کرد)
 
-    public static string ForInvoicePaymentReceivedByEndorser(Invoice invoice, InvoicePayment payment, string endorserName)
+    public static string ForInvoicePaymentByEndorser(Invoice invoice, InvoicePayment payment, string endorserName)
     {
-        return $"تسویه فاکتور فروش شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
-               (!string.IsNullOrWhiteSpace(payment.ReferenceNumber)
-                   ? $" (شماره پیگیری: {payment.ReferenceNumber})"
-                   : string.Empty);
-    }
+        var sideTitle = payment.PaymentSide == PaymentSide.Receive
+            ? "دریافت"
+            : "پرداخت";
 
-    public static string ForInvoicePaymentMadeByEndorser(Invoice invoice, InvoicePayment payment, string endorserName)
-    {
-        return $"تسویه فاکتور خرید شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}" +
-               (!string.IsNullOrWhiteSpace(payment.ReferenceNumber)
-                   ? $" (شماره پیگیری: {payment.ReferenceNumber})"
-                   : string.Empty);
+        var invoiceTitle = invoice.InvoiceType switch
+        {
+            InvoiceType.Sell => "فاکتور فروش",
+            InvoiceType.Purchase => "فاکتور خرید",
+            _ => "فاکتور"
+        };
+
+        var desc = $"{sideTitle} بابت {invoiceTitle} شماره {invoice.InvoiceNumber} توسط حواله‌کرد {endorserName}";
+
+        if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
+            desc += $" (شماره پیگیری: {payment.ReferenceNumber})";
+
+        return desc;
     }
 
     #endregion
 
     // ---------------------- 🟡 پرداخت‌های با طلا ----------------------
 
-    public static string ForMoltenGoldPaymentReceived(Invoice invoice, InvoicePayment payment)
+    public static string ForGoldPayment(Invoice invoice, InvoicePayment payment)
     {
-        var desc = "دریافت طلای آبشده";
-        if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness:G29}";
-        desc += $" بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
-        return desc;
-    }
+        var sideTitle = payment.PaymentSide == PaymentSide.Receive
+            ? "دریافت"
+            : "پرداخت";
 
-    public static string ForMoltenGoldPaymentMade(Invoice invoice, InvoicePayment payment)
-    {
-        var desc = "پرداخت طلای آبشده";
-        if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness:G29}";
-        desc += $" بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
-        return desc;
-    }
+        var goldTypeTitle = payment.PaymentType switch
+        {
+            PaymentType.MoltenGoldInventory => "طلای آبشده",
+            PaymentType.UsedGoldInventory => "طلای شکسته",
+            _ => "طلا"
+        };
 
-    public static string ForUsedGoldPaymentReceived(Invoice invoice, InvoicePayment payment)
-    {
-        var desc = "دریافت طلای شکسته";
-        if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness:G29}";
-        desc += $" بابت فاکتور فروش شماره {invoice.InvoiceNumber}";
-        return desc;
-    }
+        var invoiceTitle = invoice.InvoiceType switch
+        {
+            InvoiceType.Sell => "فاکتور فروش",
+            InvoiceType.Purchase => "فاکتور خرید",
+            _ => "فاکتور"
+        };
 
-    public static string ForUsedGoldPaymentMade(Invoice invoice, InvoicePayment payment)
-    {
-        var desc = "پرداخت طلای شکسته";
+        var desc = $"{sideTitle} {goldTypeTitle}";
+
         if (payment.GoldFineness.HasValue)
-            desc += $" با عیار {payment.GoldFineness:G29}";
-        desc += $" بابت فاکتور خرید شماره {invoice.InvoiceNumber}";
+            desc += $" با عیار {payment.GoldFineness.Value:G29}";
+
+        desc += $" بابت {invoiceTitle} شماره {invoice.InvoiceNumber}";
+
         return desc;
     }
 

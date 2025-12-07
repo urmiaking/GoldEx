@@ -22,6 +22,14 @@ public partial class PaymentDialog
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
     private GetSettingResponse? _settings;
 
+    private decimal TotalReceiptsAmount =>
+        Items.Where(p => p.PaymentSide == PaymentSide.Receive)
+            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+
+    private decimal TotalPaymentsAmount =>
+        Items.Where(p => p.PaymentSide == PaymentSide.Pay)
+            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+
     protected override async Task OnInitializedAsync()
     {
         await LoadSettingsAsync();
@@ -47,7 +55,7 @@ public partial class PaymentDialog
             { x => x.BasePriceUnit, PriceUnit },
             { x => x.PriceUnits, PriceUnits },
             { x => x.InvoiceType, InvoiceType },
-            { x => x.TotalRemaining, TotalInvoiceAmount - Items.Sum(i => i.FinalAmount * (i.ExchangeRate ?? 1)) }
+            { x => x.TotalRemaining, GetTotalRemaining() }
         };
 
         var dialog = await DialogService.ShowAsync<PaymentEditor>("ویرایش پرداخت", parameters, _dialogOptions);
@@ -90,6 +98,8 @@ public partial class PaymentDialog
             _ => null
         };
 
+        var paymentSide = InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay;
+
         var parameters = new DialogParameters<PaymentEditor>
         {
             {
@@ -98,13 +108,14 @@ public partial class PaymentDialog
                     PaymentType = paymentType,
                     PriceUnit = priceUnit,
                     AmountAdornmentText = adornmentText,
-                    GoldFineness = fineness
+                    GoldFineness = fineness,
+                    PaymentSide = paymentSide
                 }
             },
             { x => x.BasePriceUnit, PriceUnit },
             { x => x.PriceUnits, PriceUnits },
             { x => x.InvoiceType, InvoiceType },
-            { x => x.TotalRemaining, TotalInvoiceAmount - Items.Sum(i => i.FinalAmount * (i.ExchangeRate ?? 1)) }
+            { x => x.TotalRemaining, GetTotalRemaining() }
         };
 
         var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions);
@@ -116,4 +127,16 @@ public partial class PaymentDialog
             Items.Add(addedPayment);
         }
     }
+
+    private decimal GetSignedAmount(InvoicePaymentVm p)
+    {
+        var baseAmount = p.FinalAmount * (p.ExchangeRate ?? 1);
+        return p.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
+    }
+
+    private decimal TotalNetPayments =>
+        Items.Sum(GetSignedAmount);
+
+    private decimal GetTotalRemaining() =>
+        TotalInvoiceAmount - TotalNetPayments;
 }

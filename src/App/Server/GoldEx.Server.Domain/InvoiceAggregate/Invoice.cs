@@ -376,15 +376,23 @@ public class Invoice : EntityBase<InvoiceId>
         CurrencyItems.Sum(item => item.ItemRawAmount) +
         (InvoiceType is InvoiceType.Purchase ? TotalUsedProductsAmount : 0);
 
-    public decimal TotalPaidAmount => InvoicePayments?.Sum(payment => payment.FinalAmount * (payment.ExchangeRate ?? 1)) ?? 0;
+    public decimal TotalPaidAmount =>
+        InvoicePayments?.Sum(payment =>
+            (payment.PaymentSide == PaymentSide.Receive ? 1 : -1)
+            * payment.FinalAmount
+            * (payment.ExchangeRate ?? 1)
+        ) ?? 0;
+
+    public decimal TotalUnpaidAmount =>
+        TotalAmountWithDiscountsAndExtraCosts
+        - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0)
+        - TotalPaidAmount;
 
     public decimal TotalDiscountAmount => Discounts.Sum(discount => discount.Amount * (discount.ExchangeRate ?? 1));
 
     public decimal TotalExtraCostAmount => ExtraCosts.Sum(extraCost => extraCost.Amount * (extraCost.ExchangeRate ?? 1));
 
     public decimal TotalAmountWithDiscountsAndExtraCosts => TotalAmount - TotalDiscountAmount + TotalExtraCostAmount;
-
-    public decimal TotalUnpaidAmount => TotalAmountWithDiscountsAndExtraCosts - TotalPaidAmount - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
 
     public decimal TotalUsedProductsAmount => UsedProducts.Sum(usedProduct => usedProduct.ItemFinalAmount);
 
