@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -365,7 +366,12 @@ public static class TransactionDescriptionBuilder
 
     public static string ForInventoryExit(ExitReason reason, Product product)
     {
-        return string.Empty;
+        return $"خروج جنس '{product.Name}' با کد '{product.Barcode}' از انبار به دلیل {reason.GetDisplayName()}";
+    }
+
+    public static string ForInventoryExit(ExitReason reason, Coin coin)
+    {
+        return $"خروج سکه '{coin.Title}' از انبار به دلیل {reason.GetDisplayName()}";
     }
 
     #endregion
