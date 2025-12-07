@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
@@ -50,6 +51,7 @@ internal class AccountingTransactionService(
     ILedgerAccountRepository ledgerAccountRepository,
     ICoinRepository coinRepository,
     IPriceService priceService,
+    ICoinService coinService,
     IServerLedgerAccountService ledgerAccountService)
     : IAccountingTransactionService
 {
@@ -340,7 +342,7 @@ internal class AccountingTransactionService(
                         {
                             var gainLossLedger = await ledgerAccountRepository
                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.ExchangeGainLoss))
-                                .FirstOrDefaultAsync(cancellationToken) 
+                                .FirstOrDefaultAsync(cancellationToken)
                                                  ?? throw new NotFoundException("Exchange Gain/Loss ledger account not found.");
 
                             foreach (var ci in invoice.CurrencyItems)
@@ -551,7 +553,7 @@ internal class AccountingTransactionService(
                         if (invoice.TotalExtraCostAmount > 0)
                         {
                             transactions.Add(Transaction.CreateForInvoice(
-                                TransactionDescriptionBuilder.ForPurchaseOverheadCharges(invoice, 
+                                TransactionDescriptionBuilder.ForPurchaseOverheadCharges(invoice,
                                     invoice.ExtraCosts.Select(x => x.Description)),
                                 invoice.TotalExtraCostAmount,
                                 invoice.ExchangeRate,
@@ -1460,7 +1462,7 @@ internal class AccountingTransactionService(
             usedProduct.ItemFinalAmount,
             usedProduct.Invoice.ExchangeRate,
             groupId,
-            TransactionType.Credit,        
+            TransactionType.Credit,
             customerReceivableLedger.Id,
             usedProduct.Invoice.PriceUnitId,
             usedProduct.InvoiceId,
@@ -1745,7 +1747,7 @@ internal class AccountingTransactionService(
             var entryDate = transactions.Any() ? now.AddTicks(1) : now;
 
             transactions.Add(Transaction.CreateForManualEntry(
-                "اصلاح: " +description,
+                "اصلاح: " + description,
                 newWeight,
                 pricePerGram,
                 groupId,
@@ -1757,7 +1759,7 @@ internal class AccountingTransactionService(
                 entryDate));
 
             transactions.Add(Transaction.CreateForManualEntry(
-                "اصلاح: " +description,
+                "اصلاح: " + description,
                 newWeight,
                 pricePerGram,
                 groupId,
@@ -1773,26 +1775,29 @@ internal class AccountingTransactionService(
             await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 
-    public async Task CreateForInventoryExitAsync(InventoryExitId inventoryExitId, CreateInventoryExitRequest request,
-        List<InventoryStock> inventoryStocks,
-        CancellationToken cancellationToken)
+    public async Task CreateForInventoryExitAsync(
+    InventoryExitId inventoryExitId,
+    CreateInventoryExitRequest request,
+    List<InventoryStock> inventoryStocks,
+    CancellationToken cancellationToken)
     {
+        if (inventoryStocks == null || !inventoryStocks.Any())
+            throw new ArgumentException("No inventory stocks provided.", nameof(inventoryStocks));
+
         var exitReasonLedgerAccountTitle = request.ExitReason.GetLedgerAccount();
 
         var exitLedgerAccount = await ledgerAccountRepository
             .Get(new LedgerAccountsByTitleSpecification(exitReasonLedgerAccountTitle))
-            .FirstOrDefaultAsync(cancellationToken) 
-                                ?? throw new NotFoundException($"Ledger account for exit reason '{request.ExitReason}' not found.");
-
-        var inventoryLedgerAccount = await ledgerAccountRepository
-            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException($"Ledger account for exit reason '{request.ExitReason}' not found.");
 
         var basePriceUnit = await priceUnitRepository
             .Get(new PriceUnitsSetAsDefaultSpecification())
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException("Default price unit not found.");
 
         var transactions = new List<Transaction>();
+        var tick = 1;
 
         foreach (var inventoryStock in inventoryStocks)
         {
@@ -1801,19 +1806,124 @@ internal class AccountingTransactionService(
                 var product = await productRepository
                     .Get(new ProductsByIdSpecification(inventoryStock.ProductId.Value))
                     .FirstOrDefaultAsync(cancellationToken)
-                                ?? throw new NotFoundException($"Product {inventoryStock.ProductId.Value.Value} not found.");
+                    ?? throw new NotFoundException($"Product {inventoryStock.ProductId.Value.Value} not found.");
 
                 var currentPrice = await priceService.GetAsync(product.GoldUnitType, basePriceUnit.Id.Value, false, cancellationToken);
+                if (currentPrice == null || string.IsNullOrWhiteSpace(currentPrice.Value) || !decimal.TryParse(currentPrice.Value, out var pricePerGram))
+                    throw new NotFoundException($"Current gram price for product '{product.Id.Value}' not found or invalid.");
 
-                decimal.TryParse(currentPrice?.Value, out var pricePerGram);
-
-                var basePriceAmount = inventoryStock.ChangeAmount * pricePerGram;
+                var priceUnit = await priceUnitRepository
+                    .Get(new PriceUnitsByUnitTypeSpecification(currentPrice.UnitType!.Value))
+                    .FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new NotFoundException($"Price unit for type '{currentPrice.UnitType.Value}' not found.");
 
                 var amount = inventoryStock.ChangeAmount;
+                var basePriceAmount = amount * pricePerGram;
 
-                //var transaction = Transaction.CreateForInventoryExit(
-                //    TransactionDescriptionBuilder.ForInvoiceInventoryExit())
+                var groupId = Guid.NewGuid();
+                var postingDate = inventoryStock.PostingDate;
+
+                var description = TransactionDescriptionBuilder.ForInventoryExit(request.ExitReason, product);
+
+                // حسابِ موجودی محصولات
+                var productInventoryLedger = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
+                    .FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new NotFoundException("Inventory ledger account not found.");
+
+                var debit = Transaction.CreateForInventoryExit(
+                    description,
+                    amount,
+                    basePriceAmount,
+                    pricePerGram,
+                    groupId,
+                    TransactionType.Debit,
+                    exitLedgerAccount.Id, 
+                    priceUnit.Id,
+                    inventoryExitId,
+                    inventoryStock.Id,
+                    postingDate.AddTicks(tick++)
+                );
+
+                var credit = Transaction.CreateForInventoryExit(
+                    description,
+                    amount,
+                    basePriceAmount,
+                    pricePerGram,
+                    groupId,
+                    TransactionType.Credit,
+                    productInventoryLedger.Id, 
+                    priceUnit.Id,
+                    inventoryExitId,
+                    inventoryStock.Id,
+                    postingDate.AddTicks(tick++)
+                );
+
+                transactions.Add(debit);
+                transactions.Add(credit);
+            }
+            else if (inventoryStock.CoinId.HasValue)
+            {
+                var coin = await coinRepository
+                    .Get(new CoinsByIdSpecification(inventoryStock.CoinId.Value))
+                    .FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new NotFoundException($"Coin {inventoryStock.CoinId.Value.Value} not found.");
+
+                var coinInventoryLedger = await ledgerAccountRepository
+                    .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
+                    .FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new NotFoundException($"Ledger account for coin '{coin.Title}' not found.");
+
+                var coinCurrentPrice = await coinService.GetPriceAsync(coin.Id.Value, basePriceUnit.Id.Value, cancellationToken);
+                if (coinCurrentPrice?.ExchangeRate == null)
+                    throw new NotFoundException($"Current price for coin '{coin.Title}' not found.");
+
+                var amount = inventoryStock.ChangeAmount;
+                var exchangeRate = coinCurrentPrice.ExchangeRate.Value;
+                var basePriceAmount = amount * exchangeRate;
+
+                var groupId = Guid.NewGuid();
+                var postingDate = inventoryStock.PostingDate;
+                var description = TransactionDescriptionBuilder.ForInventoryExit(request.ExitReason, coin);
+
+                var debit = Transaction.CreateForInventoryExit(
+                    description,
+                    amount,
+                    basePriceAmount,
+                    exchangeRate,
+                    groupId,
+                    TransactionType.Debit,
+                    exitLedgerAccount.Id,
+                    basePriceUnit.Id,
+                    inventoryExitId,
+                    inventoryStock.Id,
+                    postingDate.AddTicks(tick++)
+                );
+
+                var credit = Transaction.CreateForInventoryExit(
+                    description,
+                    amount,
+                    basePriceAmount,
+                    exchangeRate,
+                    groupId,
+                    TransactionType.Credit,
+                    coinInventoryLedger.Id,
+                    basePriceUnit.Id,
+                    inventoryExitId,
+                    inventoryStock.Id,
+                    postingDate.AddTicks(tick++)
+                );
+
+                transactions.Add(debit);
+                transactions.Add(credit);
+            }
+            else
+            {
+                throw new InvalidOperationException("InventoryStock must be product or coin for InventoryExit.");
             }
         }
+
+        if (transactions.Any()) 
+            await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 }

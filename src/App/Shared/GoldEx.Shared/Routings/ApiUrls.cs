@@ -502,4 +502,10 @@ public class ApiUrls
 
         public static string UploadFiles() => BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.UploadFiles);
     }
+
+    public class InventoryExits
+    {
+        public static string Exit() =>
+            BuildUrl(ApiRoutes.InventoryExits.Base, ApiRoutes.InventoryExits.Exit);
+    }
 }
