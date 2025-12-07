@@ -267,7 +267,10 @@ else
 
             <div class="my-2">
                 <MudTabs Elevation="2" Rounded="true" Centered="true">
-                    <MudTabPanel Text="طلا، جواهر و آبشده" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
+                    <MudTabPanel Text="طلا، جواهر و آبشده" Icon="@Icons.Material.Filled.Diamond"
+                                 IconColor="Color.Info"
+                                 BadgeData="@(_model.ProductItems.Any() ? _model.ProductItems.Count : null)"
+                                 BadgeColor="Color.Info">
                         <ProductItemsList Items="_model.ProductItems"
                                           PriceUnit="_model.InvoicePriceUnit"
                                           OnEditItem="OnEditProductItem"
@@ -280,7 +283,10 @@ else
                                           OnBarcodeChanged="OnBarcodeChanged"
                                           OnPrintBarcode="OnPrintBarcode" />
                     </MudTabPanel>
-                    <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
+                    <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn"
+                                 IconColor="Color.Primary"
+                                 BadgeData="@(_model.CoinItems.Any() ? _model.CoinItems.Count : null)"
+                                 BadgeColor="Color.Primary">
                         <CoinItemsList Items="@_model.CoinItems"
                                        PriceUnit="@_model.InvoicePriceUnit"
                                        OnEditItem="OnEditCoinItem"
@@ -291,7 +297,10 @@ else
                                        OnAddItem="OnAddCoinItem"
                                        OnOpenSelector="OnOpenCoinSelector" />
                     </MudTabPanel>
-                    <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Success">
+                    <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney"
+                                 IconColor="Color.Success"
+                                 BadgeData="@(_model.CurrencyItems.Any() ? _model.CurrencyItems.Count : null)"
+                                 BadgeColor="Color.Success">
                         <CurrencyItemsList Items="_model.CurrencyItems"
                                            PriceUnit="_model.InvoicePriceUnit"
                                            OnEditItem="OnEditCurrencyItem"
@@ -302,7 +311,11 @@ else
                                            OnAddItem="OnAddCurrencyItem"
                                            OnOpenSelector="OnOpenCurrencySelector" />
                     </MudTabPanel>
-                    <MudTabPanel Text="طلای مستعمل" Icon="@Icons.Material.Filled.Recycling" IconColor="Color.Error">
+                    <MudTabPanel Text="خرید طلای مستعمل"
+                                 Icon="@Icons.Material.Filled.Recycling"
+                                 IconColor="Color.Error"
+                                 BadgeData="@(_model.UsedProducts.Any() ? _model.UsedProducts.Count : null)"
+                                 BadgeColor="Color.Error">
                         <UsedProductsList Items="_model.UsedProducts"
                                           PriceUnit="_model.InvoicePriceUnit"
                                           OnEditItem="OnEditUsedProduct"
@@ -358,10 +371,23 @@ else
                                 <div class="d-md-block d-none flex-grow-1"></div>
                                 <div @onclick:stopPropagation="true" class="ml-md-3">
                                     <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                                                       Color="Color.Primary"
-                                                       Variant="Variant.Filled"
-                                                       OnClick="OpenPaymentsDialog" />
+                                        @if (_model.InvoicePayments.Any())
+                                        {
+                                            <MudBadge Content="@(_model.InvoicePayments.Any() ? _model.InvoicePayments.Count : null)" Color="Color.Success" Overlap="true">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                                               Color="Color.Primary"
+                                                               Variant="Variant.Filled"
+                                                               OnClick="OpenPaymentsDialog" />
+                                            </MudBadge>
+                                        }
+                                        else
+                                        {
+                                            <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                                           Color="Color.Primary"
+                                                           Variant="Variant.Filled"
+                                                           OnClick="OpenPaymentsDialog" />
+                                        }
+
                                         <MudMenu EndIcon="@Icons.Material.Filled.ArrowDropUp"
                                                  Label="ثبت پرداخت"
                                                  AnchorOrigin="Origin.BottomCenter"
@@ -689,3 +715,15 @@ else
 
 <script src="/js/libs/jsbarcode.all.min.js"></script>
 <script src="/js/print.js?v=@_jsVersion"></script>
+
+<style>
+    .mud-tab-badge {
+        margin-bottom: 16px;
+        margin-right: 8px;
+    }
+
+    .mud-button-group .mud-badge {
+        top: -8px;
+        right: -8px;
+    }
+</style>
