@@ -154,6 +154,13 @@ public static class ClientRoutes
             public const string Index = $"{InventoryEntryPrefix}";
             public const string List = $"{InventoryEntryPrefix}/list";
         }
+
+        public static class InventoryExits
+        {
+            private const string InventoryExitsPrefix = $"{InventoryStocksPrefix}/inventory-exits";
+            public const string Index = $"{InventoryExitsPrefix}";
+            public const string List = $"{InventoryExitsPrefix}/list";
+        }
     }
 
     public static class Dashboard
