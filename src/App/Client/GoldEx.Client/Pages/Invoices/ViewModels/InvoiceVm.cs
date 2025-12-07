@@ -83,14 +83,22 @@ public class InvoiceVm
             .Where(p => p.PaymentSide == PaymentSide.Pay)
             .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
 
-    public decimal TotalPaymentsAmount => TotalReceivedPaymentAmount - TotalPaidPaymentsAmount;
+    public decimal NetPaymentsAmount =>
+        TotalReceivedPaymentAmount - TotalPaidPaymentsAmount;
 
-    public decimal TotalInvoiceAmount => TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
+    public decimal TotalPaymentsAmount =>
+        InvoicePayments.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+
+    public decimal TotalInvoiceAmount =>
+        TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
+
+    public decimal TotalUsedProductsAmount =>
+        UsedProducts.Sum(x => x.ItemAmount);
+
     public decimal TotalUnpaidAmount =>
-        TotalInvoiceAmount
-        - TotalPaymentsAmount
-        - (InvoiceType is InvoiceType.Sell ? TotalUsedProductsAmount : 0);
-    public decimal TotalUsedProductsAmount => UsedProducts.Sum(x => x.ItemAmount);
+        InvoiceType is InvoiceType.Sell
+            ? TotalInvoiceAmount - TotalUsedProductsAmount - NetPaymentsAmount
+            : TotalInvoiceAmount - TotalPaymentsAmount;
 
     public bool IsPaid => Math.Abs(TotalUnpaidAmount) < Epsilon;
     public bool IsCreditor => TotalUnpaidAmount < -Epsilon;
