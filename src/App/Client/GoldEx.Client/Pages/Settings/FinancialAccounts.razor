@@ -41,7 +41,7 @@
     <div class="d-flex flex-row align-center">
         <MudTextField T="string" Clearable="true" Immediate="true"
                       ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
-                      Adornment="Adornment.Start" Variant="Variant.Outlined"
+                      Adornment="Adornment.Start" Variant="Variant.Outlined" DebounceInterval="500"
                       Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
                       IconSize="Size.Small" Class="m-0" Style="max-width: 200px;" />
         <MudIconButton Color="Color.Primary" Variant="Variant.Outlined"
@@ -94,6 +94,7 @@
                 @infoText
             </div>
             <MudPagination SelectedChanged="PageChanged"
+                           Selected="@(_table.CurrentPage + 1)"
                            Color="Color.Primary"
                            Count="@pageCount"
                            Class="justify-center"

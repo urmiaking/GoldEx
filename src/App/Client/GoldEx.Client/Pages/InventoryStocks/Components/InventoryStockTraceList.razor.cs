@@ -38,21 +38,20 @@ public partial class InventoryStockTraceList
                     Items = response.Data
                 };
             },
+            createScope: true,
             cancelPrevious: true);
 
         return result;
     }
 
-    private async Task OnSearch(string text)
-    {
-        _searchString = text;
-        await RefreshAsync();
-    }
-
     private void PageChanged(int i)
     {
+        if (i <= 0)
+            return;
+
         _table.NavigateTo(i - 1);
     }
+
     private async Task RefreshAsync()
     {
         await _table.ReloadServerData();
