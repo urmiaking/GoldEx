@@ -36,37 +36,62 @@ public partial class PaymentEditor
     };
 
     private decimal TotalRemainingCalculated =>
-        TotalRemaining - GetSignedAmount(Model);
+        TotalRemaining - GetBalanceEffect(InvoiceType, Model);
 
     private const decimal Epsilon = 0.0001m;
 
     private bool IsZeroRemaining => Math.Abs(TotalRemainingCalculated) < Epsilon;
-    private bool IsCreditorRemaining => TotalRemainingCalculated < -Epsilon;
-    private bool IsDebtorRemaining => TotalRemainingCalculated > Epsilon;
 
     private Color RemainingColor =>
-        IsZeroRemaining ? Color.Info :
-        IsCreditorRemaining ? Color.Success :
-        Color.Error;
+        IsZeroRemaining
+            ? Color.Info
+            : InvoiceType switch
+            {
+                InvoiceType.Sell => TotalRemainingCalculated < 0
+                    ? Color.Success   // بستانکاری مشتری (ما به او بدهکاریم)
+                    : Color.Error,    // بدهکاری مشتری (او به ما بدهکار است)
+
+                InvoiceType.Purchase => TotalRemainingCalculated > 0
+                    ? Color.Success   // بستانکاری فروشنده (ما به او بدهکاریم)
+                    : Color.Error,    // بدهکاری فروشنده (او به ما بدهکار است)
+
+                _ => Color.Info
+            };
 
     private string RemainingLabel =>
         IsZeroRemaining
             ? "فاکتور تسویه شده"
-            : IsCreditorRemaining
-                ? "بستانکاری مشتری:"
-                : "بدهی به مشتری:";
+            : InvoiceType switch
+            {
+                InvoiceType.Sell => TotalRemainingCalculated > 0
+                    ? "بدهی مشتری:"
+                    : "بستانکاری مشتری:",
+
+                InvoiceType.Purchase => TotalRemainingCalculated > 0
+                    ? "بدهی ما به فروشنده:"
+                    : "بستانکاری ما از فروشنده:",
+
+                _ => "مانده:"
+            };
 
     private string FinancialAccountLabelText =>
         Model.PaymentSide switch
         {
-            PaymentSide.Receive => "دریافت از حساب",
+            PaymentSide.Receive => "واریز به حساب",
             PaymentSide.Pay => "پرداخت از حساب",
             _ => throw new ArgumentOutOfRangeException()
         };
 
-    private static decimal GetSignedAmount(InvoicePaymentVm model)
+    // به‌جای GetSignedAmount قدیمی:
+    private static decimal GetBalanceEffect(InvoiceType invoiceType, InvoicePaymentVm model)
     {
         var baseAmount = model.FinalAmount * (model.ExchangeRate ?? 1);
+
+        // در فاکتور خرید، هر پرداختی بدهی ما به فروشنده را کم می‌کند
+        if (invoiceType == InvoiceType.Purchase)
+            return baseAmount;
+
+        // در فاکتور فروش، Receive بدهی مشتری را کم می‌کند، Pay بستانکاری او را زیاد
         return model.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
     }
 
@@ -115,10 +140,18 @@ public partial class PaymentEditor
         if (Math.Abs(remaining) < Epsilon)
             return;
 
-        Model.Amount = Math.Abs(remaining);
+        var baseEffectNeeded = TotalRemaining;
+        var exchangeRate = Model.ExchangeRate ?? 1m;
+
+        var amount = Math.Abs(baseEffectNeeded / exchangeRate);
+        if (amount <= 0)
+            return;
+
+        Model.Amount = amount;
         Model.AmountAdornmentText = BasePriceUnit.Title;
         Model.PriceUnit = BasePriceUnit;
     }
+
 
     private async Task LoadExchangeRateAsync()
     {
