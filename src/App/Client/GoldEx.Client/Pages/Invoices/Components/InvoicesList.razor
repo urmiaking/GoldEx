@@ -12,7 +12,7 @@
           OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
           Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
+        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
         <MudSpacer />
@@ -218,6 +218,7 @@
                 @infoText
             </div>
             <MudPagination SelectedChanged="PageChanged"
+                           Selected="@(_table.CurrentPage + 1)"
                            Color="Color.Primary"
                            Count="@pageCount"
                            Class="justify-center"

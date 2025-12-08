@@ -335,6 +335,9 @@ public partial class AdvancedCalculator
 
     private void PageChanged(int i)
     {
+        if (i <= 0)
+            return;
+
         _table.NavigateTo(i - 1);
     }
 

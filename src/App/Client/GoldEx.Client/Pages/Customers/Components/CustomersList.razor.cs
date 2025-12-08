@@ -60,12 +60,20 @@ public partial class CustomersList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await RefreshAsync();
+
+        if (_table.CurrentPage != 0)
+            _table.NavigateTo(0);
+
+        else
+            await _table.ReloadServerData();
     }
-        
+
     private void PageChanged(int i)
     {
-        _table.NavigateTo(i - 1);   
+        if (i <= 0)
+            return;
+
+        _table.NavigateTo(i - 1);
     }
 
     public async Task OnCreate()
