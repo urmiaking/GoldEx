@@ -74,6 +74,7 @@
                     @infoText
                 </div>
                 <MudPagination SelectedChanged="PageChanged"
+                               Selected="@(_table.CurrentPage + 1)"
                                Color="Color.Primary"
                                Count="@pageCount"
                                ShowFirstButton="true"

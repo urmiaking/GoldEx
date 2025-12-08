@@ -73,6 +73,7 @@ public partial class PaymentVouchersList
                     Items = items
                 };
             },
+            createScope: true,
             cancelPrevious: true
         );
 
@@ -82,11 +83,19 @@ public partial class PaymentVouchersList
     private async Task OnSearch(string text)
     {
         _searchString = text;
-        await _table.ReloadServerData();
+
+        if (_table.CurrentPage != 0)
+            _table.NavigateTo(0);
+
+        else
+            await _table.ReloadServerData();
     }
 
     private void PageChanged(int i)
     {
+        if (i <= 0)
+            return;
+
         _table.NavigateTo(i - 1);
     }
 

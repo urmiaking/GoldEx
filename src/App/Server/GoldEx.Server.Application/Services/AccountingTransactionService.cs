@@ -854,7 +854,7 @@ internal class AccountingTransactionService(
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
                                 payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                                TransactionType.Debit,
+                                TransactionType.Credit,
                                 endorserLedger.Id,
                                 payment.PriceUnitId,
                                 invoice.Id,
@@ -864,7 +864,7 @@ internal class AccountingTransactionService(
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
                                 payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
-                                TransactionType.Credit,
+                                TransactionType.Debit,
                                 customerPayableAccount.Id,
                                 payment.PriceUnitId,
                                 invoice.Id,

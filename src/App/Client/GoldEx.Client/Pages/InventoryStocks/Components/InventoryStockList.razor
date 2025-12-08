@@ -13,7 +13,7 @@
           MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))"
+        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
         <MudSpacer />
@@ -322,8 +322,9 @@
                 @infoText
             </div>
             <MudPagination SelectedChanged="PageChanged"
-                           Color="Color.Primary"
+                           Selected="@(_table.CurrentPage + 1)" 
                            Count="@pageCount"
+                           Color="Color.Primary"
                            Class="justify-center"
                            BoundaryCount="1"
                            MiddleCount="3" />

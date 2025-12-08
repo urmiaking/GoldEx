@@ -98,14 +98,22 @@ public partial class FinancialAccounts
         }
     }
 
-    private async Task OnSearch(string s)
+    private async Task OnSearch(string text)
     {
-        _searchString = s;
-        await RefreshDataAsync();
+        _searchString = text;
+
+        if (_table.CurrentPage != 0)
+            _table.NavigateTo(0);
+
+        else
+            await _table.ReloadServerData();
     }
 
     private void PageChanged(int i)
     {
+        if (i <= 0)
+            return;
+
         _table.NavigateTo(i - 1);
     }
 
@@ -136,6 +144,7 @@ public partial class FinancialAccounts
                     Items = items
                 };
             },
+            createScope: true,
             cancelPrevious: true
         );
 
