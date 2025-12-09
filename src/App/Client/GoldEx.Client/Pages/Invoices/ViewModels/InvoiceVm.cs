@@ -86,19 +86,20 @@ public class InvoiceVm
     public decimal NetPaymentsAmount =>
         TotalReceivedPaymentAmount - TotalPaidPaymentsAmount;
 
+    // برای Purchase:
     public decimal TotalPaymentsAmount =>
-        InvoicePayments.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+        TotalPaidPaymentsAmount - TotalReceivedPaymentAmount;
+
+    public decimal TotalUnpaidAmount =>
+        InvoiceType is InvoiceType.Sell
+            ? TotalInvoiceAmount - TotalUsedProductsAmount - NetPaymentsAmount
+            : TotalInvoiceAmount - TotalPaymentsAmount;
 
     public decimal TotalInvoiceAmount =>
         TotalItemsAmount - TotalDiscountsAmount + TotalExtraCostsAmount;
 
     public decimal TotalUsedProductsAmount =>
         UsedProducts.Sum(x => x.ItemAmount);
-
-    public decimal TotalUnpaidAmount =>
-        InvoiceType is InvoiceType.Sell
-            ? TotalInvoiceAmount - TotalUsedProductsAmount - NetPaymentsAmount
-            : TotalInvoiceAmount - TotalPaymentsAmount;
 
     public bool IsPaid => Math.Abs(TotalUnpaidAmount) < Epsilon;
     public bool IsCreditor => TotalUnpaidAmount < -Epsilon;

@@ -380,33 +380,21 @@ public class Invoice : EntityBase<InvoiceId>
     // --- پرداخت‌ها ---
 
     /// <summary>
-    /// مجموع دریافتی‌ها (Receive) روی فاکتور به ارز فاکتور
+    /// خالص پرداخت‌ها (Receive - Pay) - فقط در فاکتور فروش استفاده می‌شود
     /// </summary>
-    public decimal TotalReceivedPaymentAmount =>
-        InvoicePayments?
-            .Where(p => p.PaymentSide == PaymentSide.Receive)
-            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1)) ?? 0;
+    public decimal NetPaidAmount => TotalReceivedFromCustomerAmount - TotalPaidToCustomerAmount;
 
-    /// <summary>
-    /// مجموع پرداختی‌ها (Pay) روی فاکتور به ارز فاکتور
-    /// </summary>
-    public decimal TotalPaidPaymentsAmount =>
+    public decimal TotalPaidToCustomerAmount =>
         InvoicePayments?
             .Where(p => p.PaymentSide == PaymentSide.Pay)
             .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1)) ?? 0;
 
-    /// <summary>
-    /// خالص پرداخت‌ها (Receive - Pay) - فقط در فاکتور فروش استفاده می‌شود
-    /// </summary>
-    public decimal NetPaidAmount => TotalReceivedPaymentAmount - TotalPaidPaymentsAmount;
+    public decimal TotalReceivedFromCustomerAmount =>
+        InvoicePayments?
+            .Where(p => p.PaymentSide == PaymentSide.Receive)
+            .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1)) ?? 0;
 
-    /// <summary>
-    /// مجموع کل پرداخت‌ها بدون توجه به جهت (برای فاکتور خرید)
-    /// </summary>
-    public decimal TotalPaidAmount =>
-        InvoicePayments?.Sum(payment =>
-            payment.FinalAmount * (payment.ExchangeRate ?? 1)
-        ) ?? 0;
+    public decimal TotalPaidAmount => TotalPaidToCustomerAmount - TotalReceivedFromCustomerAmount;
 
     public decimal TotalDiscountAmount =>
         Discounts.Sum(discount => discount.Amount * (discount.ExchangeRate ?? 1));
