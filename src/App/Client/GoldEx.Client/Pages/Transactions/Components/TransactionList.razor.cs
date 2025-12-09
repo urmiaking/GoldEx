@@ -4,27 +4,31 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.Invoices.Components;
+namespace GoldEx.Client.Pages.Transactions.Components;
 
 public partial class TransactionList
 {
-    private string? _searchString;
     private MudTable<GetTransactionResponse> _table = new();
-    private DateRange _filterDateRange = new();
+    private readonly DateRange _filterDateRange = new();
 
-    private TableGroupDefinition<GetTransactionResponse> _groupDefinition = new()
+    private readonly TableGroupDefinition<GetTransactionResponse> _groupDefinition = new()
     {
         GroupName = nameof(GetTransactionResponse.GroupId),
         Selector = (e) => e.GroupId
     };
 
     [Parameter] public Guid? InvoiceId { get; set; }
+    [Parameter] public Guid? CustomerId { get; set; }
+    [Parameter] public string? TableTitle { get; set; }
+    [Parameter] public string? ContainerClass { get; set; }
+    [Parameter] public bool ShowReversed { get; set; }
+    [Parameter] public bool Descending { get; set; }
 
     private async Task<TableData<GetTransactionResponse>> LoadTransactionsAsync(TableState state, CancellationToken cancellationToken)
     {
         var result = new TableData<GetTransactionResponse>();
 
-        var requestFilter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+        var requestFilter = new RequestFilter(state.Page * state.PageSize, state.PageSize, null, state.SortLabel,
             state.SortDirection switch
             {
                 SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
@@ -33,7 +37,7 @@ public partial class TransactionList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var transactionFilter = new TransactionFilter(InvoiceId, _filterDateRange.Start, _filterDateRange.End);
+        var transactionFilter = new TransactionFilter(InvoiceId, CustomerId, _filterDateRange.Start, _filterDateRange.End, ShowReversed, Descending);
 
         await SendRequestAsync<ITransactionService, PagedList<GetTransactionResponse>>(
             action: (s, ct) => s.GetListAsync(transactionFilter, requestFilter, ct),
@@ -50,19 +54,8 @@ public partial class TransactionList
         return result;
     }
 
-    private async Task OnSearch(string text)
-    {
-        _searchString = text;
-        await RefreshAsync();
-    }
-
     private void PageChanged(int i)
     {
         _table.NavigateTo(i - 1);
-    }
-    private async Task RefreshAsync()
-    {
-        await _table.ReloadServerData();
-        StateHasChanged();
     }
 }
