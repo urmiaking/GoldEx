@@ -1,10 +1,13 @@
 ﻿@using GoldEx.Shared.DTOs.Transactions
 @inherits GoldExComponentBase
 
-<MudTable T="GetTransactionResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" GroupBy="@_groupDefinition"
+<MudTable T="GetTransactionResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" GroupBy="@_groupDefinition" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="0">
-    <ToolBarContent>
-        <MudText Typo="Typo.body1">تراکنش‌های مرتبط با این فاکتور</MudText>
+    <ToolBarContent>  
+        @if (!string.IsNullOrEmpty(TableTitle))  
+        {  
+            <MudText Typo="Typo.body1">@TableTitle</MudText>  
+        }  
     </ToolBarContent>
     <ColGroup>
         <col />
@@ -78,3 +81,8 @@
         </div>
     </PagerContent>
 </MudTable>
+<style>
+    .mud-table-toolbar:empty {
+        display: none;
+    }
+</style>
