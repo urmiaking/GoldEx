@@ -199,6 +199,8 @@ public class Transaction : EntityBase<TransactionId>
     public TransactionId? ReverseTransactionId { get; private set; }
     public Transaction? ReverseTransaction { get; set; }
 
+    public IReadOnlyList<Transaction>? ReversedBy { get; private set; }
+
     public InventoryEntryId? InventoryEntryId { get; private set; }
     public InventoryEntry? InventoryEntry { get; private set; }
 
