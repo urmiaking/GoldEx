@@ -471,3 +471,32 @@ h1:focus {
         transform-origin: center center !important;
     }
 /* Barcode Scanner */
+
+/* Purchase invoice - soft green colors */
+.invoice-table-purchase {
+    --mud-palette-table-lines: rgba(76, 175, 80, 0.3); /* Light green borders */
+    --mud-palette-table-striped: rgba(76, 175, 80, 0.05); /* Very light green stripes */
+    --mud-palette-table-hover: rgba(76, 175, 80, 0.1); /* Light green hover */
+}
+
+/* Sell invoice - soft red colors */
+.invoice-table-sell {
+    --mud-palette-table-lines: rgba(244, 67, 54, 0.3); /* Light red borders */
+    --mud-palette-table-striped: rgba(244, 67, 54, 0.05); /* Very light red stripes */
+    --mud-palette-table-hover: rgba(244, 67, 54, 0.1); /* Light red hover */
+}
+
+/* Dark mode adjustments - colors automatically work with dark theme */
+@media (prefers-color-scheme: dark) {
+    .invoice-table-purchase {
+        --mud-palette-table-lines: rgba(129, 199, 132, 0.4);
+        --mud-palette-table-striped: rgba(129, 199, 132, 0.08);
+        --mud-palette-table-hover: rgba(129, 199, 132, 0.15);
+    }
+
+    .invoice-table-sell {
+        --mud-palette-table-lines: rgba(239, 154, 154, 0.4);
+        --mud-palette-table-striped: rgba(239, 154, 154, 0.08);
+        --mud-palette-table-hover: rgba(239, 154, 154, 0.15);
+    }
+}
