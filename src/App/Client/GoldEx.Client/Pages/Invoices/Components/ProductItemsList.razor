@@ -2,7 +2,7 @@
 
 <MudPaper Elevation="@Elevation" Class="@Class">
     <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
-        <MudText Typo="Typo.h6" Class="d-none d-md-block">لیست طلا و جواهرات</MudText>
+        <MudText Typo="Typo.h6" Class="d-none d-md-block">@ListTitle</MudText>
         <MudSpacer />
         @if (InvoiceType is InvoiceType.Sell)
         {
@@ -30,7 +30,7 @@
         </MudTooltip>
     </MudStack>
 
-    <MudTable Dense="true" Hover="true" Items="@Items" T="ProductItemVm">
+    <MudTable Dense="true" Hover="true" Items="@Items" T="ProductItemVm" Class="@TableClass">
         <ColGroup>
             <col />
             <col />

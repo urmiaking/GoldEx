@@ -113,6 +113,15 @@ public partial class EditorForm
         _ => Icons.Material.Filled.Receipt
     };
 
+    private string InvoiceTableClass =>
+        _model.InvoiceType switch
+        {
+            InvoiceType.Purchase => "invoice-table-purchase",
+            InvoiceType.Sell => "invoice-table-sell",
+            _ => ""
+        };
+
+
     protected override async Task OnParametersSetAsync()
     {
         _isLoadingInvoice = true;
@@ -940,6 +949,7 @@ public partial class EditorForm
         _model.InvoiceType = invoiceType;
         await LoadInvoiceNumberAsync();
         await LoadGramPriceAsync();
+        StateHasChanged();
     }
 
     private async Task OnTradeScaleChanged(TradeScale tradeScale)
