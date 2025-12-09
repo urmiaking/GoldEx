@@ -82,16 +82,15 @@ public partial class PaymentEditor
             _ => throw new ArgumentOutOfRangeException()
         };
 
-    // به‌جای GetSignedAmount قدیمی:
     private static decimal GetBalanceEffect(InvoiceType invoiceType, InvoicePaymentVm model)
     {
         var baseAmount = model.FinalAmount * (model.ExchangeRate ?? 1);
 
-        // در فاکتور خرید، هر پرداختی بدهی ما به فروشنده را کم می‌کند
         if (invoiceType == InvoiceType.Purchase)
-            return baseAmount;
+        {
+            return model.PaymentSide == PaymentSide.Pay ? baseAmount : -baseAmount;
+        }
 
-        // در فاکتور فروش، Receive بدهی مشتری را کم می‌کند، Pay بستانکاری او را زیاد
         return model.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
     }
 

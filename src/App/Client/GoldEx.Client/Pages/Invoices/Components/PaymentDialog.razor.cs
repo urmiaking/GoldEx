@@ -43,6 +43,44 @@ public partial class PaymentDialog
         Items.Where(p => p.PaymentSide == PaymentSide.Pay)
             .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
 
+    /// <summary>
+    /// خالص پرداخت‌ها (Receive - Pay) بر اساس لیست فعلی Items.
+    /// فقط برای فاکتور فروش استفاده می‌شود.
+    /// </summary>
+    private decimal TotalNetPayments => Items.Sum(GetSignedAmount);
+
+    /// <summary>
+    /// مجموع ساده پرداخت‌ها بر اساس لیست فعلی Items.
+    /// برای فاکتور خرید استفاده می‌شود.
+    /// </summary>
+    private decimal TotalAbsolutePayments =>
+        Items.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1));
+
+    /// <summary>
+    /// مانده فعلی فاکتور داخل همین دیالوگ، بر اساس مانده اولیه و تغییرات روی Items.
+    /// TotalRemaining = مانده‌ای که هنگام باز شدن دیالوگ از InvoiceVm آمده.
+    /// </summary>
+    private decimal CurrentRemaining
+    {
+        get
+        {
+            if (InvoiceType == InvoiceType.Sell)
+            {
+                // در فاکتور فروش: TotalUnpaidAmount = Amount - Used - NetPayments
+                // ما فقط می‌خواهیم Delta نسبت به باز شدن دیالوگ را اعمال کنیم.
+                // ساده‌ترین حالت: فرض کنیم هنگام باز شدن هیچ تغییری نداشتیم و الان با NetPayments فعلی،
+                // مانده = TotalRemaining - (NetPaymentsNow - 0) = TotalRemaining - TotalNetPayments.
+                // از آن‌جا که TotalRemaining از قبل NetPayments را در خودش دارد، این تقریب
+                // در PaymentDialog کافی‌ست (چون ما با کپی لیست کار می‌کنیم).
+                return TotalRemaining - TotalNetPayments;
+            }
+
+            // در فاکتور خرید: TotalUnpaidAmount = Amount - TotalPaidAmount
+            // اینجا هم مشابه، از Delta استفاده می‌کنیم: TotalRemaining - TotalAbsolutePayments
+            return TotalRemaining - TotalAbsolutePayments;
+        }
+    }
+
     private decimal GetSignedAmount(InvoicePaymentVm p)
     {
         var baseAmount = p.FinalAmount * (p.ExchangeRate ?? 1);
@@ -68,13 +106,22 @@ public partial class PaymentDialog
 
     /// <summary>
     /// مانده قبل از اعمال پرداختی که در حال ویرایش است.
-    /// فرض: TotalRemaining = مانده فعلی فاکتور (بعد از همه پرداخت‌های ثبت‌شده).
-    /// برای رسیدن به مانده قبل از این پرداخت، مقدار امضادار خودش را برمی‌گردانیم.
+    /// CurrentRemaining = مانده بعد از اعمال همهٔ پرداخت‌های فعلی (از جمله همین payment).
+    /// برای رسیدن به مانده قبل از این پرداخت، اثر خودش را برمی‌گردانیم.
     /// </summary>
     private decimal GetRemainingBefore(InvoicePaymentVm payment)
     {
-        var signed = GetSignedAmount(payment);
-        return TotalRemaining + signed;
+        var baseAmount = payment.FinalAmount * (payment.ExchangeRate ?? 1);
+
+        if (InvoiceType == InvoiceType.Sell)
+        {
+            // در فروش: از امضای پرداخت استفاده می‌کنیم (Receive - Pay)
+            var signed = GetSignedAmount(payment);
+            return CurrentRemaining + signed;
+        }
+
+        // در خرید: از مقدار مثبت پایه استفاده می‌کنیم (جمع ساده)
+        return CurrentRemaining + baseAmount;
     }
 
     private async Task OnEdit(InvoicePaymentVm payment)
@@ -148,8 +195,7 @@ public partial class PaymentDialog
             { x => x.BasePriceUnit, PriceUnit },
             { x => x.PriceUnits, PriceUnits },
             { x => x.InvoiceType, InvoiceType },
-            // برای پرداخت جدید، مانده فعلی فاکتور را به‌عنوان ورودی می‌دهیم
-            { x => x.TotalRemaining, TotalRemaining }
+            { x => x.TotalRemaining, CurrentRemaining }
         };
 
         var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions);

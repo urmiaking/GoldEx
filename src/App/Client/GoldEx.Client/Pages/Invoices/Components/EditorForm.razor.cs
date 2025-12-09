@@ -45,7 +45,6 @@ public partial class EditorForm
     private List<GetCustomerResponse> _customers = [];
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
-    private bool _paymentsMenuOpen;
     private bool _processing;
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
