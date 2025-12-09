@@ -11,6 +11,9 @@ public partial class CoinItemsList
     public string? Class { get; set; }
 
     [Parameter]
+    public string? TableClass { get; set; }
+
+    [Parameter]
     public int Elevation { get; set; } = 1;
 
     [Parameter]
@@ -33,4 +36,9 @@ public partial class CoinItemsList
 
     [Parameter]
     public EventCallback<CoinItemVm> OnRemoveItem { get; set; }
+
+    private string ListTitle =>
+        InvoiceType is InvoiceType.Sell
+            ? "فهرست سکه های فروخته‌شده"
+            : "فهرست سکه های خریداری‌شده";
 }

@@ -198,7 +198,7 @@
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Primary" OnClick="ApplyTotalRemaining" Variant="Variant.Outlined" />
                     }
                     <MudText Class="price-text" Typo="Typo.h6" Color="@RemainingColor">
-                        @RemainingLabel @Math.Abs(TotalRemainingCalculated).ToCurrencyFormat(BasePriceUnit.Title)
+                        @RemainingLabel @(TotalRemainingCalculated != 0 ? Math.Abs(TotalRemainingCalculated).ToCurrencyFormat(BasePriceUnit.Title) : "")
                     </MudText>
                 </div>
 

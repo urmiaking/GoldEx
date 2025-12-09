@@ -21,10 +21,10 @@ internal sealed class BarcodeGeneratorService(
     {
         var typePrefix = productType switch
         {
-            ProductType.Jewelry => "J",
-            ProductType.Gold => "G",
-            ProductType.MoltenGold => "M",
-            _ => "U"
+            ProductType.Jewelry => "1",
+            ProductType.Gold => "2",
+            ProductType.MoltenGold => "3",
+            _ => "9"
         };
 
         var categoryPrefix = "00";

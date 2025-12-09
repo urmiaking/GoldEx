@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -10,6 +11,9 @@ public partial class ProductItemsList
 {
     [Parameter]
     public string? Class { get; set; }
+
+    [Parameter]
+    public string? TableClass { get; set; }
 
     [Parameter]
     public int Elevation { get; set; } = 1;
@@ -42,6 +46,11 @@ public partial class ProductItemsList
 
     private string? _barcode;
 
+    private string ListTitle =>
+        InvoiceType is InvoiceType.Sell
+            ? "فهرست اقلام فروخته‌شده"
+            : "فهرست اقلام خریداری‌شده";
+
     private Task OnBarcodeCleared()
     {
         _barcode = null;
@@ -72,5 +81,4 @@ public partial class ProductItemsList
 
         return !string.IsNullOrWhiteSpace(assayNumber) ? $"آبشده ({assayNumber})" : $"طلای آبشده عیار {fineness:G29}";
     }
-
 }

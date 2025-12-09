@@ -247,10 +247,10 @@ public partial class BarcodeTemplateBuilder
     {
         var testData = new
         {
-            barcode = "G0206610",
+            barcode = "10206610",
             productName = "گوشواره طلا",
             weight = "W: 3.258G",
-            wage = "F: 1,150,000 IRR"
+            wage = "F: 1,150,000 TMN"
         };
 
         var settingsForJs = new
