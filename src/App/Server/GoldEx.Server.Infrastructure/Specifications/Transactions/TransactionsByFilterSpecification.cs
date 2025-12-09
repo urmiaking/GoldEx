@@ -27,7 +27,10 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         }
         if (!transactionFilter.ShowReversed)
         {
-            AddCriteria(x => x.ReverseTransactionId == null);
+            AddCriteria(t =>
+                t.ReverseTransactionId == null &&
+                t.ReversedBy!.Count == 0
+            );
         }
         if (transactionFilter.Descending)
         {
