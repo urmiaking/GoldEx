@@ -11,19 +11,12 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class PaymentDialog
 {
-    /// <summary>
-    /// لیست پرداخت‌های فعلی فاکتور (ویرایش روی همین لیست انجام می‌شود).
-    /// </summary>
     [Parameter] public List<InvoicePaymentVm> Items { get; set; } = new();
 
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
     [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = new();
     [Parameter] public InvoiceType InvoiceType { get; set; }
 
-    /// <summary>
-    /// مانده فعلی فاکتور قبل از این‌که کاربر در این دیالوگ تغییری بدهد.
-    /// این مقدار از InvoiceVm.TotalUnpaidAmount پر می‌شود.
-    /// </summary>
     [Parameter] public decimal TotalRemaining { get; set; }
 
     [Parameter] public Guid? CustomerId { get; set; }
@@ -31,7 +24,6 @@ public partial class PaymentDialog
     [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
 
     [Inject] public ISettingService SettingService { get; set; } = default!;
-    [Inject] public IDialogService DialogService { get; set; } = default!;
 
     private readonly DialogOptions _dialogOptions = new()
     {
@@ -57,17 +49,11 @@ public partial class PaymentDialog
         return p.PaymentSide == PaymentSide.Receive ? baseAmount : -baseAmount;
     }
 
-    /// <summary>
-    /// خالص پرداخت‌ها (فقط برای محاسبات کمکی در همین دیالوگ).
-    /// </summary>
-    private decimal TotalNetPayments => Items.Sum(GetSignedAmount);
-
     protected override async Task OnInitializedAsync()
     {
         await LoadSettingsAsync();
         await base.OnInitializedAsync();
     }
-
 
     private async Task LoadSettingsAsync()
     {
@@ -99,7 +85,6 @@ public partial class PaymentDialog
             { x => x.BasePriceUnit, PriceUnit },
             { x => x.PriceUnits, PriceUnits },
             { x => x.InvoiceType, InvoiceType },
-            // مانده قبل از این پرداخت
             { x => x.TotalRemaining, GetRemainingBefore(payment) }
         };
 

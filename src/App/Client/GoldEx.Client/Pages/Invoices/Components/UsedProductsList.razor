@@ -2,7 +2,7 @@
 
 <MudPaper Elevation="@Elevation" Class="@Class">
     <MudStack Row AlignItems="AlignItems.Center" Class="my-2">
-        <MudText Typo="Typo.h6">لیست طلاجات مستعمل</MudText>
+        <MudText Typo="Typo.h6" Class="d-none d-md-block">فهرست اقلام کهنه خریداری شده</MudText>
         <MudSpacer />
         <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Error" Text="افزودن جنس مستعمل">
             <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
@@ -10,7 +10,7 @@
         </MudTooltip>
     </MudStack>
 
-    <MudTable Dense="true" Hover="true" Items="@Items" T="UsedProductVm">
+    <MudTable Dense="true" Hover="true" Items="@Items" T="UsedProductVm" Class="@TableClass">
         <ColGroup>
             <col />
             <col />

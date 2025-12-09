@@ -10,6 +10,9 @@ public partial class UsedProductsList
     public string? Class { get; set; }
 
     [Parameter]
+    public string? TableClass { get; set; }
+
+    [Parameter]
     public int Elevation { get; set; } = 1;
 
     [Parameter]
