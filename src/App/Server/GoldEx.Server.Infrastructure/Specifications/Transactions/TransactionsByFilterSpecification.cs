@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
+using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.DTOs.Transactions;
@@ -16,6 +17,22 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         AddInclude(x => x.LedgerAccount!);
 
         // Apply filter
+        if (transactionFilter.InvoiceId.HasValue)
+        {
+            AddCriteria(x => x.InvoiceId == new InvoiceId(transactionFilter.InvoiceId.Value));
+        }
+        if (transactionFilter.CustomerId.HasValue)
+        {
+            AddCriteria(x => x.LedgerAccount!.CustomerId == new CustomerId(transactionFilter.CustomerId.Value));
+        }
+        if (!transactionFilter.ShowReversed)
+        {
+            AddCriteria(x => x.ReverseTransactionId == null);
+        }
+        if (transactionFilter.Descending)
+        {
+            ApplyOrderByDescending(x => x.PostingDate);
+        }
         if (transactionFilter.Start.HasValue)
         {
             AddCriteria(x => x.PostingDate >= transactionFilter.Start.Value);
@@ -24,10 +41,6 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         {
             var endOfDay = transactionFilter.End.Value.Date.AddDays(1).AddTicks(-1);
             AddCriteria(x => x.PostingDate <= endOfDay);
-        }
-        if (transactionFilter.InvoiceId.HasValue)
-        {
-            AddCriteria(x => x.InvoiceId == new InvoiceId(transactionFilter.InvoiceId.Value));
         }
 
         // Apply sorting

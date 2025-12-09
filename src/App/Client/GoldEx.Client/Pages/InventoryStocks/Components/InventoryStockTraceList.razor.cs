@@ -9,7 +9,6 @@ namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
 public partial class InventoryStockTraceList
 {
-    private string? _searchString;
     private MudTable<GetInventoryStockTraceResponse> _table = new();
 
     [Parameter, EditorRequired] public Guid ItemId { get; set; }
@@ -19,7 +18,7 @@ public partial class InventoryStockTraceList
     {
         var result = new TableData<GetInventoryStockTraceResponse>();
 
-        var requestFilter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+        var requestFilter = new RequestFilter(state.Page * state.PageSize, state.PageSize, null, state.SortLabel,
             state.SortDirection switch
             {
                 SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
@@ -50,12 +49,6 @@ public partial class InventoryStockTraceList
             return;
 
         _table.NavigateTo(i - 1);
-    }
-
-    private async Task RefreshAsync()
-    {
-        await _table.ReloadServerData();
-        StateHasChanged();
     }
 
     private void OnViewSource(string sourceUrl)

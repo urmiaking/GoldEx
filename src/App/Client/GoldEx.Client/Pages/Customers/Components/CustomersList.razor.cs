@@ -131,11 +131,19 @@ public partial class CustomersList
 
     private async Task OnViewTransaction(CustomerVm customerVm)
     {
-        //var parameters = new DialogParameters
-        //{
-        //    { nameof(TransactionsList.CustomerId), customerVm.Id }
-        //};
-        var dialog = await DialogService.ShowAsync<TransactionsList>($"تراکنش های {customerVm.FullName}", _dialogOptions with { MaxWidth = MaxWidth.Large });
+        var parameters = new DialogParameters<TransactionList>
+        {
+            { x => x.CustomerId, customerVm.Id },
+            { x => x.ShowReversed, false },
+            { x => x.Descending, true },
+            { x => x.ContainerClass, "responsive-table" }
+        };
+        var dialog = await DialogService.ShowAsync<TransactionList>($"تراکنش های {customerVm.FullName}",
+            parameters,
+            _dialogOptions with
+            {
+                MaxWidth = MaxWidth.Large
+            });
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
