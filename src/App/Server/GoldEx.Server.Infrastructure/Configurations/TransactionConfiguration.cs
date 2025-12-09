@@ -60,8 +60,8 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.ReverseTransaction)
-            .WithOne()
-            .HasForeignKey<Transaction>(x => x.ReverseTransactionId)
+            .WithMany(x => x.ReversedBy)
+            .HasForeignKey(x => x.ReverseTransactionId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.InventoryEntry)
