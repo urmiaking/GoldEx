@@ -452,6 +452,16 @@ internal class AccountingTransactionService(
                                 invoice.PriceUnitId,
                                 invoice.Id, NextLine()));
 
+                        if (invoice.UsedProducts.Any())
+                        {
+                            long usedLineTick = 0;
+                            foreach (var usedProduct in invoice.UsedProducts)
+                            {
+                                var usedTx = await CreateTransactionForUsedProductsAsync(usedProduct, usedLineTick++, cancellationToken);
+                                transactions.AddRange(usedTx);
+                            }
+                        }
+
                         // دریافتنی مشتری (کل فاکتور)
                         transactions.Add(Transaction.CreateForInvoice(
                             TransactionDescriptionBuilder.ForSaleReceivable(invoice, customer),
@@ -473,6 +483,10 @@ internal class AccountingTransactionService(
                         var inventoryLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.Inventory))
                             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Inventory ledger account not found.");
+
+                        var usedProductInventoryLedger = await ledgerAccountRepository
+                            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.UsedProductInventory))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("UsedProductInventory ledger account not found.");
 
                         var discountsLedger = await ledgerAccountRepository
                             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.PurchaseDiscounts))
@@ -586,6 +600,22 @@ internal class AccountingTransactionService(
                                 invoiceGroupId,
                                 TransactionType.Credit,
                                 discountsLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id, NextLine()));
+                        }
+
+                        // 7) Used Products: ورود به موجودی کالا یا موجودی طلای شکسته
+                        foreach (var usedProduct in invoice.UsedProducts)
+                        {
+                            var destLedgerId = usedProduct.IsBroken ? usedProductInventoryLedger.Id : inventoryLedger.Id;
+
+                            transactions.Add(Transaction.CreateForInvoice(
+                                TransactionDescriptionBuilder.ForUsedProductPurchase(usedProduct, customer),
+                                usedProduct.ItemFinalAmount,
+                                invoice.ExchangeRate,
+                                invoiceGroupId,
+                                TransactionType.Debit,
+                                destLedgerId,
                                 invoice.PriceUnitId,
                                 invoice.Id, NextLine()));
                         }
@@ -939,17 +969,6 @@ internal class AccountingTransactionService(
                             NextPayLine()));
                     }
                 }
-            }
-        }
-
-        // Used products
-        if (invoice.UsedProducts.Any())
-        {
-            long usedLineTick = 0;
-            foreach (var usedProduct in invoice.UsedProducts)
-            {
-                var usedTx = await CreateTransactionForUsedProductsAsync(usedProduct, usedLineTick++, cancellationToken);
-                transactions.AddRange(usedTx);
             }
         }
 
