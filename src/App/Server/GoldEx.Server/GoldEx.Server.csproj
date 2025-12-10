@@ -7,7 +7,12 @@
 		<UserSecretsId>aspnet-GoldEx-7b0c030e-462e-44b2-9816-adcd62ecb493</UserSecretsId>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerfileContext>..\..\..\..</DockerfileContext>
+		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Client\GoldEx.Client\GoldEx.Client.csproj" />
