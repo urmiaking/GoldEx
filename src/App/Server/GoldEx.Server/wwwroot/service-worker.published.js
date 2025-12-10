@@ -66,7 +66,6 @@ async function onInstall(event) {
         .map(asset => {
             // Use no-cache and reload to bypass any intermediate caches
             return new Request(asset.url, {
-                integrity: asset.hash,
                 cache: 'reload',
                 credentials: 'omit'
             });
