@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Shared.Enums;
 
@@ -35,6 +36,8 @@ public class PriceUnit : EntityBase<PriceUnitId>
 
     public PriceId? PriceId { get; private set; }
     public Price? Price { get; private set; }
+
+    public IReadOnlyList<InventoryStock>? InventoryStocks { get; private set; }
 
     public void SetTitle(string title) => Title = title;
     public void SetPriceId(PriceId? priceId) => PriceId = priceId;

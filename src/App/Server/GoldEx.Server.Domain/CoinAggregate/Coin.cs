@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 
@@ -27,6 +28,8 @@ public class Coin : EntityBase<CoinId>
 
     public LedgerAccountId LedgerAccountId { get; private set; }
     public LedgerAccount? LedgerAccount { get; private set; }
+
+    public IReadOnlyList<InventoryStock>? InventoryStocks { get; private set; }
 
     public void SetTitle(string title) => Title = title;
     public void SetPriceId(PriceId? priceId) => PriceId = priceId;
