@@ -202,7 +202,7 @@ internal class InventoryStockRepository(
 
                     // --- 4. Flattening & Projection (UPDATED) ---
                     var flattenedQuery = groupedQuery.Join(
-                        dbContext.Set<Product>().Include(p => p.MoltenGold.Assayer),
+                        dbContext.Set<Product>().Include(p => p.MoltenGold!.Assayer),
                         g => g.ProductId,
                         p => p.Id,
                         (g, p) => new
