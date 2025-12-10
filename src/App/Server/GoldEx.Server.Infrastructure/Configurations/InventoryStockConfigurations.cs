@@ -38,12 +38,12 @@ internal class InventoryStockConfigurations : IEntityTypeConfiguration<Inventory
             .HasFilter("[ReverseInventoryStockId] IS NOT NULL");
 
         builder.HasOne(x => x.Coin)
-            .WithMany()
+            .WithMany(x => x.InventoryStocks)
             .HasForeignKey(x => x.CoinId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Currency)
-            .WithMany()
+            .WithMany(x => x.InventoryStocks)
             .HasForeignKey(x => x.CurrencyId)
             .OnDelete(DeleteBehavior.Cascade);
 

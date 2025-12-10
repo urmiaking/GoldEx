@@ -24,7 +24,6 @@ using System.Data;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.InventoryExits;
-using static GoldEx.Shared.Helpers.CalculatorHelper;
 
 namespace GoldEx.Server.Application.Services;
 
