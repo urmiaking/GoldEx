@@ -43,7 +43,7 @@ internal class ReportingMapper : IRegister
                 src => $"{src.TotalAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
             .Map(dest => dest.TotalPaidAmount,
                 src =>
-                    $"{src.TotalPaidAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+                    $"{Math.Abs(src.TotalPaidAmount).ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
             .Map(dest => dest.TotalDiscountAmount,
                 src => src.TotalDiscountAmount != 0
                     ? $"{src.TotalDiscountAmount.ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}"

@@ -36,14 +36,14 @@ public class FinancialAccountsByFilterSpecification : SpecificationBase<Financia
                 (x.LocalAccount != null && (
                     (x.LocalAccount.ShabaNumber != null && x.LocalAccount.ShabaNumber.Contains(filter.Search)) ||
                     (x.LocalAccount.CardNumber != null && x.LocalAccount.CardNumber.Contains(filter.Search)) ||
-                    x.LocalAccount.AccountNumber.Contains(filter.Search)
+                    (x.LocalAccount.AccountNumber != null && x.LocalAccount.AccountNumber.Contains(filter.Search))
                 )) ||
 
                 // International Bank Account fields
                 (x.InternationalAccount != null && (
                     (x.InternationalAccount.IbanNumber != null && x.InternationalAccount.IbanNumber.Contains(filter.Search)) ||
                     (x.InternationalAccount.SwiftBicCode != null && x.InternationalAccount.SwiftBicCode.Contains(filter.Search)) ||
-                    x.InternationalAccount.AccountNumber.Contains(filter.Search)
+                    (x.InternationalAccount.AccountNumber != null && x.InternationalAccount.AccountNumber.Contains(filter.Search))
                 )) ||
 
                 // Cash Account fields
