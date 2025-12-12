@@ -20,9 +20,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="Pages\Home\ViewModels\**" />
 		<Compile Remove="wwwroot\NewFolder\**" />
+		<Content Remove="Pages\Home\ViewModels\**" />
 		<Content Remove="wwwroot\NewFolder\**" />
+		<EmbeddedResource Remove="Pages\Home\ViewModels\**" />
 		<EmbeddedResource Remove="wwwroot\NewFolder\**" />
+		<None Remove="Pages\Home\ViewModels\**" />
 		<None Remove="wwwroot\NewFolder\**" />
 	</ItemGroup>
 
@@ -32,7 +36,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Pages\Home\ViewModels\" />
 		<Folder Include="Pages\InventoryExits\ViewModels\" />
 		<Folder Include="wwwroot\assets\screenshots\" />
 	</ItemGroup>

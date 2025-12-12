@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.InventoryEntries;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -104,4 +105,38 @@ public partial class InventoryEntryList
     {
         return opened ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore;
     }
+
+    private ItemType[] GetItemTypes(InventoryEntryListVm context)
+    {
+        var types = new List<ItemType>();
+
+        if (context.ProductsAmount > 0)
+        {
+            types.Add(ItemType.Product);
+            types.Add(ItemType.MoltenGold);
+        }
+
+        if (context.CoinsAmount > 0)
+            types.Add(ItemType.Coin);
+
+        if (context.CurrenciesAmount > 0)
+            types.Add(ItemType.Currency);
+
+        return types.ToArray();
+    }
+
+    private ItemType GetSelectedItemType(InventoryEntryListVm context)
+    {
+        if (context.ProductsAmount > 0)
+            return ItemType.Product;
+
+        if (context.CoinsAmount > 0)
+            return ItemType.Coin;
+
+        if (context.CurrenciesAmount > 0)
+            return ItemType.Currency;
+
+        return ItemType.Product;
+    }
+
 }

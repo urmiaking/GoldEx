@@ -21,10 +21,10 @@
             <MudTh>عملیات</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd>@context.OperationDate.ToString("HH:mm:ss yyyy/MM/dd")</MudTd>
-            <MudTd>@context.ProductsAmount.ToCurrencyFormat("گرم")</MudTd>
-            <MudTd>@context.CoinsAmount.ToCurrencyFormat()</MudTd>
-            <MudTd>@context.CurrenciesAmount.ToCurrencyFormat()</MudTd>
+            <MudTd DataLabel="تاریخ عملیات">@context.OperationDate.ToString("HH:mm:ss yyyy/MM/dd")</MudTd>
+            <MudTd DataLabel="تعداد کل طلا، جواهر و آبشده">@context.ProductsAmount.ToCurrencyFormat("گرم")</MudTd>
+            <MudTd DataLabel="تعداد کل سکه ها">@context.CoinsAmount.ToCurrencyFormat()</MudTd>
+            <MudTd DataLabel="حجم کل ارزها">@context.CurrenciesAmount.ToCurrencyFormat()</MudTd>
             <MudTd>
                 <div class="d-flex gap-2">
                     <MudTooltip Text="بازگردانی عملیات" Color="Color.Error" Arrow="true">
@@ -46,7 +46,7 @@
                         {
                             <MudCard Elevation="2" Class="m-2">
                                 <MudCardContent>
-                                    <InventoryStockList InventoryEntryId="context.Id" Elevation="0" />
+                                    <InventoryStockList InventoryEntryId="context.Id" Elevation="0" SelectableTypes="GetItemTypes(context)" ItemType="GetSelectedItemType(context)" />
                                 </MudCardContent>
                             </MudCard>
                         }
