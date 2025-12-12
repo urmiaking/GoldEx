@@ -49,6 +49,13 @@ public class CoinsController(ICoinService service) : ApiControllerBase
         return NoContent();
     }
 
+    [HttpDelete(ApiRoutes.Coins.Delete)]
+    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.DeleteAsync(id, cancellationToken);
+        return NoContent();
+    }
+
     [HttpPut(ApiRoutes.Coins.SetStatus)]
     public async Task<IActionResult> SetStatusAsync(Guid id, bool isActive, CancellationToken cancellationToken = default)
     {

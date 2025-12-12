@@ -136,12 +136,33 @@ public static class ServiceProviderExtensions
 
         var newCoins = coinPrices
             .Where(price => existingCoins.All(c => c.PriceId != price.Id.Value))
-            .Select(price => new CoinRequestDto(null, price.Title, price.Id.Value))
+            .Select(price =>
+            {
+                var (weight, fineness) = GetCoinSpecs(price.Title);
+                return new CoinRequestDto(
+                    Id: null,
+                    Title: price.Title,
+                    Weight: weight,
+                    Fineness: fineness,
+                    PriceId: price.Id.Value
+                );
+            })
             .ToList();
 
         foreach (var newCoin in newCoins) 
             await coinService.CreateAsync(newCoin);
     }
+
+    private static (decimal Weight, decimal Fineness) GetCoinSpecs(string title) =>
+        title.Trim() switch
+        {
+            "سکه امامی" => (8.13598m, 900m),
+            "سکه بهار آزادی" => (8.13598m, 900m),
+            "نیم سکه" => (4.0665m, 900m),
+            "ربع سکه" => (2.03325m, 900m),
+            "سکه یک گرمی" => (1.01m, 900m),
+            _ => (0m, 0m)
+        };
 
     private static async Task<List<Price>> MigrateAndSeedPriceCatalogsAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
     {

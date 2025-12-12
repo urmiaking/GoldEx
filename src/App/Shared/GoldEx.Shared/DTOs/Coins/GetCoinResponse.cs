@@ -1,5 +1,3 @@
-﻿using GoldEx.Shared.Enums;
+﻿namespace GoldEx.Shared.DTOs.Coins;
 
-namespace GoldEx.Shared.DTOs.Coins;
-
-public record GetCoinResponse(Guid Id, string Title, bool IsActive, Guid? PriceId);
+public record GetCoinResponse(Guid Id, string Title, decimal Weight, decimal Fineness, bool IsActive, Guid? PriceId);

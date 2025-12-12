@@ -93,6 +93,8 @@ public partial class InventoryItemSelector
                 {
                     Coin = new GetCoinResponse(coin.Id!.Value,
                         coin.Title!,
+                        coin.Weight ?? 0,
+                        coin.Fineness ?? 0,
                         coin.IsActive,
                         coin.PriceId!.Value),
                     Quantity = 1,
