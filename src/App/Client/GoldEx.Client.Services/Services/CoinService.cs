@@ -76,4 +76,12 @@ internal class CoinService(HttpClient client, JsonSerializerOptions jsonOptions)
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.DeleteAsync(ApiUrls.Coins.Delete(id), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
 }

@@ -321,6 +321,9 @@ public class ApiUrls
 
         public static string GetPrice(Guid coinId, Guid? priceUnitId) =>
             BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.GetPrice).FormatRoute(new { coinId, priceUnitId });
+
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.Coins.Base, ApiRoutes.Coins.Delete).FormatRoute(new { id });
     }
 
     public class InventoryStocks

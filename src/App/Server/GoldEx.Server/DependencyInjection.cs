@@ -12,6 +12,7 @@ public static class DependencyInjection
             .AddControllers(configuration)
             .AddComponents()
             .AddStorage(configuration)
+            .AddDataProtectionStore(configuration)
             .AddAuth(configuration)
             .AddServices()
             .AddSwagger()

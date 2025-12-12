@@ -13,6 +13,7 @@ public partial class Editor
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private IEnumerable<GetPriceTitleResponse> _prices = [];
+    private bool _processing;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -38,8 +39,10 @@ public partial class Editor
 
     private async Task Submit()
     {
-        if (IsBusy)
+        if (_processing)
             return;
+
+        _processing = true;
 
         var request = CoinVm.ToRequest(Model);
 
@@ -47,7 +50,13 @@ public partial class Editor
             action: (s, ct) => Model.Id.HasValue ? s.UpdateAsync(Model.Id.Value, request, ct) : s.CreateAsync(request, ct),
             afterSend: () =>
             {
+                _processing = false;
                 MudDialog.Close(DialogResult.Ok(true));
+                return Task.CompletedTask;
+            },
+            onFailure: () =>
+            {
+                _processing = false;
                 return Task.CompletedTask;
             });
     }

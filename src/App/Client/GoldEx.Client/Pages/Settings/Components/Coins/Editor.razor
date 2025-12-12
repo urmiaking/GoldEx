@@ -15,6 +15,28 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
+                    <MudNumericField @bind-Value="Model.Weight"
+                                     For="@(() => Model.Weight)"
+                                     Label="@(Model.GetDisplayName(() => Model.Weight))"
+                                     Margin="Margin.Dense"
+                                     Format="G29"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="گرم"
+                                     dir="ltr"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
+                    <MudNumericField @bind-Value="Model.Fineness"
+                                     For="@(() => Model.Fineness)"
+                                     Label="@(Model.GetDisplayName(() => Model.Fineness))"
+                                     Margin="Margin.Dense"
+                                     Format="G29"
+                                     dir="ltr"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="6">
                     <MudSelect T="GetPriceTitleResponse?"
                                Value="Model.Price"
                                ValueChanged="OnPriceChanged"
@@ -41,11 +63,11 @@
 
             <MudButton Class="m-2"
                        Color="Color.Primary"
-                       Disabled="@IsBusy"
+                       Disabled="@_processing"
                        StartIcon="@Icons.Material.Filled.Save"
                        ButtonType="ButtonType.Submit"
                        Variant="Variant.Filled">
-                @if (IsBusy)
+                @if (_processing)
                 {
                     <MudProgressCircular Class="ms-n1"
                                          Size="Size.Small"
