@@ -18,6 +18,14 @@ internal class CoinConfiguration : IEntityTypeConfiguration<Coin>
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(x => x.Weight)
+            .HasPrecision(36, 10)
+            .IsRequired();
+
+        builder.Property(x => x.Fineness)
+            .HasPrecision(9, 6)
+            .IsRequired();
+
         builder.HasOne(x => x.Price)
             .WithMany()
             .HasForeignKey(x => x.PriceId)

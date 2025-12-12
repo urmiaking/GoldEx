@@ -21,30 +21,38 @@
           SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="24" Height="350px" Class="p-2 mt-4">
     <HeaderContent>
         <MudTh>عنوان</MudTh>
+        <MudTh>وزن</MudTh>
+        <MudTh>عیار</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="عنوان">@context.Title</MudTd>
+        <MudTd DataLabel="وزن">@context.Weight?.ToWeightFormat(GoldUnitType.Gram)</MudTd>
+        <MudTd DataLabel="عیار">@context.Fineness?.ToString("G29")</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
-                <MudTooltip Text="ویرایش">
+                <MudTooltip Text="ویرایش" Arrow="true" Color="Color.Primary">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                                   Color="Color.Primary" OnClick="_ => OnEdit(context)" />
                 </MudTooltip>
                 @if (context.IsActive)
                 {
-                    <MudTooltip Text="غیرفعال سازی">
-                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" ClickPropagation="true"
-                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Lock" Color="@Color.Error"></MudIconButton>
+                    <MudTooltip Text="غیرفعال سازی" Arrow="true" Color="Color.Error">
+                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" Size="@Size.Small"
+                                       Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Lock" Color="@Color.Error" />
                     </MudTooltip>
                 }
                 else
                 {
-                    <MudTooltip Text="فعال سازی">
-                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" ClickPropagation="true"
-                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Success"></MudIconButton>
+                    <MudTooltip Text="فعال سازی" Arrow="true" Color="Color.Success">
+                        <MudIconButton OnClick="@(_ => OnStatusChanged(context))" Size="@Size.Small"
+                                       Variant="@Variant.Filled" Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Success" />
                     </MudTooltip>
                 }
+                <MudTooltip Text="حذف" Arrow="true" Color="Color.Error">
+                    <MudIconButton OnClick="@(_ => OnDelete(context))" Size="@Size.Small"
+                                   Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error" />
+                </MudTooltip>
             </div>
         </MudTd>
     </RowTemplate>

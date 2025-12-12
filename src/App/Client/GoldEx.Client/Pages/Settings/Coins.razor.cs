@@ -74,4 +74,27 @@ public partial class Coins
                 await LoadCoinsAsync();
             });
     }
+
+    private async Task OnDelete(CoinVm context)
+    {
+        var coinId = context.Id ?? throw new InvalidOperationException();
+
+        var result = await DialogService.ShowMessageBox(
+            "حذف سکه",
+            $"آیا از حذف سکه '{context.Title}' اطمینان دارید؟ این عملیات قابل بازگشت نیست.",
+            yesText: "حذف کن",
+            noText: "انصراف",
+            options: new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.ExtraSmall });
+
+        if (result == true)
+        {
+            await SendRequestAsync<ICoinService>(
+                action: (s, ct) => s.DeleteAsync(coinId, ct),
+                afterSend: async () =>
+                {
+                    AddSuccessToast("سکه مورد نظر با موفقیت حذف شد.");
+                    await LoadCoinsAsync();
+                });
+        }
+    }
 }

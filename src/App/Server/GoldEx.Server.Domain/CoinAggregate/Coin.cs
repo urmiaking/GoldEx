@@ -8,12 +8,14 @@ namespace GoldEx.Server.Domain.CoinAggregate;
 public readonly record struct CoinId(Guid Value);
 public class Coin : EntityBase<CoinId>
 {
-    public static Coin Create(string title, LedgerAccountId ledgerAccountId, PriceId? priceId = null)
+    public static Coin Create(string title, decimal weight, decimal fineness, LedgerAccountId ledgerAccountId, PriceId? priceId = null)
     {
         return new Coin
         {
             Id = new CoinId(Guid.NewGuid()),
             Title = title,
+            Weight = weight,
+            Fineness = fineness,
             LedgerAccountId = ledgerAccountId,
             PriceId = priceId,
             IsActive = true
@@ -21,6 +23,8 @@ public class Coin : EntityBase<CoinId>
     }
 
     public string Title { get; private set; }
+    public decimal Weight { get; private set; }
+    public decimal Fineness { get; private set; }
     public bool IsActive { get; private set; }
 
     public PriceId? PriceId { get; private set; }
@@ -34,6 +38,8 @@ public class Coin : EntityBase<CoinId>
     public void SetTitle(string title) => Title = title;
     public void SetPriceId(PriceId? priceId) => PriceId = priceId;
     public void SetStatus(bool isActive) => IsActive = isActive;
+    public void SetWeight(decimal weight) => Weight = weight;
+    public void SetFineness(decimal fineness) => Fineness = fineness;
 
 #pragma warning disable CS8618 
     private Coin() { }
