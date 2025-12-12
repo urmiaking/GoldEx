@@ -13,6 +13,7 @@ public static class DependencyInjection
             .AddComponents()
             .AddStorage(configuration)
             .AddAuth(configuration)
+            .AddDataProtectionStore(configuration)
             .AddServices()
             .AddSwagger()
             .AddMapster()

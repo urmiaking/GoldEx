@@ -28,6 +28,7 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AspNetCore.DataProtection.SqlServer;
 
 namespace GoldEx.Server.Extensions;
 
@@ -132,6 +133,17 @@ internal static class ServiceCollectionExtensions
             //);
             options.CommandTimeout(1800);
         });
+
+        return services;
+    }
+
+    internal static IServiceCollection AddDataProtectionStore(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddDataProtection()
+            .PersistKeysToSqlServer(connectionString: configuration.GetConnectionString("GoldEx"),
+                schema: "dbo",
+                table: "DataProtectionKeys");
 
         return services;
     }
