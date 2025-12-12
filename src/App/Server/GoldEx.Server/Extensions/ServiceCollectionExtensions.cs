@@ -153,73 +153,69 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
         services.AddCascadingAuthenticationState();
 
-        var googleClientId = configuration["Authentication:Google:ClientId"];
-        var googleClientSecret = configuration["Authentication:Google:ClientSecret"];
-
-        var isGoogleAuthConfigured = !string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret);
-
-        if (isGoogleAuthConfigured)
-        {
-            services.AddAuthentication(options =>
-                {
-                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-                })
-                .AddCookie(GoldExSignInManager<AppUser>.GoldExScheme,
-                    config =>
-                    {
-                        config.ExpireTimeSpan = TimeSpan.FromHours(1);
-                    })
-                .AddGoogle(options =>
-                {
-                    options.ClientId = googleClientId!;
-                    options.ClientSecret = googleClientSecret!;
-                });
-        }
-        else
-        {
-            services.AddAuthentication()
-                .AddCookie(GoldExSignInManager<AppUser>.GoldExScheme, config => config.ExpireTimeSpan = TimeSpan.FromHours(1));
-        }
-
+        // 1. Setup Identity First. This sets up the default cookies (Identity.Application).
         services.AddIdentity<AppUser, AppRole>()
             .AddEntityFrameworkStores<GoldExDbContext>()
             .AddDefaultTokenProviders()
             .AddSignInManager<GoldExSignInManager<AppUser>>();
 
+        // 2. Configure External Providers (Google)
+        // AddIdentity registers authentication services, so we can access the builder here.
+        var authBuilder = services.AddAuthentication();
+
+        var googleClientId = configuration["Authentication:Google:ClientId"];
+        var googleClientSecret = configuration["Authentication:Google:ClientSecret"];
+
+        if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+        {
+            authBuilder.AddGoogle(options =>
+            {
+                options.ClientId = googleClientId;
+                options.ClientSecret = googleClientSecret;
+            });
+        }
+
+        // 3. Configure the Application Cookie (The one Identity created)
+        // This handles Expiration AND the API Redirect logic in one place.
         services.ConfigureApplicationCookie(config =>
         {
             config.ExpireTimeSpan = TimeSpan.FromDays(90);
+            config.SlidingExpiration = true;
+
+            // Ensure we are configuring the scheme Identity uses
+            // (Optional if you just want to use the default 'Identity.Application')
+            // config.Cookie.Name = "GoldExToken"; 
+
             var defaultEvents = config.Events;
 
             config.Events = new CookieAuthenticationEvents
             {
                 OnRedirectToLogin = ctx =>
                 {
-                    if (ctx.Request.Path.StartsWithSegments("/api") && ctx.Response.StatusCode == 200)
+                    // Check if it's an API call
+                    if (ctx.Request.Path.StartsWithSegments("/api"))
                     {
-                        ctx.Response.StatusCode = 401;
+                        ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                         return Task.CompletedTask;
                     }
-
                     return defaultEvents.OnRedirectToLogin(ctx);
                 },
                 OnRedirectToAccessDenied = ctx =>
                 {
-                    if (ctx.Request.Path.StartsWithSegments("/api") && ctx.Response.StatusCode == 200)
+                    // Check if it's an API call
+                    if (ctx.Request.Path.StartsWithSegments("/api"))
                     {
-                        ctx.Response.StatusCode = 403;
+                        ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
                         return Task.CompletedTask;
                     }
-
                     return defaultEvents.OnRedirectToAccessDenied(ctx);
                 }
             };
         });
 
+        // 4. Configure Identity Options (Password requirements, etc.)
         services.Configure<IdentityOptions>(options =>
         {
-            // Password settings.
             options.Password.RequireDigit = false;
             options.Password.RequireLowercase = false;
             options.Password.RequireUppercase = false;
@@ -227,15 +223,14 @@ internal static class ServiceCollectionExtensions
             options.Password.RequiredLength = 4;
             options.Password.RequiredUniqueChars = 1;
 
-            // Lockout settings.
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.AllowedForNewUsers = true;
 
-            // User settings.
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
             options.User.RequireUniqueEmail = true;
         });
+
         services.ConfigureOptions<ConfigureSecurityStampOptions>();
 
         return services;
