@@ -31,7 +31,8 @@ internal class CoinService(ICoinRepository repository,
     ILedgerAccountRepository ledgerAccountRepository,
     IMapper mapper,
     ILogger<CoinService> logger,
-    CoinRequestDtoValidator validator) : ICoinService
+    CoinRequestDtoValidator validator,
+    DeleteCoinValidator deleteValidator) : ICoinService
 {
     public async Task<List<GetCoinResponse>> GetListAsync(bool? isActive, CancellationToken cancellationToken = default)
     {
@@ -138,7 +139,13 @@ internal class CoinService(ICoinRepository repository,
                     ledgerAccountId = newCoinLedgerAccount.Id;
                 }
 
-                var coin = Coin.Create(request.Title, ledgerAccountId, request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                var coin = Coin.Create(request.Title,
+                    request.Weight,
+                    request.Fineness,
+                    ledgerAccountId,
+                    request.PriceId.HasValue
+                        ? new PriceId(request.PriceId.Value)
+                        : null);
 
                 await repository.CreateAsync(coin, cancellationToken);
 
@@ -167,6 +174,8 @@ internal class CoinService(ICoinRepository repository,
 
                 coin.SetTitle(request.Title);
                 coin.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
+                coin.SetWeight(request.Weight);
+                coin.SetFineness(request.Fineness);
 
                 await repository.UpdateAsync(coin, cancellationToken);
 
@@ -177,6 +186,8 @@ internal class CoinService(ICoinRepository repository,
                 priceUnitLedgerAccount.SetTitle(LedgerAccountTitleBuilder.ForCurrencyAccount(coin.Title));
 
                 await ledgerAccountRepository.UpdateAsync(priceUnitLedgerAccount, cancellationToken);
+
+                await dbTransaction.CommitAsync(cancellationToken);
             }
             catch (Exception e)
             {
@@ -196,6 +207,17 @@ internal class CoinService(ICoinRepository repository,
         coin.SetStatus(isActive);
 
         await repository.UpdateAsync(coin, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await deleteValidator.ValidateAndThrowAsync(id, cancellationToken);
+
+        var coin = await repository
+            .Get(new CoinsByIdSpecification(new CoinId(id)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        await repository.DeleteAsync(coin, cancellationToken);
     }
 
     private static decimal ConvertFromRial(decimal value, UnitType? defaultUnitType)

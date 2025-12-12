@@ -15,6 +15,14 @@ public class CoinVm
     [Display(Name = "وضعیت")]
     public bool IsActive { get; set; }
 
+    [Display(Name = "وزن")]
+    [Required(ErrorMessage = "وزن الزامی است.")]
+    public decimal? Weight { get; set; }
+
+    [Display(Name = "عیار")]
+    [Required(ErrorMessage = "عیار الزامی است.")]
+    public decimal? Fineness { get; set; }
+
     [Display(Name = "قیمت وابسته")]
     public Guid? PriceId { get; set; }
 
@@ -26,10 +34,17 @@ public class CoinVm
         {
             Id = response.Id,
             Title = response.Title,
+            Weight = response.Weight,
+            Fineness =response.Fineness,
             IsActive = response.IsActive,
             PriceId = response.PriceId
         };
     }
 
-    public static CoinRequestDto ToRequest(CoinVm item) => new(item.Id, item.Title ?? string.Empty, item.PriceId);
+    public static CoinRequestDto ToRequest(CoinVm item) =>
+        new(item.Id,
+            item.Title ?? string.Empty,
+            item.Weight ?? 0,
+            item.Fineness ?? 0,
+            item.PriceId);
 }

@@ -45,10 +45,7 @@ async function precache() {
 
     // Cache only basic app shell files — no manifest-based updates
     const baseFiles = [
-        '/',
-        '/index.html',
-        '/_framework/blazor.webassembly.js',
-        '/_framework/dotnet.wasm',
+        '/'
     ];
 
     for (const url of baseFiles) {

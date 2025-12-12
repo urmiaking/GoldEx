@@ -11,4 +11,5 @@ public interface ICoinService
     Task CreateAsync(CoinRequestDto request, CancellationToken cancellationToken = default);
     Task UpdateAsync(Guid id, CoinRequestDto request, CancellationToken cancellationToken = default);
     Task SetStatusAsync(Guid id, bool isActive, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

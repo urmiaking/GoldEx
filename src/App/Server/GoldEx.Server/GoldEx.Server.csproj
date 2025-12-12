@@ -12,6 +12,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Client\GoldEx.Client\GoldEx.Client.csproj" />
 		<ProjectReference Include="..\GoldEx.Server.Application\GoldEx.Server.Application.csproj" />
+		<PackageReference Include="AspNetCore.DataProtection.SqlServer" Version="1.0.2" />
 		<PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />

@@ -178,6 +178,7 @@ public static class ApiRoutes
         public const string Get = "{id}";
         public const string Create = "";
         public const string Update = "{id}";
+        public const string Delete = "{id}";
         public const string SetStatus = "status/{id}/{isActive}";
         public const string GetPrice = "price/{coinId}/{priceUnitId?}";
     }
