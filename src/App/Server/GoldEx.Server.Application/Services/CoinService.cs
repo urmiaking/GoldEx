@@ -183,7 +183,7 @@ internal class CoinService(ICoinRepository repository,
                     .Get(new LedgerAccountsByIdSpecification(coin.LedgerAccountId))
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                priceUnitLedgerAccount.SetTitle(LedgerAccountTitleBuilder.ForCurrencyAccount(coin.Title));
+                priceUnitLedgerAccount.SetTitle(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title));
 
                 await ledgerAccountRepository.UpdateAsync(priceUnitLedgerAccount, cancellationToken);
 
