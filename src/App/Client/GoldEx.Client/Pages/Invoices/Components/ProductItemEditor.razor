@@ -81,7 +81,7 @@
                 @if (Model.Product.ProductType is not ProductType.MoltenGold)
                 {
                     <MudItem xs="12" sm="6" md="4">
-                        <div class="d-flex flex-row align-center">
+                        <div class="d-flex align-center gap-2">
                             <MudSelect T="ProductCategoryVm?"
                                        Value="Model.Product.CategoryVm"
                                        ValueChanged="OnProductCategoryChanged"
@@ -100,17 +100,29 @@
                     </MudItem>
                 }
 
-                <MudItem xs="12" sm="6" md="4">
-                    <MudNumericField For="@(() => Model.Quantity)"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
-                                     Margin="Margin.Dense"
-                                     T="int"
-                                     @bind-Value="Model.Quantity"
-                                     HideSpinButtons="true"
-                                     Variant="Variant.Outlined" />
-                </MudItem>
+                <MudItem xs="12" sm="6" md="4">  
+                    <div class="d-flex align-center gap-2">  
+                        <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined"
+                                       OnClick="@(() => Model.Quantity--)"
+                                       Disabled="@(Model.Quantity <= 1)"
+                                       Color="Color.Primary" />  
+          
+                        <MudNumericField For="@(() => Model.Quantity)"  
+                                         Immediate="true"  
+                                         dir="ltr"  
+                                         Label="@Model.GetDisplayName(() => Model.Quantity)"  
+                                         Margin="Margin.Dense"  
+                                         T="int"  
+                                         @bind-Value="Model.Quantity"  
+                                         HideSpinButtons="true"  
+                                         Variant="Variant.Outlined"  
+                                         Style="flex: 1;" />  
+          
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
+                                       OnClick="@(() => Model.Quantity++)"
+                                       Color="Color.Primary" />
+                    </div>  
+                </MudItem>  
 
                 <MudItem xs="12" sm="6" md="4">
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -160,41 +172,90 @@
                                      Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
-                    <MudSelect For="() => Model.Product.WageType"
-                               Label="@Model.Product.GetDisplayName(() => Model.Product.WageType)"
-                               Margin="Margin.Dense"
-                               T="WageType?"
-                               Value="Model.Product.WageType"
-                               ValueChanged="OnWageTypeChanged"
-                               Variant="Variant.Outlined">
-                        <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
-                        @foreach (var wageType in Enum.GetValues<WageType>())
-                        {
-                            <MudSelectItem Value="@((WageType?)wageType)">
-                                @wageType.GetDisplayName()
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
+                    @if (Model is { InvoiceType: InvoiceType.Purchase, ShowSaleWageMode: false })
+                    {
+                        <MudSelect Label="نوع اجرت (خرید)"
+                                   Margin="Margin.Dense"
+                                   T="WageType?"
+                                   Value="Model.PurchaseWageType"
+                                   ValueChanged="PurchaseWageTypeChanged"
+                                   Variant="Variant.Outlined">
+                            <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
+                            @foreach (var wageType in Enum.GetValues<WageType>())
+                            {
+                                <MudSelectItem Value="@((WageType?)wageType)">@wageType.GetDisplayName()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        <MudSelect Label="@(Model.InvoiceType == InvoiceType.Purchase ? "نوع اجرت (فروش)" : Model.Product.GetDisplayName(() => Model.Product.WageType))"
+                                   Margin="Margin.Dense"
+                                   T="WageType?"
+                                   Value="Model.Product.WageType"
+                                   ValueChanged="OnWageTypeChanged"
+                                   Variant="Variant.Outlined">
+                            <MudSelectItem Value="@((WageType?)null)">ندارد</MudSelectItem>
+                            @foreach (var wageType in Enum.GetValues<WageType>())
+                            {
+                                <MudSelectItem Value="@((WageType?)wageType)">@wageType.GetDisplayName()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
                 </MudItem>
-                @if (Model.Product.WageType != null)
+
+                @if ((Model.ShowSaleWageMode ? Model.Product.WageType : (Model.InvoiceType == InvoiceType.Purchase ? Model.PurchaseWageType : Model.Product.WageType)) != null)
                 {
                     <MudItem xs="12" sm="6" md="4">
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <MudNumericField Adornment="Adornment.End"
-                                             AdornmentText="@WageFieldAdornmentText"
-                                             For="() => Model.Product.Wage"
-                                             Format="#,##0.##"
-                                             dir="ltr"
-                                             HideSpinButtons="true"
-                                             Immediate="true"
-                                             Margin="Margin.Dense"
-                                             Label="@(Model.GetDisplayName(() => Model.Product.Wage))"
-                                             T="decimal?"
-                                             Value="Model.Product.Wage"
-                                             ValueChanged="OnWageChanged"
-                                             Variant="Variant.Outlined"
-                                             Class="flex-grow-1" />
-                            @if (Model.Product.WageType is WageType.Fixed)
+
+                            @if (Model.InvoiceType == InvoiceType.Purchase)
+                            {
+                                <MudNumericField T="decimal?"
+                                                 Format="#,##0.##"
+                                                 dir="ltr"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true"
+                                                 Margin="Margin.Dense"
+                                                 Variant="Variant.Outlined"
+                                                 Class="flex-grow-1"
+                                                 Adornment="Adornment.End"
+                                                 AdornmentText="@WageFieldAdornmentText"
+                                                 Label="@(Model.ShowSaleWageMode ? "اجرت (فروش)" : "اجرت (خرید)")"
+                                                 Value="@(Model.ShowSaleWageMode ? Model.Product.Wage : Model.PurchaseWage)"
+                                                 ValueChanged="@(OnPurchaseWageChanged)" />
+                            }
+                            else
+                            {
+                                <MudNumericField Adornment="Adornment.End"
+                                                 AdornmentText="@WageFieldAdornmentText"
+                                                 For="() => Model.Product.Wage"
+                                                 Format="#,##0.##"
+                                                 dir="ltr"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true"
+                                                 Margin="Margin.Dense"
+                                                 Label="@(Model.GetDisplayName(() => Model.Product.Wage))"
+                                                 T="decimal?"
+                                                 Value="Model.Product.Wage"
+                                                 ValueChanged="OnWageChanged"
+                                                 Variant="Variant.Outlined"
+                                                 Class="flex-grow-1" />
+                            }
+
+                            @if (Model.InvoiceType == InvoiceType.Purchase)
+                            {
+                                <MudTooltip Text="@(Model.ShowSaleWageMode ? "مشاهده اجرت خرید" : "مشاهده اجرت فروش")"
+                                            Color="@(Model.ShowSaleWageMode ? Color.Error : Color.Success)"
+                                            Arrow="true">
+                                    <MudIconButton Icon="@(Model.ShowSaleWageMode? Icons.Material.Filled.KeyboardDoubleArrowDown : Icons.Material.Filled.KeyboardDoubleArrowUp)"
+                                                   Variant="Variant.Outlined"
+                                                   Color="@(Model.ShowSaleWageMode ? Color.Error : Color.Success)"
+                                                   OnClick="() => Model.ShowSaleWageMode = !Model.ShowSaleWageMode" />
+                                </MudTooltip>
+                            }
+
+                            @if ((Model.ShowSaleWageMode ? Model.Product.WageType : (Model.InvoiceType == InvoiceType.Purchase ? Model.PurchaseWageType : Model.Product.WageType)) is WageType.Fixed)
                             {
                                 <MudMenu @bind-Open="_wageFieldMenuOpen"
                                          ActivationEvent="@MouseEvent.LeftClick">
@@ -345,7 +406,7 @@
                                       Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" sm="6" md="4">
-                        <div class="d-flex flex-row align-center">
+                        <div class="d-flex flex-row align-center gap-2">
                             <MudAutocomplete T="CustomerVm"
                                              @bind-Value="Model.Product.MoltenGold.Assayer"
                                              Text="@Model.Product.MoltenGold.Assayer?.FullName"

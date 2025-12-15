@@ -48,7 +48,7 @@ internal class InventoryStockService(
     private async Task<List<InventoryStock>> GetActiveStocksForInvoiceAsync(Invoice invoice, CancellationToken ct)
     {
         var all = await repository
-            .Get(new InventoryStocksByInvoiceIdSpecification(invoice.Id, null))
+            .Get(new InventoryStocksByInvoiceIdSpecification(invoice.Id))
             .AsNoTracking()
             .ToListAsync(ct);
 
@@ -90,7 +90,7 @@ internal class InventoryStockService(
     // Builder: رکوردهای مطلوب جدید را می‌سازد (Persist نمی‌کند)
     private static List<InventoryStock> BuildStocksForInvoice(Invoice invoice, long tickOffset)
     {
-        var postingDate = ComposePostingDate(invoice, tickOffset); ;
+        var postingDate = ComposePostingDate(invoice, tickOffset);
 
         var action = invoice.InvoiceType == InvoiceType.Purchase ? WarehouseActionType.In : WarehouseActionType.Out;
 

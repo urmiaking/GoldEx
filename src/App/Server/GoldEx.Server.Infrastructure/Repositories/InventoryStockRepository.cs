@@ -262,33 +262,59 @@ internal class InventoryStockRepository(
                     if (!pagedResult.Any())
                         return ([], 0);
 
-                    // --- 7. Details Loading (Unchanged) ---
+                    // --- 7. Details Loading (Sale + Purchase) ---
                     var pagedProductIds = pagedResult.Select(x => x.Product.Id).ToList();
 
-                    var rawSaleItems = await dbContext.Set<Invoice>()
+                    // Fetch raw details for both Sell and Purchase invoices
+                    var rawDetails = await dbContext.Set<Invoice>()
                         .AsNoTracking()
-                        .Where(i => i.InvoiceType == InvoiceType.Sell)
+                        .Where(i => i.InvoiceType == InvoiceType.Sell || i.InvoiceType == InvoiceType.Purchase)
                         .SelectMany(i => i.ProductItems.Select(pi => new
                         {
                             pi.ProductId,
+                            i.InvoiceType,
+                            Date = i.InvoiceDate,
+                            ItemId = pi.Id,
+
+                            // Sale Properties
                             pi.SaleWage,
                             pi.SaleWageType,
                             pi.SaleWagePriceUnitId,
-                            Date = i.InvoiceDate,
-                            ItemId = pi.Id
+
+                            // Purchase Properties
+                            pi.PurchaseWage,
+                            pi.PurchaseWageType,
+                            pi.PurchaseWagePriceUnitId
                         }))
                         .Where(x => pagedProductIds.Contains(x.ProductId))
                         .ToListAsync(cancellationToken);
 
-                    var saleDetails = rawSaleItems
+                    // Group in memory to split Sale vs Purchase
+                    var productDetails = rawDetails
                         .GroupBy(x => x.ProductId)
                         .ToDictionary(
                             g => g.Key,
-                            g => g.OrderByDescending(x => x.Date).ThenByDescending(x => x.ItemId.Value).First()
+                            g => new
+                            {
+                                LatestSale = g.Where(x => x.InvoiceType == InvoiceType.Sell)
+                                              .OrderByDescending(x => x.Date)
+                                              .ThenByDescending(x => x.ItemId.Value)
+                                              .FirstOrDefault(),
+
+                                LatestPurchase = g.Where(x => x.InvoiceType == InvoiceType.Purchase)
+                                                  .OrderByDescending(x => x.Date)
+                                                  .ThenByDescending(x => x.ItemId.Value)
+                                                  .FirstOrDefault()
+                            }
                         );
 
-                    var unitIds = saleDetails.Values.Where(v => v.SaleWagePriceUnitId.HasValue)
-                        .Select(v => v.SaleWagePriceUnitId!.Value).Distinct().ToList();
+                    // Collect all PriceUnitIds (Sale + Purchase) for fetching titles
+                    var unitIds = productDetails.Values
+                        .SelectMany(v => new[] { v.LatestSale?.SaleWagePriceUnitId, v.LatestPurchase?.PurchaseWagePriceUnitId })
+                        .Where(id => id.HasValue)
+                        .Select(id => id!.Value)
+                        .Distinct()
+                        .ToList();
 
                     Dictionary<PriceUnitId, string> priceUnitTitles = [];
                     if (unitIds.Any())
@@ -299,12 +325,21 @@ internal class InventoryStockRepository(
                             .ToDictionaryAsync(u => u.Id, u => u.Title, cancellationToken);
                     }
 
+                    // --- 10. Final Projection ---
                     var finalData = pagedResult.Select(x =>
                     {
-                        var saleInfo = saleDetails.GetValueOrDefault(x.Product.Id);
-                        string? wageUnitTitle = null;
-                        if (saleInfo?.SaleWagePriceUnitId != null)
-                            priceUnitTitles.TryGetValue(saleInfo.SaleWagePriceUnitId.Value, out wageUnitTitle);
+                        var details = productDetails.GetValueOrDefault(x.Product.Id);
+                        var sale = details?.LatestSale;
+                        var purchase = details?.LatestPurchase;
+
+                        // Resolve Titles
+                        string? saleWageTitle = null;
+                        if (sale?.SaleWagePriceUnitId != null)
+                            priceUnitTitles.TryGetValue(sale.SaleWagePriceUnitId.Value, out saleWageTitle);
+
+                        string? purchaseWageTitle = null;
+                        if (purchase?.PurchaseWagePriceUnitId != null)
+                            priceUnitTitles.TryGetValue(purchase.PurchaseWagePriceUnitId.Value, out purchaseWageTitle);
 
                         return new InventorySummaryData
                         {
@@ -312,9 +347,16 @@ internal class InventoryStockRepository(
                             CurrentAmount = x.CurrentQuantity,
                             SoldAmount = x.SoldQuantity,
                             DateTime = x.LastActivityDate,
-                            SaleWage = saleInfo?.SaleWage,
-                            SaleWageType = saleInfo?.SaleWageType,
-                            SaleWagePriceUnitTitle = wageUnitTitle
+
+                            // Sale
+                            SaleWage = sale?.SaleWage,
+                            SaleWageType = sale?.SaleWageType,
+                            SaleWagePriceUnitTitle = saleWageTitle,
+
+                            // Purchase
+                            PurchaseWage = purchase?.PurchaseWage,
+                            PurchaseWageType = purchase?.PurchaseWageType,
+                            PurchaseWagePriceUnitTitle = purchaseWageTitle
                         };
                     }).ToList();
 

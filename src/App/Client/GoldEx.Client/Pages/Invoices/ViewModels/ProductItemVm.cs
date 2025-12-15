@@ -18,6 +18,8 @@ public class ProductItemVm
     private decimal _gramPrice;
     private decimal _profitPercent;
     private decimal _taxPercent;
+    private decimal? _purchaseWage;
+    private WageType? _purchaseWageType = WageType.Percent;
     private decimal? _wageExchangeRate;
     private ProductVm _product = ProductVm.CreateDefaultInstance();
     private decimal? _totalWeight;
@@ -78,6 +80,7 @@ public class ProductItemVm
     public decimal? StonePriceUnitExchangeRate { get; set; }
 
     public bool IsInstantProduct { get; set; }
+    public bool ShowSaleWageMode { get; set; }
 
     public InvoiceType InvoiceType { get; set; }
 
@@ -92,6 +95,29 @@ public class ProductItemVm
         set
         {
             _totalWeight = value;
+
+            RecalculateAmounts();
+        }
+    }
+
+    [Display(Name = "اجرت خرید")]
+    public decimal? PurchaseWage
+    {
+        get => _purchaseWage;
+        set
+        {
+            _purchaseWage = value;
+
+            RecalculateAmounts();
+        }
+    }
+
+    public WageType? PurchaseWageType
+    {
+        get => _purchaseWageType;
+        set
+        {
+            _purchaseWageType = value;
 
             RecalculateAmounts();
         }
@@ -117,6 +143,12 @@ public class ProductItemVm
         RecalculateAmounts();
     }
 
+    public void SyncProductWageFromPurchase()
+    {
+        Product.Wage = PurchaseWage;
+        Product.WageType = PurchaseWageType;
+    }
+
     // --- Display properties ---
     public bool ShowDetails { get; set; }
     public int Index { get; set; } = 1;
@@ -136,8 +168,8 @@ public class ProductItemVm
         var costPrice = CalculatorHelper.Product.CalculateCostPrice(
             weight: TotalWeight ?? 0,
             fineness: Product.Fineness,
-            wageAmount: Product.Wage,
-            wageType: Product.WageType,
+            wageAmount: PurchaseWage,
+            wageType: PurchaseWageType,
             gramPrice: GramPrice,
             exchangeRate: WageExchangeRate
         );
@@ -186,7 +218,8 @@ public class ProductItemVm
             WageExchangeRate = null,
             ProfitPercent = 0,
             TaxPercent = 0,
-            Quantity = 1
+            Quantity = 1,
+            PurchaseWageType = WageType.Percent
         };
     }
 
@@ -194,19 +227,27 @@ public class ProductItemVm
     {
         Index = other.Index;
         Product = other.Product;
-        GramPrice = other.GramPrice;
-        WageExchangeRate = other.WageExchangeRate;
-        ProfitPercent = other.ProfitPercent;
-        TaxPercent = other.TaxPercent;
+
+        _gramPrice = other.GramPrice;
+        _profitPercent = other.ProfitPercent;
+        _taxPercent = other.TaxPercent;
+        _wageExchangeRate = other.WageExchangeRate;
+        _totalWeight = other.TotalWeight;
+
+        _purchaseWage = other.PurchaseWage;
+        _purchaseWageType = other.PurchaseWageType;
+
         CostPrice = other.CostPrice;
         CostPriceExchangeRate = other.CostPriceExchangeRate;
         CostPriceUnitId = other.CostPriceUnitId;
         CostPriceUnitTitle = other.CostPriceUnitTitle;
+
         IsInstantProduct = other.IsInstantProduct;
         ShowDetails = other.ShowDetails;
         InvoiceType = other.InvoiceType;
         Quantity = other.Quantity;
-        TotalWeight = other.TotalWeight;
+
+        RecalculateAmounts();
     }
 
     public static InvoiceProductItemDto ToRequest(ProductItemVm productItem)
@@ -227,6 +268,8 @@ public class ProductItemVm
             productItem.IsInstantProduct,
             productItem.Quantity,
             productItem.TotalWeight.Value,
+            productItem.PurchaseWage,
+            productItem.PurchaseWageType,
             ProductVm.ToRequest(productItem.Product));
     }
 
@@ -252,6 +295,7 @@ public class ProductItemVm
         );
     }
 
+    // TODO: ADD PURCHASE WAGE
     public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response, InvoiceType invoiceType)
     {
         return new ProductItemVm
@@ -267,10 +311,12 @@ public class ProductItemVm
             CostPriceUnitTitle = response.CostPriceUnitTitle,
             StonePriceUnitExchangeRate = response.StonePriceUnitExchangeRate,
             IsInstantProduct = response.IsInstantProduct,
-            Product = ProductVm.CreateFromInvoice(response),
             Quantity = response.Quantity,
             TotalWeight = response.TotalWeight,
-            InvoiceType = invoiceType
+            InvoiceType = invoiceType,
+            PurchaseWage = response.PurchaseWage,
+            PurchaseWageType = response.PurchaseWageType,
+            Product = ProductVm.CreateFromInvoice(response)
         };
     }
 
@@ -279,6 +325,8 @@ public class ProductItemVm
         Product.WageType = WageType.Fixed;
         Product.WagePriceUnitId = priceUnit.Id;
         Product.WagePriceUnitTitle = priceUnit.Title;
+
+        PurchaseWageType = WageType.Fixed;
 
         if (InvoiceType is InvoiceType.Sell && tradeScale is TradeScale.Retail)
         {
@@ -293,6 +341,9 @@ public class ProductItemVm
         Product.WageType = WageType.Percent;
         Product.WagePriceUnitId = null;
         Product.WagePriceUnitTitle = null;
+
+        PurchaseWageType = WageType.Percent;
+
         if (InvoiceType is InvoiceType.Sell && tradeScale is TradeScale.Retail)
         {
             ProfitPercent = settings?.GoldProfitPercent ?? 7;
@@ -310,12 +361,14 @@ public class ProductItemVm
         }
         else
         {
-            Product.Wage = null;
-            Product.WageType = null;
+            PurchaseWage = null;
+            PurchaseWageType = null;
+            SyncProductWageFromPurchase();
         }
 
         Product.WagePriceUnitId = null;
         Product.WagePriceUnitTitle = null;
+        WageExchangeRate = null;
 
         ProfitPercent = 0;
         TaxPercent = 0;

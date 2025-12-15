@@ -318,10 +318,10 @@ public partial class InventoryStockList
     {
         if (context.SaleWage.HasValue)
         {
-            return "اجرت خرید: " + context.Product?.WageType switch
+            return "اجرت خرید: " + context.PurchaseWageType switch
             {
-                WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
-                WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                WageType.Fixed => $"{context.PurchaseWage?.ToCurrencyFormat(context.PurchaseWagePriceUnitTitle)}",
+                WageType.Percent => context.PurchaseWage?.ToString("G29") + " درصد",
                 _ => "ندارد"
             };
         }
