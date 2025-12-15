@@ -12,7 +12,6 @@ using GoldEx.Shared.Enums;
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public readonly record struct InvoiceId(Guid Value);
-
 public class Invoice : EntityBase<InvoiceId>
 {
     public static Invoice Create(long invoiceNumber,
@@ -44,9 +43,9 @@ public class Invoice : EntityBase<InvoiceId>
         };
     }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618
     private Invoice() { }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning restore CS8618
 
     public long InvoiceNumber { get; private set; }
     public DateOnly? DueDate { get; private set; }
@@ -112,6 +111,10 @@ public class Invoice : EntityBase<InvoiceId>
         decimal? stonePriceUnitExchangeRate,
         PriceUnitId? costPriceUnitId,
         bool isInstantProduct,
+        decimal purchaseWage,
+        WageType? purchaseWageType,
+        PriceUnitId? purchaseWagePriceUnitId,
+        decimal? purchaseWageExchangeRate,
         Product product)
     {
         _products.Add(InvoiceProductItem.CreatePurchaseItem(id,
@@ -125,6 +128,10 @@ public class Invoice : EntityBase<InvoiceId>
             costPriceExchangeRate,
             stonePriceUnitExchangeRate,
             costPriceUnitId,
+            purchaseWage,
+            purchaseWageType,
+            purchaseWagePriceUnitId,
+            purchaseWageExchangeRate,
             isInstantProduct)
             .SetInvoice(this)
             .RecalculateAmounts(product, InvoiceType));
@@ -168,8 +175,6 @@ public class Invoice : EntityBase<InvoiceId>
     }
 
     public void RemoveProductItem(InvoiceProductItem productItem) => _products.Remove(productItem);
-
-    public void ClearProductItems() => _products.Clear();
 
     #endregion
 

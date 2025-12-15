@@ -12,12 +12,15 @@ public record GetInventoryStockResponse(
     decimal? SaleWage,
     WageType? SaleWageType,
     string? SaleWagePriceUnitTitle,
+    decimal? PurchaseWage,
+    WageType? PurchaseWageType,
+    string? PurchaseWagePriceUnitTitle,
     GetProductResponse? Product,
     GetCoinResponse? Coin,
     GetPriceUnitTitleResponse? Currency)
 {
     // Parameterless constructor for mapping purposes
-    public GetInventoryStockResponse() : this(0, 0, default, null, null, null, null, null, null) { }
+    public GetInventoryStockResponse() : this(0, 0, default, null, null, null, null, null, null, null, null, null) { }
 
     public decimal FinalPrice { get; set; }
 }

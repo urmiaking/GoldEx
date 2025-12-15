@@ -12,6 +12,10 @@ public record InventorySummaryData
     public WageType? SaleWageType { get; init; }
     public string? SaleWagePriceUnitTitle { get; init; }
 
+    public decimal? PurchaseWage { get; init; }
+    public WageType? PurchaseWageType { get; init; }
+    public string? PurchaseWagePriceUnitTitle { get; init; }
+
     public Coin? Coin { get; init; }
     public PriceUnit? Currency { get; init; }
     public required decimal CurrentAmount { get; init; }

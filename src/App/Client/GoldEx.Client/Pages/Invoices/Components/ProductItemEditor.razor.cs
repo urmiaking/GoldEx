@@ -227,7 +227,6 @@ public partial class ProductItemEditor
                 throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
         }
 
-        // منطق محاسبه CostPrice اکنون در ProductItemVm.RecalculateAmounts() است
         StateHasChanged();
     }
 
@@ -250,14 +249,6 @@ public partial class ProductItemEditor
         Model.Product.ProductCategoryId = category?.Id;
         Model.Product.ProductCategoryTitle = category?.Title;
     }
-
-    private void OnWageAdornmentClicked()
-    {
-        if (Model.Product.WageType is WageType.Fixed)
-            _wageFieldMenuOpen = !_wageFieldMenuOpen;
-    }
-
-    private void OnCostPriceAdornmentClicked() => _costPriceMenuOpen = !_costPriceMenuOpen;
 
     private async Task SelectWagePriceUnit(GetPriceUnitTitleResponse priceUnit)
     {
@@ -347,6 +338,38 @@ public partial class ProductItemEditor
         StateHasChanged();
     }
 
+    private async Task PurchaseWageTypeChanged(WageType? wageType)
+    {
+        Model.PurchaseWageType = wageType;
+
+        switch (wageType)
+        {
+            case WageType.Percent:
+                Model.WageExchangeRate = null;
+                Model.Product.WagePriceUnitId = null;
+                break;
+            case WageType.Fixed:
+                if (Model.Product.WagePriceUnitId.HasValue)
+                {
+                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == Model.Product.WagePriceUnitId));
+                }
+                else
+                {
+                    await SelectWagePriceUnit(PriceUnits.First(x => x.Id == PriceUnit.Id));
+                }
+                break;
+            case null:
+                Model.PurchaseWage = null;
+                Model.WageExchangeRate = null;
+                Model.Product.WagePriceUnitId = null;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(wageType), wageType, null);
+        }
+
+        StateHasChanged();
+    }
+
     #region Customer
 
     private async Task<IEnumerable<CustomerVm>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)
@@ -389,12 +412,29 @@ public partial class ProductItemEditor
     #endregion
 
     private void OnCostPriceChanged(decimal? costPrice)
-    {   
+    {
         Model.CostPrice = costPrice;
 
         if (Model.IsInstantProduct || Model.InvoiceType is InvoiceType.Purchase)
         {
             Model.FinalAmount = Model.CostPrice ?? 0;
+        }
+    }
+
+    private void OnPurchaseWageChanged(decimal? val)
+    {
+        if (Model.ShowSaleWageMode)
+        {
+            OnWageChanged(val);
+        }
+        else
+        {
+            Model.PurchaseWage = val;
+
+            if (Model.InvoiceType == InvoiceType.Purchase)
+            {
+                Model.SyncProductWageFromPurchase();
+            }
         }
     }
 }
