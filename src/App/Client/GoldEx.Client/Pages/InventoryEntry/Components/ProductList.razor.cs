@@ -107,7 +107,7 @@ public partial class ProductList
 
         foreach (var item in Model.ProductItems)
         {
-            item.GramPrice = _gramPrice;
+            item.GramPrice = 1;
             item.RecalculateAmounts();
         }
 
@@ -126,12 +126,12 @@ public partial class ProductList
         {
             barcode = item.Product.Barcode ?? "",
             productName = item.Product.Name ?? "",
-            weight = $"وزن: {item.TotalWeight:G29}{(item.Product.GoldUnitType == GoldUnitType.Gram ? "g" : "m")}",
-            wage = "اجرت: " + item.Product.WageType switch
+            weight = $"W: {item.TotalWeight:G29}{(item.Product.GoldUnitType == GoldUnitType.Gram ? "G" : "M")}",
+            wage = "F: " + item.Product.WageType switch
             {
-                WageType.Fixed => $"{item.Product.Wage?.ToCurrencyFormat(item.Product.WagePriceUnitTitle)}",
+                WageType.Fixed => $"{item.Product.Wage?.ToCurrencyFormat()} {item.Product.WagePriceUnitTitle}",
                 WageType.Percent => $"{item.Product.Wage:G29}%",
-                _ => "ندارد"
+                _ => "---"
             }
         };
 

@@ -24,15 +24,19 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         WageType? saleWageType,
         PriceUnitId? saleWagePriceUnitId,
         decimal? saleWagePriceUnitExchangeRate,
+        decimal? purchaseWage,
+        WageType? purchaseWageType,
+        PriceUnitId? purchaseWagePriceUnitId,
+        decimal? purchaseWagePriceUnitExchangeRate,
         decimal? stonePriceUnitExchangeRate)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0, nameof(gramPrice));
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0, nameof(quantity));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0, nameof(totalWeight));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(gramPrice, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0);
 
         Id = id;
         GramPrice = gramPrice;
@@ -45,10 +49,17 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         IsInstantProduct = isInstantProduct;
         Quantity = quantity;
         TotalWeight = totalWeight;
+
         SaleWage = saleWage;
         SaleWageType = saleWageType;
         SaleWagePriceUnitId = saleWagePriceUnitId;
         SaleWagePriceUnitExchangeRate = saleWagePriceUnitExchangeRate;
+
+        PurchaseWage = purchaseWage;
+        PurchaseWageType = purchaseWageType;
+        PurchaseWagePriceUnitId = purchaseWagePriceUnitId;
+        PurchaseWagePriceUnitExchangeRate = purchaseWagePriceUnitExchangeRate;
+
         StonePriceUnitExchangeRate = stonePriceUnitExchangeRate;
 
         // Stored calculated values are initialized to 0
@@ -71,6 +82,10 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal? costPriceExchangeRate,
         decimal? stonePriceUnitExchangeRate,
         PriceUnitId? costPriceUnitId,
+        decimal purchaseWage,
+        WageType? purchaseWageType,
+        PriceUnitId? purchaseWagePriceUnitId,
+        decimal? purchaseWagePriceUnitExchangeRate,
         bool isInstantProduct)
     {
         return new InvoiceProductItem(id ?? new InvoiceProductItemId(Guid.NewGuid()),
@@ -88,6 +103,10 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             null,
             null,
             null,
+            purchaseWage,
+            purchaseWageType,
+            purchaseWagePriceUnitId,
+            purchaseWagePriceUnitExchangeRate,
             stonePriceUnitExchangeRate);
     }
 
@@ -123,6 +142,10 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
             saleWageType,
             saleWagePriceUnitId,
             saleWagePriceUnitExchangeRate,
+            null,
+            null,
+            null,
+            null,
             stonePriceUnitExchangeRate);
     }
 
@@ -155,6 +178,12 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
     public PriceUnitId? SaleWagePriceUnitId { get; private set; }
     public PriceUnit? SaleWagePriceUnit { get; private set; }
     public decimal? SaleWagePriceUnitExchangeRate { get; set; }
+
+    public decimal? PurchaseWage { get; private set; }
+    public WageType? PurchaseWageType { get; private set; }
+    public PriceUnitId? PurchaseWagePriceUnitId { get; private set; }
+    public PriceUnit? PurchaseWagePriceUnit { get; private set; }
+    public decimal? PurchaseWagePriceUnitExchangeRate { get; set; }
 
     public decimal? StonePriceUnitExchangeRate { get; private set; }
 
@@ -201,6 +230,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
                                                                        product.Fineness,
                                                                        1,
                                                                        product.ProductType);
+
             ItemWageAmount = SaleWageType is not null && SaleWage.HasValue
                     ? CalculatorHelper.Product.CalculateWage(ItemRawAmount,
                                                              TotalWeight,
@@ -212,10 +242,12 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
                                                              product.Wage,
                                                              product.WageType,
                                                              Invoice.ExchangeRate);
+
             ItemProfitAmount = CalculatorHelper.Product.CalculateProfit(ItemRawAmount,
                                                                         ItemWageAmount,
                                                                         product.ProductType,
                                                                         ProfitPercent);
+
             ItemTaxAmount = CalculatorHelper.Product.CalculateTax(ItemWageAmount,
                                                                   ItemProfitAmount,
                                                                   TaxPercent,
@@ -251,7 +283,11 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal totalWeight,
         decimal? costPrice,
         decimal? costPriceExchangeRate,
-        PriceUnitId? costPriceUnitId)
+        PriceUnitId? costPriceUnitId,
+        decimal? purchaseWage,
+        WageType? purchaseWageType,
+        PriceUnitId? purchaseWagePriceUnitId,
+        decimal? purchaseWagePriceUnitExchangeRate)
     {
         GramPrice = gramPrice;
         Quantity = quantity;
@@ -259,6 +295,10 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         CostPriceExchangeRate = costPriceExchangeRate;
         CostPriceUnitId = costPriceUnitId;
         TotalWeight = totalWeight;
+        PurchaseWage = purchaseWage;
+        PurchaseWageType = purchaseWageType;
+        PurchaseWagePriceUnitId = purchaseWagePriceUnitId;
+        PurchaseWagePriceUnitExchangeRate = purchaseWagePriceUnitExchangeRate;
     }
 
     public void UpdateSaleItem(decimal gramPrice,

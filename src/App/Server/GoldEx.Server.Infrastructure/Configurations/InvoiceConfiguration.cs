@@ -236,6 +236,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.SaleWagePriceUnitExchangeRate)
             .HasPrecision(36, 10);
 
+        builder.Property(x => x.PurchaseWage)
+            .HasPrecision(36, 10);
+
+        builder.Property(x => x.PurchaseWagePriceUnitExchangeRate)
+            .HasPrecision(36, 10);
+
         builder.Property(x => x.StonePriceUnitExchangeRate)
             .HasPrecision(36, 10);
 
@@ -278,8 +284,14 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasForeignKey(x => x.SaleWagePriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.PurchaseWagePriceUnit)
+            .WithMany()
+            .HasForeignKey(x => x.PurchaseWagePriceUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Navigation(x => x.CostPriceUnit).AutoInclude();
         builder.Navigation(x => x.SaleWagePriceUnit).AutoInclude();
+        builder.Navigation(x => x.PurchaseWagePriceUnit).AutoInclude();
     }
 
     private void Configure(OwnedNavigationBuilder<Invoice, InvoiceExtraCost> builder)

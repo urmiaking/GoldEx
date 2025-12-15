@@ -155,7 +155,7 @@ public class ProductVm : INotifyPropertyChanged
 
     [Display(Name = "دسته بندی")]
     public Guid? ProductCategoryId { get; set; }
-    public string? ProductCategoryTitle { get; set; } = string.Empty;
+    public string? ProductCategoryTitle { get; set; }
 
     [Display(Name = "واحد قیمت اجرت")]
     public Guid? WagePriceUnitId { get; set; }
