@@ -119,10 +119,22 @@ self.addEventListener('fetch', event => {
 
     event.respondWith((async () => {
 
-        /*
-         * 1. Cache-first for Blazor framework files
-         *    (prevents multiple WASM downloads)
-         */
+        /* ============================
+         * 0. API & AUTH REQUESTS
+         *    (NEVER CACHED)
+         * ============================ */
+        if (
+            url.pathname.startsWith('/api/') ||
+            event.request.headers.has('authorization') ||
+            event.request.credentials === 'include'
+        ) {
+            return fetch(event.request);
+        }
+
+        /* ============================
+         * 1. Blazor framework files
+         *    cache-first
+         * ============================ */
         if (url.pathname.startsWith('/_framework/')) {
             const cache = await caches.open(CACHE_NAME);
             const cached = await cache.match(event.request);
@@ -141,9 +153,10 @@ self.addEventListener('fetch', event => {
             return response;
         }
 
-        /*
-         * 2. Navigation requests: network-first with offline fallback
-         */
+        /* ============================
+         * 2. Navigation requests
+         *    network-first
+         * ============================ */
         if (event.request.mode === 'navigate') {
             try {
                 return await fetch(event.request);
@@ -153,9 +166,10 @@ self.addEventListener('fetch', event => {
             }
         }
 
-        /*
-         * 3. Static assets: cache-first
-         */
+        /* ============================
+         * 3. Static assets
+         *    cache-first
+         * ============================ */
         const cache = await caches.open(CACHE_NAME);
         const cached = await cache.match(event.request);
 
