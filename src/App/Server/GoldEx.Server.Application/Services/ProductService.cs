@@ -467,7 +467,14 @@ internal class ProductService(
                             itemDto.CostPriceExchangeRate,
                             itemDto.CostPriceUnitId.HasValue
                                 ? new PriceUnitId(itemDto.CostPriceUnitId.Value)
-                                : null);
+                                : null,
+                            itemDto.PurchaseWage,
+                            itemDto.PurchaseWageType,
+                            itemDto.Product.WagePriceUnitId.HasValue
+                                ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
+                                : null,
+                            itemDto.WagePriceUnitExchangeRate
+                            );
                     }
 
                     existingItem.RecalculateAmounts(product, invoice.InvoiceType);
@@ -495,6 +502,12 @@ internal class ProductService(
                         itemDto.StonePriceUnitExchangeRate,
                         itemDto.CostPriceUnitId.HasValue ? new PriceUnitId(itemDto.CostPriceUnitId.Value) : null,
                         itemDto.IsInstantProduct,
+                        itemDto.PurchaseWage ?? 0,
+                        itemDto.PurchaseWageType,
+                        itemDto.Product.WagePriceUnitId.HasValue
+                            ? new PriceUnitId(itemDto.Product.WagePriceUnitId.Value)
+                            : null,
+                        itemDto.WagePriceUnitExchangeRate,
                         product);
                 }
                 else

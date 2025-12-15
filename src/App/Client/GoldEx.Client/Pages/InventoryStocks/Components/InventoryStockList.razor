@@ -198,7 +198,6 @@
                 <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
                 <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
                 <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
-                @* <MudTd DataLabel="وزن">@(context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType))</MudTd> *@
                 <MudTd DataLabel="اجرت">
                     <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
                         @{
@@ -210,7 +209,7 @@
                                     WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                                }
+                            }
                             else
                             {
                                 @(context.Product.WageType switch
@@ -219,7 +218,7 @@
                                     WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
-                                }
+                            }
                         }
 
                     </MudTooltip>

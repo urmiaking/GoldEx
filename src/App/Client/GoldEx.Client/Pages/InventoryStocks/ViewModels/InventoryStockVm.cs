@@ -13,6 +13,10 @@ public class InventoryStockVm
     public WageType? SaleWageType { get; init; }
     public string? SaleWagePriceUnitTitle { get; init; }
 
+    public decimal? PurchaseWage { get; init; }
+    public WageType? PurchaseWageType { get; init; }
+    public string? PurchaseWagePriceUnitTitle { get; init; }
+
     public ProductVm? Product { get; set; }
     public CoinVm? Coin { get; set; }
     public PriceUnitVm? Currency { get; set; }
@@ -31,6 +35,9 @@ public class InventoryStockVm
             SaleWage = response.SaleWage,
             SaleWageType = response.SaleWageType,
             SaleWagePriceUnitTitle = response.SaleWagePriceUnitTitle,
+            PurchaseWage = response.PurchaseWage,
+            PurchaseWageType = response.PurchaseWageType,
+            PurchaseWagePriceUnitTitle = response.PurchaseWagePriceUnitTitle,
             Product = response.Product != null ? ProductVm.CreateFrom(response.Product) : null,
             Coin = response.Coin != null ? CoinVm.CreateFrom(response.Coin) : null,
             Currency = response.Currency != null ? PriceUnitVm.CreateFromTitleResponse(response.Currency) : null

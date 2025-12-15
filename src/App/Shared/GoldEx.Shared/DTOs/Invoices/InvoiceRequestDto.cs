@@ -83,6 +83,8 @@ public record InvoiceProductItemDto(
     bool IsInstantProduct,
     int Quantity,
     decimal TotalWeight,
+    decimal? PurchaseWage,
+    WageType? PurchaseWageType,
     ProductRequestDto Product);
 
 public record InvoiceCoinItemDto(

@@ -103,19 +103,29 @@ internal class ReportingMapper : IRegister
                 $"{src.ProfitPercent.ToCurrencyReportFormat(null)}%")
             .Map(dest => dest.TaxPercent, src =>
                 $"{src.TaxPercent.ToCurrencyReportFormat(null)}%")
-            .Map(dest => dest.SaleWageType, src => src.SaleWageType)
+            .Map(dest => dest.SaleWageType, src =>
+                src.Invoice.InvoiceType == InvoiceType.Purchase
+                    ? src.PurchaseWageType
+                    : (src.SaleWageType ?? (src.Product != null ? src.Product.WageType : null)))
             .Map(dest => dest.SaleWage, src =>
-                src.SaleWage != null
-                    ? src.SaleWageType != null
-                        ? src.SaleWageType == WageType.Percent
+                src.Invoice.InvoiceType == InvoiceType.Purchase
+                    // 1. PURCHASE LOGIC
+                    ? (src.PurchaseWage != null && src.PurchaseWageType != null
+                        ? (src.PurchaseWageType == WageType.Percent
+                            ? $"{src.PurchaseWage.Value.ToCurrencyReportFormat(null)}%"
+                            : $"{src.PurchaseWage.Value.ToCurrencyReportFormat(src.PurchaseWagePriceUnit != null ? src.PurchaseWagePriceUnit.Title : "")}")
+                        : "ندارد")
+
+                    // 2. SELL LOGIC
+                    : (src.SaleWage != null
+                        ? (src.SaleWageType == WageType.Percent
                             ? $"{src.SaleWage.Value.ToCurrencyReportFormat(null)}%"
-                            : $"{src.SaleWage.Value.ToCurrencyReportFormat(src.SaleWagePriceUnit!.Title)}"
-                        : "ندارد"
-                    : src.Product!.WageType != null
-                        ? src.Product!.WageType == WageType.Percent
-                            ? $"{src.Product!.Wage.ToCurrencyReportFormat(null)}%"
-                            : $"{src.Product!.Wage.ToCurrencyReportFormat(src.Product!.WagePriceUnit!.Title)}"
-                        : "ندارد");
+                            : $"{src.SaleWage.Value.ToCurrencyReportFormat(src.SaleWagePriceUnit != null ? src.SaleWagePriceUnit.Title : "")}")
+                        : (src.Product != null && src.Product.WageType != null
+                            ? (src.Product.WageType == WageType.Percent
+                                ? $"{src.Product.Wage.ToCurrencyReportFormat(null)}%"
+                                : $"{src.Product.Wage.ToCurrencyReportFormat(src.Product.WagePriceUnit != null ? src.Product.WagePriceUnit.Title : "")}")
+                            : "ندارد")));
 
         config.NewConfig<Product, GetProductReportResponse>()
             .Map(dest => dest.Name, src => src.Name)

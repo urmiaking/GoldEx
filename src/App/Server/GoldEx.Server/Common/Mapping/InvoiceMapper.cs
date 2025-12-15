@@ -50,11 +50,15 @@ internal class InvoiceMapper : IRegister
             .Map(dest => dest.CostPriceUnitTitle,
                 src => src.CostPriceUnit != null ? src.CostPriceUnit.Title : string.Empty)
             .Map(dest => dest.WageExchangeRate,
-                src => src.SaleWagePriceUnitExchangeRate)
+                src => src.SaleWagePriceUnitExchangeRate ?? src.PurchaseWagePriceUnitExchangeRate)
             .Map(dest => dest.SaleWagePriceUnitId,
                 src => src.SaleWagePriceUnitId.HasValue ? src.SaleWagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.SaleWagePriceUnitTitle,
                 src => src.SaleWagePriceUnit != null ? src.SaleWagePriceUnit.Title : string.Empty)
+            .Map(dest => dest.PurchaseWagePriceUnitId,
+                src => src.PurchaseWagePriceUnitId.HasValue ? src.PurchaseWagePriceUnitId.Value.Value : (Guid?)null)
+            .Map(dest => dest.PurchaseWagePriceUnitTitle,
+                src => src.PurchaseWagePriceUnit != null ? src.PurchaseWagePriceUnit.Title : string.Empty)
             .Map(dest => dest.StonePriceUnitExchangeRate, src => src.StonePriceUnitExchangeRate);
 
         config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemResponse>()
