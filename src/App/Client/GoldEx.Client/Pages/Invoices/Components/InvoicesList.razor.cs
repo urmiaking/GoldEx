@@ -94,8 +94,8 @@ public partial class InvoicesList
     {
         return amount switch
         {
-            > 0 when invoiceType == InvoiceType.Purchase => Color.Error,
-            < 0 when invoiceType == InvoiceType.Purchase => Color.Success,
+            > 0 when invoiceType == InvoiceType.Purchase => Color.Success,
+            < 0 when invoiceType == InvoiceType.Purchase => Color.Error,
             > 0 when invoiceType == InvoiceType.Sell => Color.Error,
             < 0 when invoiceType == InvoiceType.Sell => Color.Success,
             _ => Color.Inherit
