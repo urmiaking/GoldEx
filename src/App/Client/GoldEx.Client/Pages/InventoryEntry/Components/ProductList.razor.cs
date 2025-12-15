@@ -107,7 +107,7 @@ public partial class ProductList
 
         foreach (var item in Model.ProductItems)
         {
-            item.GramPrice = _gramPrice;
+            item.GramPrice = 1;
             item.RecalculateAmounts();
         }
 
