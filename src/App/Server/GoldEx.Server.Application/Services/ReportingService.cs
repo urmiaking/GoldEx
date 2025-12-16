@@ -73,27 +73,29 @@ internal class ReportingService(
         return mapped;
     }
 
-    private static string FormatRemaining(Dictionary<PriceUnit, decimal> remaining, PriceUnit mainUnit, PriceUnit? secondaryUnit, decimal? exchangeRate)
+    private static string FormatRemaining(
+        Dictionary<PriceUnit, decimal> remaining,
+        PriceUnit mainUnit,
+        PriceUnit? secondaryUnit,
+        decimal? exchangeRate)
     {
         var mainAmount = remaining.GetValueOrDefault(mainUnit, 0m);
+        var isNegative = mainAmount < 0;
 
-        var absAmount = Math.Abs(mainAmount);
-        var formatted = $"{absAmount.ToCurrencyReportFormat(mainUnit.Title)}";
-
-        if (mainAmount < 0)
-        {
-            formatted += " (بس)";
-        }
+        var absMain = Math.Abs(mainAmount);
+        var formatted = absMain.ToCurrencyReportFormat(mainUnit.Title);
 
         if (secondaryUnit != null && exchangeRate.HasValue)
         {
-            var secondaryAmount = mainAmount * exchangeRate.Value;
-            var absSecondary = Math.Abs(secondaryAmount);
-            var secondaryFormatted = $"{absSecondary.ToCurrencyReportFormat(secondaryUnit.Title)}";
-            if (secondaryAmount < 0)
-                secondaryFormatted += " (بس)";
+            var secondaryAmount = absMain * exchangeRate.Value;
+            var secondaryFormatted = secondaryAmount.ToCurrencyReportFormat(secondaryUnit.Title);
 
             formatted += $" ({secondaryFormatted})";
+        }
+
+        if (isNegative)
+        {
+            formatted += " (بس)";
         }
 
         return formatted;
