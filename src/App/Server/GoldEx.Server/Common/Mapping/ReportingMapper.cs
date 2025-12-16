@@ -55,9 +55,14 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.TotalUnpaidAmount,
                 src =>
                     $"{(src.TotalUnpaidAmount).FormatUnpaidAmount(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
-            .Map(dest => dest.TotalPayableAmount,
-                src =>
-                    $"{(src.TotalAmountWithDiscountsAndExtraCosts - src.TotalUsedProductsAmount).ToCurrencyReportFormat(src.PriceUnit == null ? null : src.PriceUnit.Title)}")
+            .Map(
+                dest => dest.TotalPayableAmount,
+                src => FormatPayableAmount(
+                    src.TotalAmountWithDiscountsAndExtraCosts
+                    - src.TotalUsedProductsAmount,
+                    src.PriceUnit!.Title
+                )
+            )
             .Map(dest => dest.TotalUnpaidSecondaryAmount,
                 src => src.UnpaidPriceUnitId.HasValue
                     ? $"({(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1))
@@ -160,7 +165,10 @@ internal class ReportingMapper : IRegister
                 src => src.ExtraCostsAmount.HasValue
                     ? src.ExtraCostsAmount.Value.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)
                     : null)
-            .Map(dest => dest.Fineness, src => src.FinenessDeductionRate)
+            .Map(dest => dest.Fineness,
+                src => src.Product != null
+                    ? src.Product.Fineness - src.FinenessDeductionRate
+                    : 750 - src.FinenessDeductionRate)
             .Map(dest => dest.GoldUnitType, src => src.UnitType)
             .Map(dest => dest.Weight, src => src.Weight.ToWeightFormat(src.UnitType))
             .Map(dest => dest.TotalPrice, src =>
@@ -172,5 +180,15 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.PaymentType, src => src.PaymentType)
             .Map(dest => dest.PaymentDate, src => src.PaymentDate)
             .Map(dest => dest.Description, src => PaymentDescriptionBuilder.Build(src));
+    }
+
+    private static string FormatPayableAmount(decimal amount, string? unitTitle)
+    {
+        var abs = Math.Abs(amount);
+        var formatted = abs.ToCurrencyReportFormat(unitTitle);
+
+        return amount < 0
+            ? $"{formatted} (بس)"
+            : formatted;
     }
 }
