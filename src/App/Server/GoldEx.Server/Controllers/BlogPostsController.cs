@@ -64,6 +64,8 @@ public class BlogPostsController(
     [IgnoreAntiforgeryToken]
     [HttpPost(ApiRoutes.BlogPosts.UploadFiles)]
     [Authorize(Roles = BuiltinRoles.Administrators)]
+    [RequestSizeLimit(100_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
     public async Task<IActionResult> UploadFilesAsync(IFormFile file, CancellationToken cancellationToken)
     {
         if (file.Length is 0)
