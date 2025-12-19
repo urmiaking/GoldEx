@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
@@ -41,4 +42,15 @@ public partial class CoinItemsList
         InvoiceType is InvoiceType.Sell
             ? "فهرست سکه های فروخته‌شده"
             : "فهرست سکه های خریداری‌شده";
+
+    private string GetWeight(CoinItemVm context)
+    {
+        var weight = context.Weight?.ToWeightFormat(GoldUnitType.Gram);
+
+        var vacuumedWeight = context.CoinPackage?.VacuumedWeight?.ToWeightFormat(GoldUnitType.Gram);
+
+        return vacuumedWeight is not null
+            ? $"{weight} ({vacuumedWeight} با وکیوم)"
+            : weight ?? "-";
+    }
 }

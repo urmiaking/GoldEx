@@ -1,8 +1,10 @@
-﻿using GoldEx.Shared.DTOs.Coins;
-using GoldEx.Shared.Helpers;
-using System.ComponentModel.DataAnnotations;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -47,8 +49,28 @@ public class CoinItemVm
         }
     }
 
+    [Display(Name = "سکه")]
+    public GetCoinResponse? Coin { get; set; } = default!;
+
+    [Display(Name = "وزن")]
+    [Required(ErrorMessage = "وزن الزامی است")]
+    public decimal? Weight { get; set; }
+
+    [Display(Name = "عیار")]
+    [Required(ErrorMessage = "عیار الزامی است")]
+    public decimal Fineness { get; set; } = 900m;
+
     [Display(Name = "نوع سکه")]
-    public GetCoinResponse Coin { get; set; } = default!;
+    public CoinMintType CoinMintType { get; set; } = CoinMintType.Banking;
+
+    [Display(Name = "نوع بسته بندی")]
+    public CoinPackageType CoinPackageType { get; set; } = CoinPackageType.VacuumSealed;
+
+    [Display(Name = "سال ضرب")]
+    public DateTime? MintYear { get; set; }
+
+    [Display(Name = "بسته بندی سکه")]
+    public CoinPackageSpecVm? CoinPackage { get; set; } = new();
 
     // --- Display properties ---
     public bool ShowDetails { get; set; }

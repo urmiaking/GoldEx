@@ -28,10 +28,14 @@
             <col />
             <col />
             <col />
+            <col />
+            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
             <MudTh>عنوان</MudTh>
+            <MudTh>نوع سکه</MudTh>
+            <MudTh>وزن</MudTh>
             <MudTh>تعداد</MudTh>
             <MudTh>نرخ واحد</MudTh>
             <MudTh>سود</MudTh>
@@ -40,7 +44,9 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
-            <MudTd DataLabel="عنوان">@context.Coin.Title</MudTd>
+            <MudTd DataLabel="عنوان">@context.Coin?.Title</MudTd>
+            <MudTd DataLabel="نوع سکه">@($"{context.CoinMintType.GetDisplayName()} ({context.CoinPackageType.GetDisplayName()})")</MudTd>
+            <MudTd DataLabel="وزن">@GetWeight(context)</MudTd>
             <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="سود">@context.ProfitAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>

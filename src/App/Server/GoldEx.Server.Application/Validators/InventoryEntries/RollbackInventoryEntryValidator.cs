@@ -50,8 +50,8 @@ internal class RollbackInventoryEntryValidator : AbstractValidator<InventoryEntr
             .ToList();
 
         var coinIds = inventoryEntry.InventoryStocks
-            .Where(x => x.CoinId.HasValue)
-            .Select(x => x.CoinId!.Value)
+            .Where(x => x.CoinInstanceId.HasValue)
+            .Select(x => x.CoinInstanceId!.Value)
             .Distinct()
             .ToList();
 
@@ -86,9 +86,9 @@ internal class RollbackInventoryEntryValidator : AbstractValidator<InventoryEntr
             {
                 productStocks.TryGetValue(inventoryStock.ProductId.Value, out currentStock);
             }
-            else if (inventoryStock.CoinId.HasValue)
+            else if (inventoryStock.CoinInstanceId.HasValue)
             {
-                coinStocks.TryGetValue(inventoryStock.CoinId.Value, out currentStock);
+                coinStocks.TryGetValue(inventoryStock.CoinInstanceId.Value, out currentStock);
             }
             else if (inventoryStock.CurrencyId.HasValue)
             {

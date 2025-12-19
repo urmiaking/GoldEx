@@ -1,5 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -17,8 +17,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
     public Product? Product { get; private set; }
     public ProductId? ProductId { get; private set; }
 
-    public Coin? Coin { get; private set; }
-    public CoinId? CoinId { get; private set; }
+    public CoinInstance? CoinInstance { get; private set; }
+    public CoinInstanceId? CoinInstanceId { get; private set; }
 
     public PriceUnit? Currency { get; private set; }
     public PriceUnitId? CurrencyId { get; private set; }
@@ -93,7 +93,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
     }
 
     public static InventoryStock CreateCoin(
-        CoinId coinId,
+        CoinInstanceId coinInstanceId,
         int changeAmount,
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
@@ -101,12 +101,12 @@ public class InventoryStock : EntityBase<InventoryStockId>
         InventoryEntryId? inventoryEntryId = null,
         InventoryExitId? inventoryExitId = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
         return new InventoryStock
         {
             Id = new InventoryStockId(Guid.NewGuid()),
-            CoinId = coinId,
+            CoinInstanceId = coinInstanceId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
             InvoiceId = invoiceId,
@@ -124,7 +124,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
         DateTime? postingDate = null,
         InventoryEntryId? inventoryEntryId = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
         return new InventoryStock
         {
@@ -149,7 +149,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
         InventoryEntryId? inventoryEntryId = null)
     {
         ArgumentNullException.ThrowIfNull(moltenGoldDetail);
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
         return new InventoryStock
         {
@@ -171,7 +171,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
         InventoryExitId inventoryExitId,
         DateTime? postingDate = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
         return new InventoryStock
         {
@@ -185,17 +185,17 @@ public class InventoryStock : EntityBase<InventoryStockId>
     }
 
     public static InventoryStock CreateCoinExit(
-        CoinId coinId,
+        CoinInstanceId coinInstanceId,
         int changeAmount,
         InventoryExitId inventoryExitId,
         DateTime? postingDate = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
         return new InventoryStock
         {
             Id = new InventoryStockId(Guid.NewGuid()),
-            CoinId = coinId,
+            CoinInstanceId = coinInstanceId,
             ChangeAmount = changeAmount,
             ActionType = WarehouseActionType.Out,
             InventoryExitId = inventoryExitId,

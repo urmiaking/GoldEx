@@ -43,7 +43,7 @@ internal class ReportingService(
                 .ThenInclude(x => x.LedgerAccount!)
                     .ThenInclude(x => x.Customer)
             .Include(x => x.CoinItems)
-                .ThenInclude(x => x.Coin)
+                .ThenInclude(x => x.CoinInstance)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
             .Include(x => x.PriceUnit)

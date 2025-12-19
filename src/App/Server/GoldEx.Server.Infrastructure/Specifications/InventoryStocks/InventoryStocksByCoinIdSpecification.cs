@@ -8,6 +8,6 @@ public class InventoryStocksByCoinIdSpecification : SpecificationBase<InventoryS
 {
     public InventoryStocksByCoinIdSpecification(CoinId coinId)
     {
-        AddCriteria(x => x.CoinId == coinId);
+        AddCriteria(x => x.CoinInstanceId == coinId);
     }
 }
