@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Coins;
@@ -56,7 +57,7 @@ internal class CreateInventoryExitRequestValidator : AbstractValidator<CreateInv
 
     private async Task<bool> NotResultInNegativeCoinInventory(CreateCoinItemExitRequest item, CancellationToken cancellationToken = default)
     {
-        var currentStock = await _inventoryStockRepository.GetQuantityAsync(new CoinId(item.CoinId), cancellationToken);
+        var currentStock = await _inventoryStockRepository.GetQuantityAsync((CoinInstanceId)new CoinId(item.CoinId), cancellationToken);
         return currentStock >= item.Quantity;
     }
 }

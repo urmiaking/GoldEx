@@ -20,7 +20,7 @@ public class InventoryStocksForTraceSpecification : SpecificationBase<InventoryS
         var take = filter.Take ?? 100;
 
         AddInclude(x => x.Currency!);
-        AddInclude(x => x.Coin!);
+        AddInclude(x => x.CoinInstance!);
         AddInclude(x => x.Product!);
         AddInclude(x => x.MeltingBatch!);
         AddInclude(x => x.Invoice!.Customer!);
@@ -33,7 +33,7 @@ public class InventoryStocksForTraceSpecification : SpecificationBase<InventoryS
                 AddCriteria(x => x.ProductId == new ProductId(itemId));
                 break;
             case ItemType.Coin:
-                AddCriteria(x => x.CoinId == new CoinId(itemId));
+                AddCriteria(x => x.CoinInstanceId == new CoinId(itemId));
                 break;
             case ItemType.Currency:
                 AddCriteria(x => x.CurrencyId == new PriceUnitId(itemId));

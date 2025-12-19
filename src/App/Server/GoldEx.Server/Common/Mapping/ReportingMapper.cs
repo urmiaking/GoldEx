@@ -150,7 +150,7 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.TotalPrice, src => 
                 src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title))
             .Map(dest => dest.CoinTitle, src => 
-                src.Coin != null ? src.Coin.Title : string.Empty);
+                src.CoinInstance != null ? src.CoinInstance.Title : string.Empty);
 
         config.NewConfig<InvoiceCurrencyItem, GetInvoiceCurrencyItemReportResponse>()
             .Map(dest => dest.Amount, src => src.Amount.ToCurrencyReportFormat(null))

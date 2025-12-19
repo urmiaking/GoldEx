@@ -95,6 +95,8 @@ public partial class InventoryItemSelector
                         coin.Title!,
                         coin.Weight ?? 0,
                         coin.Fineness ?? 0,
+                        coin.StartMintYear?.Year ?? 0,
+                        coin.EndMintYear?.Year,
                         coin.IsActive,
                         coin.PriceId!.Value),
                     Quantity = 1,

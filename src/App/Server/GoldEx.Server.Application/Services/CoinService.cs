@@ -142,6 +142,8 @@ internal class CoinService(ICoinRepository repository,
                 var coin = Coin.Create(request.Title,
                     request.Weight,
                     request.Fineness,
+                    request.StartMintYear,
+                    request.EndMintYear,
                     ledgerAccountId,
                     request.PriceId.HasValue
                         ? new PriceId(request.PriceId.Value)
@@ -176,6 +178,7 @@ internal class CoinService(ICoinRepository repository,
                 coin.SetPriceId(request.PriceId.HasValue ? new PriceId(request.PriceId.Value) : null);
                 coin.SetWeight(request.Weight);
                 coin.SetFineness(request.Fineness);
+                coin.SetMintYears(request.StartMintYear, request.EndMintYear);
 
                 await repository.UpdateAsync(coin, cancellationToken);
 

@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.InventoryExits;
@@ -68,7 +69,7 @@ internal class InventoryStockService(
     private static (ItemType type, Guid id) KeyOf(InventoryStock s)
     {
         if (s.ProductId is { } p) return (ItemType.Product, p.Value);
-        if (s.CoinId is { } c) return (ItemType.Coin, c.Value);
+        if (s.CoinInstanceId is { } c) return (ItemType.Coin, c.Value);
         if (s.CurrencyId is { } u) return (ItemType.Currency, u.Value);
         throw new InvalidOperationException("Unknown inventory stock item type.");
     }
@@ -111,7 +112,7 @@ internal class InventoryStockService(
                 postingDate)));
 
         // Coins
-        list.AddRange(invoice.CoinItems.Select(ci => InventoryStock.CreateCoin(ci.CoinId,
+        list.AddRange(invoice.CoinItems.Select(ci => InventoryStock.CreateCoin(ci.CoinInstanceId,
             ci.Quantity,
             action,
             invoice.Id,
@@ -146,7 +147,7 @@ internal class InventoryStockService(
 
             if (s.ProductId is { } p)
                 rev = InventoryStock.CreateProduct(p, s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
-            else if (s.CoinId is { } c)
+            else if (s.CoinInstanceId is { } c)
                 rev = InventoryStock.CreateCoin(c, (int)s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
             else if (s.CurrencyId is { } u)
                 rev = InventoryStock.CreateCurrency(u, s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
@@ -463,7 +464,7 @@ internal class InventoryStockService(
         switch (itemType)
         {
             case ItemType.Coin:
-                amount = await repository.GetQuantityAsync(new CoinId(itemId), cancellationToken);
+                amount = await repository.GetQuantityAsync((CoinInstanceId)new CoinId(itemId), cancellationToken);
                 break;
             case ItemType.Currency:
                 amount = await repository.GetQuantityAsync(new PriceUnitId(itemId), cancellationToken);

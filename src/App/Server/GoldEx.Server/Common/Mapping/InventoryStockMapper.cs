@@ -83,9 +83,9 @@ internal class InventoryStockMapper : IRegister
             return $"{prefix}{action} {src.ChangeAmount.ToWeightFormat(src.Product.GoldUnitType)} {src.Product.Name} {extraInfo}";
         }
 
-        if (src.Coin != null)
+        if (src.CoinInstance != null)
         {
-            return $"{prefix}{action} {src.ChangeAmount:G29} عدد {src.Coin.Title} {extraInfo}";
+            return $"{prefix}{action} {src.ChangeAmount:G29} عدد {src.CoinInstance.Title} {extraInfo}";
         }
 
         if (src.Currency != null)

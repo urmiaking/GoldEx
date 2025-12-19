@@ -528,9 +528,9 @@ internal class AccountingTransactionService(
                         foreach (var coinItem in invoice.CoinItems)
                         {
                             var coin = await coinRepository
-                                .Get(new CoinsByIdSpecification(coinItem.CoinId))
+                                .Get(new CoinsByIdSpecification(coinItem.CoinInstanceId))
                                 .FirstOrDefaultAsync(cancellationToken)
-                                       ?? throw new NotFoundException($"Coin {coinItem.CoinId.Value} not found.");
+                                       ?? throw new NotFoundException($"Coin {coinItem.CoinInstanceId.Value} not found.");
 
                             var destLedger = await ledgerAccountRepository
                                 .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
@@ -1881,12 +1881,12 @@ internal class AccountingTransactionService(
                 transactions.Add(debit);
                 transactions.Add(credit);
             }
-            else if (inventoryStock.CoinId.HasValue)
+            else if (inventoryStock.CoinInstanceId.HasValue)
             {
                 var coin = await coinRepository
-                    .Get(new CoinsByIdSpecification(inventoryStock.CoinId.Value))
+                    .Get(new CoinsByIdSpecification(inventoryStock.CoinInstanceId.Value))
                     .FirstOrDefaultAsync(cancellationToken)
-                    ?? throw new NotFoundException($"Coin {inventoryStock.CoinId.Value.Value} not found.");
+                    ?? throw new NotFoundException($"Coin {inventoryStock.CoinInstanceId.Value.Value} not found.");
 
                 var coinInventoryLedger = await ledgerAccountRepository
                     .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))

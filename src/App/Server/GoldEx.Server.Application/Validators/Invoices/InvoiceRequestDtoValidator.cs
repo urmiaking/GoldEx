@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -263,7 +264,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             {
                 var coinId = new CoinId(item.CoinId);
                 var currentStock =
-                    await _inventoryStockRepository.GetQuantityAsync(coinId, cancellationToken);
+                    await _inventoryStockRepository.GetQuantityAsync((CoinInstanceId)coinId, cancellationToken);
 
                 if (currentStock < item.Quantity)
                     return false;
@@ -330,7 +331,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         // COINS
         // ----------------------------
         var coinIds = originalInvoice.CoinItems
-            .Select(x => x.CoinId)
+            .Select(x => x.CoinInstanceId)
             .Distinct()
             .ToList();
 
@@ -342,7 +343,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             var currentStock = coinStocks.GetValueOrDefault(coinId, 0m);
 
             var oldQuantity = originalInvoice.CoinItems
-                .Where(x => x.CoinId == coinId)
+                .Where(x => x.CoinInstanceId == coinId)
                 .Sum(x => x.Quantity);
 
             var newQuantity = request.InvoiceCoinItems
