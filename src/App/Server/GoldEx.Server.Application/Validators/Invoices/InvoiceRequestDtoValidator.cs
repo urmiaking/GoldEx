@@ -254,7 +254,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
                 var currentStock =
                     await _inventoryStockRepository.GetQuantityAsync(productId, cancellationToken);
 
-                if (currentStock < item.Quantity)
+                if (currentStock < item.TotalWeight)
                     return false;
             }
 
