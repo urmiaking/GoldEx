@@ -7,7 +7,7 @@ public class CoinItemValidator : AbstractValidator<CoinItemVm>
 {
     public CoinItemValidator()
     {
-        RuleFor(c => c.Coin)
+        RuleFor(c => c.CoinInstance)
             .NotNull().WithMessage("نوع سکه الزامی است");
 
         RuleFor(c => c.Quantity)

@@ -15,8 +15,9 @@ public sealed class BarcodeReservationsByBarcodeSpecification(string barcode) : 
 /// </summary>
 public sealed class BarcodeActiveReservationByBarcodeSpecification : SpecificationBase<BarcodeReservation>
 {
-    public BarcodeActiveReservationByBarcodeSpecification(string barcode)
+    public BarcodeActiveReservationByBarcodeSpecification(BarcodeType barcodeType, string barcode)
     {
+        AddCriteria(x => x.BarcodeType == barcodeType);
         AddCriteria(x => x.Barcode == barcode);
         AddCriteria(x => x.Status == BarcodeReservationStatus.Reserved);
         AddCriteria(x => x.ExpiresAt > DateTime.Now);
@@ -63,6 +64,26 @@ public sealed class BarcodeLatestActiveOrCommittedByPrefixSpecification : Specif
     public BarcodeLatestActiveOrCommittedByPrefixSpecification(string prefix)
     {
         AddCriteria(x => x.Prefix == prefix);
+        AddCriteria(x =>
+            (x.Status == BarcodeReservationStatus.Reserved && x.ExpiresAt > DateTime.Now) ||
+            x.Status == BarcodeReservationStatus.Committed);
+
+        ApplyOrderByDescending(x => x.Barcode);
+        ApplyPaging(0, 1);
+    }
+}
+
+/// <summary>
+/// آخرین رزرو فعال یا Commit شده برای یک نوع بارکد (مثلاً Coin)
+/// برای جلوگیری از صدور بارکد تکراری
+/// </summary>
+public sealed class BarcodeLatestActiveOrCommittedByTypeSpecification
+    : SpecificationBase<BarcodeReservation>
+{
+    public BarcodeLatestActiveOrCommittedByTypeSpecification(BarcodeType barcodeType)
+    {
+        AddCriteria(x => x.BarcodeType == barcodeType);
+
         AddCriteria(x =>
             (x.Status == BarcodeReservationStatus.Reserved && x.ExpiresAt > DateTime.Now) ||
             x.Status == BarcodeReservationStatus.Committed);

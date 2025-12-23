@@ -34,7 +34,7 @@
                     }
                 </MudSelect>
             </MudItem>
-            @if (UnpaidPriceUnit is not null && MainPriceUnit is not null)
+            @if (UnpaidPriceUnit is not null && MainPriceUnit is not null && UnpaidPriceUnit.Id != MainPriceUnit.Id)
             {
                 <MudItem xs="12">
                     <MudNumericField T="decimal?"

@@ -408,7 +408,7 @@ internal class InventoryStockRepository(
                         dbContext.Set<CoinInstance>()
                             .AsNoTracking()
                             .Include(ci => ci.Coin)
-                            .Include(ci => ci.CoinInstancePackage),
+                            .Include(ci => ci.CoinInstancePackage!.Issuer),
                         g => g.CoinInstanceId,
                         ci => ci.Id,
                         (g, ci) => new

@@ -74,9 +74,9 @@ public static class TransactionDescriptionBuilder
         return $"ورود ارز '{currencyTitle}' به موجودی طبق فاکتور خرید شماره {invoiceNumber}";
     }
 
-    public static string ForPurchaseCoinEntry(long invoiceNumber, string coinTitle)
+    public static string ForPurchaseCoinEntry(long invoiceNumber)
     {
-        return $"ورود {coinTitle} به موجودی طبق فاکتور خرید شماره {invoiceNumber}";
+        return $"ورود سکه به موجودی طبق فاکتور خرید شماره {invoiceNumber}";
     }
 
     /// <summary>

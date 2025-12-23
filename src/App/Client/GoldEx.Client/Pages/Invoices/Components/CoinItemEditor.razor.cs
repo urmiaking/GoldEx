@@ -31,8 +31,8 @@ public partial class CoinItemEditor
     protected override async Task OnParametersSetAsync()
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (Model.Coin != null)
-            await LoadMaxAmountAsync(Model.Coin);
+        if (Model.CoinInstance.Coin != null)
+            await LoadMaxAmountAsync(Model.CoinInstance.Coin);
 
         await LoadCoinAsync();
         await base.OnParametersSetAsync();
@@ -78,14 +78,15 @@ public partial class CoinItemEditor
         if (coin is null)
             return;
 
-        Model.Coin = coin;
-        Model.Weight = coin.Weight;
-        Model.Fineness = coin.Fineness;
+        Model.CoinInstance.Coin = coin;
+        Model.CoinInstance.Weight = coin.Weight;
+        Model.CoinInstance.Fineness = coin.Fineness;
 
-        if (Model.MintYear.HasValue)
+        if (Model.CoinInstance.MintYear.HasValue)
         {
-            if (Model.MintYear.Value.Year < coin.StartMintYear || (coin.EndMintYear.HasValue && Model.MintYear.Value.Year > coin.EndMintYear.Value))
-                Model.MintYear = null;
+            if (Model.CoinInstance.MintYear.Value.Year < coin.StartMintYear ||
+                (coin.EndMintYear.HasValue && Model.CoinInstance.MintYear.Value.Year > coin.EndMintYear.Value))
+                Model.CoinInstance.MintYear = null;
         }
 
         if (PriceUnit is null)
@@ -116,12 +117,12 @@ public partial class CoinItemEditor
 
     private void OnCoinMintTypeChanged(CoinMintType coinMintType)
     {
-        Model.CoinMintType = coinMintType;
+        Model.CoinInstance.MintType = coinMintType;
 
-        if (Model.Coin is not null && coinMintType is CoinMintType.Banking)
+        if (coinMintType is CoinMintType.Banking)
         {
-            Model.Weight = Model.Coin.Weight;
-            Model.Fineness = Model.Coin.Fineness;
+            Model.CoinInstance.Weight = Model.CoinInstance.Weight;
+            Model.CoinInstance.Fineness = Model.CoinInstance.Fineness;
         }
     }
 
@@ -145,7 +146,7 @@ public partial class CoinItemEditor
 
     private async Task OnAddCustomer()
     {
-        if (Model.CoinPackage is null)
+        if (Model.CoinInstance.CoinPackage is null)
             return;
 
         DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
@@ -162,7 +163,7 @@ public partial class CoinItemEditor
 
         if (result is { Canceled: false, Data: CustomerVm customerVm })
         {
-            Model.CoinPackage.Issuer = customerVm;
+            Model.CoinInstance.CoinPackage.Issuer = customerVm;
             StateHasChanged();
         }
     }
@@ -177,27 +178,33 @@ public partial class CoinItemEditor
 
     private DateTime? GetMinDate()
     {
-        if (Model.Coin is null || Model.Coin.StartMintYear is 0)
+        if (Model.CoinInstance.Coin is null)
             return null;
 
-        return new DateTime(Model.Coin.StartMintYear, 1, 1);
+        if (Model.CoinInstance.Coin.StartMintYear is 0)
+            return null;
+
+        return new DateTime(Model.CoinInstance.Coin.StartMintYear, 1, 1);
     }
 
     private DateTime? GetMaxDate()
     {
-        if (Model.Coin is null || Model.Coin.EndMintYear is null or 0)
+        if (Model.CoinInstance.Coin is null)
+            return null;
+
+        if (Model.CoinInstance.Coin.EndMintYear is null or 0)
             return DateTime.Now;
 
-        return new DateTime(Model.Coin.EndMintYear.Value, 12, 31);
+        return new DateTime(Model.CoinInstance.Coin.EndMintYear.Value, 12, 31);
     }
 
     private void OnCoinPackageTypeChanged(CoinPackageType packageType)
     {
-        Model.CoinPackageType = packageType;
+        Model.CoinInstance.PackageType = packageType;
 
-        if (packageType is CoinPackageType.VacuumSealed && Model.CoinPackage is null)
-            Model.CoinPackage = new CoinPackageSpecVm();
-        else 
-            Model.CoinPackage = null;
+        if (packageType is CoinPackageType.VacuumSealed && Model.CoinInstance.CoinPackage is null)
+            Model.CoinInstance.CoinPackage = new CoinPackageSpecVm();
+        else
+            Model.CoinInstance.CoinPackage = null;
     }
 }

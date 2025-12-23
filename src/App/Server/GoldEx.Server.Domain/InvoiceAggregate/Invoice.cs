@@ -187,10 +187,13 @@ public class Invoice : EntityBase<InvoiceId>
         CoinInstanceId coinInstanceId,
         decimal unitPrice,
         int quantity,
-        decimal profitPercent)
+        decimal profitPercent,
+        bool isInstant)
     {
-        _coins.Add(InvoiceCoinItem.Create(id, coinInstanceId, unitPrice, quantity, profitPercent));
+        _coins.Add(InvoiceCoinItem.Create(id, coinInstanceId, unitPrice, quantity, profitPercent, isInstant));
     }
+
+    public void RemoveCoinItem(InvoiceCoinItem coinItem) => _coins.Remove(coinItem);
 
     public void ClearCoinItems() => _coins.Clear();
 

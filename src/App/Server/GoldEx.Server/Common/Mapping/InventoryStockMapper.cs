@@ -20,6 +20,7 @@ internal class InventoryStockMapper : IRegister
         config.NewConfig<InventorySummaryData, GetInventoryStockResponse>()
             .Map(dest => dest.CurrentAmount, src => src.CurrentAmount)
             .Map(dest => dest.SoldAmount, src => src.SoldAmount)
+            .Map(dest => dest.Coin, src => src.CoinInstance)
             .Map(dest => dest.DateTime, src => src.DateTime);
 
         config.NewConfig<InventoryWeightChartData, GetInventoryWeightChartResponse>();
@@ -85,7 +86,7 @@ internal class InventoryStockMapper : IRegister
 
         if (src.CoinInstance != null)
         {
-            return $"{prefix}{action} {src.ChangeAmount:G29} عدد {src.CoinInstance.Title} {extraInfo}";
+            return $"{prefix}{action} {src.ChangeAmount:G29} عدد {src.CoinInstance.Coin?.Title} {extraInfo}";
         }
 
         if (src.Currency != null)

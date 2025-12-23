@@ -295,14 +295,14 @@ internal class ProductService(
         {
             // Generate directly (standalone product creation scenario)
             var categoryId = request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : (ProductCategoryId?)null;
-            var barcode = await barcodeGenerator.GenerateNextAsync(request.ProductType, categoryId, cancellationToken);
+            var barcode = await barcodeGenerator.GenerateNextAsync(BarcodeType.Product, request.ProductType, categoryId, cancellationToken);
             product.SetBarcode(barcode);
         }
         else
         {
             // Attempt to commit reservation. If not found, validate uniqueness.
-            await barcodeReservationService.CommitAsync(request.Barcode, invoiceId?.Value, cancellationToken);
-            await barcodeGenerator.ValidateUniquenessAsync(request.Barcode, cancellationToken);
+            await barcodeReservationService.CommitAsync(BarcodeType.Product, request.Barcode, invoiceId?.Value, cancellationToken);
+            await barcodeGenerator.ValidateUniquenessAsync(BarcodeType.Product, request.Barcode, cancellationToken);
             product.SetBarcode(request.Barcode);
         }
 
@@ -367,7 +367,7 @@ internal class ProductService(
                     null,
                     null);
 
-                var barcode = await barcodeGenerator.GenerateNextAsync(ProductType.Gold, null, cancellationToken);
+                var barcode = await barcodeGenerator.GenerateNextAsync(BarcodeType.Product, ProductType.Gold, null, cancellationToken);
                 product.SetBarcode(barcode);
 
                 await repository.CreateAsync(product, cancellationToken);
@@ -378,7 +378,7 @@ internal class ProductService(
             {
                 var product = Product.CreateBrokenProduct(dto.Description, dto.Weight, dto.Fineness, dto.UnitType);
 
-                var barcode = await barcodeGenerator.GenerateNextAsync(dto.ProductType, null, cancellationToken);
+                var barcode = await barcodeGenerator.GenerateNextAsync(BarcodeType.Product, dto.ProductType, null, cancellationToken);
                 product.SetBarcode(barcode);
 
                 await repository.CreateAsync(product, cancellationToken);

@@ -225,7 +225,7 @@ public partial class ProductList
         if (!string.IsNullOrWhiteSpace(item.Product.Barcode))
             return;
 
-        var request = new IssueNextBarcodeRequest(item.Product.ProductType, item.Product.ProductCategoryId, null);
+        var request = new IssueNextBarcodeRequest(BarcodeType.Product, item.Product.ProductType, item.Product.ProductCategoryId, null);
 
         await SendRequestAsync<IBarcodeReservationService, IssueNextBarcodeResponse>(
             action: (svc, ct) => svc.IssueNextAsync(request, ct),
@@ -244,7 +244,7 @@ public partial class ProductList
             return;
 
         await SendRequestAsync<IBarcodeReservationService>(
-            action: (svc, ct) => svc.ReleaseAsync(item.Product.Barcode, ct));
+            action: (svc, ct) => svc.ReleaseAsync(BarcodeType.Product, item.Product.Barcode, ct));
     }
 
     private async Task EditItem(ProductItemVm context)

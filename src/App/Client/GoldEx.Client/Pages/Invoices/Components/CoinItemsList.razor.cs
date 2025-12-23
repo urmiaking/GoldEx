@@ -36,18 +36,32 @@ public partial class CoinItemsList
     public EventCallback<CoinItemVm> OnEditItem { get; set; }
 
     [Parameter]
+    public EventCallback<CoinItemVm> OnPrintBarcode { get; set; }
+
+    [Parameter]
     public EventCallback<CoinItemVm> OnRemoveItem { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnBarcodeChanged { get; set; }
 
     private string ListTitle =>
         InvoiceType is InvoiceType.Sell
             ? "فهرست سکه های فروخته‌شده"
             : "فهرست سکه های خریداری‌شده";
 
+    private string? _barcode;
+
+    private Task OnBarcodeCleared()
+    {
+        _barcode = null;
+        return OnBarcodeChanged.InvokeAsync(null);
+    }
+
     private string GetWeight(CoinItemVm context)
     {
-        var weight = context.Weight?.ToWeightFormat(GoldUnitType.Gram);
+        var weight = context.CoinInstance.Weight?.ToWeightFormat(GoldUnitType.Gram);
 
-        var vacuumedWeight = context.CoinPackage?.VacuumedWeight?.ToWeightFormat(GoldUnitType.Gram);
+        var vacuumedWeight = context.CoinInstance.CoinPackage?.VacuumedWeight?.ToWeightFormat(GoldUnitType.Gram);
 
         return vacuumedWeight is not null
             ? $"{weight} ({vacuumedWeight} با وکیوم)"

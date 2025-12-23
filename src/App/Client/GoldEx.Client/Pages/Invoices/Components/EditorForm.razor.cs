@@ -5,6 +5,7 @@ using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.BarcodeReservations;
+using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Prices;
@@ -40,7 +41,6 @@ public partial class EditorForm
     private GetSettingResponse? _setting;
     private GetPriceResponse? _gramPrice;
     private MudForm _form = default!;
-    private ElementReference _popoverAnchor;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private List<GetCustomerResponse> _customers = [];
     private bool _discountMenuOpen;
@@ -156,7 +156,7 @@ public partial class EditorForm
             _model.InvoiceType = InvoiceType.Sell;
             await OnInvoiceTypeChanged(InvoiceType.Sell);
 
-            await OnBarcodeChanged(Barcode);
+            await OnProductBarcodeChanged(Barcode);
             StateHasChanged();
         }
     }
@@ -284,9 +284,9 @@ public partial class EditorForm
 
     #endregion
 
-    #region Barcode
+    #region ProductItem
 
-    private async Task OnBarcodeChanged(string barcode)
+    private async Task OnProductBarcodeChanged(string barcode)
     {
         if (string.IsNullOrWhiteSpace(barcode))
             return;
@@ -348,10 +348,6 @@ public partial class EditorForm
             },
             cancelPrevious: true);
     }
-
-    #endregion
-
-    #region ProductItem
 
     private async Task OnOpenProductSelector()
     {
@@ -416,7 +412,7 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: ProductItemVm productItem })
         {
             // Reserve and assign barcode for brand-new items
-            await AssignReservedBarcodeIfNeeded(productItem);
+            await AssignReservedBarcodeIfNeeded(BarcodeType.Product, productItem, null);
 
             productItem.RecalculateAmounts();
             _model.AddProductItem(productItem);
@@ -443,7 +439,7 @@ public partial class EditorForm
             productItemVm.UpdateFrom(resultItem);
 
             // Reserve and assign barcode if needed
-            await AssignReservedBarcodeIfNeeded(productItemVm);
+            await AssignReservedBarcodeIfNeeded(BarcodeType.Product, productItemVm, null);
 
             StateHasChanged();
         }
@@ -460,48 +456,191 @@ public partial class EditorForm
             return;
 
         // Release reservation if this was a brand-new item with a reserved barcode
-        await ReleaseReservedBarcodeIfNeeded(productItem);
+        await ReleaseReservedBarcodeIfNeeded(BarcodeType.Product, productItem, null);
 
         _model.RemoveProductItem(productItem);
     }
 
-    private async Task AssignReservedBarcodeIfNeeded(ProductItemVm item)
+    private async Task AssignReservedBarcodeIfNeeded(BarcodeType barcodeType, ProductItemVm? productItem, CoinItemVm? coinItem)
     {
-        // Only for brand-new products (no Id) and missing barcode
-        if (item.Product.Id.HasValue)
-            return;
+        switch (barcodeType)
+        {
+            case BarcodeType.Product:
+                {
+                    if (productItem is null)
+                        return;
 
-        if (!string.IsNullOrWhiteSpace(item.Product.Barcode))
-            return;
+                    // Only for brand-new products
+                    if (productItem.Product.Id.HasValue)
+                        return;
 
-        var request = new IssueNextBarcodeRequest(item.Product.ProductType, item.Product.ProductCategoryId, _model.InvoiceId);
+                    if (!string.IsNullOrWhiteSpace(productItem.Product.Barcode))
+                        return;
 
-        // Issue a reservation based on product type and optional category
-        await SendRequestAsync<IBarcodeReservationService, IssueNextBarcodeResponse>(
-            action: (svc, ct) => svc.IssueNextAsync(request, ct),
-            afterSend: resp =>
-            {
-                item.Product.Barcode = resp.Barcode;
-            });
+                    var request = new IssueNextBarcodeRequest(
+                        BarcodeType.Product,
+                        productItem.Product.ProductType,
+                        productItem.Product.ProductCategoryId,
+                        _model.InvoiceId);
+
+                    await SendRequestAsync<IBarcodeReservationService, IssueNextBarcodeResponse>(
+                        action: (svc, ct) => svc.IssueNextAsync(request, ct),
+                        afterSend: resp =>
+                        {
+                            productItem.Product.Barcode = resp.Barcode;
+                        });
+
+                    break;
+                }
+
+            case BarcodeType.Coin:
+                {
+                    if (coinItem is null)
+                        return;
+
+                    // Only for instant coins (new CoinInstance)
+                    if (coinItem.CoinInstance.Id.HasValue)
+                        return;
+
+                    if (!string.IsNullOrWhiteSpace(coinItem.CoinInstance.Barcode))
+                        return;
+
+                    var request = new IssueNextBarcodeRequest(
+                        BarcodeType.Coin,
+                        null,
+                        null,
+                        _model.InvoiceId);
+
+                    await SendRequestAsync<IBarcodeReservationService, IssueNextBarcodeResponse>(
+                        action: (svc, ct) => svc.IssueNextAsync(request, ct),
+                        afterSend: resp =>
+                        {
+                            coinItem.CoinInstance.Barcode = resp.Barcode;
+                        });
+
+                    break;
+                }
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(barcodeType), barcodeType, null);
+        }
     }
 
-    // Helper: release reservation if the item is removed before submit
-    private async Task ReleaseReservedBarcodeIfNeeded(ProductItemVm item)
+    private async Task ReleaseReservedBarcodeIfNeeded(BarcodeType barcodeType, ProductItemVm? productItem, CoinItemVm? coinItem)
     {
-        // Only release if it's a new product (no Id) and has a reserved barcode
-        if (item.Product.Id.HasValue)
-            return;
+        switch (barcodeType)
+        {
+            case BarcodeType.Product:
+                {
+                    if (productItem is null)
+                        return;
 
-        if (string.IsNullOrWhiteSpace(item.Product.Barcode))
-            return;
+                    // Only for brand-new products
+                    if (productItem.Product.Id.HasValue)
+                        return;
 
-        await SendRequestAsync<IBarcodeReservationService>(
-            action: (svc, ct) => svc.ReleaseAsync(item.Product.Barcode, ct));
+                    if (string.IsNullOrWhiteSpace(productItem.Product.Barcode))
+                        return;
+
+                    await SendRequestAsync<IBarcodeReservationService>(
+                        action: (svc, ct) =>
+                            svc.ReleaseAsync(BarcodeType.Product, productItem.Product.Barcode, ct));
+
+                    break;
+                }
+
+            case BarcodeType.Coin:
+                {
+                    if (coinItem is null)
+                        return;
+
+                    // Only for instant coins (new CoinInstance)
+                    if (coinItem.CoinInstance.Id.HasValue)
+                        return;
+
+                    if (string.IsNullOrWhiteSpace(coinItem.CoinInstance.Barcode))
+                        return;
+
+                    await SendRequestAsync<IBarcodeReservationService>(
+                        action: (svc, ct) =>
+                            svc.ReleaseAsync(BarcodeType.Coin, coinItem.CoinInstance.Barcode, ct));
+
+                    break;
+                }
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(barcodeType), barcodeType, null);
+        }
+    }
+
+    private async Task OnPrintProductBarcode(ProductItemVm item)
+    {
+        if (_barcodeSettings is null)
+        {
+            AddErrorToast("تنظیمات چاپ بارکد لود نشده است");
+            return;
+        }
+
+        UnitType? wageUnitType = null;
+
+        if (item.Product.WagePriceUnitId != null)
+        {
+            wageUnitType = await GetPriceUnitAsync(item.Product.WagePriceUnitId.Value);
+        }
+
+        var data = new
+        {
+            barcode = item.Product.Barcode ?? "",
+            productName = item.Product.Name ?? "",
+            weight = $"W: {item.TotalWeight:G29}{(item.Product.GoldUnitType == GoldUnitType.Gram ? "G" : "M")}",
+            wage = "F: " + item.Product.WageType switch
+            {
+                WageType.Fixed => $"{item.Product.Wage?.ToCurrencyFormat()} {wageUnitType?.ToString()}",
+                WageType.Percent => $"{item.Product.Wage:G29}%",
+                _ => "---"
+            }
+        };
+
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
     }
 
     #endregion
 
     #region CoinItem
+
+    private async Task OnCoinBarcodeChanged(string barcode)
+    {
+        if (string.IsNullOrEmpty(barcode))
+            return;
+
+        await SendRequestAsync<ICoinInstanceService, GetCoinInstanceResponse?>(
+            action: (s, ct) => s.GetAsync(barcode, ct),
+            afterSend: async response =>
+            {
+                if (response is null)
+                    return;
+
+                var unitPrice = await GetCoinUnitPriceAsync(response.Coin.Id);
+
+                _model.CoinItems.Add(new CoinItemVm
+                {
+                    CoinInstance = CoinInstanceVm.CreateFrom(response),
+                    Quantity = 1,
+                    UnitPrice = unitPrice
+                });
+            });
+    }
+
+    private async Task<decimal> GetCoinUnitPriceAsync(Guid coinId)
+    {
+        if (_model.InvoicePriceUnit is null)
+            return 0;
+
+        var result = await SendRequestAsync<ICoinService, GetExchangeRateResponse?>(
+            action: (s, ct) => s.GetPriceAsync(coinId, _model.InvoicePriceUnit.IsDefault ? null : _model.InvoicePriceUnit.Id, ct));
+
+        return result?.ExchangeRate ?? 0;
+    }
 
     private async Task OnOpenCoinSelector()
     {
@@ -513,7 +652,7 @@ public partial class EditorForm
             { x => x.ItemStatus, ItemStatus.Available }
         };
 
-        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب سکه از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Medium });
+        var dialog = await DialogService.ShowAsync<InventoryItemSelector>("انتخاب سکه از انبار", parameters, _dialogOptions with { MaxWidth = MaxWidth.Large });
 
         var result = await dialog.Result;
 
@@ -521,7 +660,7 @@ public partial class EditorForm
         {
             foreach (var item in coinItems)
             {
-                if (_model.CoinItems.All(x => x.Coin.Id != item.Coin.Id))
+                if (_model.CoinItems.All(x => x.CoinInstance.Id != item.CoinInstance.Id))
                 {
                     item.Index = _model.GetLastCoinIndexNumber() + 1;
                     _model.AddCoinItem(item);
@@ -533,10 +672,13 @@ public partial class EditorForm
 
     private async Task OnAddCoinItem()
     {
+        var model = new CoinItemVm { Quantity = 1, IsInstant = _model.InvoiceType is InvoiceType.Sell };
+
         var parameters = new DialogParameters<CoinItemEditor>
         {
             { x => x.PriceUnit, _model.InvoicePriceUnit },
-            { x => x.InvoiceType, _model.InvoiceType }
+            { x => x.InvoiceType, _model.InvoiceType },
+            { x => x.Model, model }
         };
 
         var dialog = await DialogService.ShowAsync<CoinItemEditor>("افزودن سکه جدید", parameters, _dialogOptions);
@@ -545,6 +687,8 @@ public partial class EditorForm
 
         if (result is { Canceled: false, Data: CoinItemVm coinItem })
         {
+            await AssignReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
+
             coinItem.RecalculateAmounts();
             _model.AddCoinItem(coinItem);
             StateHasChanged();
@@ -567,6 +711,7 @@ public partial class EditorForm
         if (result is { Canceled: false, Data: CoinItemVm coinItem })
         {
             coinItemVm.UpdateFrom(coinItem);
+            await AssignReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
             StateHasChanged();
         }
     }
@@ -575,13 +720,34 @@ public partial class EditorForm
     {
         var result = await DialogService.ShowMessageBox(
             "هشدار",
-            markupMessage: new MarkupString($"آیا برای حذف {coinItem.Coin.Title} اطمینان دارید؟ <br> <br> "),
+            markupMessage: new MarkupString($"آیا برای حذف {coinItem.CoinInstance.Coin?.Title} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
 
         if (result is null)
             return;
 
+        await ReleaseReservedBarcodeIfNeeded(BarcodeType.Coin, null, coinItem);
+
         _model.RemoveCoinItem(coinItem);
+    }
+
+    private async Task OnPrintCoinBarcode(CoinItemVm coinItem)
+    {
+        if (_barcodeSettings is null)
+        {
+            AddErrorToast("تنظیمات چاپ بارکد لود نشده است");
+            return;
+        }
+
+        var data = new
+        {
+            barcode = coinItem.CoinInstance.Barcode,
+            productName = coinItem.CoinInstance.Coin?.Title ?? "",
+            weight = "",
+            wage = ""
+        };
+
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
     }
 
     #endregion
@@ -728,6 +894,25 @@ public partial class EditorForm
         }
     }
 
+    private async Task OnPrintUsedBarcode(UsedProductVm item)
+    {
+        if (_barcodeSettings is null)
+        {
+            AddErrorToast("تنظیمات چاپ بارکد لود نشده است");
+            return;
+        }
+
+        var data = new
+        {
+            barcode = item.Barcode,
+            productName = item.Description ?? "",
+            weight = $"W:{item.Weight:G29}{(item.UnitType == GoldUnitType.Gram ? "g" : "m")}",
+            wage = "F:" + "---"
+        };
+
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
+    }
+
     #endregion
 
     #region Invoice
@@ -765,6 +950,38 @@ public partial class EditorForm
             {
                 item.WageExchangeRate = null;
             }
+        }
+
+        foreach (var coinItem in _model.CoinItems)
+        {
+            if (coinItem.CoinInstance.Coin != null)
+            {
+                coinItem.UnitPrice = await GetCoinUnitPriceAsync(coinItem.CoinInstance.Coin.Id);
+            }
+        }
+
+        foreach (var currencyItem in _model.CurrencyItems)
+        {
+            if (currencyItem.Currency.Id != priceUnit.Id)
+            {
+                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    action: (s, ct) =>
+                        s.GetExchangeRateAsync(currencyItem.Currency.Id, _model.InvoicePriceUnit.Id, ct),
+                    afterSend: response =>
+                    {
+                        currencyItem.UnitPrice = response.ExchangeRate ?? 0;
+                    });
+            }
+            else
+            {
+                currencyItem.UnitPrice = 1;
+            }
+        }
+
+        foreach (var item in _model.UsedProducts)
+        {
+            decimal.TryParse(_gramPrice?.Value, out var gramPrice);
+            item.GramPrice = gramPrice;
         }
 
         foreach (var item in _model.InvoiceDiscounts)
@@ -829,6 +1046,7 @@ public partial class EditorForm
             if (_model.InvoicePriceUnit.Id == _model.UnpaidPriceUnit.Id)
             {
                 _model.UnpaidExchangeRate = null;
+                _model.UnpaidPriceUnit = null;
                 return;
             }
 
@@ -986,27 +1204,6 @@ public partial class EditorForm
 
     private async Task OnPrintAsync() => await JsRuntime.InvokeVoidAsync("open", PrintUrl, "_blank");
 
-    #endregion
-
-    #region MenuToggle
-
-    private void OnDiscountMenuToggled()
-    {
-        _discountMenuOpen = !_discountMenuOpen;
-    }
-
-    private void OnExtraCostsMenuToggled()
-    {
-        _extraCostsMenuOpen = !_extraCostsMenuOpen;
-    }
-
-    private void OnTotalUnpaidMenuToggled()
-    {
-        _totalUnpaidMenuOpen = !_totalUnpaidMenuOpen;
-    }
-
-    #endregion
-
     private string FormatCompleteUnpaidAmount(decimal totalUnpaidAmount, string? primaryUnit, decimal? exchangeRate, decimal totalUnpaidSecondaryAmount, string? secondaryUnit)
     {
         var primaryAmount = Math.Abs(totalUnpaidAmount).ToCurrencyFormat(primaryUnit);
@@ -1072,56 +1269,6 @@ public partial class EditorForm
             });
     }
 
-    private async Task OnPrintBarcode(ProductItemVm item)
-    {
-        if (_barcodeSettings is null)
-        {
-            AddErrorToast("تنظیمات چاپ بارکد لود نشده است");
-            return;
-        }
-
-        UnitType? wageUnitType = null;
-
-        if (item.Product.WagePriceUnitId != null)
-        {
-            wageUnitType = await GetPriceUnitAsync(item.Product.WagePriceUnitId.Value);
-        }
-
-        var data = new
-        {
-            barcode = item.Product.Barcode ?? "",
-            productName = item.Product.Name ?? "",
-            weight = $"W: {item.TotalWeight:G29}{(item.Product.GoldUnitType == GoldUnitType.Gram ? "G" : "M")}",
-            wage = "F: " + item.Product.WageType switch
-            {
-                WageType.Fixed => $"{item.Product.Wage?.ToCurrencyFormat()} {wageUnitType?.ToString()}",
-                WageType.Percent => $"{item.Product.Wage:G29}%",
-                _ => "---"
-            }
-        };
-
-        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
-    }
-
-    private async Task OnPrintUsedBarcode(UsedProductVm item)
-    {
-        if (_barcodeSettings is null)
-        {
-            AddErrorToast("تنظیمات چاپ بارکد لود نشده است");
-            return;
-        }
-
-        var data = new
-        {
-            barcode = item.Barcode,
-            productName = item.Description ?? "",
-            weight = $"W:{item.Weight:G29}{(item.UnitType == GoldUnitType.Gram ? "g" : "m")}",
-            wage = "F:" + "---"
-        };
-
-        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
-    }
-
     private async Task<UnitType?> GetPriceUnitAsync(Guid wagePriceUnitId)
     {
         GetPriceUnitResponse? priceUnit = null;
@@ -1135,6 +1282,29 @@ public partial class EditorForm
 
         return priceUnit?.UnitType;
     }
+
+    #endregion
+
+    #region MenuToggle
+
+    private void OnDiscountMenuToggled()
+    {
+        _discountMenuOpen = !_discountMenuOpen;
+    }
+
+    private void OnExtraCostsMenuToggled()
+    {
+        _extraCostsMenuOpen = !_extraCostsMenuOpen;
+    }
+
+    private void OnTotalUnpaidMenuToggled()
+    {
+        _totalUnpaidMenuOpen = !_totalUnpaidMenuOpen;
+    }
+
+    #endregion
+
+    #region Payments
 
     private async Task OpenPaymentsDialog()
     {
@@ -1189,12 +1359,13 @@ public partial class EditorForm
                     PaymentType = paymentType,
                     PriceUnit = priceUnit,
                     AmountAdornmentText = adornmentText,
-                    GoldFineness = fineness
+                    GoldFineness = fineness,
+                    PaymentSide = _model.InvoiceType is InvoiceType.Sell ? PaymentSide.Receive : PaymentSide.Pay
                 }
             },
             { x => x.BasePriceUnit, _model.InvoicePriceUnit },
             { x => x.PriceUnits, _priceUnits },
-            { x => x.InvoiceType, InvoiceType },
+            { x => x.InvoiceType, _model.InvoiceType },
             { x => x.TotalRemaining, _model.TotalUnpaidAmount }
         };
 
@@ -1207,4 +1378,6 @@ public partial class EditorForm
             _model.InvoicePayments.Add(addedPayment);
         }
     }
+
+    #endregion
 }

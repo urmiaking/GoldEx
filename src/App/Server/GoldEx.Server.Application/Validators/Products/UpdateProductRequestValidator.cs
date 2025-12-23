@@ -7,6 +7,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InventoryEntries;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Products;
@@ -62,7 +63,7 @@ internal class UpdateProductRequestValidator : AbstractValidator<ProductRequestD
 
         try
         {
-            await _barcodeGeneratorService.ValidateUniquenessAsync(barcode, cancellationToken);
+            await _barcodeGeneratorService.ValidateUniquenessAsync(BarcodeType.Product, barcode, cancellationToken);
             return true;
         }
         catch (Exception)

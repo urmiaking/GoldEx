@@ -3,6 +3,7 @@ using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.BarcodeReservations;
+using GoldEx.Server.Infrastructure.Specifications.CoinInstances;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.Enums;
@@ -13,11 +14,90 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal sealed class BarcodeGeneratorService(
     IProductRepository productRepository,
+    ICoinInstanceRepository coinRepository,
     IProductCategoryRepository categoryRepository,
     IBarcodeReservationRepository reservationRepository
 ) : IBarcodeGeneratorService
 {
-    public async Task<string> BuildFullPrefixAsync(ProductType productType, ProductCategoryId? categoryId, CancellationToken cancellationToken = default)
+    private const int CoinDigits = 6;
+    private const int CoinStart = 100001;
+
+    #region Public API
+
+    public async Task<string> GenerateNextAsync(
+        BarcodeType barcodeType,
+        ProductType? productType,
+        ProductCategoryId? categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        return barcodeType switch
+        {
+            BarcodeType.Product => await GenerateNextProductAsync(productType!.Value, categoryId, cancellationToken),
+            BarcodeType.Coin => await GenerateNextCoinAsync(cancellationToken),
+            _ => throw new ArgumentOutOfRangeException(nameof(barcodeType))
+        };
+    }
+
+    public async Task ValidateUniquenessAsync(
+        BarcodeType barcodeType,
+        string barcode,
+        CancellationToken cancellationToken = default)
+    {
+        var exists = barcodeType switch
+        {
+            BarcodeType.Product =>
+                await productRepository.ExistsAsync(
+                    new ProductsByBarcodeSpecification(barcode), cancellationToken),
+
+            BarcodeType.Coin =>
+                await coinRepository.ExistsAsync(
+                    new CoinInstancesByBarcodeSpecification(barcode), cancellationToken),
+
+            _ => throw new ArgumentOutOfRangeException(nameof(barcodeType))
+        };
+
+        if (exists)
+            throw new InvalidOperationException($"کد {barcode} از قبل موجود می‌باشد");
+    }
+
+    #endregion
+
+    #region Product
+
+    private async Task<string> GenerateNextProductAsync(
+        ProductType productType,
+        ProductCategoryId? categoryId,
+        CancellationToken cancellationToken)
+    {
+        var prefix = await BuildProductPrefixAsync(productType, categoryId, cancellationToken);
+
+        var lastProduct = await productRepository
+            .GetLastBarcodeWithPrefixAsync(prefix, cancellationToken);
+
+        var lastReserved = await reservationRepository
+            .Get(new BarcodeLatestActiveOrCommittedByPrefixSpecification(prefix))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var baseline = MaxBarcode(lastProduct, lastReserved?.Barcode);
+
+        var next = ComputeNext(prefixed: true, prefix, baseline, 8, 1);
+
+        while (await productRepository.ExistsAsync(
+                   new ProductsByBarcodeSpecification(next), cancellationToken)
+               || await reservationRepository.ExistsAsync(
+                   new BarcodeReservationsByBarcodeSpecification(next), cancellationToken))
+        {
+            next = ComputeNext(prefixed: true, prefix, next, 8, 1);
+        }
+
+        return next;
+    }
+
+    public async Task<string> BuildProductPrefixAsync(
+        ProductType productType,
+        ProductCategoryId? categoryId,
+        CancellationToken cancellationToken)
     {
         var typePrefix = productType switch
         {
@@ -28,6 +108,7 @@ internal sealed class BarcodeGeneratorService(
         };
 
         var categoryPrefix = "00";
+
         if (categoryId.HasValue)
         {
             var category = await categoryRepository
@@ -42,58 +123,64 @@ internal sealed class BarcodeGeneratorService(
         return $"{typePrefix}{categoryPrefix}";
     }
 
-    public async Task<string> GenerateNextAsync(ProductType productType, ProductCategoryId? categoryId, CancellationToken cancellationToken = default)
+    #endregion
+
+    #region Coin
+
+    private async Task<string> GenerateNextCoinAsync(CancellationToken cancellationToken)
     {
-        var fullPrefix = await BuildFullPrefixAsync(productType, categoryId, cancellationToken);
+        var lastCoinBarcode = await coinRepository.GetLastBarcodeAsync(cancellationToken);
 
-        // last product with prefix
-        var lastProductBarcode = await productRepository.GetLastBarcodeWithPrefixAsync(fullPrefix, cancellationToken);
-
-        // last active or committed reservation with prefix
-        var lastReservedOrCommitted = await reservationRepository
-            .Get(new BarcodeLatestActiveOrCommittedByPrefixSpecification(fullPrefix))
+        var lastReserved = await reservationRepository
+            .Get(new BarcodeLatestActiveOrCommittedByTypeSpecification(BarcodeType.Coin))
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
-        var baseline = MaxBarcode(lastProductBarcode, lastReservedOrCommitted?.Barcode);
+        var baseline = MaxBarcode(lastCoinBarcode, lastReserved?.Barcode);
 
-        var next = ComputeNextBarcode(fullPrefix, baseline);
+        var next = ComputeNext(prefixed: false, null, baseline, CoinDigits, CoinStart);
 
-        // ensure uniqueness across products and reservations
-        while (await productRepository.ExistsAsync(new ProductsByBarcodeSpecification(next), cancellationToken)
-            || await reservationRepository.ExistsAsync(new BarcodeReservationsByBarcodeSpecification(next), cancellationToken))
+        while (await coinRepository.ExistsAsync(
+                   new CoinInstancesByBarcodeSpecification(next), cancellationToken)
+               || await reservationRepository.ExistsAsync(
+                   new BarcodeReservationsByBarcodeSpecification(next), cancellationToken))
         {
-            next = ComputeNextBarcode(fullPrefix, next);
+            next = ComputeNext(prefixed: false, null, next, CoinDigits, CoinStart);
         }
 
         return next;
     }
 
-    public async Task ValidateUniquenessAsync(string barcode, CancellationToken cancellationToken = default)
-    {
-        var existsInProducts = await productRepository.ExistsAsync(new ProductsByBarcodeSpecification(barcode), cancellationToken);
+    #endregion
 
-        if (existsInProducts)
-            throw new InvalidOperationException($"کد {barcode} از قبل موجود می‌باشد");
-    }
+    #region Helpers
 
     private static string MaxBarcode(string? a, string? b)
     {
-        if (string.IsNullOrWhiteSpace(a)) return b ?? "";
+        if (string.IsNullOrWhiteSpace(a)) return b ?? string.Empty;
         if (string.IsNullOrWhiteSpace(b)) return a;
         return string.CompareOrdinal(a, b) >= 0 ? a : b;
     }
 
-    private static string ComputeNextBarcode(string fullPrefix, string? lastOrNull)
+    private static string ComputeNext(
+        bool prefixed,
+        string? prefix,
+        string? last,
+        int digits,
+        int start)
     {
-        if (string.IsNullOrEmpty(lastOrNull) || !lastOrNull.StartsWith(fullPrefix) || lastOrNull.Length < 4)
-            return $"{fullPrefix}{1:D5}";
+        if (string.IsNullOrWhiteSpace(last))
+            return start.ToString($"D{digits}");
 
-        var numericPart = lastOrNull.Substring(fullPrefix.Length);
-        if (!int.TryParse(numericPart, out var n))
-            n = 0;
+        var numericPart = prefixed
+            ? last.Substring(prefix!.Length)
+            : last;
 
-        var next = (n + 1).ToString("D5");
-        return $"{fullPrefix}{next}";
+        if (!int.TryParse(numericPart, out var n) || n < start)
+            n = start - 1;
+
+        return (n + 1).ToString($"D{digits}");
     }
+
+    #endregion
 }

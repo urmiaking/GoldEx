@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -69,7 +69,7 @@ internal class RollbackInventoryEntryValidator : AbstractValidator<InventoryEntr
 
         var coinStocks = coinIds.Any()
             ? await _inventoryStockRepository.GetQuantitiesAsync(coinIds, cancellationToken)
-            : new Dictionary<CoinId, decimal>();
+            : new Dictionary<CoinInstanceId, decimal>();
 
         var currencyStocks = currencyIds.Any()
             ? await _inventoryStockRepository.GetQuantitiesAsync(currencyIds, cancellationToken)

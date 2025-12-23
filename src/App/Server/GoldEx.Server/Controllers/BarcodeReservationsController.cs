@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.BarcodeReservations;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
@@ -25,10 +26,11 @@ public sealed class BarcodeReservationsController(IBarcodeReservationService ser
     [HttpPut(ApiRoutes.BarcodeReservations.Release)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ReleaseAsync(
+        [FromRoute] BarcodeType barcodeType,
         [FromRoute] string barcode,
         CancellationToken cancellationToken = default)
     {
-        await service.ReleaseAsync(barcode, cancellationToken);
+        await service.ReleaseAsync(barcodeType, barcode, cancellationToken);
         return NoContent();
     }
 }

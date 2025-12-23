@@ -7,6 +7,7 @@ using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Mapster;
+using System.Globalization;
 
 namespace GoldEx.Server.Common.Mapping;
 
@@ -147,10 +148,13 @@ internal class ReportingMapper : IRegister
 
         config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemReportResponse>()
             .Map(dest => dest.Quantity, src => src.Quantity)
+            .Map(dest => dest.Weight, src => FormatCoinWeight(src))
+            .Map(dest => dest.Fineness,
+                src => src.CoinInstance != null ? $"{src.CoinInstance.Fineness:G29}" : string.Empty)
+            .Map(dest => dest.MintYear, src => GetCoinMintYear(src))
             .Map(dest => dest.TotalPrice, src => 
                 src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title))
-            .Map(dest => dest.CoinTitle, src => 
-                src.CoinInstance != null ? src.CoinInstance.Title : string.Empty);
+            .Map(dest => dest.CoinTitle, src => GetCoinTitle(src));
 
         config.NewConfig<InvoiceCurrencyItem, GetInvoiceCurrencyItemReportResponse>()
             .Map(dest => dest.Amount, src => src.Amount.ToCurrencyReportFormat(null))
@@ -180,6 +184,53 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.PaymentType, src => src.PaymentType)
             .Map(dest => dest.PaymentDate, src => src.PaymentDate)
             .Map(dest => dest.Description, src => PaymentDescriptionBuilder.Build(src));
+    }
+
+    private static string GetCoinTitle(InvoiceCoinItem coinItem)
+    {
+        var coinInstance = coinItem.CoinInstance;
+        var coin = coinInstance?.Coin;
+
+        if (coin is null)
+            return "سکه نامشخص";
+
+        var baseTitle = coin.Title;
+
+        var issuer = coinInstance?.CoinInstancePackage?.Issuer;
+        if (issuer is null)
+            return baseTitle;
+
+        var issuerName = issuer.FullName;
+        var nationalCode = issuer.NationalId;
+
+        if (string.IsNullOrWhiteSpace(issuerName) || string.IsNullOrWhiteSpace(nationalCode))
+            return baseTitle;
+
+        return $"{baseTitle} - {issuerName} ({nationalCode})";
+    }
+
+    private string GetCoinMintYear(InvoiceCoinItem coinItem)
+    {
+        var mintYear = coinItem.CoinInstance?.MintYear;
+
+        if (!mintYear.HasValue)
+            return "نامشخص";
+
+        var date = new DateTime(mintYear.Value, 1, 1);
+        var persianYear = new PersianCalendar().GetYear(date);
+
+        return persianYear.ToString();
+    }
+
+    private static string FormatCoinWeight(InvoiceCoinItem coinItem)
+    {
+        var weight = coinItem.CoinInstance?.Weight.ToWeightFormat(GoldUnitType.Gram);
+        return weight ?? "-";
+        //var vacuumedWeight = coinItem.CoinInstance?.CoinInstancePackage?.VacuumedWeight.ToWeightFormat(GoldUnitType.Gram);
+
+        //return vacuumedWeight is not null
+        //    ? $"{weight} ({vacuumedWeight} با پرس)"
+        //    : weight ?? "-";
     }
 
     private static string FormatPayableAmount(decimal amount, string? unitTitle)

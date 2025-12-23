@@ -7,7 +7,7 @@ namespace GoldEx.Server.Domain.InvoiceAggregate;
 public readonly record struct InvoiceCoinItemId(Guid Value);
 public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
 {
-    private InvoiceCoinItem(InvoiceCoinItemId id, CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent)
+    private InvoiceCoinItem(InvoiceCoinItemId id, CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent, bool isInstant)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(quantity, 0);
@@ -22,15 +22,16 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
         UnitPrice = unitPrice;
         Quantity = quantity;
         ProfitPercent = profitPercent;
+        IsInstant = isInstant;
 
         ItemRawAmount = unitPrice;
         ItemProfitAmount = itemProfitAmount;
         ItemFinalAmount = itemFinalAmount;
     }
 
-    internal static InvoiceCoinItem Create(InvoiceCoinItemId? id, CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent)
+    internal static InvoiceCoinItem Create(InvoiceCoinItemId? id, CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent, bool isInstant)
     {
-        return new InvoiceCoinItem(id ?? new InvoiceCoinItemId(Guid.NewGuid()), coinInstanceId, unitPrice, quantity, profitPercent);
+        return new InvoiceCoinItem(id ?? new InvoiceCoinItemId(Guid.NewGuid()), coinInstanceId, unitPrice, quantity, profitPercent, isInstant);
     }
 
     private InvoiceCoinItem() { }
@@ -45,7 +46,17 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
     public int Quantity { get; private set; }
     public decimal ProfitPercent { get; private set; }
 
+    public bool IsInstant { get; private set; }
+
     public decimal ItemRawAmount { get; private set; }
     public decimal ItemProfitAmount { get; private set; }
     public decimal ItemFinalAmount { get; private set; }
+
+    public void Update(CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent)
+    {
+        CoinInstanceId = coinInstanceId;
+        UnitPrice = unitPrice;
+        Quantity = quantity;
+        ProfitPercent = profitPercent;
+    }
 }

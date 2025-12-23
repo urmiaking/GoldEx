@@ -87,4 +87,32 @@ public class CoinInstance : EntityBase<CoinInstanceId>
     {
         return new CoinInstance(barcode, mintYear, weight, fineness, coinId, mintType, CoinPackageType.VacuumSealed, coinInstancePackage);
     }
+
+    public void SetBarcode(string barcode) => Barcode = barcode;
+    public void SetMintYear(int? mintYear) => MintYear = mintYear;
+    public void SetWeight(decimal weight)
+    {
+        if (weight <= 0)
+            throw new InvalidOperationException("Weight must be greater than zero");
+        Weight = weight;
+    }
+    public void SetFineness(decimal fineness)
+    {
+        if (fineness <= 0)
+            throw new InvalidOperationException("Fineness must be greater than zero");
+        Fineness = fineness;
+    }
+    public void SetMintType(CoinMintType mintType) => MintType = mintType;
+
+    public void SetPackage(CoinPackageType packageType, CoinInstancePackage? package)
+    {
+        if (packageType == CoinPackageType.Open && package != null)
+            throw new InvalidOperationException("Open coins cannot have package details");
+
+        if (packageType == CoinPackageType.VacuumSealed && package == null)
+            throw new InvalidOperationException("Vacuumed coins must have package details");
+
+        PackageType = packageType;
+        CoinInstancePackage = package;
+    }
 }

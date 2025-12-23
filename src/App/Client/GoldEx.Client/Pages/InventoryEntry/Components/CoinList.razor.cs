@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -19,7 +20,7 @@ public partial class CoinList
     {
         var result = await DialogService.ShowMessageBox(
             "هشدار",
-            $"آیا برای حذف سکه {context.Coin.Title} مطمئن هستید؟",
+            $"آیا برای حذف سکه {context.CoinInstance.Coin?.Title} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");
 
         if (result is true)
@@ -80,5 +81,16 @@ public partial class CoinList
 
             StateHasChanged();
         }
+    }
+
+    private string GetWeight(CoinItemVm context)
+    {
+        var weight = context.CoinInstance.Weight?.ToWeightFormat(GoldUnitType.Gram);
+
+        var vacuumedWeight = context.CoinInstance.CoinPackage?.VacuumedWeight?.ToWeightFormat(GoldUnitType.Gram);
+
+        return vacuumedWeight is not null
+            ? $"{weight} ({vacuumedWeight} با وکیوم)"
+            : weight ?? "-";
     }
 }

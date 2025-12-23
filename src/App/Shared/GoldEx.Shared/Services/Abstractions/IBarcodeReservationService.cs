@@ -21,5 +21,5 @@ public interface IBarcodeReservationService
     /// <summary>
     /// آزاد کردن رزرو بارکد (در صورت حذف آیتم از فرم قبل از ثبت)
     /// </summary>
-    Task ReleaseAsync(string barcode, CancellationToken cancellationToken = default);
+    Task ReleaseAsync(BarcodeType barcodeType, string barcode, CancellationToken cancellationToken = default);
 }
