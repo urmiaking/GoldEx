@@ -1,7 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
-using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -33,7 +33,7 @@ public class InventoryStocksForTraceSpecification : SpecificationBase<InventoryS
                 AddCriteria(x => x.ProductId == new ProductId(itemId));
                 break;
             case ItemType.Coin:
-                AddCriteria(x => x.CoinInstanceId == new CoinId(itemId));
+                AddCriteria(x => x.CoinInstanceId == new CoinInstanceId(itemId));
                 break;
             case ItemType.Currency:
                 AddCriteria(x => x.CurrencyId == new PriceUnitId(itemId));

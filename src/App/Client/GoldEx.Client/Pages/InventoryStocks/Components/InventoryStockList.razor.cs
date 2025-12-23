@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
+using GoldEx.Client.Pages.Invoices.ViewModels;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -479,4 +480,49 @@ public partial class InventoryStockList
         ProductCategoryVm? CategoryFilter,
         DateRange DateRange
     );
+
+    private string GetCoinTitle(CoinInstanceVm coinInstance)
+    {
+        var coin = coinInstance.Coin;
+
+        if (coin is null)
+            return "سکه نامشخص";
+
+        var baseTitle = coin.Title;
+
+        var issuer = coinInstance.CoinPackage?.Issuer;
+        if (issuer is null)
+            return baseTitle;
+
+        var issuerName = issuer.FullName;
+        var nationalCode = issuer.NationalId;
+
+        if (string.IsNullOrWhiteSpace(issuerName) || string.IsNullOrWhiteSpace(nationalCode))
+            return baseTitle;
+
+        return $"{baseTitle} - {issuerName} ({nationalCode})";
+    }
+
+    private string GetCoinWeight(CoinInstanceVm coinInstance)
+    {
+        var weight = coinInstance.Weight?.ToWeightFormat(GoldUnitType.Gram);
+
+        var vacuumedWeight = coinInstance.CoinPackage?.VacuumedWeight?.ToWeightFormat(GoldUnitType.Gram);
+
+        return vacuumedWeight is not null
+            ? $"{weight} ({vacuumedWeight} با پرس)"
+            : weight ?? "-";
+    }
+
+    private string GetCoinMintYear(CoinInstanceVm coinItem)
+    {
+        var mintYear = coinItem.MintYear;
+
+        if (!mintYear.HasValue)
+            return "نامشخص";
+
+        var persianYear = new PersianCalendar().GetYear(mintYear.Value);
+
+        return persianYear.ToString();
+    }
 }

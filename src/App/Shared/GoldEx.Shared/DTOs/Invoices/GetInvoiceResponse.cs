@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Coins;
+﻿using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -94,7 +94,8 @@ public record GetInvoiceCoinItemResponse(
     decimal UnitPrice,
     int Quantity,
     decimal ProfitPercent,
-    GetCoinResponse Coin);
+    bool IsInstant,
+    GetCoinInstanceResponse Coin);
 
 public record GetInvoicePaymentResponse(
     Guid Id,

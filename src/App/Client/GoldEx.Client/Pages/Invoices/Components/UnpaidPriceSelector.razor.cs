@@ -32,9 +32,11 @@ public partial class UnpaidPriceSelector
             }
             else
             {
-                if (UnpaidPriceUnit is null)
+                if (UnpaidPriceUnit is null && MainPriceUnit is not null)
                 {
-                    var defaultUnit = PriceUnits.FirstOrDefault(pu => pu.IsGoldBased) ?? PriceUnits.FirstOrDefault();
+                    var defaultUnit = MainPriceUnit.IsDefault
+                        ? PriceUnits.FirstOrDefault(pu => pu.IsGoldBased)
+                        : PriceUnits.FirstOrDefault(pu => pu.IsDefault);
                     _ = SetUnpaidPriceUnitAsync(defaultUnit);
                 }
             }
@@ -63,18 +65,7 @@ public partial class UnpaidPriceSelector
                 : ExchangeRate)
             : null;
 
-    // گرد کردن هوشمند برای نمایش
-    private int RateDisplayDecimals
-    {
-        get
-        {
-            if (!RawDisplayExchangeRate.HasValue) return 0;
-            if (ShouldReverseDisplay) return 0; // قیمت هر گرم/دلار به تومان: بدون اعشار
-            var val = RawDisplayExchangeRate.Value;
-            if (val >= 1m) return 4;          // مقدارهای بزرگ: اعشار محدود
-            return 6;                          // مقدارهای کوچک: کمی اعشار بیشتر
-        }
-    }
+    private int RateDisplayDecimals => 0;
 
     private decimal? RoundedDisplayExchangeRate =>
         RawDisplayExchangeRate.HasValue
@@ -135,6 +126,13 @@ public partial class UnpaidPriceSelector
     {
         if (UnpaidPriceUnit is not null && MainPriceUnit is not null)
         {
+            if (UnpaidPriceUnit.Id == MainPriceUnit.Id)
+            {
+                await SetExchangeRateAsync(null);
+                StateHasChanged();
+                return;
+            }
+
             decimal? fetchedRate = null;
             await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
                 action: (s, ct) => s.GetExchangeRateAsync(MainPriceUnit.Id, UnpaidPriceUnit.Id, ct),

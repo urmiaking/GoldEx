@@ -1,10 +1,8 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.Coins;
 using GoldEx.Server.Domain.CoinAggregate;
-using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -117,34 +115,12 @@ internal class CoinService(ICoinRepository repository,
                                             .FirstOrDefaultAsync(cancellationToken) ??
                                         throw new NotFoundException($"{nameof(SystemLedgerAccounts.CoinInventory)} account not found");
 
-                var requestedCoinLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(request.Title)))
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                LedgerAccountId ledgerAccountId;
-
-                if (requestedCoinLedgerAccount is not null)
-                {
-                    ledgerAccountId = requestedCoinLedgerAccount.Id;
-                }
-                else
-                {
-                    var newCoinLedgerAccount = LedgerAccount.CreateSystemAccount(
-                        LedgerAccountTitleBuilder.ForCoinAccount(request.Title),
-                        LedgerAccountType.Asset,
-                        coinLedgerAccount.Id);
-
-                    await ledgerAccountRepository.CreateAsync(newCoinLedgerAccount, cancellationToken);
-
-                    ledgerAccountId = newCoinLedgerAccount.Id;
-                }
-
                 var coin = Coin.Create(request.Title,
                     request.Weight,
                     request.Fineness,
                     request.StartMintYear,
                     request.EndMintYear,
-                    ledgerAccountId,
+                    coinLedgerAccount.Id,
                     request.PriceId.HasValue
                         ? new PriceId(request.PriceId.Value)
                         : null);
@@ -181,14 +157,6 @@ internal class CoinService(ICoinRepository repository,
                 coin.SetMintYears(request.StartMintYear, request.EndMintYear);
 
                 await repository.UpdateAsync(coin, cancellationToken);
-
-                var priceUnitLedgerAccount = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByIdSpecification(coin.LedgerAccountId))
-                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
-
-                priceUnitLedgerAccount.SetTitle(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title));
-
-                await ledgerAccountRepository.UpdateAsync(priceUnitLedgerAccount, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }

@@ -1,16 +1,18 @@
-﻿using FluentValidation;
+﻿using DevExpress.XtraReports.Services;
+using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.Invoices;
-using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -18,9 +20,6 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using DevExpress.XtraReports.Services;
-using GoldEx.Server.Domain.FinancialAccountAggregate;
-using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -34,6 +33,7 @@ internal class InvoiceService(
     IAccountingTransactionService transactionService,
     IServerInventoryStockService inventoryStockService,
     IServerInvoicePaymentService invoicePaymentService,
+    IServerCoinInstanceService coinInstanceService,
     IFinancialAccountService financialAccountService,
     IReportProvider reportProvider,
     IMapper mapper,
@@ -85,17 +85,6 @@ internal class InvoiceService(
 
                 #region InvoiceItems
 
-                foreach (var coinItemDto in request.InvoiceCoinItems)
-                {
-                    invoice.AddCoinItem(coinItemDto.Id.HasValue
-                            ? new InvoiceCoinItemId(coinItemDto.Id.Value)
-                            : null,
-                        new CoinId(coinItemDto.CoinId),
-                        coinItemDto.UnitPrice,
-                        coinItemDto.Quantity,
-                        coinItemDto.ProfitPercent);
-                }
-
                 foreach (var currencyItemDto in request.InvoiceCurrencyItems)
                 {
                     invoice.AddCurrencyItem(currencyItemDto.Id.HasValue
@@ -109,8 +98,8 @@ internal class InvoiceService(
                         currencyItemDto.ProfitPercent);
                 }
 
+                await coinInstanceService.SyncCoinItemsAsync(invoice, request.InvoiceCoinItems, cancellationToken);
                 await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
-
                 await productService.SyncProductItemsAsync(invoice, request.InvoiceProductItems, cancellationToken);
 
                 #endregion
@@ -165,18 +154,6 @@ internal class InvoiceService(
 
             #region InvoiceItems
 
-            invoice.ClearCoinItems();
-            foreach (var coinItemDto in request.InvoiceCoinItems)
-            {
-                invoice.AddCoinItem(coinItemDto.Id.HasValue
-                        ? new InvoiceCoinItemId(coinItemDto.Id.Value)
-                        : null,
-                    new CoinId(coinItemDto.CoinId),
-                    coinItemDto.UnitPrice,
-                    coinItemDto.Quantity,
-                    coinItemDto.ProfitPercent);
-            }
-
             invoice.ClearCurrencyItems();
             foreach (var currencyItemDto in request.InvoiceCurrencyItems)
             {
@@ -191,6 +168,7 @@ internal class InvoiceService(
                     currencyItemDto.ProfitPercent);
             }
 
+            await coinInstanceService.SyncCoinItemsAsync(invoice, request.InvoiceCoinItems, cancellationToken);
             await productService.SyncUsedProductsForInvoiceAsync(invoice, request.InvoiceUsedProducts, cancellationToken);
             await productService.SyncProductItemsAsync(invoice, request.InvoiceProductItems, cancellationToken);
 
@@ -260,7 +238,11 @@ internal class InvoiceService(
                 .ThenInclude(x => x.LedgerAccount!)
                     .ThenInclude(x => x.Customer)
             .Include(x => x.CoinItems)
-                .ThenInclude(x => x.CoinInstance)
+                .ThenInclude(x => x.CoinInstance!)
+                    .ThenInclude(x => x.Coin)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.CoinInstance!)
+                    .ThenInclude(x => x.CoinInstancePackage!.Issuer)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
             .Include(x => x.UsedProducts)
@@ -269,9 +251,7 @@ internal class InvoiceService(
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.ProductItems)
-                .ThenInclude(x => x.Product!)
-                    .ThenInclude(x => x.MoltenGold!)
-                        .ThenInclude(x => x.Assayer)
+                .ThenInclude(x => x.Product!.MoltenGold!.Assayer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         var result = mapper.Map<GetInvoiceResponse>(item);
@@ -299,18 +279,28 @@ internal class InvoiceService(
                 .ThenInclude(x => x.CreditLimitPriceUnit)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.CostPriceUnit)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.SourceFinancialAccount!)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.LedgerAccount!)
                     .ThenInclude(x => x.Customer)
             .Include(x => x.CoinItems)
-                .ThenInclude(x => x.CoinInstance)
+                .ThenInclude(x => x.CoinInstance!)
+                    .ThenInclude(x => x.Coin)
+            .Include(x => x.CoinItems)
+                .ThenInclude(x => x.CoinInstance!)
+                    .ThenInclude(x => x.CoinInstancePackage!.Issuer)
             .Include(x => x.CurrencyItems)
                 .ThenInclude(x => x.Currency)
             .Include(x => x.UsedProducts)
                 .ThenInclude(x => x.Product)
             .Include(x => x.PriceUnit!.Price!)
+            .Include(x => x.CurrencyItems)
+                .ThenInclude(x => x.FinancialAccount)
+            .Include(x => x.ProductItems)
+                .ThenInclude(x => x.Product!.MoltenGold!.Assayer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         return mapper.Map<GetInvoiceResponse>(item);

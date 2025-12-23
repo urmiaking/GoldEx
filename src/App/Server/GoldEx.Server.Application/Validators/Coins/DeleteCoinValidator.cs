@@ -2,26 +2,26 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
+using GoldEx.Server.Infrastructure.Specifications.CoinInstances;
 
 namespace GoldEx.Server.Application.Validators.Coins;
 
 [ScopedService]
 internal class DeleteCoinValidator : AbstractValidator<Guid>
 {
-    private readonly IInventoryStockRepository _inventoryStockRepository;
-    public DeleteCoinValidator(IInventoryStockRepository inventoryStockRepository)
+    private readonly ICoinInstanceRepository _coinInstanceRepository;
+    public DeleteCoinValidator(ICoinInstanceRepository coinInstanceRepository)
     {
-        _inventoryStockRepository = inventoryStockRepository;
+        _coinInstanceRepository = coinInstanceRepository;
 
         RuleFor(x => x)
-            .MustAsync(NotUsedInInventories)
+            .MustAsync(NotUsedInCoinInstances)
             .WithMessage("امکان حذف این سکه به دلیل مورد استفاده قرار گرفتن وجود ندارد.");
     }
 
-    private async Task<bool> NotUsedInInventories(Guid coinId, CancellationToken cancellationToken)
+    private async Task<bool> NotUsedInCoinInstances(Guid coinId, CancellationToken cancellationToken)
     {
-        var exists = await _inventoryStockRepository.ExistsAsync(new InventoryStocksByCoinIdSpecification(new CoinId(coinId)), cancellationToken);
+        var exists = await _coinInstanceRepository.ExistsAsync(new CoinInstancesByCoinIdSpecification(new CoinId(coinId)), cancellationToken);
         return !exists;
     }
 }

@@ -5,6 +5,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -24,9 +25,9 @@ internal class BarcodeReservationService(HttpClient client, JsonSerializerOption
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task ReleaseAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task ReleaseAsync(BarcodeType barcodeType, string barcode, CancellationToken cancellationToken = default)
     {
-        using var response = await client.PutAsync(ApiUrls.BarcodeReservations.Release(barcode), null, cancellationToken);
+        using var response = await client.PutAsync(ApiUrls.BarcodeReservations.Release(barcodeType, barcode), null, cancellationToken);
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }

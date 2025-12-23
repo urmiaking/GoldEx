@@ -6,4 +6,7 @@ namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 public interface ICoinInstanceRepository : IRepository<CoinInstance>,
     ICreateRepository<CoinInstance>,
     IUpdateRepository<CoinInstance>,
-    IDeleteRepository<CoinInstance>;
+    IDeleteRepository<CoinInstance>
+{
+    Task<string?> GetLastBarcodeAsync(CancellationToken cancellationToken);
+}

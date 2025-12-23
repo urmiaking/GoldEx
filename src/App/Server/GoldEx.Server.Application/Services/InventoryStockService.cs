@@ -3,7 +3,6 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.InventoryStocks;
-using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
@@ -276,7 +275,7 @@ internal class InventoryStockService(
             .ToList();
 
         inventoryStocks.AddRange(request.Coins.Select(coinRequest => InventoryStock.CreateCoin(
-            new CoinId(coinRequest.CoinId),
+            new CoinInstanceId(coinRequest.Id),
             coinRequest.Quantity,
             WarehouseActionType.Out,
             postingDate: request.ExitDate,
@@ -422,6 +421,7 @@ internal class InventoryStockService(
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.InventoryEntry)
             .Include(x => x.MeltingBatch)
+            .Include(x => x.CoinInstance!.Coin)
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
@@ -444,6 +444,7 @@ internal class InventoryStockService(
             .Include(x => x.Invoice!.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.Transactions)
+            .Include(x => x.CoinInstance!.Coin)
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
@@ -464,7 +465,7 @@ internal class InventoryStockService(
         switch (itemType)
         {
             case ItemType.Coin:
-                amount = await repository.GetQuantityAsync((CoinInstanceId)new CoinId(itemId), cancellationToken);
+                amount = await repository.GetQuantityAsync(new CoinInstanceId(itemId), cancellationToken);
                 break;
             case ItemType.Currency:
                 amount = await repository.GetQuantityAsync(new PriceUnitId(itemId), cancellationToken);

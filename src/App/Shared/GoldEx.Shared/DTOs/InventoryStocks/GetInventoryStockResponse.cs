@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Coins;
+﻿using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
@@ -16,7 +16,7 @@ public record GetInventoryStockResponse(
     WageType? PurchaseWageType,
     string? PurchaseWagePriceUnitTitle,
     GetProductResponse? Product,
-    GetCoinResponse? Coin,
+    GetCoinInstanceResponse? Coin,
     GetPriceUnitTitleResponse? Currency)
 {
     // Parameterless constructor for mapping purposes

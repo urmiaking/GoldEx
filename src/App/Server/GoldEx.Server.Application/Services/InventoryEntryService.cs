@@ -4,7 +4,6 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.InventoryEntries;
-using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -28,6 +27,7 @@ internal class InventoryEntryService(
     IInventoryEntryRepository inventoryEntryRepository,
     IInventoryStockRepository inventoryStockRepository,
     IServerProductService productService,
+    IServerCoinInstanceService coinInstanceService,
     IAccountingTransactionService transactionService,
     ISpreadsheetService spreadsheetService,
     IExcelProductProcessor excelProductProcessor,
@@ -120,7 +120,9 @@ internal class InventoryEntryService(
 
                 foreach (var coinItem in request.Coins)
                 {
-                    var inventoryStock = InventoryStock.CreateCoin(new CoinId(coinItem.CoinId),
+                    var coin = await coinInstanceService.CreateCoinAsync(coinItem.CoinInstance);
+
+                    var inventoryStock = InventoryStock.CreateCoin(coin.Id,
                         coinItem.Quantity,
                         WarehouseActionType.In,
                         inventoryEntryId: inventoryEntry.Id);
