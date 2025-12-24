@@ -226,7 +226,12 @@ else
             {
                 <MudGrid Class="mt-0 mb-2">
                     <MudItem xs="12" md="3">
-                        <MudText>نام و نام خانوادگی: @_model.Customer.FullName</MudText>
+                        <div class="d-flex align-items-center gap-1">
+                            <MudText>نام و نام خانوادگی: @_model.Customer.FullName</MudText>
+                            <MudTooltip Text="ویرایش اطلاعات مشتری" ShowOnHover="true" Color="Color.Success" Arrow="true">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Color="Color.Success" Size="Size.Small" OnClick="OnEditCustomer" />
+                            </MudTooltip>
+                        </div>
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudText>شماره تماس: @_model.Customer.PhoneNumber</MudText>
