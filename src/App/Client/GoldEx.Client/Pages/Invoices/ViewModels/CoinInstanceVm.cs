@@ -64,7 +64,7 @@ public class CoinInstanceVm
             Fineness = response.Fineness,
             MintType = response.MintType,
             PackageType = response.PackageType,
-            MintYear = response.MintYear.HasValue ? new DateTime(response.MintYear.Value, 1, 1) : null,
+            MintYear = response.MintYear.HasValue ? new DateTime(response.MintYear.Value, 3, 21) : null,
             CoinPackage = response.CoinPackage != null ? CoinPackageSpecVm.CreateFrom(response.CoinPackage) : null
         };
     }
