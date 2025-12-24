@@ -86,51 +86,55 @@
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12">
-                    <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
-                        <MudText Typo="Typo.h6" GutterBottom="true">حساب های مالی</MudText>
-                        <MudSpacer />
-                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                            <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="Size.Small"
-                                       Variant="Variant.Filled">ثبت حساب مالی جدید</MudButton>
-                        </MudHidden>
+                @if (ShowFinancialAccounts)
+                {
+                    <MudItem xs="12">
+                        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
-                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="@Size.Small"
-                                           Variant="@Variant.Filled"></MudIconButton>
-                        </MudHidden>
-                    </MudStack>
-                </MudItem>
-                <MudDivider Class="mb-2" />
-                <MudItem xs="12">
-                    <MudTable Items="@Model.FinancialAccounts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
-                        <HeaderContent>
-                            <MudTh>نوع حساب</MudTh>
-                            <MudTh>نوع ارز</MudTh>
-                            <MudTh>عملیات</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="نوع حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
-                            <MudTd DataLabel="نوع ارز">@context.PriceUnit?.Title</MudTd>
-                            <MudTd DataLabel="عملیات">
-                                <div class="d-flex gap-2">
-                                    <MudTooltip Text="ویرایش">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                                       Color="Color.Info" OnClick="_ => OnEditFinancialAccount(context)"></MudIconButton>
-                                    </MudTooltip>
-                                    <MudTooltip Text="حذف">
-                                        <MudIconButton OnClick="() => OnRemoveFinancialAccount(context)" Size="@Size.Small" Variant="@Variant.Filled"
-                                                       Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                                    </MudTooltip>
-                                </div>
-                            </MudTd>
-                        </RowTemplate>
-                        <NoRecordsContent>
-                            <MudText>هیچ حساب بانکی یافت نشد</MudText>
-                        </NoRecordsContent>
-                    </MudTable>
-                </MudItem>
+                            <MudText Typo="Typo.h6" GutterBottom="true">حساب های مالی</MudText>
+                            <MudSpacer />
+                            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                                <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="Size.Small"
+                                           Variant="Variant.Filled">ثبت حساب مالی جدید</MudButton>
+                            </MudHidden>
+
+                            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                                <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="OnAddFinancialAccount" Size="@Size.Small"
+                                               Variant="@Variant.Filled"></MudIconButton>
+                            </MudHidden>
+                        </MudStack>
+                    </MudItem>
+                    <MudDivider Class="mb-2" />
+                    <MudItem xs="12">
+                        <MudTable Items="@Model.FinancialAccounts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>نوع حساب</MudTh>
+                                <MudTh>نوع ارز</MudTh>
+                                <MudTh>عملیات</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="نوع حساب">@context.FinancialAccountType.GetDisplayName()</MudTd>
+                                <MudTd DataLabel="نوع ارز">@context.PriceUnit?.Title</MudTd>
+                                <MudTd DataLabel="عملیات">
+                                    <div class="d-flex gap-2">
+                                        <MudTooltip Text="ویرایش">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                                           Color="Color.Info" OnClick="_ => OnEditFinancialAccount(context)"></MudIconButton>
+                                        </MudTooltip>
+                                        <MudTooltip Text="حذف">
+                                            <MudIconButton OnClick="() => OnRemoveFinancialAccount(context)" Size="@Size.Small" Variant="@Variant.Filled"
+                                                           Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                                        </MudTooltip>
+                                    </div>
+                                </MudTd>
+                            </RowTemplate>
+                            <NoRecordsContent>
+                                <MudText>هیچ حساب بانکی یافت نشد</MudText>
+                            </NoRecordsContent>
+                        </MudTable>
+                    </MudItem>
+                }
             </MudGrid>
         </DialogContent>
         <DialogActions>

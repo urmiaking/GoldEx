@@ -1,5 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
-using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
@@ -184,13 +184,16 @@ public class Invoice : EntityBase<InvoiceId>
     public IReadOnlyList<InvoiceCoinItem> CoinItems => _coins;
 
     public void AddCoinItem(InvoiceCoinItemId? id,
-        CoinId coinId,
+        CoinInstanceId coinInstanceId,
         decimal unitPrice,
         int quantity,
-        decimal profitPercent)
+        decimal profitPercent,
+        bool isInstant)
     {
-        _coins.Add(InvoiceCoinItem.Create(id, coinId, unitPrice, quantity, profitPercent));
+        _coins.Add(InvoiceCoinItem.Create(id, coinInstanceId, unitPrice, quantity, profitPercent, isInstant));
     }
+
+    public void RemoveCoinItem(InvoiceCoinItem coinItem) => _coins.Remove(coinItem);
 
     public void ClearCoinItems() => _coins.Clear();
 

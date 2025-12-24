@@ -5,6 +5,20 @@
         <MudText Typo="Typo.h6" Class="d-none d-md-block">@ListTitle</MudText>
         <MudSpacer />
 
+        <MudPaper Elevation="0" Style="max-width: 250px;">
+            <MudTextField Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.QrCode"
+                          Clearable="true"
+                          Label="بارکد سکه"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          T="string"
+                          Value="_barcode"
+                          ValueChanged="((s) => OnBarcodeChanged.InvokeAsync(s))"
+                          OnClearButtonClick="OnBarcodeCleared" />
+        </MudPaper>
+
         @if (InvoiceType is InvoiceType.Sell)
         {
             <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Tertiary" Text="انتخاب جنس از انبار">
@@ -28,10 +42,16 @@
             <col />
             <col />
             <col />
+            <col />
+            <col />
+            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
             <MudTh>عنوان</MudTh>
+            <MudTh>نوع سکه</MudTh>
+            <MudTh>وزن</MudTh>
+            <MudTh>سال ضرب</MudTh>
             <MudTh>تعداد</MudTh>
             <MudTh>نرخ واحد</MudTh>
             <MudTh>سود</MudTh>
@@ -40,13 +60,20 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
-            <MudTd DataLabel="عنوان">@context.Coin.Title</MudTd>
+            <MudTd DataLabel="عنوان">@context.CoinInstance.Coin?.Title</MudTd>
+            <MudTd DataLabel="نوع سکه">@($"{context.CoinInstance.MintType.GetDisplayName()} ({context.CoinInstance.PackageType.GetDisplayName()})")</MudTd>
+            <MudTd DataLabel="وزن">@GetWeight(context)</MudTd>
+            <MudTd DataLabel="سال ضرب">@GetMintYear(context)</MudTd>
             <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="سود">@context.ProfitAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">
+                    <MudTooltip Text="چاپ بارکد">
+                        <MudIconButton Icon="@Icons.Material.Filled.Print" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Success" OnClick="() => OnPrintBarcode.InvokeAsync(context)"></MudIconButton>
+                    </MudTooltip>
                     <MudTooltip Text="ویرایش">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
                                        Color="Color.Primary" OnClick="() => OnEditItem.InvokeAsync(context)"></MudIconButton>

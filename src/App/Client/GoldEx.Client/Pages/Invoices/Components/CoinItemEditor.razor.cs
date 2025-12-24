@@ -1,6 +1,8 @@
-﻿using GoldEx.Client.Pages.Invoices.Validators;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.Coins;
+using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -19,16 +21,18 @@ public partial class CoinItemEditor
     [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
 
     private List<GetCoinResponse> _coins = [];
+    private List<GetCustomerResponse> _customers = [];
     private MudForm _form = default!;
     private bool _isProcessing;
     private readonly CoinItemValidator _coinItemValidator = new();
     private int? _maxAvailableAmount;
+    private MudColorPicker? _colorPicker;
 
     protected override async Task OnParametersSetAsync()
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (Model.Coin != null) 
-            await LoadMaxAmountAsync(Model.Coin);
+        if (Model.CoinInstance.Id.HasValue)
+            await LoadMaxAmountAsync(Model.CoinInstance);
 
         await LoadCoinAsync();
         await base.OnParametersSetAsync();
@@ -45,10 +49,13 @@ public partial class CoinItemEditor
             });
     }
 
-    private async Task LoadMaxAmountAsync(GetCoinResponse coin)
+    private async Task LoadMaxAmountAsync(CoinInstanceVm coin)
     {
+        if (coin.Id is null)
+            return;
+
         await SendRequestAsync<IInventoryStockService, GetInventoryStockAmountResponse>(
-            action: (s, ct) => s.GetAvailableItemAmountAsync(coin.Id, ItemType.Coin, ct),
+            action: (s, ct) => s.GetAvailableItemAmountAsync(coin.Id.Value, ItemType.Coin, ct),
             afterSend: response => _maxAvailableAmount = (int)response.Amount);
     }
 
@@ -74,12 +81,19 @@ public partial class CoinItemEditor
         if (coin is null)
             return;
 
-        Model.Coin = coin;
+        Model.CoinInstance.Coin = coin;
+        Model.CoinInstance.Weight = coin.Weight;
+        Model.CoinInstance.Fineness = coin.Fineness;
+
+        if (Model.CoinInstance.MintYear.HasValue)
+        {
+            if (Model.CoinInstance.MintYear.Value.Year < coin.StartMintYear ||
+                (coin.EndMintYear.HasValue && Model.CoinInstance.MintYear.Value.Year > coin.EndMintYear.Value))
+                Model.CoinInstance.MintYear = null;
+        }
 
         if (PriceUnit is null)
             return;
-
-        await LoadMaxAmountAsync(coin);
 
         await SendRequestAsync<ICoinService, GetExchangeRateResponse?>(
             action: (s, ct) => s.GetPriceAsync(coin.Id, PriceUnit.IsDefault ? null : PriceUnit.Id, ct),
@@ -99,6 +113,99 @@ public partial class CoinItemEditor
         if (InvoiceType is InvoiceType.Purchase)
             return int.MaxValue;
 
-        return _maxAvailableAmount ?? 0;
+        return _maxAvailableAmount ?? int.MaxValue;
+    }
+
+    private void OnCoinMintTypeChanged(CoinMintType coinMintType)
+    {
+        Model.CoinInstance.MintType = coinMintType;
+
+        if (coinMintType is CoinMintType.Banking)
+        {
+            Model.CoinInstance.Weight = Model.CoinInstance.Weight;
+            Model.CoinInstance.Fineness = Model.CoinInstance.Fineness;
+        }
+    }
+
+    #region Customer
+
+    private async Task<IEnumerable<CustomerVm>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(customerName))
+            return null;
+
+        await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
+            action: (s, ct) => s.GetByNameAsync(customerName, CustomerType.Workshop, ct),
+            afterSend: response =>
+            {
+                _customers = response;
+            },
+            cancelPrevious: true);
+
+        return _customers.Select(CustomerVm.CreateFrom);
+    }
+
+    private async Task OnAddCustomer()
+    {
+        if (Model.CoinInstance.CoinPackage is null)
+            return;
+
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
+
+        var parameters = new DialogParameters<Customers.Components.Editor>
+        {
+            { x => x.ReturnModel, true },
+            { x => x.CustomerType, CustomerType.Workshop }
+        };
+
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن کارگاه جدید", parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: CustomerVm customerVm })
+        {
+            Model.CoinInstance.CoinPackage.Issuer = customerVm;
+            StateHasChanged();
+        }
+    }
+
+    #endregion
+
+    private async Task OpenColorPicker()
+    {
+        if (_colorPicker is not null)
+            await _colorPicker.OpenAsync();
+    }
+
+    private DateTime? GetMinDate()
+    {
+        if (Model.CoinInstance.Coin is null)
+            return null;
+
+        if (Model.CoinInstance.Coin.StartMintYear is 0)
+            return null;
+
+        return new DateTime(Model.CoinInstance.Coin.StartMintYear, 1, 1);
+    }
+
+    private DateTime? GetMaxDate()
+    {
+        if (Model.CoinInstance.Coin is null)
+            return null;
+
+        if (Model.CoinInstance.Coin.EndMintYear is null or 0)
+            return DateTime.Now;
+
+        return new DateTime(Model.CoinInstance.Coin.EndMintYear.Value, 12, 31);
+    }
+
+    private void OnCoinPackageTypeChanged(CoinPackageType packageType)
+    {
+        Model.CoinInstance.PackageType = packageType;
+
+        if (packageType is CoinPackageType.VacuumSealed && Model.CoinInstance.CoinPackage is null)
+            Model.CoinInstance.CoinPackage = new CoinPackageSpecVm();
+        else
+            Model.CoinInstance.CoinPackage = null;
     }
 }

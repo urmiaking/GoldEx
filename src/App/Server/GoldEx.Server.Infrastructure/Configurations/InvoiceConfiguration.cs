@@ -189,9 +189,12 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10)
             .IsRequired();
 
-        builder.HasOne(x => x.Coin)
+        builder.HasIndex(x => new { x.InvoiceId, x.CoinInstanceId })
+            .IsUnique();
+
+        builder.HasOne(x => x.CoinInstance)
             .WithMany()
-            .HasForeignKey(x => x.CoinId)
+            .HasForeignKey(x => x.CoinInstanceId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 

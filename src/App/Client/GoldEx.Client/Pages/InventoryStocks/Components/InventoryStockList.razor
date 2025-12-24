@@ -163,9 +163,12 @@
                 <MudTh><MudTableSortLabel SortLabel="CurrentQuantity" T="InventoryStockVm">وزن موجود</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="SoldQuantity" T="InventoryStockVm">وزن فروخته شده</MudTableSortLabel></MudTh>
                 break;
-
             case ItemType.Coin:
+                <MudTh><MudTableSortLabel SortLabel="Coin.Barcode" T="InventoryStockVm">بارکد</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Coin.Title" T="InventoryStockVm">عنوان</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Coin.Weight" T="InventoryStockVm">وزن</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Coin.Fineness" T="InventoryStockVm">عیار</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Coin.MintYear" T="InventoryStockVm">سال ضرب</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="CurrentAmount" T="InventoryStockVm">تعداد موجود</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="SoldAmount" T="InventoryStockVm">تعداد فروخته شده</MudTableSortLabel></MudTh>
                 break;
@@ -242,7 +245,15 @@
                 <MudTd DataLabel="وزن فروخته شده">@context.SoldAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
                 break;
             case ItemType.Coin when context.Coin is not null:
-                <MudTd DataLabel="عنوان">@(context.Coin.Title)</MudTd>
+                <MudTd DataLabel="بارکد">
+                    <MudTooltip Text="@GetBarcodeTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                        @context.Coin.Barcode
+                    </MudTooltip>
+                </MudTd>
+                <MudTd DataLabel="عنوان">@(GetCoinTitle(context.Coin))</MudTd>
+                <MudTd DataLabel="وزن">@(GetCoinWeight(context.Coin))</MudTd>
+                <MudTd DataLabel="عیار">@(context.Coin.Fineness.ToString("G29"))</MudTd>
+                <MudTd DataLabel="سال ضرب">@(GetCoinMintYear(context.Coin))</MudTd>
                 <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToString("G29")</MudTd>
                 <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
                 break;

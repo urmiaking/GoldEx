@@ -11,17 +11,13 @@ namespace GoldEx.Client.Pages.Invoices.Components;
 
 public partial class PaymentDialog
 {
-    [Parameter] public List<InvoicePaymentVm> Items { get; set; } = new();
-
+    [Parameter] public List<InvoicePaymentVm> Items { get; set; } = [];
     [Parameter] public GetPriceUnitTitleResponse PriceUnit { get; set; } = default!;
-    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = new();
+    [Parameter] public List<GetPriceUnitTitleResponse> PriceUnits { get; set; } = [];
     [Parameter] public InvoiceType InvoiceType { get; set; }
-
     [Parameter] public decimal TotalRemaining { get; set; }
-
     [Parameter] public Guid? CustomerId { get; set; }
-
-    [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
 
     [Inject] public ISettingService SettingService { get; set; } = default!;
 
@@ -60,26 +56,7 @@ public partial class PaymentDialog
     /// مانده فعلی فاکتور داخل همین دیالوگ، بر اساس مانده اولیه و تغییرات روی Items.
     /// TotalRemaining = مانده‌ای که هنگام باز شدن دیالوگ از InvoiceVm آمده.
     /// </summary>
-    private decimal CurrentRemaining
-    {
-        get
-        {
-            if (InvoiceType == InvoiceType.Sell)
-            {
-                // در فاکتور فروش: TotalUnpaidAmount = Amount - Used - NetPayments
-                // ما فقط می‌خواهیم Delta نسبت به باز شدن دیالوگ را اعمال کنیم.
-                // ساده‌ترین حالت: فرض کنیم هنگام باز شدن هیچ تغییری نداشتیم و الان با NetPayments فعلی،
-                // مانده = TotalRemaining - (NetPaymentsNow - 0) = TotalRemaining - TotalNetPayments.
-                // از آن‌جا که TotalRemaining از قبل NetPayments را در خودش دارد، این تقریب
-                // در PaymentDialog کافی‌ست (چون ما با کپی لیست کار می‌کنیم).
-                return TotalRemaining - TotalNetPayments;
-            }
-
-            // در فاکتور خرید: TotalUnpaidAmount = Amount - TotalPaidAmount
-            // اینجا هم مشابه، از Delta استفاده می‌کنیم: TotalRemaining - TotalAbsolutePayments
-            return TotalRemaining - TotalAbsolutePayments;
-        }
-    }
+    private decimal CurrentRemaining => TotalRemaining;
 
     private decimal GetSignedAmount(InvoicePaymentVm p)
     {
@@ -115,13 +92,17 @@ public partial class PaymentDialog
 
         if (InvoiceType == InvoiceType.Sell)
         {
-            // در فروش: از امضای پرداخت استفاده می‌کنیم (Receive - Pay)
             var signed = GetSignedAmount(payment);
-            return CurrentRemaining + signed;
+            // در فروش: InvoiceVm از NetPayments استفاده می‌کند.
+            // TotalRemaining = مانده بعد از این پرداخت.
+            // برای قبل از این پرداخت، باید اثر امضادار خودش را حذف کنیم.
+            return TotalRemaining + signed;
         }
 
-        // در خرید: از مقدار مثبت پایه استفاده می‌کنیم (جمع ساده)
-        return CurrentRemaining + baseAmount;
+        // در خرید: InvoiceVm از مجموع ساده (TotalPaidAmount) استفاده می‌کند.
+        // TotalRemaining = Amount - SumPaymentsIncludingThis
+        // برای قبل از این پرداخت، باید مبلغ مثبتش را حذف کنیم.
+        return TotalRemaining + baseAmount;
     }
 
     private async Task OnEdit(InvoicePaymentVm payment)
@@ -195,7 +176,7 @@ public partial class PaymentDialog
             { x => x.BasePriceUnit, PriceUnit },
             { x => x.PriceUnits, PriceUnits },
             { x => x.InvoiceType, InvoiceType },
-            { x => x.TotalRemaining, CurrentRemaining }
+            { x => x.TotalRemaining, TotalRemaining }
         };
 
         var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions);

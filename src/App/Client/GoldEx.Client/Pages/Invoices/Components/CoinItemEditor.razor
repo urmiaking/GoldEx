@@ -4,13 +4,53 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_coinItemValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <MudGrid>
-                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 3 : 4)">
+            <div class="align-center d-flex flex-wrap gap-md-3 justify-center justify-md-space-between mb-1">
+                <div class="d-flex flex-wrap align-center gap-3 my-3">
+                    <MudText Typo="Typo.body1" Class="d-none d-md-block">نوع سکه:</MudText>
+                    <MudChipSet T="CoinMintType"
+                                SelectionMode="SelectionMode.SingleSelection"
+                                Variant="Variant.Outlined"
+                                Size="Size.Medium"
+                                CheckMark="true"
+                                SelectedValue="Model.CoinInstance.MintType"
+                                SelectedValueChanged="OnCoinMintTypeChanged">
+                        <MudChip Color="Color.Success"
+                                 Value="CoinMintType.Banking"
+                                 Size="@(Model.CoinInstance.MintType == CoinMintType.Banking ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.CoinInstance.MintType == CoinMintType.Banking ? Variant.Text : Variant.Outlined)">@CoinMintType.Banking.GetDisplayName()</MudChip>
+                        <MudChip Color="Color.Error"
+                                 Value="CoinMintType.NonBanking"
+                                 Size="@(Model.CoinInstance.MintType == CoinMintType.NonBanking ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.CoinInstance.MintType == CoinMintType.NonBanking ? Variant.Text : Variant.Outlined)">@CoinMintType.NonBanking.GetDisplayName()</MudChip>
+                    </MudChipSet>
+                </div>
+                <div class="d-flex flex-wrap align-center gap-3 my-3">
+                    <MudText Typo="Typo.body1" Class="d-none d-md-block">نوع بسته بندی:</MudText>
+                    <MudChipSet T="CoinPackageType"
+                                SelectionMode="SelectionMode.SingleSelection"
+                                Variant="Variant.Outlined"
+                                Size="Size.Medium"
+                                CheckMark="true"
+                                SelectedValue="Model.CoinInstance.PackageType"
+                                SelectedValueChanged="OnCoinPackageTypeChanged">
+                        <MudChip Color="Color.Success"
+                                 Value="CoinPackageType.VacuumSealed"
+                                 Size="@(Model.CoinInstance.PackageType == CoinPackageType.VacuumSealed ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.CoinInstance.PackageType == CoinPackageType.VacuumSealed ? Variant.Text : Variant.Outlined)">@CoinPackageType.VacuumSealed.GetDisplayName()</MudChip>
+                        <MudChip Color="Color.Error"
+                                 Value="CoinPackageType.Open"
+                                 Size="@(Model.CoinInstance.PackageType == CoinPackageType.Open ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.CoinInstance.PackageType == CoinPackageType.Open ? Variant.Text : Variant.Outlined)">@CoinPackageType.Open.GetDisplayName()</MudChip>
+                    </MudChipSet>
+                </div>
+            </div>
+            <MudGrid Spacing="4">
+                <MudItem xs="12" md="6" lg="4">
                     <MudSelect T="GetCoinResponse?"
-                               Value="Model.Coin"
+                               Value="Model.CoinInstance.Coin"
                                ValueChanged="OnCoinChanged"
-                               Label="@Model.GetDisplayName(() => Model.Coin)"
-                               For="() => Model.Coin"
+                               Label="@Model.GetDisplayName(() => Model.CoinInstance)"
+                               For="() => Model.CoinInstance.Coin"
                                Margin="Margin.Dense"
                                Variant="Variant.Outlined">
                         <MudSelectItem T="GetCoinResponse?" Value="null">انتخاب کنید...</MudSelectItem>
@@ -20,7 +60,7 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 3 : 4)">
+                <MudItem xs="12" md="6" lg="4">
                     <MudNumericField T="decimal"
                                      @bind-Value="Model.UnitPrice"
                                      Label="@Model.GetDisplayName(() => Model.UnitPrice)"
@@ -33,24 +73,78 @@
                                      Variant="Variant.Outlined"
                                      InputMode="InputMode.numeric"
                                      Adornment="Adornment.End"
-                                     AdornmentText="@PriceUnit?.Title"/>
+                                     AdornmentText="@PriceUnit?.Title" />
                 </MudItem>
-                <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 3 : 4)">
-                    <MudNumericField T="int"
-                                     @bind-Value="Model.Quantity"
-                                     Label="@Model.GetDisplayName(() => Model.Quantity)"
-                                     For="() => Model.Quantity"
+                <MudItem xs="12" sm="6" md="4">
+                    <div class="d-flex align-center gap-2">
+                        <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined"
+                                       OnClick="@(() => Model.Quantity--)"
+                                       Disabled="@(Model.Quantity <= 1)"
+                                       Color="Color.Primary" />
+
+                        <MudNumericField For="@(() => Model.Quantity)"
+                                         Immediate="true"
+                                         dir="ltr"
+                                         Label="@Model.GetDisplayName(() => Model.Quantity)"
+                                         Margin="Margin.Dense"
+                                         T="int"
+                                         Min="0"
+                                         Max="GetMaxAmount()"
+                                         @bind-Value="Model.Quantity"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Style="flex: 1;" />
+
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
+                                       OnClick="@(() => Model.Quantity++)"
+                                       Color="Color.Primary" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudNumericField Adornment="Adornment.End"
+                                     AdornmentText="@GoldUnitType.Gram.GetDisplayName()"
+                                     For="() => Model.CoinInstance.Weight"
+                                     dir="ltr"
+                                     Disabled="Model.CoinInstance.MintType == CoinMintType.Banking"
+                                     Format="G29"
+                                     Immediate="true"
+                                     HideSpinButtons="true"
+                                     Margin="Margin.Dense"
+                                     Label="@(Model.GetDisplayName(() => Model.CoinInstance.Weight))"
+                                     T="decimal?"
+                                     @bind-Value="Model.CoinInstance.Weight"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudNumericField For="@(() => Model.CoinInstance.Fineness)"
+                                     Format="G29"
                                      Immediate="true"
                                      dir="ltr"
-                                     Min="0"
-                                     Max="GetMaxAmount()"
+                                     Label="@Model.GetDisplayName(() => Model.CoinInstance.Fineness)"
                                      Margin="Margin.Dense"
-                                     Variant="Variant.Outlined"
-                                     InputMode="InputMode.numeric" />
+                                     Disabled="Model.CoinInstance.MintType == CoinMintType.Banking"
+                                     T="decimal"
+                                     @bind-Value="Model.CoinInstance.Fineness"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudDatePicker OpenTo="OpenTo.Year"
+                                   FixMonth="1" FixDay="1"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   MinDate="@(GetMinDate())"
+                                   MaxDate="@(GetMaxDate())"
+                                   RelativeWidth="DropdownWidth.Relative"
+                                   ShowToolbar="false"
+                                   DateFormat="yyyy"
+                                   dir="ltr"
+                                   Label="@Model.GetDisplayName(() => Model.CoinInstance.MintYear)"
+                                   @bind-Date="Model.CoinInstance.MintYear" />
                 </MudItem>
                 @if (InvoiceType is InvoiceType.Sell)
                 {
-                    <MudItem xs="12" md="6" lg="3">
+                    <MudItem xs="12" md="6" lg="4">
                         <MudNumericField T="decimal"
                                          @bind-Value="Model.ProfitPercent"
                                          Label="@Model.GetDisplayName(() => Model.ProfitPercent)"
@@ -66,8 +160,78 @@
                                          InputMode="InputMode.numeric" />
                     </MudItem>
                 }
-
             </MudGrid>
+            @if (Model.CoinInstance.PackageType is CoinPackageType.VacuumSealed && Model.CoinInstance.CoinPackage is not null)
+            {
+                <MudText Typo="Typo.body1" Class="mt-4">بسته بندی سکه</MudText>
+                <MudDivider />
+                <MudGrid Spacing="4">
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudNumericField Adornment="Adornment.End"
+                                         AdornmentText="@GoldUnitType.Gram.GetDisplayName()"
+                                         For="() => Model.CoinInstance.CoinPackage.VacuumedWeight"
+                                         dir="ltr"
+                                         Format="G29"
+                                         Immediate="true"
+                                         HideSpinButtons="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(Model.GetDisplayName(() => Model.CoinInstance.CoinPackage.VacuumedWeight))"
+                                         T="decimal?"
+                                         @bind-Value="Model.CoinInstance.CoinPackage.VacuumedWeight"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudTextField @bind-Value="Model.CoinInstance.CoinPackage.StandardCode"
+                                      For="() => Model.CoinInstance.CoinPackage.StandardCode!"
+                                      Label="@Model.GetDisplayName(() => Model.CoinInstance.CoinPackage.StandardCode)"
+                                      Margin="Margin.Dense"
+                                      dir="ltr"
+                                      T="string"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <div class="d-flex flex-row align-center gap-2">
+                            <MudAutocomplete T="CustomerVm"  
+                                             @bind-Value="Model.CoinInstance.CoinPackage.Issuer"
+                                             Text="@(Model.CoinInstance.CoinPackage.Issuer != null ? $"{Model.CoinInstance.CoinPackage.Issuer.FullName} ({Model.CoinInstance.CoinPackage.Issuer.NationalId})" : null)"
+                                             For="@(() => Model.CoinInstance.CoinPackage.Issuer!)"  
+                                             Placeholder="جستجوی کارگاه..."  
+                                             Label="@(Model.GetDisplayName(() => Model.CoinInstance.CoinPackage.Issuer))"  
+                                             ToStringFunc="@(issuer => issuer != null ? $"{issuer.FullName} ({issuer.NationalId})" : null)"  
+                                             Margin="Margin.Dense"  
+                                             Adornment="Adornment.Start"  
+                                             AdornmentIcon="@Icons.Material.Filled.Search"  
+                                             Variant="Variant.Outlined"  
+                                             SearchFunc="@SearchCustomers"  
+                                             ResetValueOnEmptyText="true"  
+                                             DebounceInterval="0"  
+                                             ShowProgressIndicator="false">  
+                            </MudAutocomplete>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer" />
+                        </div>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <div class="d-flex flex-row align-center gap-2">
+                            <MudColorPicker @bind-Text="Model.CoinInstance.CoinPackage.CardColor"
+                                            @ref="_colorPicker"
+                                            Label="@Model.GetDisplayName(() => Model.CoinInstance.CoinPackage.CardColor)"
+                                            ColorPickerView="ColorPickerView.Palette"
+                                            TransformOrigin="Origin.TopRight"
+                                            AnchorOrigin="Origin.BottomCenter"
+                                            Variant="Variant.Outlined"
+                                            Margin="Margin.Dense"
+                                            Elevation="24" />
+
+                            @if (!string.IsNullOrEmpty(Model.CoinInstance.CoinPackage.CardColor))
+                            {
+                                <div style="width: 30px; height: 30px; border-radius: 16px; border: 1px solid #ccc; background: @Model.CoinInstance.CoinPackage.CardColor; cursor: pointer;"  
+                                     @onclick="OpenColorPicker">  
+                                </div>  
+                            }
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            }
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Error"

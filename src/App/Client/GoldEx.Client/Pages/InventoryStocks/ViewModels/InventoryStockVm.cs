@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Products.ViewModels;
+﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
@@ -18,7 +19,7 @@ public class InventoryStockVm
     public string? PurchaseWagePriceUnitTitle { get; init; }
 
     public ProductVm? Product { get; set; }
-    public CoinVm? Coin { get; set; }
+    public CoinInstanceVm? Coin { get; set; }
     public PriceUnitVm? Currency { get; set; }
 
     public DateTime DateTime { get; set; }
@@ -39,7 +40,7 @@ public class InventoryStockVm
             PurchaseWageType = response.PurchaseWageType,
             PurchaseWagePriceUnitTitle = response.PurchaseWagePriceUnitTitle,
             Product = response.Product != null ? ProductVm.CreateFrom(response.Product) : null,
-            Coin = response.Coin != null ? CoinVm.CreateFrom(response.Coin) : null,
+            Coin = response.Coin != null ? CoinInstanceVm.CreateFrom(response.Coin) : null,
             Currency = response.Currency != null ? PriceUnitVm.CreateFromTitleResponse(response.Currency) : null
         };
     }

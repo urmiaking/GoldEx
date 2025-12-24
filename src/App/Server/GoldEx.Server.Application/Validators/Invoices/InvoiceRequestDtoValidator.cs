@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -115,7 +115,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             .SetValidator(new InvoiceExtraCostDtoValidator(priceUnitRepository));
 
         RuleForEach(x => x.InvoiceCoinItems)
-            .SetValidator(new InvoiceCoinItemDtoValidator(coinRepository));
+            .SetValidator(new InvoiceCoinItemDtoValidator(coinRepository, customerRepository));
 
         RuleForEach(x => x.InvoiceCurrencyItems)
             .SetValidator(new InvoiceCurrencyItemDtoValidator(priceUnitRepository));
@@ -232,9 +232,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         return invoiceProductItem.Product.Id.HasValue || invoiceProductItem.CostPrice.HasValue;
     }
 
-    private async Task<bool> NotResultInNegativeInventory(
-    InvoiceRequestDto request,
-    CancellationToken cancellationToken = default)
+    private async Task<bool> NotResultInNegativeInventory(InvoiceRequestDto request, CancellationToken cancellationToken = default)
     {
         // -------------------------------------------------
         // CREATE
@@ -261,7 +259,10 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             // Coins
             foreach (var item in request.InvoiceCoinItems)
             {
-                var coinId = new CoinId(item.CoinId);
+                if (!item.CoinInstance.Id.HasValue)
+                    continue;
+
+                var coinId = new CoinInstanceId(item.CoinInstance.Id.Value);
                 var currentStock =
                     await _inventoryStockRepository.GetQuantityAsync(coinId, cancellationToken);
 
@@ -330,7 +331,7 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         // COINS
         // ----------------------------
         var coinIds = originalInvoice.CoinItems
-            .Select(x => x.CoinId)
+            .Select(x => x.CoinInstanceId)
             .Distinct()
             .ToList();
 
@@ -342,11 +343,11 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
             var currentStock = coinStocks.GetValueOrDefault(coinId, 0m);
 
             var oldQuantity = originalInvoice.CoinItems
-                .Where(x => x.CoinId == coinId)
+                .Where(x => x.CoinInstanceId == coinId)
                 .Sum(x => x.Quantity);
 
             var newQuantity = request.InvoiceCoinItems
-                .Where(x => x.CoinId == coinId.Value)
+                .Where(x => x.Id == coinId.Value)
                 .Sum(x => x.Quantity);
 
             var baselineStock = currentStock + oldQuantity;

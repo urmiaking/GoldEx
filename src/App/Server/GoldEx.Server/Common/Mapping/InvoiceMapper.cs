@@ -62,7 +62,8 @@ internal class InvoiceMapper : IRegister
             .Map(dest => dest.StonePriceUnitExchangeRate, src => src.StonePriceUnitExchangeRate);
 
         config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemResponse>()
-            .Map(dest => dest.Id, src => src.Id.Value);
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Coin, src => src.CoinInstance);
 
         config.NewConfig<InvoiceCurrencyItem, GetInvoiceCurrencyItemResponse>()
             .Map(dest => dest.Id, src => src.Id.Value);
