@@ -224,7 +224,7 @@ public static class ApiRoutes
     {
         public const string Base = "/api/barcode-reservations";
         public const string IssueNext = "issue-next";
-        public const string Release = "{barcode}/release";
+        public const string Release = "{barcodeType}/{barcode}/release";
 
     }
 
@@ -279,5 +279,11 @@ public static class ApiRoutes
         public const string SetStatus = "status/{id}/{isActive}";
         public const string Delete = "{id}";
         public const string UploadFiles = "upload";
+    }
+
+    public class CoinInstances
+    {
+        public const string Base = "/api/coin-instances";
+        public const string Get = "{barcode}";
     }
 }

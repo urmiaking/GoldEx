@@ -4,7 +4,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
-using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -36,10 +36,10 @@ internal class InventoryStockRepository(
                 cancellationToken);
     }
 
-    public Task<decimal> GetQuantityAsync(CoinId coinId, CancellationToken cancellationToken = default)
+    public Task<decimal> GetQuantityAsync(CoinInstanceId coinId, CancellationToken cancellationToken = default)
     {
         return Query
-            .Where(stock => stock.CoinId == coinId)
+            .Where(stock => stock.CoinInstanceId == coinId)
             .SumAsync(stock => stock.ActionType == WarehouseActionType.In
                     ? stock.ChangeAmount
                     : -stock.ChangeAmount,
@@ -73,15 +73,16 @@ internal class InventoryStockRepository(
             .ToDictionaryAsync(result => result.Id, result => result.TotalQuantity, cancellationToken);
     }
 
-    public async Task<Dictionary<CoinId, decimal>> GetQuantitiesAsync(IEnumerable<CoinId> coinIds, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<CoinInstanceId, decimal>> GetQuantitiesAsync(IEnumerable<CoinInstanceId> coinIds,
+        CancellationToken cancellationToken = default)
     {
         var ids = coinIds.ToList();
         if (!ids.Any())
-            return new Dictionary<CoinId, decimal>();
+            return new Dictionary<CoinInstanceId, decimal>();
 
         return await Query
-            .Where(stock => stock.CoinId != null && ids.Contains(stock.CoinId.Value))
-            .GroupBy(stock => stock.CoinId!.Value)
+            .Where(stock => stock.CoinInstanceId != null && ids.Contains(stock.CoinInstanceId.Value))
+            .GroupBy(stock => stock.CoinInstanceId!.Value)
             .Select(group => new
             {
                 Id = group.Key,
@@ -216,7 +217,7 @@ internal class InventoryStockRepository(
                             ProductName = p.Name,
                             ProductBarcode = p.Barcode,
                             ProductFineness = p.Fineness,
-                            ProductType = p.ProductType,
+                            p.ProductType,
                             ProductCreatedAt = p.CreatedAt,
 
                             // NEW: Flatten Category Title (Triggers Left Join in SQL)
@@ -365,22 +366,35 @@ internal class InventoryStockRepository(
 
             case ItemType.Coin:
                 {
+                    query = query.Where(x => x.CoinInstanceId != null);
+
                     if (!string.IsNullOrEmpty(filter.Search))
-                        query = query.Where(x => x.Coin!.Title.Contains(filter.Search));
+                    {
+                        query = query.Where(x =>
+                            x.CoinInstance!.Barcode.Contains(filter.Search));
+                    }
 
                     var groupedQuery = query
-                        .Where(x => x.CoinId != null)
-                        .GroupBy(x => x.CoinId)
+                        .GroupBy(x => x.CoinInstanceId)
                         .Select(g => new
                         {
-                            CoinId = g.Key,
+                            CoinInstanceId = g.Key!,
                             LastActivityDate = g.Min(x => x.PostingDate),
-                            CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
-                            SoldQuantity = g.Where(s => s.ActionType == WarehouseActionType.Out &&
-                                                        s.InvoiceId != null &&
-                                                        s.Invoice!.InvoiceType == InvoiceType.Sell &&
-                                                        s.ReverseInventoryStockId == null)
-                                            .Sum(s => s.ChangeAmount)
+
+                            CurrentQuantity = g.Sum(s =>
+                                s.ActionType == WarehouseActionType.In
+                                    ? s.ChangeAmount
+                                    : -s.ChangeAmount
+                            ),
+
+                            SoldQuantity = g
+                                .Where(s =>
+                                    s.ActionType == WarehouseActionType.Out &&
+                                    s.InvoiceId != null &&
+                                    s.Invoice!.InvoiceType == InvoiceType.Sell &&
+                                    s.ReverseInventoryStockId == null
+                                )
+                                .Sum(s => s.ChangeAmount)
                         });
 
                     if (inventoryFilter.ActionType == WarehouseActionType.In)
@@ -391,28 +405,49 @@ internal class InventoryStockRepository(
                     var total = await groupedQuery.CountAsync(cancellationToken);
 
                     var flattenedQuery = groupedQuery.Join(
-                        dbContext.Set<Coin>(),
-                        g => g.CoinId,
-                        c => c.Id,
-                        (g, c) => new
+                        dbContext.Set<CoinInstance>()
+                            .AsNoTracking()
+                            .Include(ci => ci.Coin)
+                            .Include(ci => ci.CoinInstancePackage!.Issuer),
+                        g => g.CoinInstanceId,
+                        ci => ci.Id,
+                        (g, ci) => new
                         {
-                            Coin = c,
+                            CoinInstance = ci,
                             g.CurrentQuantity,
                             g.SoldQuantity,
                             g.LastActivityDate,
-                            CoinTitle = c.Title
-                        }
-                    );
+                            ci.Barcode,
+                            ci.MintYear,
+                            ci.PackageType
+                        });
 
-                    var isDesc = filter.SortDirection == null || filter.SortDirection == SortDirection.None ||
-                                 filter.SortDirection == SortDirection.Descending;
+                    var isDesc =
+                        filter.SortDirection == null ||
+                        filter.SortDirection == SortDirection.None ||
+                        filter.SortDirection == SortDirection.Descending;
 
                     flattenedQuery = filter.SortLabel switch
                     {
-                        "Coin.Title" => isDesc ? flattenedQuery.OrderByDescending(x => x.CoinTitle) : flattenedQuery.OrderBy(x => x.CoinTitle),
-                        "CurrentAmount" => isDesc ? flattenedQuery.OrderByDescending(x => x.CurrentQuantity) : flattenedQuery.OrderBy(x => x.CurrentQuantity),
-                        "SoldAmount" => isDesc ? flattenedQuery.OrderByDescending(x => x.SoldQuantity) : flattenedQuery.OrderBy(x => x.SoldQuantity),
-                        _ => isDesc ? flattenedQuery.OrderByDescending(x => x.CoinTitle) : flattenedQuery.OrderBy(x => x.CoinTitle)
+                        "CoinInstance.Barcode" =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.Barcode)
+                                : flattenedQuery.OrderBy(x => x.Barcode),
+
+                        "CurrentAmount" =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.CurrentQuantity)
+                                : flattenedQuery.OrderBy(x => x.CurrentQuantity),
+
+                        "SoldAmount" =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.SoldQuantity)
+                                : flattenedQuery.OrderBy(x => x.SoldQuantity),
+
+                        _ =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.LastActivityDate)
+                                : flattenedQuery.OrderBy(x => x.LastActivityDate)
                     };
 
                     var pagedResult = await flattenedQuery
@@ -422,7 +457,7 @@ internal class InventoryStockRepository(
 
                     var data = pagedResult.Select(x => new InventorySummaryData
                     {
-                        Coin = x.Coin,
+                        CoinInstance = x.CoinInstance,
                         CurrentAmount = x.CurrentQuantity,
                         SoldAmount = x.SoldQuantity,
                         DateTime = x.LastActivityDate
@@ -430,7 +465,6 @@ internal class InventoryStockRepository(
 
                     return (data, total);
                 }
-
             case ItemType.Currency:
                 {
                     if (!string.IsNullOrEmpty(filter.Search))

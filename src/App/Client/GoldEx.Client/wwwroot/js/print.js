@@ -175,16 +175,16 @@ function generateItemHtml(item, data, position) {
     const style = `font-size: ${item.fontSize}px; ${marginProp}: ${item.itemSpacing}px; font-weight: 500;`;
 
     switch (item.itemType) {
-    case 'Barcode':
-        const barcodeSettings = item.barcodeSettings || {
-            width: 2,
-            height: 50,
-            displayValue: true,
-            fontSize: 14,
-            margin: 0
-        };
+        case 'Barcode':
+            const barcodeSettings = item.barcodeSettings || {
+                width: 2,
+                height: 50,
+                displayValue: true,
+                fontSize: 14,
+                margin: 0
+            };
 
-        return `<svg class="barcode-svg barcode-element" 
+            return `<svg class="barcode-svg barcode-element" 
                         data-barcode="${escapeHtml(data.barcode)}" 
                         data-position="${position}"
                         data-width="${barcodeSettings.width}"
@@ -194,17 +194,29 @@ function generateItemHtml(item, data, position) {
                         data-margin="${barcodeSettings.margin}"
                         style="${marginProp}: ${item.itemSpacing}px;"></svg>`;
 
-    case 'ProductName':
-        return `<div class="item" style="${style} font-family: 'B Nazanin'"><strong>${escapeHtml(data.productName || 'نام محصول')}</strong></div>`;
+        case 'ProductName':
+            if (!data.productName)
+                return '';
+            return `<div class="item" style="${style} font-family: 'B Nazanin'">
+                        <strong>${escapeHtml(data.productName)}</strong>
+                    </div>`;
 
-    case 'Weight':
-        return `<div class="item" style="${style}">${escapeHtml(data.weight || 'وزن')}</div>`;
+        case 'Weight':
+            if (!data.weight)
+                return '';
+            return `<div class="item" style="${style}">
+                        ${escapeHtml(data.weight)}
+                    </div>`;
 
-    case 'Wage':
-        return `<div class="item" style="${style}">${escapeHtml(data.wage || 'اجرت')}</div>`;
+        case 'Wage':
+            if (!data.wage)
+                return '';
+            return `<div class="item" style="${style}">
+                        ${escapeHtml(data.wage)}
+                    </div>`;
 
-    default:
-        return '';
+        default:
+            return '';
     }
 }
 
@@ -236,7 +248,7 @@ function generateAllBarcodes(printWindow, barcodeValue) {
                 font: "monospace",
                 fontOptions: "bold",
                 textAlign: "center",
-                textPosition: "bottom", 
+                textPosition: "bottom",
                 textMargin: 2,
                 background: "#ffffff",
                 lineColor: "#000000",

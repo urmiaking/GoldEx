@@ -66,7 +66,7 @@ internal class ExcelProductProcessor(
                 }
 
                 // ====== دسته‌بندی ======
-                ProductCategory? category = null;
+                ProductCategory? category;
                 if (!string.IsNullOrWhiteSpace(dto.ProductCategory))
                 {
                     category = await productCategoryService
@@ -91,11 +91,11 @@ internal class ExcelProductProcessor(
                         continue;
                     }
 
-                    await barcodeService.ValidateUniquenessAsync(barcode, cancellationToken);
+                    await barcodeService.ValidateUniquenessAsync(BarcodeType.Product, barcode, cancellationToken);
                 }
                 else
                 {
-                    barcode = await barcodeService.GenerateNextAsync(dto.ProductType, category?.Id, cancellationToken);
+                    barcode = await barcodeService.GenerateNextAsync(BarcodeType.Product, dto.ProductType, category.Id, cancellationToken);
                     barcodeSet.Add(barcode);
                 }
 
@@ -143,8 +143,8 @@ internal class ExcelProductProcessor(
                     ProductType: dto.ProductType,
                     WageType: dto.WageType,
                     Fineness: dto.Fineness,
-                    ProductCategoryId: category?.Id.Value,
-                    ProductCategoryTitle: category?.Title,
+                    ProductCategoryId: category.Id.Value,
+                    ProductCategoryTitle: category.Title,
                     WagePriceUnitId: wagePriceUnit?.Id,
                     WagePriceUnitTitle: wagePriceUnit?.Title,
                     DateTime: DateTime.Now,

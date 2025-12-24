@@ -1,4 +1,6 @@
-﻿namespace GoldEx.Server.Application.Services.Abstractions;
+﻿using GoldEx.Shared.Enums;
+
+namespace GoldEx.Server.Application.Services.Abstractions;
 
 public interface IServerBarcodeReservationService
 {
@@ -11,5 +13,5 @@ public interface IServerBarcodeReservationService
     /// <summary>
     /// نهایی‌سازی رزرو بارکد هنگام ثبت فاکتور
     /// </summary>
-    Task CommitAsync(string barcode, Guid? invoiceId, CancellationToken cancellationToken = default);
+    Task CommitAsync(BarcodeType barcodeType, string barcode, Guid? invoiceId, CancellationToken cancellationToken = default);
 }

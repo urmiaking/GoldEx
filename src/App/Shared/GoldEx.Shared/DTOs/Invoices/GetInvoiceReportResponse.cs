@@ -69,6 +69,9 @@ public record GetProductReportResponse(
 
 public record GetInvoiceCoinItemReportResponse(
     string CoinTitle,
+    string Weight,
+    string Fineness,
+    int? MintYear,
     string TotalPrice,
     int Quantity);
 

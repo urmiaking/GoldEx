@@ -25,7 +25,7 @@ public partial class InventoryItemSelector
     [CascadingParameter] public IMudDialogInstance Dialog { get; set; } = default!;
 
     private List<ProductVm>? _products;
-    private List<CoinVm>? _coins;
+    private List<CoinInstanceVm>? _coins;
     private List<PriceUnitVm>? _currencies;
 
     private List<InventoryStockVm>? _selectedItems;
@@ -91,12 +91,7 @@ public partial class InventoryItemSelector
 
                 return await new CoinItemVm
                 {
-                    Coin = new GetCoinResponse(coin.Id!.Value,
-                        coin.Title!,
-                        coin.Weight ?? 0,
-                        coin.Fineness ?? 0,
-                        coin.IsActive,
-                        coin.PriceId!.Value),
+                    CoinInstance = coin,
                     Quantity = 1,
                     UnitPrice = unitPrice
                 }.RecalculateAmountsAsync();

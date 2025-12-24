@@ -101,7 +101,7 @@ public partial class PaymentEditor
         if (Model.PaymentType is PaymentType.InternalCash && !Model.FinancialAccounts.Any())
             await LoadFinancialAccountsAsync();
 
-        if (Model.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory && Model.PriceUnit?.Id != BasePriceUnit.Id)
+        if (Model.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory && Model.PriceUnit?.Id != BasePriceUnit.Id && !Model.Id.HasValue)
             await LoadExchangeRateAsync();
 
         await base.OnParametersSetAsync();
@@ -151,30 +151,26 @@ public partial class PaymentEditor
         Model.PriceUnit = BasePriceUnit;
     }
 
-
     private async Task LoadExchangeRateAsync()
     {
         if (Model.PriceUnit is null)
             return;
 
-        Model.ExchangeRateLabel = $"نرخ تبدیل هر {Model.PriceUnit.Title}";
-
         if (Model.PriceUnit.Id == BasePriceUnit.Id)
         {
             Model.ExchangeRate = 1;
-            Model.ExchangeRateLabel = null;
             StateHasChanged();
             return;
         }
 
         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
-            action: (s, ct) => s.GetExchangeRateAsync(Model.PriceUnit.Id, BasePriceUnit.Id, ct),
+            action: (s, ct) => s.GetExchangeRateAsync(
+                Model.PriceUnit.Id,
+                BasePriceUnit.Id,
+                ct),
             afterSend: response =>
             {
-                if (response.ExchangeRate.HasValue)
-                {
-                    Model.ExchangeRate = response.ExchangeRate.Value;
-                }
+                Model.ExchangeRate = response.ExchangeRate;
                 StateHasChanged();
             });
     }

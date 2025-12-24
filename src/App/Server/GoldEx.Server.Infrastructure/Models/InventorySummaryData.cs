@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.CoinAggregate;
+﻿using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
@@ -16,7 +16,7 @@ public record InventorySummaryData
     public WageType? PurchaseWageType { get; init; }
     public string? PurchaseWagePriceUnitTitle { get; init; }
 
-    public Coin? Coin { get; init; }
+    public CoinInstance? CoinInstance { get; init; }
     public PriceUnit? Currency { get; init; }
     public required decimal CurrentAmount { get; init; }
     public required decimal SoldAmount { get; init; }

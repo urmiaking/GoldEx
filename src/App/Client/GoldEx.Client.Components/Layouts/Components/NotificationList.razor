@@ -2,7 +2,7 @@
     <div class="notification-list">
         @if (Items.Any())
         {
-            <div class="notification-header">
+            @* <div class="notification-header">
                 <MudText Typo="Typo.h6">اعلان ها</MudText>
                 <MudButton Size="Size.Small"
                            Variant="Variant.Text"
@@ -11,7 +11,7 @@
                     همه را خواندم
                 </MudButton>
             </div>
-            <MudDivider />
+            <MudDivider /> *@
 
             @foreach (var notification in Items)
             {

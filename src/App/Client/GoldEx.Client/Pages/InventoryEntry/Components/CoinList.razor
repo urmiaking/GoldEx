@@ -19,10 +19,16 @@
             <col />
             <col />
             <col />
+            <col />
+            <col />
+            <col />
         </ColGroup>
         <HeaderContent>
             <MudTh>ردیف</MudTh>
             <MudTh>عنوان</MudTh>
+            <MudTh>نوع سکه</MudTh>
+            <MudTh>وزن</MudTh>
+            <MudTh>سال ضرب</MudTh>
             <MudTh>تعداد</MudTh>
             <MudTh>نرخ واحد</MudTh>
             <MudTh>ارزش کل</MudTh>
@@ -30,7 +36,10 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
-            <MudTd DataLabel="عنوان">@context.Coin.Title</MudTd>
+            <MudTd DataLabel="عنوان">@context.CoinInstance.Coin?.Title</MudTd>
+            <MudTd DataLabel="نوع سکه">@($"{context.CoinInstance.MintType.GetDisplayName()} ({context.CoinInstance.PackageType.GetDisplayName()})")</MudTd>
+            <MudTd DataLabel="وزن">@GetWeight(context)</MudTd>
+            <MudTd DataLabel="سال ضرب">@GetMintYear(context)</MudTd>
             <MudTd DataLabel="تعداد">@context.Quantity</MudTd>
             <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
             <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>

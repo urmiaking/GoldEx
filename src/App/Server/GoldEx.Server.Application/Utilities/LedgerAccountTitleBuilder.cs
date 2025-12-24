@@ -15,11 +15,6 @@ public static class LedgerAccountTitleBuilder
         return $"{SystemLedgerAccounts.InternalCashAccounts} - {priceUnitTitle}";
     }
 
-    public static string ForCoinAccount(string coinTitle)
-    {
-        return $"{SystemLedgerAccounts.CoinInventory} - {coinTitle}";
-    }
-
     public static string ForFinancialAccount(
         FinancialAccountType accountType,
         string? brokerName,

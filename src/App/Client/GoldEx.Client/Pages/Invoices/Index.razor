@@ -10,7 +10,9 @@
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
-
+    
+    <MudText Typo="Typo.h5" GutterBottom="true">فاکتورهای من</MudText>
+    <MudDivider Class="mb-4" />
     <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="مدیریت فاکتورها"
@@ -18,17 +20,43 @@
                            StartIcon="@Icons.Material.Filled.LibraryBooks"
                            Href="@ClientRoutes.Invoices.List" />
         </MudItem>
+    </MudGrid>
+    
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">فاکتور فروش</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudActionCard Title="فاکتور خرده فروشی"
-                           Description="ثبت فاکتور خرده فروشی برای مشتریان خرد"
-                           StartIcon="@Icons.Material.Filled.Transform"
-                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Retail })" />
+            <MudActionCard Title="فاکتور فروش عمده"
+                           Description="ثبت فاکتور فروش عمده با واحد گرم"
+                           StartIcon="@Icons.Material.Filled.ShoppingCart"
+                           Color="Color.Error"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Wholesale })" />
         </MudItem>
         <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudActionCard Title="فاکتور عمده فروشی"
-                           Description="ثبت فاکتور عمده فروشی برای مشتریان عمده"
-                           StartIcon="@Icons.Material.Filled.Transform"
-                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Wholesale })" />
+            <MudActionCard Title="فاکتور فروش خرده"
+                           Description="ثبت فاکتور فروش خرده با واحد تومان"
+                           StartIcon="@Icons.Material.Filled.ShoppingBasket"
+                           Color="Color.Error"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Retail })" />
+        </MudItem>
+    </MudGrid>
+    
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">فاکتور خرید</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="فاکتور خرید عمده"
+                           Description="ثبت فاکتور خرید عمده با واحد گرم"
+                           StartIcon="@Icons.Material.Filled.ShoppingCart"
+                           Color="Color.Success"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Wholesale, InvoiceType = InvoiceType.Purchase })" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="فاکتور خرید خرده"
+                           Description="ثبت فاکتور خرید خرده با واحد تومان"
+                           StartIcon="@Icons.Material.Filled.ShoppingBasket"
+                           Color="Color.Success"
+                           Href="@ClientRoutes.Invoices.Create.AppendQueryString(new { TradeScale = TradeScale.Retail, InvoiceType = InvoiceType.Purchase })" />
         </MudItem>
     </MudGrid>
 </MudContainer>

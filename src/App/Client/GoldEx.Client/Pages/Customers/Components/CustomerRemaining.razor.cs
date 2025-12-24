@@ -17,6 +17,7 @@ public partial class CustomerRemaining
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public string? ItemClass { get; set; }
     [Parameter] public decimal? AddedValue { get; set; }
+    [Parameter] public bool EnableManualSlide { get; set; } = false;
 
     private List<CustomerRemainingVm>? _remainingList;
     private bool _isLoading = true;
@@ -138,6 +139,29 @@ public partial class CustomerRemaining
 
         var absoluteAmount = Math.Abs(calculationAmount);
         return absoluteAmount.ToCurrencyFormat(remaining.PriceUnit);
+    }
+
+    private string? GetClickableStyle()
+    {
+        if (!EnableManualSlide || _remainingList?.Count <= 1)
+            return null;
+
+        return "cursor: pointer;";
+    }
+
+    private void OnManualSlide()
+    {
+        if (!EnableManualSlide)
+            return;
+
+        if (_remainingList is not { Count: > 1 })
+            return;
+
+        _currentIndex = (_currentIndex + 1) % _remainingList.Count;
+
+        StartSlideTimer(); // or StopSlideTimer(), depending on desired UX
+
+        StateHasChanged();
     }
 
     public override ValueTask DisposeAsync()
