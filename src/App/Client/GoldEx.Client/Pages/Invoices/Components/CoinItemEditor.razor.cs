@@ -31,7 +31,7 @@ public partial class CoinItemEditor
     protected override async Task OnParametersSetAsync()
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (Model.CoinInstance.Coin != null)
+        if (Model.CoinInstance.Id.HasValue)
             await LoadMaxAmountAsync(Model.CoinInstance);
 
         await LoadCoinAsync();
@@ -113,7 +113,7 @@ public partial class CoinItemEditor
         if (InvoiceType is InvoiceType.Purchase)
             return int.MaxValue;
 
-        return _maxAvailableAmount ?? 0;
+        return _maxAvailableAmount ?? int.MaxValue;
     }
 
     private void OnCoinMintTypeChanged(CoinMintType coinMintType)

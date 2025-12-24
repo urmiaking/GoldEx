@@ -94,21 +94,28 @@ internal class InventoryStockService(
 
         var action = invoice.InvoiceType == InvoiceType.Purchase ? WarehouseActionType.In : WarehouseActionType.Out;
 
-        // Product items
-        var list = invoice.ProductItems.Select(pi => InventoryStock.CreateProduct(pi.ProductId,
-                pi.TotalWeight,
-                action,
-                invoice.Id,
-                postingDate))
-            .ToList();
-
         // Instant products → ورود
-        list.AddRange(invoice.ProductItems.Where(x => x.IsInstantProduct)
+        var list = invoice.ProductItems.Where(x => x.IsInstantProduct)
             .Select(pi => InventoryStock.CreateProduct(pi.ProductId,
                 pi.TotalWeight,
                 WarehouseActionType.In,
                 invoice.Id,
+                postingDate)).ToList();
+
+        // Instant coins → ورود
+        list.AddRange(invoice.CoinItems.Where(x => x.IsInstant)
+            .Select(ci => InventoryStock.CreateCoin(ci.CoinInstanceId,
+                ci.Quantity,
+                WarehouseActionType.In,
+                invoice.Id,
                 postingDate)));
+
+        // Product items
+        list.AddRange(invoice.ProductItems.Select(pi => InventoryStock.CreateProduct(pi.ProductId,
+            pi.TotalWeight,
+            action,
+            invoice.Id,
+            postingDate)));
 
         // Coins
         list.AddRange(invoice.CoinItems.Select(ci => InventoryStock.CreateCoin(ci.CoinInstanceId,
