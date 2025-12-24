@@ -14,532 +14,617 @@
           </ExpressionBindings>
           <StylePriority Ref="10" UseFont="false" UseTextAlignment="false" />
         </Item1>
-        <Item2 Ref="11" ControlType="XRLabel" Name="xrLabel1" Multiline="true" Text="عنوان صفحه" TextAlignment="TopCenter" SizeF="217.7082,43.83332" LocationFloat="261.2391,10.00001" Font="B Farnaz, 24pt, style=Bold" Padding="2,2,0,0,100">
+        <Item2 Ref="11" ControlType="XRPictureBox" Name="logoBox" Sizing="ZoomImage" SizeF="120.0001,122.2917" LocationFloat="9.999939,0" />
+        <Item3 Ref="12" ControlType="XRLabel" Name="xrLabel5" Multiline="true" TextAlignment="TopCenter" SizeF="427.4888,43.83332" LocationFloat="154.7919,10" Font="B Farnaz, 36pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
-            <Item1 Ref="12" EventName="BeforePrint" PropertyName="Text" Expression="Iif([Invoice.InvoiceType] == 'Purchase', 'فاکتور خرید', &#xA;    Iif([Invoice.InvoiceType] == 'Sell', 'فاکتور فروش', ''))&#xA;" />
+            <Item1 Ref="13" EventName="BeforePrint" PropertyName="Text" Expression="[Setting].[InstitutionName]" />
           </ExpressionBindings>
-          <StylePriority Ref="13" UseFont="false" UseTextAlignment="false" />
-        </Item2>
-        <Item3 Ref="14" ControlType="XRPictureBox" Name="logoBox" Sizing="ZoomImage" SizeF="120.0001,122.2917" LocationFloat="9.999939,0" />
-        <Item4 Ref="15" ControlType="XRLabel" Name="xrLabel5" Multiline="true" TextAlignment="TopCenter" SizeF="427.4888,43.83332" LocationFloat="154.7919,53.83332" Font="B Farnaz, 36pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="14" UseFont="false" UseTextAlignment="false" />
+        </Item3>
+        <Item4 Ref="15" ControlType="XRBarCode" Name="xrBarCode2" AutoModule="true" TextAlignment="BottomCenter" ShowText="false" SizeF="121.8751,100" LocationFloat="595.175659,22.29167" Padding="10,10,0,0,100">
+          <Symbology Ref="16" Name="QRCode" CompactionMode="Byte" IncludeQuietZone="false" />
           <ExpressionBindings>
-            <Item1 Ref="16" EventName="BeforePrint" PropertyName="Text" Expression="[Setting].[InstitutionName]" />
+            <Item1 Ref="17" EventName="BeforePrint" PropertyName="Text" Expression="?invoiceUrl" />
           </ExpressionBindings>
-          <StylePriority Ref="17" UseFont="false" UseTextAlignment="false" />
+          <StylePriority Ref="18" UseTextAlignment="false" />
         </Item4>
-        <Item5 Ref="18" ControlType="XRBarCode" Name="xrBarCode2" AutoModule="true" TextAlignment="BottomCenter" ShowText="false" SizeF="121.8751,100" LocationFloat="595.175659,22.29167" Padding="10,10,0,0,100">
-          <Symbology Ref="19" Name="QRCode" CompactionMode="Byte" IncludeQuietZone="false" />
-          <ExpressionBindings>
-            <Item1 Ref="20" EventName="BeforePrint" PropertyName="Text" Expression="?invoiceUrl" />
-          </ExpressionBindings>
-          <StylePriority Ref="21" UseTextAlignment="false" />
-        </Item5>
-        <Item6 Ref="22" ControlType="XRPanel" Name="xrPanel1" SizeF="747.9061,111.875" LocationFloat="1.041683,152.0834">
+        <Item5 Ref="19" ControlType="XRPanel" Name="xrPanel1" SizeF="747.9061,111.875" LocationFloat="1.041683,152.0834">
           <Controls>
-            <Item1 Ref="23" ControlType="XRLabel" Name="xrLabel15" Multiline="true" Text="آدرس:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="393.3335,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="24" UseFont="false" UseTextAlignment="false" />
+            <Item1 Ref="20" ControlType="XRLabel" Name="xrLabel15" Multiline="true" Text="آدرس:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="393.3335,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="21" UseFont="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="25" ControlType="XRLabel" Name="xrLabel10" Multiline="true" AutoWidth="true" CanGrow="false" Text="نام مشتری:" SizeF="237.4997,23" LocationFloat="130.8335,46.81109" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+            <Item2 Ref="22" ControlType="XRLabel" Name="xrLabel10" Multiline="true" AutoWidth="true" CanGrow="false" Text="نام مشتری:" SizeF="237.4997,23" LocationFloat="130.8335,46.81109" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
               <ExpressionBindings>
-                <Item1 Ref="26" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[FullName]" />
+                <Item1 Ref="23" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[FullName]" />
               </ExpressionBindings>
-              <StylePriority Ref="27" UseFont="false" />
+              <StylePriority Ref="24" UseFont="false" />
             </Item2>
-            <Item3 Ref="28" ControlType="XRLine" Name="xrLine1" LineWidth="2" SizeF="618.9478,23" LocationFloat="128.9584,9.060791" />
-            <Item4 Ref="29" ControlType="XRLabel" Name="xrLabel14" Multiline="true" AutoWidth="true" CanGrow="false" SizeF="237.4997,22.99998" LocationFloat="130.8335,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+            <Item3 Ref="25" ControlType="XRLine" Name="xrLine1" LineWidth="2" SizeF="618.9478,23" LocationFloat="128.9584,9.060791" />
+            <Item4 Ref="26" ControlType="XRLabel" Name="xrLabel14" Multiline="true" AutoWidth="true" CanGrow="false" SizeF="237.4997,22.99998" LocationFloat="130.8335,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
               <ExpressionBindings>
-                <Item1 Ref="30" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[PhoneNumber]" />
+                <Item1 Ref="27" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[PhoneNumber]" />
               </ExpressionBindings>
-              <StylePriority Ref="31" UseFont="false" />
+              <StylePriority Ref="28" UseFont="false" />
             </Item4>
-            <Item5 Ref="32" ControlType="XRLabel" Name="xrLabel13" Multiline="true" Text="شماره تماس:" TextAlignment="TopLeft" SizeF="126.0416,23" LocationFloat="4.79192,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="33" UseFont="false" UseTextAlignment="false" />
+            <Item5 Ref="29" ControlType="XRLabel" Name="xrLabel13" Multiline="true" Text="شماره تماس:" TextAlignment="TopLeft" SizeF="126.0416,23" LocationFloat="4.79192,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="30" UseFont="false" UseTextAlignment="false" />
             </Item5>
-            <Item6 Ref="34" ControlType="XRLabel" Name="xrLabel16" Multiline="true" SizeF="271.6667,42.06396" LocationFloat="473.1251,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+            <Item6 Ref="31" ControlType="XRLabel" Name="xrLabel16" Multiline="true" SizeF="271.6667,42.06396" LocationFloat="473.1251,69.81107" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
               <ExpressionBindings>
-                <Item1 Ref="35" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[Address]" />
+                <Item1 Ref="32" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[Address]" />
               </ExpressionBindings>
-              <StylePriority Ref="36" UseFont="false" />
+              <StylePriority Ref="33" UseFont="false" />
             </Item6>
-            <Item7 Ref="37" ControlType="XRLabel" Name="xrLabel17" CanShrink="true" Text="مشخصات مشتری" SizeF="124.1666,40.70836" LocationFloat="4.791809,3.935806" Font="B Titr, 14pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="38" UseFont="false" />
+            <Item7 Ref="34" ControlType="XRLabel" Name="xrLabel17" CanShrink="true" Text="مشخصات مشتری" SizeF="124.1666,40.70836" LocationFloat="4.791809,3.935806" Font="B Titr, 14pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="35" UseFont="false" />
             </Item7>
-            <Item8 Ref="39" ControlType="XRLabel" Name="xrLabel9" Multiline="true" Text="نام و نام خانوادگی:" TextAlignment="TopLeft" SizeF="126.0416,23.00002" LocationFloat="4.791809,44.64425" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="40" UseFont="false" UseTextAlignment="false" />
+            <Item8 Ref="36" ControlType="XRLabel" Name="xrLabel9" Multiline="true" Text="نام و نام خانوادگی:" TextAlignment="TopLeft" SizeF="126.0416,23.00002" LocationFloat="4.791809,44.64425" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="37" UseFont="false" UseTextAlignment="false" />
             </Item8>
-            <Item9 Ref="41" ControlType="XRLabel" Name="xrLabel12" Multiline="true" AutoWidth="true" CanGrow="false" Text="کد یکتای مشتری:" SizeF="271.6667,22.99997" LocationFloat="473.1251,44.64437" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+            <Item9 Ref="38" ControlType="XRLabel" Name="xrLabel12" Multiline="true" AutoWidth="true" CanGrow="false" Text="کد یکتای مشتری:" SizeF="271.6667,22.99997" LocationFloat="473.1251,44.64437" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
               <ExpressionBindings>
-                <Item1 Ref="42" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[NationalId]" />
+                <Item1 Ref="39" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[Customer].[NationalId]" />
               </ExpressionBindings>
-              <StylePriority Ref="43" UseFont="false" />
+              <StylePriority Ref="40" UseFont="false" />
             </Item9>
-            <Item10 Ref="44" ControlType="XRLabel" Name="xrLabel11" Multiline="true" Text="کد مشتری:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="393.3335,44.64427" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="45" UseFont="false" UseTextAlignment="false" />
+            <Item10 Ref="41" ControlType="XRLabel" Name="xrLabel11" Multiline="true" Text="کد مشتری:" TextAlignment="TopLeft" SizeF="79.79169,23" LocationFloat="393.3335,44.64427" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="42" UseFont="false" UseTextAlignment="false" />
             </Item10>
           </Controls>
+        </Item5>
+        <Item6 Ref="43" ControlType="XRLabel" Name="xrLabel4" Multiline="true" Text="شماره فاکتور:" TextAlignment="TopLeft" SizeF="89.98401,23" LocationFloat="10,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="44" UseFont="false" UseTextAlignment="false" />
         </Item6>
-        <Item7 Ref="46" ControlType="XRLabel" Name="xrLabel4" Multiline="true" Text="شماره فاکتور:" TextAlignment="TopLeft" SizeF="89.98401,23" LocationFloat="10,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="47" UseFont="false" UseTextAlignment="false" />
-        </Item7>
-        <Item8 Ref="48" ControlType="XRLabel" Name="xrLabel3" Multiline="true" AutoWidth="true" CanGrow="false" Text="شماره فاکتور: " SizeF="82.29138,22.99998" LocationFloat="99.98401,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item7 Ref="45" ControlType="XRLabel" Name="xrLabel3" Multiline="true" AutoWidth="true" CanGrow="false" Text="شماره فاکتور: " SizeF="82.29138,22.99998" LocationFloat="99.98401,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
-            <Item1 Ref="49" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[InvoiceNumber]" />
+            <Item1 Ref="46" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[InvoiceNumber]" />
           </ExpressionBindings>
-          <StylePriority Ref="50" UseFont="false" />
+          <StylePriority Ref="47" UseFont="false" />
+        </Item7>
+        <Item8 Ref="48" ControlType="XRLabel" Name="xrLabel2" Multiline="true" Text="تاریخ فاکتور:" SizeF="83.33333,23" LocationFloat="559.3643,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="49" UseFont="false" />
         </Item8>
-        <Item9 Ref="51" ControlType="XRLabel" Name="xrLabel2" Multiline="true" Text="تاریخ فاکتور:" SizeF="83.33333,23" LocationFloat="559.3643,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item9 Ref="50" ControlType="XRLabel" Name="xrLabel6" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" AutoWidth="true" CanGrow="false" Text="تاریخ فاکتور:" SizeF="106.2497,22.99998" LocationFloat="642.6976,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+          <ExpressionBindings>
+            <Item1 Ref="51" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[InvoiceDate]" />
+          </ExpressionBindings>
           <StylePriority Ref="52" UseFont="false" />
         </Item9>
-        <Item10 Ref="53" ControlType="XRLabel" Name="xrLabel6" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" AutoWidth="true" CanGrow="false" Text="تاریخ فاکتور:" SizeF="106.2497,22.99998" LocationFloat="642.6976,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item10 Ref="53" ControlType="XRLabel" Name="xrLabel8" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" AutoWidth="true" CanGrow="false" Text="شماره فاکتور: " SizeF="106.2498,22.99997" LocationFloat="353.1091,129.0834" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
-            <Item1 Ref="54" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[InvoiceDate]" />
+            <Item1 Ref="54" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[DueDate]" />
+            <Item2 Ref="55" EventName="BeforePrint" PropertyName="Visible" Expression="Iif(IsNullOrEmpty([Invoice.DueDate]), False, True)&#xA;" />
           </ExpressionBindings>
-          <StylePriority Ref="55" UseFont="false" />
+          <StylePriority Ref="56" UseFont="false" />
         </Item10>
-        <Item11 Ref="56" ControlType="XRLabel" Name="xrLabel8" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" AutoWidth="true" CanGrow="false" Text="شماره فاکتور: " SizeF="106.2498,22.99997" LocationFloat="353.1091,129.0834" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
+        <Item11 Ref="57" ControlType="XRLabel" Name="xrLabel7" Multiline="true" Text="تاریخ سررسید:" SizeF="91.87006,23" LocationFloat="261.239,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
           <ExpressionBindings>
-            <Item1 Ref="57" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[DueDate]" />
-            <Item2 Ref="58" EventName="BeforePrint" PropertyName="Visible" Expression="Iif(IsNullOrEmpty([Invoice.DueDate]), False, True)&#xA;" />
+            <Item1 Ref="58" EventName="BeforePrint" PropertyName="Visible" Expression="Iif(IsNullOrEmpty([Invoice.DueDate]), False, True)" />
           </ExpressionBindings>
           <StylePriority Ref="59" UseFont="false" />
         </Item11>
-        <Item12 Ref="60" ControlType="XRLabel" Name="xrLabel7" Multiline="true" Text="تاریخ سررسید:" SizeF="91.87006,23" LocationFloat="261.239,129.0833" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100">
-          <ExpressionBindings>
-            <Item1 Ref="61" EventName="BeforePrint" PropertyName="Visible" Expression="Iif(IsNullOrEmpty([Invoice.DueDate]), False, True)" />
-          </ExpressionBindings>
-          <StylePriority Ref="62" UseFont="false" />
-        </Item12>
       </Controls>
     </Item2>
-    <Item3 Ref="63" ControlType="GroupHeaderBand" Name="GroupHeader1" HeightF="42.08937">
+    <Item3 Ref="60" ControlType="GroupHeaderBand" Name="GroupHeader1" HeightF="42.08937">
       <Controls>
-        <Item1 Ref="64" ControlType="XRLabel" Name="xrLabel18" Multiline="true" Text="اقلام فاکتور" SizeF="88.54163,40.70837" LocationFloat="4.793335,0" Font="B Titr, 14pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="65" UseFont="false" />
+        <Item1 Ref="61" ControlType="XRLabel" Name="xrLabel18" Multiline="true" Text="اقلام فاکتور" SizeF="88.54163,40.70837" LocationFloat="4.793335,0" Font="B Titr, 14pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="62" UseFont="false" />
         </Item1>
-        <Item2 Ref="66" ControlType="XRLine" Name="xrLine2" LineWidth="2" SizeF="656.6649,23" LocationFloat="93.33495,11.48071" />
+        <Item2 Ref="63" ControlType="XRLine" Name="xrLine2" LineWidth="2" SizeF="656.6649,23" LocationFloat="93.33495,11.48071" />
       </Controls>
     </Item3>
-    <Item4 Ref="67" ControlType="DetailBand" Name="Detail" Expanded="false" HeightF="0" Visible="false" />
-    <Item5 Ref="68" ControlType="DetailReportBand" Name="ProductsList" Level="0" DataMember="Invoice.InvoiceProductItems" DataSource="#Ref-0">
+    <Item4 Ref="64" ControlType="DetailBand" Name="Detail" Expanded="false" HeightF="0" Visible="false" />
+    <Item5 Ref="65" ControlType="DetailReportBand" Name="ProductsList" Level="0" DataMember="Invoice.InvoiceProductItems" DataSource="#Ref-0">
       <Bands>
-        <Item1 Ref="69" ControlType="GroupHeaderBand" Name="ProductTableHeader" HeightF="65.70837">
+        <Item1 Ref="66" ControlType="GroupHeaderBand" Name="ProductTableHeader" HeightF="65.70837">
           <Controls>
-            <Item1 Ref="70" ControlType="XRLabel" Name="xrLabel44" Multiline="true" Text="مصنوعات طلا" TextAlignment="MiddleLeft" SizeF="88.54169,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="71" UseFont="false" UseTextAlignment="false" />
+            <Item1 Ref="67" ControlType="XRLabel" Name="xrLabel44" Multiline="true" Text="مصنوعات طلا" TextAlignment="MiddleLeft" SizeF="88.54169,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="68" UseFont="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="72" ControlType="XRLine" Name="xrLine5" SizeF="656.665,23" LocationFloat="93.33496,11.48071" BorderWidth="1">
-              <StylePriority Ref="73" UseBorderWidth="false" />
+            <Item2 Ref="69" ControlType="XRLine" Name="xrLine5" SizeF="656.665,23" LocationFloat="93.33496,11.48071" BorderWidth="1">
+              <StylePriority Ref="70" UseBorderWidth="false" />
             </Item2>
-            <Item3 Ref="74" ControlType="XRTable" Name="xrTable4" TextAlignment="TopCenter" SizeF="748.9474,25" LocationFloat="0,40.70837" Padding="2,2,0,0,96" Borders="All">
+            <Item3 Ref="71" ControlType="XRTable" Name="xrTable4" TextAlignment="TopCenter" SizeF="748.9474,25" LocationFloat="0,40.70837" Padding="2,2,0,0,96" Borders="All">
               <Rows>
-                <Item1 Ref="75" ControlType="XRTableRow" Name="xrTableRow4" Weight="11.5">
+                <Item1 Ref="72" ControlType="XRTableRow" Name="xrTableRow4" Weight="11.5">
                   <Cells>
-                    <Item1 Ref="76" ControlType="XRTableCell" Name="xrTableCell15" Weight="0.63052948280723509" Multiline="true" Text="نوع جنس" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="77" UseFont="false" />
+                    <Item1 Ref="73" ControlType="XRTableCell" Name="xrTableCell15" Weight="0.63052948280723509" Multiline="true" Text="نوع جنس" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="74" UseFont="false" />
                     </Item1>
-                    <Item2 Ref="78" ControlType="XRTableCell" Name="xrTableCell16" Weight="1.4988784879109471" Multiline="true" Text="عنوان" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="79" UseFont="false" />
+                    <Item2 Ref="75" ControlType="XRTableCell" Name="xrTableCell16" Weight="1.4988784879109471" Multiline="true" Text="عنوان" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="76" UseFont="false" />
                     </Item2>
-                    <Item3 Ref="80" ControlType="XRTableCell" Name="xrTableCell18" Weight="0.75577774738679615" Multiline="true" Text="اجرت ساخت" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="81" UseFont="false" UseTextAlignment="false" />
+                    <Item3 Ref="77" ControlType="XRTableCell" Name="xrTableCell18" Weight="0.75577774738679615" Multiline="true" Text="اجرت ساخت" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="78" UseFont="false" UseTextAlignment="false" />
                     </Item3>
-                    <Item4 Ref="82" ControlType="XRTableCell" Name="xrTableCell19" Weight="0.31807475865943113" Multiline="true" Text="تعداد" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="83" UseFont="false" UseTextAlignment="false" />
+                    <Item4 Ref="79" ControlType="XRTableCell" Name="xrTableCell19" Weight="0.31807475865943113" Multiline="true" Text="تعداد" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="80" UseFont="false" UseTextAlignment="false" />
                     </Item4>
-                    <Item5 Ref="84" ControlType="XRTableCell" Name="xrTableCell21" Weight="0.57555630275243552" Multiline="true" Text="وزن" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="85" UseFont="false" UseTextAlignment="false" />
+                    <Item5 Ref="81" ControlType="XRTableCell" Name="xrTableCell21" Weight="0.57555630275243552" Multiline="true" Text="وزن" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="82" UseFont="false" UseTextAlignment="false" />
                     </Item5>
-                    <Item6 Ref="86" ControlType="XRTableCell" Name="xrTableCell22" Weight="0.27873933561805386" Multiline="true" Text="عیار" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="87" UseFont="false" />
+                    <Item6 Ref="83" ControlType="XRTableCell" Name="xrTableCell22" Weight="0.27873933561805386" Multiline="true" Text="عیار" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="84" UseFont="false" />
                     </Item6>
-                    <Item7 Ref="88" ControlType="XRTableCell" Name="xrTableCell23" Weight="1.0019993647553425" Multiline="true" Text="ارزش کل" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="89" UseFont="false" UseTextAlignment="false" />
+                    <Item7 Ref="85" ControlType="XRTableCell" Name="xrTableCell23" Weight="1.0019993647553425" Multiline="true" Text="ارزش کل" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="86" UseFont="false" UseTextAlignment="false" />
                     </Item7>
                   </Cells>
                 </Item1>
               </Rows>
-              <StylePriority Ref="90" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="87" UseBorders="false" UseTextAlignment="false" />
             </Item3>
           </Controls>
         </Item1>
-        <Item2 Ref="91" ControlType="DetailBand" Name="ProductTableDetails" KeepTogetherWithDetailReports="true" HeightF="25">
+        <Item2 Ref="88" ControlType="DetailBand" Name="ProductTableDetails" KeepTogetherWithDetailReports="true" HeightF="25">
           <Controls>
-            <Item1 Ref="92" ControlType="XRLabel" Name="xrLabel45" RightToLeft="Yes" Multiline="true" Text="xrLabel19" TextAlignment="MiddleRight" SizeF="148.3222,25" LocationFloat="600.6251,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item1 Ref="89" ControlType="XRLabel" Name="xrLabel45" RightToLeft="Yes" Multiline="true" Text="xrLabel19" TextAlignment="MiddleRight" SizeF="148.3222,25" LocationFloat="600.6251,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="93" EventName="BeforePrint" PropertyName="Text" Expression="[TotalAmount]" />
+                <Item1 Ref="90" EventName="BeforePrint" PropertyName="Text" Expression="[TotalAmount]" />
               </ExpressionBindings>
-              <StylePriority Ref="94" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="91" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="95" ControlType="XRTable" Name="xrTable5" SizeF="600.6251,25" LocationFloat="0,0" Padding="2,2,0,0,96" Borders="All">
+            <Item2 Ref="92" ControlType="XRTable" Name="xrTable5" SizeF="600.6251,25" LocationFloat="0,0" Padding="2,2,0,0,96" Borders="All">
               <Rows>
-                <Item1 Ref="96" ControlType="XRTableRow" Name="xrTableRow5" Weight="11.5">
+                <Item1 Ref="93" ControlType="XRTableRow" Name="xrTableRow5" Weight="11.5">
                   <Cells>
-                    <Item1 Ref="97" ControlType="XRTableCell" Name="xrTableCell24" Weight="0.630529604858709" Multiline="true" Text="xrTableCell7" TextAlignment="TopCenter">
+                    <Item1 Ref="94" ControlType="XRTableCell" Name="xrTableCell24" Weight="0.630529604858709" Multiline="true" Text="xrTableCell7" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                       <ExpressionBindings>
-                        <Item1 Ref="98" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[ProductType]" />
+                        <Item1 Ref="95" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[ProductType]" />
                       </ExpressionBindings>
-                      <StylePriority Ref="99" UseTextAlignment="false" />
+                      <StylePriority Ref="96" UseFont="false" UseTextAlignment="false" />
                     </Item1>
-                    <Item2 Ref="100" ControlType="XRTableCell" Name="xrTableCell25" Weight="1.4988788596436975" Multiline="true" Text="xrTableCell8" TextAlignment="TopCenter">
+                    <Item2 Ref="97" ControlType="XRTableCell" Name="xrTableCell25" Weight="1.4988788596436975" Multiline="true" Text="xrTableCell8" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                       <ExpressionBindings>
-                        <Item1 Ref="101" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[Name]" />
+                        <Item1 Ref="98" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[Name]" />
                       </ExpressionBindings>
-                      <StylePriority Ref="102" UseTextAlignment="false" />
+                      <StylePriority Ref="99" UseFont="false" UseTextAlignment="false" />
                     </Item2>
-                    <Item3 Ref="103" ControlType="XRTableCell" Name="xrTableCell26" Weight="0.75577789431481446" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell9" TextAlignment="TopCenter">
+                    <Item3 Ref="100" ControlType="XRTableCell" Name="xrTableCell26" Weight="0.75577789431481446" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell9" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                       <ExpressionBindings>
-                        <Item1 Ref="104" EventName="BeforePrint" PropertyName="Text" Expression="[SaleWage]" />
+                        <Item1 Ref="101" EventName="BeforePrint" PropertyName="Text" Expression="[SaleWage]" />
                       </ExpressionBindings>
-                      <StylePriority Ref="105" UseTextAlignment="false" />
+                      <StylePriority Ref="102" UseFont="false" UseTextAlignment="false" />
                     </Item3>
-                    <Item4 Ref="106" ControlType="XRTableCell" Name="xrTableCell27" Weight="0.31807480840823094" Multiline="true" Text="xrTableCell10" TextAlignment="TopCenter">
+                    <Item4 Ref="103" ControlType="XRTableCell" Name="xrTableCell27" Weight="0.31807480840823094" Multiline="true" Text="xrTableCell10" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                       <ExpressionBindings>
-                        <Item1 Ref="107" EventName="BeforePrint" PropertyName="Text" Expression="[Quantity]" />
+                        <Item1 Ref="104" EventName="BeforePrint" PropertyName="Text" Expression="[Quantity]" />
                       </ExpressionBindings>
-                      <StylePriority Ref="108" UseTextAlignment="false" />
+                      <StylePriority Ref="105" UseFont="false" UseTextAlignment="false" />
                     </Item4>
-                    <Item5 Ref="109" ControlType="XRTableCell" Name="xrTableCell28" Weight="0.5755564145987806" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell11" TextAlignment="TopCenter">
+                    <Item5 Ref="106" ControlType="XRTableCell" Name="xrTableCell28" Weight="0.5755564145987806" TextFormatString="{0:#,##0.##}" Multiline="true" Text="xrTableCell11" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                       <ExpressionBindings>
-                        <Item1 Ref="110" EventName="BeforePrint" PropertyName="Text" Expression="[TotalWeight]" />
+                        <Item1 Ref="107" EventName="BeforePrint" PropertyName="Text" Expression="[TotalWeight]" />
                       </ExpressionBindings>
-                      <StylePriority Ref="111" UseTextAlignment="false" />
+                      <StylePriority Ref="108" UseFont="false" UseTextAlignment="false" />
                     </Item5>
-                    <Item6 Ref="112" ControlType="XRTableCell" Name="xrTableCell29" Weight="0.27873951234599403" TextFormatString="{0:G29}" Multiline="true" Text="xrTableCell12" TextAlignment="TopCenter">
+                    <Item6 Ref="109" ControlType="XRTableCell" Name="xrTableCell29" Weight="0.27873951234599403" TextFormatString="{0:G29}" Multiline="true" Text="xrTableCell12" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
                       <ExpressionBindings>
-                        <Item1 Ref="113" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[Fineness]" />
+                        <Item1 Ref="110" EventName="BeforePrint" PropertyName="Text" Expression="[Product].[Fineness]" />
                       </ExpressionBindings>
-                      <StylePriority Ref="114" UseTextAlignment="false" />
+                      <StylePriority Ref="111" UseFont="false" UseTextAlignment="false" />
                     </Item6>
                   </Cells>
                 </Item1>
               </Rows>
-              <StylePriority Ref="115" UseBorders="false" />
+              <StylePriority Ref="112" UseBorders="false" />
             </Item2>
           </Controls>
         </Item2>
       </Bands>
-      <ReportPrintOptions Ref="116" PrintOnEmptyDataSource="false" />
+      <ReportPrintOptions Ref="113" PrintOnEmptyDataSource="false" />
     </Item5>
-    <Item6 Ref="117" ControlType="DetailReportBand" Name="CoinsList" Level="1" DataMember="Invoice.InvoiceCoinItems" DataSource="#Ref-0">
+    <Item6 Ref="114" ControlType="DetailReportBand" Name="CoinsList" Level="2" DataMember="Invoice.InvoiceCoinItems" DataSource="#Ref-0">
       <Bands>
-        <Item1 Ref="118" ControlType="GroupHeaderBand" Name="CoinTableHeader" HeightF="65.70837">
+        <Item1 Ref="115" ControlType="GroupHeaderBand" Name="CoinTableHeader" HeightF="65.708374">
           <Controls>
-            <Item1 Ref="119" ControlType="XRLabel" Name="xrLabel40" Multiline="true" Text="سکه ها" TextAlignment="MiddleLeft" SizeF="53.76434,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="120" UseFont="false" UseTextAlignment="false" />
+            <Item1 Ref="116" ControlType="XRLabel" Name="xrLabel40" Multiline="true" Text="سکه ها" TextAlignment="MiddleLeft" SizeF="53.76434,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="117" UseFont="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="121" ControlType="XRLine" Name="xrLine4" SizeF="691.4423,23" LocationFloat="58.55761,11.48071" />
-            <Item3 Ref="122" ControlType="XRTable" Name="xrTable3" TextAlignment="TopCenter" SizeF="747.9056,25" LocationFloat="1.041687,40.70837" Padding="2,2,0,0,96" Borders="All">
+            <Item2 Ref="118" ControlType="XRLine" Name="xrLine4" SizeF="691.4423,23" LocationFloat="58.55761,11.48071" />
+            <Item3 Ref="119" ControlType="XRTable" Name="xrTable3" TextAlignment="TopCenter" SizeF="748.9583,25" LocationFloat="1.041687,40.70837" Padding="2,2,0,0,96" Borders="All">
               <Rows>
-                <Item1 Ref="123" ControlType="XRTableRow" Name="xrTableRow3" Weight="11.5">
+                <Item1 Ref="120" ControlType="XRTableRow" Name="xrTableRow3" Weight="11.5">
                   <Cells>
-                    <Item1 Ref="124" ControlType="XRTableCell" Name="xrTableCell14" Weight="2.8781487502573584" Multiline="true" Text="نوع سکه" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="125" UseFont="false" />
+                    <Item1 Ref="121" ControlType="XRTableCell" Name="xrTableCell14" Weight="4.7550194488635649" Multiline="true" Text="عنوان" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="122" UseFont="false" />
                     </Item1>
-                    <Item2 Ref="126" ControlType="XRTableCell" Name="xrTableCell17" Weight="1.1723700289300467" Multiline="true" Text="تعداد" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="127" UseFont="false" UseTextAlignment="false" />
+                    <Item2 Ref="123" ControlType="XRTableCell" Name="xrTableCell7" Weight="2.1741287517305712" Multiline="true" Text="وزن" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="124" UseFont="false" />
                     </Item2>
-                    <Item3 Ref="128" ControlType="XRTableCell" Name="xrTableCell20" Weight="1.0019986728674022" Multiline="true" Text="ارزش کل" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
-                      <StylePriority Ref="129" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+                    <Item3 Ref="125" ControlType="XRTableCell" Name="xrTableCell8" Weight="0.8566235894423706" Multiline="true" Text="عیار" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="126" UseFont="false" />
                     </Item3>
+                    <Item4 Ref="127" ControlType="XRTableCell" Name="xrTableCell9" Weight="1.5647639347556226" Multiline="true" Text="سال ضرب" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="128" UseFont="false" />
+                    </Item4>
+                    <Item5 Ref="129" ControlType="XRTableCell" Name="xrTableCell17" Weight="0.85262519275302173" Multiline="true" Text="تعداد" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="130" UseFont="false" UseTextAlignment="false" />
+                    </Item5>
+                    <Item6 Ref="131" ControlType="XRTableCell" Name="xrTableCell20" Weight="3.4838027852817315" Multiline="true" Text="ارزش کل" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
+                      <StylePriority Ref="132" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+                    </Item6>
                   </Cells>
                 </Item1>
               </Rows>
-              <StylePriority Ref="130" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="133" UseBorders="false" UseTextAlignment="false" />
             </Item3>
           </Controls>
         </Item1>
-        <Item2 Ref="131" ControlType="DetailBand" Name="CoinTableDetails" KeepTogetherWithDetailReports="true" HeightF="23">
+        <Item2 Ref="134" ControlType="DetailBand" Name="CoinTableDetails" KeepTogetherWithDetailReports="true" HeightF="23">
           <Controls>
-            <Item1 Ref="132" ControlType="XRLabel" Name="xrLabel43" Multiline="true" Text="xrLabel43" TextAlignment="TopRight" SizeF="148.3221,23" LocationFloat="600.6251,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item1 Ref="135" ControlType="XRLabel" Name="xrLabel24" Multiline="true" Text="xrLabel24" TextAlignment="TopCenter" SizeF="118.969604,23" LocationFloat="261.238983,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,96" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="133" EventName="BeforePrint" PropertyName="Text" Expression="[TotalPrice]" />
+                <Item1 Ref="136" EventName="BeforePrint" PropertyName="Text" Expression="[Weight]" />
               </ExpressionBindings>
-              <StylePriority Ref="134" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="137" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="135" ControlType="XRLabel" Name="xrLabel42" TextFormatString="{0:G29}" Multiline="true" Text="xrLabel42" TextAlignment="TopCenter" SizeF="173.5416,23" LocationFloat="427.0835,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item2 Ref="138" ControlType="XRLabel" Name="xrLabel21" Multiline="true" Text="xrLabel21" TextAlignment="TopCenter" SizeF="46.87491,23" LocationFloat="380.2086,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,96" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="136" EventName="BeforePrint" PropertyName="Text" Expression="[Quantity]" />
+                <Item1 Ref="139" EventName="BeforePrint" PropertyName="Text" Expression="[Fineness]" />
               </ExpressionBindings>
-              <StylePriority Ref="137" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="140" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item2>
-            <Item3 Ref="138" ControlType="XRLabel" Name="xrLabel41" Multiline="true" Text="xrLabel41" TextAlignment="TopCenter" SizeF="426.0417,23" LocationFloat="1.041687,0" Padding="2,2,0,0,100" Borders="All">
+            <Item3 Ref="141" ControlType="XRLabel" Name="xrLabel20" Multiline="true" Text="xrLabel20" TextAlignment="TopCenter" SizeF="85.6247559,23" LocationFloat="427.0835,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,96" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="139" EventName="BeforePrint" PropertyName="Text" Expression="[CoinTitle]" />
+                <Item1 Ref="142" EventName="BeforePrint" PropertyName="Text" Expression="[MintYear]" />
               </ExpressionBindings>
-              <StylePriority Ref="140" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="143" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item3>
+            <Item4 Ref="144" ControlType="XRLabel" Name="xrLabel43" Multiline="true" Text="xrLabel43" TextAlignment="TopRight" SizeF="189.582825,23" LocationFloat="559.3644,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="145" EventName="BeforePrint" PropertyName="Text" Expression="[TotalPrice]" />
+              </ExpressionBindings>
+              <StylePriority Ref="146" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item4>
+            <Item5 Ref="147" ControlType="XRLabel" Name="xrLabel42" TextFormatString="{0:G29}" Multiline="true" Text="xrLabel42" TextAlignment="TopCenter" SizeF="46.6560974,23" LocationFloat="512.708252,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="148" EventName="BeforePrint" PropertyName="Text" Expression="[Quantity]" />
+              </ExpressionBindings>
+              <StylePriority Ref="149" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item5>
+            <Item6 Ref="150" ControlType="XRLabel" Name="xrLabel41" Multiline="true" Text="xrLabel41" TextAlignment="TopCenter" SizeF="260.1973,23" LocationFloat="1.041687,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <ExpressionBindings>
+                <Item1 Ref="151" EventName="BeforePrint" PropertyName="Text" Expression="[CoinTitle]" />
+              </ExpressionBindings>
+              <StylePriority Ref="152" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item6>
           </Controls>
         </Item2>
       </Bands>
-      <ReportPrintOptions Ref="141" PrintOnEmptyDataSource="false" />
+      <ReportPrintOptions Ref="153" PrintOnEmptyDataSource="false" />
     </Item6>
-    <Item7 Ref="142" ControlType="DetailReportBand" Name="CurrencyList" Level="2" DataMember="Invoice.InvoiceCurrencyItems" DataSource="#Ref-0">
+    <Item7 Ref="154" ControlType="DetailReportBand" Name="CurrencyList" Level="3" DataMember="Invoice.InvoiceCurrencyItems" DataSource="#Ref-0">
       <Bands>
-        <Item1 Ref="143" ControlType="GroupHeaderBand" Name="CurrencyTableHeader" HeightF="65.70837">
+        <Item1 Ref="155" ControlType="GroupHeaderBand" Name="CurrencyTableHeader" HeightF="65.70837">
           <Controls>
-            <Item1 Ref="144" ControlType="XRTable" Name="xrTable1" TextAlignment="TopCenter" SizeF="748.9473,25" LocationFloat="5.125999E-06,40.70837" Padding="2,2,0,0,96" Borders="All">
+            <Item1 Ref="156" ControlType="XRTable" Name="xrTable1" TextAlignment="TopCenter" SizeF="748.9473,25" LocationFloat="5.125999E-06,40.70837" Padding="2,2,0,0,96" Borders="All">
               <Rows>
-                <Item1 Ref="145" ControlType="XRTableRow" Name="xrTableRow1" Weight="11.5">
+                <Item1 Ref="157" ControlType="XRTableRow" Name="xrTableRow1" Weight="11.5">
                   <Cells>
-                    <Item1 Ref="146" ControlType="XRTableCell" Name="xrTableCell1" Weight="2.8851859238355142" Multiline="true" Text="نوع ارز" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="147" UseFont="false" />
+                    <Item1 Ref="158" ControlType="XRTableCell" Name="xrTableCell1" Weight="2.8851859238355142" Multiline="true" Text="نوع ارز" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="159" UseFont="false" />
                     </Item1>
-                    <Item2 Ref="148" ControlType="XRTableCell" Name="xrTableCell2" Weight="1.1723700289300467" Multiline="true" Text="حجم" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
-                      <StylePriority Ref="149" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+                    <Item2 Ref="160" ControlType="XRTableCell" Name="xrTableCell2" Weight="1.1723700289300467" Multiline="true" Text="حجم" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
+                      <StylePriority Ref="161" UseFont="false" UseBorders="false" UseTextAlignment="false" />
                     </Item2>
-                    <Item3 Ref="150" ControlType="XRTableCell" Name="xrTableCell3" Weight="1.0019986728674022" Multiline="true" Text="ارزش کل" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
-                      <StylePriority Ref="151" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+                    <Item3 Ref="162" ControlType="XRTableCell" Name="xrTableCell3" Weight="1.0019986728674022" Multiline="true" Text="ارزش کل" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
+                      <StylePriority Ref="163" UseFont="false" UseBorders="false" UseTextAlignment="false" />
                     </Item3>
                   </Cells>
                 </Item1>
               </Rows>
-              <StylePriority Ref="152" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="164" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="153" ControlType="XRLabel" Name="xrLabel46" Multiline="true" Text="ارزها" TextAlignment="MiddleLeft" SizeF="43.34772,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="154" UseFont="false" UseTextAlignment="false" />
+            <Item2 Ref="165" ControlType="XRLabel" Name="xrLabel46" Multiline="true" Text="ارزها" TextAlignment="MiddleLeft" SizeF="43.34772,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="166" UseFont="false" UseTextAlignment="false" />
             </Item2>
-            <Item3 Ref="155" ControlType="XRLine" Name="xrLine6" SizeF="701.8589,23" LocationFloat="48.14099,11.48071" />
+            <Item3 Ref="167" ControlType="XRLine" Name="xrLine6" SizeF="701.8589,23" LocationFloat="48.14099,11.48071" />
           </Controls>
         </Item1>
-        <Item2 Ref="156" ControlType="DetailBand" Name="CurrencyTableDetails" KeepTogetherWithDetailReports="true" HeightF="23">
+        <Item2 Ref="168" ControlType="DetailBand" Name="CurrencyTableDetails" KeepTogetherWithDetailReports="true" HeightF="23">
           <Controls>
-            <Item1 Ref="157" ControlType="XRLabel" Name="xrLabel49" Multiline="true" Text="xrLabel49" TextAlignment="TopRight" SizeF="148.3221,23" LocationFloat="600.6251,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item1 Ref="169" ControlType="XRLabel" Name="xrLabel49" Multiline="true" Text="xrLabel49" TextAlignment="TopRight" SizeF="148.3221,23" LocationFloat="600.6251,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="158" EventName="BeforePrint" PropertyName="Text" Expression="[TotalPrice]" />
+                <Item1 Ref="170" EventName="BeforePrint" PropertyName="Text" Expression="[TotalPrice]" />
               </ExpressionBindings>
-              <StylePriority Ref="159" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="171" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="160" ControlType="XRLabel" Name="xrLabel48" Multiline="true" Text="xrLabel48" TextAlignment="TopCenter" SizeF="173.5417,23" LocationFloat="427.0834,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item2 Ref="172" ControlType="XRLabel" Name="xrLabel48" Multiline="true" Text="xrLabel48" TextAlignment="TopCenter" SizeF="173.5417,23" LocationFloat="427.0834,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="161" EventName="BeforePrint" PropertyName="Text" Expression="[Amount]" />
+                <Item1 Ref="173" EventName="BeforePrint" PropertyName="Text" Expression="[Amount]" />
               </ExpressionBindings>
-              <StylePriority Ref="162" UseBorders="false" UseTextAlignment="false" />
-            </Item2>
-            <Item3 Ref="163" ControlType="XRLabel" Name="xrLabel47" Multiline="true" Text="xrLabel47" TextAlignment="TopCenter" SizeF="427.0834,23" LocationFloat="0,0" Padding="2,2,0,0,100" Borders="All">
-              <ExpressionBindings>
-                <Item1 Ref="164" EventName="BeforePrint" PropertyName="Text" Expression="[CurrencyTitle]" />
-              </ExpressionBindings>
-              <StylePriority Ref="165" UseBorders="false" UseTextAlignment="false" />
-            </Item3>
-          </Controls>
-        </Item2>
-      </Bands>
-      <ReportPrintOptions Ref="166" PrintOnEmptyDataSource="false" />
-    </Item7>
-    <Item8 Ref="167" ControlType="DetailReportBand" Name="SummaryList" Level="3">
-      <Bands>
-        <Item1 Ref="168" ControlType="GroupHeaderBand" Name="SummaryTableDetails" HeightF="342.4129">
-          <Controls>
-            <Item1 Ref="169" ControlType="XRLabel" Name="xrLabel83" Multiline="true" CanGrow="false" CanShrink="true" Text="* اجناس فوق با اجرت مشخص و سود [Invoice.ProfitPercent]  و مالیات ارزش افزوده  [Invoice.TaxPercent]  از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.&#xD;&#xA;* اجناس فروخته شده بدون علت پس گرفته نمی‌شود." TextAlignment="TopJustify" SizeF="750,68.43749" LocationFloat="0,273.0003" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
-              <ExpressionBindings>
-                <Item1 Ref="170" EventName="BeforePrint" PropertyName="Text" Expression="Iif(&#xA;    [Invoice.InvoiceType] == 'Purchase',&#xA;    '',&#xA;    Iif(&#xA;        ([Invoice.InvoiceType] == 'Sell') And ([Invoice.TradeScale] == 'Wholesale'),&#xA;        'کلیه طلاجات مندرج در این قبض جهت بازاریابی به اینجانب ' + [Invoice.Customer.FullName] +&#xA;        ' به رسم امانت تحویل گردید و شرعاً و قانوناً متعهد و ملزم گردیدم هر آنچه از اقلام اجناس را بابت خود یا دیگری فاکتور نمودم بهای آن را علاوه بر اجرت نقداً به محسن یوسف‌زاده بپردازم و مابقی اجناس را عندالمطالبه به ایشان مسترد نمایم. چون اجناس مذکور نزد اینجانب امانت بوده و دین است بر ذمه اینجانب و در این خصوص هرگونه کوتاهی، بی‌احتیاطی و غیره بعمل آید ضامن و مسئول پاسخگو هستم.',&#xA;        Iif(&#xA;            ([Invoice.InvoiceType] == 'Sell') And ([Invoice.TradeScale] == 'Retail') And Not IsNullOrEmpty([Invoice.TaxPercent]),&#xA;            '* اجناس فوق با اجرت مشخص و سود ' + [Invoice.ProfitPercent] +&#xA;            ' و مالیات ارزش افزوده ' + [Invoice.TaxPercent] +&#xA;            ' از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.' + &#xA;            '     * اجناس فروخته شده بدون علت پس گرفته نمی‌شود.',&#xA;            ''&#xA;        )&#xA;    )&#xA;)&#xA;" />
-              </ExpressionBindings>
-              <StylePriority Ref="171" UseFont="false" UseTextAlignment="false" />
-            </Item1>
-            <Item2 Ref="172" ControlType="XRLine" Name="xrLine8" SizeF="749.9999,23" LocationFloat="0,250.0003" />
-            <Item3 Ref="173" ControlType="XRLabel" Name="xrLabel60" Multiline="true" Text="جمع کل:" TextAlignment="TopRight" SizeF="97.08334,25" LocationFloat="427.0834,25" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
               <StylePriority Ref="174" UseFont="false" UseBorders="false" UseTextAlignment="false" />
-            </Item3>
-            <Item4 Ref="175" ControlType="XRLabel" Name="xrLabel63" Multiline="true" Text="xrLabel30" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,25" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            </Item2>
+            <Item3 Ref="175" ControlType="XRLabel" Name="xrLabel47" Multiline="true" Text="xrLabel47" TextAlignment="TopCenter" SizeF="427.0834,23" LocationFloat="0,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
               <ExpressionBindings>
-                <Item1 Ref="176" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalAmount]" />
+                <Item1 Ref="176" EventName="BeforePrint" PropertyName="Text" Expression="[CurrencyTitle]" />
               </ExpressionBindings>
               <StylePriority Ref="177" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item3>
+          </Controls>
+        </Item2>
+      </Bands>
+      <ReportPrintOptions Ref="178" PrintOnEmptyDataSource="false" />
+    </Item7>
+    <Item8 Ref="179" ControlType="DetailReportBand" Name="SummaryList" Level="4">
+      <Bands>
+        <Item1 Ref="180" ControlType="GroupHeaderBand" Name="SummaryTableDetails" HeightF="342.4129">
+          <Controls>
+            <Item1 Ref="181" ControlType="XRLabel" Name="xrLabel83" Multiline="true" CanGrow="false" CanShrink="true" Text="* اجناس فوق با اجرت مشخص و سود [Invoice.ProfitPercent]  و مالیات ارزش افزوده  [Invoice.TaxPercent]  از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.&#xD;&#xA;* اجناس فروخته شده بدون علت پس گرفته نمی‌شود." TextAlignment="TopJustify" SizeF="750,68.43749" LocationFloat="0,273.0003" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="182" EventName="BeforePrint" PropertyName="Text" Expression="Iif(&#xA;    [Invoice.InvoiceType] == 'Purchase',&#xA;    '',&#xA;    Iif(&#xA;        ([Invoice.InvoiceType] == 'Sell') And ([Invoice.TradeScale] == 'Wholesale'),&#xA;        'کلیه طلاجات مندرج در این قبض جهت بازاریابی به اینجانب ' + [Invoice.Customer.FullName] +&#xA;        ' به رسم امانت تحویل گردید و شرعاً و قانوناً متعهد و ملزم گردیدم هر آنچه از اقلام اجناس را بابت خود یا دیگری فاکتور نمودم بهای آن را علاوه بر اجرت نقداً به محسن یوسف‌زاده بپردازم و مابقی اجناس را عندالمطالبه به ایشان مسترد نمایم. چون اجناس مذکور نزد اینجانب امانت بوده و دین است بر ذمه اینجانب و در این خصوص هرگونه کوتاهی، بی‌احتیاطی و غیره بعمل آید ضامن و مسئول پاسخگو هستم.',&#xA;        Iif(&#xA;            ([Invoice.InvoiceType] == 'Sell') And ([Invoice.TradeScale] == 'Retail') And Not IsNullOrEmpty([Invoice.TaxPercent]),&#xA;            '* اجناس فوق با اجرت مشخص و سود ' + [Invoice.ProfitPercent] +&#xA;            ' و مالیات ارزش افزوده ' + [Invoice.TaxPercent] +&#xA;            ' از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.' + &#xA;            '     * اجناس فروخته شده بدون علت پس گرفته نمی‌شود.',&#xA;            ''&#xA;        )&#xA;    )&#xA;)&#xA;" />
+              </ExpressionBindings>
+              <StylePriority Ref="183" UseFont="false" UseTextAlignment="false" />
+            </Item1>
+            <Item2 Ref="184" ControlType="XRLine" Name="xrLine8" SizeF="749.9999,23" LocationFloat="0,250.0003" />
+            <Item3 Ref="185" ControlType="XRLabel" Name="xrLabel60" Multiline="true" Text="جمع کل:" TextAlignment="TopRight" SizeF="97.08334,25" LocationFloat="427.0834,25" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <StylePriority Ref="186" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item3>
+            <Item4 Ref="187" ControlType="XRLabel" Name="xrLabel63" Multiline="true" Text="xrLabel30" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,25" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="188" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalAmount]" />
+              </ExpressionBindings>
+              <StylePriority Ref="189" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item4>
-            <Item5 Ref="178" ControlType="XRLabel" Name="xrLabel64" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel20" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,49.99997" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item5 Ref="190" ControlType="XRLabel" Name="xrLabel64" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel20" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,49.99997" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="179" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.TotalDiscountAmount]" />
-              </ExpressionBindings>
-              <StylePriority Ref="180" UseFont="false" UseBorders="false" />
-            </Item5>
-            <Item6 Ref="181" ControlType="XRLabel" Name="xrLabel65" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="تخفیف:" TextAlignment="TopRight" SizeF="97.08328,25" LocationFloat="427.0835,49.99987" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <ExpressionBindings>
-                <Item1 Ref="182" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalDiscountAmount]), '', 'تخفیف:')" />
-              </ExpressionBindings>
-              <StylePriority Ref="183" UseFont="false" UseBorders="false" />
-            </Item6>
-            <Item7 Ref="184" ControlType="XRLabel" Name="xrLabel66" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="مخارج جانبی:" TextAlignment="TopRight" SizeF="97.08331,25" LocationFloat="427.0835,74.99987" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <ExpressionBindings>
-                <Item1 Ref="185" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalExtraCostAmount]), '', 'مخارج جانبی:')&#xA;" />
-              </ExpressionBindings>
-              <StylePriority Ref="186" UseFont="false" UseBorders="false" />
-            </Item7>
-            <Item8 Ref="187" ControlType="XRLabel" Name="xrLabel67" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,74.99997" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
-              <ExpressionBindings>
-                <Item1 Ref="188" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.TotalExtraCostAmount]" />
-              </ExpressionBindings>
-              <StylePriority Ref="189" UseFont="false" UseBorders="false" />
-            </Item8>
-            <Item9 Ref="190" ControlType="XRLabel" Name="xrLabel68" RightToLeft="Yes" Multiline="true" Text="xrLabel24" TextAlignment="TopRight" SizeF="224.7807,25" LocationFloat="524.1667,125" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
-              <ExpressionBindings>
-                <Item1 Ref="191" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalPayableAmount]" />
+                <Item1 Ref="191" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.TotalDiscountAmount]" />
               </ExpressionBindings>
               <StylePriority Ref="192" UseFont="false" UseBorders="false" />
-            </Item9>
-            <Item10 Ref="193" ControlType="XRLabel" Name="xrLabel69" RightToLeft="Yes" Multiline="true" Text="قابل پرداخت:" TextAlignment="TopRight" SizeF="97.08328,25" LocationFloat="427.0835,124.9999" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <StylePriority Ref="194" UseFont="false" UseBorders="false" />
-            </Item10>
-            <Item11 Ref="195" ControlType="XRLabel" Name="xrLabel70" RightToLeft="Yes" Multiline="true" Text="پرداخت شده:" TextAlignment="TopRight" SizeF="97.08331,25.00001" LocationFloat="427.0834,149.9999" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <StylePriority Ref="196" UseFont="false" UseBorders="false" />
-            </Item11>
-            <Item12 Ref="197" ControlType="XRLabel" Name="xrLabel71" RightToLeft="Yes" Multiline="true" Text="xrLabel26" TextAlignment="TopRight" SizeF="224.7811,25" LocationFloat="524.1667,150" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            </Item5>
+            <Item6 Ref="193" ControlType="XRLabel" Name="xrLabel65" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="تخفیف:" TextAlignment="TopRight" SizeF="97.08328,25" LocationFloat="427.0835,49.99987" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
               <ExpressionBindings>
-                <Item1 Ref="198" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalPaidAmount]" />
+                <Item1 Ref="194" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalDiscountAmount]), '', 'تخفیف:')" />
               </ExpressionBindings>
-              <StylePriority Ref="199" UseFont="false" UseBorders="false" />
-            </Item12>
-            <Item13 Ref="200" ControlType="XRLabel" Name="xrLabel72" RightToLeft="Yes" Multiline="true" Text="[Invoice.TotalUnpaidAmount] [Invoice.TotalUnpaidSecondaryAmount]" TextAlignment="TopRight" SizeF="224.7811,25" LocationFloat="524.1667,175" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <StylePriority Ref="195" UseFont="false" UseBorders="false" />
+            </Item6>
+            <Item7 Ref="196" ControlType="XRLabel" Name="xrLabel66" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="مخارج جانبی:" TextAlignment="TopRight" SizeF="97.08331,25" LocationFloat="427.0835,74.99987" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <ExpressionBindings>
+                <Item1 Ref="197" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalExtraCostAmount]), '', 'مخارج جانبی:')&#xA;" />
+              </ExpressionBindings>
+              <StylePriority Ref="198" UseFont="false" UseBorders="false" />
+            </Item7>
+            <Item8 Ref="199" ControlType="XRLabel" Name="xrLabel67" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,74.99997" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="200" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.TotalExtraCostAmount]" />
+              </ExpressionBindings>
               <StylePriority Ref="201" UseFont="false" UseBorders="false" />
+            </Item8>
+            <Item9 Ref="202" ControlType="XRLabel" Name="xrLabel68" RightToLeft="Yes" Multiline="true" Text="xrLabel24" TextAlignment="TopRight" SizeF="224.7807,25" LocationFloat="524.1667,125" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="203" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalPayableAmount]" />
+              </ExpressionBindings>
+              <StylePriority Ref="204" UseFont="false" UseBorders="false" />
+            </Item9>
+            <Item10 Ref="205" ControlType="XRLabel" Name="xrLabel69" RightToLeft="Yes" Multiline="true" Text="قابل پرداخت:" TextAlignment="TopRight" SizeF="97.08328,25" LocationFloat="427.0835,124.9999" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <StylePriority Ref="206" UseFont="false" UseBorders="false" />
+            </Item10>
+            <Item11 Ref="207" ControlType="XRLabel" Name="xrLabel70" RightToLeft="Yes" Multiline="true" Text="پرداخت شده:" TextAlignment="TopRight" SizeF="97.08331,25.00001" LocationFloat="427.0834,149.9999" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <StylePriority Ref="208" UseFont="false" UseBorders="false" />
+            </Item11>
+            <Item12 Ref="209" ControlType="XRLabel" Name="xrLabel71" RightToLeft="Yes" Multiline="true" Text="xrLabel26" TextAlignment="TopRight" SizeF="224.7811,25" LocationFloat="524.1667,150" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="210" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalPaidAmount]" />
+              </ExpressionBindings>
+              <StylePriority Ref="211" UseFont="false" UseBorders="false" />
+            </Item12>
+            <Item13 Ref="212" ControlType="XRLabel" Name="xrLabel72" RightToLeft="Yes" Multiline="true" Text="[Invoice.TotalUnpaidAmount] [Invoice.TotalUnpaidSecondaryAmount]" TextAlignment="TopRight" SizeF="224.7811,25" LocationFloat="524.1667,175" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <StylePriority Ref="213" UseFont="false" UseBorders="false" />
             </Item13>
-            <Item14 Ref="202" ControlType="XRLabel" Name="xrLabel73" RightToLeft="Yes" Multiline="true" Text="مانده فاکتور:" TextAlignment="TopRight" SizeF="97.08322,25" LocationFloat="427.0835,175" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <StylePriority Ref="203" UseFont="false" UseBorders="false" />
+            <Item14 Ref="214" ControlType="XRLabel" Name="xrLabel73" RightToLeft="Yes" Multiline="true" Text="مانده فاکتور:" TextAlignment="TopRight" SizeF="97.08322,25" LocationFloat="427.0835,175" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <StylePriority Ref="215" UseFont="false" UseBorders="false" />
             </Item14>
-            <Item15 Ref="204" ControlType="XRLabel" Name="xrLabel74" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="نرخ روز هر [Invoice.GoldUnitType] طلای 18 عیار: [Invoice.DailyGramPrice]" TextAlignment="TopCenter" SizeF="427.0834,25" LocationFloat="0,225.0003" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Left, Top, Bottom">
+            <Item15 Ref="216" ControlType="XRLabel" Name="xrLabel74" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="نرخ روز هر [Invoice.GoldUnitType] طلای 18 عیار: [Invoice.DailyGramPrice]" TextAlignment="TopCenter" SizeF="427.0834,25" LocationFloat="0,225.0003" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Left, Top, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="205" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.DailyGramPrice]), '', 'نرخ روز هر ' + [Invoice.GoldUnitType] + ' طلای 18 عیار: ' + [Invoice.DailyGramPrice])&#xA;" />
-              </ExpressionBindings>
-              <StylePriority Ref="206" UseFont="false" UseBorders="false" UseTextAlignment="false" />
-            </Item15>
-            <Item16 Ref="207" ControlType="XRLabel" Name="xrLabel75" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,99.99998" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
-              <ExpressionBindings>
-                <Item1 Ref="208" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.TotalUsedProductsAmount]" />
-              </ExpressionBindings>
-              <StylePriority Ref="209" UseFont="false" UseBorders="false" />
-            </Item16>
-            <Item17 Ref="210" ControlType="XRLabel" Name="xrLabel76" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" TextAlignment="TopRight" SizeF="97.08344,25" LocationFloat="427.0834,99.99988" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <ExpressionBindings>
-                <Item1 Ref="211" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalUsedProductsAmount]), '', 'طلای مستعمل:')" />
-              </ExpressionBindings>
-              <StylePriority Ref="212" UseFont="false" UseBorders="false" />
-            </Item17>
-            <Item18 Ref="213" ControlType="XRLabel" Name="xrLabel77" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel30" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
-              <ExpressionBindings>
-                <Item1 Ref="214" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalStoneAmount]" />
-              </ExpressionBindings>
-              <StylePriority Ref="215" UseFont="false" UseBorders="false" UseTextAlignment="false" />
-            </Item18>
-            <Item19 Ref="216" ControlType="XRLabel" Name="xrLabel78" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" TextAlignment="TopRight" SizeF="97.08334,25" LocationFloat="427.0835,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <ExpressionBindings>
-                <Item1 Ref="217" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalStoneAmount]), '', 'ارزش سنگ ها:')&#xA;" />
+                <Item1 Ref="217" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.DailyGramPrice]), '', 'نرخ روز هر ' + [Invoice.GoldUnitType] + ' طلای 18 عیار: ' + [Invoice.DailyGramPrice])&#xA;" />
               </ExpressionBindings>
               <StylePriority Ref="218" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item15>
+            <Item16 Ref="219" ControlType="XRLabel" Name="xrLabel75" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,99.99998" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="220" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.TotalUsedProductsAmount]" />
+              </ExpressionBindings>
+              <StylePriority Ref="221" UseFont="false" UseBorders="false" />
+            </Item16>
+            <Item17 Ref="222" ControlType="XRLabel" Name="xrLabel76" RightToLeft="Yes" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" TextAlignment="TopRight" SizeF="97.08344,25" LocationFloat="427.0834,99.99988" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <ExpressionBindings>
+                <Item1 Ref="223" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalUsedProductsAmount]), '', 'طلای مستعمل:')" />
+              </ExpressionBindings>
+              <StylePriority Ref="224" UseFont="false" UseBorders="false" />
+            </Item17>
+            <Item18 Ref="225" ControlType="XRLabel" Name="xrLabel77" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" Text="xrLabel30" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1667,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="226" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice].[TotalStoneAmount]" />
+              </ExpressionBindings>
+              <StylePriority Ref="227" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item18>
+            <Item19 Ref="228" ControlType="XRLabel" Name="xrLabel78" Multiline="true" CanShrink="true" ProcessNullValues="SuppressAndShrink" TextAlignment="TopRight" SizeF="97.08334,25" LocationFloat="427.0835,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <ExpressionBindings>
+                <Item1 Ref="229" EventName="BeforePrint" PropertyName="Text" Expression="Iif(IsNullOrEmpty([Invoice.TotalStoneAmount]), '', 'ارزش سنگ ها:')&#xA;" />
+              </ExpressionBindings>
+              <StylePriority Ref="230" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item19>
-            <Item20 Ref="219" ControlType="XRLabel" Name="xrLabel79" RightToLeft="Yes" Multiline="true" Text="مانده قبلی" TextAlignment="TopRight" SizeF="97.08331,25" LocationFloat="427.0833,200" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <StylePriority Ref="220" UseFont="false" UseBorders="false" />
+            <Item20 Ref="231" ControlType="XRLabel" Name="xrLabel79" RightToLeft="Yes" Multiline="true" Text="مانده قبلی" TextAlignment="TopRight" SizeF="97.08331,25" LocationFloat="427.0833,200" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <StylePriority Ref="232" UseFont="false" UseBorders="false" />
             </Item20>
-            <Item21 Ref="221" ControlType="XRLabel" Name="xrLabel80" RightToLeft="Yes" Multiline="true" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1666,200.0001" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item21 Ref="233" ControlType="XRLabel" Name="xrLabel80" RightToLeft="Yes" Multiline="true" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1666,200.0001" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="222" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.PreviousRemaining]" />
+                <Item1 Ref="234" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.PreviousRemaining]" />
               </ExpressionBindings>
-              <StylePriority Ref="223" UseFont="false" UseBorders="false" />
+              <StylePriority Ref="235" UseFont="false" UseBorders="false" />
             </Item21>
-            <Item22 Ref="224" ControlType="XRLabel" Name="xrLabel81" RightToLeft="Yes" Multiline="true" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1666,225.0003" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item22 Ref="236" ControlType="XRLabel" Name="xrLabel81" RightToLeft="Yes" Multiline="true" Text="xrLabel21" TextAlignment="TopRight" SizeF="224.7808,25" LocationFloat="524.1666,225.0003" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="225" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.AfterRemaining]" />
+                <Item1 Ref="237" EventName="BeforePrint" PropertyName="Text" Expression="[Invoice.AfterRemaining]" />
               </ExpressionBindings>
-              <StylePriority Ref="226" UseFont="false" UseBorders="false" />
+              <StylePriority Ref="238" UseFont="false" UseBorders="false" />
             </Item22>
-            <Item23 Ref="227" ControlType="XRLabel" Name="xrLabel82" RightToLeft="Yes" Multiline="true" Text="مانده نهایی:" TextAlignment="TopRight" SizeF="97.08344,25" LocationFloat="427.0833,225" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
-              <StylePriority Ref="228" UseFont="false" UseBorders="false" />
+            <Item23 Ref="239" ControlType="XRLabel" Name="xrLabel82" RightToLeft="Yes" Multiline="true" Text="مانده نهایی:" TextAlignment="TopRight" SizeF="97.08344,25" LocationFloat="427.0833,225" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
+              <StylePriority Ref="240" UseFont="false" UseBorders="false" />
             </Item23>
           </Controls>
         </Item1>
-        <Item2 Ref="229" ControlType="DetailBand" Name="Detail1" HeightF="0.5956014" />
+        <Item2 Ref="241" ControlType="DetailBand" Name="Detail1" HeightF="0.5956014" />
       </Bands>
     </Item8>
-    <Item9 Ref="230" ControlType="DetailReportBand" Name="PaymentList" Level="4" DataMember="Invoice.InvoicePayments">
+    <Item9 Ref="242" ControlType="DetailReportBand" Name="PaymentList" Level="5" DataMember="Invoice.InvoicePayments">
       <Bands>
-        <Item1 Ref="231" ControlType="GroupHeaderBand" Name="PaymentTableHeader" HeightF="65.70835">
+        <Item1 Ref="243" ControlType="GroupHeaderBand" Name="PaymentTableHeader" HeightF="65.70835">
           <Controls>
-            <Item1 Ref="232" ControlType="XRTable" Name="xrTable2" TextAlignment="TopCenter" SizeF="748.9473,25" LocationFloat="7.629395E-06,40.70835" Padding="2,2,0,0,96" Borders="All">
+            <Item1 Ref="244" ControlType="XRTable" Name="xrTable2" TextAlignment="TopCenter" SizeF="748.9473,25" LocationFloat="7.629395E-06,40.70835" Padding="2,2,0,0,96" Borders="All">
               <Rows>
-                <Item1 Ref="233" ControlType="XRTableRow" Name="xrTableRow2" Weight="11.5">
+                <Item1 Ref="245" ControlType="XRTableRow" Name="xrTableRow2" Weight="11.5">
                   <Cells>
-                    <Item1 Ref="234" ControlType="XRTableCell" Name="xrTableCell4" Weight="1.1952652302632329" Multiline="true" Text="مبلغ" Font="B Nazanin, 12pt, style=Bold">
-                      <StylePriority Ref="235" UseFont="false" />
+                    <Item1 Ref="246" ControlType="XRTableCell" Name="xrTableCell4" Weight="1.1952652302632329" Multiline="true" Text="مبلغ" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="247" UseFont="false" />
                     </Item1>
-                    <Item2 Ref="236" ControlType="XRTableCell" Name="xrTableCell5" Weight="3.6428643784209451" Multiline="true" Text="شرح" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
-                      <StylePriority Ref="237" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+                    <Item2 Ref="248" ControlType="XRTableCell" Name="xrTableCell5" Weight="3.6428643784209451" Multiline="true" Text="شرح" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
+                      <StylePriority Ref="249" UseFont="false" UseBorders="false" UseTextAlignment="false" />
                     </Item2>
-                    <Item3 Ref="238" ControlType="XRTableCell" Name="xrTableCell6" Weight="1.023960446943154" Multiline="true" Text="تاریخ پرداخت" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
-                      <StylePriority Ref="239" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+                    <Item3 Ref="250" ControlType="XRTableCell" Name="xrTableCell6" Weight="1.023960446943154" Multiline="true" Text="تاریخ پرداخت" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold" Borders="Top, Right, Bottom">
+                      <StylePriority Ref="251" UseFont="false" UseBorders="false" UseTextAlignment="false" />
                     </Item3>
                   </Cells>
                 </Item1>
               </Rows>
-              <StylePriority Ref="240" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="252" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="241" ControlType="XRLabel" Name="xrLabel58" Multiline="true" Text="جزئیات پرداخت" TextAlignment="MiddleLeft" SizeF="107.2917,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
-              <StylePriority Ref="242" UseFont="false" UseTextAlignment="false" />
+            <Item2 Ref="253" ControlType="XRLabel" Name="xrLabel58" Multiline="true" Text="جزئیات پرداخت" TextAlignment="MiddleLeft" SizeF="107.2917,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="254" UseFont="false" UseTextAlignment="false" />
             </Item2>
-            <Item3 Ref="243" ControlType="XRLine" Name="xrLine7" SizeF="637.9149,23" LocationFloat="112.085,11.48071" />
+            <Item3 Ref="255" ControlType="XRLine" Name="xrLine7" SizeF="637.9149,23" LocationFloat="112.085,11.48071" />
           </Controls>
         </Item1>
-        <Item2 Ref="244" ControlType="DetailBand" Name="PaymentTableDetails" HeightF="23.06455">
+        <Item2 Ref="256" ControlType="DetailBand" Name="PaymentTableDetails" HeightF="23.06455">
           <Controls>
-            <Item1 Ref="245" ControlType="XRLabel" Name="xrLabel62" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" Text="xrLabel62" TextAlignment="TopCenter" SizeF="130.8223,23" LocationFloat="618.1249,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item1 Ref="257" ControlType="XRLabel" Name="xrLabel62" TextFormatString="{0:yyyy-MM-dd}" Multiline="true" Text="xrLabel62" TextAlignment="TopCenter" SizeF="130.8223,23" LocationFloat="618.1249,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="246" EventName="BeforePrint" PropertyName="Text" Expression="[PaymentDate]" />
+                <Item1 Ref="258" EventName="BeforePrint" PropertyName="Text" Expression="[PaymentDate]" />
               </ExpressionBindings>
-              <StylePriority Ref="247" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="259" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item1>
-            <Item2 Ref="248" ControlType="XRLabel" Name="xrLabel61" Multiline="true" Text="xrLabel61" TextAlignment="TopCenter" SizeF="465.4164,23" LocationFloat="152.7085,0" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
+            <Item2 Ref="260" ControlType="XRLabel" Name="xrLabel61" Multiline="true" Text="xrLabel61" TextAlignment="TopCenter" SizeF="465.4164,23" LocationFloat="152.7085,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="Top, Right, Bottom">
               <ExpressionBindings>
-                <Item1 Ref="249" EventName="BeforePrint" PropertyName="Text" Expression="[Description]" />
+                <Item1 Ref="261" EventName="BeforePrint" PropertyName="Text" Expression="[Description]" />
               </ExpressionBindings>
-              <StylePriority Ref="250" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="262" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item2>
-            <Item3 Ref="251" ControlType="XRLabel" Name="xrLabel59" Multiline="true" Text="xrLabel59" TextAlignment="TopCenter" SizeF="152.7084,23" LocationFloat="0,0" Padding="2,2,0,0,100" Borders="All">
+            <Item3 Ref="263" ControlType="XRLabel" Name="xrLabel59" Multiline="true" Text="xrLabel59" TextAlignment="TopCenter" SizeF="152.7084,23" LocationFloat="0,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,100" Borders="All">
               <ExpressionBindings>
-                <Item1 Ref="252" EventName="BeforePrint" PropertyName="Text" Expression="[FinalAmount]" />
+                <Item1 Ref="264" EventName="BeforePrint" PropertyName="Text" Expression="[FinalAmount]" />
               </ExpressionBindings>
-              <StylePriority Ref="253" UseBorders="false" UseTextAlignment="false" />
+              <StylePriority Ref="265" UseFont="false" UseBorders="false" UseTextAlignment="false" />
             </Item3>
           </Controls>
         </Item2>
       </Bands>
-      <ReportPrintOptions Ref="254" PrintOnEmptyDataSource="false" />
+      <ReportPrintOptions Ref="266" PrintOnEmptyDataSource="false" />
     </Item9>
-    <Item10 Ref="255" ControlType="PageFooterBand" Name="PageFooter" HeightF="127.310036">
+    <Item10 Ref="267" ControlType="PageFooterBand" Name="PageFooter" HeightF="127.310036">
       <Controls>
-        <Item1 Ref="256" ControlType="XRPictureBox" Name="pictureBox2" ImageSource="img,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAsNJREFUaEPtmcvrTVEcxZdXyCOJEKVEKYqRxx9gJmYeI2NlhDIwEElmwsDrLzBgYCYT8pZ+v4liSpJnkUfetGrf+rVa5/z2uXvve86NT6263bu/e333Pft5NvAfyywAOwGcB/AAwGsA34P4+X74bUco2zkWATgD4DOAP5Fi2QsAlmtlbTAVwBEAn0yiseLTOh7qaoV5AG6YxPrVHQAL1aQ0qwE8M8mk6mmoeyAsKNSIntgYehRlWugCap5bt0uPGQ5sNS2lY2qeC06xKbNTU30DsEyTyAHXCTUrrXOaRCozAXw0RqXFHkDvbHDboSZ1+grgJID1AGYE8fOp8JuWr9M2TSYF7o/UoErPAazRCsawNpTRuCqd1QpS4AZQDZz4b9c1ogcbE/tk7mlwCm+MgRO7UyynTbzTKw1MgVOhGjit08AaNph4Jz65bMR2gyYzDMtqvNMXDUzhpTFwatKQ2Sbe6YUGpvDYGDiV6FqPNDCFK8bAietELLGD/ZIGpsANnBo4cSxxah0PlomdQA5rcApcXdWgSlzs6hrTdEHcohWkMB/AL2NSJf7b7DocB5wAqI3hu9gnQf0Ik0JWRo1Rad3UJHIwyENVT/s1iRysNEYl9RvAUk0iFyPGsJSuq3lOdhvDUtqu5jnh7PPemOYWtyVT1Dw3J4xxbh1U0xIsabAb7kcfAMxR01Lw+KkJ5NJRNSvJ4kLvuN4BmKtmpeFmThNJ1R41GQTTM7/MfjKImaqKXSahfrVZKx8kEwE8NEk11TWtuA14vuD1mSYXK94lrtBK2yL2BOm0VytrE17K8CWBJjmeeF09SStrG54Gf5pkq8TdwSqtpCtwVdaEq7RPg7vEZAC3TNKqq2HG6zTcVL41yffEl9K8xhsKtoajqjaCY2iTFu46h0xDDmihYWACgItjGnE5fDeU8GjMG6e7Dd/U/7v8BZW6sAruCpgZAAAAAElFTkSuQmCC" Sizing="ZoomImage" SizeF="21.47435,22.99998" LocationFloat="4.887824,50.0716934" />
-        <Item2 Ref="257" ControlType="XRPictureBox" Name="pictureBox1" ImageSource="img,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAqhJREFUaEPtmU3LTVEYhi/fBoQJxpISwpypCfIdpQyIMjExJuUj5EdQFAYM+BsGFPmeKhPyzQDdtd463T3nPHsfazt7cK66Jm/rftZz3nP2WnuvDVOmTKnBfOAQcBt4BXwF/nSkar8scx0sc1dhP/A2mPB/+QbY6021YQ5wLSg8Ka8Cs73JJvTpQ8x4xZvM2BcU6Yt7vNlh6OJ6HRToi7peF3jTEVopPNw3D3jTEVr2PNg3b3nTES+CYOQn4BywDlgKbASeBOO68Lk3HfE5CLofygdwVnW8Wc6of2KKhyIPe2iA08H4LkzxQORCDw2gjfRRkKltigfc3x4I0FrvudqmeCByiYeMlUGmtikeiNzkIWNNkKltigciT3jIOBtkapvigcg7HhpgPfA9yNQ2xQOR2isWebCsWI+D8V2Y4oFhHvMgsDUY15UpHhim7pDnWnZtMK4rUzwwyqMeBh4G47owxQOjfA8st/wG4GcwtrYpHsi85wWAU8G42qZ4oInRhX85GFfTFA808RewzQuVb+ZHMF77zBlgNbAC2D3GjWaKB5qqZ4TNXqxskA8Gxmmf0d8c7UF6BGj6PJPigTa+G/JhhJbmLaXhUejhrMmTZooH2qpvJvqZtUE3pV7XTfHAOOqaOe6FW6AzAK/ppnjgX7xfLua26CDDa7kpHvhXtWlqeZ7nE43gQlDHTfFALXWqrp/bYp/Q0J3BlyDvpuhi9VBNvwF3gZNlhVtW5tWBxhHgY5BxGx0HNT2gm6TPvOmIm0Gwb97wpiN0QOzBvqnXHilaXfQOz8N9UT/9xivgrnIQ50UmrXra4c1mXAoKTdrz3mQT9OLxYk++GfWgDzHLm2zDzgkvyXoXst2bGhddXDqY1rL3tLwf8Qlrqdqa43qZ009qpkyZMgZ/AT5dsYR4zlfrAAAAAElFTkSuQmCC" Sizing="ZoomImage" SizeF="21.47435,22.99998" LocationFloat="708.7116,73.8176956" />
-        <Item3 Ref="258" ControlType="XRLabel" Name="label2" Multiline="true" Text="3. امارات متحده سوق الذهب هندپلازا 6 طبقه 1 پلاک 109" TextAlignment="TopLeft" SizeF="368.424469,22.99998" LocationFloat="26.3671875,96.81768" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="259" UseFont="false" UseTextAlignment="false" />
+        <Item1 Ref="268" ControlType="XRPictureBox" Name="pictureBox2" ImageSource="img,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEQAACxEBf2RfkQAAAsNJREFUaEPtmcvrTVEcxZdXyCOJEKVEKYqRxx9gJmYeI2NlhDIwEElmwsDrLzBgYCYT8pZ+v4liSpJnkUfetGrf+rVa5/z2uXvve86NT6263bu/e333Pft5NvAfyywAOwGcB/AAwGsA34P4+X74bUco2zkWATgD4DOAP5Fi2QsAlmtlbTAVwBEAn0yiseLTOh7qaoV5AG6YxPrVHQAL1aQ0qwE8M8mk6mmoeyAsKNSIntgYehRlWugCap5bt0uPGQ5sNS2lY2qeC06xKbNTU30DsEyTyAHXCTUrrXOaRCozAXw0RqXFHkDvbHDboSZ1+grgJID1AGYE8fOp8JuWr9M2TSYF7o/UoErPAazRCsawNpTRuCqd1QpS4AZQDZz4b9c1ogcbE/tk7mlwCm+MgRO7UyynTbzTKw1MgVOhGjit08AaNph4Jz65bMR2gyYzDMtqvNMXDUzhpTFwatKQ2Sbe6YUGpvDYGDiV6FqPNDCFK8bAietELLGD/ZIGpsANnBo4cSxxah0PlomdQA5rcApcXdWgSlzs6hrTdEHcohWkMB/AL2NSJf7b7DocB5wAqI3hu9gnQf0Ik0JWRo1Rad3UJHIwyENVT/s1iRysNEYl9RvAUk0iFyPGsJSuq3lOdhvDUtqu5jnh7PPemOYWtyVT1Dw3J4xxbh1U0xIsabAb7kcfAMxR01Lw+KkJ5NJRNSvJ4kLvuN4BmKtmpeFmThNJ1R41GQTTM7/MfjKImaqKXSahfrVZKx8kEwE8NEk11TWtuA14vuD1mSYXK94lrtBK2yL2BOm0VytrE17K8CWBJjmeeF09SStrG54Gf5pkq8TdwSqtpCtwVdaEq7RPg7vEZAC3TNKqq2HG6zTcVL41yffEl9K8xhsKtoajqjaCY2iTFu46h0xDDmihYWACgItjGnE5fDeU8GjMG6e7Dd/U/7v8BZW6sAruCpgZAAAAAElFTkSuQmCC" Sizing="ZoomImage" SizeF="21.47435,22.99998" LocationFloat="4.887824,50.0716934" />
+        <Item2 Ref="269" ControlType="XRPictureBox" Name="pictureBox1" ImageSource="img,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEQAACxEBf2RfkQAAAqhJREFUaEPtmU3LTVEYhi/fBoQJxpISwpypCfIdpQyIMjExJuUj5EdQFAYM+BsGFPmeKhPyzQDdtd463T3nPHsfazt7cK66Jm/rftZz3nP2WnuvDVOmTKnBfOAQcBt4BXwF/nSkar8scx0sc1dhP/A2mPB/+QbY6021YQ5wLSg8Ka8Cs73JJvTpQ8x4xZvM2BcU6Yt7vNlh6OJ6HRToi7peF3jTEVopPNw3D3jTEVr2PNg3b3nTES+CYOQn4BywDlgKbASeBOO68Lk3HfE5CLofygdwVnW8Wc6of2KKhyIPe2iA08H4LkzxQORCDw2gjfRRkKltigfc3x4I0FrvudqmeCByiYeMlUGmtikeiNzkIWNNkKltigciT3jIOBtkapvigcg7HhpgPfA9yNQ2xQOR2isWebCsWI+D8V2Y4oFhHvMgsDUY15UpHhim7pDnWnZtMK4rUzwwyqMeBh4G47owxQOjfA8st/wG4GcwtrYpHsi85wWAU8G42qZ4oInRhX85GFfTFA808RewzQuVb+ZHMF77zBlgNbAC2D3GjWaKB5qqZ4TNXqxskA8Gxmmf0d8c7UF6BGj6PJPigTa+G/JhhJbmLaXhUejhrMmTZooH2qpvJvqZtUE3pV7XTfHAOOqaOe6FW6AzAK/ppnjgX7xfLua26CDDa7kpHvhXtWlqeZ7nE43gQlDHTfFALXWqrp/bYp/Q0J3BlyDvpuhi9VBNvwF3gZNlhVtW5tWBxhHgY5BxGx0HNT2gm6TPvOmIm0Gwb97wpiN0QOzBvqnXHilaXfQOz8N9UT/9xivgrnIQ50UmrXra4c1mXAoKTdrz3mQT9OLxYk++GfWgDzHLm2zDzgkvyXoXst2bGhddXDqY1rL3tLwf8Qlrqdqa43qZ009qpkyZMgZ/AT5dsYR4zlfrAAAAAElFTkSuQmCC" Sizing="ZoomImage" SizeF="21.47435,22.99998" LocationFloat="708.7116,73.8176956" />
+        <Item3 Ref="270" ControlType="XRLabel" Name="label2" Multiline="true" Text="3. امارات متحده سوق الذهب هندپلازا 6 طبقه 1 پلاک 109" TextAlignment="TopLeft" SizeF="368.424469,22.99998" LocationFloat="26.3671875,96.81768" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="271" UseFont="false" UseTextAlignment="false" />
         </Item3>
-        <Item4 Ref="260" ControlType="XRLabel" Name="label1" Multiline="true" Text="2. قره ضیالدین خیابان امام روبروب بانک ملی" TextAlignment="TopLeft" SizeF="368.424469,22.99998" LocationFloat="26.3671761,73.8176956" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="261" UseFont="false" UseTextAlignment="false" />
+        <Item4 Ref="272" ControlType="XRLabel" Name="label1" Multiline="true" Text="2. قره ضیالدین خیابان امام روبروب بانک ملی" TextAlignment="TopLeft" SizeF="368.424469,22.99998" LocationFloat="26.3671761,73.8176956" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="273" UseFont="false" UseTextAlignment="false" />
         </Item4>
-        <Item5 Ref="262" ControlType="XRLabel" Name="xrLabel23" Multiline="true" Text="[Setting.PhoneNumber]" TextAlignment="TopRight" SizeF="137.890625,22.99998" LocationFloat="570.821,74.85937" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="263" UseFont="false" UseTextAlignment="false" />
+        <Item5 Ref="274" ControlType="XRLabel" Name="xrLabel23" Multiline="true" Text="[Setting.PhoneNumber]" TextAlignment="TopRight" SizeF="137.890625,22.99998" LocationFloat="570.821,74.85937" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="275" UseFont="false" UseTextAlignment="false" />
         </Item5>
-        <Item6 Ref="264" ControlType="XRLabel" Name="xrLabel22" Multiline="true" Text="محل امضای فروشنده:" TextAlignment="TopLeft" SizeF="120.016,21.30211" LocationFloat="6.103516E-05,0" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="265" UseFont="false" UseTextAlignment="false" />
+        <Item6 Ref="276" ControlType="XRLabel" Name="xrLabel22" Multiline="true" Text="محل امضای فروشنده:" TextAlignment="TopLeft" SizeF="120.016,21.30211" LocationFloat="6.103516E-05,0" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="277" UseFont="false" UseTextAlignment="false" />
         </Item6>
-        <Item7 Ref="266" ControlType="XRPictureBox" Name="xrPictureBox1" ImageSource="img,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAA0NJREFUaEPtmceqFUEQhv+FulEMe12IEdyIaSHqwrA2vIrpBRR1aVgYMLyDqBhRwUcw7XVlwoC6MfBBDzR1q9NxPDOL88MHl1vVNdVnOtR0SzPNNAqtk3Rc0gNJLyV9k/SnJ4hFzPuSjoVn9a4tkh46D//fPJO03SYzieZLuiDpt/OQacGzz0uaZ5Or1TJJj5zAQ8GIIKcm8SaGGEolnkpaYJPNieFkg4yFczbZlJjYQ86JEuS22SbtaYxDysISnRVrt200TW5JWh647dhj1tjkY7HZ2QbThA50WuHYY45GvnPEK7MNpklLR+5FvnP02mnQygdJVyXtD0N1YYC/D0i6Jumj0w4YTnQA7jj2mFc2+VhfnAa1fJd0QtJiG9TREkknQxsbpxZyTco61/LGLIn7JF0JvxrFYFcQXpa0N/JjqaetjVdLUtaxBhLpxvZaSU8cH8vjaNWh7aSdSco6lmBodG9iV2bsezCXdoa2WyX9cHxKJGUdSzAnEG+ipRMddGZ1iHHasZdIyjrmIAkmLaoZTimosNHSCX6MpKxjDpZYxMS2tlb2hFjXHVuOpKxjDvYJxOpkba1cCrEOOrYcSVnHHMwLxBJrba2wNKPWWi8p65hjUWjz1bG1QgxETGvLkZR1zNFnRz6HWFQF1pYjKeuYo8+h9SLEGmRoUQAiyg5ra+ViiHXIseVIyjrmoIpF1E7W1sruEOuGY8uRlHXMEW+I1E7WXguf1ogN8ZNjz5GUdSxBKY5WSnrn2EvEJcoZx14iKetYgkKPUhxRAJKY9UnxXtKO0Hbb0EUjxGU8v27N6STDaVVow9fgW8enhqSsYy10hlK8E7UTZQfLKvsMPA+rUzexEW9i0k5AUv/yqcvQOBUmbUn4MCd+OnFqyX7q9nH4QClOFUsBuD5UAMDf/I8ltnV18sgePgx9HNTCXZt8LG6KbIOxctgmH4sDAdtgrHS1XlLcD9pGYyN7ythpo6RfTuOxQG5V1wqIOzsbYCyctcnmxMXjGIcYpzVNV2+Ii8cxXfrww9Zstq54M9zZDXkVx5xgOE18PR1rg6SbzkP+N2zQm2wyfYh9hpsilj+OcPo4eOggFkUmO/aR0tXaTDNNSX8B04VsOKydBP4AAAAASUVORK5CYII=" Sizing="ZoomImage" SizeF="21.47435,22.99998" LocationFloat="708.7116,50.8177" />
-        <Item8 Ref="267" ControlType="XRLabel" Name="xrLabel27" Multiline="true" Text="محل امضای خریدار:" TextAlignment="TopLeft" SizeF="120.016,21.30211" LocationFloat="353.1091,0" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="268" UseFont="false" UseTextAlignment="false" />
+        <Item7 Ref="278" ControlType="XRPictureBox" Name="xrPictureBox1" ImageSource="img,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEQAACxEBf2RfkQAAA0NJREFUaEPtmceqFUEQhv+FulEMe12IEdyIaSHqwrA2vIrpBRR1aVgYMLyDqBhRwUcw7XVlwoC6MfBBDzR1q9NxPDOL88MHl1vVNdVnOtR0SzPNNAqtk3Rc0gNJLyV9k/SnJ4hFzPuSjoVn9a4tkh46D//fPJO03SYzieZLuiDpt/OQacGzz0uaZ5Or1TJJj5zAQ8GIIKcm8SaGGEolnkpaYJPNieFkg4yFczbZlJjYQ86JEuS22SbtaYxDysISnRVrt200TW5JWh647dhj1tjkY7HZ2QbThA50WuHYY45GvnPEK7MNpklLR+5FvnP02mnQygdJVyXtD0N1YYC/D0i6Jumj0w4YTnQA7jj2mFc2+VhfnAa1fJd0QtJiG9TREkknQxsbpxZyTco61/LGLIn7JF0JvxrFYFcQXpa0N/JjqaetjVdLUtaxBhLpxvZaSU8cH8vjaNWh7aSdSco6lmBodG9iV2bsezCXdoa2WyX9cHxKJGUdSzAnEG+ipRMddGZ1iHHasZdIyjrmIAkmLaoZTimosNHSCX6MpKxjDpZYxMS2tlb2hFjXHVuOpKxjDvYJxOpkba1cCrEOOrYcSVnHHMwLxBJrba2wNKPWWi8p65hjUWjz1bG1QgxETGvLkZR1zNFnRz6HWFQF1pYjKeuYo8+h9SLEGmRoUQAiyg5ra+ViiHXIseVIyjrmoIpF1E7W1sruEOuGY8uRlHXMEW+I1E7WXguf1ogN8ZNjz5GUdSxBKY5WSnrn2EvEJcoZx14iKetYgkKPUhxRAJKY9UnxXtKO0Hbb0EUjxGU8v27N6STDaVVow9fgW8enhqSsYy10hlK8E7UTZQfLKvsMPA+rUzexEW9i0k5AUv/yqcvQOBUmbUn4MCd+OnFqyX7q9nH4QClOFUsBuD5UAMDf/I8ltnV18sgePgx9HNTCXZt8LG6KbIOxctgmH4sDAdtgrHS1XlLcD9pGYyN7ythpo6RfTuOxQG5V1wqIOzsbYCyctcnmxMXjGIcYpzVNV2+Ii8cxXfrww9Zstq54M9zZDXkVx5xgOE18PR1rg6SbzkP+N2zQm2wyfYh9hpsilj+OcPo4eOggFkUmO/aR0tXaTDNNSX8B04VsOKydBP4AAAAASUVORK5CYII=" Sizing="ZoomImage" SizeF="21.47435,22.99998" LocationFloat="708.7116,50.8177" />
+        <Item8 Ref="279" ControlType="XRLabel" Name="xrLabel27" Multiline="true" Text="محل امضای خریدار:" TextAlignment="TopLeft" SizeF="120.016,21.30211" LocationFloat="353.1091,0" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="280" UseFont="false" UseTextAlignment="false" />
         </Item8>
-        <Item9 Ref="269" ControlType="XRLabel" Name="xrLabel29" RightToLeft="Yes" Multiline="true" Text="mohsengold57" TextAlignment="TopRight" SizeF="137.9069,23" LocationFloat="570.8047,52.90103" Font="Segoe UI Light, 10pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="270" UseFont="false" UseTextAlignment="false" />
+        <Item9 Ref="281" ControlType="XRLabel" Name="xrLabel29" RightToLeft="Yes" Multiline="true" Text="mohsengold57" TextAlignment="TopRight" SizeF="137.9069,23" LocationFloat="570.8047,52.90103" Font="Segoe UI Light, 10pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="282" UseFont="false" UseTextAlignment="false" />
         </Item9>
-        <Item10 Ref="271" ControlType="XRLabel" Name="xrLabel37" Multiline="true" Text="1. [Setting.Address]" TextAlignment="TopLeft" SizeF="368.424469,22.99998" LocationFloat="26.3671761,50.8177" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
-          <StylePriority Ref="272" UseFont="false" UseTextAlignment="false" />
+        <Item10 Ref="283" ControlType="XRLabel" Name="xrLabel37" Multiline="true" Text="1. [Setting.Address]" TextAlignment="TopLeft" SizeF="368.424469,22.99998" LocationFloat="26.3671761,50.8177" Font="B Nazanin, 10pt, style=Bold" Padding="2,2,0,0,100">
+          <StylePriority Ref="284" UseFont="false" UseTextAlignment="false" />
         </Item10>
-        <Item11 Ref="273" ControlType="XRLabel" Name="xrLabel39" Multiline="true" Text="صفحه:" SizeF="38.54163,23" LocationFloat="656.2337,101.126366" Padding="2,2,0,0,100" />
-        <Item12 Ref="274" ControlType="XRPageInfo" Name="xrPageInfo2" SizeF="34.77582,23" LocationFloat="695.410156,101.126366" Padding="2,2,0,0,100" />
+        <Item11 Ref="285" ControlType="XRLabel" Name="xrLabel39" Multiline="true" Text="صفحه:" SizeF="38.54163,23" LocationFloat="656.2337,101.126366" Padding="2,2,0,0,100" />
+        <Item12 Ref="286" ControlType="XRPageInfo" Name="xrPageInfo2" SizeF="34.77582,23" LocationFloat="695.410156,101.126366" Padding="2,2,0,0,100" />
       </Controls>
     </Item10>
-    <Item11 Ref="275" ControlType="BottomMarginBand" Name="BottomMargin" HeightF="9.765625" />
+    <Item11 Ref="287" ControlType="BottomMarginBand" Name="BottomMargin" HeightF="9.765625" />
+    <Item12 Ref="288" ControlType="DetailReportBand" Name="UsedProductList" Level="1" DataMember="Invoice.InvoiceUsedProductItems" DataSource="#Ref-0">
+      <Bands>
+        <Item1 Ref="289" ControlType="DetailBand" Name="UsedProductTableDetails" HeightF="23">
+          <Controls>
+            <Item1 Ref="290" ControlType="XRLabel" Name="xrLabel31" Multiline="true" Text="xrLabel31" TextAlignment="TopCenter" SizeF="353.10907,23" LocationFloat="0,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,96" Borders="All">
+              <ExpressionBindings>
+                <Item1 Ref="291" EventName="BeforePrint" PropertyName="Text" Expression="[Title]" />
+              </ExpressionBindings>
+              <StylePriority Ref="292" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item1>
+            <Item2 Ref="293" ControlType="XRLabel" Name="xrLabel30" Multiline="true" Text="xrLabel30" TextAlignment="TopCenter" SizeF="73.9743958,23" LocationFloat="353.1091,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,96" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="294" EventName="BeforePrint" PropertyName="Text" Expression="[Quantity]" />
+              </ExpressionBindings>
+              <StylePriority Ref="295" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item2>
+            <Item3 Ref="296" ControlType="XRLabel" Name="xrLabel28" Multiline="true" Text="xrLabel28" TextAlignment="TopCenter" SizeF="97.0831451,23" LocationFloat="427.0835,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,96" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="297" EventName="BeforePrint" PropertyName="Text" Expression="[Weight]" />
+              </ExpressionBindings>
+              <StylePriority Ref="298" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item3>
+            <Item4 Ref="299" ControlType="XRLabel" Name="xrLabel26" Multiline="true" Text="xrLabel26" TextAlignment="TopRight" SizeF="224.781158,23" LocationFloat="524.1666,0" Font="B Nazanin, 12pt, style=Bold" Padding="2,2,0,0,96" Borders="Top, Right, Bottom">
+              <ExpressionBindings>
+                <Item1 Ref="300" EventName="BeforePrint" PropertyName="Text" Expression="[TotalPrice]" />
+              </ExpressionBindings>
+              <StylePriority Ref="301" UseFont="false" UseBorders="false" UseTextAlignment="false" />
+            </Item4>
+          </Controls>
+        </Item1>
+        <Item2 Ref="302" ControlType="GroupHeaderBand" Name="UsedProductTableHeader" HeightF="65.71">
+          <Controls>
+            <Item1 Ref="303" ControlType="XRTable" Name="xrTable6" TextAlignment="TopCenter" SizeF="748.9479,25" LocationFloat="0,40.70837" Padding="2,2,0,0,96" Borders="All">
+              <Rows>
+                <Item1 Ref="304" ControlType="XRTableRow" Name="xrTableRow6" Weight="11.5">
+                  <Cells>
+                    <Item1 Ref="305" ControlType="XRTableCell" Name="xrTableCell11" Weight="2.3854479477484829" Multiline="true" Text="عنوان" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="306" UseFont="false" />
+                    </Item1>
+                    <Item2 Ref="307" ControlType="XRTableCell" Name="xrTableCell13" Weight="0.49973806648505331" Multiline="true" Text="تعداد" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="308" UseFont="false" UseTextAlignment="false" />
+                    </Item2>
+                    <Item3 Ref="309" ControlType="XRTableCell" Name="xrTableCell30" Weight="0.65585067345619608" Multiline="true" Text="وزن" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="310" UseFont="false" UseTextAlignment="false" />
+                    </Item3>
+                    <Item4 Ref="311" ControlType="XRTableCell" Name="xrTableCell32" Weight="1.5185217524757124" Multiline="true" Text="ارزش کل" TextAlignment="TopCenter" Font="B Nazanin, 12pt, style=Bold">
+                      <StylePriority Ref="312" UseFont="false" UseTextAlignment="false" />
+                    </Item4>
+                  </Cells>
+                </Item1>
+              </Rows>
+              <StylePriority Ref="313" UseBorders="false" UseTextAlignment="false" />
+            </Item1>
+            <Item2 Ref="314" ControlType="XRLabel" Name="xrLabel25" Multiline="true" Text="طلای مستعمل خریداری شده" TextAlignment="MiddleLeft" SizeF="177.482117,40.70837" LocationFloat="4.793274,0" Font="B Titr, 12pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="315" UseFont="false" UseTextAlignment="false" />
+            </Item2>
+            <Item3 Ref="316" ControlType="XRLine" Name="xrLine3" SizeF="567.724548,23" LocationFloat="182.275391,11.4807129" BorderWidth="1">
+              <StylePriority Ref="317" UseBorderWidth="false" />
+            </Item3>
+          </Controls>
+        </Item2>
+      </Bands>
+      <ReportPrintOptions Ref="318" PrintOnEmptyDataSource="false" />
+    </Item12>
   </Bands>
   <StyleSheet>
-    <Item1 Ref="276" Name="baseControlStyle" BorderStyle="Inset" Padding="2,2,0,0,100" Font="Segoe UI, 9.75pt" Sides="All" StringFormat="Near;Near;0;None;Character;GenericDefault" BorderWidthSerializable="1" />
-    <Item2 Ref="277" Name="evenDetailStyle" BorderStyle="Inset" Padding="2,2,0,0,100" BackColor="255,235,233,234" StringFormat="Near;Near;0;None;Character;GenericDefault" />
-    <Item3 Ref="278" Name="oddDetailStyle" BorderStyle="Inset" Padding="2,2,0,0,100" BackColor="WhiteSmoke" StringFormat="Near;Near;0;None;Character;GenericDefault" />
+    <Item1 Ref="319" Name="baseControlStyle" BorderStyle="Inset" Padding="2,2,0,0,100" Font="Segoe UI, 9.75pt" Sides="All" StringFormat="Near;Near;0;None;Character;GenericDefault" BorderWidthSerializable="1" />
+    <Item2 Ref="320" Name="evenDetailStyle" BorderStyle="Inset" Padding="2,2,0,0,100" BackColor="255,235,233,234" StringFormat="Near;Near;0;None;Character;GenericDefault" />
+    <Item3 Ref="321" Name="oddDetailStyle" BorderStyle="Inset" Padding="2,2,0,0,100" BackColor="WhiteSmoke" StringFormat="Near;Near;0;None;Character;GenericDefault" />
   </StyleSheet>
   <ParameterPanelLayoutItems>
-    <Item1 Ref="279" LayoutItemType="Parameter" Parameter="#Ref-3" />
-    <Item2 Ref="280" LayoutItemType="Parameter" Parameter="#Ref-5" />
+    <Item1 Ref="322" LayoutItemType="Parameter" Parameter="#Ref-3" />
+    <Item2 Ref="323" LayoutItemType="Parameter" Parameter="#Ref-5" />
   </ParameterPanelLayoutItems>
   <ComponentStorage>
     <Item1 Ref="0" ObjectType="DevExpress.DataAccess.ObjectBinding.ObjectDataSource,DevExpress.DataAccess.v24.2" Name="objectDataSource2" Base64="PE9iamVjdERhdGFTb3VyY2UgTmFtZT0ib2JqZWN0RGF0YVNvdXJjZTIiPjxEYXRhU291cmNlIFR5cGU9IkdvbGRFeC5TaGFyZWQuRFRPcy5SZXBvcnRpbmcuR2V0SW52b2ljZVJlcG9ydFJlc3BvbnNlLCBHb2xkRXguU2hhcmVkLCBWZXJzaW9uPTEuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbCIgLz48Q29uc3RydWN0b3I+PFBhcmFtZXRlciBOYW1lPSJJbnZvaWNlIiBUeXBlPSJHb2xkRXguU2hhcmVkLkRUT3MuSW52b2ljZXMuR2V0SW52b2ljZVJlc3BvbnNlLCBHb2xkRXguU2hhcmVkLCBWZXJzaW9uPTEuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbCIgSXNOdWxsPSJ0cnVlIiAvPjxQYXJhbWV0ZXIgTmFtZT0iU2V0dGluZyIgVHlwZT0iR29sZEV4LlNoYXJlZC5EVE9zLlNldHRpbmdzLkdldFNldHRpbmdSZXNwb25zZSwgR29sZEV4LlNoYXJlZCwgVmVyc2lvbj0xLjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwiIElzTnVsbD0idHJ1ZSIgLz48L0NvbnN0cnVjdG9yPjwvT2JqZWN0RGF0YVNvdXJjZT4=" />
