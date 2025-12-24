@@ -6,6 +6,7 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using System.Globalization;
 
 namespace GoldEx.Client.Pages.InventoryEntry.Components;
 
@@ -92,5 +93,17 @@ public partial class CoinList
         return vacuumedWeight is not null
             ? $"{weight} ({vacuumedWeight} با وکیوم)"
             : weight ?? "-";
+    }
+
+    private string GetMintYear(CoinItemVm coinItem)
+    {
+        var mintYear = coinItem.CoinInstance.MintYear;
+
+        if (!mintYear.HasValue)
+            return "نامشخص";
+
+        var persianYear = new PersianCalendar().GetYear(mintYear.Value);
+
+        return persianYear.ToString();
     }
 }

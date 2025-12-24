@@ -32,7 +32,7 @@ public partial class CoinItemEditor
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (Model.CoinInstance.Coin != null)
-            await LoadMaxAmountAsync(Model.CoinInstance.Coin);
+            await LoadMaxAmountAsync(Model.CoinInstance);
 
         await LoadCoinAsync();
         await base.OnParametersSetAsync();
@@ -49,10 +49,13 @@ public partial class CoinItemEditor
             });
     }
 
-    private async Task LoadMaxAmountAsync(GetCoinResponse coin)
+    private async Task LoadMaxAmountAsync(CoinInstanceVm coin)
     {
+        if (coin.Id is null)
+            return;
+
         await SendRequestAsync<IInventoryStockService, GetInventoryStockAmountResponse>(
-            action: (s, ct) => s.GetAvailableItemAmountAsync(coin.Id, ItemType.Coin, ct),
+            action: (s, ct) => s.GetAvailableItemAmountAsync(coin.Id.Value, ItemType.Coin, ct),
             afterSend: response => _maxAvailableAmount = (int)response.Amount);
     }
 
@@ -91,8 +94,6 @@ public partial class CoinItemEditor
 
         if (PriceUnit is null)
             return;
-
-        await LoadMaxAmountAsync(coin);
 
         await SendRequestAsync<ICoinService, GetExchangeRateResponse?>(
             action: (s, ct) => s.GetPriceAsync(coin.Id, PriceUnit.IsDefault ? null : PriceUnit.Id, ct),
