@@ -2258,7 +2258,6 @@
         }
 
         #endregion
-
         private DevExpress.XtraReports.UI.TopMarginBand TopMargin;
         private DevExpress.XtraReports.UI.PageHeaderBand PageHeader;
         private DevExpress.XtraReports.UI.XRLabel label1;
@@ -2352,7 +2351,6 @@
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell2;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell3;
         private DevExpress.XtraReports.UI.XRLabel xrLabel46;
-        private DevExpress.XtraReports.UI.XRLine xrLine6;
         private DevExpress.XtraReports.UI.DetailBand CurrencyTableDetails;
         private DevExpress.XtraReports.UI.XRLabel xrLabel49;
         private DevExpress.XtraReports.UI.XRLabel xrLabel48;
@@ -2415,5 +2413,6 @@
         private DevExpress.XtraReports.UI.XRControlStyle oddDetailStyle;
         private DevExpress.XtraReports.Parameters.Parameter invoiceNumber;
         private DevExpress.XtraReports.Parameters.Parameter invoiceUrl;
+        private DevExpress.XtraReports.UI.XRLine xrLine6;
     }
 }
