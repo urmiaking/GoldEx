@@ -1,36 +1,37 @@
 ﻿@inherits GoldExComponentBase
 
-<MudMenu @bind-Open="IsOpen"
-         AnchorOrigin="Origin.BottomCenter"
-         TransformOrigin="Origin.TopCenter"
-         PopoverClass="notification-popover"
-         MaxHeight="600">
-    <ActivatorContent>
-        @if (_unreadCount > 0)
-        {
-            <MudBadge Content="@_unreadCount.ToString()"
-                      Color="Color.Error"
-                      Bordered="true"
-                      Dot="true"
-                      Overlap="true"
-                      Class="notification-badge">
-                <MudIconButton Icon="@Icons.Material.Filled.NotificationsActive"
-                               Color="Color.Error">
-                </MudIconButton>
-            </MudBadge>
-        }
-        else
-        {
-            <MudIconButton Icon="@Icons.Material.Filled.Notifications"
-                           Color="Color.Inherit">
-            </MudIconButton>
-        }
-    </ActivatorContent>
-    <ChildContent>
-        <NotificationList IsOpen="_isOpen"
-                          Items="_notifications"
-                          OnMarkAsRead="HandleMarkAsRead"
-                          OnMarkAllAsRead="HandleMarkAllAsRead"
-                          OnButtonAction="HandleButtonAction" />
-    </ChildContent>
-</MudMenu>
+<MudDrawer @bind-Open="_drawerOpen"
+           Anchor="Anchor.End"
+           Variant="DrawerVariant.Temporary"
+           Overlay="true"
+           OverlayAutoClose="true"
+           Elevation="8"
+           Width="400px">
+    <MudToolBar Dense="true" Gutters="false">
+        <MudText Typo="Typo.h6" Class="mr-3">اعلان ها</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                       Color="Color.Inherit"
+                       OnClick="@(() => _drawerOpen = false)" />
+    </MudToolBar>
+    <MudDivider />
+    <NotificationList IsOpen="_drawerOpen"
+                      Items="_notifications"
+                      OnMarkAsRead="HandleMarkAsRead"
+                      OnMarkAllAsRead="HandleMarkAllAsRead"
+                      OnButtonAction="HandleButtonAction" />
+</MudDrawer>
+
+<MudIconButton OnClick="@(() => _drawerOpen = true)"
+               Icon="@(_unreadCount > 0 ? Icons.Material.Filled.NotificationsActive : Icons.Material.Filled.Notifications)"
+               Color="@(_unreadCount > 0 ? Color.Error : Color.Inherit)">
+    @if (_unreadCount > 0)
+    {
+        <MudBadge Content="@_unreadCount.ToString()"
+                  Color="Color.Error"
+                  Bordered="true"
+                  Dot="true"
+                  Overlap="true"
+                  Class="notification-badge" />
+    }
+</MudIconButton>  
