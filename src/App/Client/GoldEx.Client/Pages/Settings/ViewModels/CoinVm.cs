@@ -43,8 +43,8 @@ public class CoinVm
             Title = response.Title,
             Weight = response.Weight,
             Fineness =response.Fineness,
-            StartMintYear = response.StartMintYear != 0 ? new DateTime(response.StartMintYear, 1, 1) : null ,
-            EndMintYear = response.EndMintYear.HasValue ? new DateTime(response.EndMintYear.Value, 1, 1) : null,
+            StartMintYear = response.StartMintYear != 0 ? new DateTime(response.StartMintYear, 3, 21) : null ,
+            EndMintYear = response.EndMintYear.HasValue ? new DateTime(response.EndMintYear.Value, 3, 21) : null,
             IsActive = response.IsActive,
             PriceId = response.PriceId
         };
