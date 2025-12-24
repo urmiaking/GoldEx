@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Customers;
+﻿using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 
@@ -92,7 +92,8 @@ public record InvoiceCoinItemDto(
     decimal UnitPrice,
     int Quantity,
     decimal ProfitPercent,
-    Guid CoinId);
+    bool IsInstant,
+    CoinInstanceRequestDto CoinInstance);
 
 public record InvoiceCurrencyItemDto(
     Guid? Id,

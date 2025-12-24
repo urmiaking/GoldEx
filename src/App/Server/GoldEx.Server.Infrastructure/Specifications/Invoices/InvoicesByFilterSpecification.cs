@@ -57,33 +57,35 @@ public class InvoicesByFilterSpecification : SpecificationBase<Invoice>
         // Apply status filter only if a status is provided
         if (invoiceFilter.Status.HasValue)
         {
-            Expression<Func<Invoice, decimal>> unpaidAmountExpression = x =>
-                (
-                    x.ProductItems.Sum(i => i.ItemFinalAmount * (i.CostPriceExchangeRate ?? 1)) +
-                    x.CoinItems.Sum(c => c.ItemFinalAmount) +
-                    x.CurrencyItems.Sum(c => c.ItemFinalAmount) +
-                    x.UsedProducts.Sum(up => up.ItemFinalAmount) -
-                    x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)) +
-                    x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1))
-                )
-                - x.InvoicePayments!.Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1))
-                - (x.InvoiceType == InvoiceType.Sell ? x.UsedProducts.Sum(up => up.ItemFinalAmount) : 0);
+            var unpaidExpr = InvoiceExpressions.TotalUnpaidAmount();
 
-            Expression<Func<Invoice, bool>> isPaidExpression = Expression.Lambda<Func<Invoice, bool>>(
-                Expression.LessThan(
-                    Expression.Call(typeof(Math), "Abs", null, unpaidAmountExpression.Body),
-                    Expression.Constant(0.01m)
-                ),
-                unpaidAmountExpression.Parameters
-            );
+            var isPaidExpression =
+                Expression.Lambda<Func<Invoice, bool>>(
+                    Expression.LessThan(
+                        Expression.Call(
+                            typeof(Math),
+                            nameof(Math.Abs),
+                            null,
+                            unpaidExpr.Body
+                        ),
+                        Expression.Constant(0.01m)
+                    ),
+                    unpaidExpr.Parameters
+                );
 
-            Expression<Func<Invoice, bool>> hasDebtExpression = Expression.Lambda<Func<Invoice, bool>>(
-                Expression.GreaterThanOrEqual(
-                    Expression.Call(typeof(Math), "Abs", null, unpaidAmountExpression.Body),
-                    Expression.Constant(0.01m)
-                ),
-                unpaidAmountExpression.Parameters
-            );
+            var hasDebtExpression =
+                Expression.Lambda<Func<Invoice, bool>>(
+                    Expression.GreaterThanOrEqual(
+                        Expression.Call(
+                            typeof(Math),
+                            nameof(Math.Abs),
+                            null,
+                            unpaidExpr.Body
+                        ),
+                        Expression.Constant(0.01m)
+                    ),
+                    unpaidExpr.Parameters
+                );
 
             switch (invoiceFilter.Status.Value)
             {

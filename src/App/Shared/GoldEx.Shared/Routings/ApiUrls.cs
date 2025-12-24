@@ -423,9 +423,9 @@ public class ApiUrls
         public static string IssueNext() =>
             BuildUrl(ApiRoutes.BarcodeReservations.Base, ApiRoutes.BarcodeReservations.IssueNext);
 
-        public static string Release(string barcode) =>
+        public static string Release(BarcodeType barcodeType, string barcode) =>
             BuildUrl(ApiRoutes.BarcodeReservations.Base, ApiRoutes.BarcodeReservations.Release)
-                .FormatRoute(new { barcode });
+                .FormatRoute(new { barcodeType, barcode });
     }
 
     public static class PriceProviders
@@ -510,5 +510,12 @@ public class ApiUrls
     {
         public static string Exit() =>
             BuildUrl(ApiRoutes.InventoryExits.Base, ApiRoutes.InventoryExits.Exit);
+    }
+
+    public class CoinInstances
+    {
+        public static string Get(string barcode) =>
+            BuildUrl(ApiRoutes.CoinInstances.Base, ApiRoutes.CoinInstances.Get)
+                .FormatRoute(new { barcode });
     }
 }

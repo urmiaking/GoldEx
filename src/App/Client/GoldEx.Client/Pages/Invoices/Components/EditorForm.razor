@@ -226,7 +226,12 @@ else
             {
                 <MudGrid Class="mt-0 mb-2">
                     <MudItem xs="12" md="3">
-                        <MudText>نام و نام خانوادگی: @_model.Customer.FullName</MudText>
+                        <div class="d-flex align-items-center gap-1">
+                            <MudText>نام و نام خانوادگی: @_model.Customer.FullName</MudText>
+                            <MudTooltip Text="ویرایش اطلاعات مشتری" ShowOnHover="true" Color="Color.Success" Arrow="true">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Color="Color.Success" Size="Size.Small" OnClick="OnEditCustomer" />
+                            </MudTooltip>
+                        </div>
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudText>شماره تماس: @_model.Customer.PhoneNumber</MudText>
@@ -241,7 +246,7 @@ else
                                 <MudText>مانده: </MudText>
                                 <CustomerRemaining CustomerId="_model.Customer.Id.Value"
                                                    TextTypo="Typo.body1"
-                                                   PriceUnit="@_model.InvoicePriceUnit"
+                                                   EnableManualSlide="true"
                                                    AddedValue="@(_applyCurrentInvoice && !IsEditMode ? _model.TotalUnpaidAmount : null)" />
                                 <MudTooltip Text="@RemainingTooltipText" ShowOnHover="true" Color="Color.Success" Arrow="true">
                                     <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Success" Size="Size.Small" />
@@ -281,8 +286,8 @@ else
                                           InvoiceType="_model.InvoiceType"
                                           OnAddItem="OnAddProductItem"
                                           OnOpenSelector="OnOpenProductSelector"
-                                          OnBarcodeChanged="OnBarcodeChanged"
-                                          OnPrintBarcode="OnPrintBarcode" />
+                                          OnBarcodeChanged="OnProductBarcodeChanged"
+                                          OnPrintBarcode="OnPrintProductBarcode" />
                     </MudTabPanel>
                     <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn"
                                  IconColor="Color.Primary"
@@ -297,7 +302,9 @@ else
                                        Elevation="2"
                                        InvoiceType="@_model.InvoiceType"
                                        OnAddItem="OnAddCoinItem"
-                                       OnOpenSelector="OnOpenCoinSelector" />
+                                       OnOpenSelector="OnOpenCoinSelector"
+                                       OnPrintBarcode="OnPrintCoinBarcode"
+                                       OnBarcodeChanged="OnCoinBarcodeChanged" />
                     </MudTabPanel>
                     <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney"
                                  IconColor="Color.Success"
@@ -345,7 +352,7 @@ else
                                 <MudText Typo="Typo.body1" Color="@GetUnpaidAmountColor(_model.TotalUnpaidAmount)" Class="d-md-none">
                                     @($"مانده نهایی: {FormatCompleteUnpaidAmount(_model.TotalUnpaidAmount, _model.InvoicePriceUnit?.Title, _model.UnpaidExchangeRate, _model.TotalUnpaidSecondaryAmount, _model.UnpaidPriceUnit?.Title)}")
                                 </MudText>
-                                <div @ref="_popoverAnchor">
+                                <div>
                                     <MudTooltip Color="Color.Success" Arrow="true" Text="تغییر نوع بدهی">
                                         <MudIconButton Size="Size.Small"
                                                        Icon="@Icons.Material.Filled.SwapHoriz"
@@ -360,8 +367,8 @@ else
                                                 Elevation="24">
                                         <div class="container d-flex flex-column">
                                             <UnpaidPriceSelector PriceUnits="@_priceUnits"
-                                                                 TotalUnpaidAmount="@_model.TotalUnpaidAmount"
-                                                                 TotalUnpaidSecondaryAmount="@_model.TotalUnpaidSecondaryAmount"
+                                                                 TotalUnpaidAmount="@Math.Abs(_model.TotalUnpaidAmount)"
+                                                                 TotalUnpaidSecondaryAmount="@Math.Abs(_model.TotalUnpaidSecondaryAmount)"
                                                                  MainPriceUnit="@_model.InvoicePriceUnit"
                                                                  @bind-UnpaidPriceUnit="@_model.UnpaidPriceUnit"
                                                                  @bind-ExchangeRate="@_model.UnpaidExchangeRate" />

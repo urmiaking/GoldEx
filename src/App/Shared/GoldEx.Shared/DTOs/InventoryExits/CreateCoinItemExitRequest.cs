@@ -1,3 +1,3 @@
 ﻿namespace GoldEx.Shared.DTOs.InventoryExits;
 
-public record CreateCoinItemExitRequest(Guid CoinId, int Quantity);
+public record CreateCoinItemExitRequest(Guid Id, int Quantity);

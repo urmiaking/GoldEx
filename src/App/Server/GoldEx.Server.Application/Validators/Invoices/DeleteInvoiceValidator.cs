@@ -26,7 +26,7 @@ internal class DeleteInvoiceValidator : AbstractValidator<Invoice>
     private async Task<bool> NotResultInNegativeInventory(Invoice invoice, CancellationToken cancellationToken = default)
     {
         var productIds = invoice.ProductItems.Select(p => p.ProductId).ToList();
-        var coinIds = invoice.CoinItems.Select(c => c.CoinId).ToList();
+        var coinIds = invoice.CoinItems.Select(c => c.CoinInstanceId).ToList();
         var currencyIds = invoice.CurrencyItems.Select(c => c.CurrencyId).ToList();
 
         var productQuantities = await _inventoryStockRepository.GetQuantitiesAsync(productIds, cancellationToken);
@@ -44,7 +44,7 @@ internal class DeleteInvoiceValidator : AbstractValidator<Invoice>
 
         foreach (var coinItem in invoice.CoinItems)
         {
-            var currentStock = coinQuantities.GetValueOrDefault(coinItem.CoinId, 0m);
+            var currentStock = coinQuantities.GetValueOrDefault(coinItem.CoinInstanceId, 0m);
             if (currentStock - coinItem.Quantity < 0)
             {
                 return false;

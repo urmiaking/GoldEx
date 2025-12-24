@@ -1,3 +1,8 @@
-﻿namespace GoldEx.Shared.DTOs.InventoryEntries;
+﻿using GoldEx.Shared.DTOs.CoinInstances;
 
-public record CreateCoinItemEntryRequest(Guid CoinId, int Quantity, decimal UnitPrice);
+namespace GoldEx.Shared.DTOs.InventoryEntries;
+
+public record CreateCoinItemEntryRequest(
+    int Quantity,
+    decimal UnitPrice,
+    CoinInstanceRequestDto CoinInstance);

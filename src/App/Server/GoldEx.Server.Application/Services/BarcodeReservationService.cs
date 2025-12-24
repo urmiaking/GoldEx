@@ -6,6 +6,7 @@ using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.BarcodeReservations;
 using GoldEx.Shared.DTOs.BarcodeReservations;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,12 +23,34 @@ internal sealed class BarcodeReservationService(
     public async Task<IssueNextBarcodeResponse> IssueNextAsync(IssueNextBarcodeRequest request,
         CancellationToken cancellationToken = default)
     {
-        var categoryId = request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : (ProductCategoryId?)null;
+        string? fullPrefix = null;
+        string next;
 
-        var fullPrefix = await generator.BuildFullPrefixAsync(request.ProductType, categoryId, cancellationToken);
-        var next = await generator.GenerateNextAsync(request.ProductType, categoryId, cancellationToken);
+        switch (request.BarcodeType)
+        {
+            case BarcodeType.Product:
+                {
+                    if (!request.ProductType.HasValue)
+                        throw new ArgumentException("ProductType is required for Product barcode type.", nameof(request.ProductType));
+
+                    var categoryId = request.ProductCategoryId.HasValue ? new ProductCategoryId(request.ProductCategoryId.Value) : (ProductCategoryId?)null;
+
+                    fullPrefix = await generator.BuildProductPrefixAsync(request.ProductType.Value, categoryId, cancellationToken);
+                    next = await generator.GenerateNextAsync(request.BarcodeType, request.ProductType, categoryId, cancellationToken);
+
+                    break;
+                }
+            case BarcodeType.Coin:
+                {
+                    next = await generator.GenerateNextAsync(request.BarcodeType, null, null, cancellationToken);
+                    break;
+                }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
 
         var reservation = BarcodeReservation.Create(
+            barcodeType: request.BarcodeType,
             prefix: fullPrefix,
             barcode: next,
             ttl: DefaultTtl,
@@ -35,13 +58,14 @@ internal sealed class BarcodeReservationService(
 
         await reservationRepository.CreateAsync(reservation, cancellationToken);
 
-        return new IssueNextBarcodeResponse(fullPrefix, reservation.Barcode, reservation.ExpiresAt);
+        return new IssueNextBarcodeResponse(reservation.Barcode);
     }
 
-    public async Task CommitAsync(string barcode, Guid? invoiceId, CancellationToken cancellationToken = default)
+    public async Task CommitAsync(BarcodeType barcodeType, string barcode, Guid? invoiceId,
+        CancellationToken cancellationToken = default)
     {
         var active = await reservationRepository
-            .Get(new BarcodeActiveReservationByBarcodeSpecification(barcode))
+            .Get(new BarcodeActiveReservationByBarcodeSpecification(barcodeType, barcode))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (active is null)
@@ -51,10 +75,10 @@ internal sealed class BarcodeReservationService(
         await reservationRepository.UpdateAsync(active, cancellationToken);
     }
 
-    public async Task ReleaseAsync(string barcode, CancellationToken cancellationToken = default)
+    public async Task ReleaseAsync(BarcodeType barcodeType, string barcode, CancellationToken cancellationToken = default)
     {
         var active = await reservationRepository
-            .Get(new BarcodeActiveReservationByBarcodeSpecification(barcode))
+            .Get(new BarcodeActiveReservationByBarcodeSpecification(barcodeType, barcode))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (active is null)

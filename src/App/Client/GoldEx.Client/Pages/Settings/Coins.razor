@@ -23,12 +23,14 @@
         <MudTh>عنوان</MudTh>
         <MudTh>وزن</MudTh>
         <MudTh>عیار</MudTh>
+        <MudTh>سال ضرب</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="عنوان">@context.Title</MudTd>
         <MudTd DataLabel="وزن">@context.Weight?.ToWeightFormat(GoldUnitType.Gram)</MudTd>
         <MudTd DataLabel="عیار">@context.Fineness?.ToString("G29")</MudTd>
+        <MudTd DataLabel="سال ضرب">@GetMintYearText(context.StartMintYear, context.EndMintYear)</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="ویرایش" Arrow="true" Color="Color.Primary">

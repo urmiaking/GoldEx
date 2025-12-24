@@ -19,7 +19,7 @@ internal class InventoryEntryMapper : IRegister
                     : 0)
             .Map(dest => dest.CoinsAmount, src =>
                 src.InventoryStocks != null
-                    ? src.InventoryStocks.Where(x => x.CoinId != null)
+                    ? src.InventoryStocks.Where(x => x.CoinInstanceId != null)
                         .Sum(x => x.ChangeAmount)
                     : 0)
             .Map(dest => dest.CurrenciesAmount, src =>

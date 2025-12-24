@@ -18,6 +18,7 @@ public partial class Editor
     [Parameter] public CustomerVm Model { get; set; } = new();
     [Parameter] public bool ReturnModel { get; set; }
     [Parameter] public CustomerType? CustomerType { get; set; }
+    [Parameter] public bool ShowFinancialAccounts { get; set; } = true;
 
     private readonly DialogOptions _bankAccountsDialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
     private readonly CustomerValidator _customerValidator = new();

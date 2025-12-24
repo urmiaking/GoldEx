@@ -81,6 +81,107 @@ public class InvoicePaymentVm
         }
     }
 
+    #region ExchangeRate
+
+    private static bool IsMoney(GetPriceUnitTitleResponse? unit)
+        => unit is not null && !unit.IsGoldBased;
+
+    private static bool IsGold(GetPriceUnitTitleResponse? unit)
+        => unit is not null && unit.IsGoldBased;
+
+    public bool ShouldForceGoldToMoneyDisplay(GetPriceUnitTitleResponse baseUnit)
+    {
+        if (PriceUnit is null)
+            return false;
+
+        return
+            (IsGold(PriceUnit) && IsMoney(baseUnit)) ||
+            (IsGold(baseUnit) && IsMoney(PriceUnit));
+    }
+
+    public bool ShouldReverseExchangeRateDisplay(GetPriceUnitTitleResponse baseUnit)
+    {
+        if (PriceUnit is null || ExchangeRate is null)
+            return false;
+
+        // Money → Money with very small rate
+        var isMoneyToMoney =
+            !PriceUnit.IsGoldBased &&
+            !baseUnit.IsGoldBased &&
+            ExchangeRate.Value < 1m;
+
+        // Gold → Money (e.g. gram → toman)
+        var isGoldToMoney =
+            PriceUnit.IsGoldBased &&
+            baseUnit.IsDefault;
+
+        return isMoneyToMoney || isGoldToMoney;
+    }
+
+    public decimal? GetDisplayExchangeRate(GetPriceUnitTitleResponse baseUnit)
+    {
+        if (ExchangeRate is null)
+            return null;
+
+        if (!ShouldForceGoldToMoneyDisplay(baseUnit))
+            return ExchangeRate;
+
+        // stored is Payment -> Base
+        // but UI must show Gold -> Money
+        var goldIsPayment = PriceUnit!.IsGoldBased;
+
+        return goldIsPayment
+            ? ExchangeRate                         // already Gold -> Money
+            : (ExchangeRate == 0 ? null : 1 / ExchangeRate.Value);
+    }
+
+    public void SetFromDisplayExchangeRate(
+        decimal? displayValue,
+        GetPriceUnitTitleResponse baseUnit)
+    {
+        if (!displayValue.HasValue || displayValue <= 0)
+            return;
+
+        if (!ShouldForceGoldToMoneyDisplay(baseUnit))
+        {
+            ExchangeRate = displayValue;
+            return;
+        }
+
+        var goldIsPayment = PriceUnit!.IsGoldBased;
+
+        ExchangeRate = goldIsPayment
+            ? displayValue.Value
+            : 1 / displayValue.Value;
+    }
+
+    public string GetExchangeRateLabel(GetPriceUnitTitleResponse baseUnit)
+    {
+        if (PriceUnit is null)
+            return string.Empty;
+
+        if (!ShouldForceGoldToMoneyDisplay(baseUnit))
+            return $"نرخ تبدیل هر {PriceUnit.Title} به {baseUnit.Title}";
+
+        var gold = PriceUnit.IsGoldBased ? PriceUnit : baseUnit;
+        var money = PriceUnit.IsGoldBased ? baseUnit : PriceUnit;
+
+        return $"قیمت هر {gold.Title} به {money.Title}";
+    }
+
+    public string GetExchangeRateAdornment(GetPriceUnitTitleResponse baseUnit)
+    {
+        if (!ShouldForceGoldToMoneyDisplay(baseUnit))
+            return baseUnit.Title;
+
+        return PriceUnit!.IsGoldBased
+            ? baseUnit.Title      // gold → money
+            : PriceUnit.Title;
+    }
+
+
+    #endregion
+
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {
         if (item.PriceUnit is null)
