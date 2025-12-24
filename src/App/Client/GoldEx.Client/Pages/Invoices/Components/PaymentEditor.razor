@@ -73,21 +73,22 @@
                 @if (Model.PriceUnit?.Id != BasePriceUnit.Id)
                 {
                     <MudItem xs="12" md="6">
-                        <MudNumericField For="@(() => Model.ExchangeRate)"
-                                         Format="#,##0.########"
+                        <MudNumericField T="decimal?"
+                                         Value="Model.GetDisplayExchangeRate(BasePriceUnit)"
+                                         ValueChanged="@(v => Model.SetFromDisplayExchangeRate(v, BasePriceUnit))"
                                          Immediate="true"
                                          dir="ltr"
-                                         Label="@Model.ExchangeRateLabel"
+                                         Label="@Model.GetExchangeRateLabel(BasePriceUnit)"
                                          Margin="Margin.Dense"
                                          Disabled="Model.Disabled"
-                                         T="decimal?"
-                                         @bind-Value="Model.ExchangeRate"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
+                                         Format="#,##0.########"
                                          Adornment="Adornment.End"
-                                         AdornmentText="@BasePriceUnit.Title"/>
+                                         AdornmentText="@Model.GetExchangeRateAdornment(BasePriceUnit)" />
                     </MudItem>
                 }
+
                 <MudItem xs="12" md="6">
                     @switch (Model.PaymentType)
                     {

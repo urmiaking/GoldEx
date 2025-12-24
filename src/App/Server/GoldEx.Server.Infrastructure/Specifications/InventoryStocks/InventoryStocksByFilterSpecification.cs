@@ -26,10 +26,9 @@ public class InventoryStocksByFilterSpecification : SpecificationBase<InventoryS
                         x.Product!.Barcode.Contains(filter.Search));
                 break;
             case ItemType.Coin:
-                AddInclude(x => x.Coin!);
+                AddInclude(x => x.CoinInstance!);
                 if (!string.IsNullOrEmpty(filter.Search))
-                    AddCriteria(x =>
-                        x.Coin!.Title.Contains(filter.Search));
+                    AddCriteria(x => x.CoinInstance!.Coin!.Title.Contains(filter.Search) || x.CoinInstance.Barcode == filter.Search);
                 break;
             case ItemType.Currency:
                 AddInclude(x => x.Currency!);

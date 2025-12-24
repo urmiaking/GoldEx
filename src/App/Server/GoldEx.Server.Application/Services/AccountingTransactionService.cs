@@ -1,5 +1,4 @@
-﻿using GoldEx.Sdk.Common.Definitions;
-using GoldEx.Sdk.Common.DependencyInjections;
+﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
@@ -17,6 +16,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.CoinInstances;
 using GoldEx.Server.Infrastructure.Specifications.Coins;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
@@ -49,6 +49,7 @@ internal class AccountingTransactionService(
     IProductRepository productRepository,
     IInventoryStockRepository inventoryStockRepository,
     ILedgerAccountRepository ledgerAccountRepository,
+    ICoinInstanceRepository coinInstanceRepository,
     ICoinRepository coinRepository,
     IPriceService priceService,
     ICoinService coinService,
@@ -525,27 +526,28 @@ internal class AccountingTransactionService(
                         }
 
                         // 2) Debit: سکه‌ها → CoinInventory
-                        foreach (var coinItem in invoice.CoinItems)
+                        if (invoice.CoinItems.Any())
                         {
-                            var coin = await coinRepository
-                                .Get(new CoinsByIdSpecification(coinItem.CoinId))
-                                .FirstOrDefaultAsync(cancellationToken)
-                                       ?? throw new NotFoundException($"Coin {coinItem.CoinId.Value} not found.");
+                            var coinInventoryLedger = await ledgerAccountRepository
+                                                          .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
+                                                          .FirstOrDefaultAsync(cancellationToken)
+                                                      ?? throw new NotFoundException("Coin inventory ledger account not found.");
 
-                            var destLedger = await ledgerAccountRepository
-                                .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
-                                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Coin '{coin.Title}' ledger account not found.");
+                            var coinLinesTotal = invoice.CoinItems.Sum(ci => ci.ItemFinalAmount);
 
-                            // بدهکار به حساب دفتری سکه
-                            transactions.Add(Transaction.CreateForInvoice(
-                                TransactionDescriptionBuilder.ForPurchaseCoinEntry(invoice.InvoiceNumber, coin.Title),
-                                coinItem.ItemFinalAmount,
-                                invoice.ExchangeRate,
-                                invoiceGroupId,
-                                TransactionType.Debit,
-                                destLedger.Id,
-                                invoice.PriceUnitId,
-                                invoice.Id, NextLine()));
+                            if (coinLinesTotal > 0)
+                            {
+                                transactions.Add(Transaction.CreateForInvoice(
+                                    TransactionDescriptionBuilder.ForPurchaseCoinEntry(invoice.InvoiceNumber),
+                                    coinLinesTotal,
+                                    invoice.ExchangeRate,
+                                    invoiceGroupId,
+                                    TransactionType.Debit,
+                                    coinInventoryLedger.Id,
+                                    invoice.PriceUnitId,
+                                    invoice.Id,
+                                    NextLine()));
+                            }
                         }
 
                         // 3) Debit: کالاها → Inventory
@@ -1387,7 +1389,7 @@ internal class AccountingTransactionService(
         else if (coin is not null)
         {
             var coinLedgerAccount = await ledgerAccountRepository
-                .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
+                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
                 .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Coin '{coin.Title}' ledger account not found.");
 
             debitLedgerAccountId = coinLedgerAccount.Id;
@@ -1574,14 +1576,14 @@ internal class AccountingTransactionService(
         if (coinItemEntry.UnitPrice < 0)
             throw new ArgumentOutOfRangeException(nameof(coinItemEntry.UnitPrice), "قیمت واحد نمی‌تواند منفی باشد.");
 
-        var coinId = new CoinId(coinItemEntry.CoinId);
+        var coinId = new CoinId(coinItemEntry.CoinInstance.CoinId);
         var coin = await coinRepository
             .Get(new CoinsByIdSpecification(coinId))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"سکه {coinId.Value} یافت نشد.");
 
         var coinLedger = await ledgerAccountRepository
-            .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"حساب دفتری سکه '{coin.Title}' یافت نشد.");
+            .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب دفتری سکه یافت نشد.");
 
         var openingEquity = await ledgerAccountRepository
             .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.OpeningBalanceEquity))
@@ -1881,17 +1883,22 @@ internal class AccountingTransactionService(
                 transactions.Add(debit);
                 transactions.Add(credit);
             }
-            else if (inventoryStock.CoinId.HasValue)
+            else if (inventoryStock.CoinInstanceId.HasValue)
             {
+                var coinInstance = await coinInstanceRepository
+                                       .Get(new CoinInstancesByIdSpecification(inventoryStock.CoinInstanceId.Value))
+                                       .FirstOrDefaultAsync(cancellationToken)
+                                   ?? throw new NotFoundException($"Coin instance {inventoryStock.CoinInstanceId.Value} not found.");
+
                 var coin = await coinRepository
-                    .Get(new CoinsByIdSpecification(inventoryStock.CoinId.Value))
-                    .FirstOrDefaultAsync(cancellationToken)
-                    ?? throw new NotFoundException($"Coin {inventoryStock.CoinId.Value.Value} not found.");
+                               .Get(new CoinsByIdSpecification(coinInstance.CoinId))
+                               .FirstOrDefaultAsync(cancellationToken)
+                           ?? throw new NotFoundException($"Coin {coinInstance.CoinId.Value} not found.");
 
                 var coinInventoryLedger = await ledgerAccountRepository
-                    .Get(new LedgerAccountsByTitleSpecification(LedgerAccountTitleBuilder.ForCoinAccount(coin.Title)))
+                    .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CoinInventory))
                     .FirstOrDefaultAsync(cancellationToken)
-                    ?? throw new NotFoundException($"Ledger account for coin '{coin.Title}' not found.");
+                    ?? throw new NotFoundException("Ledger account for coin not found.");
 
                 var coinCurrentPrice = await coinService.GetPriceAsync(coin.Id.Value, basePriceUnit.Id.Value, cancellationToken);
                 if (coinCurrentPrice?.ExchangeRate == null)

@@ -3,6 +3,7 @@ using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.Services.Abstractions;
 using MudBlazor;
+using System.Globalization;
 
 namespace GoldEx.Client.Pages.Settings;
 
@@ -96,5 +97,23 @@ public partial class Coins
                     await LoadCoinsAsync();
                 });
         }
+    }
+
+    private static string GetMintYearText(DateTime? start, DateTime? end)
+    {
+        if ((start is null || start.Value.Year == 0) && end is null)
+            return "نامشخص";
+
+        var pc = new PersianCalendar();
+
+        var startYear = start is not null && start.Value.Year > 0
+            ? pc.GetYear(start.Value).ToString()
+            : "نامشخص";
+
+        var endYear = end is null
+            ? "تاکنون"
+            : pc.GetYear(end.Value).ToString();
+
+        return $"{startYear} - {endYear}";
     }
 }

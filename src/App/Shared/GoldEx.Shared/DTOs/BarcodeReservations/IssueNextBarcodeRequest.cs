@@ -6,6 +6,7 @@ namespace GoldEx.Shared.DTOs.BarcodeReservations;
 /// درخواست صدور/رزرو بارکد بعدی
 /// </summary>
 public sealed record IssueNextBarcodeRequest(
-    ProductType ProductType,
+    BarcodeType BarcodeType,
+    ProductType? ProductType,
     Guid? ProductCategoryId,
     Guid? InvoiceId);

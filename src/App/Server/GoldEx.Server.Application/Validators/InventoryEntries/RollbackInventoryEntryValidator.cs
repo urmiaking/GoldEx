@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -50,8 +50,8 @@ internal class RollbackInventoryEntryValidator : AbstractValidator<InventoryEntr
             .ToList();
 
         var coinIds = inventoryEntry.InventoryStocks
-            .Where(x => x.CoinId.HasValue)
-            .Select(x => x.CoinId!.Value)
+            .Where(x => x.CoinInstanceId.HasValue)
+            .Select(x => x.CoinInstanceId!.Value)
             .Distinct()
             .ToList();
 
@@ -69,7 +69,7 @@ internal class RollbackInventoryEntryValidator : AbstractValidator<InventoryEntr
 
         var coinStocks = coinIds.Any()
             ? await _inventoryStockRepository.GetQuantitiesAsync(coinIds, cancellationToken)
-            : new Dictionary<CoinId, decimal>();
+            : new Dictionary<CoinInstanceId, decimal>();
 
         var currencyStocks = currencyIds.Any()
             ? await _inventoryStockRepository.GetQuantitiesAsync(currencyIds, cancellationToken)
@@ -86,9 +86,9 @@ internal class RollbackInventoryEntryValidator : AbstractValidator<InventoryEntr
             {
                 productStocks.TryGetValue(inventoryStock.ProductId.Value, out currentStock);
             }
-            else if (inventoryStock.CoinId.HasValue)
+            else if (inventoryStock.CoinInstanceId.HasValue)
             {
-                coinStocks.TryGetValue(inventoryStock.CoinId.Value, out currentStock);
+                coinStocks.TryGetValue(inventoryStock.CoinInstanceId.Value, out currentStock);
             }
             else if (inventoryStock.CurrencyId.HasValue)
             {

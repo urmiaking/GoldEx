@@ -13,7 +13,7 @@
 
             @* This inner stack groups the starting icon and the text together. *@
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                <MudIcon Icon="@StartIcon" Size="Size.Large" Color="Color.Primary" />
+                <MudIcon Icon="@StartIcon" Size="Size.Large" Color="@Color" />
 
                 @* This stack keeps the Title and Description neatly stacked vertically. *@
                 <MudStack Spacing="2">
@@ -23,7 +23,7 @@
             </MudStack>
 
             @* The forward arrow icon is placed at the end. *@
-            <MudIcon Icon="@Icons.Material.Filled.ArrowBackIos" Color="Color.Default" />
+            <MudIcon Icon="@Icons.Material.Filled.ArrowBackIos" Color="@Color" />
         </MudStack>
     </MudPaper>
 </MudLink>
@@ -52,4 +52,10 @@
     /// </summary>
     [Parameter]
     public string Href { get; set; } = "/";
+
+    /// <summary>
+    /// The color theme of the card.
+    /// </summary>
+    [Parameter] 
+    public Color Color { get; set; } = Color.Primary;
 }

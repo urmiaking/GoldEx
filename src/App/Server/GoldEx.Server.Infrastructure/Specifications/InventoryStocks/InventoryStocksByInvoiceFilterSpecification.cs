@@ -16,7 +16,7 @@ public class InventoryStocksByInvoiceFilterSpecification : SpecificationBase<Inv
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
-        AddInclude(x => x.Coin!);
+        AddInclude(x => x.CoinInstance!);
         AddInclude(x => x.Currency!);
         AddInclude(x => x.Product!);
 

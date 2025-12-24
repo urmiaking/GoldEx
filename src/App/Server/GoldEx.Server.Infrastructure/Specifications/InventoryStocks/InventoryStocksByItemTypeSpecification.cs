@@ -14,7 +14,7 @@ public class InventoryStocksByItemTypeSpecification : SpecificationBase<Inventor
                 AddCriteria(x => x.ProductId.HasValue);
                 break;
             case ItemType.Coin:
-                AddCriteria(x => x.CoinId.HasValue);
+                AddCriteria(x => x.CoinInstanceId.HasValue);
                 break;
             case ItemType.Currency:
                 AddCriteria(x => x.CurrencyId.HasValue);

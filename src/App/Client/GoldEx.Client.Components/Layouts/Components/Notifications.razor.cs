@@ -7,6 +7,7 @@ namespace GoldEx.Client.Components.Layouts.Components;
 
 public partial class Notifications
 {
+    private bool _drawerOpen;
     private List<GetNotificationResponse> _notifications = [];
     private bool _isOpen;
     private int _unreadCount;

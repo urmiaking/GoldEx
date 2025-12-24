@@ -3,7 +3,6 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Validators.InventoryStocks;
-using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
@@ -21,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.InventoryExits;
@@ -68,7 +68,7 @@ internal class InventoryStockService(
     private static (ItemType type, Guid id) KeyOf(InventoryStock s)
     {
         if (s.ProductId is { } p) return (ItemType.Product, p.Value);
-        if (s.CoinId is { } c) return (ItemType.Coin, c.Value);
+        if (s.CoinInstanceId is { } c) return (ItemType.Coin, c.Value);
         if (s.CurrencyId is { } u) return (ItemType.Currency, u.Value);
         throw new InvalidOperationException("Unknown inventory stock item type.");
     }
@@ -94,24 +94,31 @@ internal class InventoryStockService(
 
         var action = invoice.InvoiceType == InvoiceType.Purchase ? WarehouseActionType.In : WarehouseActionType.Out;
 
-        // Product items
-        var list = invoice.ProductItems.Select(pi => InventoryStock.CreateProduct(pi.ProductId,
-                pi.TotalWeight,
-                action,
-                invoice.Id,
-                postingDate))
-            .ToList();
-
         // Instant products → ورود
-        list.AddRange(invoice.ProductItems.Where(x => x.IsInstantProduct)
+        var list = invoice.ProductItems.Where(x => x.IsInstantProduct)
             .Select(pi => InventoryStock.CreateProduct(pi.ProductId,
                 pi.TotalWeight,
                 WarehouseActionType.In,
                 invoice.Id,
+                postingDate)).ToList();
+
+        // Instant coins → ورود
+        list.AddRange(invoice.CoinItems.Where(x => x.IsInstant)
+            .Select(ci => InventoryStock.CreateCoin(ci.CoinInstanceId,
+                ci.Quantity,
+                WarehouseActionType.In,
+                invoice.Id,
                 postingDate)));
 
+        // Product items
+        list.AddRange(invoice.ProductItems.Select(pi => InventoryStock.CreateProduct(pi.ProductId,
+            pi.TotalWeight,
+            action,
+            invoice.Id,
+            postingDate)));
+
         // Coins
-        list.AddRange(invoice.CoinItems.Select(ci => InventoryStock.CreateCoin(ci.CoinId,
+        list.AddRange(invoice.CoinItems.Select(ci => InventoryStock.CreateCoin(ci.CoinInstanceId,
             ci.Quantity,
             action,
             invoice.Id,
@@ -146,7 +153,7 @@ internal class InventoryStockService(
 
             if (s.ProductId is { } p)
                 rev = InventoryStock.CreateProduct(p, s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
-            else if (s.CoinId is { } c)
+            else if (s.CoinInstanceId is { } c)
                 rev = InventoryStock.CreateCoin(c, (int)s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
             else if (s.CurrencyId is { } u)
                 rev = InventoryStock.CreateCurrency(u, s.ChangeAmount, Invert(s.ActionType), s.InvoiceId, revDate);
@@ -275,7 +282,7 @@ internal class InventoryStockService(
             .ToList();
 
         inventoryStocks.AddRange(request.Coins.Select(coinRequest => InventoryStock.CreateCoin(
-            new CoinId(coinRequest.CoinId),
+            new CoinInstanceId(coinRequest.Id),
             coinRequest.Quantity,
             WarehouseActionType.Out,
             postingDate: request.ExitDate,
@@ -421,6 +428,7 @@ internal class InventoryStockService(
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.InventoryEntry)
             .Include(x => x.MeltingBatch)
+            .Include(x => x.CoinInstance!.Coin)
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
@@ -443,6 +451,7 @@ internal class InventoryStockService(
             .Include(x => x.Invoice!.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.Transactions)
+            .Include(x => x.CoinInstance!.Coin)
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
@@ -463,7 +472,7 @@ internal class InventoryStockService(
         switch (itemType)
         {
             case ItemType.Coin:
-                amount = await repository.GetQuantityAsync(new CoinId(itemId), cancellationToken);
+                amount = await repository.GetQuantityAsync(new CoinInstanceId(itemId), cancellationToken);
                 break;
             case ItemType.Currency:
                 amount = await repository.GetQuantityAsync(new PriceUnitId(itemId), cancellationToken);

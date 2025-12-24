@@ -1,7 +1,9 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
+using System.Globalization;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -35,10 +37,47 @@ public partial class CoinItemsList
     public EventCallback<CoinItemVm> OnEditItem { get; set; }
 
     [Parameter]
+    public EventCallback<CoinItemVm> OnPrintBarcode { get; set; }
+
+    [Parameter]
     public EventCallback<CoinItemVm> OnRemoveItem { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnBarcodeChanged { get; set; }
 
     private string ListTitle =>
         InvoiceType is InvoiceType.Sell
             ? "فهرست سکه های فروخته‌شده"
             : "فهرست سکه های خریداری‌شده";
+
+    private string? _barcode;
+
+    private Task OnBarcodeCleared()
+    {
+        _barcode = null;
+        return OnBarcodeChanged.InvokeAsync(null);
+    }
+
+    private string GetWeight(CoinItemVm context)
+    {
+        var weight = context.CoinInstance.Weight?.ToWeightFormat(GoldUnitType.Gram);
+
+        var vacuumedWeight = context.CoinInstance.CoinPackage?.VacuumedWeight?.ToWeightFormat(GoldUnitType.Gram);
+
+        return vacuumedWeight is not null
+            ? $"{weight} ({vacuumedWeight} با وکیوم)"
+            : weight ?? "-";
+    }
+
+    private string GetMintYear(CoinItemVm coinItem)
+    {
+        var mintYear = coinItem.CoinInstance.MintYear;
+
+        if (!mintYear.HasValue)
+            return "نامشخص";
+
+        var persianYear = new PersianCalendar().GetYear(mintYear.Value);
+
+        return persianYear.ToString();
+    }
 }

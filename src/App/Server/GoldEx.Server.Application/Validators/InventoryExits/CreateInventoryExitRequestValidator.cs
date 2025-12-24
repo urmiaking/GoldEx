@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Coins;
@@ -31,9 +32,9 @@ internal class CreateInventoryExitRequestValidator : AbstractValidator<CreateInv
 
         RuleForEach(x => x.Coins)
             .Must(x => x.Quantity > 0)
-            .WithMessage((_, item) => $"تعداد سکه با شناسه {item.CoinId} باید بزرگتر از صفر باشد")
+            .WithMessage((_, item) => $"تعداد سکه با شناسه {item.Id} باید بزرگتر از صفر باشد")
             .MustAsync(BeValidCoin)
-            .WithMessage((_, item) => $"سکه با شناسه {item.CoinId} یافت نشد")
+            .WithMessage((_, item) => $"سکه با شناسه {item.Id} یافت نشد")
             .MustAsync(NotResultInNegativeCoinInventory)
             .WithMessage((_, item) => $"تعداد {item.Quantity} بیشتر از موجودی انبار می باشد");
     }
@@ -51,12 +52,12 @@ internal class CreateInventoryExitRequestValidator : AbstractValidator<CreateInv
 
     private Task<bool> BeValidCoin(CreateCoinItemExitRequest item, CancellationToken cancellationToken = default)
     {
-        return _coinRepository.ExistsAsync(new CoinsByIdSpecification(new CoinId(item.CoinId)), cancellationToken);
+        return _coinRepository.ExistsAsync(new CoinsByIdSpecification(new CoinId(item.Id)), cancellationToken);
     }
 
     private async Task<bool> NotResultInNegativeCoinInventory(CreateCoinItemExitRequest item, CancellationToken cancellationToken = default)
     {
-        var currentStock = await _inventoryStockRepository.GetQuantityAsync(new CoinId(item.CoinId), cancellationToken);
+        var currentStock = await _inventoryStockRepository.GetQuantityAsync(new CoinInstanceId(item.Id), cancellationToken);
         return currentStock >= item.Quantity;
     }
 }

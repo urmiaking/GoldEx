@@ -17,7 +17,6 @@ internal class BarcodeReservationConfiguration : IEntityTypeConfiguration<Barcod
             .HasConversion(x => x.Value, v => new BarcodeReservationId(v));
 
         builder.Property(x => x.Prefix)
-            .IsRequired()
             .HasMaxLength(3);
 
         builder.Property(x => x.Barcode)

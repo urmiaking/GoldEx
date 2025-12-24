@@ -1,8 +1,7 @@
-﻿using GoldEx.Shared.DTOs.Coins;
+﻿using GoldEx.Shared.DTOs.InventoryEntries;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.InventoryEntries;
-using GoldEx.Shared.DTOs.Invoices;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -47,8 +46,10 @@ public class CoinItemVm
         }
     }
 
-    [Display(Name = "نوع سکه")]
-    public GetCoinResponse Coin { get; set; } = default!;
+    [Display(Name = "سکه")]
+    public CoinInstanceVm CoinInstance { get; set; } = new ();
+
+    public bool IsInstant { get; set; }
 
     // --- Display properties ---
     public bool ShowDetails { get; set; }
@@ -84,22 +85,23 @@ public class CoinItemVm
 
     public static InvoiceCoinItemDto ToRequest(CoinItemVm coinItem)
     {
-        if (coinItem.Coin is null)
+        if (coinItem.CoinInstance is null)
             throw new FluentValidation.ValidationException("سکه انتخاب نشده است");
 
         return new InvoiceCoinItemDto(coinItem.Id,
             coinItem.UnitPrice,
             coinItem.Quantity,
             coinItem.ProfitPercent,
-            coinItem.Coin.Id);
+            coinItem.IsInstant,
+            coinItem.CoinInstance.ToRequest());
     }
 
     public static CreateCoinItemEntryRequest ToInventoryEntryRequest(CoinItemVm coinItem)
     {
-        if (coinItem.Coin is null)
+        if (coinItem.CoinInstance is null)
             throw new FluentValidation.ValidationException("سکه انتخاب نشده است");
 
-        return new CreateCoinItemEntryRequest(coinItem.Coin.Id, coinItem.Quantity, coinItem.UnitPrice);
+        return new CreateCoinItemEntryRequest( coinItem.Quantity, coinItem.UnitPrice, coinItem.CoinInstance.ToRequest());
     }
 
     public static CoinItemVm CreateFrom(GetInvoiceCoinItemResponse response)
@@ -110,7 +112,8 @@ public class CoinItemVm
             UnitPrice = response.UnitPrice,
             ProfitPercent = response.ProfitPercent,
             Quantity = response.Quantity,
-            Coin = response.Coin
+            IsInstant = response.IsInstant,
+            CoinInstance = CoinInstanceVm.CreateFrom(response.Coin)
         };
     }
 
@@ -120,7 +123,8 @@ public class CoinItemVm
         UnitPrice = coinItem.UnitPrice;
         ProfitPercent = coinItem.ProfitPercent;
         Quantity = coinItem.Quantity;
-        Coin = coinItem.Coin;
+        IsInstant = coinItem.IsInstant;
+        CoinInstance = coinItem.CoinInstance;
         ShowDetails = coinItem.ShowDetails;
     }
 }

@@ -23,6 +23,13 @@ public class CoinVm
     [Required(ErrorMessage = "عیار الزامی است.")]
     public decimal? Fineness { get; set; }
 
+    [Display(Name = "سال شروع ضرب")]
+    [Required(ErrorMessage = "سال شروع ضرب الزامی است.")]
+    public DateTime? StartMintYear { get; set; }
+
+    [Display(Name = "سال پایان ضرب")]
+    public DateTime? EndMintYear { get; set; }
+
     [Display(Name = "قیمت وابسته")]
     public Guid? PriceId { get; set; }
 
@@ -36,6 +43,8 @@ public class CoinVm
             Title = response.Title,
             Weight = response.Weight,
             Fineness =response.Fineness,
+            StartMintYear = response.StartMintYear != 0 ? new DateTime(response.StartMintYear, 1, 1) : null ,
+            EndMintYear = response.EndMintYear.HasValue ? new DateTime(response.EndMintYear.Value, 1, 1) : null,
             IsActive = response.IsActive,
             PriceId = response.PriceId
         };
@@ -46,5 +55,7 @@ public class CoinVm
             item.Title ?? string.Empty,
             item.Weight ?? 0,
             item.Fineness ?? 0,
+            item.StartMintYear?.Year ?? 0,
+            item.EndMintYear?.Year,
             item.PriceId);
 }
