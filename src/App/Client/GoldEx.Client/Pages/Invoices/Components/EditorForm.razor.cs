@@ -268,10 +268,34 @@ public partial class EditorForm
 
         var parameters = new DialogParameters<Customers.Components.Editor>
         {
-            { x => x.ReturnModel, true }
+            { x => x.ReturnModel, true },
+            { x => x.ShowFinancialAccounts, false }
         };
 
         var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: CustomerVm customerVm })
+        {
+            _model.Customer = customerVm;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnEditCustomer()
+    {
+        if (_model.Customer is null)
+            return;
+
+        var parameters = new DialogParameters<Customers.Components.Editor>
+            {
+            { x => x.Model, _model.Customer },
+            { x => x.ReturnModel, true },
+            { x => x.ShowFinancialAccounts, true }
+        };
+
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("ویرایش طرف حساب", parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
 
         var result = await dialog.Result;
 
