@@ -338,9 +338,9 @@ public class ApiUrls
                 .AppendQueryString(calculatorFilter)
                 .AppendQueryString(filter);
 
-        public static string GetInventoryWeightChart(GoldUnitType targetUnit) =>
+        public static string GetInventoryWeightChart(WarehouseActionType actionType) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetInventoryWeightChart)
-                .FormatRoute(new { targetUnit });
+                .FormatRoute(new { actionType });
 
         public static string GetInvoiceInventoryItems(Guid invoiceId, RequestFilter requestFilter) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetInvoiceInventoryItems)

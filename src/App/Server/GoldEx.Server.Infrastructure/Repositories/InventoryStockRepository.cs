@@ -583,63 +583,120 @@ internal class InventoryStockRepository(
         return (finalData, total);
     }
 
-    public async Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit,
-        CancellationToken cancellationToken = default)
+    public async Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(WarehouseActionType actionType, CancellationToken cancellationToken = default)
     {
-        var settings = await settingRepository
-            .Get(new SettingsDefaultSpecification())
-            .FirstOrDefaultAsync(cancellationToken);
-
-        var gramPerMesghal = settings?.GramPerMesghal ?? 4.6083m;
-
-        var productStocks = await dbContext.Set<InventoryStock>()
+        // ---------- Base Query ----------
+        var stocksQuery = dbContext.Set<InventoryStock>()
             .AsNoTracking()
-            .Include(x => x.Product!)
-            .ThenInclude(p => p.ProductCategory)
-            .Where(x => x.ProductId != null)
-            .ToListAsync(cancellationToken);
+            .Include(x => x.Product)
+                .ThenInclude(p => p!.ProductCategory)
+            .Include(x => x.MoltenGoldDetail)
+            .Include(x => x.CoinInstance)
+                .ThenInclude(ci => ci!.Coin)
+            .Include(x => x.Invoice)
+            .AsQueryable();
 
-        if (productStocks.Count == 0)
-            return [];
-
-        var groupedByProduct = productStocks
-            .GroupBy(x => x.ProductId)
-            .Select(g => new
-            {
-                g.First().Product,
-                CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
-            })
-            .Where(x => x.CurrentQuantity > 0)
-            .ToList();
-
-        decimal ConvertToTarget(decimal value, GoldUnitType from)
+        // ---------- Filter by ActionType ----------
+        if (actionType == WarehouseActionType.In)
         {
-            if (from == targetUnit)
-                return value;
-
-            return from switch
-            {
-                GoldUnitType.Mesghal when targetUnit == GoldUnitType.Gram => value * gramPerMesghal,
-                GoldUnitType.Gram when targetUnit == GoldUnitType.Mesghal => value / gramPerMesghal,
-                _ => value
-            };
+            // موجودی
+            stocksQuery = stocksQuery.Where(x =>
+                x.ActionType == WarehouseActionType.In ||
+                x.ActionType == WarehouseActionType.Out);
+        }
+        else
+        {
+            // فروخته‌شده واقعی
+            stocksQuery = stocksQuery.Where(x =>
+                x.ActionType == WarehouseActionType.Out &&
+                x.InvoiceId != null &&
+                x.Invoice!.InvoiceType == InvoiceType.Sell &&
+                x.ReverseInventoryStockId == null);
         }
 
-        var goldWeight = groupedByProduct
-            .Where(x => x.Product is { ProductType: ProductType.Gold })
-            .Sum(x => ConvertToTarget(x.CurrentQuantity * x.Product!.Weight, x.Product!.GoldUnitType));
+        var stocks = await stocksQuery.ToListAsync(cancellationToken);
 
-        var jewelryWeight = groupedByProduct
-            .Where(x => x.Product is { ProductType: ProductType.Jewelry })
-            .Sum(x => ConvertToTarget(x.CurrentQuantity * x.Product!.Weight, x.Product!.GoldUnitType));
+        if (!stocks.Any())
+            return [];
 
         var result = new List<InventoryWeightChartData>();
 
-        if (goldWeight > 0)
-            result.Add(new InventoryWeightChartData(ProductType.Gold.GetDisplayName(), goldWeight, targetUnit));
+        // =====================================================
+        // 1. PRODUCTS (Jewelry + Gold + UsedGold)
+        // Grouped by ProductCategory
+        // =====================================================
 
-        if (jewelryWeight > 0)
-            result.Add(new InventoryWeightChartData(ProductType.Jewelry.GetDisplayName(), jewelryWeight, targetUnit));
+        var productWeights = stocks
+            .Where(x => x.ProductId != null &&
+                        x.Product!.ProductType != ProductType.MoltenGold)
+            .GroupBy(x => x.Product!.ProductCategory?.Title ?? "بدون دسته‌بندی")
+            .Select(g => new InventoryWeightChartData(
+                g.Key,
+                g.Sum(s =>
+                    s.ActionType == actionType
+                        ? s.ChangeAmount
+                        : -s.ChangeAmount
+                )
+            ))
+            .Where(x => x.Weight > 0)
+            .ToList();
+
+        result.AddRange(productWeights);
+
+        // =====================================================
+        // 2. MOLTEN GOLD
+        // =====================================================
+        var moltenGoldWeight = stocks
+            .Where(x => x.Product?.ProductType == ProductType.MoltenGold)
+            .Sum(s =>
+                s.ActionType == actionType
+                    ? s.ChangeAmount
+                    : -s.ChangeAmount
+            );
+
+        if (moltenGoldWeight > 0)
+        {
+            result.Add(new InventoryWeightChartData(
+                ProductType.MoltenGold.GetDisplayName(),
+                moltenGoldWeight
+            ));
+        }
+
+        // =====================================================
+        // 3. COINS
+        // Grouped by Coin (not CoinInstance)
+        // =====================================================
+
+        var coinData = stocks
+            .Where(x => x.CoinInstanceId != null)
+            .GroupBy(x => x.CoinInstanceId)
+            .Select(g =>
+            {
+                var coin = g.First().CoinInstance!.Coin!;
+                var quantity = g.Sum(s =>
+                    s.ActionType == actionType
+                        ? s.ChangeAmount
+                        : -s.ChangeAmount);
+
+                return new
+                {
+                    Coin = coin,
+                    Quantity = quantity
+                };
+            })
+            .Where(x => x.Quantity > 0)
+            .GroupBy(x => x.Coin.Title)
+            .Select(g => new InventoryWeightChartData(
+                g.Key,
+                g.Sum(c => c.Quantity * c.Coin.Weight)
+            ))
+            .ToList();
+
+        result.AddRange(coinData);
+
+        result = result
+            .Select(x => x with { Weight = Math.Round(x.Weight, 0, MidpointRounding.AwayFromZero) })
+            .ToList();
 
         return result;
     }

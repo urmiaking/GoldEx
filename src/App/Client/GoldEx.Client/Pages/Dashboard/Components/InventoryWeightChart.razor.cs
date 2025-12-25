@@ -6,7 +6,7 @@ namespace GoldEx.Client.Pages.Dashboard.Components;
 
 public partial class InventoryWeightChart
 {
-    private GoldUnitType _selectedUnitType = GoldUnitType.Gram;
+    private WarehouseActionType _selectedActionType = WarehouseActionType.In;
     private List<GetInventoryWeightChartResponse>? _chartResponse;
     private double[] _chartData = [];
     private string[] _chartLabels = [];
@@ -20,7 +20,7 @@ public partial class InventoryWeightChart
     private async Task LoadChartAsync()
     {
         await SendRequestAsync<IInventoryStockService, List<GetInventoryWeightChartResponse>>(
-            action: (s, ct) => s.GetInventoryWeightChartAsync(_selectedUnitType, ct),
+            action: (s, ct) => s.GetInventoryWeightChartAsync(_selectedActionType, ct),
             afterSend: response =>
             {
                 _chartResponse = response;
@@ -28,9 +28,9 @@ public partial class InventoryWeightChart
             });
     }
 
-    private async Task OnUnitTypeChanged(GoldUnitType newUnit)
+    private async Task OnActionTypeChanged(WarehouseActionType newActionType)
     {
-        _selectedUnitType = newUnit;
+        _selectedActionType = newActionType;
         await LoadChartAsync();
     }
 
@@ -40,5 +40,18 @@ public partial class InventoryWeightChart
 
         _chartData = _chartResponse.Select(x => (double)x.Weight).ToArray();
         _chartLabels = _chartResponse.Select(x => x.Label).ToArray();
+    }
+
+    private string GetDisplayName(WarehouseActionType actionType)
+    {
+        switch(actionType)
+        {
+            case WarehouseActionType.In:
+                return "موجودی فعلی";
+            case WarehouseActionType.Out:
+                return "فروخته شده";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null);
+        }
     }
 }
