@@ -56,10 +56,13 @@ public partial class PriceList
         return Task.CompletedTask;
     }
 
-    private async void TimerCallback(object? state)
+    private void TimerCallback(object? state)
     {
-        await LoadPricesAsync();
-        StateHasChanged();
+        _ = InvokeAsync(async () =>
+        {
+            await LoadPricesAsync();
+            StateHasChanged();
+        });
     }
 
     public override async ValueTask DisposeAsync()

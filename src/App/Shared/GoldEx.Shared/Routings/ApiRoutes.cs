@@ -188,7 +188,7 @@ public static class ApiRoutes
         public const string Base = "/api/inventory-stocks";
         public const string GetList = "";
         public const string GetAvailableProducts = "available";
-        public const string GetInventoryWeightChart = "{targetUnit}/weight-chart";
+        public const string GetInventoryWeightChart = "{actionType}/weight-chart";
         public const string GetInvoiceInventoryItems = "invoice/{invoiceId}/items";
         public const string GetTraces = "{itemType}/{itemId}/traces";
         public const string GetAvailableItemAmount = "{itemType}/{itemId}/available-amount";

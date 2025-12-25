@@ -40,10 +40,11 @@ internal class InventoryStockService(HttpClient client, JsonSerializerOptions js
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<List<GetInventoryWeightChartResponse>> GetInventoryWeightChartAsync(GoldUnitType targetUnit,
+    public async Task<List<GetInventoryWeightChartResponse>> GetInventoryWeightChartAsync(
+        WarehouseActionType actionType,
         CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.InventoryStocks.GetInventoryWeightChart(targetUnit), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.InventoryStocks.GetInventoryWeightChart(actionType), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
