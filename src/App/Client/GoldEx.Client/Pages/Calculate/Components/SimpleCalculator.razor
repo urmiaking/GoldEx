@@ -255,34 +255,36 @@
 
                             @if (_model.WageType is WageType.Fixed)
                             {
-                                <MudMenu @bind-Open="_wageFieldMenuOpen"
-                                         ActivationEvent="@MouseEvent.LeftClick">
-                                    <ActivatorContent>
-                                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        @foreach (var item in _priceUnits)
-                                        {
-                                            <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
-                                                <div style="display: flex; align-items: center; gap: 8px;">
-                                                    @if (item.HasIcon)
-                                                    {
-                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                        </MudAvatar>
-                                                    }
-                                                    @item.Title
-                                                </div>
-                                            </MudMenuItem>
-                                        }
-                                    </ChildContent>
-                                </MudMenu>
+                                <AuthorizeView>
+                                    <MudMenu @bind-Open="_wageFieldMenuOpen"
+                                             ActivationEvent="@MouseEvent.LeftClick">
+                                        <ActivatorContent>
+                                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            @foreach (var item in _priceUnits)
+                                            {
+                                                <MudMenuItem OnClick="() => SelectWagePriceUnit(item)">
+                                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                                        @if (item.HasIcon)
+                                                        {
+                                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                            </MudAvatar>
+                                                        }
+                                                        @item.Title
+                                                    </div>
+                                                </MudMenuItem>
+                                            }
+                                        </ChildContent>
+                                    </MudMenu>
+                                </AuthorizeView>
                             }
                         </div>
                     </MudItem>
                 }
 
-                @if (_model.WageType is WageType.Fixed && _model.PriceUnit != _model.WagePriceUnit)
+                @if (_model.WageType is WageType.Fixed && _model.PriceUnit?.Title != _model.WagePriceUnit?.Title)
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3">
                         <MudNumericField For="() => _model.WageExchangeRate"
@@ -378,7 +380,7 @@
                         </MudMenu>
                     </div>
                 </MudItem>
-                @if (_model.PriceUnit != _model.StonePriceUnit)
+                @if (_model.PriceUnit?.Title != _model.StonePriceUnit?.Title)
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3">
                         <MudNumericField For="() => _model.StoneExchangeRate"
