@@ -116,12 +116,6 @@ public partial class ProductList
 
     private async Task PrintBarcode(ProductItemVm item)
     {
-        if (_barcodeSettings is null)
-        {
-            AddErrorToast("تنظیمات چاپ بارکد لود نشده است");
-            return;
-        }
-
         var data = new
         {
             barcode = item.Product.Barcode ?? "",

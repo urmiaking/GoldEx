@@ -24,13 +24,11 @@ public partial class InventoryStockList
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public bool Selectable { get; set; }
-
     [Parameter] public ItemType ItemType { get; set; } = ItemType.Product;
     [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
     [Parameter] public Guid? InventoryEntryId { get; set; }
     [Parameter] public EventCallback<HashSet<InventoryStockVm>?> SelectedItemsChanged { get; set; }
     [Parameter] public ItemType[] SelectableTypes { get; set; } = Enum.GetValues<ItemType>();
-
 
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
@@ -43,7 +41,7 @@ public partial class InventoryStockList
     private WarehouseActionType _actionType = WarehouseActionType.In;
     private List<ProductCategoryVm> _categories = [];
     private ProductCategoryVm? _categoryFilter;
-    private GetBarcodePrintSettingsResponse? _settings;
+    private GetBarcodePrintSettingsResponse? _barcodeSettings;
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
     private string DateRangeFilterLabel => ItemStatus switch
@@ -110,6 +108,39 @@ public partial class InventoryStockList
         _ => Color.Default
     };
 
+    private object SettingsForJs => new
+    {
+        labelWidth = _barcodeSettings?.LabelWidth,
+        labelHeight = _barcodeSettings?.LabelHeight,
+        marginTop = _barcodeSettings?.MarginTop,
+        marginRight = _barcodeSettings?.MarginRight,
+        marginBottom = _barcodeSettings?.MarginBottom,
+        marginLeft = _barcodeSettings?.MarginLeft,
+        paddingTop = _barcodeSettings?.PaddingTop,
+        paddingRight = _barcodeSettings?.PaddingRight,
+        paddingBottom = _barcodeSettings?.PaddingBottom,
+        paddingLeft = _barcodeSettings?.PaddingLeft,
+        positionItems = _barcodeSettings?.PositionItems.Select(x => new
+        {
+            position = x.Position.ToString(),
+            itemType = x.ItemType.ToString(),
+            order = x.Order,
+            isVisible = x.IsVisible,
+            fontSize = x.FontSize,
+            itemSpacing = x.ItemSpacing,
+            barcodeSettings = x.BarcodeSettings != null
+                ? new
+                {
+                    width = x.BarcodeSettings.Width,
+                    height = x.BarcodeSettings.Height,
+                    displayValue = x.BarcodeSettings.DisplayValue,
+                    fontSize = x.BarcodeSettings.FontSize,
+                    margin = x.BarcodeSettings.Margin
+                }
+                : null
+        }).ToArray()
+    };
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -124,7 +155,7 @@ public partial class InventoryStockList
     {
         await SendRequestAsync<IBarcodePrintSettingsService, GetBarcodePrintSettingsResponse>(
             action: (s, token) => s.GetAsync(token),
-            afterSend: response => _settings = response,
+            afterSend: response => _barcodeSettings = response,
             createScope: true
         );
     }
@@ -208,48 +239,8 @@ public partial class InventoryStockList
         _table.NavigateTo(i - 1);
     }
 
-    private async Task OnPrintBarcode(InventoryStockVm item)
+    private async Task OnPrintProductBarcode(InventoryStockVm item)
     {
-        if (_settings is null)
-        {
-            AddWarningToast("تنظیمات بارکد لود نشده است");
-            return;
-        }
-
-        // تبدیل به فرمت JavaScript
-        var settingsForJs = new
-        {
-            labelWidth = _settings.LabelWidth,
-            labelHeight = _settings.LabelHeight,
-            marginTop = _settings.MarginTop,
-            marginRight = _settings.MarginRight,
-            marginBottom = _settings.MarginBottom,
-            marginLeft = _settings.MarginLeft,
-            paddingTop = _settings.PaddingTop,
-            paddingRight = _settings.PaddingRight,
-            paddingBottom = _settings.PaddingBottom,
-            paddingLeft = _settings.PaddingLeft,
-            positionItems = _settings.PositionItems.Select(x => new
-            {
-                position = x.Position.ToString(),
-                itemType = x.ItemType.ToString(),
-                order = x.Order,
-                isVisible = x.IsVisible,
-                fontSize = x.FontSize,
-                itemSpacing = x.ItemSpacing,
-                barcodeSettings = x.BarcodeSettings != null
-                    ? new
-                    {
-                        width = x.BarcodeSettings.Width,
-                        height = x.BarcodeSettings.Height,
-                        displayValue = x.BarcodeSettings.DisplayValue,
-                        fontSize = x.BarcodeSettings.FontSize,
-                        margin = x.BarcodeSettings.Margin
-                    }
-                    : null
-            }).ToArray()
-        };
-
         UnitType? wageUnitType = null;
 
         if (item.Product?.WagePriceUnitId != null)
@@ -257,7 +248,6 @@ public partial class InventoryStockList
             wageUnitType = await GetPriceUnitAsync(item.Product.WagePriceUnitId.Value);
         }
 
-        // داده‌های واقعی محصول
         var data = new
         {
             barcode = item.Product?.Barcode ?? "",
@@ -271,7 +261,20 @@ public partial class InventoryStockList
             }
         };
 
-        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", settingsForJs, data);
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
+    }
+
+    private async Task OnPrintCoinBarcode(InventoryStockVm item)
+    {
+        var data = new
+        {
+            barcode = item.Coin?.Barcode,
+            productName = item.Coin?.Coin?.Title ?? "",
+            weight = "",
+            wage = ""
+        };
+
+        await JsRuntime.InvokeVoidAsync("printDynamicBarcode", SettingsForJs, data);
     }
 
     private async Task<UnitType?> GetPriceUnitAsync(Guid wagePriceUnitId)
