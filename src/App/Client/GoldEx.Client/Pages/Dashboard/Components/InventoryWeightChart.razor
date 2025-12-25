@@ -3,7 +3,7 @@
 <MudCard Elevation="24">
     <MudCardHeader>
         <CardHeaderContent>
-            <MudText Typo="Typo.h6">نمودار لحظه ای ارزش موجودی</MudText>
+            <MudText Typo="Typo.h6">نمودار ارزش موجودی (گرم)</MudText>
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent>
@@ -30,18 +30,18 @@
                               InputLabels="@_chartLabels"
                               />
                 </MudStack>
-                <MudSelect T="GoldUnitType"
-                           Label="واحد طلا"
-                           Variant="Variant.Outlined"
-                           Margin="Margin.Dense"
-                           Value="_selectedUnitType"
-                           ValueChanged="OnUnitTypeChanged">
-                    @foreach (GoldUnitType unit in Enum.GetValues(typeof(GoldUnitType)))
-                    {
-                        <MudSelectItem Value="@unit">@unit.GetDisplayName()</MudSelectItem>
-                    }
-                </MudSelect>
             }
+            <MudSelect T="WarehouseActionType"
+                       Label="نوع"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Value="_selectedActionType"
+                       ValueChanged="OnActionTypeChanged">
+                @foreach (var actionType in Enum.GetValues<WarehouseActionType>())
+                {
+                    <MudSelectItem Value="@actionType">@GetDisplayName(actionType)</MudSelectItem>
+                }
+            </MudSelect>
         }
 
     </MudCardContent>

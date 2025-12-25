@@ -13,7 +13,7 @@ public interface IInventoryStockService
         RequestFilter filter,
         CancellationToken cancellationToken = default);
 
-    Task<List<GetInventoryWeightChartResponse>> GetInventoryWeightChartAsync(GoldUnitType targetUnit,
+    Task<List<GetInventoryWeightChartResponse>> GetInventoryWeightChartAsync(WarehouseActionType actionType,
         CancellationToken cancellationToken = default);
 
     Task<PagedList<GetInventoryStockItemResponse>> GetInvoiceInventoryItemsAsync(Guid invoiceId,

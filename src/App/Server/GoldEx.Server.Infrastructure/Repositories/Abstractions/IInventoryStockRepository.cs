@@ -29,5 +29,5 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
         CalculatorFilterRequest calculatorFilter,
         CancellationToken cancellationToken = default);
 
-    Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(GoldUnitType targetUnit, CancellationToken cancellationToken = default);
+    Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(WarehouseActionType actionType, CancellationToken cancellationToken = default);
 }
