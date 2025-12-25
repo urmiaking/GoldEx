@@ -71,7 +71,8 @@ public partial class SimpleCalculator
             ? $"نرخ تبدیل {_model.StonePriceUnit.Title} به {_model.PriceUnit.Title}"
             : null;
 
-    private GetPriceUnitTitleResponse? DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault);
+    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault) 
+                                                           ?? new GetPriceUnitTitleResponse(Guid.Empty, "تومان", false, true, false);
 
     protected override async Task OnParametersSetAsync()
     {
@@ -99,7 +100,7 @@ public partial class SimpleCalculator
             var defaultPriceUnit = await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse?>(
                 action: (s, ct) => s.GetDefaultAsync(ct));
 
-            var priceUnit = new GetPriceUnitTitleResponse(defaultPriceUnit?.Id ?? Guid.Empty, defaultPriceUnit?.Title ?? "ریال", false, true, false);
+            var priceUnit = new GetPriceUnitTitleResponse(defaultPriceUnit?.Id ?? Guid.Empty, defaultPriceUnit?.Title ?? "تومان", false, true, false);
 
             _model.PriceUnit = priceUnit;
             _model.WagePriceUnit = priceUnit;
