@@ -110,8 +110,8 @@ internal class InventoryStockRepository(
             .ToDictionaryAsync(result => result.Id, result => result.TotalQuantity, cancellationToken);
     }
 
-    public async Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter,
-    InventoryFilter inventoryFilter, CancellationToken cancellationToken = default)
+    public async Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter, 
+        InventoryFilter inventoryFilter, CancellationToken cancellationToken = default)
     {
         var settings = await settingRepository
             .Get(new SettingsDefaultSpecification())
@@ -429,10 +429,30 @@ internal class InventoryStockRepository(
 
                     flattenedQuery = filter.SortLabel switch
                     {
-                        "CoinInstance.Barcode" =>
+                        "Coin.Barcode" =>
                             isDesc
                                 ? flattenedQuery.OrderByDescending(x => x.Barcode)
                                 : flattenedQuery.OrderBy(x => x.Barcode),
+
+                        "Coin.Weight" =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.CoinInstance.Weight)
+                                : flattenedQuery.OrderBy(x => x.CoinInstance.Weight),
+
+                        "Coin.Fineness" =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.CoinInstance.Fineness)
+                                : flattenedQuery.OrderBy(x => x.CoinInstance.Fineness),
+
+                        "Coin.Title" =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.CoinInstance.Coin!.Title)
+                                : flattenedQuery.OrderBy(x => x.CoinInstance.Coin!.Title),
+
+                        "Coin.MintYear" =>
+                            isDesc
+                                ? flattenedQuery.OrderByDescending(x => x.MintYear)
+                                : flattenedQuery.OrderBy(x => x.MintYear),
 
                         "CurrentAmount" =>
                             isDesc

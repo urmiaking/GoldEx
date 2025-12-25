@@ -17,7 +17,7 @@ public class NotificationButton
             ButtonIcon = Shared.Enums.ButtonIcon.View,
             Color = ButtonColor.Success,
             ActionType = ButtonActionType.NavigateToUrl,
-            Text = "مشاهده فاکتور"
+            Text = "مشاهده"
         };
 
     public static NotificationButton CreateSendButton(string action) =>
@@ -27,6 +27,6 @@ public class NotificationButton
             ButtonIcon = Shared.Enums.ButtonIcon.Send,
             Color = ButtonColor.Primary,
             ActionType = ButtonActionType.SendReminderSms,
-            Text = "ارسال پیامک یادآوری"
+            Text = "ارسال پیامک"
         };
 }

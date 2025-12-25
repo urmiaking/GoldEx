@@ -1,9 +1,11 @@
 ﻿using System.Data;
 using System.Data.Common;
+using System.Linq.Expressions;
 using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Sdk.Server.Infrastructure.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace GoldEx.Sdk.Server.Infrastructure.Repositories;
@@ -156,6 +158,21 @@ public abstract class RepositoryBase<TEntity>(DbContext context) :
         await SaveAsync(cancellationToken);
     }
 
+    public virtual Task<int> ExecuteUpdateAsync(ISpecification<TEntity> specification,
+        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (specification.Criteria == null)
+            throw new InvalidOperationException(
+                "ExecuteUpdate requires a specification with Criteria.");
+
+        query = query.Where(specification.Criteria);
+
+        return query.ExecuteUpdateAsync(setPropertyCalls, cancellationToken);
+    }
+
     public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         Delete(entity);
@@ -166,5 +183,18 @@ public abstract class RepositoryBase<TEntity>(DbContext context) :
     {
         DeleteRange(entities);
         await SaveAsync(cancellationToken);
+    }
+
+    public virtual Task<int> ExecuteDeleteAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
+    {
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (specification.Criteria == null)
+            throw new InvalidOperationException(
+                "ExecuteDelete requires a specification with Criteria.");
+
+        query = query.Where(specification.Criteria);
+
+        return query.ExecuteDeleteAsync(cancellationToken);
     }
 }
