@@ -184,6 +184,7 @@
         {
             case ItemType.MoltenGold:
             case ItemType.Product:
+            case ItemType.Coin:
                 <MudTh>عملیات</MudTh>
                 break;
         }
@@ -254,8 +255,8 @@
                 <MudTd DataLabel="وزن">@(GetCoinWeight(context.Coin))</MudTd>
                 <MudTd DataLabel="عیار">@(context.Coin.Fineness.ToString("G29"))</MudTd>
                 <MudTd DataLabel="سال ضرب">@(GetCoinMintYear(context.Coin))</MudTd>
-                <MudTd DataLabel="تعداد موجود">@context.CurrentAmount.ToString("G29")</MudTd>
-                <MudTd DataLabel="تعداد فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
+                <MudTd DataLabel="موجودی فعلی">@context.CurrentAmount.ToString("G29")</MudTd>
+                <MudTd DataLabel="فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
                 break;
             case ItemType.Currency when context.Currency is not null:
                 <MudTd DataLabel="عنوان">@(context.Currency.Title)</MudTd>
@@ -271,7 +272,7 @@
                     <div class="d-flex gap-2">
                         <MudTooltip Text="چاپ بارکد" Color="Color.Success" Arrow="true">
                             <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
-                                           OnClick="_ => OnPrintBarcode(context)"
+                                           OnClick="_ => OnPrintProductBarcode(context)"
                                            Color="@Color.Success"></MudIconButton>
                         </MudTooltip>
                         <MudTooltip Text="ویرایش محصول" Color="Color.Primary" Arrow="true">
@@ -291,6 +292,15 @@
                 </MudTd>
                 break;
             case ItemType.Coin:
+                <MudTd DataLabel="عملیات">
+                    <div class="d-flex gap-2">
+                        <MudTooltip Text="چاپ بارکد" Color="Color.Success" Arrow="true">
+                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                           OnClick="_ => OnPrintCoinBarcode(context)"
+                                           Color="@Color.Success"></MudIconButton>
+                        </MudTooltip>
+                    </div>
+                </MudTd>
                 break;
             case ItemType.Currency:
                 break;
