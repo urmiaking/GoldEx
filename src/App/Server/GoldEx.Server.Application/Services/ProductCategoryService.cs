@@ -67,12 +67,13 @@ internal class ProductCategoryService(
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await repository.Get(new ProductCategoriesByIdSpecification(new ProductCategoryId(id)))
+        var item = await repository
+            .Get(new ProductCategoriesByIdSpecification(new ProductCategoryId(id)))
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         await deleteValidator.ValidateAndThrowAsync(item, cancellationToken);
 
-        await repository.DeleteAsync(item, cancellationToken);
+        await repository.ExecuteDeleteAsync(new ProductCategoriesByIdSpecification(new ProductCategoryId(id)), cancellationToken);
     }
 
     public async Task<GetProductCategoryNumberResponse> GetLastCodeAsync(CancellationToken cancellationToken = default)
