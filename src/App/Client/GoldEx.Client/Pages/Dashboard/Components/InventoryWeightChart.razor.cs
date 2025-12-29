@@ -6,7 +6,7 @@ namespace GoldEx.Client.Pages.Dashboard.Components;
 
 public partial class InventoryWeightChart
 {
-    private WarehouseActionType _selectedActionType = WarehouseActionType.In;
+    private WarehouseActionType _selectedActionType = WarehouseActionType.Out;
     private List<GetInventoryWeightChartResponse>? _chartResponse;
     private double[] _chartData = [];
     private string[] _chartLabels = [];
