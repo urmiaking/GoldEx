@@ -36,6 +36,9 @@ public class Data
 
     [JsonPropertyName("ounce")]
     public MarketData? Ounce { get; set; }
+
+    [JsonPropertyName("silver")]
+    public MarketData? Silver { get; set; }
 }
 
 public class MarketDataItem
