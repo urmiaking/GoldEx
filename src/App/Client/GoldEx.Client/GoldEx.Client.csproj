@@ -17,6 +17,7 @@
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);CS8669</NoWarn>
 		<NoWarn>$(NoWarn);MUD0002</NoWarn>
+		<NoWarn>$(NoWarn);DX1000</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,0 +1,61 @@
+﻿@using GoldEx.Shared.DTOs.Transactions
+@inherits GoldExComponentBase
+
+<MudCard Elevation="24">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex justify-content-between align-items-center">
+                <MudText Typo="Typo.h6">تراز ارزی حساب مشتریان</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.CurrencyExchange" Color="Color.Success"></MudIcon>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (_accountBalances is null)
+        {
+            <div class="d-flex flex-column gap-4 justify-content-center align-items-center">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                <MudText Class="mr-2">در حال بارگیری...</MudText>
+            </div>
+        }
+        else
+        {
+            if (!_accountBalances.Any())
+            {
+                <div class="d-flex flex-column gap-4 justify-content-center align-items-center">
+                    <MudText>هیچ داده ای در دسترس نیست</MudText>
+                </div>
+            }
+            else
+            {
+                <MudTable T="GetAccountBalanceResponse" Items="_accountBalances" Elevation="0" Dense="true">
+                    <HeaderContent>
+                        <MudTh>
+                            <MudText Typo="Typo.body1">ارز</MudText>
+                        </MudTh>
+                        <MudTh>
+                            <div class="d-flex">
+                                <MudText Typo="Typo.body1" Color="Color.Error">بدهکاری</MudText>&nbsp;/&nbsp;<MudText Color="Color.Success" Typo="Typo.body1">بستانکاری</MudText>
+                            </div>
+                        </MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="ارز">
+                            @context.PriceUnit
+                        </MudTd>
+                        <MudTd DataLabel="بدهکاری/بستانکاری">
+                            <MudChip Icon="@GetBalanceIcon(context)"
+                                     Color="@GetBalanceColor(context)"
+                                     Size="Size.Medium"
+                                     Variant="Variant.Text"
+                                     T="string"
+                                     Label="true">
+                                @(GetBalance(context))
+                            </MudChip>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        }
+    </MudCardContent>
+</MudCard>
