@@ -245,6 +245,14 @@ public enum PriceCatalog
     [Display(Name = "انس پلاتین")]
     [Market(MarketType.Ounce)]
     Platinum,
+
+    [Display(Name = "گرم نقره 999")]
+    [Market(MarketType.Silver)]
+    GeramiSilver,
+
+    [Display(Name = "مثقال نقره 999")]
+    [Market(MarketType.Silver)]
+    MesghalSilver
 }
 
 // Custom attribute

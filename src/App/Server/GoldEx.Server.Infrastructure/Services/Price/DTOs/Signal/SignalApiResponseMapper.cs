@@ -48,7 +48,6 @@ public static class SignalApiResponseMapper
                     GetMarketType(nameof(response.Data.Currency))));
         }
 
-
         if (response.Data.Coin is not null)
         {
             priceResponses.AddRange(from item in response.Data.Coin.Data
@@ -114,6 +113,22 @@ public static class SignalApiResponseMapper
                                         change,
                                         iconUrl,
                                         GetMarketType(nameof(response.Data.Ounce))));
+        }
+
+        if (response.Data.Silver is not null)
+        {
+            priceResponses.AddRange(from item in response.Data.Silver?.Data
+                                    let currentValue = ParseDecimal(item.Close)
+                                    let change = FormatChange(item.Change, item.PercentChange)
+                                    let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
+                                    let iconUrl = item.IconUrl
+                                    select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
+                                        currentValue,
+                                        item.Unit,
+                                        lastUpdate.ToGregorianDateTime(),
+                                        change,
+                                        iconUrl,
+                                        GetMarketType(nameof(response.Data.Silver))));
         }
 
         return priceResponses;
@@ -185,7 +200,7 @@ public static class SignalApiResponseMapper
             nameof(SignalApiResponse.Data.BubbleCoin) => MarketType.BubbleCoin,
             nameof(SignalApiResponse.Data.ParsianCoin) => MarketType.ParsianCoin,
             nameof(SignalApiResponse.Data.Ounce) => MarketType.Ounce,
-
+            nameof(SignalApiResponse.Data.Silver) => MarketType.Silver,
             _ => throw new ArgumentOutOfRangeException()
         };
     }

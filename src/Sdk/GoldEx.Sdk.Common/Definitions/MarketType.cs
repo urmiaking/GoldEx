@@ -20,5 +20,8 @@ public enum MarketType
     ParsianCoin = 4,
 
     [Display(Name = "انس")]
-    Ounce = 5
+    Ounce = 5,
+
+    [Display(Name = "نقره")]
+    Silver = 6
 }
