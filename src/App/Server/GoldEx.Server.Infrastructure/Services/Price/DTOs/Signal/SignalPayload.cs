@@ -30,8 +30,32 @@ public class SignalPayloadItem
             CreateCoinBubblePayload(),
             CreateCoinParsianPayload(),
             CreateCurrencyPayload(),
-            CreateGoldPayload()
+            CreateGoldPayload(),
+            CreateSilverPayload()
         ];
+    }
+
+    public static SignalPayloadItem CreateSilverPayload()
+    {
+        return new SignalPayloadItem
+        {
+            Market = "silver",
+            FilterName = "silver",
+            Property =
+            [
+                "name",
+                "change",
+                "close",
+                "iconUrl",
+                "id",
+                "index",
+                "jDate",
+                "persianName",
+                "time",
+                "percentChange",
+                "unit"
+            ]
+        };
     }
 
     private static SignalPayloadItem CreateOuncePayload()
