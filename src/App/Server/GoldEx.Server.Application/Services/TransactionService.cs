@@ -75,4 +75,10 @@ internal class TransactionService(IMapper mapper,
 
         return new GetFinancialAccountBalanceResponse(amount);
     }
+
+    public async Task<List<GetAccountBalanceResponse>> GetAccountBalanceAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await repository.GetPayableReceivableAccountsSummaryAsync(cancellationToken: cancellationToken);
+        return mapper.Map<List<GetAccountBalanceResponse>>(result);
+    }
 }
