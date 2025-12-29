@@ -21,8 +21,8 @@ public class PriceUpdaterBackgroundService(
             try
             {
                 var now = DateTime.Now.TimeOfDay;
-                var startBlock = new TimeSpan(22, 0, 0);
-                var endBlock = new TimeSpan(8, 0, 0);
+                var startBlock = new TimeSpan(23, 0, 0);
+                var endBlock = new TimeSpan(7, 30, 0);
 
                 if (now >= startBlock || now < endBlock)
                 {
