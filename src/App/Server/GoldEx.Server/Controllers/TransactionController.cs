@@ -34,4 +34,11 @@ public class TransactionController(ITransactionService service) : ApiControllerB
         var item = await service.GetFinancialAccountBalanceAsync(financialAccountId, cancellationToken);
         return Ok(item);
     }
+
+    [HttpGet(ApiRoutes.Transactions.GetAccountBalance)]
+    public async Task<IActionResult> GetAccountBalanceAsync(CancellationToken cancellationToken = default)
+    {
+        var items = await service.GetAccountBalanceAsync(cancellationToken);
+        return Ok(items);
+    }
 }

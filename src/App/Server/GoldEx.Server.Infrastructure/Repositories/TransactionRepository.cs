@@ -7,8 +7,9 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.Transactions;
+using GoldEx.Shared.Constants;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -107,5 +108,37 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
 
         var avg = qtySum != 0 ? baseSum / qtySum : 0;
         return (qtySum, baseSum, avg);
+    }
+
+    public async Task<List<AccountBalanceSummaryModel>> GetPayableReceivableAccountsSummaryAsync(DateTime? fromDate = null, DateTime? toDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = Query
+            .AsNoTracking()
+            .Include(t => t.PriceUnit)
+            .Include(x => x.ReversedBy)
+            .Include(t => t.LedgerAccount!).ThenInclude(la => la.ParentAccount)
+            .Where(t => !fromDate.HasValue || t.PostingDate >= fromDate.Value)
+            .Where(t => !toDate.HasValue || t.PostingDate <= toDate.Value)
+            .Where(t =>
+                t.LedgerAccount != null &&
+                t.LedgerAccount.ParentAccount != null &&
+                (
+                    t.LedgerAccount.ParentAccount.Title == SystemLedgerAccounts.AccountsPayable ||
+                    t.LedgerAccount.ParentAccount.Title == SystemLedgerAccounts.AccountsReceivable
+                ))
+            .Where(t => t.ReverseTransactionId == null)
+            .Where(x => x.ReversedBy == null || !x.ReversedBy.Any());
+
+        var result = await query
+            .GroupBy(t => new { t.PriceUnitId, t.PriceUnit!.Title })
+            .Select(g => new AccountBalanceSummaryModel(
+                g.Key.Title,
+                g.Where(x => x.TransactionType == TransactionType.Debit).Sum(x => x.Amount),
+                g.Where(x => x.TransactionType == TransactionType.Credit).Sum(x => x.Amount)))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return result;
     }
 }

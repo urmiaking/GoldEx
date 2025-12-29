@@ -1,0 +1,59 @@
+﻿@using GoldEx.Shared.DTOs.Transactions
+@inherits GoldExComponentBase
+
+<MudCard Elevation="24">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">تراز ارزی حساب ها</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (_accountBalances is null)
+        {
+            <div class="d-flex flex-column gap-4 justify-content-center align-items-center">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                <MudText Class="mr-2">در حال بارگیری...</MudText>
+            </div>
+        }
+        else
+        {
+            if (!_accountBalances.Any())
+            {
+                <div class="d-flex flex-column gap-4 justify-content-center align-items-center">
+                    <MudText>هیچ داده ای در دسترس نیست</MudText>
+                </div>
+            }
+            else
+            {
+                <MudTable T="GetAccountBalanceResponse" Items="_accountBalances">
+                    <HeaderContent>
+                        <MudTh>بدهکاری</MudTh>
+                        <MudTh>بستانکاری</MudTh>
+                    </HeaderContent> 
+                    <RowTemplate>
+                        <MudTd DataLabel="بدهکاری">
+                            <MudChip Icon="@Icons.Material.Filled.ArrowDropDown"
+                                     Color="@Color.Error"
+                                     Size="Size.Medium" 
+                                     Variant="Variant.Text" 
+                                     T="string"
+                                     Label="true">
+                                @(context.Debit.ToCurrencyFormat(context.PriceUnit))
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="بستانکاری">
+                            <MudChip Icon="@Icons.Material.Filled.ArrowDropUp"
+                                     Color="@Color.Success"
+                                     Size="Size.Medium" 
+                                     Variant="Variant.Text" 
+                                     T="string"
+                                     Label="true">
+                                @(context.Credit.ToCurrencyFormat(context.PriceUnit))
+                            </MudChip>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        }
+    </MudCardContent>
+</MudCard>

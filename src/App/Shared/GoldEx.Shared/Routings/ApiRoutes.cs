@@ -99,6 +99,7 @@ public static class ApiRoutes
         public const string GetList = "";
         public const string GetRemainingList = "customer/{customerId}/remaining-list";
         public const string GetFinancialAccountBalance = "financial-account/{financialAccountId}/balance";
+        public const string GetAccountBalance = "account-balance";
     }
 
     public class PriceUnits
