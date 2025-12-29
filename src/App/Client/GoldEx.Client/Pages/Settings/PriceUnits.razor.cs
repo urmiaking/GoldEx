@@ -1,7 +1,9 @@
-﻿using GoldEx.Client.Pages.Settings.Components.PriceUnits;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Settings.Components.PriceUnits;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Settings;
@@ -11,6 +13,20 @@ public partial class PriceUnits
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IEnumerable<PriceUnitVm> _priceUnits = new List<PriceUnitVm>();
     private bool _processing;
+
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        HelpContext.Slug = "price-unit-management";
+        base.OnInitialized();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {

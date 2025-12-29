@@ -1,7 +1,9 @@
-﻿using GoldEx.Client.Pages.Settings.Components.LedgerAccounts;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Settings.Components.LedgerAccounts;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Settings;
@@ -10,6 +12,20 @@ public partial class LedgerAccounts
 {
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private IReadOnlyCollection<TreeItemData<GetLedgerAccountResponse>> _treeItems = [];
+
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        HelpContext.Slug = "ledger-accounts";
+        base.OnInitialized();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
