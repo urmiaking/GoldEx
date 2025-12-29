@@ -1,0 +1,45 @@
+﻿@using GoldEx.Shared.DTOs.Blogs.BlogPosts
+@using GoldEx.Shared.Services.Abstractions
+@inherits GoldExComponentBase
+
+<MudDialog>
+    <DialogContent>
+        @if (_blogPost is null)
+        {
+            <MudProgressLinear Indeterminate="true"></MudProgressLinear>
+        }
+        else
+        {
+            <MudText Typo="Typo.body1">
+                @(new MarkupString(_blogPost.Content))
+            </MudText>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary">
+            بستن
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private BlogPostResponse? _blogPost;
+    [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public string Slug { get; set; } = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadBlogAsync(Slug);
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadBlogAsync(string slug)
+    {
+        await SendRequestAsync<IBlogPostService, BlogPostResponse?>(
+            action: (s, ct) => s.GetAsync(slug, ct),
+            afterSend: response => _blogPost = response);
+    }
+
+    private void Close() => Dialog.Close();
+}
