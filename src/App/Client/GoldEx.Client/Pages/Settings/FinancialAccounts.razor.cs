@@ -1,10 +1,12 @@
-﻿using GoldEx.Client.Pages.FinancialAccounts.Components;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Settings;
@@ -33,6 +35,20 @@ public partial class FinancialAccounts
         null => Icons.Material.Filled.ViewHeadline,
         _ => throw new ArgumentOutOfRangeException()
     };
+
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        HelpContext.Slug = "financial-accounts";
+        base.OnInitialized();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 
     private async Task RefreshDataAsync()
     {
