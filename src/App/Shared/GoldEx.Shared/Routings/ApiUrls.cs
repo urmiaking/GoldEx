@@ -376,6 +376,9 @@ public class ApiUrls
         public static string GetFinancialAccountBalance(Guid financialAccountId) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetFinancialAccountBalance)
                 .FormatRoute(new { financialAccountId });
+
+        public static string GetAccountBalance() =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetAccountBalance);
     }
 
     public class Notifications

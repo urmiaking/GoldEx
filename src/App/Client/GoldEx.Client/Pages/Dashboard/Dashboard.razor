@@ -11,16 +11,19 @@
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
-    
+
     <MudText Typo="Typo.h5" GutterBottom="true">نرخ لحظه ای</MudText>
     <MudDivider Class="mb-2" />
     <PriceList />
-    
+
     <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">نمودارها</MudText>
     <MudDivider Class="mb-2" />
     <MudGrid>
         <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
             <InventoryWeightChart />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6" lg="4" xl="3">
+            <AccountBalanceChart />
         </MudItem>
     </MudGrid>
 

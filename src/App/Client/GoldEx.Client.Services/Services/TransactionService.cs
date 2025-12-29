@@ -50,4 +50,16 @@ internal class TransactionService(HttpClient client, JsonSerializerOptions jsonO
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<List<GetAccountBalanceResponse>> GetAccountBalanceAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Transactions.GetAccountBalance(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetAccountBalanceResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }
