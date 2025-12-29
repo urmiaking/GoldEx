@@ -6,6 +6,7 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Server.Infrastructure.Models;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
@@ -21,5 +22,9 @@ public interface ITransactionRepository : IRepository<Transaction>,
     Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, PriceUnitId? priceUnitId, DateTime? untilDate = null, CancellationToken cancellationToken = default);
     Task<(decimal qty, decimal baseAmount, decimal avgRate)> GetLedgerPositionSummaryAsync(
         LedgerAccountId ledgerAccountId,
+        CancellationToken cancellationToken = default);
+
+    Task<List<AccountBalanceSummaryModel>> GetPayableReceivableAccountsSummaryAsync(DateTime? fromDate = null,
+        DateTime? toDate = null,
         CancellationToken cancellationToken = default);
 }
