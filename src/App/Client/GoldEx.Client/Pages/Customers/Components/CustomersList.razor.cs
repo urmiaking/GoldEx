@@ -1,4 +1,5 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Transactions.Components;
 using GoldEx.Sdk.Common.Data;
@@ -16,12 +17,25 @@ public partial class CustomersList
     [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool ShowTitle { get; set; }
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
 
     private string? _searchString;
     private DateRange _filterDateRange = new();
     private MudTable<CustomerVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private CustomerType? _customerType;
+
+    protected override void OnInitialized()
+    {
+        HelpContext.Slug = "customer-management-video";
+        base.OnInitialized();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 
     private async Task<TableData<CustomerVm>> LoadCustomersAsync(TableState state, CancellationToken cancellationToken = default)
     {
@@ -142,7 +156,7 @@ public partial class CustomersList
             parameters,
             _dialogOptions with
             {
-                MaxWidth = MaxWidth.Large
+                MaxWidth = MaxWidth.ExtraLarge
             });
         var result = await dialog.Result;
         if (result is { Canceled: false })
@@ -157,7 +171,7 @@ public partial class CustomersList
         {
             { nameof(InvoicesList.CustomerId), customerVm.Id }
         };
-        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای های {customerVm.FullName}", parameters, _dialogOptions with { MaxWidth = MaxWidth.Large });
+        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای های {customerVm.FullName}", parameters, _dialogOptions with { MaxWidth = MaxWidth.ExtraLarge });
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {

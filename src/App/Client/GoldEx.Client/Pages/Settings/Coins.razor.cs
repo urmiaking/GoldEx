@@ -1,7 +1,9 @@
-﻿using GoldEx.Client.Pages.Settings.Components.Coins;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Settings.Components.Coins;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Globalization;
 
@@ -12,6 +14,20 @@ public partial class Coins
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private List<CoinVm> _coins = [];
     private bool _processing;
+
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        HelpContext.Slug = "coin-management";
+        base.OnInitialized();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {
