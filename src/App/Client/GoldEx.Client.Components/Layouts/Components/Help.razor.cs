@@ -67,6 +67,6 @@ public partial class Help
             { x => x.Slug, HelpContext.Slug }
         };
 
-        await DialogService.ShowAsync<HelpContent>("راهنما", parameters, new DialogOptions { FullWidth = true, FullScreen = true, CloseButton = true});
+        await DialogService.ShowAsync<HelpContent>("راهنما", parameters, new DialogOptions { FullWidth = true, FullScreen = true, CloseButton = true, MaxWidth = MaxWidth.Large });
     }
 }

@@ -4,16 +4,19 @@
 
 <MudDialog>
     <DialogContent>
-        @if (_blogPost is null)
-        {
-            <MudProgressLinear Indeterminate="true"></MudProgressLinear>
-        }
-        else
-        {
-            <MudText Typo="Typo.body1">
+        <div style="height: calc(100vh - 120px); overflow-y: auto;" class="row">
+            @if (_blogPost is null)
+            {
+                <div class="d-flex flex-column align-center gap-4">
+                    <MudProgressLinear Indeterminate="true"></MudProgressLinear>
+                    <MudText>در حال بارگیری...</MudText>
+                </div>
+            }
+            else
+            {
                 @(new MarkupString(_blogPost.Content))
-            </MudText>
-        }
+            }
+        </div>
     </DialogContent>
 
     <DialogActions>

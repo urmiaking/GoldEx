@@ -1,6 +1,8 @@
-﻿using GoldEx.Client.Pages.Settings.Components.Prices;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Settings.Components.Prices;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Settings;
@@ -10,6 +12,20 @@ public partial class PriceSettings
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private List<GetPriceSettingResponse> _priceSettings = [];
     private bool _showAlert = true;
+
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        HelpContext.Slug = "price-management";
+        base.OnInitialized();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {
