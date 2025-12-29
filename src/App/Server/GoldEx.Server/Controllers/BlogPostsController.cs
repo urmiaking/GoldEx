@@ -26,7 +26,7 @@ public class BlogPostsController(
     public async Task<IActionResult> GetBySlugAsync([FromRoute] string slug, CancellationToken cancellationToken)
     {
         var result = await service.GetAsync(slug, cancellationToken);
-        return Ok(result);
+        return result is null ? NotFound() : Ok(result);
     }
 
     [HttpPost(ApiRoutes.BlogPosts.Create)]
@@ -107,5 +107,12 @@ public class BlogPostsController(
 
         // 4. Return the URL that maps to the shared folder via Middleware
         return Json(new { location = $"/{virtualUrl}" });
+    }
+
+    [HttpGet(ApiRoutes.BlogPosts.Exists)]
+    public async Task<IActionResult> ExistsAsync([FromRoute] string slug, CancellationToken cancellationToken)
+    {
+        var exists = await service.ExistsAsync(slug, cancellationToken);
+        return Ok(exists);
     }
 }

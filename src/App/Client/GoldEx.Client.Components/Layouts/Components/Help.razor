@@ -1,0 +1,10 @@
+﻿@inherits GoldExComponentBase
+
+@if (_hasHelp)
+{
+    <MudTooltip Text="راهنما" Arrow="true" Color="Color.Info">
+        <MudIconButton OnClick="@(OpenDialog)"
+                       Icon="@Icons.Material.Filled.Help"
+                       Color="@Color.Inherit" />
+    </MudTooltip>
+}

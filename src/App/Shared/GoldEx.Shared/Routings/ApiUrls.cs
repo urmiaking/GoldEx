@@ -507,6 +507,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.Delete).FormatRoute(new { id });
 
         public static string UploadFiles() => BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.UploadFiles);
+
+        public static string Exists(string slug) =>
+            BuildUrl(ApiRoutes.BlogPosts.Base, ApiRoutes.BlogPosts.Exists)
+                .FormatRoute(new { slug });
     }
 
     public class InventoryExits

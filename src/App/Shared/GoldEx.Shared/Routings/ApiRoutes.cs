@@ -280,6 +280,7 @@ public static class ApiRoutes
         public const string SetStatus = "status/{id}/{isActive}";
         public const string Delete = "{id}";
         public const string UploadFiles = "upload";
+        public const string Exists = "exists/{slug}";
     }
 
     public class CoinInstances
