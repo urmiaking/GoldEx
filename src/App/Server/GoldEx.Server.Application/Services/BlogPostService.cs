@@ -38,13 +38,13 @@ internal sealed class BlogPostService(
         return mapper.Map<BlogPostResponse>(item);
     }
 
-    public async Task<BlogPostResponse> GetAsync(string slug, CancellationToken cancellationToken = default)
+    public async Task<BlogPostResponse?> GetAsync(string slug, CancellationToken cancellationToken = default)
     {
         var item = await repository
             .Get(new BlogPostsBySlugSpecification(slug))
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+            .FirstOrDefaultAsync(cancellationToken);
 
-        return mapper.Map<BlogPostResponse>(item);
+        return item == null ? null : mapper.Map<BlogPostResponse>(item);
     }
 
     public async Task CreateAsync(BlogPostRequest request, CancellationToken cancellationToken = default)
@@ -93,7 +93,7 @@ internal sealed class BlogPostService(
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        if (!IsAdminUser()) 
+        if (!IsAdminUser())
             throw new ForbiddenException();
 
         var post = await repository
@@ -106,6 +106,11 @@ internal sealed class BlogPostService(
 
         if (Directory.Exists(blogDir))
             Directory.Delete(blogDir, true);
+    }
+
+    public Task<bool> ExistsAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        return repository.ExistsAsync(new BlogPostsBySlugSpecification(slug), cancellationToken);
     }
 
     private bool IsAdminUser() => _httpContext.User.IsInRole(BuiltinRoles.Administrators);

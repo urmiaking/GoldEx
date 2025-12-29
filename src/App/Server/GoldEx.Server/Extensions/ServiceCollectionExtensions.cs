@@ -1,5 +1,7 @@
-﻿using DevExpress.AspNetCore;
+﻿using AspNetCore.DataProtection.SqlServer;
+using DevExpress.AspNetCore;
 using DevExpress.Drawing;
+using GoldEx.Client.Components.Services;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Api.Identity;
@@ -28,7 +30,6 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AspNetCore.DataProtection.SqlServer;
 
 namespace GoldEx.Server.Extensions;
 
@@ -286,6 +287,12 @@ internal static class ServiceCollectionExtensions
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoicePaymentResponse));
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceExtraCostsResponse));
 
+        return services;
+    }
+
+    internal static IServiceCollection AddHelpContext(this IServiceCollection services)
+    {
+        services.AddScoped<HelpContext>();
         return services;
     }
 }

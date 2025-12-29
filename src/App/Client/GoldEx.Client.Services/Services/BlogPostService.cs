@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using System.Net;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Blogs.BlogPosts;
 using GoldEx.Shared.Routings;
@@ -23,9 +24,12 @@ internal sealed class BlogPostService(HttpClient client, JsonSerializerOptions j
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<BlogPostResponse> GetAsync(string slug, CancellationToken cancellationToken = default)
+    public async Task<BlogPostResponse?> GetAsync(string slug, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.BlogPosts.Get(slug), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
@@ -65,5 +69,16 @@ internal sealed class BlogPostService(HttpClient client, JsonSerializerOptions j
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task<bool> ExistsAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.BlogPosts.Exists(slug), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<bool>(jsonOptions, cancellationToken);
+        return result;
     }
 }

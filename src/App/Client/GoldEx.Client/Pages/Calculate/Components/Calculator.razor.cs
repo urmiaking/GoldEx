@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
-using MudBlazor;
-using MudBlazor.Services;
+﻿using GoldEx.Client.Components.Services;
+using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
 
@@ -8,54 +7,33 @@ public partial class Calculator
 {
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
-    //[Inject] public IBrowserViewportService BrowserViewportService { get; set; } = default!;
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
 
-    //private bool _isMobile = false;
-    //private bool _isInitialized;
-    //private readonly Guid _observerId = Guid.NewGuid();
+    protected override void OnInitialized()
+    {
+        SetHelpContext(0);
+        base.OnInitialized();
+    }
 
-    //protected override async Task OnAfterRenderAsync(bool firstRender)
-    //{
-    //    if (firstRender)
-    //    {
-    //        await BrowserViewportService.SubscribeAsync(
-    //            _observerId,
-    //            async (eventArgs) => await OnBreakpointChanged(eventArgs),
-    //            new ResizeOptions { ReportRate = 250, NotifyOnBreakpointOnly = true }
-    //        );
+    private void SetHelpContext(int index)
+    {
+        switch (index)
+        {
+            case 0:
+                HelpContext.Slug = "calculator-video";
+                break;
+            case 1:
+                HelpContext.Slug = "calculator-video";
+                break;
+            case 2:
+                HelpContext.Slug = "calculator-video";
+                break;
+        }
+    }
 
-    //        await Task.Yield();
-    //        await UpdateTabTitle();
-    //        _isInitialized = true;
-    //    }
-    //}
-
-    //private async Task OnBreakpointChanged(BrowserViewportEventArgs eventArgs)
-    //{
-    //    if (_isInitialized)
-    //    {
-    //        await UpdateTabTitle();
-    //        StateHasChanged();
-    //    }
-    //}
-
-    //private async Task UpdateTabTitle()
-    //{
-    //    var breakpoint = await BrowserViewportService.GetCurrentBreakpointAsync();
-
-    //    var wasMobile = _isMobile;
-    //    _isMobile = await BrowserViewportService.IsBreakpointWithinReferenceSizeAsync(
-    //        Breakpoint.MdAndDown, breakpoint);
-
-    //    if (_isMobile != wasMobile)
-    //    {
-    //        StateHasChanged();
-    //    }
-    //}
-
-    //public override async ValueTask DisposeAsync()
-    //{
-    //    await BrowserViewportService.UnsubscribeAsync(_observerId);
-    //    await base.DisposeAsync();
-    //}
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
@@ -31,6 +32,7 @@ public partial class EditorForm
     [Parameter] public TradeScale TradeScale { get; set; }
     [Parameter] public InvoiceType InvoiceType { get; set; }
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
+    [Inject] private HelpContext HelpContext { get; set; } = default!;
 
     private bool IsEditMode => Id.HasValue;
 
@@ -135,6 +137,7 @@ public partial class EditorForm
         await LoadGramPriceAsync();
         await LoadIncomingProductAsync();
         await LoadBarcodeSettingsAsync();
+        SetHelpContext(_model.InvoiceType);
 
         _isLoadingInvoice = false;
         await base.OnParametersSetAsync();
@@ -1190,7 +1193,18 @@ public partial class EditorForm
         _model.InvoiceType = invoiceType;
         await LoadInvoiceNumberAsync();
         await LoadGramPriceAsync();
+        SetHelpContext(invoiceType);
         StateHasChanged();
+    }
+
+    private void SetHelpContext(InvoiceType invoiceType)
+    {
+        HelpContext.Slug = invoiceType switch
+        {
+            InvoiceType.Sell => "sell-invoice-video",
+            InvoiceType.Purchase => "purchase-invoice-video",
+            _ => null
+        };
     }
 
     private async Task OnTradeScaleChanged(TradeScale tradeScale)
@@ -1404,4 +1418,10 @@ public partial class EditorForm
     }
 
     #endregion
+
+    public override ValueTask DisposeAsync()
+    {
+        HelpContext.Slug = null;
+        return base.DisposeAsync();
+    }
 }
