@@ -17,9 +17,11 @@ public class StoneTypesBySymbolSpecification(string symbol) : SpecificationBase<
 
 public class StoneTypesByKindSpecification(StoneKind kind) : SpecificationBase<StoneType>(x => x.Kind == kind);
 
-public class StoneTypesDefaultSpecification : SpecificationBase<StoneType>
+public class StoneTypesDefaultSpecification : SpecificationBase<StoneType>;
+
+public class StoneTypesByFilterSpecification : SpecificationBase<StoneType>
 {
-    public StoneTypesDefaultSpecification(RequestFilter filter, StoneTypeRequestFilter requestFilter)
+    public StoneTypesByFilterSpecification(RequestFilter filter, StoneTypeRequestFilter requestFilter)
     {
         if (requestFilter.IsActive.HasValue)
         {
