@@ -14,10 +14,4 @@ public partial class BarcodeBuilder
         HelpContext.Slug = "barcode-builder";
         base.OnInitialized();
     }
-
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
 }

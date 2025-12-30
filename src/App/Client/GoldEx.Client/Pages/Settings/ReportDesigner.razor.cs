@@ -16,10 +16,4 @@ public partial class ReportDesigner
         HelpContext.Slug = "report-list";
         base.OnInitialized();
     }
-
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
 }

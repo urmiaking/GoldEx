@@ -44,12 +44,6 @@ public partial class FinancialAccounts
         base.OnInitialized();
     }
 
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
-
     private async Task RefreshDataAsync()
     {
         await _table.ReloadServerData();
