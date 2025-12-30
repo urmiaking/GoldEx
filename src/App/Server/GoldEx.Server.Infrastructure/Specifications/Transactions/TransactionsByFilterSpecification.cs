@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.DTOs.Transactions;
 
@@ -10,7 +11,7 @@ namespace GoldEx.Server.Infrastructure.Specifications.Transactions;
 
 public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
 {
-    public TransactionsByFilterSpecification(TransactionFilter transactionFilter, RequestFilter filter)
+    public TransactionsByFilterSpecification(TransactionFilter transactionFilter, RequestFilter? filter)
     {
         // Includes
         AddInclude(x => x.PriceUnit!);
@@ -45,20 +46,32 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
             var endOfDay = transactionFilter.End.Value.Date.AddDays(1).AddTicks(-1);
             AddCriteria(x => x.PostingDate <= endOfDay);
         }
-
-        // Apply sorting
-        if (!string.IsNullOrEmpty(filter.SortLabel) && filter.SortDirection != null && filter.SortDirection != SortDirection.None)
+        if (transactionFilter.PriceUnitId.HasValue)
         {
-            ApplySorting(filter.SortLabel, filter.SortDirection.Value);
-        }
-        else
-        {
-            ApplySorting(nameof(Transaction.PostingDate), SortDirection.Ascending);
+            AddCriteria(x => x.PriceUnitId == new PriceUnitId(transactionFilter.PriceUnitId.Value));
         }
 
-        // --- Paging ---
-        var skip = filter.Skip ?? 0;
-        var take = filter.Take ?? 15;
-        ApplyPaging(skip, take);
+        if (filter != null)
+        {
+            if (!string.IsNullOrEmpty(filter.Search))
+            {
+                AddCriteria(x => x.Description.Contains(filter.Search));
+            }
+
+            // Apply sorting
+            if (!string.IsNullOrEmpty(filter.SortLabel) && filter.SortDirection != null && filter.SortDirection != SortDirection.None)
+            {
+                ApplySorting(filter.SortLabel, filter.SortDirection.Value);
+            }
+            else
+            {
+                ApplySorting(nameof(Transaction.PostingDate), SortDirection.Ascending);
+            }
+
+            // --- Paging ---
+            var skip = filter.Skip ?? 0;
+            var take = filter.Take ?? 15;
+            ApplyPaging(skip, take);
+        }
     }
 }

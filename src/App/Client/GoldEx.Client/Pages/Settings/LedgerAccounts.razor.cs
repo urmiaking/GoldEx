@@ -21,12 +21,6 @@ public partial class LedgerAccounts
         base.OnInitialized();
     }
 
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
-
     protected override async Task OnParametersSetAsync()
     {
         await LoadLedgerAccountsAsync();

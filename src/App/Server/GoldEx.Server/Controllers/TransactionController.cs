@@ -41,4 +41,11 @@ public class TransactionController(ITransactionService service) : ApiControllerB
         var items = await service.GetAccountBalanceAsync(cancellationToken);
         return Ok(items);
     }
+
+    [HttpGet(ApiRoutes.Transactions.GetAvailablePriceUnits)]
+    public async Task<IActionResult> GetAvailablePriceUnitsAsync([FromQuery] TransactionFilter transactionFilter, CancellationToken cancellationToken = default)
+    {
+        var items = await service.GetAvailablePriceUnitsAsync(transactionFilter, cancellationToken);
+        return Ok(items);
+    }
 }
