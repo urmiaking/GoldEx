@@ -3,11 +3,55 @@
 
 <MudTable T="GetTransactionResponse" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" GroupBy="@_groupDefinition" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadTransactionsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="0">
-    <ToolBarContent>  
-        @if (!string.IsNullOrEmpty(TableTitle))  
-        {  
-            <MudText Typo="Typo.body1">@TableTitle</MudText>  
-        }  
+    <ToolBarContent>
+        @if (!string.IsNullOrEmpty(TableTitle))
+        {
+            <MudText Typo="Typo.body1">@TableTitle</MudText>
+        }
+        else
+        {
+            <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
+                          Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
+                <MudDateRangePicker DateRange="@_filterDateRange"
+                                    DateRangeChanged="OnDateRangeChanged"
+                                    Margin="Margin.Dense"
+                                    Variant="Variant.Outlined"
+                                    Class="ml-3"
+                                    MaxMonthColumns="1"
+                                    DisplayMonths="1"
+                                    Rounded="true"
+                                    ShowToolbar="false"
+                                    Style="max-width: 320px;"
+                                    PlaceholderStart="از"
+                                    PlaceholderEnd="تا"
+                                    Elevation="24"
+                                    RelativeWidth="DropdownWidth.Adaptive"
+                                    Label="تاریخ تراکنش"
+                                    Clearable="true" />
+                                    
+                @if (_priceUnits is not null && _priceUnits.Any())
+                {
+                    <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="ml-3">
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.AttachMoney">
+                            @(_priceUnit == null ? "همه ارزها" : _priceUnit.Title)
+                        </MudButton>
+                        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                            <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Menu"
+                                         OnClick="() => SetPriceUnit(null)">همه ارزها</MudMenuItem>
+                            @foreach (var priceUnit in _priceUnits)
+                            {
+                                <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MonetizationOn"
+                                             OnClick="() => SetPriceUnit(priceUnit)">@priceUnit.Title</MudMenuItem>
+                            }
+                        </MudMenu>
+                    </MudButtonGroup>
+                }
+                
+            </MudHidden>
+        }
     </ToolBarContent>
     <ColGroup>
         <col />

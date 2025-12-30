@@ -150,7 +150,7 @@ public partial class CustomersList
             { x => x.CustomerId, customerVm.Id },
             { x => x.ShowReversed, false },
             { x => x.Descending, true },
-            { x => x.ContainerClass, "responsive-table" }
+            { x => x.ContainerClass, "responsive-table-toolbar" }
         };
         var dialog = await DialogService.ShowAsync<TransactionList>($"تراکنش های {customerVm.FullName}",
             parameters,
