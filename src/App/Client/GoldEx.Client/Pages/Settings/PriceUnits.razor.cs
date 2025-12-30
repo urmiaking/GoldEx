@@ -22,12 +22,6 @@ public partial class PriceUnits
         base.OnInitialized();
     }
 
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
-
     protected override async Task OnInitializedAsync()
     {
         await LoadPriceUnitsAsync();

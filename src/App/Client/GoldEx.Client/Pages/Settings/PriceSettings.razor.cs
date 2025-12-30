@@ -21,12 +21,6 @@ public partial class PriceSettings
         base.OnInitialized();
     }
 
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
-
     protected override async Task OnInitializedAsync()
     {
         await LoadPriceSettingsAsync();

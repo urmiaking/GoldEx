@@ -24,12 +24,6 @@ public partial class BaseInfo
         await base.OnInitializedAsync();
     }
 
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
-
     private async Task LoadSettingsAsync()
     {
         await SendRequestAsync<ISettingService, GetSettingResponse?>(
