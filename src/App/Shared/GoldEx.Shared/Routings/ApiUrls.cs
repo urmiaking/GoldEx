@@ -379,6 +379,10 @@ public class ApiUrls
 
         public static string GetAccountBalance() =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetAccountBalance);
+
+        public static string GetAvailablePriceUnits(TransactionFilter transactionFilter) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetAvailablePriceUnits)
+                .AppendQueryString(transactionFilter);
     }
 
     public class Notifications

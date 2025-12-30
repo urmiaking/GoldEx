@@ -81,4 +81,17 @@ internal class TransactionService(IMapper mapper,
         var result = await repository.GetPayableReceivableAccountsSummaryAsync(cancellationToken: cancellationToken);
         return mapper.Map<List<GetAccountBalanceResponse>>(result);
     }
+
+    public async Task<List<GetPriceUnitTitleResponse>> GetAvailablePriceUnitsAsync(TransactionFilter transactionFilter, CancellationToken cancellationToken = default)
+    {
+        var priceUnits = await repository
+            .Get(new TransactionsByFilterSpecification(transactionFilter, null))
+            .AsNoTracking()
+            .Where(x => x.PriceUnit != null)
+            .Select(t => t.PriceUnit!)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetPriceUnitTitleResponse>>(priceUnits);
+    }
 }
