@@ -18,7 +18,6 @@ using GoldEx.Shared.Settings;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -275,7 +274,7 @@ internal static class ServiceCollectionExtensions
     {
         services.AddDevExpressControls();
 
-        DevExpress.Drawing.Settings.DrawingEngine = DrawingEngine.Skia;
+        Settings.DrawingEngine = DrawingEngine.Skia;
 
         DevExpress.Utils.DeserializationSettings.RegisterTrustedAssembly(typeof(GetInvoiceReportResponse).Assembly);
         DevExpress.Utils.DeserializationSettings.RegisterTrustedClass(typeof(GetInvoiceReportResponse));

@@ -22,7 +22,7 @@ public static class DependencyInjection
             .AddAppHealthCheck(configuration)
             .AddSerilogUiService(configuration)
             .AddDevExpress()
-            .AddHelpContext();
+            .AddHelpContext(); 
 
         services.AddHttpClient();
 
