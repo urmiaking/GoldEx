@@ -28,12 +28,6 @@ public partial class CategoriesList
         await base.OnInitializedAsync();
     }
 
-    public override ValueTask DisposeAsync()
-    {
-        HelpContext.Slug = null;
-        return base.DisposeAsync();
-    }
-
     private async Task LoadCategoriesAsync()
     {
         _processing = true;
