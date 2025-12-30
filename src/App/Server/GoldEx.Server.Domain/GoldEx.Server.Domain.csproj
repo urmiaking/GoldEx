@@ -21,6 +21,7 @@
     <Folder Include="FinancialAccountAggregate\Extensions\" />
     <Folder Include="BlogCategoryAggregate\" />
     <Folder Include="InventoryExitAggregate\" />
+    <Folder Include="StoneTypeAggregate\" />
     <Folder Include="PriceProviderMappingAggregate\" />
     <Folder Include="PaymentVoucherAggregate\" />
     <Folder Include="TransactionAggregate\" />
