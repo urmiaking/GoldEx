@@ -17,16 +17,17 @@ public class StoneType : EntityBase<StoneTypeId>
     private StoneType() { }
 #pragma warning restore CS8618
 
-    private StoneType(string title, string enTitle, string symbol)
+    private StoneType(string title, string enTitle, string symbol, StoneKind kind)
     {
         Id = new StoneTypeId(Guid.NewGuid());
         Title = title;
         EnTitle = enTitle;
         Symbol = symbol;
+        Kind = kind;
         IsActive = true;
     }
 
-    public static StoneType Create(string title, string enTitle, string symbol) => new(title, enTitle, symbol);
+    public static StoneType Create(string title, string enTitle, string symbol, StoneKind kind) => new(title, enTitle, symbol, kind);
 
     public void Update(string title, string enTitle, string symbol)
     {
