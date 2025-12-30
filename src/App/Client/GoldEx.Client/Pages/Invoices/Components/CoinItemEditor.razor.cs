@@ -10,6 +10,7 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using MudBlazor.Utilities;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -27,10 +28,24 @@ public partial class CoinItemEditor
     private readonly CoinItemValidator _coinItemValidator = new();
     private int? _maxAvailableAmount;
     private MudColorPicker? _colorPicker;
+    private readonly MudColor[] _colorPalette =
+    [
+        "#424242", "#2196f3", "#00c853", "#ff9800", "#f44336",
+        "#f6f9fb", "#9df1fa", "#bdffcf", "#fff0a3", "#ffd254",
+        "#e6e9eb", "#27dbf5", "#7ef7a0", "#ffe273", "#ffb31f",
+        "#c9cccf", "#13b8e8", "#14dc71", "#fdd22f", "#ff9102",
+        "#858791", "#0989c2", "#1bbd66", "#ebb323", "#fe6800",
+        "#585b62", "#17698e", "#17a258", "#d9980d", "#dc3f11",
+        "#353940", "#113b53", "#127942", "#bf7d11", "#aa0000",  
+        Colors.Purple.Lighten5, Colors.Purple.Lighten4, Colors.Purple.Lighten3,
+        Colors.Purple.Lighten2, Colors.Purple.Lighten1, Colors.Purple.Default,
+        Colors.Purple.Darken1, Colors.Purple.Darken2, Colors.Purple.Darken3,
+        Colors.Purple.Darken4, Colors.Purple.Accent1, Colors.Purple.Accent2,
+        Colors.Purple.Accent3, Colors.Purple.Accent4
+    ];
 
     protected override async Task OnParametersSetAsync()
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (Model.CoinInstance.Id.HasValue)
             await LoadMaxAmountAsync(Model.CoinInstance);
 
