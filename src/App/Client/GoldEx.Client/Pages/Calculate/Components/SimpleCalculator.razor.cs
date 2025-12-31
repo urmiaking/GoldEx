@@ -296,6 +296,7 @@ public partial class SimpleCalculator
         try
         {
             _model.WagePriceUnit = priceUnit;
+            _model.WageExchangeRate = null;
 
             if (_model.PriceUnit is null)
                 return;
