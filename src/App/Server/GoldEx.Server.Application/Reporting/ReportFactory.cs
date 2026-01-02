@@ -5,7 +5,6 @@ using DevExpress.XtraReports.Services;
 using DevExpress.XtraReports.UI;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
@@ -18,7 +17,7 @@ namespace GoldEx.Server.Application.Reporting;
 internal class ReportFactory(
     IWebHostEnvironment hostingEnvironment,
     IIconService iconService,
-    IReportingService reportingService,
+    IInvoicePrintService invoicePrintService,
     IHttpContextAccessor httpContextAccessor)
     : IReportProviderAsync, IReportProvider
 {
@@ -45,7 +44,7 @@ internal class ReportFactory(
             if (long.TryParse(queryParams["invoiceNumber"], out var invoiceNumber) &&
                 Enum.TryParse<InvoiceType>(queryParams["invoiceType"], out var invoiceType))
             {
-                var response = await reportingService.GetInvoiceReportAsync(invoiceNumber, invoiceType);
+                var response = await invoicePrintService.GetInvoiceReportAsync(invoiceNumber, invoiceType);
 
                 var reportUrl = GenerateInvoiceUrl(response.Invoice.Id);
 

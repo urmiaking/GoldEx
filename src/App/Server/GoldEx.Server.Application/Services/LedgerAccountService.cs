@@ -11,6 +11,7 @@ using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
+using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.LedgerAccounts;
 using GoldEx.Shared.Enums;
@@ -25,6 +26,7 @@ internal class LedgerAccountService(
     ILedgerAccountRepository repository,
     ICustomerRepository customerRepository,
     IPriceUnitRepository priceUnitRepository,
+    ITransactionRepository transactionRepository,
     ILedgerAccountRepository ledgerAccountRepository,
     IMapper mapper,
     LedgerAccountRequestDtoValidator validator,
@@ -42,6 +44,21 @@ internal class LedgerAccountService(
     {
         var spec = new LedgerAccountsByFinancialAccountTypeSpecification(financialAccountType);
         var list = await repository.Get(spec).AsNoTracking().ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetLedgerAccountResponse>>(list);
+    }
+
+    public async Task<List<GetLedgerAccountResponse>> GetActiveLedgerAccountsAsync(CancellationToken cancellationToken = default)
+    {
+        var list = await transactionRepository
+            .Get(new TransactionDefaultSpecification())
+            .Include(x => x.LedgerAccount)
+            .Where(x => x.LedgerAccount!.IsSystemAccount)
+            .Select(x => x.LedgerAccount!)
+            .Distinct()
+            .OrderBy(x => x.AccountType)
+            .ThenBy(x => x.Title)
+            .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetLedgerAccountResponse>>(list);
     }

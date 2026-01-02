@@ -1,0 +1,18 @@
+﻿@using Microsoft.JSInterop
+@inherits LayoutComponentBase
+
+<div class="print-container">
+    @Body
+</div>
+
+@code
+{
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JsRuntime.InvokeVoidAsync("removeLoadingIndicator");
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

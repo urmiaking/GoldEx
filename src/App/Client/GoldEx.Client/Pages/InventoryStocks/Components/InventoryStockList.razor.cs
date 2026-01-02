@@ -21,6 +21,7 @@ public partial class InventoryStockList
 {
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public string ContainerClass { get; set; } = default!;
+    [Parameter] public string? SearchQuery { get; set; }
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public bool Selectable { get; set; }
@@ -35,7 +36,6 @@ public partial class InventoryStockList
     private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<InventoryStockVm> _table = default!;
 
-    private string? _searchString;
     private bool _mobileFiltersOpen;
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
@@ -178,7 +178,7 @@ public partial class InventoryStockList
     {
         var result = new TableData<InventoryStockVm>();
 
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, SearchQuery, state.SortLabel,
             state.SortDirection switch
             {
                 SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
@@ -205,7 +205,35 @@ public partial class InventoryStockList
             cancelPrevious: false
         );
 
+        if (!string.IsNullOrEmpty(SearchQuery) && Guid.TryParse(SearchQuery, out _))
+        {
+            var item = result.Items?.FirstOrDefault();
+
+            if (item is not null)
+            {
+                SetFilter(item);
+            }
+        }
+
         return result;
+    }
+
+    private void SetFilter(InventoryStockVm item)
+    {
+        if (item.Coin is not null)
+        {
+            ItemType = ItemType.Coin;
+        }
+        else if (item.Currency is not null)
+        {
+            ItemType = ItemType.Currency;
+        }
+        else if (item.Product is not null)
+        {
+            ItemType = ItemType.Product;
+        }
+
+        ItemStatus = item.CurrentAmount <= 0 ? ItemStatus.Sold : ItemStatus.Available;
     }
 
     private async Task RefreshAsync()
@@ -222,7 +250,7 @@ public partial class InventoryStockList
 
     private async Task OnSearch(string text)
     {
-        _searchString = text;
+        SearchQuery = text;
 
         if (_table.CurrentPage != 0)
             _table.NavigateTo(0);
@@ -233,7 +261,7 @@ public partial class InventoryStockList
 
     private void PageChanged(int i)
     {
-        if (i <= 0) 
+        if (i <= 0)
             return;
 
         _table.NavigateTo(i - 1);

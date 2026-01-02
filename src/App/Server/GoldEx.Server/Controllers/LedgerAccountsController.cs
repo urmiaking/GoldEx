@@ -27,6 +27,13 @@ public class LedgerAccountsController(ILedgerAccountService service) : ApiContro
         return Ok(titles);
     }
 
+    [HttpGet(ApiRoutes.LedgerAccounts.GetActiveList)]
+    public async Task<IActionResult> GetActiveListAsync(CancellationToken cancellationToken)
+    {
+        var titles = await service.GetActiveLedgerAccountsAsync(cancellationToken);
+        return Ok(titles);
+    }
+
     [HttpGet(ApiRoutes.LedgerAccounts.Get)]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
     {

@@ -166,6 +166,7 @@ public static class ApiRoutes
     {
         public const string Base = "/api/ledger-accounts";
         public const string GetList = "";
+        public const string GetActiveList = "active-list";
         public const string Get = "{id}";
         public const string Create = "";
         public const string Update = "{id}";
@@ -288,5 +289,11 @@ public static class ApiRoutes
     {
         public const string Base = "/api/coin-instances";
         public const string Get = "{barcode}";
+    }
+
+    public class Reporting
+    {
+        public const string Base = "/api/reporting";
+        public const string GetLedgerAccountStatements = "ledger-account-statements";
     }
 }

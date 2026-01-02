@@ -1,0 +1,137 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>گزارش ها</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+    
+    <MudText Typo="Typo.h5" GutterBottom="true">حسابداری (دفاتر و ترازها)</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="گردش حساب"
+                           Description="ریز بدهکار/بستانکار حساب های دفتری"
+                           StartIcon="@Icons.Material.Filled.AccountBalanceWallet"
+                           Href="@ClientRoutes.Reporting.LedgerAccountDetails" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="تراز کلی حساب ها"
+                           Description="جمع بدهکار/بستانکار و مانده همه حساب‌ها"
+                           StartIcon="@Icons.Material.Filled.Balance"
+                           Href="@ClientRoutes.Reporting.LedgerAccountBalances" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">مشتریان</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="مانده مشتریان"
+                           Description="بدهکاری/بستانکاری مشتریان"
+                           StartIcon="@Icons.Material.Filled.Groups"
+                           Href="@ClientRoutes.Reporting.CustomerBalances" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="گردش حساب مشتری"
+                           Description="ریز تراکنش‌های مرتبط با مشتری"
+                           StartIcon="@Icons.Material.Filled.ReceiptLong"
+                           Href="@ClientRoutes.Reporting.CustomerTransactions" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="مانده های برتر"
+                           Description="بدهکار/بستانکارترین مشتریان"
+                           StartIcon="@Icons.Material.Filled.Leaderboard"
+                           Href="@ClientRoutes.Reporting.TopCustomersRemaining" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">فاکتورها</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="لیست فاکتورهای فروش"
+                           Description="خلاصه فروش‌ها با مبلغ، سود و مالیات"
+                           StartIcon="@Icons.Material.Filled.PointOfSale"
+                           Href="@ClientRoutes.Reporting.SellInvoices" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="لیست فاکتورهای خرید"
+                           Description="خلاصه خریدها با مبلغ و مانده"
+                           StartIcon="@Icons.Material.Filled.ShoppingCart"
+                           Href="@ClientRoutes.Reporting.PurchaseInvoices" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="خلاصه خرید/فروش"
+                           Description="خلاصه خرید و فروش در بازه زمانی"
+                           StartIcon="@Icons.Material.Filled.DateRange"
+                           Href="@ClientRoutes.Reporting.InvoiceSummary" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">وصول و پرداخت</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="وضعیت تسویه فاکتورها"
+                           Description="فاکتورهای تسویه‌شده و باز به‌همراه مانده"
+                           StartIcon="@Icons.Material.Filled.FactCheck"
+                           Href="@ClientRoutes.Reporting.InvoiceSettlements" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="معوقه فاکتورها"
+                           Description="دسته‌بندی مانده‌ها بر اساس روزهای سررسید"
+                           StartIcon="@Icons.Material.Filled.EventBusy"
+                           Href="@ClientRoutes.Reporting.InvoiceAgingAnalysis" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="ریز پرداخت‌های فاکتور"
+                           Description="لیست پرداخت‌ها/دریافت‌های هر فاکتور"
+                           StartIcon="@Icons.Material.Filled.Payments"
+                           Href="@ClientRoutes.Reporting.InvoicePayments" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="گزارش اسناد پرداخت"
+                           Description="لیست اسناد پرداخت به هماره مبلغ"
+                           StartIcon="@Icons.Material.Filled.RequestQuote"
+                           Href="@ClientRoutes.Reporting.PaymentVouchers" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">انبار و موجودی</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="کاردکس کالا"
+                           Description="گردش ورود/خروج کالا با سند مرجع"
+                           StartIcon="@Icons.Material.Filled.Inventory2"
+                           Href="@ClientRoutes.Reporting.InventoryKardex" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="موجودی کالا تا تاریخ"
+                           Description="موجودی پایان دوره (Snapshot)"
+                           StartIcon="@Icons.Material.Filled.Warehouse"
+                           Href="@ClientRoutes.Reporting.InventoryStockSnapshot" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="موجودی سکه"
+                           Description="موجودی و گردش سکه‌ها"
+                           StartIcon="@Icons.Material.Filled.MonetizationOn"
+                           Href="@ClientRoutes.Reporting.CoinInventory" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="موجودی ارز"
+                           Description="موجودی و گردش ارزها"
+                           StartIcon="@Icons.Material.Filled.CurrencyExchange"
+                           Href="@ClientRoutes.Reporting.CurrencyInventory" />
+        </MudItem>
+    </MudGrid>
+</MudContainer>

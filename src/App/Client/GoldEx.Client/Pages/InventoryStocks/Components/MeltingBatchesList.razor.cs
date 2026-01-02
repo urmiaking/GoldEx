@@ -17,11 +17,11 @@ public partial class MeltingBatchesList
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Parameter] public string? SearchQuery { get; set; }
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
-    private string _jsVersion = new Random().Next(1, 1000).ToString();
+    private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<MeltingBatchListVm> _table = default!;
-    private string? _searchString;
     private MeltingBatchStatus? _status;
     private DateRange _filterDateRange = new();
     
@@ -45,7 +45,7 @@ public partial class MeltingBatchesList
     {
         var result = new TableData<MeltingBatchListVm>();
 
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, SearchQuery, state.SortLabel,
             state.SortDirection switch
             {
                 SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
@@ -89,7 +89,7 @@ public partial class MeltingBatchesList
 
     private async Task OnSearch(string text)
     {
-        _searchString = text;
+        SearchQuery = text;
 
         if (_table.CurrentPage != 0)
             _table.NavigateTo(0);

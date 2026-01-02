@@ -1,0 +1,290 @@
+﻿/* Print-specific styles */
+@media print {
+    /* Reset browser defaults and minimize margins */
+    @page {
+        size: A4;
+        margin: 0.5cm; /* Minimal margin */
+    }
+
+    * {
+        direction: rtl;
+        text-align: right;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'IRANSans', sans-serif;
+        font-size: 11pt;
+        line-height: 1.4;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Report container - minimal padding */
+    .report-container {
+        padding: 8px;
+        margin: 0;
+        background: white;
+        box-shadow: none;
+    }
+
+    /* Institution header - only on first page */
+    .header {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        margin-bottom: 16px;
+        border: 2px solid #212121;
+        border-radius: 8px;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+    }
+
+    .header-logo {
+        flex-shrink: 0;
+        margin-left: 16px;
+    }
+
+    .logo-img {
+        width: 60px;
+        height: 60px;
+        display: block;
+        object-fit: contain;
+    }
+
+    .header-title h1 {
+        font-size: 16pt;
+        font-weight: 700;
+        color: #212121;
+        margin: 0;
+        text-align: center;
+    }
+
+    /* Report title - only on first page, NOT repeated */
+    .title {
+        font-size: 14pt;
+        font-weight: 700;
+        color: #212121;
+        text-align: center;
+        margin: 16px 0 20px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #212121;
+    }
+
+    /* Date filter meta */
+    .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding: 8px 12px;
+        background: #f5f5f5;
+        border: 1px solid #212121;
+        border-radius: 4px;
+        font-weight: 500;
+        flex-wrap: nowrap;
+    }
+
+        .meta span {
+            color: #212121;
+            white-space: nowrap;
+            font-size: 10pt;
+        }
+
+    /* Table styling with proper page breaks */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-size: 10pt;
+    }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #212121;
+            color: #212121;
+        }
+
+        .table td {
+            padding: 6px 8px;
+            border: 1px solid #212121;
+            vertical-align: middle;
+        }
+
+        /* Critical page break handling */
+        .table thead {
+            display: table-header-group;
+        }
+
+        .table tbody tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+            .table tbody tr:first-child {
+                page-break-after: auto;
+            }
+
+    /* Transaction amount styling */
+    .transaction-amount {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+    }
+
+    .transaction-icon {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .debit-icon {
+        background-color: #f44336;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 14l5-5 5 5z'/%3E%3C/svg%3E") no-repeat center;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 14l5-5 5 5z'/%3E%3C/svg%3E") no-repeat center;
+    }
+
+    .credit-icon {
+        background-color: #4caf50;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat center;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat center;
+    }
+
+    /* Summary section with proper page breaks */
+    .summary {
+        margin-top: 20px;
+        page-break-inside: avoid;
+    }
+
+    .summary-title {
+        font-size: 12pt;
+        font-weight: 700;
+        color: #212121;
+        text-align: center;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #212121;
+    }
+
+    .summary-section {
+        margin-bottom: 16px;
+        padding: 12px;
+        border: 1px solid #212121;
+        border-radius: 6px;
+        page-break-inside: avoid;
+    }
+
+    .summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .summary-section-title {
+        font-size: 11pt;
+        font-weight: 600;
+        color: #212121;
+        margin: 0;
+    }
+
+    .summary-info {
+        font-size: 9pt;
+        color: #666;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .summary-item {
+        padding: 8px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        text-align: center;
+        page-break-inside: avoid;
+    }
+
+        .summary-item.debit {
+            background: #ffebee;
+            border-color: #f8bbd9;
+        }
+
+        .summary-item.credit {
+            background: #f1f8e9;
+            border-color: #c8e6c9;
+        }
+
+        .summary-item.net {
+            background: #e3f2fd;
+            border-color: #bbdefb;
+        }
+
+    .summary-label {
+        font-size: 9pt;
+        color: #666;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .summary-value {
+        font-size: 10pt;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+        .summary-value.debit-value {
+            color: #f44336;
+        }
+
+        .summary-value.credit-value {
+            color: #4caf50;
+        }
+
+        .summary-value.positive {
+            color: #f44336;
+        }
+
+        .summary-value.negative {
+            color: #4caf50;
+        }
+
+    /* Ensure images display properly */
+    img {
+        display: block !important;
+        visibility: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        forced-color-adjust: exact !important;
+    }
+
+    /* Prevent content from being cut off */
+    .header, .title, .meta, .summary {
+        page-break-inside: avoid;
+    }
+
+    /* Handle summary sections that might break */
+    .summary-section {
+        page-break-before: auto;
+        page-break-after: auto;
+    }
+
+    /* Ensure proper spacing after page breaks */
+    .table, .summary {
+        margin-top: 16px;
+    }
+}

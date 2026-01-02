@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.Routings;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.InventoryStocks;
@@ -11,4 +12,6 @@ public partial class List
         new("انبار", href: ClientRoutes.InventoryStocks.Index, icon: Icons.Material.Filled.Warehouse),
         new("موجودی", href: ClientRoutes.InventoryStocks.List, icon: Icons.Material.Filled.Task)
     ];
+
+    [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchQuery { get; set; }
 }
