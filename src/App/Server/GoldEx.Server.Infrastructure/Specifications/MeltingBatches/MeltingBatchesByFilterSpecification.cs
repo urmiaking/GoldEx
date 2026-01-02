@@ -23,6 +23,10 @@ public class MeltingBatchesByFilterSpecification : SpecificationBase<MeltingBatc
             {
                 AddCriteria(x => x.BatchNumber == batchNumber);
             }
+            else if (Guid.TryParse(requestFilter.Search, out var id))
+            {
+                AddCriteria(x => x.Id == new MeltingBatchId(id));
+            }
         }
 
         if (filter.Status.HasValue)

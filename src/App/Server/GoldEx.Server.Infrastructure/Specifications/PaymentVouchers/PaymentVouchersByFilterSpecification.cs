@@ -54,6 +54,10 @@ public class PaymentVouchersByFilterSpecification : SpecificationBase<PaymentVou
                 AddCriteria(x =>
                     x.VoucherNumber == number);
             }
+            else if (Guid.TryParse(filter.Search, out var id))
+            {
+                AddCriteria(x => x.Id == new PaymentVoucherId(id));
+            }
             else
             {
                 AddCriteria(x =>

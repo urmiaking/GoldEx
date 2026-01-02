@@ -12,6 +12,7 @@ public class TransactionsByLedgerAccountIdSpecification : SpecificationBase<Tran
 
         if (skipReversed)
         {
+            // TODO: need review
             AddCriteria(x => x.ReverseTransactionId == null);
         }
 

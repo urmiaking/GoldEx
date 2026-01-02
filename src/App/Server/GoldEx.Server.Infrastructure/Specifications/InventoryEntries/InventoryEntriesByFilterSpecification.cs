@@ -17,6 +17,14 @@ public class InventoryEntriesByFilterSpecification : SpecificationBase<Inventory
 
         AddInclude(x => x.InventoryStocks!);
 
+        if (!string.IsNullOrEmpty(requestFilter.Search))
+        {
+            if (Guid.TryParse(requestFilter.Search, out var id))
+            {
+                AddCriteria(x => x.Id == new InventoryEntryId(id));
+            }
+        }
+
         // Apply sorting
         if (!string.IsNullOrEmpty(requestFilter.SortLabel) && requestFilter.SortDirection != null && requestFilter.SortDirection != SortDirection.None)
         {

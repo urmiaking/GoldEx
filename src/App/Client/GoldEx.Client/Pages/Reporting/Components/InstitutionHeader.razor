@@ -1,0 +1,31 @@
+﻿@using GoldEx.Shared.DTOs.Settings
+@using GoldEx.Shared.Services.Abstractions
+
+@inherits GoldExComponentBase
+
+<div class="header">
+    <div class="header-logo">
+        <img src="@(ApiUrls.Icons.Get(IconType.App, Guid.Empty))" alt="لوگو" class="logo-img" />
+    </div>
+    <div class="header-title">
+        <h1>@_settings?.InstitutionName</h1>
+    </div>
+</div>
+
+@code {
+    private GetSettingResponse? _settings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettingsAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        await SendRequestAsync<ISettingService, GetSettingResponse?>(
+            action: (s, ct) => s.GetAsync(ct),
+            afterSend: response => _settings = response,
+            createScope: true);
+    }
+}

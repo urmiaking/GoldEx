@@ -1,0 +1,23 @@
+﻿@inherits ComponentBase  
+  
+<CascadingValue Value="@this">  
+    <div class="report-container">  
+        @if (ShowInstitutionHeader)  
+        {  
+            <InstitutionHeader />  
+        }  
+          
+        @if (!string.IsNullOrEmpty(Title))  
+        {  
+            <h2 class="title">@Title</h2>  
+        }  
+          
+        @ChildContent  
+    </div>  
+</CascadingValue>  
+  
+@code {  
+    [Parameter] public string Title { get; set; } = string.Empty;  
+    [Parameter] public bool ShowInstitutionHeader { get; set; } = true;  
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }  
+}

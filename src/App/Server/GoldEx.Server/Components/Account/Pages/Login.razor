@@ -123,7 +123,7 @@
         {
             // reset failed attempts
             HttpContext.Session.SetInt32("FailedLoginCount", 0);
-            Logger.LogInformation("User logged in.");
+            Logger.LogInformation($"User '{Input.Email}' logged in at {DateTime.Now}");
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else

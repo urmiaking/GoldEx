@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.DTOs.Transactions;
@@ -49,6 +50,11 @@ public class TransactionsByFilterSpecification : SpecificationBase<Transaction>
         if (transactionFilter.PriceUnitId.HasValue)
         {
             AddCriteria(x => x.PriceUnitId == new PriceUnitId(transactionFilter.PriceUnitId.Value));
+        }
+
+        if (transactionFilter.LedgerAccountId.HasValue)
+        {
+            AddCriteria(x => x.LedgerAccountId == new LedgerAccountId(transactionFilter.LedgerAccountId.Value));
         }
 
         if (filter != null)

@@ -1,0 +1,55 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Print.LedgerAccountDetails)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"   
+                 FromDate="@FromDate"   
+                 ToDate="@ToDate"  
+                 Data="@_items"  
+                 ReportTitle="@($"گزارش گردش حساب {_ledgerAccount?.Title}")"
+                 Summary="@_summary">  
+      
+    <table class="table">  
+        <thead>  
+        <tr>  
+            <th>تاریخ</th>  
+            <th>شرح</th>  
+            <th>نوع</th>  
+            <th>مبلغ</th>  
+            <th>نرخ تبدیل</th>  
+            <th>مبلغ پایه</th>  
+        </tr>  
+        </thead>  
+        @if (_items != null)  
+        {  
+            <tbody>  
+            @foreach (var item in _items) 
+            {  
+            <tr>  
+                <td>@item.PostingDate.ToString("yyyy/MM/dd")</td>  
+                <td>@item.Description</td>  
+                <td>@item.TransactionType.GetDisplayName()</td>  
+                <td class="text-end">    
+                    <div class="transaction-amount @(GetTransactionClass(item))">    
+                        <span class="icon transaction-icon @(GetTransactionIconClass(item))"></span>    
+                        <span>@item.Amount.ToCurrencyFormat(item.PriceUnitTitle)</span>    
+                    </div>    
+                </td>    
+                <td class="text-end">@(item.ExchangeRate?.ToCurrencyFormat() ?? "-")</td>  
+                <td class="text-end">@item.BaseCurrencyAmount.ToString("N0")</td>  
+            </tr>  
+            }  
+            </tbody>  
+        } 
+    </table>  
+</ReportPrintBase>  
+
+<script src="/js/report-print.js?v=6"></script>

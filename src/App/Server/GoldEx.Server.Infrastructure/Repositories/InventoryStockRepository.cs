@@ -135,6 +135,60 @@ internal class InventoryStockRepository(
             query = query.Where(x => x.InventoryEntryId == entryId);
         }
 
+        InventoryStock? resolvedStock = null;
+
+        if (!string.IsNullOrEmpty(filter.Search) &&
+            Guid.TryParse(filter.Search, out var stockGuid))
+        {
+            resolvedStock = await dbContext.Set<InventoryStock>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == new InventoryStockId(stockGuid), cancellationToken);
+
+            if (resolvedStock == null)
+                return ([], 0);
+        }
+
+        if (resolvedStock != null)
+        {
+            // wipe out conflicting filters
+            inventoryFilter = inventoryFilter with
+            {
+                ItemType = null,
+                ActionType = null,
+                CategoryId = null,
+                InventoryEntryId = null
+            };
+
+            if (resolvedStock.ProductId != null)
+                query = query.Where(x => x.ProductId == resolvedStock.ProductId);
+
+            else if (resolvedStock.CoinInstanceId != null)
+                query = query.Where(x => x.CoinInstanceId == resolvedStock.CoinInstanceId);
+
+            else if (resolvedStock.CurrencyId != null)
+                query = query.Where(x => x.CurrencyId == resolvedStock.CurrencyId);
+        }
+
+        if (resolvedStock != null && inventoryFilter.ItemType == null)
+        {
+            inventoryFilter = inventoryFilter with
+            {
+                ItemType =
+                resolvedStock.ProductId != null ? ItemType.Product :
+                resolvedStock.CoinInstanceId != null ? ItemType.Coin :
+                ItemType.Currency
+            };
+        }
+
+        if (resolvedStock != null && !string.IsNullOrEmpty(filter.Search))
+        {
+            filter = filter with
+            {
+                Search = null,
+                Skip = 0
+            };
+        }
+
         switch (inventoryFilter.ItemType)
         {
             case ItemType.Product:
@@ -196,7 +250,7 @@ internal class InventoryStockRepository(
 
                     if (inventoryFilter.ActionType == WarehouseActionType.In)
                         groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
-                    else
+                    else if (inventoryFilter.ActionType == WarehouseActionType.Out)
                         groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0);
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
@@ -399,7 +453,7 @@ internal class InventoryStockRepository(
 
                     if (inventoryFilter.ActionType == WarehouseActionType.In)
                         groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
-                    else
+                    else if(inventoryFilter.ActionType == WarehouseActionType.Out)
                         groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0);
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
@@ -507,7 +561,7 @@ internal class InventoryStockRepository(
 
                     if (inventoryFilter.ActionType == WarehouseActionType.In)
                         groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
-                    else
+                    else if (inventoryFilter.ActionType == WarehouseActionType.Out)
                         groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0);
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
