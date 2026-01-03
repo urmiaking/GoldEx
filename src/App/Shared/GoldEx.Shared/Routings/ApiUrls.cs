@@ -305,6 +305,9 @@ public class ApiUrls
 
         public static string GetActiveList() =>
             BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetActiveList);
+
+        public static string GetParentList() =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetParentList);
     }
 
     public class Coins
@@ -538,6 +541,10 @@ public class ApiUrls
     {
         public static string GetLedgerAccountStatements(LedgerAccountStatementRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetLedgerAccountStatements)
+                .AppendQueryString(request);
+
+        public static string GetLedgerAccountTrialBalance(LedgerAccountTrialBalanceRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetLedgerAccountTrialBalance)
                 .AppendQueryString(request);
     }
 }

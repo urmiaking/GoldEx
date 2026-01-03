@@ -1,0 +1,76 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Print.LedgerAccountTrialBalances)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"
+                 FromDate="@FromDate"
+                 ToDate="@ToDate"
+                 Data="@_items"
+                 ReportTitle="@($"گزارش تراز کلی حساب ها{SelectedParentLedger}")"
+                 Summary="@_summary">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>حساب</th>
+                <th>بدهکار @GetBasePriceTitle()</th>
+                <th>بستانکار @GetBasePriceTitle()</th>
+                <th>خالص @GetBasePriceTitle()</th>
+            </tr>
+        </thead>
+        @if (_items != null)
+        {
+            <tbody>
+                @foreach (var item in _items)
+                {
+                    <tr class="hierarchy-row">
+                        <td style="padding-right: 2px;">@item.LedgerAccountTitle</td>
+                        <td class="text-end">@item.DebitAmountBase.ToString("N0")</td>
+                        <td class="text-end">@item.CreditAmountBase.ToString("N0")</td>
+                        <td class="text-end">@GetNetAmount(item)</td>
+                    </tr>
+
+                    @foreach (var subAccount in item.SubLedgerAccounts)
+                    {
+                        <tr class="hierarchy-row" style="margin-right: 24px;">
+                            <td style="padding-right: 24px;">@subAccount.LedgerAccountTitle</td>
+                            <td class="text-end">@subAccount.DebitAmountBase.ToString("N0")</td>
+                            <td class="text-end">@subAccount.CreditAmountBase.ToString("N0")</td>
+                            <td class="text-end">@GetNetAmount(subAccount)</td>
+                        </tr>
+
+                        @foreach (var subSubAccount in subAccount.SubLedgerAccounts)
+                        {
+                            <tr class="hierarchy-row" style="margin-right: 48px;">
+                                <td style="padding-right: 48px;">@subSubAccount.LedgerAccountTitle</td>
+                                <td class="text-end">@subSubAccount.DebitAmountBase.ToString("N0")</td>
+                                <td class="text-end">@subSubAccount.CreditAmountBase.ToString("N0")</td>
+                                <td class="text-end">@GetNetAmount(subSubAccount)</td>
+                            </tr>
+
+                            @foreach (var subSubSubAccount in subSubAccount.SubLedgerAccounts)
+                            {
+                                <tr class="hierarchy-row" style="margin-right: 96px;">
+                                    <td style="padding-right: 96px;">@subSubSubAccount.LedgerAccountTitle</td>
+                                    <td class="text-end">@subSubSubAccount.DebitAmountBase.ToString("N0")</td>
+                                    <td class="text-end">@subSubSubAccount.CreditAmountBase.ToString("N0")</td>
+                                    <td class="text-end">@GetNetAmount(subSubSubAccount)</td>
+                                </tr>
+                            }
+                        }
+                    }
+                }
+            </tbody>
+        }
+    </table>
+</ReportPrintBase>
+
+<script src="/js/report-print.js?v=6"></script>
+

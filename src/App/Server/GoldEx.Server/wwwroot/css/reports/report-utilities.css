@@ -76,3 +76,6 @@
     color: #616161;
 }
 
+.hierarchy-row {
+    page-break-inside: avoid;
+}  

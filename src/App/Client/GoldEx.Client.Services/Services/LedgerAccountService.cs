@@ -48,6 +48,18 @@ internal class LedgerAccountService(HttpClient client, JsonSerializerOptions jso
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
+    public async Task<List<GetLedgerAccountResponse>> GetParentLedgerAccountsAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.LedgerAccounts.GetParentList(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetLedgerAccountResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task<GetLedgerAccountResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.LedgerAccounts.Get(id), cancellationToken);

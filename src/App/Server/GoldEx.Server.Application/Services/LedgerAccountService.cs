@@ -63,6 +63,18 @@ internal class LedgerAccountService(
         return mapper.Map<List<GetLedgerAccountResponse>>(list);
     }
 
+    public async Task<List<GetLedgerAccountResponse>> GetParentLedgerAccountsAsync(CancellationToken cancellationToken = default)
+    {
+        var list = await repository
+            .Get(new LedgerAccountsParentSpecification())
+            .AsNoTracking()
+            .OrderBy(x => x.ParentAccountId)
+            .ThenBy(x => x.Title)
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetLedgerAccountResponse>>(list);
+    }
+
     public async Task<GetLedgerAccountResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await repository

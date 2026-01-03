@@ -642,6 +642,11 @@ internal class AccountingTransactionService(
                         ? basePosting.AddTicks(1000 + payLine++)
                         : ComposePaymentPostingDate(payment.PaymentDate, payment.CreatedAt, postingTickOffset, payLine++);
 
+                var exchangeRate = ResolveTransactionExchangeRate(
+                    invoice,
+                    payment,
+                    basePriceUnit.Id);
+
                 // 1) پرداخت‌های مبتنی بر حساب مالی (نقدی / کارت / ... )
                 if (payment.SourceFinancialAccountId.HasValue)
                 {
@@ -675,7 +680,7 @@ internal class AccountingTransactionService(
                         // Credit: حساب دریافتنی / پرداختنی طرف حساب
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Debit,
                             sourceLedgerAccount.Id,
                             payment.PriceUnitId,
@@ -685,7 +690,7 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Credit,
                             counterpartyLedger.Id,
                             payment.PriceUnitId,
@@ -700,7 +705,7 @@ internal class AccountingTransactionService(
                         // Credit: حساب مالی
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Debit,
                             counterpartyLedger.Id,
                             payment.PriceUnitId,
@@ -710,7 +715,7 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Credit,
                             sourceLedgerAccount.Id,
                             payment.PriceUnitId,
@@ -750,7 +755,7 @@ internal class AccountingTransactionService(
                         // Credit: حساب دریافتنی / پرداختنی طرف حساب
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Debit,
                             goldLedger.Id,
                             payment.PriceUnitId,
@@ -760,7 +765,7 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Credit,
                             counterpartyLedger.Id,
                             payment.PriceUnitId,
@@ -775,7 +780,7 @@ internal class AccountingTransactionService(
                         // Credit: موجودی طلا
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Debit,
                             counterpartyLedger.Id,
                             payment.PriceUnitId,
@@ -785,7 +790,7 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                            payment.FinalAmount, exchangeRate, paymentGroupId,
                             TransactionType.Credit,
                             goldLedger.Id,
                             payment.PriceUnitId,
@@ -823,7 +828,7 @@ internal class AccountingTransactionService(
                             // دریافت به نفع ما: بدهکار کردن مشتری اصلی، بستانکار کردن حواله‌کرد
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Debit,
                                 customerReceivableAccount.Id,
                                 payment.PriceUnitId,
@@ -833,7 +838,7 @@ internal class AccountingTransactionService(
 
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 payment.PriceUnitId,
@@ -847,7 +852,7 @@ internal class AccountingTransactionService(
                             // تفسیر: بدهکار کردن حواله‌کرد، بستانکار کردن مشتری اصلی
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Debit,
                                 endorserLedger.Id,
                                 payment.PriceUnitId,
@@ -857,7 +862,7 @@ internal class AccountingTransactionService(
 
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Credit,
                                 customerReceivableAccount.Id,
                                 payment.PriceUnitId,
@@ -885,7 +890,7 @@ internal class AccountingTransactionService(
                             // Credit: حساب پرداختنی تأمین‌کننده
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 payment.PriceUnitId,
@@ -895,7 +900,7 @@ internal class AccountingTransactionService(
 
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Debit,
                                 customerPayableAccount.Id,
                                 payment.PriceUnitId,
@@ -910,7 +915,7 @@ internal class AccountingTransactionService(
                             // Credit: حساب حواله‌کرد
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Debit,
                                 customerPayableAccount.Id,
                                 payment.PriceUnitId,
@@ -920,7 +925,7 @@ internal class AccountingTransactionService(
 
                             transactions.Add(Transaction.CreateForInvoicePayment(
                                 desc,
-                                payment.FinalAmount, payment.ExchangeRate, paymentGroupId,
+                                payment.FinalAmount, exchangeRate, paymentGroupId,
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 payment.PriceUnitId,
@@ -952,7 +957,7 @@ internal class AccountingTransactionService(
                         // Credit: پیش‌پرداخت به تأمین‌کننده
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.Amount, payment.ExchangeRate, paymentGroupId,
+                            payment.Amount, exchangeRate, paymentGroupId,
                             TransactionType.Debit,
                             supplierLedger.Id,
                             payment.PriceUnitId,
@@ -962,7 +967,7 @@ internal class AccountingTransactionService(
 
                         transactions.Add(Transaction.CreateForInvoicePayment(
                             description,
-                            payment.Amount, payment.ExchangeRate, paymentGroupId,
+                            payment.Amount, exchangeRate, paymentGroupId,
                             TransactionType.Credit,
                             prepaymentLedger.Id,
                             payment.PriceUnitId,
@@ -1951,5 +1956,31 @@ internal class AccountingTransactionService(
 
         if (transactions.Any()) 
             await repository.CreateRangeAsync(transactions, cancellationToken);
+    }
+
+    private static decimal? ResolveTransactionExchangeRate(
+        Invoice invoice,
+        InvoicePayment payment,
+        PriceUnitId basePriceUnitId)
+    {
+        // 1) پرداخت به ارز پایه
+        if (payment.PriceUnitId == basePriceUnitId)
+            return null;
+
+        // 2) نرخ پرداخت مستقیماً به ارز پایه است
+        // (مثل گرم → تومان)
+        if (payment.ExchangeRate.HasValue && invoice.PriceUnitId == basePriceUnitId)
+            return payment.ExchangeRate;
+
+        // 3) پرداخت هم‌ارز فاکتور
+        if (payment.PriceUnitId == invoice.PriceUnitId)
+            return invoice.ExchangeRate;
+
+        // 4) تبدیل زنجیره‌ای
+        if (payment.ExchangeRate.HasValue && invoice.ExchangeRate.HasValue)
+            return payment.ExchangeRate.Value * invoice.ExchangeRate.Value;
+
+        // 5) واقعاً نرخ قابل استنتاج نداریم
+        return null;
     }
 }

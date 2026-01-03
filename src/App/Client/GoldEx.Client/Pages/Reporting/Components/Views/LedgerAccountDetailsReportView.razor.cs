@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Pages.Reporting.ViewModels;
-using GoldEx.Shared.DTOs.Reporting;
+﻿using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;

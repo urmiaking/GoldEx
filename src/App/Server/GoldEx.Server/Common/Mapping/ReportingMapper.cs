@@ -1,4 +1,5 @@
 ﻿using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Shared.DTOs.Reporting;
 using Mapster;
 
@@ -25,5 +26,7 @@ internal class ReportingMapper : IRegister
                 src => src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
             .Map(dest => dest.PriceUnitTitle,
                 src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty);
+
+        config.NewConfig<LedgerAccountTrialBalanceNodeModel, LedgerAccountTrialBalanceRpResponse>();
     }
 }
