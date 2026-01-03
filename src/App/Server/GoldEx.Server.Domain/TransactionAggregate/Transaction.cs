@@ -362,4 +362,10 @@ public class Transaction : EntityBase<TransactionId>
             PostingDate = postingDate
         };
     }
+
+    public void SetExchangeRate(decimal? exchangeRate)
+    {
+        ExchangeRate = exchangeRate;
+        BaseCurrencyAmount = Amount * (exchangeRate ?? 1);
+    }
 }

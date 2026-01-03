@@ -4,7 +4,7 @@ using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace GoldEx.Client.Pages.Reporting;
+namespace GoldEx.Client.Pages.Reporting.Pages.Reports;
 
 public partial class LedgerAccountDetails
 {

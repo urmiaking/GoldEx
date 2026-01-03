@@ -128,7 +128,7 @@ public static class ClientRoutes
         public const string Index = $"{ReportingPrefix}";
         public const string DesignReport = $"{ReportingPrefix}/designer/{{name}}";
         public const string LedgerAccountDetails = $"{ReportingPrefix}/ledger-account-details";
-        public const string LedgerAccountBalances = $"{ReportingPrefix}/ledger-account-balances";
+        public const string LedgerAccountTrialBalances = $"{ReportingPrefix}/ledger-account-trial-balances";
         public const string CustomerBalances = $"{ReportingPrefix}/customer-balances";
         public const string CustomerTransactions = $"{ReportingPrefix}/customer-transactions";
         public const string TopCustomersRemaining = $"{ReportingPrefix}/top-customers-remaining";
@@ -149,6 +149,7 @@ public static class ClientRoutes
             private const string PrintPrefix = "/reporting/print";
 
             public const string LedgerAccountDetails = $"{PrintPrefix}/ledger-account-details";
+            public const string LedgerAccountTrialBalances = $"{PrintPrefix}/ledger-account-trial-balances";
         }
     }
 

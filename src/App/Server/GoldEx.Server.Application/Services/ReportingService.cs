@@ -29,4 +29,11 @@ internal class ReportingService(ITransactionRepository transactionRepository, IM
 
         return mapper.Map<List<LedgerAccountStatementRpResponse>>(list);
     }
+
+    public async Task<List<LedgerAccountTrialBalanceRpResponse>> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await transactionRepository.GetLedgerAccountTrialBalanceAsync(request, cancellationToken);
+        return mapper.Map<List<LedgerAccountTrialBalanceRpResponse>>(list.Nodes);
+    }
 }

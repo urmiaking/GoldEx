@@ -20,4 +20,13 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         var result = await service.GetLedgerAccountStatementsAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet(ApiRoutes.Reporting.GetLedgerAccountTrialBalance)]
+    public async Task<IActionResult> GetLedgerAccountTrialBalanceAsync(
+        [FromQuery] LedgerAccountTrialBalanceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetLedgerAccountTrialBalanceAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }

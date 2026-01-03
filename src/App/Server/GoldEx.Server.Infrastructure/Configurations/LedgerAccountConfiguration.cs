@@ -27,7 +27,7 @@ internal class LedgerAccountConfiguration : IEntityTypeConfiguration<LedgerAccou
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.ParentAccount)
-            .WithMany()
+            .WithMany(x => x.ChildLedgerAccounts)
             .HasForeignKey(x => x.ParentAccountId)
             .OnDelete(DeleteBehavior.Restrict);
 

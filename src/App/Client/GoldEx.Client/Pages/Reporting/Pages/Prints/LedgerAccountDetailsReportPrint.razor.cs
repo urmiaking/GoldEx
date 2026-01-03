@@ -5,7 +5,6 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MudBlazor;
 using static GoldEx.Client.Pages.Reporting.ViewModels.LedgerAccountDetailsFilterVm;
 
@@ -19,14 +18,12 @@ public partial class LedgerAccountDetailsReportPrint
     [Parameter, SupplyParameterFromQuery]
     public Guid? PriceUnitId { get; set; }
 
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
-
     private LedgerAccountDetailsFilterVm _filter = default!;
     private List<LedgerAccountStatementRpResponse>? _items;
     private GetLedgerAccountResponse? _ledgerAccount;
     private ReportSummaryVm? _summary;
 
-    private readonly int _version = new Random().Next(1000);
+    private readonly int _version = new Random().Next(0, 1000);
 
     protected override void OnInitialized()
     {

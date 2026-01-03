@@ -1,13 +1,14 @@
-﻿@attribute [Route(ClientRoutes.Reporting.LedgerAccountDetails)]
-@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}")]
+﻿@attribute [Route(ClientRoutes.Reporting.LedgerAccountTrialBalances)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @using GoldEx.Client.Pages.Reporting.Components.Filters
 @using GoldEx.Client.Pages.Reporting.Components.Views
 @using GoldEx.Client.Pages.Reporting.Pages.Base
 
-@inherits LedgerAccountDetailsPageBase
+@inherits LedgerAccountTrailBalancePageBase
 
-<PageTitle>گردش حساب</PageTitle>
+<PageTitle>تراز حساب ها</PageTitle>
+
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudBreadcrumbs Class="pr-0" Items="Breadcrumbs">
         <SeparatorTemplate>
@@ -16,10 +17,10 @@
     </MudBreadcrumbs>
 
     <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
-        <LedgerAccountDetailsFilters Model="@Filters" />
+        <LedgerAccountTrialBalanceFilters Model="@Filters" />
     </ReportFiltersBase>
 
-    <LedgerAccountDetailsReportView Items="@Data" OnPrintReport="PrintReport" OnOpenReference="OpenReference" />
+    <LedgerAccountTrialBalanceReportView Items="@Data" OnPrintReport="PrintReport" />
 </MudContainer>
 
 <script src="/js/report-print.js?v=2"></script>
