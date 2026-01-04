@@ -1,9 +1,19 @@
 ﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
 @using GoldEx.Shared.DTOs.Reporting
 
-@if (Items is null)
+@if (Items is null || IsLoading)
 {
-    <ReportViewPlaceHolder />
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
 }
 else
 {

@@ -60,7 +60,11 @@ public class LedgerAccountTrailBalancePageBase
     {
         var request = model.ToRequest();
 
+        IsLoading = true;
+
         Data = await SendRequestAsync<IReportingService, List<LedgerAccountTrialBalanceRpResponse>>(
             (s, ct) => s.GetLedgerAccountTrialBalanceAsync(request, ct));
+
+        IsLoading = false;
     }
 }

@@ -16,8 +16,8 @@ public partial class LedgerAccountDetailsReportView
     /// Item2: شناسه مرجع
     /// </summary>
     [Parameter] public EventCallback<(string RefType, Guid? RefId)> OnOpenReference { get; set; }
-
     [Parameter] public EventCallback OnPrintReport { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
 
     private LedgerAccountDetailsReportSummary? _summary;
 
