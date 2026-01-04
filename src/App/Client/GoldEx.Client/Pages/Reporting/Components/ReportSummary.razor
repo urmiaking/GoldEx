@@ -1,0 +1,52 @@
+﻿@using GoldEx.Client.Pages.Reporting.ViewModels
+
+@if (Summary != null)  
+{  
+    <div class="summary">  
+        <h3 class="summary-title">@Title</h3>  
+          
+        @foreach (var section in Summary.Sections)  
+        {  
+            <div class="summary-section">  
+                <div class="summary-header">  
+                    <h4 class="summary-section-title">@(section.Title)</h4>  
+                    @if (!string.IsNullOrEmpty(section.Info))  
+                    {  
+                        <span class="summary-info">@(section.Info)</span>  
+                    }  
+                </div>  
+                  
+                <div class="summary-grid">  
+                    @foreach (var item in section.Items)  
+                    {  
+                        <div class="summary-item @item.Type">  
+                            <div class="summary-label">@item.Label</div>  
+                            <div class="summary-value @item.ValueType">  
+                                @if (item.ShowIcon)  
+                                {  
+                                    <span class="icon @item.IconType"></span>  
+                                }  
+                                @item.Value  
+                            </div>  
+                        </div>  
+                    }  
+                </div>  
+                  
+                @if (section.Footer != null)
+                {
+                    <div class="summary-footer">
+                        <div class="summary-footer-item">
+                            <span class="summary-footer-label">@(section.Footer.Label)</span>
+                            <span class="summary-footer-value">@(section.Footer.Value)</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}  
+  
+@code {  
+    [Parameter] public ReportSummaryVm? Summary { get; set; }  
+    [Parameter] public string Title { get; set; } = string.Empty;  
+}

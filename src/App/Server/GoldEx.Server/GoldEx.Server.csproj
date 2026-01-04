@@ -9,6 +9,10 @@
 		<DockerfileContext>..\..\..\..</DockerfileContext>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);DX1000</NoWarn>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\..\Client\GoldEx.Client\GoldEx.Client.csproj" />
 		<ProjectReference Include="..\GoldEx.Server.Application\GoldEx.Server.Application.csproj" />

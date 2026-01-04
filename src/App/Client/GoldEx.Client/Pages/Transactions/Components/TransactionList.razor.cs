@@ -28,7 +28,14 @@ public partial class TransactionList
     [Parameter] public bool ShowReversed { get; set; }
     [Parameter] public bool Descending { get; set; }
 
-    private TransactionFilter TransactionFilter => new(InvoiceId, CustomerId, _priceUnit?.Id, _filterDateRange.Start, _filterDateRange.End, ShowReversed, Descending);
+    private TransactionFilter TransactionFilter => new(InvoiceId,
+        CustomerId,
+        _priceUnit?.Id,
+        null,
+        _filterDateRange.Start,
+        _filterDateRange.End,
+        ShowReversed,
+        Descending);
 
     protected override async Task OnInitializedAsync()
     {

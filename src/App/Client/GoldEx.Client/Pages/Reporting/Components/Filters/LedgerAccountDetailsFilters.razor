@@ -1,0 +1,35 @@
+﻿@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="3">
+    <MudAutocomplete T="Guid?"  
+                     Label="@Model.GetDisplayName(() => Model.LedgerAccountId)"  
+                     Value="Model.LedgerAccountId"  
+                     ValueChanged="OnLedgerAccountChanged"  
+                     Dense="true"  
+                     For="@(() => Model.LedgerAccountId)"  
+                     Variant="Variant.Outlined"  
+                     Margin="Margin.Dense"  
+                     Required="true"
+                     MaxItems="100"
+                     SearchFunc="SearchLedgerAccounts"  
+                     ToStringFunc="GetLedgerAccountDisplayText"  
+                     CoerceText="true" />
+</MudItem>
+
+<MudItem xs="12" sm="6" md="3">
+    <MudSelect T="Guid?"
+               Label="@Model.GetDisplayName(() => Model.PriceUnitId)"
+               @bind-Value="Model.PriceUnitId"
+               Dense="true"
+               Disabled="@(!Model.LedgerAccountId.HasValue)"
+               For="@(() => Model.PriceUnitId)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        @foreach (var priceUnit in _priceUnits)
+        {
+            <MudSelectItem T="Guid?" Value="@((Guid?)priceUnit.Id)">
+                @priceUnit.Title
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>

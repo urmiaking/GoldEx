@@ -1,0 +1,68 @@
+﻿<!-- ReportPrintBase.razor -->  
+@using GoldEx.Client.Pages.Reporting.ViewModels
+@inherits GoldExComponentBase  
+  
+<ReportBase Title="@ReportTitle" ShowInstitutionHeader="true">  
+    @if (IsLoading)  
+    {  
+        <div class="loading-message">در حال آماده‌سازی گزارش...</div>  
+    }  
+    else if (Data != null)  
+    {  
+        @if (ShowDateFilter && (FromDate.HasValue || ToDate.HasValue))  
+        {  
+            <div class="meta">  
+                @if (FromDate.HasValue)  
+                {  
+                    <span>از تاریخ: @FromDate?.ToString("yyyy/MM/dd")</span>  
+                }  
+                @if (ToDate.HasValue)  
+                {  
+                    <span>تا تاریخ: @ToDate?.ToString("yyyy/MM/dd")</span>  
+                }  
+            </div>  
+        }  
+  
+        @ChildContent
+          
+        @if (ShowSummary && Summary != null)  
+        {  
+            <ReportSummary Summary="@Summary" Title="خلاصه گزارش" />  
+        }  
+    }  
+</ReportBase>  
+  
+@code {  
+    [Parameter] public bool IsLoading { get; set; }  
+
+    [Parameter] public bool ShowDateFilter { get; set; } = true; 
+
+    [Parameter] public bool ShowSummary { get; set; } = true; 
+
+    [Parameter, SupplyParameterFromQuery(Name = "Start")]
+    public DateTime? FromDate { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "End")]
+    public DateTime? ToDate { get; set; }
+
+    [Parameter] public object? Data { get; set; }  
+
+    [Parameter] public ReportSummaryVm? Summary { get; set; }  
+
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public string ReportTitle { get; set; } = "گزارش";
+      
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;  
+
+    private bool _printInvoked; 
+      
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!IsLoading && Data != null && !_printInvoked)
+        {
+            _printInvoked = true;
+            await Task.Delay(1000);
+            await JsRuntime.InvokeVoidAsync("printAndClose");
+        }
+    }
+}

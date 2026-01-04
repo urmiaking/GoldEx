@@ -17,6 +17,7 @@ public partial class PaymentVouchersList
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public Guid? CustomerId { get; set; }
+    [Parameter] public string? SearchQuery { get; set; }
 
     public string? VoucherTypeIcon => _voucherType switch
     {
@@ -34,7 +35,6 @@ public partial class PaymentVouchersList
         _ => throw new ArgumentOutOfRangeException()
     };
 
-    private string? _searchString;
     private DateRange _filterDateRange = new();
     private PaymentVoucherType? _voucherType;
 
@@ -53,7 +53,7 @@ public partial class PaymentVouchersList
 
         var paymentVoucherFilter = new PaymentVoucherFilter(_filterDateRange.Start, _filterDateRange.End, _voucherType);
 
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, SearchQuery, state.SortLabel,
             state.SortDirection switch
             {
                 SortDirection.None => Sdk.Common.Definitions.SortDirection.None,
@@ -82,7 +82,7 @@ public partial class PaymentVouchersList
 
     private async Task OnSearch(string text)
     {
-        _searchString = text;
+        SearchQuery = text;
 
         if (_table.CurrentPage != 0)
             _table.NavigateTo(0);

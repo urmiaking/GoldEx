@@ -16,13 +16,14 @@ public partial class InventoryEntryList
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Parameter] public string? SearchQuery { get; set; }
 
     private async Task<TableData<InventoryEntryListVm>> LoadInventoryEntryAsync(TableState state,
         CancellationToken cancellationToken)
     {
         var result = new TableData<InventoryEntryListVm>();
 
-        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, null, state.SortLabel,
+        var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, SearchQuery, state.SortLabel,
             state.SortDirection switch
             {
                 SortDirection.None => Sdk.Common.Definitions.SortDirection.None,

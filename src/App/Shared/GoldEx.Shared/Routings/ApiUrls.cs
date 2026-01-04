@@ -11,6 +11,7 @@ using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.MeltingBatches;
+using GoldEx.Shared.DTOs.Reporting;
 
 namespace GoldEx.Shared.Routings;
 
@@ -301,6 +302,12 @@ public class ApiUrls
         public static string GetTitles(FinancialAccountType? financialAccountType) =>
             BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetTitles)
                 .AppendQueryString(new { financialAccountType });
+
+        public static string GetActiveList() =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetActiveList);
+
+        public static string GetParentList() =>
+            BuildUrl(ApiRoutes.LedgerAccounts.Base, ApiRoutes.LedgerAccounts.GetParentList);
     }
 
     public class Coins
@@ -528,5 +535,16 @@ public class ApiUrls
         public static string Get(string barcode) =>
             BuildUrl(ApiRoutes.CoinInstances.Base, ApiRoutes.CoinInstances.Get)
                 .FormatRoute(new { barcode });
+    }
+
+    public class Reporting
+    {
+        public static string GetLedgerAccountStatements(LedgerAccountStatementRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetLedgerAccountStatements)
+                .AppendQueryString(request);
+
+        public static string GetLedgerAccountTrialBalance(LedgerAccountTrialBalanceRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetLedgerAccountTrialBalance)
+                .AppendQueryString(request);
     }
 }

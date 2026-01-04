@@ -125,7 +125,32 @@ public static class ClientRoutes
     public static class Reporting
     {
         private const string ReportingPrefix = "/reporting";
+        public const string Index = $"{ReportingPrefix}";
         public const string DesignReport = $"{ReportingPrefix}/designer/{{name}}";
+        public const string LedgerAccountDetails = $"{ReportingPrefix}/ledger-account-details";
+        public const string LedgerAccountTrialBalances = $"{ReportingPrefix}/ledger-account-trial-balances";
+        public const string CustomerBalances = $"{ReportingPrefix}/customer-balances";
+        public const string CustomerTransactions = $"{ReportingPrefix}/customer-transactions";
+        public const string TopCustomersRemaining = $"{ReportingPrefix}/top-customers-remaining";
+        public const string SellInvoices = $"{ReportingPrefix}/sell-invoices";
+        public const string PurchaseInvoices = $"{ReportingPrefix}/purchase-invoices";
+        public const string InvoiceSummary = $"{ReportingPrefix}/invoice-summary";
+        public const string InvoiceSettlements = $"{ReportingPrefix}/invoice-settlements";
+        public const string InvoiceAgingAnalysis = $"{ReportingPrefix}/invoice-aging-analysis";
+        public const string InvoicePayments = $"{ReportingPrefix}/invoice-payments";
+        public const string PaymentVouchers = $"{ReportingPrefix}/payment-vouchers";
+        public const string InventoryKardex = $"{ReportingPrefix}/inventory-kardex";
+        public const string InventoryStockSnapshot = $"{ReportingPrefix}/inventory-stock-snapshot";
+        public const string CoinInventory = $"{ReportingPrefix}/coin-inventory";
+        public const string CurrencyInventory = $"{ReportingPrefix}/currency-inventory";
+
+        public static class Print
+        {
+            private const string PrintPrefix = "/reporting/print";
+
+            public const string LedgerAccountDetails = $"{PrintPrefix}/ledger-account-details";
+            public const string LedgerAccountTrialBalances = $"{PrintPrefix}/ledger-account-trial-balances";
+        }
     }
 
     public static class PaymentVouchers

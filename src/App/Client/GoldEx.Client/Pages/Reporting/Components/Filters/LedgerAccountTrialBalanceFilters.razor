@@ -1,0 +1,48 @@
+﻿@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="3">
+    <MudSelect T="Guid?"
+               Label="@Model.GetDisplayName(() => Model.ParentLedgerId)"
+               @bind-Value="Model.ParentLedgerId"
+               Dense="true"
+               For="@(() => Model.ParentLedgerId)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="Guid?" Value="@((Guid?)null)">انتخاب کنید ...</MudSelectItem>
+        @foreach (var item in GetSortedLedgerAccounts())
+        {
+            var indentLevel = GetIndentLevel(item);
+            var icon = GetAccountTypeIcon(item.AccountType);
+            var iconColor = GetAccountTypeColor(item.AccountType);
+
+            <MudSelectItem T="Guid?" Value="@((Guid?)item.Id)"
+                           Class="@($"ledger-account-item indent-{indentLevel}")">
+                <MudIcon Icon="@icon" Color="@iconColor" Size="Size.Small" Class="me-2"/>
+                @item.Title
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<style>
+    .ledger-account-item.indent-1 {
+        margin-inline-start: 16px;
+    }
+
+    .ledger-account-item.indent-2 {
+        margin-inline-start: 32px;
+    }
+
+    .ledger-account-item.indent-3 {
+        margin-inline-start: 48px;
+    }
+
+    .mud-popover .mud-list {
+        overflow-x: hidden !important;
+    }
+
+    .ledger-account-item {
+        max-width: 100%;
+    }
+
+</style>
