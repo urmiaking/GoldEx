@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Seeders;
 
-[ScopedService]
+//[ScopedService]
 internal sealed class TransactionFixSeeder(
     ITransactionRepository repository,
     IPriceUnitRepository priceUnitRepository,
