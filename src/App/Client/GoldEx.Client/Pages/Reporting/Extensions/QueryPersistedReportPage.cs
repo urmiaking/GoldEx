@@ -8,6 +8,7 @@ public abstract class QueryPersistedReportPage<TFilter> : GoldExComponentBase
     where TFilter : ReportFilterVmBase, new()
 {
     protected TFilter Filters { get; } = new();
+    protected bool IsLoading { get; set; }
 
     protected abstract void ReadQueryToFilter();
     protected abstract object WriteFilterToQuery();

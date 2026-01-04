@@ -65,7 +65,11 @@ public abstract class LedgerAccountDetailsPageBase
     {
         var request = model.ToRequest();
 
+        IsLoading = true;
+
         Data = await SendRequestAsync<IReportingService, List<LedgerAccountStatementRpResponse>>(
-            (s, ct) => s.GetLedgerAccountStatementsAsync(request, ct));
+            action: (s, ct) => s.GetLedgerAccountStatementsAsync(request, ct));
+
+        IsLoading = false;
     }
 }

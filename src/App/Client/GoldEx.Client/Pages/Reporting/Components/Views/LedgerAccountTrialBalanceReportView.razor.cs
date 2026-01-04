@@ -10,15 +10,16 @@ public partial class LedgerAccountTrialBalanceReportView
 {
     [Parameter] public List<LedgerAccountTrialBalanceRpResponse>? Items { get; set; }
     [Parameter] public EventCallback OnPrintReport { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
 
     private LedgerAccountTrialBalanceReportSummary? _summary;
 
-    private List<LedgerAccountTrialBalanceRpResponse> FlattenedItems = new();
+    private List<LedgerAccountTrialBalanceRpResponse> _flattenedItems = [];
 
     protected override void OnParametersSet()
     {
         CalculateSummary();
-        FlattenedItems = FlattenHierarchy(Items);
+        _flattenedItems = FlattenHierarchy(Items);
         base.OnParametersSet();
     }
 
