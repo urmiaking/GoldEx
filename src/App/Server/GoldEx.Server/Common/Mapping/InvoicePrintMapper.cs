@@ -33,6 +33,11 @@ internal class InvoicePrintMapper : IRegister
                       (src.ExchangeRate.HasValue && src.BasePriceUnit != null
                           ? $" (معادل {src.ExchangeRate.Value.ToCurrencyReportFormat(null)} {src.BasePriceUnit.Title})"
                           : null)
+                    : src.UsedProducts.FirstOrDefault() != null
+                        ? $"{src.UsedProducts.First().GramPrice.ToCurrencyReportFormat(src.PriceUnit!.Title)}" +
+                          (src.ExchangeRate.HasValue && src.BasePriceUnit != null
+                              ? $" (معادل {src.ExchangeRate.Value.ToCurrencyReportFormat(null)} {src.BasePriceUnit.Title})"
+                              : null)
                     : null)
             .Map(dest => dest.GoldUnitType,
                 src => src.ProductItems.FirstOrDefault() != null
@@ -101,7 +106,7 @@ internal class InvoicePrintMapper : IRegister
                 src => $"{src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)}")
             .Map(dest => dest.TotalAmount,
                 src => $"{src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)}")
-            .Map(dest => dest.TotalWeight, 
+            .Map(dest => dest.TotalWeight,
                 src => $"{src.TotalWeight.ToWeightFormat(src.Product != null ? src.Product.GoldUnitType : GoldUnitType.Gram)}")
             .Map(dest => dest.GramPrice, src =>
                 $"{src.GramPrice.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title)}")
@@ -152,7 +157,7 @@ internal class InvoicePrintMapper : IRegister
             .Map(dest => dest.Fineness,
                 src => src.CoinInstance != null ? $"{src.CoinInstance.Fineness:G29}" : string.Empty)
             .Map(dest => dest.MintYear, src => GetCoinMintYear(src))
-            .Map(dest => dest.TotalPrice, src => 
+            .Map(dest => dest.TotalPrice, src =>
                 src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title))
             .Map(dest => dest.CoinTitle, src => GetCoinTitle(src));
 
@@ -179,7 +184,7 @@ internal class InvoicePrintMapper : IRegister
                 src.ItemFinalAmount.ToCurrencyReportFormat(src.Invoice.PriceUnit!.Title));
 
         config.NewConfig<InvoicePayment, GetInvoicePaymentReportResponse>()
-            .Map(dest => dest.FinalAmount, src => 
+            .Map(dest => dest.FinalAmount, src =>
                 src.PriceUnit != null ? src.FinalAmount.ToCurrencyReportFormat(src.PriceUnit.Title) : string.Empty)
             .Map(dest => dest.PaymentType, src => src.PaymentType)
             .Map(dest => dest.PaymentDate, src => src.PaymentDate)

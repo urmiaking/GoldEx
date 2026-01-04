@@ -20,7 +20,7 @@
         <LedgerAccountTrialBalanceFilters Model="@Filters" />
     </ReportFiltersBase>
 
-    <LedgerAccountTrialBalanceReportView Items="@Data" OnPrintReport="PrintReport" />
+    <LedgerAccountTrialBalanceReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
 </MudContainer>
 
 <script src="/js/report-print.js?v=2"></script>

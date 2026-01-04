@@ -19,7 +19,7 @@
         <LedgerAccountDetailsFilters Model="@Filters" />
     </ReportFiltersBase>
 
-    <LedgerAccountDetailsReportView Items="@Data" OnPrintReport="PrintReport" OnOpenReference="OpenReference" />
+    <LedgerAccountDetailsReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" OnOpenReference="OpenReference" />
 </MudContainer>
 
 <script src="/js/report-print.js?v=2"></script>
