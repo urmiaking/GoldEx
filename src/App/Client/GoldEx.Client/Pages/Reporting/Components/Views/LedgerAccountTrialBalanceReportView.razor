@@ -1,13 +1,23 @@
 ﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
 @using GoldEx.Shared.DTOs.Reporting
 
-@if (Items is null)
+@if (Items is null || IsLoading)
 {
-    <ReportViewPlaceHolder />
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
 }
 else
 {
-    <MudTable Items="@FlattenedItems"
+    <MudTable Items="@_flattenedItems"
               Dense="true"
               Hover="true"
               Bordered="true"
@@ -79,7 +89,7 @@ else
                         }  
                         else  
                         {  
-                            var parentAccount = FlattenedItems.FirstOrDefault(x => x.Id == Guid.Parse(context.Key.ToString()));
+                            var parentAccount = _flattenedItems.FirstOrDefault(x => x.Id == Guid.Parse(context.Key.ToString()));
 
                             if (parentAccount is null)
                             {
