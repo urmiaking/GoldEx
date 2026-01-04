@@ -166,11 +166,13 @@ public static class ApiRoutes
     {
         public const string Base = "/api/ledger-accounts";
         public const string GetList = "";
+        public const string GetActiveList = "active-list";
         public const string Get = "{id}";
         public const string Create = "";
         public const string Update = "{id}";
         public const string Delete = "{id}";
         public const string GetTitles = "titles";
+        public const string GetParentList = "parent-list";
     }
 
     public class Coins
@@ -288,5 +290,12 @@ public static class ApiRoutes
     {
         public const string Base = "/api/coin-instances";
         public const string Get = "{barcode}";
+    }
+
+    public class Reporting
+    {
+        public const string Base = "/api/reporting";
+        public const string GetLedgerAccountStatements = "ledger-account-statements";
+        public const string GetLedgerAccountTrialBalance = "ledger-account-trial-balance";
     }
 }

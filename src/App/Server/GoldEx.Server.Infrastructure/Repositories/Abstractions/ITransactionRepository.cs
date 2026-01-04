@@ -7,6 +7,7 @@ using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Models;
+using GoldEx.Shared.DTOs.Reporting;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
@@ -27,4 +28,6 @@ public interface ITransactionRepository : IRepository<Transaction>,
     Task<List<AccountBalanceSummaryModel>> GetPayableReceivableAccountsSummaryAsync(DateTime? fromDate = null,
         DateTime? toDate = null,
         CancellationToken cancellationToken = default);
+
+    Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request, CancellationToken cancellationToken);
 }

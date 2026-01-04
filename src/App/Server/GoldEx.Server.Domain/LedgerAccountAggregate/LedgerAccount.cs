@@ -20,6 +20,7 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
     public PriceUnitId? PriceUnitId { get; private set; }
 
     public IReadOnlyList<FinancialAccount>? FinancialAccounts { get; private set; }
+    public IReadOnlyList<LedgerAccount>? ChildLedgerAccounts { get; private set; }
 
     public CustomerId? CustomerId { get; private set; }
     public Customer? Customer { get; private set; }

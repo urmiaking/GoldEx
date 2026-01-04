@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.Routings;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.InventoryStocks;
@@ -11,4 +12,6 @@ public partial class MeltingBatches
         new("انبار", href: ClientRoutes.InventoryStocks.Index, icon: Icons.Material.Filled.Warehouse),
         new("لیست ذوب طلا", href: ClientRoutes.InventoryStocks.MeltingBatches.Index, icon: Icons.Material.Filled.Whatshot)
     ];
+
+    [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchQuery { get; set; }
 }

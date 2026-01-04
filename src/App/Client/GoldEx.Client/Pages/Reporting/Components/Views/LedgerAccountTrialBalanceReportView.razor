@@ -1,0 +1,146 @@
+﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using GoldEx.Shared.DTOs.Reporting
+
+@if (Items is null)
+{
+    <ReportViewPlaceHolder />
+}
+else
+{
+    <MudTable Items="@FlattenedItems"
+              Dense="true"
+              Hover="true"
+              Bordered="true"
+              Striped="true"
+              FixedHeader="true"
+              Breakpoint="Breakpoint.Sm"
+              SortLabel="مرتب ‌سازی"
+              ContainerClass="responsive-table-toolbar"
+              Elevation="24"
+              GroupBy="@GroupDefinition">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">گزارش تراز کلی حساب ‌ها</MudText>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudButton StartIcon="@Icons.Material.Filled.Print"
+                           Class="ml-2"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           OnClick="@(() => OnPrintReport.InvokeAsync())">
+                    پرینت
+                </MudButton>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Print"
+                               Color="Color.Success"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
+            </MudHidden>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<LedgerAccountTrialBalanceRpResponse, object>(x => x.LedgerAccountTitle)">
+                    حساب
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<LedgerAccountTrialBalanceRpResponse, object>(x => x.LedgerAccountType)">
+                    نوع
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<LedgerAccountTrialBalanceRpResponse, object>(x => x.DebitAmountBase)">
+                    بدهکار
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<LedgerAccountTrialBalanceRpResponse, object>(x => x.CreditAmountBase)">
+                    بستانکار
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<LedgerAccountTrialBalanceRpResponse, object>(x => (x.DebitAmountBase - x.CreditAmountBase))">
+                    خالص
+                </MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+
+        <GroupHeaderTemplate>  
+            <MudTh colspan="5" class="mud-table-cell-custom-group">  
+                <div class="d-flex align-center gap-2">  
+                    <MudIcon Icon="@GetAccountIcon(context.Items.FirstOrDefault())"  
+                             Color="@GetAccountTypeColor(context.Items.FirstOrDefault()?.LedgerAccountType)"  
+                             Class="mr-2" />  
+                    <MudText Typo="Typo.h6">  
+                        @if (context.Key?.ToString() == Guid.Empty.ToString())  
+                        {  
+                            <text>حساب‌ های اصلی</text>  
+                        }  
+                        else  
+                        {  
+                            var parentAccount = FlattenedItems.FirstOrDefault(x => x.Id == Guid.Parse(context.Key.ToString()));
+
+                            if (parentAccount is null)
+                            {
+                                <text>حساب والد</text>
+                            }
+                            else
+                            {
+                                <text>@parentAccount.LedgerAccountTitle</text>  
+                            }
+
+                        }  
+                    </MudText>  
+                    <MudChip Variant="Variant.Outlined" Size="Size.Small" Class="ml-2" T="string">  
+                        @context.Items.Count() حساب  
+                    </MudChip>  
+                </div>  
+            </MudTh>  
+        </GroupHeaderTemplate>
+
+        <RowTemplate>
+            <MudTd DataLabel="حساب">
+                <div class="d-flex align-center gap-2 mr-6">
+                    <MudIcon Icon="@GetAccountIcon(context)" Color="@GetAccountTypeColor(context.LedgerAccountType)" Class="mr-2" />
+                    <MudText>@context.LedgerAccountTitle</MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="نوع">
+                <MudChip Color="@GetAccountTypeColor(context.LedgerAccountType)" Size="Size.Small" T="string">
+                    @context.LedgerAccountType.GetDisplayName()
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="بدهکار">
+                <div class="d-flex gap-2">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="@Color.Error" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">@context.DebitAmountBase.ToCurrencyFormat(context.BasePriceUnitTitle)</MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="بستانکار">
+                <div class="d-flex gap-2">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="@Color.Success" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">@context.CreditAmountBase.ToCurrencyFormat(context.BasePriceUnitTitle)</MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="خالص">
+                @{
+                    var netAmount = context.DebitAmountBase - context.CreditAmountBase;
+                    var isDebit = netAmount >= 0;
+                }
+                <div class="d-flex gap-2">
+                    <MudIcon Icon="@(isDebit? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"
+                             Color="@(isDebit ? Color.Error : Color.Success)"
+                             Size="Size.Small" />
+                    <MudText Typo="Typo.body2">@Math.Abs(netAmount).ToCurrencyFormat(context.BasePriceUnitTitle)</MudText>
+                </div>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <LedgerAccountTrialBalanceSummary Summary="@_summary" />
+}

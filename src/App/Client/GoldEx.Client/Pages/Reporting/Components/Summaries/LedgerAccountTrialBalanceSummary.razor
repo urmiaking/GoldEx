@@ -1,0 +1,46 @@
+﻿@using GoldEx.Client.Pages.Reporting.ViewModels
+
+@if (Summary is not null)
+{
+    <MudCard Elevation="24" Class="mt-6">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">جمع کل</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent Class="pa-3">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="4">
+                    <MudPaper Class="pa-3 text-center" Elevation="0">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Large" Color="Color.Error" />
+                        <MudText Typo="Typo.h5" Color="Color.Error">@Summary.TotalDebit.ToString("N0")</MudText>
+                        <MudText Typo="Typo.h6">مجموع بدهکار</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudPaper Class="pa-3 text-center" Elevation="0">
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Large" Color="Color.Success" />
+                        <MudText Typo="Typo.h5" Color="Color.Success">@Summary.TotalCredit.ToString("N0")</MudText>
+                        <MudText Typo="Typo.h6">مجموع بستانکار</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudPaper Class="pa-3 text-center" Elevation="0">
+                        @{
+                            var totalNet = Summary.TotalDebit - Summary.TotalCredit;
+                            var totalNetColor = totalNet >= 0 ? Color.Error : Color.Success;
+                            var totalNetIcon = totalNet >= 0 ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward;
+                        }
+                        <MudIcon Icon="@totalNetIcon" Size="Size.Large" Color="@totalNetColor" />
+                        <MudText Typo="Typo.h5" Color="@totalNetColor">@Math.Abs(totalNet).ToString("N0")</MudText>
+                        <MudText Typo="Typo.h6">خالص</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public LedgerAccountTrialBalanceFilterVm.LedgerAccountTrialBalanceReportSummary? Summary { get; set; }
+}

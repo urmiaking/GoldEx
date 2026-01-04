@@ -23,7 +23,7 @@
                 </MudChipSet>
             </div>
 
-            <MudGrid>
+            <MudGrid Spacing="4">
                 <MudItem xs="12" md="6">
                     <div class="d-flex gap-2 align-items-center">
                         <MudNumericField @bind-Value="Model.Amount"
@@ -93,7 +93,7 @@
                     @switch (Model.PaymentType)
                     {
                         case PaymentType.InternalCash:
-                            <div class="d-flex flex-row align-center">
+                            <div class="d-flex align-center gap-2">
                                 <MudSelect @bind-Value="@Model.FinancialAccount"
                                            T="GetFinancialAccountTitleResponse?"
                                            For="@(() => Model.FinancialAccount)"
@@ -113,7 +113,7 @@
                             </div>
                             break;
                         case PaymentType.CustomerTransfer:
-                            <div class="d-flex flex-row align-center">
+                            <div class="d-flex align-center gap-2">
                                 <MudAutocomplete T="CustomerVm"
                                                  @bind-Value="Model.Endorser"
                                                  Text="@Model.Endorser?.FullName"
