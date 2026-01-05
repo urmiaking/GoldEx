@@ -546,5 +546,9 @@ public class ApiUrls
         public static string GetLedgerAccountTrialBalance(LedgerAccountTrialBalanceRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetLedgerAccountTrialBalance)
                 .AppendQueryString(request);
+
+        public static string GetCustomerRemainingBalance(CustomerRemainingBalanceRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCustomerRemainingBalance)
+                .AppendQueryString(request);
     }
 }

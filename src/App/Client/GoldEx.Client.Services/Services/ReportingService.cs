@@ -36,4 +36,17 @@ internal class ReportingService(HttpClient client, JsonSerializerOptions jsonOpt
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<List<CustomerRemainingBalanceRpResponse>> GetCustomerRemainingBalanceAsync(CustomerRemainingBalanceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetCustomerRemainingBalance(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<CustomerRemainingBalanceRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

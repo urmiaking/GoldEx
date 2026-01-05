@@ -1,0 +1,52 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Print.CustomerBalances)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"
+                 FromDate="@FromDate"
+                 ToDate="@ToDate"
+                 Data="@_items"
+                 ReportTitle="@($"گزارش مانده مشتریان {TitleFilter}")"
+                 Summary="@_summary">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>طرف حساب</th>
+                <th>شماره تماس</th>
+                <th>پرداختنی</th>
+                <th>دریافتنی</th>
+                <th>خالص</th>
+            </tr>
+        </thead>
+        @if (_items != null)
+        {
+            <tbody>
+                @foreach (var item in _items)
+                {
+                    <tr>
+                        <td>@item.CustomerName</td>
+                        <td>@item.CustomerPhoneNumber</td>
+                        <td class="text-end">@GetAmount(item.PayableAmount, item.PriceUnitTitle)</td>
+                        <td class="text-end">@GetAmount(item.ReceivableAmount, item.PriceUnitTitle)</td>
+                        <td class="text-end">
+                            <div class="transaction-amount @(GetTransactionClass(item))">
+                                <span class="icon transaction-icon @(GetTransactionIconClass(item))"></span>
+                                <span>@GetNetAmount(item)</span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+</ReportPrintBase>
+
+<script src="/js/report-print.js?v=6"></script>

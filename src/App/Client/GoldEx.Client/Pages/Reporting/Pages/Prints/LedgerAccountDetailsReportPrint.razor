@@ -1,5 +1,5 @@
 ﻿@attribute [Route(ClientRoutes.Reporting.Print.LedgerAccountDetails)]
-@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}")]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @layout PrintLayout
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Reporting;
 
 namespace GoldEx.Client.Pages.Reporting.ViewModels;
@@ -18,22 +19,8 @@ public sealed class LedgerAccountDetailsFilterVm : ReportFilterVmBase
             throw new InvalidOperationException("LedgerAccountId is required.");
 
         return new LedgerAccountStatementRpRequest(LedgerAccountId.Value, 
-            DateRange?.Start != null
-            ? new DateTime(DateRange.Start.Value.Year,
-                DateRange.Start.Value.Month,
-                DateRange.Start.Value.Day,
-                0,
-                0,
-                0)
-            : null, 
-            DateRange?.End != null
-            ? new DateTime(DateRange.End.Value.Year,
-                DateRange.End.Value.Month,
-                DateRange.End.Value.Day,
-                23,
-                59,
-                59)
-            : null,
+            DateRange?.Start?.GetDayStart(), 
+            DateRange?.End?.GetDayEnd(),
             PriceUnitId);
     }
 

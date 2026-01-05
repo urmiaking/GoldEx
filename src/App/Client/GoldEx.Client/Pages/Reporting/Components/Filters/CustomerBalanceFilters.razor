@@ -1,0 +1,73 @@
+﻿@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="TransactionType?"
+               Label="@Model.GetDisplayName(() => Model.Type)"
+               @bind-Value="Model.Type"
+               For="@(() => Model.Type)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="TransactionType?" Value="@((TransactionType?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.SwapHoriz"></MudIcon>
+                <MudText>بدهکار/بستانکار</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<TransactionType>())
+        {
+            <MudSelectItem Value="item" T="TransactionType?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetTransactionColor(item)" Icon="@GetTransactionIcon(item)"></MudIcon>
+                    <MudText>فقط @item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="3">
+    <MudTextField Label="@Model.GetDisplayName(() => Model.SearchQuery)"
+                  @bind-Value="Model.SearchQuery"
+                  For="@(() => Model.SearchQuery)"
+                  Variant="Variant.Outlined"
+                  Placeholder="بر اساس نام، کد و یا شماره تلفن مشتری"
+                  Margin="Margin.Dense" />
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="Guid?"
+               Label="@Model.GetDisplayName(() => Model.PriceUnitId)"
+               Value="Model.PriceUnitId"
+               ValueChanged="PriceUnitChanged"
+               For="@(() => Model.PriceUnitId)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه ارزها</MudSelectItem>
+        @foreach (var item in _priceUnits)
+        {
+            <MudSelectItem Value="item.Id" T="Guid?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                    </MudAvatar>
+                    <MudText>@item.Title</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudNumericField Label="@Model.GetDisplayName(() => Model.MinimumThreshold)"
+                     @bind-Value="Model.MinimumThreshold"
+                     For="@(() => Model.MinimumThreshold)"
+                     Variant="Variant.Outlined"
+                     dir="ltr"
+                     Format="#,##0.##"
+                     HideSpinButtons="true"
+                     Disabled="@(Model.PriceUnitId == null)"
+                     Adornment="Adornment.End"
+                     AdornmentText="@_selectedPriceUnit?.Title"
+                     Margin="Margin.Dense" />
+</MudItem>

@@ -143,9 +143,8 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         return result;
     }
 
-    public async Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(
-    LedgerAccountTrialBalanceRpRequest request,
-    CancellationToken cancellationToken)
+    public async Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request, 
+        CancellationToken cancellationToken = default)
     {
         var basePriceUnit = await dbContext
             .Set<PriceUnit>()
@@ -336,5 +335,97 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                 .Cast<LedgerAccountTrialBalanceNodeModel>()
                 .ToList()
         };
+    }
+
+    public async Task<List<CustomerRemainingBalanceModel>> GetCustomerRemainingBalanceAsync(
+    CustomerRemainingBalanceRpRequest request,
+    CancellationToken cancellationToken = default)
+    {
+        var q = Query
+            .AsNoTracking()
+            .Include(t => t.ReversedBy)
+            .Include(t => t.PriceUnit)
+            .Include(t => t.LedgerAccount!).ThenInclude(la => la.ParentAccount)
+            .Include(t => t.LedgerAccount!).ThenInclude(la => la.Customer)
+            .Where(t => t.LedgerAccount != null)
+            .Where(t => t.LedgerAccount!.CustomerId != null)
+            .Where(t => t.LedgerAccount!.ParentAccount != null)
+            .Where(t =>
+                t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable ||
+                t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
+            .Where(t => t.ReverseTransactionId == null)
+            .Where(t => t.ReversedBy == null || !t.ReversedBy.Any())
+            .Where(t => !request.UntilDate.HasValue || t.PostingDate < request.UntilDate.Value)
+            .Where(t => !request.PriceUnitId.HasValue || t.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value));
+
+        if (!string.IsNullOrWhiteSpace(request.SearchQuery))
+        {
+            var s = request.SearchQuery.Trim();
+            q = q.Where(t =>
+                t.LedgerAccount!.Customer!.FullName.Contains(s) ||
+                t.LedgerAccount!.Customer!.NationalId.Contains(s) ||
+                (t.LedgerAccount!.Customer!.PhoneNumber != null && t.LedgerAccount!.Customer!.PhoneNumber.Contains(s)));
+        }
+
+        var grouped = await q
+            .GroupBy(t => new
+            {
+                CustomerId = t.LedgerAccount!.CustomerId!.Value,
+                CustomerName = t.LedgerAccount!.Customer!.FullName,
+                CustomerCode = t.LedgerAccount!.Customer!.NationalId,
+                CustomerPhoneNumber = t.LedgerAccount!.Customer!.PhoneNumber,
+                PriceUnitTitle = t.PriceUnit!.Title
+            })
+            .Select(g => new
+            {
+                g.Key.CustomerName,
+                g.Key.CustomerCode,
+                g.Key.CustomerPhoneNumber,
+                g.Key.PriceUnitTitle,
+                ReceivableSigned = g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
+                    .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount),
+                PayableSigned = g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable)
+                    .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount)
+            })
+            .ToListAsync(cancellationToken);
+
+        var rows = grouped
+            .Select(x =>
+            {
+                var receivable = x.ReceivableSigned >= 0m ? x.ReceivableSigned : 0m;
+                var payable = x.PayableSigned <= 0m ? Math.Abs(x.PayableSigned) : 0m;
+
+                return new CustomerRemainingBalanceModel
+                {
+                    CustomerName = x.CustomerName,
+                    CustomerCode = x.CustomerCode,
+                    CustomerPhoneNumber = x.CustomerPhoneNumber ?? string.Empty,
+                    PriceUnitTitle = x.PriceUnitTitle,
+                    ReceivableAmount = receivable,
+                    PayableAmount = payable
+                };
+            });
+
+        if (request.TransactionType.HasValue)
+        {
+            rows = request.TransactionType.Value == TransactionType.Debit
+                ? rows.Where(x => x.ReceivableAmount - x.PayableAmount > 0m)
+                : rows.Where(x => x.ReceivableAmount - x.PayableAmount < 0m);
+        }
+
+        if (request.MinimumThreshold.HasValue)
+        {
+            var th = request.MinimumThreshold.Value;
+            rows = rows.Where(x => Math.Abs(x.ReceivableAmount - x.PayableAmount) >= th);
+        }
+        else
+        {
+            rows = rows.Where(x => (x.ReceivableAmount - x.PayableAmount) != 0m);
+        }
+
+        return rows
+            .OrderBy(x => x.CustomerName)
+            .ThenBy(x => x.PriceUnitTitle)
+            .ToList();
     }
 }
