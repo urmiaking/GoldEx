@@ -11,19 +11,30 @@
                                 SelectionMode="SelectionMode.SingleSelection"
                                 Variant="Variant.Outlined"
                                 CheckMark="true"
-                                Class="d-flex flex-wrap justify-content-center"
-                                SelectedValue="Model.FinancialAccountType"
-                                SelectedValueChanged="OnAccountTypeChanged">
-                        <MudChip Color="Color.Success" Value="@(FinancialAccountType.LocalBankAccount)">
+                                Class="d-flex flex-wrap justify-content-center align-center"
+                                @bind-SelectedValue="Model.FinancialAccountType">
+                        <MudChip Color="Color.Success"
+                                 Value="@(FinancialAccountType.LocalBankAccount)"
+                                 Size="@(Model.FinancialAccountType == FinancialAccountType.LocalBankAccount ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.FinancialAccountType == FinancialAccountType.LocalBankAccount ? Variant.Text : Variant.Outlined)">
                             @FinancialAccountType.LocalBankAccount.GetDisplayName()
                         </MudChip>
-                        <MudChip Color="Color.Error" Value="@(FinancialAccountType.InternationalBankAccount)">
+                        <MudChip Color="Color.Error"
+                                 Value="@(FinancialAccountType.InternationalBankAccount)"
+                                 Size="@(Model.FinancialAccountType == FinancialAccountType.InternationalBankAccount ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.FinancialAccountType == FinancialAccountType.InternationalBankAccount ? Variant.Text : Variant.Outlined)">
                             @FinancialAccountType.InternationalBankAccount.GetDisplayName()
                         </MudChip>
-                        <MudChip Color="Color.Info" Value="@(FinancialAccountType.Cash)">
+                        <MudChip Color="Color.Info"
+                                 Value="@(FinancialAccountType.Cash)"
+                                 Size="@(Model.FinancialAccountType == FinancialAccountType.Cash ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.FinancialAccountType == FinancialAccountType.Cash ? Variant.Text : Variant.Outlined)">
                             @FinancialAccountType.Cash.GetDisplayName()
                         </MudChip>
-                        <MudChip Color="Color.Primary" Value="@(FinancialAccountType.Gold)">
+                        <MudChip Color="Color.Primary"
+                                 Value="@(FinancialAccountType.Gold)"
+                                 Size="@(Model.FinancialAccountType == FinancialAccountType.Gold ? Size.Large : Size.Medium)"
+                                 Variant="@(Model.FinancialAccountType == FinancialAccountType.Gold ? Variant.Text : Variant.Outlined)">
                             @FinancialAccountType.Gold.GetDisplayName()
                         </MudChip>
                     </MudChipSet>

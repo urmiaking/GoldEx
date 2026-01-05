@@ -26,7 +26,7 @@ public partial class PaymentDialog
         CloseButton = true,
         FullWidth = true,
         FullScreen = false,
-        MaxWidth = MaxWidth.Small
+        MaxWidth = MaxWidth.Medium
     };
 
     private GetSettingResponse? _settings;
