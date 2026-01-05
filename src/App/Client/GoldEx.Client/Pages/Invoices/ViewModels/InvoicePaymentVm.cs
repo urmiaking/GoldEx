@@ -41,7 +41,7 @@ public class InvoicePaymentVm
     [Display(Name = "طرف حساب")]
     public CustomerVm? Endorser { get; set; }
 
-    public List<GetFinancialAccountTitleResponse> FinancialAccounts { get; set; } = [];
+    public List<GetFinancialAccountTitleResponse>? FinancialAccounts { get; set; }
 
     [Display(Name = "نرخ تبدیل")]
     public decimal? ExchangeRate { get; set; }

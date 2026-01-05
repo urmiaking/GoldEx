@@ -1407,7 +1407,7 @@ public partial class EditorForm
             { x => x.TotalRemaining, _model.TotalUnpaidAmount }
         };
 
-        var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions with { MaxWidth = MaxWidth.Small });
+        var dialog = await DialogService.ShowAsync<PaymentEditor>(paymentType.GetDisplayTitle(), parameters, _dialogOptions with { MaxWidth = MaxWidth.Medium });
 
         var result = await dialog.Result;
 
