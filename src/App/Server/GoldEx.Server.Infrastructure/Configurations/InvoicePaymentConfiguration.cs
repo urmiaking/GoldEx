@@ -19,7 +19,7 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
             .IsRequired();
 
         builder.Property(x => x.ExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.GoldFineness)
             .HasPrecision(9, 6);

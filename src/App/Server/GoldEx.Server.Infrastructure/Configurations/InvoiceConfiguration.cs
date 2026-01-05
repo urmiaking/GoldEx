@@ -15,10 +15,10 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
                 value => new InvoiceId(value));
 
         builder.Property(x => x.UnpaidAmountExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.ExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.HasIndex(x => new { x.InvoiceNumber, x.InvoiceType })
             .IsUnique();
@@ -227,7 +227,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10);
 
         builder.Property(x => x.CostPriceExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.TotalWeight)
             .HasPrecision(36, 10)
@@ -237,16 +237,16 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasPrecision(36, 10);
 
         builder.Property(x => x.SaleWagePriceUnitExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.PurchaseWage)
             .HasPrecision(36, 10);
 
         builder.Property(x => x.PurchaseWagePriceUnitExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.StonePriceUnitExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.ItemRawAmount)
             .HasPrecision(36, 10)
@@ -306,7 +306,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .IsRequired();
 
         builder.Property(x => x.ExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.Description)
             .HasMaxLength(500);
@@ -328,7 +328,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .IsRequired();
 
         builder.Property(x => x.ExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.Description)
             .HasMaxLength(500);
