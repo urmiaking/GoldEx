@@ -94,20 +94,20 @@
                     {
                         case PaymentType.InternalCash:
                             <div class="d-flex align-center gap-2">
-                                <MudSelect @bind-Value="@Model.FinancialAccount"
-                                           T="GetFinancialAccountTitleResponse?"
-                                           For="@(() => Model.FinancialAccount)"
-                                           Label="@FinancialAccountLabelText"
-                                           Margin="Margin.Dense"
-                                           Disabled="Model.Disabled"
-                                           OuterClass="text-truncate"
-                                           Variant="Variant.Outlined"
-                                           ToStringFunc="@(acc => acc?.Title)">
-                                    @foreach (var account in Model.FinancialAccounts)
-                                    {
-                                        <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
-                                    }
-                                </MudSelect>
+                                <MudAutocomplete @bind-Value="@Model.FinancialAccount"  
+                                                 T="GetFinancialAccountTitleResponse?"  
+                                                 For="@(() => Model.FinancialAccount)"  
+                                                 Label="@FinancialAccountLabelText"  
+                                                 Margin="Margin.Dense"  
+                                                 Disabled="Model.Disabled"  
+                                                 InputClass="text-truncate"  
+                                                 Variant="Variant.Outlined"  
+                                                 DebounceInterval="500"
+                                                 Placeholder="جستجوی حساب مالی..."
+                                                 MaxItems="100"
+                                                 ToStringFunc="@(acc => acc?.Title)"  
+                                                 SearchFunc="SearchFinancialAccountsAsync"  
+                                                 ResetValueOnEmptyText="true" />
                                 <MudIconButton Disabled="Model.Disabled" Icon="@Icons.Material.Filled.Add"
                                                Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
                             </div>

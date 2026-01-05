@@ -98,7 +98,7 @@ public partial class PaymentEditor
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Model.PaymentType is PaymentType.InternalCash && !Model.FinancialAccounts.Any())
+        if (Model.PaymentType is PaymentType.InternalCash && Model.FinancialAccounts == null)
             await LoadFinancialAccountsAsync();
 
         if (Model.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory && Model.PriceUnit?.Id != BasePriceUnit.Id && !Model.Id.HasValue)
@@ -179,6 +179,21 @@ public partial class PaymentEditor
 
     #region FinancialAccounts
 
+    private async Task<IEnumerable<GetFinancialAccountTitleResponse?>> SearchFinancialAccountsAsync(string value, CancellationToken token)
+    {
+        // Ensure accounts are loaded  
+        if (Model.FinancialAccounts == null)
+        {
+            await LoadFinancialAccountsAsync();
+        }
+
+        // Return all accounts if search is empty, otherwise filter  
+        return (string.IsNullOrEmpty(value)
+            ? Model.FinancialAccounts
+            : Model.FinancialAccounts?.Where(acc => acc.Title.Contains(value,
+                StringComparison.InvariantCultureIgnoreCase))) ?? [];
+    }
+
     private async Task LoadFinancialAccountsAsync()
     {
         await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
@@ -203,7 +218,7 @@ public partial class PaymentEditor
         if (result is { Canceled: false, Data: FinancialAccountVm financialAccount })
         {
             await LoadFinancialAccountsAsync();
-            Model.FinancialAccount = Model.FinancialAccounts.FirstOrDefault(x => x.Id == financialAccount.Id);
+            Model.FinancialAccount = Model.FinancialAccounts?.FirstOrDefault(x => x.Id == financialAccount.Id);
             StateHasChanged();
         }
     }
