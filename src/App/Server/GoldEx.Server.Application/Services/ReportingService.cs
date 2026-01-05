@@ -36,4 +36,11 @@ internal class ReportingService(ITransactionRepository transactionRepository, IM
         var list = await transactionRepository.GetLedgerAccountTrialBalanceAsync(request, cancellationToken);
         return mapper.Map<List<LedgerAccountTrialBalanceRpResponse>>(list.Nodes);
     }
+
+    public async Task<List<CustomerRemainingBalanceRpResponse>> GetCustomerRemainingBalanceAsync(CustomerRemainingBalanceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await transactionRepository.GetCustomerRemainingBalanceAsync(request, cancellationToken);
+        return mapper.Map<List<CustomerRemainingBalanceRpResponse>>(list);
+    }
 }

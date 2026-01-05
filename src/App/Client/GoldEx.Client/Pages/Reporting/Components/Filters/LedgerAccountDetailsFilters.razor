@@ -20,15 +20,20 @@
     <MudSelect T="Guid?"
                Label="@Model.GetDisplayName(() => Model.PriceUnitId)"
                @bind-Value="Model.PriceUnitId"
-               Dense="true"
                Disabled="@(!Model.LedgerAccountId.HasValue)"
                For="@(() => Model.PriceUnitId)"
                Variant="Variant.Outlined"
                Margin="Margin.Dense">
-        @foreach (var priceUnit in _priceUnits)
+        <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه ارزها</MudSelectItem>
+        @foreach (var item in _priceUnits)
         {
-            <MudSelectItem T="Guid?" Value="@((Guid?)priceUnit.Id)">
-                @priceUnit.Title
+            <MudSelectItem Value="item.Id" T="Guid?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                    </MudAvatar>
+                    <MudText>@item.Title</MudText>
+                </MudStack>
             </MudSelectItem>
         }
     </MudSelect>
