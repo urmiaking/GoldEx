@@ -81,14 +81,15 @@ internal sealed class BarcodeGeneratorService(
 
         var baseline = MaxBarcode(lastProduct, lastReserved?.Barcode);
 
-        var next = ComputeNext(prefixed: true, prefix, baseline, 8, 1);
+        // Product total length must be 8 (prefix + numeric tail)
+        var next = ComputeNext(prefixed: true, prefix, baseline, totalDigits: 8, start: 1);
 
         while (await productRepository.ExistsAsync(
                    new ProductsByBarcodeSpecification(next), cancellationToken)
                || await reservationRepository.ExistsAsync(
                    new BarcodeReservationsByBarcodeSpecification(next), cancellationToken))
         {
-            next = ComputeNext(prefixed: true, prefix, next, 8, 1);
+            next = ComputeNext(prefixed: true, prefix, next, totalDigits: 8, start: 1);
         }
 
         return next;
@@ -138,14 +139,14 @@ internal sealed class BarcodeGeneratorService(
 
         var baseline = MaxBarcode(lastCoinBarcode, lastReserved?.Barcode);
 
-        var next = ComputeNext(prefixed: false, null, baseline, CoinDigits, CoinStart);
+        var next = ComputeNext(prefixed: false, null, baseline, totalDigits: CoinDigits, start: CoinStart);
 
         while (await coinRepository.ExistsAsync(
                    new CoinInstancesByBarcodeSpecification(next), cancellationToken)
                || await reservationRepository.ExistsAsync(
                    new BarcodeReservationsByBarcodeSpecification(next), cancellationToken))
         {
-            next = ComputeNext(prefixed: false, null, next, CoinDigits, CoinStart);
+            next = ComputeNext(prefixed: false, null, next, totalDigits: CoinDigits, start: CoinStart);
         }
 
         return next;
@@ -162,24 +163,56 @@ internal sealed class BarcodeGeneratorService(
         return string.CompareOrdinal(a, b) >= 0 ? a : b;
     }
 
+    /// <summary>
+    /// Computes the next barcode.
+    /// - If prefixed=false (coins): returns a numeric string with totalDigits length.
+    /// - If prefixed=true (products): returns prefix + numeric tail, where (prefix + tail).Length == totalDigits.
+    /// </summary>
     private static string ComputeNext(
         bool prefixed,
         string? prefix,
         string? last,
-        int digits,
+        int totalDigits,
         int start)
     {
-        if (string.IsNullOrWhiteSpace(last))
-            return start.ToString($"D{digits}");
+        if (!prefixed)
+        {
+            // Coins: whole barcode is numeric with fixed length
+            if (string.IsNullOrWhiteSpace(last))
+                return start.ToString($"D{totalDigits}");
 
-        var numericPart = prefixed
-            ? last.Substring(prefix!.Length)
-            : last;
+            if (!int.TryParse(last, out var result) || result < start)
+                result = start - 1;
+
+            return (result + 1).ToString($"D{totalDigits}");
+        }
+
+        // Products: barcode total length is fixed, prefix is part of it
+        if (string.IsNullOrWhiteSpace(prefix))
+            throw new ArgumentException("Prefix is required for prefixed barcode.", nameof(prefix));
+
+        if (prefix.Length >= totalDigits)
+            throw new InvalidOperationException($"Prefix length ({prefix.Length}) cannot be >= total digits ({totalDigits}).");
+
+        var numericDigits = totalDigits - prefix.Length;
+
+        if (string.IsNullOrWhiteSpace(last))
+        {
+            // first barcode for this prefix
+            return prefix + start.ToString($"D{numericDigits}");
+        }
+
+        var normalizedLast = last.Trim();
+
+        // last may already include prefix; if not, treat it as numeric tail
+        var numericPart = normalizedLast.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? normalizedLast.Substring(prefix.Length)
+            : normalizedLast;
 
         if (!int.TryParse(numericPart, out var n) || n < start)
             n = start - 1;
 
-        return (n + 1).ToString($"D{digits}");
+        return prefix + (n + 1).ToString($"D{numericDigits}");
     }
 
     #endregion
