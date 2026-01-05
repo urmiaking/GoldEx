@@ -23,4 +23,14 @@ public interface IReportingService
     Task<List<LedgerAccountTrialBalanceRpResponse>> GetLedgerAccountTrialBalanceAsync(
         LedgerAccountTrialBalanceRpRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get customer payable and receivable amounts report and their remaining balance
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<CustomerRemainingBalanceRpResponse>> GetCustomerRemainingBalanceAsync(
+        CustomerRemainingBalanceRpRequest request,
+        CancellationToken cancellationToken = default);
 }

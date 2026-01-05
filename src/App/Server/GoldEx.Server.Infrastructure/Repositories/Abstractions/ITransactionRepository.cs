@@ -20,7 +20,11 @@ public interface ITransactionRepository : IRepository<Transaction>,
     Task RemoveByPaymentVoucherIdAsync(PaymentVoucherId paymentVoucherId, CancellationToken cancellationToken = default);
     Task RemoveByInvoicePaymentIdsAsync(List<InvoicePaymentId>? invoicePaymentIds, CancellationToken cancellationToken = default);
 
-    Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, PriceUnitId? priceUnitId, DateTime? untilDate = null, CancellationToken cancellationToken = default);
+    Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId,
+        PriceUnitId? priceUnitId,
+        DateTime? untilDate = null,
+        CancellationToken cancellationToken = default);
+
     Task<(decimal qty, decimal baseAmount, decimal avgRate)> GetLedgerPositionSummaryAsync(
         LedgerAccountId ledgerAccountId,
         CancellationToken cancellationToken = default);
@@ -29,5 +33,6 @@ public interface ITransactionRepository : IRepository<Transaction>,
         DateTime? toDate = null,
         CancellationToken cancellationToken = default);
 
-    Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request, CancellationToken cancellationToken);
+    Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request, CancellationToken cancellationToken = default);
+    Task<List<CustomerRemainingBalanceModel>> GetCustomerRemainingBalanceAsync(CustomerRemainingBalanceRpRequest request, CancellationToken cancellationToken = default);
 }

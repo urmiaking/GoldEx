@@ -297,5 +297,6 @@ public static class ApiRoutes
         public const string Base = "/api/reporting";
         public const string GetLedgerAccountStatements = "ledger-account-statements";
         public const string GetLedgerAccountTrialBalance = "ledger-account-trial-balance";
+        public const string GetCustomerRemainingBalance = "customer-remaining-balance";
     }
 }
