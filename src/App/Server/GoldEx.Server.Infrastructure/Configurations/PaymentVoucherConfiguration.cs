@@ -19,7 +19,7 @@ internal class PaymentVoucherConfiguration : IEntityTypeConfiguration<PaymentVou
             .IsRequired();
 
         builder.Property(x => x.ExchangeRate)
-            .HasPrecision(36, 10);
+            .HasPrecision(38, 18);
 
         builder.Property(x => x.Description)
             .HasMaxLength(150)
