@@ -150,6 +150,7 @@ public static class ClientRoutes
 
             public const string LedgerAccountDetails = $"{PrintPrefix}/ledger-account-details";
             public const string LedgerAccountTrialBalances = $"{PrintPrefix}/ledger-account-trial-balances";
+            public const string CustomerBalances = $"{PrintPrefix}/customer-balances";
         }
     }
 

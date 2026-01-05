@@ -29,4 +29,13 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         var result = await service.GetLedgerAccountTrialBalanceAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet(ApiRoutes.Reporting.GetCustomerRemainingBalance)]
+    public async Task<IActionResult> GetCustomerRemainingBalanceAsync(
+        [FromQuery] CustomerRemainingBalanceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetCustomerRemainingBalanceAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }

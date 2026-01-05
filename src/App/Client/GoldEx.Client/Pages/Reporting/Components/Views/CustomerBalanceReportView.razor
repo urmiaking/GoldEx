@@ -1,0 +1,100 @@
+﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using GoldEx.Shared.DTOs.Reporting
+@if (Items is null || IsLoading)
+{
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
+}
+else
+{
+    <MudTable Items="@Items"
+              Dense="true"
+              Hover="true"
+              Bordered="true"
+              Striped="true"
+              FixedHeader="true"
+              Breakpoint="Breakpoint.Sm"
+              SortLabel="مرتب ‌سازی"
+              ContainerClass="responsive-table-toolbar"
+              Elevation="24">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">گزارش مانده مشتریان</MudText>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudButton StartIcon="@Icons.Material.Filled.Print"
+                           Class="ml-2"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           OnClick="@(() => OnPrintReport.InvokeAsync())">
+                    پرینت
+                </MudButton>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Print"
+                               Color="Color.Success"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
+            </MudHidden>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => x.CustomerName)">
+                    طرف حساب
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                شماره تماس
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => x.PayableAmount)">
+                    حساب پرداختنی
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => x.ReceivableAmount)">
+                    حساب دریافتنی
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => (x.ReceivableAmount - x.PayableAmount))">
+                    خالص
+                </MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="طرف حساب">@($"{context.CustomerName} ({context.CustomerCode})")</MudTd>
+            <MudTd DataLabel="شماره تماس">@context.CustomerPhoneNumber</MudTd>
+            <MudTd DataLabel="حساب پرداختنی">
+                @GetAmount(context.PayableAmount, context.PriceUnitTitle)
+            </MudTd>
+            <MudTd DataLabel="حساب دریافتنی">
+                @GetAmount(context.ReceivableAmount, context.PriceUnitTitle)
+            </MudTd>
+            <MudTd DataLabel="مبلغ">
+                <div class="d-flex gap-2">
+                    <MudIcon Icon="@GetNetIcon(context)" Color="@GetNetColor(context)" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">
+                        @GetNetAmount(context)
+                    </MudText>
+                </div>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <CustomerBalanceSummary Summary="@_summary" />
+}
