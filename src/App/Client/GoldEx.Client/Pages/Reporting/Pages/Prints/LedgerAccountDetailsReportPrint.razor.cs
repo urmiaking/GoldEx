@@ -194,11 +194,11 @@ public partial class LedgerAccountDetailsReportPrint
 
     private string GetTransactionClass(LedgerAccountStatementRpResponse context)
     {
-        return context.TransactionType is TransactionType.Debit ? "debit" : "credit";
+        return context.TransactionType is TransactionType.Credit ? "debit" : "credit";
     }
 
     private string GetTransactionIconClass(LedgerAccountStatementRpResponse context)
     {
-        return context.TransactionType is TransactionType.Debit ? "debit-icon" : "credit-icon";
+        return context.TransactionType is TransactionType.Credit ? "debit-icon" : "credit-icon";
     }
 }

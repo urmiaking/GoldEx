@@ -32,14 +32,14 @@
                                         <div class="d-flex justify-space-between align-center">  
                                             <MudText Typo="Typo.body1">مجموع بدهکار:</MudText>  
                                             <MudText Typo="Typo.body1" Color="Color.Error">  
-                                                <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="ml-1" />  
+                                                <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="ml-1" />  
                                                 @priceUnit.TotalDebit.ToCurrencyFormat(priceUnit.PriceUnitTitle)  
                                             </MudText>  
                                         </div>  
                                         <div class="d-flex justify-space-between align-center">
                                             <MudText Typo="Typo.body1">مجموع بستانکار:</MudText>
                                             <MudText Typo="Typo.body1" Color="Color.Success">
-                                                <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="ml-1" />  
+                                                <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="ml-1" />  
                                                 @priceUnit.TotalCredit.ToCurrencyFormat(priceUnit.PriceUnitTitle)  
                                             </MudText>  
                                         </div>  
@@ -49,7 +49,7 @@
                                             @{
                                                 var net = priceUnit.TotalDebit - priceUnit.TotalCredit;
                                                 var netColor = net >= 0 ? Color.Error : Color.Success;
-                                                var netIcon = net >= 0 ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward;
+                                                var netIcon = net >= 0 ? Icons.Material.Filled.ArrowUpward : Icons.Material.Filled.ArrowDownward;
                                                 var netText = net >= 0 ? "بدهکار" : "بستانکار";
                                             }
                                             <MudText Typo="Typo.body1" Color="@netColor">
@@ -77,14 +77,14 @@
                         <MudGrid Spacing="2">  
                             <MudItem xs="12" sm="4">
                                 <MudPaper Class="pa-3 text-center" Elevation="0">
-                                    <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Large" Color="Color.Error" />
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Large" Color="Color.Error" />
                                     <MudText Typo="Typo.h5" Color="Color.Error">@Summary.TotalBaseCurrencyDebit.ToString("N0")</MudText>
                                     <MudText Typo="Typo.h6">مجموع بدهکار</MudText>
                                 </MudPaper>
                             </MudItem>
                             <MudItem xs="12" sm="4">
                                 <MudPaper Class="pa-3 text-center" Elevation="0">
-                                    <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Large" Color="Color.Success" />
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Large" Color="Color.Success" />
                                     <MudText Typo="Typo.h5" Color="Color.Success">@Summary.TotalBaseCurrencyCredit.ToString("N0")</MudText>
                                     <MudText Typo="Typo.h6">مجموع بستانکار</MudText>
                                 </MudPaper>
@@ -94,7 +94,7 @@
                                     @{
                                         var totalNet = Summary.TotalNetBaseCurrency;
                                         var totalNetColor = totalNet >= 0 ? Color.Error : Color.Success;
-                                        var totalNetIcon = totalNet >= 0 ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward;
+                                        var totalNetIcon = totalNet >= 0 ? Icons.Material.Filled.ArrowUpward : Icons.Material.Filled.ArrowDownward;
                                     }
                                     <MudIcon Icon="@totalNetIcon" Size="Size.Large" Color="@totalNetColor" />
                                     <MudText Typo="Typo.h5" Color="@totalNetColor">@Math.Abs(totalNet).ToString("N0")</MudText>
