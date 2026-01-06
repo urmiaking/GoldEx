@@ -32,12 +32,12 @@
                                  Variant="@(Model.FinancialAccountType == FinancialAccountType.Cash ? Variant.Text : Variant.Outlined)">
                             @FinancialAccountType.Cash.GetDisplayName()
                         </MudChip>
-                        <MudChip Color="Color.Primary"
+                        @* <MudChip Color="Color.Primary"
                                  Value="@(FinancialAccountType.Gold)"
                                  Size="@(Model.FinancialAccountType == FinancialAccountType.Gold ? Size.Large : Size.Medium)"
                                  Variant="@(Model.FinancialAccountType == FinancialAccountType.Gold ? Variant.Text : Variant.Outlined)">
                             @FinancialAccountType.Gold.GetDisplayName()
-                        </MudChip>
+                        </MudChip> *@
                     </MudChipSet>
                 </MudItem>
                 @if (Model.FinancialAccountType != FinancialAccountType.Gold)
@@ -51,7 +51,7 @@
                                    FullWidth="true"
                                    Margin="Margin.Dense"
                                    Variant="Variant.Outlined">
-                            @foreach (var item in PriceUnits)
+                            @foreach (var item in PriceUnits.Where(x => !x.IsGoldBased))
                             {
                                 <MudSelectItem Value="item">
                                     <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
