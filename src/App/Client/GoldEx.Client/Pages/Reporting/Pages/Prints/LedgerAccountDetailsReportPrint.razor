@@ -25,6 +25,7 @@
             <th>مبلغ</th>  
             <th>نرخ تبدیل</th>  
             <th>مبلغ پایه</th>  
+            <th>مانده جاری</th>  
         </tr>  
         </thead>  
         @if (_items != null)  
@@ -44,6 +45,7 @@
                 </td>    
                 <td class="text-end">@(item.ExchangeRate?.ToCurrencyFormat() ?? "-")</td>  
                 <td class="text-end">@item.BaseCurrencyAmount.ToString("N0")</td>  
+                <td class="text-end">@item.RunningBalance.ToCurrencyFormat(item.PriceUnitTitle)</td>  
             </tr>  
             }  
             </tbody>  

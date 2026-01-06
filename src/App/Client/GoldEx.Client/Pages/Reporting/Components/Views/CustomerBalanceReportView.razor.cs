@@ -1,11 +1,9 @@
 ﻿using GoldEx.Client.Pages.Reporting.ViewModels;
 using GoldEx.Shared.DTOs.Reporting;
-using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using static GoldEx.Client.Pages.Reporting.ViewModels.CustomerBalanceFilterVm;
-using static GoldEx.Client.Pages.Reporting.ViewModels.LedgerAccountDetailsFilterVm;
 
 namespace GoldEx.Client.Pages.Reporting.Components.Views;
 
@@ -75,9 +73,11 @@ public partial class CustomerBalanceReportView
         var net = GetNet(x);
         var amountString = Math.Abs(net).ToCurrencyFormat(x.PriceUnitTitle);
 
-        return net > 0 ? $"{amountString} بدهکار"
-            : net < 0 ? $"{amountString} بستانکار"
-            : $"{0m.ToCurrencyFormat(x.PriceUnitTitle)}";
+        return amountString;
+
+        //return net > 0 ? $"{amountString} بدهکار"
+        //    : net < 0 ? $"{amountString} بستانکار"
+        //    : $"{0m.ToCurrencyFormat(x.PriceUnitTitle)}";
     }
 
     private static string GetAmount(decimal amount, string priceUnit)

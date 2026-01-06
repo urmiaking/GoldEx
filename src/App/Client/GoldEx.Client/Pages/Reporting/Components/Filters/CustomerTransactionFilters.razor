@@ -1,0 +1,68 @@
+﻿@using GoldEx.Shared.DTOs.Customers
+@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="3">
+    <MudAutocomplete T="GetCustomerResponse?"
+                     Value="_selectedCustomer"
+                     ValueChanged="OnCustomerChanged"
+                     Text="@_selectedCustomer?.FullName"
+                     Placeholder="جستجوی طرف حساب..."
+                     Label="@(Model.GetDisplayName(() => Model.CustomerId))"
+                     ToStringFunc="@(customer => customer != null ? $"{customer.FullName}" : null)"
+                     Margin="Margin.Dense"
+                     Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.Person"
+                     Variant="Variant.Outlined"
+                     Required="true"
+                     SearchFunc="@SearchCustomers"
+                     CoerceText="true"
+                     ResetValueOnEmptyText="true" />
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="Guid?"
+               Label="@Model.GetDisplayName(() => Model.PriceUnitId)"
+               @bind-Value="Model.PriceUnitId"
+               For="@(() => Model.PriceUnitId)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه ارزها</MudSelectItem>
+        @foreach (var item in _priceUnits)
+        {
+            <MudSelectItem Value="item.Id" T="Guid?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                    </MudAvatar>
+                    <MudText>@item.Title</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="LedgerAccountRole?"
+               Label="@Model.GetDisplayName(() => Model.Role)"
+               @bind-Value="Model.Role"
+               For="@(() => Model.Role)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="LedgerAccountRole?" Value="@((LedgerAccountRole?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.SwapHoriz"></MudIcon>
+                <MudText>دریافتنی/پرداختنی</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<LedgerAccountRole>())
+        {
+            <MudSelectItem Value="item" T="LedgerAccountRole?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetTransactionColor(item)" Icon="@GetTransactionIcon(item)"></MudIcon>
+                    <MudText>فقط @item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+
+        }
+    </MudSelect>
+</MudItem>
