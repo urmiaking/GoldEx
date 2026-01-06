@@ -59,7 +59,7 @@ public partial class CustomerBalanceFilters
     private string GetTransactionIcon(TransactionType item)
     {
         return item is TransactionType.Debit
-            ? Icons.Material.Filled.ArrowDownward
-            : Icons.Material.Filled.ArrowUpward;
+            ? Icons.Material.Filled.AccountBalanceWallet
+            : Icons.Material.Filled.Payments;
     }
 }

@@ -9,12 +9,6 @@ namespace GoldEx.Client.Pages.Reporting.Components.Views;
 public partial class LedgerAccountDetailsReportView
 {
     [Parameter] public List<LedgerAccountStatementRpResponse>? Items { get; set; }
-
-    /// <summary>
-    /// خروجی کلیک روی مرجع (برای باز کردن صفحه/دیالوگ مربوطه)
-    /// Item1: نوع مرجع (Invoice, PaymentVoucher, ...)
-    /// Item2: شناسه مرجع
-    /// </summary>
     [Parameter] public EventCallback<(string RefType, Guid? RefId)> OnOpenReference { get; set; }
     [Parameter] public EventCallback OnPrintReport { get; set; }
     [Parameter] public bool IsLoading { get; set; }
@@ -62,7 +56,10 @@ public partial class LedgerAccountDetailsReportView
 
     private string? CalculateAverageExchangeRate(IGrouping<string, LedgerAccountStatementRpResponse> group)
     {
-        var exchangeRates = group.Where(x => x.ExchangeRate.HasValue).Select(x => x.ExchangeRate!.Value).ToList();
+        var exchangeRates = group
+            .Where(x => x.ExchangeRate.HasValue)
+            .Select(x => x.ExchangeRate!.Value)
+            .ToList();
 
         if (!exchangeRates.Any())
             return null;
@@ -81,6 +78,16 @@ public partial class LedgerAccountDetailsReportView
     private Color GetTransactionIconColor(LedgerAccountStatementRpResponse context)
     {
         return context.TransactionType is TransactionType.Debit
+            ? Color.Success
+            : Color.Error;
+    }
+
+    private Color GetRunningBalanceColor(LedgerAccountStatementRpResponse context)
+    {
+        if (context.RunningBalance == 0)
+            return Color.Inherit;
+
+        return context.RunningBalance > 0
             ? Color.Error
             : Color.Success;
     }

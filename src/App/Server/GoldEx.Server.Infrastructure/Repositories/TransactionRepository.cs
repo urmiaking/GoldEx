@@ -143,6 +143,110 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         return result;
     }
 
+    public async Task<List<LedgerAccountStatementModel>> GetLedgerAccountStatementsAsync(
+    LedgerAccountStatementRpRequest request,
+    CancellationToken cancellationToken = default)
+    {
+        var q = Query
+            .AsNoTracking()
+            .Include(t => t.PriceUnit)
+            .Include(t => t.ReversedBy)
+            .Where(t => t.ReverseTransactionId == null)
+            .Where(t => t.ReversedBy == null || !t.ReversedBy.Any())
+            .Where(t => t.LedgerAccountId == new LedgerAccountId(request.LedgerAccountId))
+            .Where(t => request.PriceUnitId == null || t.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value))
+            .Where(t => request.FromDate == null || t.PostingDate >= request.FromDate.Value)
+            .Where(t => request.ToDate == null || t.PostingDate <= request.ToDate.Value);
+
+        var list = await q
+            .OrderBy(t => t.PostingDate)
+            .ThenBy(t => t.Id)
+            .Select(t => new
+            {
+                t.PostingDate,
+                t.Description,
+                t.TransactionType,
+                t.Amount,
+                t.ExchangeRate,
+                t.BaseCurrencyAmount,
+                PriceUnitTitle = t.PriceUnit!.Title,
+                t.PriceUnitId,
+                t.InvoiceId,
+                t.PaymentVoucherId,
+                t.InvoicePaymentId,
+                t.InventoryEntryId,
+                t.InventoryExitId,
+                t.InventoryStockId,
+                t.MeltingBatchId
+            })
+            .ToListAsync(cancellationToken);
+
+        var result = new List<LedgerAccountStatementModel>(list.Count);
+
+        if (request.PriceUnitId.HasValue)
+        {
+            var running = 0m;
+
+            foreach (var t in list)
+            {
+                var signed = t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount;
+                running += signed;
+
+                result.Add(new LedgerAccountStatementModel
+                {
+                    PostingDate = t.PostingDate,
+                    Description = t.Description,
+                    TransactionType = t.TransactionType,
+                    Amount = t.Amount,
+                    RunningBalance = running,
+                    PriceUnitTitle = t.PriceUnitTitle,
+                    ExchangeRate = t.ExchangeRate,
+                    BaseCurrencyAmount = t.BaseCurrencyAmount,
+                    InvoiceId = t.InvoiceId?.Value,
+                    PaymentVoucherId = t.PaymentVoucherId?.Value,
+                    InvoicePaymentId = t.InvoicePaymentId?.Value,
+                    InventoryEntryId = t.InventoryEntryId?.Value,
+                    InventoryExitId = t.InventoryExitId?.Value,
+                    InventoryStockId = t.InventoryStockId?.Value,
+                    MeltingBatchId = t.MeltingBatchId?.Value
+                });
+            }
+
+            return result;
+        }
+
+        var runningByUnit = new Dictionary<PriceUnitId, decimal>();
+
+        foreach (var t in list)
+        {
+            var signed = t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount;
+
+            var running = runningByUnit.GetValueOrDefault(t.PriceUnitId, 0m) + signed;
+            runningByUnit[t.PriceUnitId] = running;
+
+            result.Add(new LedgerAccountStatementModel
+            {
+                PostingDate = t.PostingDate,
+                Description = t.Description,
+                TransactionType = t.TransactionType,
+                Amount = t.Amount,
+                RunningBalance = running,
+                PriceUnitTitle = t.PriceUnitTitle,
+                ExchangeRate = t.ExchangeRate,
+                BaseCurrencyAmount = t.BaseCurrencyAmount,
+                InvoiceId = t.InvoiceId?.Value,
+                PaymentVoucherId = t.PaymentVoucherId?.Value,
+                InvoicePaymentId = t.InvoicePaymentId?.Value,
+                InventoryEntryId = t.InventoryEntryId?.Value,
+                InventoryExitId = t.InventoryExitId?.Value,
+                InventoryStockId = t.InventoryStockId?.Value,
+                MeltingBatchId = t.MeltingBatchId?.Value
+            });
+        }
+
+        return result;
+    }
+
     public async Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request, 
         CancellationToken cancellationToken = default)
     {
@@ -337,9 +441,8 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         };
     }
 
-    public async Task<List<CustomerRemainingBalanceModel>> GetCustomerRemainingBalanceAsync(
-    CustomerRemainingBalanceRpRequest request,
-    CancellationToken cancellationToken = default)
+    public async Task<List<CustomerRemainingBalanceModel>> GetCustomerRemainingBalanceAsync(CustomerRemainingBalanceRpRequest request, 
+        CancellationToken cancellationToken = default)
     {
         var q = Query
             .AsNoTracking()
@@ -427,5 +530,122 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
             .OrderBy(x => x.CustomerName)
             .ThenBy(x => x.PriceUnitTitle)
             .ToList();
+    }
+
+    public async Task<List<CustomerTransactionModel>> GetCustomerTransactionsAsync(CustomerTransactionRpRequest request, 
+        CancellationToken cancellationToken = default)
+    {
+        var q = Query
+            .AsNoTracking()
+            .Include(t => t.PriceUnit)
+            .Include(t => t.LedgerAccount!).ThenInclude(la => la.ParentAccount)
+            .Include(t => t.ReversedBy)
+            .Where(t => t.LedgerAccount != null)
+            .Where(t => t.LedgerAccount!.CustomerId == new CustomerId(request.CustomerId))
+            .Where(t => request.PriceUnitId == null || t.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value))
+            .Where(t => t.ReverseTransactionId == null)
+            .Where(t => t.ReversedBy == null || !t.ReversedBy.Any())
+            .Where(t => request.FromDate == null || t.PostingDate >= request.FromDate.Value)
+            .Where(t => request.ToDate == null || t.PostingDate <= request.ToDate.Value);
+
+        if (request.LedgerRole.HasValue)
+        {
+            var parentTitle = request.LedgerRole.Value == LedgerAccountRole.Receivable
+                ? SystemLedgerAccounts.AccountsReceivable
+                : SystemLedgerAccounts.AccountsPayable;
+
+            q = q.Where(t =>
+                t.LedgerAccount!.ParentAccount != null &&
+                t.LedgerAccount!.ParentAccount!.Title == parentTitle);
+        }
+        else
+        {
+            q = q.Where(t =>
+                t.LedgerAccount!.ParentAccount != null &&
+                (
+                    t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable ||
+                    t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable
+                ));
+        }
+
+        var list = await q
+            .OrderBy(t => t.PostingDate)
+            .ThenBy(t => t.Id)
+            .Select(t => new
+            {
+                t.PostingDate,
+                t.Description,
+                t.TransactionType,
+                t.Amount,
+                t.ExchangeRate,
+                t.BaseCurrencyAmount,
+                PriceUnitTitle = t.PriceUnit!.Title,
+                t.PriceUnitId,
+                t.InvoiceId,
+                t.InvoicePaymentId,
+                t.PaymentVoucherId,
+                Role = t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable
+                    ? LedgerAccountRole.Receivable
+                    : LedgerAccountRole.Payable
+            })
+            .ToListAsync(cancellationToken);
+
+        var result = new List<CustomerTransactionModel>(list.Count);
+
+        if (request.PriceUnitId.HasValue)
+        {
+            decimal running = 0m;
+            foreach (var t in list)
+            {
+                var signed = t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount;
+                running += signed;
+
+                result.Add(new CustomerTransactionModel
+                {
+                    PostingDate = t.PostingDate,
+                    Description = t.Description,
+                    TransactionType = t.TransactionType,
+                    Role = t.Role,
+                    Amount = t.Amount,
+                    RunningBalance = running,
+                    PriceUnitTitle = t.PriceUnitTitle,
+                    ExchangeRate = t.ExchangeRate,
+                    BaseCurrencyAmount = t.BaseCurrencyAmount,
+                    InvoiceId = t.InvoiceId?.Value,
+                    InvoicePaymentId = t.InvoicePaymentId?.Value,
+                    PaymentVoucherId = t.PaymentVoucherId?.Value
+                });
+            }
+
+            return result;
+        }
+
+        var runningByUnit = new Dictionary<PriceUnitId, decimal>();
+
+        foreach (var t in list)
+        {
+            var signed = t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount;
+
+            var running = runningByUnit.GetValueOrDefault(t.PriceUnitId, 0m) + signed;
+            runningByUnit[t.PriceUnitId] = running;
+
+            result.Add(new CustomerTransactionModel
+            {
+                PostingDate = t.PostingDate,
+                Description = t.Description,
+                TransactionType = t.TransactionType,
+                Role = t.Role,
+                Amount = t.Amount,
+                RunningBalance = running,
+                PriceUnitTitle = t.PriceUnitTitle,
+                ExchangeRate = t.ExchangeRate,
+                BaseCurrencyAmount = t.BaseCurrencyAmount,
+                InvoiceId = t.InvoiceId?.Value,
+                InvoicePaymentId = t.InvoicePaymentId?.Value,
+                PaymentVoucherId = t.PaymentVoucherId?.Value
+            });
+        }
+
+        return result;
     }
 }

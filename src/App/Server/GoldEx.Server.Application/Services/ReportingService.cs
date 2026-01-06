@@ -1,12 +1,8 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Server.Domain.LedgerAccountAggregate;
-using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
-using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -17,17 +13,8 @@ internal class ReportingService(ITransactionRepository transactionRepository, IM
         LedgerAccountStatementRpRequest request,
         CancellationToken cancellationToken = default)
     {
-        var list = await transactionRepository
-            .Get(new TransactionDefaultSpecification())
-            .Include(x => x.PriceUnit)
-            .Where(x => x.LedgerAccountId == new LedgerAccountId(request.LedgerAccountId))
-            .Where(x => request.PriceUnitId == null || x.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value))
-            .Where(x => request.FromDate == null || x.PostingDate >= request.FromDate)
-            .Where(x => request.ToDate == null || x.PostingDate <= request.ToDate)
-            .OrderBy(x => x.PostingDate)
-            .ToListAsync(cancellationToken);
-
-        return mapper.Map<List<LedgerAccountStatementRpResponse>>(list);
+        var models = await transactionRepository.GetLedgerAccountStatementsAsync(request, cancellationToken);
+        return mapper.Map<List<LedgerAccountStatementRpResponse>>(models);
     }
 
     public async Task<List<LedgerAccountTrialBalanceRpResponse>> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request,
@@ -42,5 +29,12 @@ internal class ReportingService(ITransactionRepository transactionRepository, IM
     {
         var list = await transactionRepository.GetCustomerRemainingBalanceAsync(request, cancellationToken);
         return mapper.Map<List<CustomerRemainingBalanceRpResponse>>(list);
+    }
+
+    public async Task<List<CustomerTransactionRpResponse>> GetCustomerTransactionsAsync(CustomerTransactionRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await transactionRepository.GetCustomerTransactionsAsync(request, cancellationToken);
+        return mapper.Map<List<CustomerTransactionRpResponse>>(list);
     }
 }

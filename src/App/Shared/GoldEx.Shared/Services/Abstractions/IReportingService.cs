@@ -33,4 +33,14 @@ public interface IReportingService
     Task<List<CustomerRemainingBalanceRpResponse>> GetCustomerRemainingBalanceAsync(
         CustomerRemainingBalanceRpRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get customer payable and receivable transactions report for given customer
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<CustomerTransactionRpResponse>> GetCustomerTransactionsAsync(
+        CustomerTransactionRpRequest request,
+        CancellationToken cancellationToken = default);
 }

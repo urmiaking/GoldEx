@@ -550,5 +550,9 @@ public class ApiUrls
         public static string GetCustomerRemainingBalance(CustomerRemainingBalanceRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCustomerRemainingBalance)
                 .AppendQueryString(request);
+
+        public static string GetCustomerTransactions(CustomerTransactionRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCustomerTransactions)
+                .AppendQueryString(request);
     }
 }
