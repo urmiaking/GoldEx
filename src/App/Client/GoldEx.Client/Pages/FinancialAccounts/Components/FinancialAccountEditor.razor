@@ -12,7 +12,8 @@
                                 Variant="Variant.Outlined"
                                 CheckMark="true"
                                 Class="d-flex flex-wrap justify-content-center align-center"
-                                @bind-SelectedValue="Model.FinancialAccountType">
+                                SelectedValue="Model.FinancialAccountType"
+                                SelectedValueChanged="OnAccountTypeChanged">
                         <MudChip Color="Color.Success"
                                  Value="@(FinancialAccountType.LocalBankAccount)"
                                  Size="@(Model.FinancialAccountType == FinancialAccountType.LocalBankAccount ? Size.Large : Size.Medium)"
