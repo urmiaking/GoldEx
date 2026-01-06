@@ -18,7 +18,7 @@
             <MudSelectItem Value="item" T="TransactionType?">
                 <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
                     <MudIcon Color="@GetTransactionColor(item)" Icon="@GetTransactionIcon(item)"></MudIcon>
-                    <MudText>فقط @item.GetDisplayName()</MudText>
+                    <MudText Color="@GetTransactionColor(item)">فقط @item.GetDisplayName()</MudText>
                 </MudStack>
             </MudSelectItem>
 

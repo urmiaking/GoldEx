@@ -33,6 +33,16 @@ public interface ITransactionRepository : IRepository<Transaction>,
         DateTime? toDate = null,
         CancellationToken cancellationToken = default);
 
-    Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request, CancellationToken cancellationToken = default);
-    Task<List<CustomerRemainingBalanceModel>> GetCustomerRemainingBalanceAsync(CustomerRemainingBalanceRpRequest request, CancellationToken cancellationToken = default);
+    Task<List<LedgerAccountStatementModel>> GetLedgerAccountStatementsAsync(
+        LedgerAccountStatementRpRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<LedgerAccountTrialBalanceModel> GetLedgerAccountTrialBalanceAsync(LedgerAccountTrialBalanceRpRequest request, 
+        CancellationToken cancellationToken = default);
+
+    Task<List<CustomerRemainingBalanceModel>> GetCustomerRemainingBalanceAsync(CustomerRemainingBalanceRpRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<List<CustomerTransactionModel>> GetCustomerTransactionsAsync(CustomerTransactionRpRequest request, 
+        CancellationToken cancellationToken = default);
 }

@@ -29,7 +29,7 @@ else
               ContainerClass="responsive-table-toolbar"
               Elevation="24">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">گزارش گردش حساب</MudText>
+            <MudText Typo="Typo.h6">گزارش گردش حساب مشتری</MudText>
             <MudSpacer />
             <MudHidden Breakpoint="Breakpoint.MdAndDown">
                 <MudButton StartIcon="@Icons.Material.Filled.Print"
@@ -49,7 +49,7 @@ else
         </ToolBarContent>
         <HeaderContent>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<LedgerAccountStatementRpResponse, object>(x => x.PostingDate)">
+                <MudTableSortLabel SortBy="new Func<CustomerTransactionRpResponse, object>(x => x.PostingDate)">
                     تاریخ
                 </MudTableSortLabel>
             </MudTh>
@@ -57,25 +57,25 @@ else
             <MudTh>شرح</MudTh>
 
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<LedgerAccountStatementRpResponse, object>(x => x.Amount)">
+                <MudTableSortLabel SortBy="new Func<CustomerTransactionRpResponse, object>(x => x.Amount)">
                     مبلغ
                 </MudTableSortLabel>
             </MudTh>
 
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<LedgerAccountStatementRpResponse, object>(x => x.ExchangeRate ?? 0m)">
+                <MudTableSortLabel SortBy="new Func<CustomerTransactionRpResponse, object>(x => x.ExchangeRate ?? 0m)">
                     نرخ تبدیل
                 </MudTableSortLabel>
             </MudTh>
 
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<LedgerAccountStatementRpResponse, object>(x => x.BaseCurrencyAmount)">
+                <MudTableSortLabel SortBy="new Func<CustomerTransactionRpResponse, object>(x => x.BaseCurrencyAmount)">
                     مبلغ به ارز پایه
                 </MudTableSortLabel>
             </MudTh>
 
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<LedgerAccountStatementRpResponse, object>(x => x.RunningBalance)">
+                <MudTableSortLabel SortBy="new Func<CustomerTransactionRpResponse, object>(x => x.RunningBalance)">
                     مانده جاری
                 </MudTableSortLabel>
             </MudTh>
@@ -86,11 +86,7 @@ else
         <RowTemplate>
             <MudTd DataLabel="تاریخ">@context.PostingDate.ToString("yyyy/MM/dd HH:mm")</MudTd>
 
-            <MudTd DataLabel="شرح">
-                <MudText Typo="Typo.body2">
-                    @context.Description
-                </MudText>
-            </MudTd>
+            <MudTd DataLabel="شرح"><MudText Typo="Typo.body2">@context.Description</MudText></MudTd>
 
             <MudTd DataLabel="مبلغ">
                 <div class="d-flex gap-2">
@@ -146,46 +142,6 @@ else
                                  Color="Color.Info"
                                  Variant="Variant.Outlined" />
                     }
-                    @if (context.InventoryEntryId is not null)
-                    {
-                        <MudChip T="string"
-                                 Text="ورود دستی"
-                                 Icon="@Icons.Material.Filled.Input"
-                                 Size="Size.Small"
-                                 Color="Color.Error"
-                                 Variant="Variant.Filled"
-                                 OnClick="@(() => OnOpenReference.InvokeAsync((nameof(context.InventoryEntryId), context.InventoryEntryId.Value)))" />
-                    }
-                    @if (context.InventoryExitId is not null)
-                    {
-                        <MudChip T="string"
-                                 Text="خروج دستی"
-                                 Icon="@Icons.Material.Filled.Output"
-                                 Size="Size.Small"
-                                 Color="Color.Primary"
-                                 Variant="Variant.Filled"
-                                 OnClick="@(() => OnOpenReference.InvokeAsync((nameof(context.InventoryExitId), context.InventoryExitId.Value)))" />
-                    }
-                    @if (context.InventoryStockId is not null)
-                    {
-                        <MudChip T="string"
-                                 Text="رکورد انبار"
-                                 Icon="@Icons.Material.Filled.Inventory2"
-                                 Size="Size.Small"
-                                 Color="Color.Tertiary"
-                                 Variant="Variant.Filled"
-                                 OnClick="@(() => OnOpenReference.InvokeAsync((nameof(context.InventoryStockId), context.InventoryStockId.Value)))" />
-                    }
-                    @if (context.MeltingBatchId is not null)
-                    {
-                        <MudChip T="string"
-                                 Text="ذوب طلا"
-                                 Icon="@Icons.Material.Filled.LocalFireDepartment"
-                                 Size="Size.Small"
-                                 Color="Color.Primary"
-                                 Variant="Variant.Filled"
-                                 OnClick="@(() => OnOpenReference.InvokeAsync((nameof(context.MeltingBatchId), context.MeltingBatchId.Value)))" />
-                    }
                 </div>
             </MudTd>
         </RowTemplate>
@@ -195,5 +151,5 @@ else
         </NoRecordsContent>
     </MudTable>
 
-    <LedgerAccountDetailsSummary Summary="@_summary" />
+    <CustomerTransactionsSummary Summary="@_summary" />
 }
