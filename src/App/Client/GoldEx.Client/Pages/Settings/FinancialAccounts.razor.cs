@@ -72,6 +72,12 @@ public partial class FinancialAccounts
 
     private async Task OnEdit(FinancialAccountVm model)
     {
+        if (model.PriceUnit is { IsGoldBased: true })
+        {
+            AddErrorToast("حساب‌های مالی مبتنی بر طلا قابل ویرایش نیستند.");
+            return;
+        }
+
         var parameters = new DialogParameters<FinancialAccountEditor>
         {
             { x => x.Model, model },
