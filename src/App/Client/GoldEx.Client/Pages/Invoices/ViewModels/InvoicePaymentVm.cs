@@ -132,7 +132,7 @@ public class InvoicePaymentVm
 
         return goldIsPayment
             ? ExchangeRate                         // already Gold -> Money
-            : (ExchangeRate == 0 ? null : 1 / ExchangeRate.Value);
+            : (ExchangeRate == 0 ? null : Math.Round(1 / ExchangeRate.Value, 2));
     }
 
     public void SetFromDisplayExchangeRate(
