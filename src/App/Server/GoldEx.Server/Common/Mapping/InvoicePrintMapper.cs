@@ -71,7 +71,7 @@ internal class InvoicePrintMapper : IRegister
             )
             .Map(dest => dest.TotalUnpaidSecondaryAmount,
                 src => src.UnpaidPriceUnitId.HasValue
-                    ? $"({(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1))
+                    ? $"({Math.Abs(src.TotalUnpaidAmount * (src.UnpaidAmountExchangeRate ?? 1))
                         .ToCurrencyReportFormat(src.UnpaidPriceUnit == null ? null : src.UnpaidPriceUnit.Title)})"
                     : null)
             .Map(dest => dest.TotalStoneAmount, src => src.TotalStoneAmount != 0
