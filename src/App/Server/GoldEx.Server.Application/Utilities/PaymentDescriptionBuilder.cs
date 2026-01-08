@@ -45,9 +45,13 @@ public static class PaymentDescriptionBuilder
     {
         var text = "پرداخت نقدی";
 
+        var exchangeRate = payment.ExchangeRate < 1 ? Math.Round(1 / payment.ExchangeRate.Value, 2) : payment.ExchangeRate;
+
+        var priceUnit = payment.ExchangeRate < 1 ? payment.PriceUnit : payment.Invoice?.PriceUnit;
+
         if (payment.PriceUnitId != payment.Invoice?.PriceUnitId)
         {
-            text += $" {payment.PriceUnit?.Title} با نرخ تبدیل {payment.ExchangeRate?.ToCurrencyReportFormat(payment.Invoice?.PriceUnit?.Title)}";
+            text += $" {payment.PriceUnit?.Title} با نرخ تبدیل {exchangeRate?.ToCurrencyReportFormat(priceUnit?.Title)}";
         }
 
         return text;
