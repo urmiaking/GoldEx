@@ -1,5 +1,4 @@
 ﻿using GoldEx.Client.Extensions;
-using GoldEx.Client.Pages.Reporting.Extensions;
 using GoldEx.Client.Pages.Reporting.ViewModels;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
