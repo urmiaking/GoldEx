@@ -9,7 +9,8 @@ namespace GoldEx.Server.Infrastructure.Specifications.Invoices;
 
 public class InvoicesReportSpecification : SpecificationBase<Invoice>
 {
-    public InvoicesReportSpecification(InvoicePaymentStatus? paymentStatus = null,
+    public InvoicesReportSpecification(InvoiceType invoiceType,
+        InvoicePaymentStatus? paymentStatus = null,
         Guid? priceUnitId = null,
         Guid? customerId = null,
         DateTime? fromDate = null,
@@ -18,7 +19,7 @@ public class InvoicesReportSpecification : SpecificationBase<Invoice>
         AddInclude(x => x.Customer!);
         AddInclude(x => x.InvoicePayments!);
 
-        AddCriteria(x => x.InvoiceType == InvoiceType.Sell);
+        AddCriteria(x => x.InvoiceType == invoiceType);
 
         if (paymentStatus.HasValue)
         {

@@ -1,0 +1,22 @@
+﻿@attribute [Route(ClientRoutes.Reporting.PurchaseInvoices)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits PurchaseInvoicePageBase
+
+<PageTitle>گزارش فاکتور خرید</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="pr-0" Items="Breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
+        <PurchaseInvoiceFilters Model="@Filters" />
+    </ReportFiltersBase>
+
+    <PurchaseInvoiceReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
+</MudContainer>
+
+<script src="/js/report-print.js?v=2"></script>

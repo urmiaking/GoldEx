@@ -151,8 +151,8 @@ public static class ClientRoutes
             public const string LedgerAccountTrialBalances = $"{PrintPrefix}/ledger-account-trial-balances";
             public const string CustomerBalances = $"{PrintPrefix}/customer-balances";
             public const string CustomerTransactions = $"{PrintPrefix}/customer-transactions";
-
             public const string SellInvoices = $"{PrintPrefix}/sell-invoices";
+            public const string PurchaseInvoices = $"{PrintPrefix}/purchase-invoices";
         }
     }
 

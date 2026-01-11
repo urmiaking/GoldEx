@@ -19,5 +19,11 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.TotalProfit, src => src.TotalProfitAmount)
             .Map(dest => dest.TotalTax, src => src.TotalTaxAmount)
             .Map(dest => dest.TotalWage, src => src.TotalWageAmount);
+
+        config.NewConfig<Invoice, PurchaseInvoiceRpResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.PriceUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
+            .Map(dest => dest.RemainingPrice, src => src.TotalUnpaidAmount)
+            .Map(dest => dest.TotalPrice, src => src.TotalAmountWithDiscountsAndExtraCosts);
     }
 }
