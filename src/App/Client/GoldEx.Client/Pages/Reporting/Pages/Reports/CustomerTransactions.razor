@@ -1,10 +1,6 @@
 ﻿@attribute [Route(ClientRoutes.Reporting.CustomerTransactions)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
-@using GoldEx.Client.Pages.Reporting.Components.Filters
-@using GoldEx.Client.Pages.Reporting.Components.Views
-@using GoldEx.Client.Pages.Reporting.Pages.Base
-
 @inherits CustomerTransactionsPageBase
 
 <PageTitle>گردش حساب مشتری</PageTitle>

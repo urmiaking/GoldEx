@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Pages.Reporting.ViewModels;
-using GoldEx.Shared.DTOs.Reporting;
+﻿using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -31,7 +30,7 @@ public partial class CustomerBalanceReportView
 
         var groupedByPriceUnit = Items
             .GroupBy(x => x.PriceUnitTitle)
-            .Select(g => new CustomerBalanceFilterVm.PriceUnitSummary
+            .Select(g => new PriceUnitSummary
             {
                 PriceUnitTitle = g.Key,
                 TotalPayable = g.Sum(x => x.PayableAmount),
@@ -47,16 +46,6 @@ public partial class CustomerBalanceReportView
 
     private decimal GetNet(CustomerRemainingBalanceRpResponse x)
         => x.ReceivableAmount - x.PayableAmount;
-
-    private string? GetNetIcon(CustomerRemainingBalanceRpResponse x)
-    {
-        var net = GetNet(x);
-        if (net == 0) return null;
-
-        return net > 0
-            ? Icons.Material.Filled.ArrowDownward 
-            : Icons.Material.Filled.ArrowUpward;
-    }
 
     private Color GetNetColor(CustomerRemainingBalanceRpResponse x)
     {
@@ -74,10 +63,6 @@ public partial class CustomerBalanceReportView
         var amountString = Math.Abs(net).ToCurrencyFormat(x.PriceUnitTitle);
 
         return amountString;
-
-        //return net > 0 ? $"{amountString} بدهکار"
-        //    : net < 0 ? $"{amountString} بستانکار"
-        //    : $"{0m.ToCurrencyFormat(x.PriceUnitTitle)}";
     }
 
     private static string GetAmount(decimal amount, string priceUnit)
