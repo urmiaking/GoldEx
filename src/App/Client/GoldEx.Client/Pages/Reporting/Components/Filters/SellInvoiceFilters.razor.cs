@@ -9,9 +9,9 @@ using MudBlazor;
 
 namespace GoldEx.Client.Pages.Reporting.Components.Filters;
 
-public partial class CustomerTransactionFilters
+public partial class SellInvoiceFilters
 {
-    [Parameter] public CustomerTransactionFilterVm Model { get; set; } = default!;
+    [Parameter] public SellInvoiceFilterVm Model { get; set; } = default!;
 
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private List<GetCustomerResponse>? _customers;
@@ -27,12 +27,34 @@ public partial class CustomerTransactionFilters
                     action: (s, ct) => s.GetAsync(Model.CustomerId.Value, ct),
                     afterSend: response => _selectedCustomer = response,
                     cancelPrevious: true);
-
-                await LoadPriceUnitsAsync();
             }
         }
 
+        await LoadPriceUnitsAsync();
+
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadPriceUnitsAsync()
+    {
+        var request = new TransactionFilter(
+            null,
+            Model.CustomerId,
+            null,
+            null,
+            null,
+            null,
+            false,
+            false);
+
+        await SendRequestAsync<ITransactionService, List<GetPriceUnitTitleResponse>>(
+            (s, ct) => s.GetAvailablePriceUnitsAsync(request, ct),
+            response =>
+            {
+                _priceUnits = response;
+                StateHasChanged();
+            },
+            createScope: true);
     }
 
     private async Task<IEnumerable<GetCustomerResponse>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)
@@ -56,41 +78,27 @@ public partial class CustomerTransactionFilters
         await LoadPriceUnitsAsync();
     }
 
-    private async Task LoadPriceUnitsAsync()
+    private Color GetStatusColor(InvoicePaymentStatus? item)
     {
-        if (!Model.CustomerId.HasValue)
-            return;
-
-        var request = new TransactionFilter(
-            null,
-            Model.CustomerId.Value,
-            null,
-            null,
-            null,
-            null,
-            false,
-            false);
-
-        await SendRequestAsync<ITransactionService, List<GetPriceUnitTitleResponse>>(
-            (s, ct) => s.GetAvailablePriceUnitsAsync(request, ct),
-            response =>
-            {
-                _priceUnits = response;
-                StateHasChanged();
-            });
+        return item switch
+        {
+            InvoicePaymentStatus.Paid => Color.Success,
+            InvoicePaymentStatus.HasDebt => Color.Primary,
+            InvoicePaymentStatus.Overdue => Color.Error,
+            null => Color.Info,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
-    private Color GetTransactionColor(LedgerAccountRole item)
+    private string GetStatusIcon(InvoicePaymentStatus? item)
     {
-        return item is LedgerAccountRole.Receivable
-            ? Color.Success
-            : Color.Primary;
-    }
-
-    private string GetTransactionIcon(LedgerAccountRole item)
-    {
-        return item == LedgerAccountRole.Receivable
-            ? Icons.Material.Filled.AccountBalanceWallet
-            : Icons.Material.Filled.Payments;
+        return item switch
+        {
+            InvoicePaymentStatus.Paid => Icons.Material.Filled.Check,
+            InvoicePaymentStatus.HasDebt => Icons.Material.Filled.Pending,
+            InvoicePaymentStatus.Overdue => Icons.Material.Filled.MoreTime,
+            null => Icons.Material.Filled.ViewHeadline,
+            _ => throw new ArgumentOutOfRangeException(nameof(item), item, null)
+        };
     }
 }

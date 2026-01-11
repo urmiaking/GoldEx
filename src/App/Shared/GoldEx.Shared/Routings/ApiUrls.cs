@@ -554,5 +554,9 @@ public class ApiUrls
         public static string GetCustomerTransactions(CustomerTransactionRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCustomerTransactions)
                 .AppendQueryString(request);
+
+        public static string GetSellInvoices(SellInvoiceRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetSellInvoices)
+                .AppendQueryString(request);
     }
 }

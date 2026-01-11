@@ -1,9 +1,9 @@
-﻿@attribute [Route(ClientRoutes.Reporting.LedgerAccountTrialBalances)]
+﻿@attribute [Route(ClientRoutes.Reporting.SellInvoices)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
-@inherits LedgerAccountTrailBalancePageBase
+@inherits SellInvoicePageBase
 
-<PageTitle>تراز حساب ها</PageTitle>
+<PageTitle>گزارش فاکتور فروش</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudBreadcrumbs Class="pr-0" Items="Breadcrumbs">
@@ -13,10 +13,10 @@
     </MudBreadcrumbs>
 
     <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
-        <LedgerAccountTrialBalanceFilters Model="@Filters" />
+        <SellInvoiceFilters Model="@Filters" /> 
     </ReportFiltersBase>
 
-    <LedgerAccountTrialBalanceReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
+    <SellInvoiceReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
 </MudContainer>
 
 <script src="/js/report-print.js?v=2"></script>

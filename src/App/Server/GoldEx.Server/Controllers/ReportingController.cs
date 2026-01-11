@@ -47,4 +47,13 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         var result = await service.GetCustomerTransactionsAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet(ApiRoutes.Reporting.GetSellInvoices)]
+    public async Task<IActionResult> GetSellInvoicesAsync(
+        [FromQuery] SellInvoiceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetSellInvoicesAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }
