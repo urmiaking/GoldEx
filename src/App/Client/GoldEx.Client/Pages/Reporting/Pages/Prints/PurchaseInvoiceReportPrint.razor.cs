@@ -10,7 +10,7 @@ using MudBlazor;
 
 namespace GoldEx.Client.Pages.Reporting.Pages.Prints;
 
-public partial class SellInvoiceReportPrint
+public partial class PurchaseInvoiceReportPrint
 {
     [Parameter, SupplyParameterFromQuery]
     public Guid? PriceUnitId { get; set; }
@@ -30,7 +30,7 @@ public partial class SellInvoiceReportPrint
 
             var output = $"{customerName}";
 
-            if (!string.IsNullOrEmpty(priceUnit)) 
+            if (!string.IsNullOrEmpty(priceUnit))
                 output += $" ({priceUnit})";
 
             return output;
@@ -38,8 +38,8 @@ public partial class SellInvoiceReportPrint
     }
 
     private readonly int _version = new Random().Next(0, 1000);
-    private SellInvoiceFilterVm _filter = default!;
-    private List<SellInvoiceRpResponse>? _items;
+    private PurchaseInvoiceFilterVm _filter = default!;
+    private List<PurchaseInvoiceRpResponse>? _items;
     private GetPriceUnitResponse? _priceUnit;
     private GetCustomerResponse? _customer;
     private ReportSummaryVm? _summary;
@@ -54,7 +54,7 @@ public partial class SellInvoiceReportPrint
             status = parsed;
         }
 
-        _filter = new SellInvoiceFilterVm
+        _filter = new PurchaseInvoiceFilterVm
         {
             PriceUnitId = PriceUnitId,
             CustomerId = CustomerId,
@@ -99,8 +99,8 @@ public partial class SellInvoiceReportPrint
     {
         var request = _filter.ToRequest();
 
-        _items = await SendRequestAsync<IReportingService, List<SellInvoiceRpResponse>>(
-            action: (s, ct) => s.GetSellInvoicesAsync(request, ct),
+        _items = await SendRequestAsync<IReportingService, List<PurchaseInvoiceRpResponse>>(
+            action: (s, ct) => s.GetPurchaseInvoicesAsync(request, ct),
             createScope: true);
 
         CalculateSummary();
@@ -116,13 +116,10 @@ public partial class SellInvoiceReportPrint
 
         var groupedByPriceUnit = _items
             .GroupBy(x => x.PriceUnit)
-            .Select(g => new SellInvoiceFilterVm.PriceUnitSummary
+            .Select(g => new PurchaseInvoiceFilterVm.PriceUnitSummary
             {
                 PriceUnitTitle = g.Key,
                 TotalPrice = g.Sum(x => x.TotalPrice),
-                TotalProfit = g.Sum(x => x.TotalProfit),
-                TotalWage = g.Sum(x => x.TotalWage),
-                TotalTax = g.Sum(x => x.TotalTax),
                 TotalRemaining = g.Sum(x => x.RemainingPrice)
             })
             .OrderBy(x => x.PriceUnitTitle)
@@ -141,31 +138,13 @@ public partial class SellInvoiceReportPrint
                 },
                 new SummaryItem
                 {
-                    Label = "مجموع سود",
-                    Value = pu.TotalProfit.ToCurrencyFormat(pu.PriceUnitTitle),
-                    Type = "credit"
-                },
-                new SummaryItem
-                {
-                    Label = "مجموع اجرت",
-                    Value = pu.TotalWage.ToCurrencyFormat(pu.PriceUnitTitle),
-                    Type = "net"
-                },
-                new SummaryItem
-                {
-                    Label = "مجموع مالیات",
-                    Value = pu.TotalTax.ToCurrencyFormat(pu.PriceUnitTitle),
-                    Type = "debit"
-                },
-                new SummaryItem
-                {
                     Label = "مجموع مانده",
                     Value = Math.Abs(pu.TotalRemaining).ToCurrencyFormat(pu.PriceUnitTitle),
                     Type = pu.TotalRemaining switch
                     {
                         0 => "net",
-                        > 0 => "debit",
-                        < 0 => "credit"
+                        > 0 => "credit",
+                        < 0 => "debit"
                     }
                 }
             ]
@@ -181,8 +160,8 @@ public partial class SellInvoiceReportPrint
     {
         var amountString = Math.Abs(amount).ToCurrencyFormat(priceUnit);
 
-        return amount > 0 ? $"{amountString} بدهکار"
-            : amount < 0 ? $"{amountString} بستانکار"
+        return amount > 0 ? $"{amountString} بستانکار"
+            : amount < 0 ? $"{amountString} بدهکار"
             : "تسویه";
     }
 
@@ -200,6 +179,6 @@ public partial class SellInvoiceReportPrint
         if (amount == 0)
             return string.Empty;
 
-        return amount > 0 ? "debit-icon" : "credit-icon";
+        return amount > 0 ? "credit-icon" : "debit-icon";
     }
 }

@@ -2,6 +2,7 @@
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +47,8 @@ internal class ReportingService(
     public async Task<List<SellInvoiceRpResponse>> GetSellInvoicesAsync(SellInvoiceRpRequest request, CancellationToken cancellationToken = default)
     {
         var list = await invoiceRepository
-            .Get(new InvoicesReportSpecification(request.PaymentStatus,
+            .Get(new InvoicesReportSpecification(InvoiceType.Sell,
+                request.PaymentStatus,
                 request.PriceUnitId,
                 request.CustomerId,
                 request.FromDate,
@@ -54,5 +56,19 @@ internal class ReportingService(
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<SellInvoiceRpResponse>>(list);
+    }
+
+    public async Task<List<PurchaseInvoiceRpResponse>> GetPurchaseInvoicesAsync(PurchaseInvoiceRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var list = await invoiceRepository
+            .Get(new InvoicesReportSpecification(InvoiceType.Purchase,
+                request.PaymentStatus,
+                request.PriceUnitId,
+                request.CustomerId,
+                request.FromDate,
+                request.ToDate))
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<PurchaseInvoiceRpResponse>>(list);
     }
 }

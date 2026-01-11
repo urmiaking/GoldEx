@@ -1,0 +1,66 @@
+﻿@using GoldEx.Shared.DTOs.Customers
+@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="Guid?"
+               Label="@Model.GetDisplayName(() => Model.PriceUnitId)"
+               @bind-Value="Model.PriceUnitId"
+               For="@(() => Model.PriceUnitId)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه ارزها</MudSelectItem>
+        @foreach (var item in _priceUnits)
+        {
+            <MudSelectItem Value="item.Id" T="Guid?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                    </MudAvatar>
+                    <MudText>@item.Title</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="InvoicePaymentStatus?"
+               Label="@Model.GetDisplayName(() => Model.PaymentStatus)"
+               @bind-Value="Model.PaymentStatus"
+               For="@(() => Model.PaymentStatus)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="InvoicePaymentStatus?" Value="@((InvoicePaymentStatus?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.SwapHoriz"></MudIcon>
+                <MudText>همه فاکتورها</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<InvoicePaymentStatus>())
+        {
+            <MudSelectItem Value="item" T="InvoicePaymentStatus?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetStatusColor(item)" Icon="@GetStatusIcon(item)"></MudIcon>
+                    <MudText Color="@GetStatusColor(item)">@item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudAutocomplete T="GetCustomerResponse?"
+                     Value="_selectedCustomer"
+                     ValueChanged="OnCustomerChanged"
+                     Text="@_selectedCustomer?.FullName"
+                     Placeholder="جستجوی طرف حساب..."
+                     Label="@(Model.GetDisplayName(() => Model.CustomerId))"
+                     ToStringFunc="@(customer => customer != null ? $"{customer.FullName}" : null)"
+                     Margin="Margin.Dense"
+                     Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.Person"
+                     Variant="Variant.Outlined"
+                     SearchFunc="@SearchCustomers"
+                     CoerceText="true"
+                     ResetValueOnEmptyText="true" />
+</MudItem>
