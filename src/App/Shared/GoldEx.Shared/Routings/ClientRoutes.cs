@@ -133,9 +133,7 @@ public static class ClientRoutes
         public const string CustomerTransactions = $"{ReportingPrefix}/customer-transactions";
         public const string SellInvoices = $"{ReportingPrefix}/sell-invoices";
         public const string PurchaseInvoices = $"{ReportingPrefix}/purchase-invoices";
-        public const string InvoiceSummary = $"{ReportingPrefix}/invoice-summary";
-        public const string InvoiceSettlements = $"{ReportingPrefix}/invoice-settlements";
-        public const string InvoiceAgingAnalysis = $"{ReportingPrefix}/invoice-aging-analysis";
+        public const string Payments = $"{ReportingPrefix}/payments";
         public const string InvoicePayments = $"{ReportingPrefix}/invoice-payments";
         public const string PaymentVouchers = $"{ReportingPrefix}/payment-vouchers";
         public const string InventoryKardex = $"{ReportingPrefix}/inventory-kardex";
