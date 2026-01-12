@@ -1,0 +1,31 @@
+﻿@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="InvoiceType?"
+               Label="@Model.GetDisplayName(() => Model.InvoiceType)"
+               @bind-Value="Model.InvoiceType"
+               For="@(() => Model.InvoiceType)"
+               Variant="Variant.Outlined"
+               Required="true"
+               Margin="Margin.Dense">
+        @foreach (var item in Enum.GetValues<InvoiceType>())
+        {
+            <MudSelectItem Value="item" T="InvoiceType?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="GetColor(item)" Icon="@GetIcon(item)"></MudIcon>
+                    <MudText Color="GetColor(item)">@item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+<MudItem xs="12" sm="6" md="2">
+    <MudNumericField Label="@Model.GetDisplayName(() => Model.InvoiceNumber)"
+                     @bind-Value="Model.InvoiceNumber"
+                     For="@(() => Model.InvoiceNumber)"
+                     Variant="Variant.Outlined"
+                     dir="ltr"
+                     Required="true"
+                     HideSpinButtons="true"
+                     Margin="Margin.Dense" />
+</MudItem>

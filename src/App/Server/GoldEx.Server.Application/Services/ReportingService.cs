@@ -82,4 +82,13 @@ internal class ReportingService(
 
         return mapper.Map<List<PaymentRpResponse>>(list);
     }
+
+    public async Task<List<InvoicePaymentRpResponse>> GetInvoicePaymentsAsync(InvoicePaymentRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var list = await paymentRepository
+            .Get(new InvoicePaymentsByNumberSpecification(request.InvoiceNumber, request.InvoiceType))
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<InvoicePaymentRpResponse>>(list);
+    }
 }

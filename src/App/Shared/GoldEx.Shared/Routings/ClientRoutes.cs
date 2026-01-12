@@ -152,6 +152,7 @@ public static class ClientRoutes
             public const string SellInvoices = $"{PrintPrefix}/sell-invoices";
             public const string PurchaseInvoices = $"{PrintPrefix}/purchase-invoices";
             public const string Payments = $"{PrintPrefix}/payments";
+            public const string InvoicePayments = $"{PrintPrefix}/invoice-payments";
         }
     }
 

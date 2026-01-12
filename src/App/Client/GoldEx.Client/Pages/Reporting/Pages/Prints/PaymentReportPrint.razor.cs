@@ -1,5 +1,4 @@
 ﻿using GoldEx.Client.Pages.Reporting.ViewModels;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Reporting;

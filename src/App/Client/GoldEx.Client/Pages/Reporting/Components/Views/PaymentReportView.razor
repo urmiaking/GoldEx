@@ -66,7 +66,7 @@ else
                 </MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<PaymentRpResponse, object>(x => x.Customer.FullName)">
+                <MudTableSortLabel SortBy="new Func<PaymentRpResponse, object>(x => x.CustomerName)">
                     طرف حساب
                 </MudTableSortLabel>
             </MudTh>
@@ -85,7 +85,7 @@ else
                 </div>
             </MudTd>
             <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber @context.InvoiceType.GetDisplayName()</MudTd>
-            <MudTd DataLabel="طرف حساب">@context.Customer.FullName</MudTd>
+            <MudTd DataLabel="طرف حساب">@context.CustomerName</MudTd>
             <MudTd DataLabel="شرح">@context.Description</MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">
