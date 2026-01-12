@@ -18,33 +18,24 @@ public class DeleteInventoryStockProductValidator : AbstractValidator<Guid>
         _invoiceStockRepository = invoiceStockRepository;
 
         RuleFor(x => x)
-            .MustAsync(NotEnteredByPurchasedInvoice)
-            .WithMessage("این محصول از طریق فاکتور خرید اضافه شده است و امکان حذف آن وجود ندارد.")
+            .MustAsync(NotEnteredByInvoice)
+            .WithMessage("این محصول از طریق فاکتور اضافه شده است و امکان حذف آن وجود ندارد.")
             .MustAsync(NotResultInNegativeInventory)
-            .WithMessage("حذف این محصول منجر به موجودی منفی در انبار می‌شود و امکان‌پذیر نیست.")
-            .MustAsync(NotUsedInSellInvoices)
-            .WithMessage("این محصول در فاکتورهای فروش استفاده شده است و امکان حذف آن وجود ندارد.");
+            .WithMessage("حذف این محصول منجر به موجودی منفی در انبار می‌شود و امکان‌پذیر نیست.");
     }
 
-    private async Task<bool> NotEnteredByPurchasedInvoice(Guid id, CancellationToken cancellationToken)
+    private async Task<bool> NotEnteredByInvoice(Guid id, CancellationToken cancellationToken)
     {
         var exists = await _invoiceRepository
-            .ExistsAsync(new InvoicesByProductIdSpecification(new ProductId(id), InvoiceType.Purchase), cancellationToken);
+            .ExistsAsync(new InvoicesByProductIdSpecification(new ProductId(id)), cancellationToken);
 
         return !exists;
     }
 
+    // TODO: this should be reviewed
     private async Task<bool> NotResultInNegativeInventory(Guid id, CancellationToken cancellationToken)
     {
         var currentStock = await _invoiceStockRepository.GetQuantityAsync(new ProductId(id), cancellationToken);
         return currentStock > 0;
-    }
-
-    private async Task<bool> NotUsedInSellInvoices(Guid id, CancellationToken cancellationToken)
-    {
-        var exists = await _invoiceRepository
-            .ExistsAsync(new InvoicesByProductIdSpecification(new ProductId(id), InvoiceType.Sell), cancellationToken);
-
-        return !exists;
     }
 }
