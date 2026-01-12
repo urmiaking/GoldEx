@@ -1,5 +1,6 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
@@ -13,6 +14,7 @@ namespace GoldEx.Server.Application.Services;
 internal class ReportingService(
     ITransactionRepository transactionRepository,
     IInvoiceRepository invoiceRepository,
+    IInvoicePaymentRepository paymentRepository,
     IMapper mapper) : IReportingService
 {
     public async Task<List<LedgerAccountStatementRpResponse>> GetLedgerAccountStatementsAsync(
@@ -70,5 +72,14 @@ internal class ReportingService(
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<PurchaseInvoiceRpResponse>>(list);
+    }
+
+    public async Task<List<PaymentRpResponse>> GetPaymentsAsync(PaymentRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var list = await paymentRepository
+            .Get(new InvoicePaymentsByReportSpecification(request))
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<PaymentRpResponse>>(list);
     }
 }

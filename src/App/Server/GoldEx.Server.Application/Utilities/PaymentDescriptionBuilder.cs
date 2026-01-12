@@ -6,11 +6,11 @@ namespace GoldEx.Server.Application.Utilities;
 
 public static class PaymentDescriptionBuilder
 {
-    public static string Build(InvoicePayment payment)
+    public static string Build(InvoicePayment payment, bool includeAccountDetails = false)
     {
         return payment.PaymentType switch
         {
-            PaymentType.InternalCash => GetInternalCashTitle(payment),
+            PaymentType.InternalCash => GetInternalCashTitle(payment, includeAccountDetails),
             PaymentType.UsedGoldInventory => GetGoldPaymentTitle(PaymentType.UsedGoldInventory, payment),
             PaymentType.MoltenGoldInventory => GetGoldPaymentTitle(PaymentType.MoltenGoldInventory, payment),
             PaymentType.CustomerTransfer => $"حواله به {payment.LedgerAccount?.Customer?.FullName}",
@@ -41,9 +41,24 @@ public static class PaymentDescriptionBuilder
         throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, null);
     }
 
-    private static string GetInternalCashTitle(InvoicePayment payment)
+    private static string GetInternalCashTitle(InvoicePayment payment, bool includeAccountDetails)
     {
         var text = "پرداخت نقدی";
+
+        if (includeAccountDetails)
+        {
+            switch (payment.PaymentSide)
+            {
+                case PaymentSide.Pay:
+                    text += " از حساب";
+                    break;
+                case PaymentSide.Receive:
+                    text += " به حساب";
+                    break;
+            }
+
+            text += $" {payment.SourceFinancialAccount?.GetAccountTypeText()}";
+        }
 
         var exchangeRate = payment.ExchangeRate < 1 ? Math.Round(1 / payment.ExchangeRate.Value, 2) : payment.ExchangeRate;
 

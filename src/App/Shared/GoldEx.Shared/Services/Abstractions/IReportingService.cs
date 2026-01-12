@@ -63,4 +63,14 @@ public interface IReportingService
     Task<List<PurchaseInvoiceRpResponse>> GetPurchaseInvoicesAsync(
         PurchaseInvoiceRpRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get payments report
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<PaymentRpResponse>> GetPaymentsAsync(
+        PaymentRpRequest request,
+        CancellationToken cancellationToken = default);
 }

@@ -301,5 +301,6 @@ public static class ApiRoutes
         public const string GetCustomerTransactions = "customer-transactions";
         public const string GetSellInvoices = "sell-invoices";
         public const string GetPurchaseInvoices = "purchase-invoices";
+        public const string GetPayments = "payments";
     }
 }

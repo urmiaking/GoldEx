@@ -188,7 +188,7 @@ internal class InvoicePrintMapper : IRegister
                 src.PriceUnit != null ? src.FinalAmount.ToCurrencyReportFormat(src.PriceUnit.Title) : string.Empty)
             .Map(dest => dest.PaymentType, src => src.PaymentType)
             .Map(dest => dest.PaymentDate, src => src.PaymentDate)
-            .Map(dest => dest.Description, src => PaymentDescriptionBuilder.Build(src));
+            .Map(dest => dest.Description, src => PaymentDescriptionBuilder.Build(src, false));
     }
 
     private static string GetCoinTitle(InvoiceCoinItem coinItem)

@@ -562,5 +562,9 @@ public class ApiUrls
         public static string GetPurchaseInvoices(PurchaseInvoiceRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetPurchaseInvoices)
                 .AppendQueryString(request);
+
+        public static string GetPayments(PaymentRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetPayments)
+                .AppendQueryString(request);
     }
 }
