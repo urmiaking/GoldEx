@@ -302,5 +302,6 @@ public static class ApiRoutes
         public const string GetSellInvoices = "sell-invoices";
         public const string GetPurchaseInvoices = "purchase-invoices";
         public const string GetPayments = "payments";
+        public const string GetInvoicePayments = "invoice-payments";
     }
 }

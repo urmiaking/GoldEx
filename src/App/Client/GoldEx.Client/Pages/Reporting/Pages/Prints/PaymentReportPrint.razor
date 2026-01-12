@@ -18,29 +18,29 @@
                  Summary="@_summary">
     <table class="table">
         <thead>
-        <tr>
-            <th>تاریخ</th>
-            <th>نوع عملیات</th>
-            <th>مبلغ</th>
-            <th>شماره فاکتور</th>
-            <th>طرف حساب</th>
-            <th>شرح</th>
-        </tr>
+            <tr>
+                <th>تاریخ</th>
+                <th>نوع عملیات</th>
+                <th>مبلغ</th>
+                <th>شماره فاکتور</th>
+                <th>طرف حساب</th>
+                <th>شرح</th>
+            </tr>
         </thead>
         @if (_items != null)
         {
             <tbody>
-            @foreach (var item in _items)
-            {
-                <tr>
-                    <td>@item.PaymentDate.ToShortDateString()</td>
-                    <td>@item.PaymentSide.GetDisplayTitle()</td>
-                    <td class="text-end">@item.Amount.ToCurrencyFormat(item.PriceUnit)</td>
-                    <td>@item.InvoiceNumber @item.InvoiceType.GetDisplayName()</td>
-                    <td>@item.Customer.FullName</td>
-                    <td>@item.Description</td>
-                </tr>
-            }
+                @foreach (var item in _items)
+                {
+                    <tr>
+                        <td>@item.PaymentDate.ToShortDateString()</td>
+                        <td>@item.PaymentSide.GetDisplayTitle()</td>
+                        <td class="text-end">@item.Amount.ToCurrencyFormat(item.PriceUnit)</td>
+                        <td>@item.InvoiceNumber @item.InvoiceType.GetDisplayName()</td>
+                        <td>@item.CustomerName</td>
+                        <td>@item.Description</td>
+                    </tr>
+                }
             </tbody>
         }
     </table>

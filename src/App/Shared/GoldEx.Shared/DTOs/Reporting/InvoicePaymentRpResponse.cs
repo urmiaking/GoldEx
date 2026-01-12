@@ -2,14 +2,14 @@
 
 namespace GoldEx.Shared.DTOs.Reporting;
 
-public record PaymentRpResponse(
+public record InvoicePaymentRpResponse(
     Guid InvoiceId,
-    long InvoiceNumber,
-    InvoiceType InvoiceType,
     PaymentType PaymentType,
     PaymentSide PaymentSide,
     DateTime PaymentDate,
     string CustomerName,
+    decimal InvoiceRemainingPrice,
+    string InvoicePriceUnit,
     decimal Amount,
     decimal? ExchangeRate,
     string PriceUnit,

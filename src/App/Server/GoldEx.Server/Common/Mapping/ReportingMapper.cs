@@ -16,6 +16,7 @@ internal class ReportingMapper : IRegister
         config.NewConfig<Invoice, SellInvoiceRpResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
+            .Map(dest => dest.CustomerName, src => src.Customer!.FullName)
             .Map(dest => dest.RemainingPrice, src => src.TotalUnpaidAmount)
             .Map(dest => dest.TotalPrice, src => src.TotalAmountWithDiscountsAndExtraCosts)
             .Map(dest => dest.TotalProfit, src => src.TotalProfitAmount)
@@ -24,15 +25,24 @@ internal class ReportingMapper : IRegister
 
         config.NewConfig<Invoice, PurchaseInvoiceRpResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CustomerName, src => src.Customer!.FullName)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
             .Map(dest => dest.RemainingPrice, src => src.TotalUnpaidAmount)
             .Map(dest => dest.TotalPrice, src => src.TotalAmountWithDiscountsAndExtraCosts);
 
         config.NewConfig<InvoicePayment, PaymentRpResponse>()
-            .Map(dest => dest.Customer, src => src.Invoice!.Customer)
+            .Map(dest => dest.CustomerName, src => src.Invoice!.Customer!.FullName)
             .Map(dest => dest.InvoiceId, src => src.InvoiceId.Value)
             .Map(dest => dest.InvoiceNumber, src => src.Invoice!.InvoiceNumber)
             .Map(dest => dest.InvoiceType, src => src.Invoice!.InvoiceType)
+            .Map(dest => dest.PriceUnit, src => src.PriceUnit!.Title)
+            .Map(dest => dest.Description, src => PaymentDescriptionBuilder.Build(src, true));
+        
+        config.NewConfig<InvoicePayment, InvoicePaymentRpResponse>()
+            .Map(dest => dest.InvoiceId, src => src.InvoiceId.Value)
+            .Map(dest => dest.CustomerName, src => src.Invoice!.Customer!.FullName)
+            .Map(dest => dest.InvoiceRemainingPrice, src => src.Invoice!.TotalUnpaidAmount)
+            .Map(dest => dest.InvoicePriceUnit, src => src.Invoice!.PriceUnit!.Title)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit!.Title)
             .Map(dest => dest.Description, src => PaymentDescriptionBuilder.Build(src, true));
     }
