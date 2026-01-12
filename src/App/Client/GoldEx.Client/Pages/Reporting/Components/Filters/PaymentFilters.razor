@@ -1,0 +1,91 @@
+﻿@using GoldEx.Shared.DTOs.Customers
+@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="PaymentSide?"
+               Label="@Model.GetDisplayName(() => Model.PaymentSide)"
+               @bind-Value="Model.PaymentSide"
+               For="@(() => Model.PaymentSide)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="PaymentSide?" Value="@((PaymentSide?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.SwapHoriz"></MudIcon>
+                <MudText>پرداخت/دریافت</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<PaymentSide>())
+        {
+            <MudSelectItem Value="item" T="PaymentSide?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetSideColor(item)" Icon="@GetSideIcon(item)"></MudIcon>
+                    <MudText Color="@GetSideColor(item)">@item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="PaymentType?"
+               Label="@Model.GetDisplayName(() => Model.PaymentType)"
+               @bind-Value="Model.PaymentType"
+               For="@(() => Model.PaymentType)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="PaymentType?" Value="@((PaymentType?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.Menu"></MudIcon>
+                <MudText>همه</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<PaymentType>())
+        {
+            <MudSelectItem Value="item" T="PaymentType?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetTypeColor(item)" Icon="@GetTypeIcon(item)"></MudIcon>
+                    <MudText>@item.GetDisplayTitle()</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="Guid?"
+               Label="@Model.GetDisplayName(() => Model.PriceUnitId)"
+               @bind-Value="Model.PriceUnitId"
+               For="@(() => Model.PriceUnitId)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه ارزها</MudSelectItem>
+        @foreach (var item in _priceUnits)
+        {
+            <MudSelectItem Value="item.Id" T="Guid?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                    </MudAvatar>
+                    <MudText>@item.Title</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="3">
+    <MudAutocomplete T="GetCustomerResponse?"
+                     Value="_selectedCustomer"
+                     ValueChanged="OnCustomerChanged"
+                     Text="@_selectedCustomer?.FullName"
+                     Placeholder="جستجوی طرف حساب..."
+                     Label="@(Model.GetDisplayName(() => Model.CustomerId))"
+                     ToStringFunc="@(customer => customer != null ? $"{customer.FullName}" : null)"
+                     Margin="Margin.Dense"
+                     Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.Person"
+                     Variant="Variant.Outlined"
+                     SearchFunc="@SearchCustomers"
+                     CoerceText="true"
+                     ResetValueOnEmptyText="true" />
+</MudItem>
