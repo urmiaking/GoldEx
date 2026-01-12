@@ -62,10 +62,12 @@ public class InvoicePaymentVm
             var typeTitle = PaymentType.GetDisplayTitle();
             var sideTitle = PaymentSide.GetDisplayName();
 
+            var verb = PaymentSide is PaymentSide.Pay ? "از" : "به";
+
             return PaymentType switch
             {
                 PaymentType.InternalCash when FinancialAccount is not null
-                    => $"{sideTitle} - {typeTitle} از حساب {FinancialAccount.Title}",
+                    => $"{sideTitle} - {typeTitle} {verb} حساب {FinancialAccount.Title}",
 
                 PaymentType.UsedGoldInventory when GoldFineness.HasValue
                     => $"{sideTitle} - {typeTitle} (عیار {GoldFineness.Value.ToCurrencyFormat()})",
