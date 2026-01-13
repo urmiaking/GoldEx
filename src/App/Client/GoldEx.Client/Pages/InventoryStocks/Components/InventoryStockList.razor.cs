@@ -25,7 +25,8 @@ public partial class InventoryStockList
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool ShowTitle { get; set; }
     [Parameter] public bool Selectable { get; set; }
-    [Parameter] public ItemType ItemType { get; set; } = ItemType.Product;
+    [Parameter] public bool ShowItemStatus { get; set; } = true;
+    [Parameter] public ItemType ItemType { get; set; }
     [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
     [Parameter] public Guid? InventoryEntryId { get; set; }
     [Parameter] public EventCallback<HashSet<InventoryStockVm>?> SelectedItemsChanged { get; set; }
@@ -140,6 +141,14 @@ public partial class InventoryStockList
                 : null
         }).ToArray()
     };
+
+    protected override void OnParametersSet()
+    {
+        if (ItemType == default) 
+            ItemType = SelectableTypes.First();
+
+        base.OnParametersSet();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

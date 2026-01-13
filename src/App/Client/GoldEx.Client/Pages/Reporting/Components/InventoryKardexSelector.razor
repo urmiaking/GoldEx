@@ -3,11 +3,10 @@
 <MudDialog>
     <DialogContent>
         <div class="d-flex flex-column overflow-auto">
-            <InventoryStockList ItemStatus="ItemStatus" 
-                                Elevation="0"
-                                SelectableTypes="SelectableTypes"
-                                ShowItemStatus="false"
-                                Selectable="true" SelectedItemsChanged="OnSelectedItemsChanged">
+            <InventoryStockList Elevation="0"
+                                Selectable="true"
+                                ShowItemStatus="true"
+                                SelectedItemsChanged="OnSelectedItemsChanged">
             </InventoryStockList>
         </div>
     </DialogContent>
@@ -22,7 +21,7 @@
                    StartIcon="@Icons.Material.Filled.Save"
                    OnClick="OnSubmit"
                    Variant="Variant.Filled">
-            <MudText>ثبت</MudText>
+            <MudText>انتخاب</MudText>
         </MudButton>
     </DialogActions>
 </MudDialog>

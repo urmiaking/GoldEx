@@ -363,6 +363,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableItemAmount)
                 .FormatRoute(new { itemId, itemType });
 
+        public static string GetTitle(ItemType itemType, Guid id) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetTitle)
+                .FormatRoute(new { itemType, id });
+
         public static string DeleteProduct(Guid productId) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.DeleteProduct)
                 .FormatRoute(new { productId });
@@ -569,6 +573,10 @@ public class ApiUrls
 
         public static string GetInvoicePayments(InvoicePaymentRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetInvoicePayments)
+                .AppendQueryString(request);
+
+        public static string GetInventoryKardex(InventoryKardexRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetInventoryKardex)
                 .AppendQueryString(request);
     }
 }

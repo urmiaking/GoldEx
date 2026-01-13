@@ -60,6 +60,13 @@ public class InventoryStocksController(IInventoryStockService service) : ApiCont
         return Ok(result);
     }
 
+    [HttpGet(ApiRoutes.InventoryStocks.GetTitle)]
+    public async Task<IActionResult> GetTitleAsync(ItemType itemType, Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetTitleAsync(itemType, id, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpDelete(ApiRoutes.InventoryStocks.DeleteProduct)]
     public async Task<IActionResult> DeleteProductAsync(Guid productId, CancellationToken cancellationToken = default)
     {

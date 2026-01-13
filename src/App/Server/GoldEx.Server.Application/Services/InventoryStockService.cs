@@ -20,8 +20,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
+using GoldEx.Server.Infrastructure.Specifications.CoinInstances;
+using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.InventoryExits;
 
@@ -31,6 +34,8 @@ namespace GoldEx.Server.Application.Services;
 internal class InventoryStockService(
     IInventoryStockRepository repository,
     IProductRepository productRepository,
+    ICoinInstanceRepository coinInstanceRepository,
+    IPriceUnitRepository priceUnitRepository,
     ITransactionRepository transactionRepository,
     IServiceProvider serviceProvider,
     IMapper mapper,
@@ -451,8 +456,6 @@ internal class InventoryStockService(
         var items = await repository.Get(spec)
             .Include(x => x.Invoice!.CurrencyItems)
                 .ThenInclude(x => x.FinancialAccount)
-            .Include(x => x.Transactions)
-            .Include(x => x.CoinInstance!.Coin)
             .ToListAsync(cancellationToken);
 
         var total = await repository.CountAsync(spec, cancellationToken);
@@ -522,6 +525,45 @@ internal class InventoryStockService(
         }
     }
 
+    public async Task<GetInventoryItemTitleResponse> GetTitleAsync(ItemType itemType, Guid id, CancellationToken cancellationToken = default)
+    {
+        string itemName;
+
+        switch (itemType)
+        {
+            case ItemType.Product:
+            case ItemType.MoltenGold:
+            case ItemType.UsedProduct:
+                var product = await productRepository
+                    .Get(new ProductsByIdSpecification(new ProductId(id)))
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                itemName = $"{product.Name} ({product.Barcode})";
+                break;
+            case ItemType.Coin:
+                var coin = await coinInstanceRepository
+                    .Get(new CoinInstancesByIdSpecification(new CoinInstanceId(id)))
+                    .Include(x => x.Coin)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                itemName = $"سکه {coin.Coin?.Title} ({coin.Barcode})";
+                break;
+            case ItemType.Currency:
+                var currency = await priceUnitRepository
+                    .Get(new PriceUnitsByIdSpecification(new PriceUnitId(id)))
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                itemName = $"ارز {currency.Title}";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
+        }
+
+        return new GetInventoryItemTitleResponse(itemName);
+    }
 
     #endregion
 }

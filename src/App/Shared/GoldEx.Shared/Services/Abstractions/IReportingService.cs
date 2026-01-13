@@ -83,4 +83,14 @@ public interface IReportingService
     Task<List<InvoicePaymentRpResponse>> GetInvoicePaymentsAsync(
         InvoicePaymentRpRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get inventory kardex
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<InventoryKardexRpResponse>> GetInventoryKardexAsync(
+        InventoryKardexRpRequest request,
+        CancellationToken cancellationToken = default);
 }
