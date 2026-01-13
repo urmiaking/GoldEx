@@ -548,7 +548,7 @@ internal class InventoryStockService(
                     .AsNoTracking()
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-                itemName = $"سکه {coin.Coin?.Title} ({coin.Barcode})";
+                itemName = $"{coin.Coin?.Title} ({coin.Barcode})";
                 break;
             case ItemType.Currency:
                 var currency = await priceUnitRepository
