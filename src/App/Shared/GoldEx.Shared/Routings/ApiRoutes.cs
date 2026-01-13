@@ -197,6 +197,7 @@ public static class ApiRoutes
         public const string GetTraces = "{itemType}/{itemId}/traces";
         public const string GetAvailableItemAmount = "{itemType}/{itemId}/available-amount";
         public const string DeleteProduct = "product/{productId}";
+        public const string GetTitle = "title/{itemType}/{id}";
     }
 
     public class Notifications
@@ -303,5 +304,6 @@ public static class ApiRoutes
         public const string GetPurchaseInvoices = "purchase-invoices";
         public const string GetPayments = "payments";
         public const string GetInvoicePayments = "invoice-payments";
+        public const string GetInventoryKardex = "inventory-kardex";
     }
 }

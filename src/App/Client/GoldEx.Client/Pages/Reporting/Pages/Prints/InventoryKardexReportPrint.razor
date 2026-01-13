@@ -1,0 +1,45 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Print.InventoryKardex)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"
+                 FromDate="@FromDate"
+                 ToDate="@ToDate"
+                 Data="@_items"
+                 ReportTitle="@($"گزارش کاردکس کالا {TitleFilter}")"
+                 Summary="@_summary">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>تاریخ</th>
+                <th>نوع عملیات</th>
+                <th>مبلغ</th>
+                <th>شرح</th>
+            </tr>
+        </thead>
+        @if (_items != null)
+        {
+            <tbody>
+                @foreach (var item in _items)
+                {
+                    <tr>
+                        <td>@item.DateTime.ToShortDateString()</td>
+                        <td>@item.ActionType.GetDisplayName()</td>
+                        <td class="text-end">@item.Amount.ToCurrencyFormat(item.PriceUnit)</td>
+                        <td>@item.Description</td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+</ReportPrintBase>
+
+<script src="/js/report-print.js?v=6"></script>

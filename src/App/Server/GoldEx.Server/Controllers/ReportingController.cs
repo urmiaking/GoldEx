@@ -83,4 +83,13 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         var result = await service.GetInvoicePaymentsAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet(ApiRoutes.Reporting.GetInventoryKardex)]
+    public async Task<IActionResult> GetInventoryKardexAsync(
+        [FromQuery] InventoryKardexRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetInventoryKardexAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }

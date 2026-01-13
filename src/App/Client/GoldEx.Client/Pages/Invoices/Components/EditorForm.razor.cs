@@ -386,7 +386,6 @@ public partial class EditorForm
             { x => x.TaxPercent, _model.TradeScale is TradeScale.Retail ? _setting?.TaxPercent ?? 10 : 0 },
             { x => x.GoldProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.GoldProfitPercent ?? 7 : 0 },
             { x => x.JewelryProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.JewelryProfitPercent ?? 20 : 0 },
-            { x => x.ItemType, ItemType.Product },
             { x => x.SelectableTypes, [ItemType.Product, ItemType.MoltenGold ]},
             { x => x.PriceUnit, _model.InvoicePriceUnit },
             { x => x.ItemStatus, ItemStatus.Available }

@@ -1,5 +1,9 @@
 ﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
@@ -15,6 +19,7 @@ internal class ReportingService(
     ITransactionRepository transactionRepository,
     IInvoiceRepository invoiceRepository,
     IInvoicePaymentRepository paymentRepository,
+    IInventoryStockRepository inventoryStockRepository,
     IMapper mapper) : IReportingService
 {
     public async Task<List<LedgerAccountStatementRpResponse>> GetLedgerAccountStatementsAsync(
@@ -90,5 +95,24 @@ internal class ReportingService(
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<InvoicePaymentRpResponse>>(list);
+    }
+
+    public async Task<List<InventoryKardexRpResponse>> GetInventoryKardexAsync(InventoryKardexRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var list = await inventoryStockRepository
+            .Get(new InventoryStocksKardexSpecification(request.ProductId.HasValue
+                    ? new ProductId(request.ProductId.Value)
+                    : null,
+                request.CoinInstanceId.HasValue
+                    ? new CoinInstanceId(request.CoinInstanceId.Value)
+                    : null,
+                request.CurrencyId.HasValue
+                    ? new PriceUnitId(request.CurrencyId.Value)
+                    : null))
+            .Include(x => x.Invoice!.CurrencyItems)
+                .ThenInclude(x => x.FinancialAccount)
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<InventoryKardexRpResponse>>(list);
     }
 }

@@ -110,4 +110,16 @@ internal class ReportingService(HttpClient client, JsonSerializerOptions jsonOpt
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<List<InventoryKardexRpResponse>> GetInventoryKardexAsync(InventoryKardexRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetInventoryKardex(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<InventoryKardexRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }
