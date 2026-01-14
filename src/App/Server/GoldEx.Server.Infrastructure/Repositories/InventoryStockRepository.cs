@@ -15,8 +15,11 @@ using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 namespace GoldEx.Server.Infrastructure.Repositories;
 
@@ -115,6 +118,7 @@ internal class InventoryStockRepository(
     {
         var settings = await settingRepository
             .Get(new SettingsDefaultSpecification())
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         var gramPerMesghal = settings?.GramPerMesghal ?? 4.6083m;
@@ -773,5 +777,169 @@ internal class InventoryStockRepository(
             .ToList();
 
         return result;
+    }
+
+    public async Task<List<InventorySummaryData>> GetProductsReportAsync(ProductInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var targetProductTypes = request.ItemType switch
+        {
+            ItemType.Product => [ProductType.Jewelry, ProductType.Gold],
+            ItemType.MoltenGold => [ProductType.MoltenGold],
+            ItemType.UsedProduct => [ProductType.UsedGold],
+            _ => Enum.GetValues<ProductType>()
+        };
+
+        var settings = await settingRepository
+            .Get(new SettingsDefaultSpecification())
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var gramPerMesghal = settings?.GramPerMesghal ?? 4.6083m;
+
+        var query = Query
+            .Where(x => x.ProductId != null)
+            .Where(x => request.ProductCategoryId == null ||
+                        x.Product!.ProductCategoryId == new ProductCategoryId(request.ProductCategoryId.Value))
+            .Where(x => request.FromDate == null || x.PostingDate >= request.FromDate)
+            .Where(x => request.ToDate == null || x.PostingDate <= request.ToDate)
+            .Where(x => request.ItemType == null || targetProductTypes.Contains(x.Product!.ProductType));
+
+        var groupedQuery = query
+            .GroupBy(x => x.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                LastActivityDate = g.Min(x => x.PostingDate),
+                CurrentQuantity = g.Sum(s =>
+                    (
+                        (s.MoltenGoldDetail != null && s.Product!.ProductType == ProductType.MoltenGold
+                            ? s.MoltenGoldDetail.WeightUnitType
+                            : s.Product!.GoldUnitType) == GoldUnitType.Mesghal
+                            ? gramPerMesghal
+                            : 1.0m
+                    ) * (s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+                ),
+                SoldQuantity = g
+                    .Where(s => s.ActionType == WarehouseActionType.Out &&
+                                s.ReverseInventoryStockId == null &&
+                                ((s.InvoiceId != null && s.Invoice!.InvoiceType == InvoiceType.Sell) || s.MeltingBatchId != null))
+                    .Sum(s =>
+                        (
+                            ((s.MoltenGoldDetail != null && s.Product!.ProductType == ProductType.MoltenGold)
+                                ? s.MoltenGoldDetail.WeightUnitType
+                                : s.Product!.GoldUnitType) == GoldUnitType.Mesghal
+                                ? gramPerMesghal
+                                : 1.0m
+                        ) * s.ChangeAmount
+                    )
+            });
+
+        groupedQuery = request.ItemStatus switch
+        {
+            ItemStatus.Available => groupedQuery.Where(x => x.CurrentQuantity > 0),
+            ItemStatus.Sold => groupedQuery.Where(x => x.SoldQuantity > 0),
+            _ => groupedQuery
+        };
+
+        var flattenedQuery = groupedQuery.Join(
+            dbContext.Set<Product>().Include(p => p.MoltenGold!.Assayer),
+            g => g.ProductId,
+            p => p.Id,
+            (g, p) => new
+            {
+                Product = p,
+                g.CurrentQuantity,
+                g.SoldQuantity,
+                g.LastActivityDate,
+                CategoryTitle = p.ProductCategory!.Title
+            }
+        );
+
+        var list = await flattenedQuery.ToListAsync(cancellationToken);
+
+        var productIds = list.Select(x => x.Product.Id).ToList();
+
+        var rawDetails = await dbContext.Set<Invoice>()
+            .AsNoTracking()
+            .SelectMany(i => i.ProductItems.Select(pi => new
+            {
+                pi.ProductId,
+                i.InvoiceType,
+                Date = i.InvoiceDate,
+                ItemId = pi.Id,
+                pi.SaleWage,
+                pi.SaleWageType,
+                pi.SaleWagePriceUnitId,
+                pi.PurchaseWage,
+                pi.PurchaseWageType,
+                pi.PurchaseWagePriceUnitId
+            }))
+            .Where(x => productIds.Contains(x.ProductId))
+            .ToListAsync(cancellationToken);
+
+        var productDetails = rawDetails
+            .GroupBy(x => x.ProductId)
+            .ToDictionary(
+                g => g.Key,
+                g => new
+                {
+                    LatestSale = g.Where(x => x.InvoiceType == InvoiceType.Sell)
+                                  .OrderByDescending(x => x.Date)
+                                  .ThenByDescending(x => x.ItemId.Value)
+                                  .FirstOrDefault(),
+
+                    LatestPurchase = g.Where(x => x.InvoiceType == InvoiceType.Purchase)
+                                      .OrderByDescending(x => x.Date)
+                                      .ThenByDescending(x => x.ItemId.Value)
+                                      .FirstOrDefault()
+                }
+            );
+
+        var unitIds = productDetails.Values
+            .SelectMany(v => new[] { v.LatestSale?.SaleWagePriceUnitId, v.LatestPurchase?.PurchaseWagePriceUnitId })
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        Dictionary<PriceUnitId, string> priceUnitTitles = [];
+        if (unitIds.Any())
+        {
+            priceUnitTitles = await dbContext.Set<PriceUnit>()
+                .AsNoTracking()
+                .Where(u => unitIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.Title, cancellationToken);
+        }
+
+        var finalData = list.Select(x =>
+        {
+            var details = productDetails.GetValueOrDefault(x.Product.Id);
+            var sale = details?.LatestSale;
+            var purchase = details?.LatestPurchase;
+
+            string? saleWageTitle = null;
+            if (sale?.SaleWagePriceUnitId != null)
+                priceUnitTitles.TryGetValue(sale.SaleWagePriceUnitId.Value, out saleWageTitle);
+
+            string? purchaseWageTitle = null;
+            if (purchase?.PurchaseWagePriceUnitId != null)
+                priceUnitTitles.TryGetValue(purchase.PurchaseWagePriceUnitId.Value, out purchaseWageTitle);
+
+            return new InventorySummaryData
+            {
+                Product = x.Product,
+                CurrentAmount = x.CurrentQuantity,
+                SoldAmount = x.SoldQuantity,
+                DateTime = x.LastActivityDate,
+                SaleWage = sale?.SaleWage,
+                SaleWageType = sale?.SaleWageType,
+                SaleWagePriceUnitTitle = saleWageTitle,
+                PurchaseWage = purchase?.PurchaseWage,
+                PurchaseWageType = purchase?.PurchaseWageType,
+                PurchaseWagePriceUnitTitle = purchaseWageTitle
+            };
+        }).ToList();
+
+        return finalData;
     }
 }

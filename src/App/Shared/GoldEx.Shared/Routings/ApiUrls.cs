@@ -578,5 +578,9 @@ public class ApiUrls
         public static string GetInventoryKardex(InventoryKardexRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetInventoryKardex)
                 .AppendQueryString(request);
+
+        public static string GetProductInventory(ProductInventoryRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetProductInventory)
+                .AppendQueryString(request);
     }
 }

@@ -1,5 +1,4 @@
 ﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
-@using GoldEx.Client.Pages.Reporting.Pages.Reports
 @using GoldEx.Shared.DTOs.Reporting
 
 @inherits GoldExComponentBase
@@ -21,6 +20,7 @@
 else
 {
     <MudTable Items="@Items"
+              Virtualize="true"
               Dense="true"
               Hover="true"
               Bordered="true"
@@ -85,7 +85,7 @@ else
                         <MudButton Size="@Size.Small"
                                    Variant="@Variant.Filled" 
                                    EndIcon="@Icons.Material.Filled.ArrowBack"
-                                   OnClick="_ => OnViewSource(context.SourceUrl)"
+                                   OnClick="() => OnViewSource(context.SourceUrl)"
                                    Color="@GetActionColor(context.SourceUrl)">
                             @GetActionText(context.SourceUrl)
                         </MudButton>

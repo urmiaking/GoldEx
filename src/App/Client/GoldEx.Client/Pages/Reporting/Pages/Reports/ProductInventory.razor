@@ -1,0 +1,22 @@
+﻿@attribute [Route(ClientRoutes.Reporting.ProductInventory)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits ProductInventoryPageBase
+
+<PageTitle>گزارش موجودی کالا</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="pr-0" Items="Breadcrumbs">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
+        <ProductInventoryFilters Model="@Filters" />
+    </ReportFiltersBase>
+
+    <ProductInventoryReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
+</MudContainer>
+
+<script src="/js/report-print.js?v=2"></script>
