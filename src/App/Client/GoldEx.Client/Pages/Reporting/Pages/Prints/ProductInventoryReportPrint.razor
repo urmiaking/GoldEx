@@ -1,0 +1,53 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Print.ProductInventory)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"
+                 FromDate="@FromDate"
+                 ToDate="@ToDate"
+                 Data="@_items"
+                 ReportTitle="@($"گزارش موجودی کالا {TitleFilter}")"
+                 Summary="@_summary">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>بارکد</th>
+                <th>نوع جنس</th>
+                <th>دست</th>
+                <th>عنوان</th>
+                <th>اجرت</th>
+                <th>عیار</th>
+                <th>موجود</th>
+                <th>فروخته شده</th>
+            </tr>
+        </thead>
+        @if (_items != null)
+        {
+            <tbody>
+                @foreach (var item in _items)
+                {
+                    <tr>
+                        <td>@item.Product.Barcode</td>
+                        <td>@item.Product.ProductType.GetDisplayName()</td>
+                        <td>@(item.Product.ProductCategoryTitle ?? "ندارد")</td>
+                        <td>@item.Product.Name</td>
+                        <td>@GetItemWage(item)</td>
+                        <td>@item.Product.Fineness.ToString("G29")</td>
+                        <td>@item.CurrentAmount.ToWeightFormat(item.Product.GoldUnitType)</td>
+                        <td>@item.SoldAmount.ToWeightFormat(item.Product.GoldUnitType)</td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+</ReportPrintBase>
+
+<script src="/js/report-print.js?v=6"></script>

@@ -305,5 +305,6 @@ public static class ApiRoutes
         public const string GetPayments = "payments";
         public const string GetInvoicePayments = "invoice-payments";
         public const string GetInventoryKardex = "inventory-kardex";
+        public const string GetProductInventory = "product-inventory";
     }
 }

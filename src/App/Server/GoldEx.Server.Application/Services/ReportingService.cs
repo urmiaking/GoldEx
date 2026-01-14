@@ -120,4 +120,10 @@ internal class ReportingService(
 
         return mapper.Map<List<InventoryKardexRpResponse>>(list);
     }
+
+    public async Task<List<ProductInventoryRpResponse>> GetProductInventoryAsync(ProductInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var list = await inventoryStockRepository.GetProductsReportAsync(request, cancellationToken);
+        return mapper.Map<List<ProductInventoryRpResponse>>(list);
+    }
 }

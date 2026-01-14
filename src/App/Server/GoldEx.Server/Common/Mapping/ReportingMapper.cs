@@ -57,5 +57,7 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.PriceUnit, src => src.Currency != null ? src.Currency.Title : null)
             .Map(dest => dest.Description, src => InventoryStockDescriptionBuilder.Build(src, true))
             .Map(dest => dest.SourceUrl, src => InventoryStockDescriptionBuilder.BuildUrl(src));
+
+        config.NewConfig<InventorySummaryData, ProductInventoryRpResponse>();
     }
 }

@@ -137,7 +137,7 @@ public static class ClientRoutes
         public const string InvoicePayments = $"{ReportingPrefix}/invoice-payments";
         public const string PaymentVouchers = $"{ReportingPrefix}/payment-vouchers";
         public const string InventoryKardex = $"{ReportingPrefix}/inventory-kardex";
-        public const string InventoryStockSnapshot = $"{ReportingPrefix}/inventory-stock-snapshot";
+        public const string ProductInventory = $"{ReportingPrefix}/inventory-inventory";
         public const string CoinInventory = $"{ReportingPrefix}/coin-inventory";
         public const string CurrencyInventory = $"{ReportingPrefix}/currency-inventory";
 
@@ -154,6 +154,7 @@ public static class ClientRoutes
             public const string Payments = $"{PrintPrefix}/payments";
             public const string InvoicePayments = $"{PrintPrefix}/invoice-payments";
             public const string InventoryKardex = $"{PrintPrefix}/inventory-kardex";
+            public const string ProductInventory = $"{PrintPrefix}/product-inventory";
         }
     }
 

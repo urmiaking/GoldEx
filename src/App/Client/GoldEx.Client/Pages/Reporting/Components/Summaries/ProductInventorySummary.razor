@@ -1,0 +1,46 @@
+﻿@using GoldEx.Client.Pages.Reporting.ViewModels
+
+@if (Summary != null)
+{
+    <MudCard Elevation="24" Class="mt-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">خلاصه گزارش</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (Summary != null)
+            {
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4">
+                        <MudPaper Class="pa-3 text-center" Elevation="0">
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Large" Color="Color.Success" />
+                            <MudText Typo="Typo.h5" Color="Color.Success">@Summary.TotalAmount.ToWeightFormat(GoldUnitType.Gram)</MudText>
+                            <MudText Typo="Typo.h6">موجودی کل</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudPaper Class="pa-3 text-center" Elevation="0">
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Large" Color="Color.Error" />
+                            <MudText Typo="Typo.h5" Color="Color.Error">@Summary.TotalSoldAmount.ToWeightFormat(GoldUnitType.Gram)</MudText>
+                            <MudText Typo="Typo.h6">موجودی فروخته شده</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudPaper Class="pa-3 text-center" Elevation="0">
+                            <MudIcon Icon="@Icons.Material.Outlined.Check" Size="Size.Large" Color="Color.Success" />
+                            <MudText Typo="Typo.h5" Color="Color.Success">
+                                @Math.Max(0, Summary.TotalRemainingAmount).ToWeightFormat(GoldUnitType.Gram)
+                            </MudText>
+                            <MudText Typo="Typo.h6">موجودی فعلی</MudText>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public ProductInventoryFilterVm.ProductInventorySummary? Summary { get; set; }
+}
