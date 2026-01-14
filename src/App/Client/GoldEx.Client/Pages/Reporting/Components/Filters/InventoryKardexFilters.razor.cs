@@ -43,4 +43,13 @@ public partial class InventoryKardexFilters
             StateHasChanged();
         }
     }
+
+    private void OnCleared()
+    {
+        Model.ProductId = null;
+        Model.CoinInstanceId = null;
+        Model.CurrencyId = null;
+
+        _selectedItem = null;
+    }
 }
