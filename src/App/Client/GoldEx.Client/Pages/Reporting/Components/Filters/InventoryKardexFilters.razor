@@ -5,7 +5,11 @@
         <MudTextField T="string?"
                       Value="@_selectedItem"
                       Immediate
-                      Disabled
+                      ReadOnly
+                      Required
+                      Clearable
+                      OnClearButtonClick="OnCleared"
+                      RequiredError="لطفا کالا را انتخاب کنید"
                       Margin="Margin.Dense"
                       Label="عنوان کالا"
                       Variant="Variant.Outlined"

@@ -1,4 +1,6 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
@@ -99,6 +101,9 @@ internal class ReportingService(
 
     public async Task<List<InventoryKardexRpResponse>> GetInventoryKardexAsync(InventoryKardexRpRequest request, CancellationToken cancellationToken = default)
     {
+        if (!request.ProductId.HasValue && !request.CoinInstanceId.HasValue && !request.CurrencyId.HasValue)
+            throw new ValidationException(new List<ValidationFailure> { new (nameof(request), "لطفا کالا را انتخاب کنید") });
+
         var list = await inventoryStockRepository
             .Get(new InventoryStocksKardexSpecification(request.ProductId.HasValue
                     ? new ProductId(request.ProductId.Value)

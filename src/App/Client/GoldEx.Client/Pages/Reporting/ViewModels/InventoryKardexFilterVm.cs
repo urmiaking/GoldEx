@@ -18,9 +18,6 @@ public class InventoryKardexFilterVm : ReportFilterVmBase
 
     public InventoryKardexRpRequest ToRequest()
     {
-        if (ProductId is null && CoinInstanceId is null && CurrencyId is null)
-            throw new ArgumentNullException();
-
         return new InventoryKardexRpRequest(ProductId,
             CoinInstanceId,
             CurrencyId,
