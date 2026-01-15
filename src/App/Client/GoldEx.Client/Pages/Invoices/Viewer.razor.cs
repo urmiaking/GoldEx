@@ -29,7 +29,7 @@ public partial class Viewer
         _breadcrumbs =
         [
             new BreadcrumbItem("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
-            new BreadcrumbItem("فاکتورها", href: ClientRoutes.Invoices.Index, icon: Icons.Material.Filled.ReceiptLong),
+            new BreadcrumbItem("فاکتور ها", href: ClientRoutes.Invoices.Index, icon: Icons.Material.Filled.LibraryBooks),
             new BreadcrumbItem("لیست", href: ClientRoutes.Invoices.List, icon: Icons.Material.Filled.List),
             new BreadcrumbItem("مشاهده فاکتور", href: null, icon: Icons.Material.Filled.ViewTimeline)
         ];
