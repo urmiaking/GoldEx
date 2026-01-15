@@ -155,6 +155,8 @@ public static class ClientRoutes
             public const string InvoicePayments = $"{PrintPrefix}/invoice-payments";
             public const string InventoryKardex = $"{PrintPrefix}/inventory-kardex";
             public const string ProductInventory = $"{PrintPrefix}/product-inventory";
+            public const string CoinInventory = $"{PrintPrefix}/coin-inventory";
+            public const string CurrencyInventory = $"{PrintPrefix}/currency-inventory";
         }
     }
 

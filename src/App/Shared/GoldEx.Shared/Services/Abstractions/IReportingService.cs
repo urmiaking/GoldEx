@@ -58,8 +58,7 @@ public interface IReportingService
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<PaymentRpResponse>> GetPaymentsAsync(PaymentRpRequest request,
-        CancellationToken cancellationToken = default);
+    Task<List<PaymentRpResponse>> GetPaymentsAsync(PaymentRpRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get payments report of an invoice
@@ -84,4 +83,14 @@ public interface IReportingService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<List<ProductInventoryRpResponse>> GetProductInventoryAsync(ProductInventoryRpRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get coin instance report in inventory
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<CoinInventoryRpResponse>> GetCoinInventoryAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default);
+
+    Task<List<CurrencyInventoryRpResponse>> GetCurrencyInventoryAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default);
 }

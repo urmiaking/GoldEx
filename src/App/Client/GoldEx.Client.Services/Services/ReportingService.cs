@@ -134,4 +134,28 @@ internal class ReportingService(HttpClient client, JsonSerializerOptions jsonOpt
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<List<CoinInventoryRpResponse>> GetCoinInventoryAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetCoinInventory(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<CoinInventoryRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<CurrencyInventoryRpResponse>> GetCurrencyInventoryAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetCurrencyInventory(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<CurrencyInventoryRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

@@ -5,27 +5,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Reporting.ViewModels;
 
-public class ProductInventoryFilterVm : ReportFilterVmBase
+public class CurrencyInventoryFilterVm : ReportFilterVmBase
 {
-    [Display(Name = "وضعیت کالا")]
+    [Display(Name = "وضعیت ارز")]
     public ItemStatus? ItemStatus { get; set; }
 
-    [Display(Name = "نوع کالا")]
-    public ItemType? ItemType { get; set; }
-
-    [Display(Name = "دسته بندی کالا")]
-    public Guid? ProductCategoryId { get; set; }
-
-    public ProductInventoryRpRequest ToRequest()
+    public CurrencyInventoryRpRequest ToRequest()
     {
-        return new ProductInventoryRpRequest(ItemStatus,
-            ItemType,
-            ProductCategoryId,
+        return new CurrencyInventoryRpRequest(ItemStatus,
             DateRange?.Start?.GetDayStart(),
             DateRange?.End?.GetDayEnd());
     }
 
-    public class ProductInventoryReportSummary
+    public class CurrencyInventoryReportSummary
     {
         public decimal TotalSoldAmount { get; set; }
         public decimal TotalAmount { get; set; }

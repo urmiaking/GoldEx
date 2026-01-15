@@ -126,4 +126,16 @@ internal class ReportingService(
         var list = await inventoryStockRepository.GetProductsReportAsync(request, cancellationToken);
         return mapper.Map<List<ProductInventoryRpResponse>>(list);
     }
+
+    public async Task<List<CoinInventoryRpResponse>> GetCoinInventoryAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var list = await inventoryStockRepository.GetCoinsReportAsync(request, cancellationToken);
+        return mapper.Map<List<CoinInventoryRpResponse>>(list);
+    }
+
+    public async Task<List<CurrencyInventoryRpResponse>> GetCurrencyInventoryAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var list = await inventoryStockRepository.GetCurrenciesReportAsync(request, cancellationToken);
+        return mapper.Map<List<CurrencyInventoryRpResponse>>(list);
+    }
 }

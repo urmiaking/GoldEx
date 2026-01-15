@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Reporting.Print.ProductInventory)]
+﻿@attribute [Route(ClientRoutes.Reporting.Print.CoinInventory)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
 @layout PrintLayout
@@ -14,17 +14,16 @@
                  FromDate="@FromDate"
                  ToDate="@ToDate"
                  Data="@_items"
-                 ReportTitle="@($"گزارش موجودی کالا {TitleFilter}")"
+                 ReportTitle="@($"گزارش موجودی سکه {TitleFilter}")"
                  Summary="@_summary">
     <table class="table">
         <thead>
             <tr>
                 <th>بارکد</th>
-                <th>نوع جنس</th>
-                <th>دسته</th>
                 <th>عنوان</th>
-                <th>اجرت</th>
+                <th>وزن</th>
                 <th>عیار</th>
+                <th>سال ضرب</th>
                 <th>موجود</th>
                 <th>فروخته شده</th>
             </tr>
@@ -35,14 +34,13 @@
                 @foreach (var item in _items)
                 {
                     <tr>
-                        <td>@item.Product.Barcode</td>
-                        <td>@item.Product.ProductType.GetDisplayName()</td>
-                        <td>@(item.Product.ProductCategoryTitle ?? "ندارد")</td>
-                        <td>@item.Product.Name</td>
-                        <td>@GetItemWage(item)</td>
-                        <td>@item.Product.Fineness.ToString("G29")</td>
-                        <td>@item.CurrentAmount.ToWeightFormat(item.Product.GoldUnitType)</td>
-                        <td>@item.SoldAmount.ToWeightFormat(item.Product.GoldUnitType)</td>
+                        <td>@item.CoinInstance.Barcode</td>
+                        <td>@GetCoinTitle(item.CoinInstance)</td>
+                        <td>@GetCoinWeight(item.CoinInstance)</td>
+                        <td>@item.CoinInstance.Fineness.ToString("G29")</td>
+                        <td>@GetCoinMintYear(item.CoinInstance)</td>
+                        <td>@item.CurrentAmount.ToString("G29")</td>
+                        <td>@item.SoldAmount.ToString("G29")</td>
                     </tr>
                 }
             </tbody>

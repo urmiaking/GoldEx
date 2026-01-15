@@ -4,6 +4,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Extensions;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
+using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
@@ -17,9 +18,7 @@ using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 
 namespace GoldEx.Server.Infrastructure.Repositories;
 
@@ -113,7 +112,7 @@ internal class InventoryStockRepository(
             .ToDictionaryAsync(result => result.Id, result => result.TotalQuantity, cancellationToken);
     }
 
-    public async Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter, 
+    public async Task<(List<InventorySummaryData> Data, int Total)> GetInventorySummaryAsync(RequestFilter filter,
         InventoryFilter inventoryFilter, CancellationToken cancellationToken = default)
     {
         var settings = await settingRepository
@@ -255,7 +254,7 @@ internal class InventoryStockRepository(
                     if (inventoryFilter.ActionType == WarehouseActionType.In)
                         groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
                     else if (inventoryFilter.ActionType == WarehouseActionType.Out)
-                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0);
+                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
 
@@ -457,8 +456,8 @@ internal class InventoryStockRepository(
 
                     if (inventoryFilter.ActionType == WarehouseActionType.In)
                         groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
-                    else if(inventoryFilter.ActionType == WarehouseActionType.Out)
-                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0);
+                    else if (inventoryFilter.ActionType == WarehouseActionType.Out)
+                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
 
@@ -566,7 +565,7 @@ internal class InventoryStockRepository(
                     if (inventoryFilter.ActionType == WarehouseActionType.In)
                         groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
                     else if (inventoryFilter.ActionType == WarehouseActionType.Out)
-                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0);
+                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
 
@@ -837,7 +836,7 @@ internal class InventoryStockRepository(
         groupedQuery = request.ItemStatus switch
         {
             ItemStatus.Available => groupedQuery.Where(x => x.CurrentQuantity > 0),
-            ItemStatus.Sold => groupedQuery.Where(x => x.SoldQuantity > 0),
+            ItemStatus.Sold => groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0),
             _ => groupedQuery
         };
 
@@ -938,6 +937,127 @@ internal class InventoryStockRepository(
                 PurchaseWageType = purchase?.PurchaseWageType,
                 PurchaseWagePriceUnitTitle = purchaseWageTitle
             };
+        }).ToList();
+
+        return finalData;
+    }
+
+    public async Task<List<InventorySummaryData>> GetCoinsReportAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var query = Query
+            .Where(x => x.CoinInstanceId != null)
+            .Where(x => request.CoinId == null || x.CoinInstance!.CoinId == new CoinId(request.CoinId.Value))
+            .Where(x => request.FromDate == null || x.PostingDate >= request.FromDate)
+            .Where(x => request.ToDate == null || x.PostingDate <= request.ToDate);
+
+        var groupedQuery = query
+            .GroupBy(x => x.CoinInstanceId)
+            .Select(g => new
+            {
+                CoinInstanceId = g.Key!,
+                LastActivityDate = g.Min(x => x.PostingDate),
+
+                CurrentQuantity = g.Sum(s =>
+                    s.ActionType == WarehouseActionType.In
+                        ? s.ChangeAmount
+                        : -s.ChangeAmount
+                ),
+
+                SoldQuantity = g
+                    .Where(s =>
+                        s.ActionType == WarehouseActionType.Out &&
+                        s.InvoiceId != null &&
+                        s.Invoice!.InvoiceType == InvoiceType.Sell &&
+                        s.ReverseInventoryStockId == null
+                    )
+                    .Sum(s => s.ChangeAmount)
+            });
+
+        groupedQuery = request.ItemStatus switch
+        {
+            ItemStatus.Available => groupedQuery.Where(x => x.CurrentQuantity > 0),
+            ItemStatus.Sold => groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0),
+            _ => groupedQuery
+        };
+
+        var flattenedQuery = groupedQuery.Join(
+            dbContext.Set<CoinInstance>()
+                .AsNoTracking()
+                .Include(ci => ci.Coin)
+                .Include(ci => ci.CoinInstancePackage!.Issuer),
+            g => g.CoinInstanceId,
+            ci => ci.Id,
+            (g, ci) => new
+            {
+                CoinInstance = ci,
+                g.CurrentQuantity,
+                g.SoldQuantity,
+                g.LastActivityDate,
+            });
+
+        var list = await flattenedQuery.ToListAsync(cancellationToken);
+
+        var finalData = list.Select(x => new InventorySummaryData
+        {
+            CoinInstance = x.CoinInstance,
+            CurrentAmount = x.CurrentQuantity,
+            SoldAmount = x.SoldQuantity,
+            DateTime = x.LastActivityDate,
+        }).ToList();
+
+        return finalData;
+    }
+
+    public async Task<List<InventorySummaryData>> GetCurrenciesReportAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        var query = Query
+            .Where(x => x.CurrencyId != null)
+            .Where(x => request.FromDate == null || x.PostingDate >= request.FromDate)
+            .Where(x => request.ToDate == null || x.PostingDate <= request.ToDate);
+
+        var groupedQuery = query
+            .Where(x => x.CurrencyId != null)
+            .GroupBy(x => x.CurrencyId)
+            .Select(g => new
+            {
+                CurrencyId = g.Key,
+                LastActivityDate = g.Min(x => x.PostingDate),
+                CurrentQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount),
+                SoldQuantity = g.Where(s => s.ActionType == WarehouseActionType.Out &&
+                                            s.InvoiceId != null &&
+                                            s.Invoice!.InvoiceType == InvoiceType.Sell &&
+                                            s.ReverseInventoryStockId == null)
+                    .Sum(s => s.ChangeAmount)
+            });
+
+        groupedQuery = request.ItemStatus switch
+        {
+            ItemStatus.Available => groupedQuery.Where(x => x.CurrentQuantity > 0),
+            ItemStatus.Sold => groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0),
+            _ => groupedQuery
+        };
+
+        var flattenedQuery = groupedQuery.Join(
+            dbContext.Set<PriceUnit>(),
+            g => g.CurrencyId,
+            c => c.Id,
+            (g, c) => new
+            {
+                Currency = c,
+                g.CurrentQuantity,
+                g.SoldQuantity,
+                g.LastActivityDate,
+            }
+        );
+
+        var list = await flattenedQuery.ToListAsync(cancellationToken);
+
+        var finalData = list.Select(x => new InventorySummaryData
+        {
+            Currency = x.Currency,
+            CurrentAmount = x.CurrentQuantity,
+            SoldAmount = x.SoldQuantity,
+            DateTime = x.LastActivityDate,
         }).ToList();
 
         return finalData;
