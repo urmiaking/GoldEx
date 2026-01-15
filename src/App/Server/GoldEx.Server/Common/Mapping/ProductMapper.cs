@@ -20,7 +20,7 @@ internal class ProductMapper : IRegister
             .Map(dest => dest.GemStones, src => src.GemStones)
             .Map(dest => dest.Weight, src => src.InventoryStocks != null 
                 ? src.InventoryStocks.Sum(x => x.ActionType == WarehouseActionType.In ? x.ChangeAmount : -x.ChangeAmount)
-                : 0m);
+                : src.Weight);
 
         config.NewConfig<GemStone, GetGemStoneResponse>();
         config.NewConfig<MoltenGold, GetMoltenGoldResponse>();

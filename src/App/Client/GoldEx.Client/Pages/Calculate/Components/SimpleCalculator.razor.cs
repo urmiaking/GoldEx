@@ -436,6 +436,12 @@ public partial class SimpleCalculator
                      if (response is null)
                          return;
 
+                     if (response.Weight is 0)
+                     {
+                         AddErrorToast($"{response.Name} با کد {response.Barcode} فروخته شده است");
+                         return;
+                     }
+
                      _searchedProduct = response;
 
                      var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
@@ -553,7 +559,6 @@ public partial class SimpleCalculator
     }
 
     #endregion
-
 
     private void AddToInvoice(GetProductResponse product)
     {

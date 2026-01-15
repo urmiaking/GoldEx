@@ -51,7 +51,6 @@ public static class ApiRoutes
     public class Products
     {
         public const string Base = "/api/products";
-        public const string GetList = "";
         public const string GetByBarcode = "barcode/{barcode}";
         public const string Create = "";
         public const string Update = "{id}";

@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Common.Extensions;
@@ -65,12 +64,6 @@ internal class ProductService(
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : mapper.Map<GetProductResponse>(item);
-    }
-
-    public Task<PagedList<GetProductResponse>> GetListAsync(RequestFilter filter, ProductFilter productFilter,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task UpdateAsync(Guid id, ProductRequestDto request, CancellationToken cancellationToken = default)
