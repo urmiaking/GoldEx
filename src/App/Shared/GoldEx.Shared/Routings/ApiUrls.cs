@@ -95,9 +95,6 @@ public class ApiUrls
 
     public class Products
     {
-        public static string GetList(RequestFilter filter, ProductFilter productFilter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList)
-            .AppendQueryString(filter).AppendQueryString(productFilter);
-
         public static string GetList(string name, ProductType productType) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetListByName)
                 .FormatRoute(new { productType })

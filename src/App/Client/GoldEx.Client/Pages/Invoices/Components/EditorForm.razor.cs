@@ -325,6 +325,12 @@ public partial class EditorForm
                 if (response is null)
                     return;
 
+                if (response.Weight is 0)
+                {
+                    AddErrorToast($"{response.Name} با کد {response.Barcode} قبلا فروخته شده است");
+                    return;
+                }
+
                 decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
                 decimal? wageExchangeRate = null;
