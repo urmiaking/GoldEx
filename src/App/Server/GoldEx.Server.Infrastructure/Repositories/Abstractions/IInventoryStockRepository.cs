@@ -32,4 +32,6 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
 
     Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(WarehouseActionType actionType, CancellationToken cancellationToken = default);
     Task<List<InventorySummaryData>> GetProductsReportAsync(ProductInventoryRpRequest request, CancellationToken cancellationToken = default);
+    Task<List<InventorySummaryData>> GetCoinsReportAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default);
+    Task<List<InventorySummaryData>> GetCurrenciesReportAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default);
 }

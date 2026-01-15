@@ -1,0 +1,80 @@
+﻿@using GoldEx.Shared.DTOs.Reporting
+
+@inherits GoldExComponentBase
+
+@if (Items is null || IsLoading)
+{
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
+}
+else
+{
+    <MudTable Items="@Items"
+              Virtualize="true"
+              Dense="true"
+              Hover="true"
+              Bordered="true"
+              Striped="true"
+              FixedHeader="true"
+              Breakpoint="Breakpoint.Sm"
+              SortLabel="مرتب ‌سازی"
+              ContainerClass="responsive-table-toolbar"
+              Elevation="24">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">گزارش موجودی ارز</MudText>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudButton StartIcon="@Icons.Material.Filled.Print"
+                           Class="ml-2"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           OnClick="@(() => OnPrintReport.InvokeAsync())">
+                    پرینت
+                </MudButton>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Print"
+                               Color="Color.Success"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
+            </MudHidden>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CurrencyInventoryRpResponse, object>(x => x.Currency.Title)">
+                    عنوان
+                </MudTableSortLabel>
+            </MudTh>
+             <MudTh>
+                <MudTableSortLabel SortBy="new Func<CurrencyInventoryRpResponse, object>(x => x.CurrentAmount)">
+                    موجود
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CurrencyInventoryRpResponse, object>(x => x.SoldAmount)">
+                    فروخته شده
+                </MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="عنوان">@context.Currency.Title</MudTd>
+            <MudTd DataLabel="موجود">@context.CurrentAmount.ToCurrencyFormat()</MudTd>
+            <MudTd DataLabel="فروخته شده">@context.SoldAmount.ToCurrencyFormat()</MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+}

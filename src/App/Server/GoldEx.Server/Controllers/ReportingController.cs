@@ -101,4 +101,22 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         var result = await service.GetProductInventoryAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet(ApiRoutes.Reporting.GetCoinInventory)]
+    public async Task<IActionResult> GetCoinInventoryAsync(
+        [FromQuery] CoinInventoryRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetCoinInventoryAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetCurrencyInventory)]
+    public async Task<IActionResult> GetCurrencyInventoryAsync(
+        [FromQuery] CurrencyInventoryRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetCurrencyInventoryAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }

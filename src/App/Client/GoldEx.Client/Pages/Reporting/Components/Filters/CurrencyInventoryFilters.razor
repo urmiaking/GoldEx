@@ -1,0 +1,24 @@
+﻿<MudItem xs="12" sm="6" md="3">
+    <MudSelect T="ItemStatus?"
+               Label="@Model.GetDisplayName(() => Model.ItemStatus)"
+               @bind-Value="Model.ItemStatus"
+               For="@(() => Model.ItemStatus)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="ItemStatus?" Value="@((ItemStatus?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.Menu"></MudIcon>
+                <MudText>موجود/فروخته شده</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<ItemStatus>().Where(x => x is not ItemStatus.Melted))
+        {
+            <MudSelectItem Value="item" T="ItemStatus?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetStatusColor(item)" Icon="@GetStatusIcon(item)"></MudIcon>
+                    <MudText>@item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>

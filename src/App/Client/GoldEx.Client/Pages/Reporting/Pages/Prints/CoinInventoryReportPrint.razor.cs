@@ -1,22 +1,21 @@
 ﻿using GoldEx.Client.Extensions;
 using GoldEx.Client.Pages.Reporting.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.DTOs.ProductCategories;
+using GoldEx.Shared.DTOs.CoinInstances;
+using GoldEx.Shared.DTOs.Coins;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using System.Globalization;
 
 namespace GoldEx.Client.Pages.Reporting.Pages.Prints;
 
-public partial class ProductInventoryReportPrint
+public partial class CoinInventoryReportPrint
 {
-    [Parameter, SupplyParameterFromQuery] 
-    public Guid? ProductCategoryId { get; set; }
-
     [Parameter, SupplyParameterFromQuery]
-    public string? ItemType { get; set; }
+    public Guid? CoinId { get; set; }
 
     [Parameter, SupplyParameterFromQuery]
     public string? ItemStatus { get; set; }
@@ -26,14 +25,10 @@ public partial class ProductInventoryReportPrint
         get
         {
             string? output = null;
-            if (_itemType.HasValue)
-            {
-                output += $" ({_itemType.Value.GetDisplayName()})";
-            }
 
-            if (_productCategory is not null)
+            if (_coin is not null)
             {
-                output += $" دسته {_productCategory.Title}";
+                output += $" ({_coin.Title})";
             }
 
             if (_itemStatus.HasValue)
@@ -46,31 +41,23 @@ public partial class ProductInventoryReportPrint
     }
 
     private readonly int _version = new Random().Next(0, 1000);
-    private ProductInventoryFilterVm _filter = default!;
-    private GetProductCategoryResponse? _productCategory;
-    private List<ProductInventoryRpResponse>? _items;
+    private CoinInventoryFilterVm _filter = default!;
+    private GetCoinResponse? _coin;
+    private List<CoinInventoryRpResponse>? _items;
     private ReportSummaryVm? _summary;
-    private ItemType? _itemType;
     private ItemStatus? _itemStatus;
 
     protected override void OnInitialized()
     {
-        if (!string.IsNullOrWhiteSpace(ItemType) &&
-            Enum.TryParse<ItemType>(ItemType, ignoreCase: true, out var parsedType))
-        {
-            _itemType = parsedType;
-        }
-
         if (!string.IsNullOrWhiteSpace(ItemStatus) &&
             Enum.TryParse<ItemStatus>(ItemStatus, ignoreCase: true, out var parsedStatus))
         {
             _itemStatus = parsedStatus;
         }
 
-        _filter = new ProductInventoryFilterVm
+        _filter = new CoinInventoryFilterVm
         {
-            ProductCategoryId = ProductCategoryId,
-            ItemType = _itemType,
+            CoinId = CoinId,
             ItemStatus = _itemStatus,
             DateRange = DateRangeExtensions.From(FromDate, ToDate),
         };
@@ -85,11 +72,11 @@ public partial class ProductInventoryReportPrint
 
     private async Task LoadProductCategoryAsync()
     {
-        if (!ProductCategoryId.HasValue)
+        if (!CoinId.HasValue)
             return;
 
-        _productCategory = await SendRequestAsync<IProductCategoryService, GetProductCategoryResponse>(
-            action: (s, ct) => s.GetAsync(ProductCategoryId.Value, ct),
+        _coin = await SendRequestAsync<ICoinService, GetCoinResponse>(
+            action: (s, ct) => s.GetAsync(CoinId.Value, ct),
             createScope: true);
     }
 
@@ -97,8 +84,8 @@ public partial class ProductInventoryReportPrint
     {
         var request = _filter.ToRequest();
 
-        _items = await SendRequestAsync<IReportingService, List<ProductInventoryRpResponse>>(
-            action: (s, ct) => s.GetProductInventoryAsync(request, ct),
+        _items = await SendRequestAsync<IReportingService, List<CoinInventoryRpResponse>>(
+            action: (s, ct) => s.GetCoinInventoryAsync(request, ct),
             createScope: true);
 
         CalculateSummary();
@@ -112,9 +99,9 @@ public partial class ProductInventoryReportPrint
             return;
         }
 
-        var totalCurrentAmount = _items.Sum(x => x.CurrentAmount);
+        var totalAvailableAmount = _items.Sum(x => x.CurrentAmount);
         var totalSoldAmount = _items.Sum(x => x.SoldAmount);
-        var totalRemaining = totalCurrentAmount - totalSoldAmount;
+        var totalAmount = totalAvailableAmount + totalSoldAmount;
 
         _summary = new ReportSummaryVm
         {
@@ -126,25 +113,25 @@ public partial class ProductInventoryReportPrint
                     [
                         new SummaryItem
                         {
-                            Label = "موجودی کل",
-                            Value = totalCurrentAmount.ToWeightFormat(GoldUnitType.Gram),
+                            Label = "موجود",
+                            Value = totalAvailableAmount.ToString("G29"),
                             Type = "credit",
                             ShowIcon = true,
                             IconType = "credit-icon"
                         },
                         new SummaryItem
                         {
-                            Label = "موجودی فروخته شده",
-                            Value = totalSoldAmount.ToWeightFormat(GoldUnitType.Gram),
+                            Label = "فروخته شده",
+                            Value = totalSoldAmount.ToString("G29"),
                             Type = "debit",
                             ShowIcon = true,
                             IconType = "debit-icon"
                         },
                         new SummaryItem
                         {
-                            Label = "موجودی فعلی",
-                            Value = Math.Max(0, totalRemaining).ToWeightFormat(GoldUnitType.Gram),
-                            Type = "net",
+                            Label = "تعداد کل",
+                            Value = Math.Max(0, totalAmount).ToString("G29"),
+                            Type = "net"
                         }
                     ]
                 }
@@ -152,25 +139,47 @@ public partial class ProductInventoryReportPrint
         };
     }
 
-    private string GetItemWage(ProductInventoryRpResponse context)
+    private string GetCoinTitle(GetCoinInstanceResponse coinInstance)
     {
-        if (context.CurrentAmount == 0)
-        {
-            return context.SaleWageType switch
-            {
-                WageType.Fixed => $"{context.SaleWage?.ToCurrencyFormat(context.SaleWagePriceUnitTitle)}",
-                WageType.Percent => context.SaleWage?.ToString("G29") + " درصد",
-                _ => "ندارد"
-            };
-        }
-        else
-        {
-            return context.Product.WageType switch
-            {
-                WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
-                WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
-                _ => "ندارد"
-            };
-        }
+        var coin = coinInstance.Coin;
+
+        var baseTitle = coin.Title;
+
+        var issuer = coinInstance.CoinPackage?.Issuer;
+        if (issuer is null)
+            return baseTitle;
+
+        var issuerName = issuer.FullName;
+        var nationalCode = issuer.NationalId;
+
+        if (string.IsNullOrWhiteSpace(issuerName) || string.IsNullOrWhiteSpace(nationalCode))
+            return baseTitle;
+
+        return $"{baseTitle} - {issuerName} ({nationalCode})";
+    }
+
+    private string GetCoinWeight(GetCoinInstanceResponse coinInstance)
+    {
+        var weight = coinInstance.Weight.ToWeightFormat(GoldUnitType.Gram);
+
+        var vacuumedWeight = coinInstance.CoinPackage?.VacuumedWeight.ToWeightFormat(GoldUnitType.Gram);
+
+        return vacuumedWeight is not null
+            ? $"{weight} ({vacuumedWeight} با پرس)"
+            : weight;
+    }
+
+    private string GetCoinMintYear(GetCoinInstanceResponse coinItem)
+    {
+        DateTime? mintDate = coinItem.MintYear.HasValue
+            ? new DateTime(coinItem.MintYear.Value, 3, 21)
+            : null;
+
+        if (!mintDate.HasValue)
+            return "نامشخص";
+
+        var persianYear = new PersianCalendar().GetYear(mintDate.Value);
+
+        return persianYear.ToString();
     }
 }

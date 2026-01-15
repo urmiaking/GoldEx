@@ -59,5 +59,9 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.SourceUrl, src => InventoryStockDescriptionBuilder.BuildUrl(src));
 
         config.NewConfig<InventorySummaryData, ProductInventoryRpResponse>();
+
+        config.NewConfig<InventorySummaryData, CoinInventoryRpResponse>();
+
+        config.NewConfig<InventorySummaryData, CurrencyInventoryRpResponse>();
     }
 }

@@ -582,5 +582,13 @@ public class ApiUrls
         public static string GetProductInventory(ProductInventoryRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetProductInventory)
                 .AppendQueryString(request);
+
+        public static string GetCoinInventory(CoinInventoryRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCoinInventory)
+                .AppendQueryString(request);
+
+        public static string GetCurrencyInventory(CurrencyInventoryRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCurrencyInventory)
+                .AppendQueryString(request);
     }
 }
