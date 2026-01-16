@@ -17,24 +17,24 @@ public class Setting : EntityBase<SettingsId>
         decimal gramPerMesghal,
         TimeSpan priceUpdateInterval)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(goldProfitPercent, 0, nameof(goldProfitPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(jewelryProfitPercent, 0, nameof(jewelryProfitPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(moltenGoldCommissionPercent, 0, nameof(moltenGoldCommissionPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(goldSafetyMarginPercent, 0, nameof(goldSafetyMarginPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(usedGoldFinenessDeductionRate, 0, nameof(usedGoldFinenessDeductionRate));
-        ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0, nameof(gramPerMesghal));
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(goldProfitPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(jewelryProfitPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(moltenGoldCommissionPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(goldSafetyMarginPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(usedGoldFinenessDeductionRate, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0);
 
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(goldProfitPercent, 100, nameof(goldProfitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(jewelryProfitPercent, 100, nameof(jewelryProfitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(moltenGoldCommissionPercent, 100, nameof(moltenGoldCommissionPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(goldSafetyMarginPercent, 100, nameof(goldSafetyMarginPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(usedGoldFinenessDeductionRate, 1000, nameof(usedGoldFinenessDeductionRate));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(goldProfitPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(jewelryProfitPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(moltenGoldCommissionPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(goldSafetyMarginPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(usedGoldFinenessDeductionRate, 1000);
 
-        ArgumentNullException.ThrowIfNull(institutionName, nameof(institutionName));
-        ArgumentNullException.ThrowIfNull(address, nameof(address));
-        ArgumentNullException.ThrowIfNull(phoneNumber, nameof(phoneNumber));
+        ArgumentNullException.ThrowIfNull(institutionName);
+        ArgumentNullException.ThrowIfNull(address);
+        ArgumentNullException.ThrowIfNull(phoneNumber);
 
         return new Setting
         {
@@ -75,32 +75,32 @@ public class Setting : EntityBase<SettingsId>
     public void SetPhoneNumber(string phoneNumber) => PhoneNumber = phoneNumber;
     public void SetTax(decimal taxPercent)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(taxPercent, 100);
 
         TaxPercent = taxPercent;
     }
 
     public void SetGoldProfit(decimal profitPercent)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100);
 
         GoldProfitPercent = profitPercent;
     }
 
     public void SetJewelryProfit(decimal profitPercent)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100);
 
         JewelryProfitPercent = profitPercent;
     }
 
     public void SetMoltenGoldCommission(decimal commissionPercent)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(commissionPercent, 0, nameof(commissionPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(commissionPercent, 100, nameof(commissionPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThan(commissionPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(commissionPercent, 100);
 
         MoltenGoldCommissionPercent = commissionPercent;
     }
@@ -109,24 +109,19 @@ public class Setting : EntityBase<SettingsId>
     public void SetPriceUpdateInterval(TimeSpan interval) => PriceUpdateInterval = interval;
     public void SetUsedGoldFinenessDeduction(decimal deductionRate)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(deductionRate, -250, nameof(deductionRate));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(deductionRate, 750, nameof(deductionRate));
+        ArgumentOutOfRangeException.ThrowIfLessThan(deductionRate, -250);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(deductionRate, 750);
         UsedGoldFinenessDeductionRate = deductionRate;
     }
 
     public void SetGramPerMesghal(decimal gramPerMesghal)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0, nameof(gramPerMesghal));
+        ArgumentOutOfRangeException.ThrowIfLessThan(gramPerMesghal, 0);
         GramPerMesghal = gramPerMesghal;
     }
 
     public void UpdateBarcodePrintSettings(BarcodePrintSettings barcodePrintSettings)
     {
         BarcodePrintSettings = barcodePrintSettings ?? throw new ArgumentNullException(nameof(barcodePrintSettings));
-    }
-
-    public void InitializeBarcodePrintSettings()
-    {
-        BarcodePrintSettings ??= BarcodePrintSettings.CreateDefault();
     }
 }
