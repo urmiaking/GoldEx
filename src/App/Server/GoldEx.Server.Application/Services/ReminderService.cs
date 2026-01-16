@@ -27,7 +27,7 @@ internal class ReminderService(ISmsSender smsSender, IInvoiceRepository invoiceR
         {
             throw new ValidationException(new List<ValidationFailure>
             {
-                new("invoiceId", "امکان ارسال پیامک برای مشتری به دلیل عدم وجود شماره تماس وجود ندارد")
+                new(nameof(invoiceId), "امکان ارسال پیامک برای مشتری به دلیل عدم وجود شماره تماس وجود ندارد")
             });
         }
 
