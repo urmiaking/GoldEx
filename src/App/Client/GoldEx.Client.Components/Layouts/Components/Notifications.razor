@@ -8,15 +8,18 @@
            Elevation="8"
            Width="400px">
     <MudToolBar Dense="true" Gutters="false">
-        <MudText Typo="Typo.h6" Class="mr-3">اعلان ها</MudText>
-        <MudSpacer />
+        <MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Notifications" />
+        <MudText Typo="Typo.h6" Class="mr-1">اعلان ها</MudText>
+        <MudSpacer/>
         <MudIconButton Icon="@Icons.Material.Filled.Close"
                        Color="Color.Inherit"
-                       OnClick="@(() => _drawerOpen = false)" />
+                       OnClick="@(() => _drawerOpen = false)"/>
     </MudToolBar>
     <MudDivider />
     <NotificationList IsOpen="_drawerOpen"
-                      Items="_notifications"
+                      UnreadItems="_unreadNotifications"
+                      ReadItems="_readNotifications"
+                      OnDelete="HandleDelete"
                       OnMarkAsRead="HandleMarkAsRead"
                       OnMarkAllAsRead="HandleMarkAllAsRead"
                       OnButtonAction="HandleButtonAction" />

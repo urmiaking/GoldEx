@@ -203,6 +203,7 @@ public static class ApiRoutes
     {
         public const string Base = "/api/notifications";
         public const string GetList = "";
+        public const string Delete = "{id}";
         public const string MarkAsRead = "{id}/read";
         public const string MarkAllAsRead = "read-all";
     }

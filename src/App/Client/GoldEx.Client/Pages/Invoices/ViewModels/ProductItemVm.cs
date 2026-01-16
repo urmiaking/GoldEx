@@ -295,7 +295,6 @@ public class ProductItemVm
         );
     }
 
-    // TODO: ADD PURCHASE WAGE
     public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response, InvoiceType invoiceType)
     {
         return new ProductItemVm

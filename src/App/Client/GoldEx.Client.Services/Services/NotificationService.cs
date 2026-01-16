@@ -11,9 +11,10 @@ namespace GoldEx.Client.Services.Services;
 [ScopedService]
 internal class NotificationService(HttpClient client, JsonSerializerOptions jsonOptions) : INotificationService
 {
-    public async Task<List<GetNotificationResponse>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetNotificationResponse>> GetListAsync(bool? isRead,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Notifications.GetList(), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Notifications.GetList(isRead), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
@@ -34,6 +35,14 @@ internal class NotificationService(HttpClient client, JsonSerializerOptions json
     public async Task MarkAllAsReadAsync(CancellationToken cancellationToken = default)
     {
         using var response = await client.PutAsJsonAsync(ApiUrls.Notifications.MarkAllAsRead(), jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.DeleteAsync(ApiUrls.Notifications.Delete(id), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

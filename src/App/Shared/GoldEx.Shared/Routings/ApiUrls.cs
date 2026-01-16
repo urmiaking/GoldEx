@@ -395,12 +395,16 @@ public class ApiUrls
 
     public class Notifications
     {
-        public static string GetList()
-            => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.GetList);
+        public static string GetList(bool? isRead)
+            => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.GetList)
+                .AppendQueryString(new { isRead });
         public static string MarkAsRead(Guid id)
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAsRead).FormatRoute(new { id });
         public static string MarkAllAsRead()
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAllAsRead);
+
+        public static string Delete(Guid id) => 
+            BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.Delete).FormatRoute(new { id });
     }
 
     public class MeltingBatches

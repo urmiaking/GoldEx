@@ -1,32 +1,15 @@
 ﻿using GoldEx.Shared.DTOs.Notifications;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
-using System;
 
 namespace GoldEx.Client.Components.Layouts.Components;
 
 public partial class Notifications
 {
+    private List<GetNotificationResponse> _unreadNotifications = [];
+    private List<GetNotificationResponse> _readNotifications = [];
     private bool _drawerOpen;
-    private List<GetNotificationResponse> _notifications = [];
-    private bool _isOpen;
     private int _unreadCount;
-
-    public bool IsOpen
-    {
-        get => _isOpen;
-        set
-        {
-            if (_isOpen == value) return;
-
-            _isOpen = value;
-
-            if (_isOpen)
-            {
-                _ = LoadNotificationsAsync();
-            }
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,12 +20,20 @@ public partial class Notifications
     private async Task LoadNotificationsAsync()
     {
         await SendRequestAsync<INotificationService, List<GetNotificationResponse>>(
-            action: (s, ct) => s.GetListAsync(ct),
+            action: (s, ct) => s.GetListAsync(null, ct),
             afterSend: response =>
             {
-                _notifications = response;
+                _unreadNotifications = response.Where(x => !x.IsRead).ToList();
+                _readNotifications = response.Where(x => x.IsRead).ToList();
                 _unreadCount = response.Count;
             });
+    }
+
+    private async Task HandleDelete(Guid id)
+    {
+        await SendRequestAsync<INotificationService>(
+            action: (s, ct) => s.DeleteAsync(id, ct),
+            afterSend: LoadNotificationsAsync);
     }
 
     private async Task HandleMarkAsRead(Guid id)
