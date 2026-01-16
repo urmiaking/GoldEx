@@ -9,12 +9,14 @@ namespace GoldEx.Client.Components.Layouts.Components;
 public partial class NotificationList
 {
     [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public List<GetNotificationResponse> Items { get; set; } = [];
+    [Parameter] public List<GetNotificationResponse> UnreadItems { get; set; } = [];
+    [Parameter] public List<GetNotificationResponse> ReadItems { get; set; } = [];
     [Parameter] public EventCallback<Guid> OnMarkAsRead { get; set; }
+    [Parameter] public EventCallback<Guid> OnDelete { get; set; }
     [Parameter] public EventCallback OnMarkAllAsRead { get; set; }
     [Parameter] public EventCallback<(string action, ButtonActionType actionType, Guid? invoiceId)> OnButtonAction { get; set; }
 
-    private Dictionary<Guid, TouchInfo> _touchStates = new();
+    private readonly Dictionary<Guid, TouchInfo> _touchStates = new();
 
     private class TouchInfo
     {

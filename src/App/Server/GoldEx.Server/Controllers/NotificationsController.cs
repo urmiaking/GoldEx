@@ -12,9 +12,9 @@ namespace GoldEx.Server.Controllers;
 public class NotificationsController(INotificationService service) : ApiControllerBase
 {
     [HttpGet(ApiRoutes.Notifications.GetList)]
-    public async Task<IActionResult> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetListAsync([FromQuery] bool? isRead, CancellationToken cancellationToken = default)
     {
-        var list = await service.GetListAsync(cancellationToken);
+        var list = await service.GetListAsync(isRead, cancellationToken);
         return Ok(list);
     }
 
@@ -29,6 +29,13 @@ public class NotificationsController(INotificationService service) : ApiControll
     public async Task<IActionResult> MarkAsReadAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await service.MarkAsReadAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete(ApiRoutes.Notifications.Delete)]
+    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 }
