@@ -21,8 +21,8 @@
 @if (!_treeItems.Any())
 {
     <div class="align-center d-flex flex-column gap-3 justify-content-center">
-        <MudProgressCircular Color="Color.Success" Indeterminate="true" />
-        <div>در حال بارگیری</div>
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        <MudText>در حال بارگیری</MudText>
     </div>
 }
 else

@@ -27,5 +27,5 @@ public sealed class BarcodeMargin : EntityBase
         return new BarcodeMargin(top, right, bottom, left);
     }
 
-    public static BarcodeMargin Default() => new(5, 5, 5, 5);
+    public static BarcodeMargin Default() => new(9, 10, 10, 10);
 }

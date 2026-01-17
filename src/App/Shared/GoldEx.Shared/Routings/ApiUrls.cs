@@ -592,4 +592,19 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCurrencyInventory)
                 .AppendQueryString(request);
     }
+
+    public class SmsTemplates
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.SmsTemplates.Base, ApiRoutes.SmsTemplates.GetList);
+
+        public static string Update() =>
+            BuildUrl(ApiRoutes.SmsTemplates.Base, ApiRoutes.SmsTemplates.Update);
+    }
+
+    public class SmsLogs
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.SmsLogs.Base, ApiRoutes.SmsLogs.GetList);
+    }
 }
