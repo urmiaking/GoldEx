@@ -1,0 +1,43 @@
+﻿<MudCard Elevation="0">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex justify-content-between align-center">
+                <MudText Typo="Typo.h6">@Subject.GetDisplayName()</MudText>
+                <MudSwitch @bind-Value="Model.IsActive"
+                           For="() => Model.IsActive"
+                           Label="@(GetStatusLabel())"
+                           LabelPlacement="Placement.Left"
+                           Color="Color.Success"
+                           UncheckedColor="Color.Error"
+                           ThumbIconColor="Color.Info" />
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid Spacing="4">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="Model.Body"
+                              For="@(() => Model.Body)"
+                              AutoGrow
+                              Label="@(Model.GetDisplayName(() => Model.Body))"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6" Class="mt-2">
+                <MudPaper Elevation="0" Class="p-3" Style="border: solid 1px;">
+                    <MudText Typo="Typo.body1" Class="mb-2 text-center">پارامترها</MudText>
+                    <div class="d-flex gap-2 flex-wrap justify-center">
+                        @foreach (var parameter in Parameters)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Color="GetRandomColor()"
+                                       StartIcon="@Icons.Material.Filled.Info"
+                                       OnClick="() => OnParameterClicked(parameter)">
+                                @parameter
+                            </MudButton>
+                        }
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>

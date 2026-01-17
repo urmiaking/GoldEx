@@ -1,0 +1,89 @@
+﻿@using GoldEx.Shared.DTOs.SmsLogs
+@inherits GoldExComponentBase
+
+@attribute [Route(ClientRoutes.Settings.SmsLogs)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+<PageTitle>تاریخچه پیامک ها</PageTitle>
+
+<div class="d-flex align-center justify-space-between flex-wrap">
+    <MudText Typo="Typo.h6" GutterBottom="true">تاریخچه پیامک ها</MudText>
+    <MudSpacer />
+    <MudTextField T="string" Clearable="true" Immediate="true"
+                  ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
+                  Adornment="Adornment.Start" Variant="Variant.Outlined" DebounceInterval="500"
+                  Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
+                  IconSize="Size.Small" Class="m-0" />
+</div>
+
+<MudDivider Class="my-2" />
+
+<MudTable T="SmsLogResponse" @ref="_table" Hover="true" FixedHeader="true" Dense="true"
+          ServerData="LoadSmsLogsAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Xs"
+          Elevation="24" RowsPerPage="10" Class="p-2 mt-4">
+    <ColGroup>
+        <col />
+        <col span="2" />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh>گیرنده</MudTh>
+        <MudTh>متن پیام</MudTh>
+        <MudTh>تاریخ ارسال</MudTh>
+        <MudTh>وضعیت</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="گیرنده">@context.Receiver</MudTd>
+        <MudTd DataLabel="متن پیام" Class="w-md-50">
+            <MudText Typo="Typo.body2">@context.Message</MudText>
+        </MudTd>
+        <MudTd DataLabel="تاریخ ارسال">@context.CreatedAt.ToString("D")</MudTd>
+        <MudTd DataLabel="وضعیت">
+            <div class="d-flex gap-2 align-center">
+                @if (context.Delivered)
+                {
+                    <MudIcon Color="Color.Success" Icon="@Icons.Material.Outlined.Check"/>
+                    <MudText Typo="Typo.body2">ارسال شده</MudText>
+                }
+                else
+                {
+                    <MudIcon Color="Color.Error" Icon="@Icons.Material.Outlined.Warning"/>
+                    <MudText Typo="Typo.body2">خطا در ارسال</MudText>
+                }
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ پیامکی یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگیری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Selected="@(_table.CurrentPage + 1)"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           Class="justify-center"
+                           BoundaryCount="1"
+                           MiddleCount="3"/>
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>

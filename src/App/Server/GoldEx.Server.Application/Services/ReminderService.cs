@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-internal class ReminderService(ISmsSender smsSender, IInvoiceRepository invoiceRepository, ISettingRepository settingRepository) : IServerReminderService
+internal class ReminderService(IServerSmsService smsService, IInvoiceRepository invoiceRepository, ISettingRepository settingRepository) : IServerReminderService
 {
     public async Task SendReminderAsync(Guid invoiceId, CancellationToken cancellationToken = default)
     {
@@ -23,29 +23,11 @@ internal class ReminderService(ISmsSender smsSender, IInvoiceRepository invoiceR
             .Include(x => x.Customer)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
-        if (string.IsNullOrEmpty(invoice.Customer?.PhoneNumber))
-        {
-            throw new ValidationException(new List<ValidationFailure>
-            {
-                new(nameof(invoiceId), "امکان ارسال پیامک برای مشتری به دلیل عدم وجود شماره تماس وجود ندارد")
-            });
-        }
-
         var appSetting = await settingRepository
             .Get(new SettingsDefaultSpecification())
             .FirstOrDefaultAsync(cancellationToken)
                 ?? throw new NotFoundException("Settings not found");
 
-        // TODO: load the message template from the database
-        var message = $"""
-            {invoice.Customer.FullName} عزیز
-            فاکتور شماره {invoice.InvoiceNumber} شما به مبلغ {invoice.TotalAmount:N0} {invoice.PriceUnit?.Title} صادر شده است.
-            مبلغ پرداخت نشده این فاکتور {invoice.TotalUnpaidAmount:N0} {invoice.PriceUnit?.Title} می‌باشد.
-            لطفا در اسرع وقت نسبت به تسویه آن اقدام فرمایید.
-            با تشکر، {appSetting.InstitutionName}
-            """;
-
-        // TODO: log the message to the database
-        await smsSender.SendAsync(invoice.Customer.PhoneNumber, message, cancellationToken);
+        await smsService.SendInvoiceDueMessageAsync(invoice, appSetting, cancellationToken);
     }
 }

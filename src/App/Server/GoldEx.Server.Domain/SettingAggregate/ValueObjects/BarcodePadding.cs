@@ -27,5 +27,5 @@ public sealed class BarcodePadding : EntityBase
         return new BarcodePadding(top, right, bottom, left);
     }
 
-    public static BarcodePadding Default() => new(10, 10, 10, 10);
+    public static BarcodePadding Default() => new(1, 15, 3, 20);
 }

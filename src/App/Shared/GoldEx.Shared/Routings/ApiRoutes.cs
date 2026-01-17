@@ -309,4 +309,17 @@ public static class ApiRoutes
         public const string GetCoinInventory = "coin-inventory";
         public const string GetCurrencyInventory = "currency-inventory";
     }
+
+    public class SmsTemplates
+    {
+        public const string Base = "/api/sms-templates";
+        public const string GetList = "";
+        public const string Update = "";
+    }
+
+    public class SmsLogs
+    {
+        public const string Base = "/api/sms-logs";
+        public const string GetList = "";
+    }
 }
