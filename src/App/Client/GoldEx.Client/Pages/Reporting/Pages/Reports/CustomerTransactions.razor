@@ -15,7 +15,7 @@
         <CustomerTransactionFilters Model="@Filters" />
     </ReportFiltersBase>
 
-    <CustomerTransactionsReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
+    <CustomerTransactionsReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" OnOpenReference="OpenReference" />
 </MudContainer>
 
 <script src="/js/report-print.js?v=2"></script>
