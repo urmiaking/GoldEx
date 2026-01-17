@@ -1,5 +1,7 @@
-﻿using GoldEx.Shared.DTOs.Reporting;
+﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Helpers;
+using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using static GoldEx.Client.Pages.Reporting.ViewModels.CustomerBalanceFilterVm;
@@ -68,5 +70,10 @@ public partial class CustomerBalanceReportView
     private static string GetAmount(decimal amount, string priceUnit)
     {
         return amount is 0 ? "-" : Math.Abs(amount).ToCurrencyFormat(priceUnit);
+    }
+
+    private void OnViewSource(CustomerRemainingBalanceRpResponse x)
+    {
+        Navigation.NavigateTo(ClientRoutes.Reporting.CustomerTransactions.AppendQueryString(new { x.CustomerId, x.PriceUnitId }));
     }
 }

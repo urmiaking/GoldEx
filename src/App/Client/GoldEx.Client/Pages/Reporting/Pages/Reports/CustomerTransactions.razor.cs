@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -15,5 +16,27 @@ public partial class CustomerTransactions
             .AppendQueryString(WriteFilterToQuery());
 
         await JsRuntime.InvokeVoidAsync("openReportPopup", Navigation.ToAbsoluteUri(url).ToString());
+    }
+
+    private void OpenReference((string RefType, Guid? RefId) reference)
+    {
+        if (!reference.RefId.HasValue)
+            return;
+
+        switch (reference.RefType)
+        {
+            case nameof(CustomerTransactionRpResponse.InvoiceId):
+            {
+                var url = ClientRoutes.Invoices.SetInvoice.FormatRoute(new { id = reference.RefId.Value });
+                Navigation.NavigateTo(url);
+                break;
+            }
+            case nameof(CustomerTransactionRpResponse.PaymentVoucherId):
+            {
+                var url = ClientRoutes.PaymentVouchers.Index.AppendQueryString(new { q = reference.RefId.Value });
+                Navigation.NavigateTo(url);
+                break;
+            }
+        }
     }
 }

@@ -477,14 +477,17 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                 CustomerName = t.LedgerAccount!.Customer!.FullName,
                 CustomerCode = t.LedgerAccount!.Customer!.NationalId,
                 CustomerPhoneNumber = t.LedgerAccount!.Customer!.PhoneNumber,
-                PriceUnitTitle = t.PriceUnit!.Title
+                PriceUnitTitle = t.PriceUnit!.Title,
+                t.PriceUnitId
             })
             .Select(g => new
             {
+                CustomerId = g.Key.CustomerId.Value,
                 g.Key.CustomerName,
                 g.Key.CustomerCode,
                 g.Key.CustomerPhoneNumber,
                 g.Key.PriceUnitTitle,
+                PriceUnitId = g.Key.PriceUnitId.Value,
                 ReceivableSigned = g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
                     .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount),
                 PayableSigned = g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable)
@@ -500,9 +503,11 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
 
                 return new CustomerRemainingBalanceModel
                 {
+                    CustomerId = x.CustomerId,
                     CustomerName = x.CustomerName,
                     CustomerCode = x.CustomerCode,
                     CustomerPhoneNumber = x.CustomerPhoneNumber ?? string.Empty,
+                    PriceUnitId = x.PriceUnitId,
                     PriceUnitTitle = x.PriceUnitTitle,
                     ReceivableAmount = receivable,
                     PayableAmount = payable
