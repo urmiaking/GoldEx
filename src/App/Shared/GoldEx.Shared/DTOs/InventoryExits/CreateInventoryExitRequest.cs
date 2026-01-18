@@ -7,4 +7,5 @@ public record CreateInventoryExitRequest(
     DateTime ExitDate,
     string? Description,
     List<CreateProductItemExitRequest> Products,
-    List<CreateCoinItemExitRequest> Coins);
+    List<CreateCoinItemExitRequest> Coins,
+    List<CreateCurrencyItemExitRequest> Currencies);

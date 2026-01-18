@@ -9,6 +9,6 @@ public partial class Index
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
         new("انبار", href: ClientRoutes.InventoryStocks.Index, icon: Icons.Material.Filled.Warehouse),
-        new("خروج دستی اجناس", href: ClientRoutes.InventoryStocks.InventoryExits.Index, icon: Icons.Material.Filled.Logout)
+        new("خروج دستی", href: ClientRoutes.InventoryStocks.InventoryExits.Index, icon: Icons.Material.Filled.Logout)
     ];
 }

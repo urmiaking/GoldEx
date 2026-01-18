@@ -122,7 +122,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
         DateTime? postingDate = null,
-        InventoryEntryId? inventoryEntryId = null)
+        InventoryEntryId? inventoryEntryId = null,
+        InventoryExitId? inventoryExitId = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
@@ -134,7 +135,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ActionType = actionType,
             InvoiceId = invoiceId,
             PostingDate = postingDate ?? DateTime.Now,
-            InventoryEntryId = inventoryEntryId
+            InventoryEntryId = inventoryEntryId,
+            InventoryExitId = inventoryExitId
         };
     }
 

@@ -1,4 +1,5 @@
 ﻿using GoldEx.Shared.DTOs.InventoryEntries;
+using GoldEx.Shared.DTOs.InventoryExits;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
@@ -126,5 +127,13 @@ public class CoinItemVm
         IsInstant = coinItem.IsInstant;
         CoinInstance = coinItem.CoinInstance;
         ShowDetails = coinItem.ShowDetails;
+    }
+
+    public static CreateCoinItemExitRequest ToInventoryExitRequest(CoinItemVm vm)
+    {
+        if (vm.CoinInstance.Id is null)
+            throw new ArgumentNullException();
+
+        return new CreateCoinItemExitRequest(vm.CoinInstance.Id.Value, vm.Quantity);
     }
 }

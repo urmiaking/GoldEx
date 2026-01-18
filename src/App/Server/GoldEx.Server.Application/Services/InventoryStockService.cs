@@ -293,6 +293,13 @@ internal class InventoryStockService(
             postingDate: request.ExitDate,
             inventoryExitId: inventoryExitId)));
 
+        inventoryStocks.AddRange(request.Currencies.Select(currency => InventoryStock.CreateCurrency(
+            new PriceUnitId(currency.Id),
+            changeAmount: currency.Quantity,
+            WarehouseActionType.Out,
+            postingDate: request.ExitDate,
+            inventoryExitId: inventoryExitId)));
+
         if (inventoryStocks.Any())
         {
             await repository.CreateRangeAsync(inventoryStocks, cancellationToken);

@@ -1,3 +1,71 @@
-﻿@using GoldEx.Client.Pages.Statics
+﻿@inherits GoldExComponentBase
 
-<UnderDevelopment></UnderDevelopment>
+<MudPaper Class="@Class" Elevation="24">
+    <MudForm Model="_model" @ref="_form" Validation="@(_inventoryExitValidator.ValidateValue)" ValidationDelay="0">
+        <MudTabs Elevation="2" Rounded Centered>
+            <MudTabPanel Text="طلا، جواهر و آبشده" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
+                <ProductList Model="_model" PriceUnit="_priceUnit" />
+            </MudTabPanel>
+            <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
+                <CoinList Model="_model" PriceUnit="_priceUnit" />
+            </MudTabPanel>
+            <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Success">
+                <CurrencyList Model="_model" PriceUnit="_priceUnit" />
+            </MudTabPanel>
+        </MudTabs>
+        <MudDivider />
+        <div class="d-flex p-3 align-center flex-wrap gap-2">
+            <MudSelect T="ExitReason?"
+                       Label="@_model.GetDisplayName(() => _model.ExitReason)"
+                       @bind-Value="_model.ExitReason"
+                       For="@(() => _model.ExitReason)"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense">
+                <MudSelectItem T="ExitReason?" Value="@((ExitReason?)null)">انتخاب کنید...</MudSelectItem>
+                @foreach (var item in Enum.GetValues<ExitReason>())
+                {
+                    <MudSelectItem Value="item" T="ExitReason?">@item.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudTextField Label="@_model.GetDisplayName(() => _model.Description)"
+                          @bind-Value="_model.Description"
+                          For="@(() => _model.Description)"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense" />
+
+            <MudDatePicker @bind-Date="_model.ExitDate"
+                           Color="Color.Secondary"
+                           Editable="true"
+                           AnchorOrigin="Origin.TopCenter"
+                           TransformOrigin="Origin.BottomCenter"
+                           For="@(() => _model.ExitDate)"
+                           dir="ltr"
+                           Label="@(_model.GetDisplayName(() => _model.ExitDate))"
+                           ImmediateText="true"
+                           Margin="Margin.Dense"
+                           Rounded="true"
+                           Variant="Variant.Outlined" />
+
+            <div class="flex-fill d-none d-md-block"></div>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Success"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Size="Size.Medium"
+                       Disabled="@IsBusy"
+                       OnClick="OnSubmitAsync">
+                @if (IsBusy)
+                {
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </div>
+    </MudForm>
+</MudPaper>

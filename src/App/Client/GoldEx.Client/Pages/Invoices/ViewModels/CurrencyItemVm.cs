@@ -1,9 +1,10 @@
-﻿using GoldEx.Shared.DTOs.Invoices;
+﻿using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.InventoryEntries;
+using GoldEx.Shared.DTOs.InventoryExits;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.FinancialAccounts;
-using GoldEx.Shared.DTOs.InventoryEntries;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -158,5 +159,13 @@ public class CurrencyItemVm
         FinancialAccount = coinItem.FinancialAccount;
         TaxPercent = coinItem.TaxPercent;
         ShowDetails = coinItem.ShowDetails;
+    }
+
+    public static CreateCurrencyItemExitRequest ToInventoryExitRequest(CurrencyItemVm vm)
+    {
+        if (vm.FinancialAccount is null)
+            throw new ArgumentNullException();
+
+        return new CreateCurrencyItemExitRequest(vm.Currency.Id, vm.Amount, vm.FinancialAccount.Id);
     }
 }

@@ -5,31 +5,11 @@
         <MudText Typo="Typo.h6" GutterBottom="true" Class="d-none d-md-block">
             لیست اجناس
         </MudText>
-        <div Class="flex-fill d-none d-md-block"></div>
-
-        <MudPaper Elevation="0" Style="max-width: 250px;">
-            <MudNumericField Adornment="Adornment.End"
-                             AdornmentText="@PriceUnit?.Title"
-                             For="() => _gramPrice"
-                             Format="#,##0.##"
-                             HideSpinButtons="true"
-                             Immediate="true"
-                             Margin="Margin.Dense"
-                             Label="نرخ هر گرم طلای 18 عیار"
-                             dir="ltr"
-                             T="decimal"
-                             Value="@_gramPrice"
-                             ValueChanged="OnGramPriceChanged"
-                             Variant="Variant.Outlined" />
-        </MudPaper>
-        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Info" Text="افزودن جنس">
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small"
-                           Variant="Variant.Filled" Color="Color.Info" OnClick="AddItem" />
-        </MudTooltip>
-        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Success" Text="آپلود فایل اکسل">
-            <MudIconButton Icon="@Icons.Custom.FileFormats.FileExcel" Size="Size.Small"
-                           Variant="Variant.Filled" Color="Color.Success" OnClick="UploadExcel" />
-        </MudTooltip>
+        <div class="flex-fill d-none d-md-block"></div>
+        <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small"
+                   Variant="Variant.Filled" Color="Color.Info" OnClick="AddItem">
+            افزودن جنس از انبار
+        </MudButton>
     </MudStack>
     <MudTable Elevation="0" Dense="true" Hover="true" Virtualize="true" Items="@Model.ProductItems" T="ProductItemVm" FixedHeader="true"
               ContainerClass="responsive-table-import">
@@ -44,7 +24,7 @@
             <col />
             @if (Model.ProductItems.Any(x => x.StoneAmount > 0))
             {
-                <col/>
+                <col />
             }
             <col />
             <col />
@@ -83,7 +63,7 @@
                         WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
                         _ => "ندارد"
                     })
-                }
+                                }
             </MudTd>
             <MudTd DataLabel="وزن">@context.TotalWeight?.ToString("G29") @context.Product.GoldUnitType.GetDisplayName()</MudTd>
             @if (Model.ProductItems.Any(x => x.StoneAmount > 0))
@@ -93,10 +73,6 @@
             <MudTd DataLabel="ارزش کل">@context.FinalAmount.ToCurrencyFormat(_gramPriceUnit?.Title)</MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">
-                    <MudTooltip Text="چاپ بارکد">
-                        <MudIconButton Icon="@Icons.Material.Filled.Print" Size="Size.Small" Variant="Variant.Filled"
-                                       Color="Color.Success" OnClick="() => PrintBarcode(context)"></MudIconButton>
-                    </MudTooltip>
                     <MudTooltip Text="ویرایش جنس">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
                                        Color="Color.Primary" OnClick="() => EditItem(context)"></MudIconButton>
