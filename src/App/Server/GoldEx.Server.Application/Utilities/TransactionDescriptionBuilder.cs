@@ -2,10 +2,12 @@
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.FinancialAccountAggregate.Extensions;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.Enums;
 
@@ -372,6 +374,11 @@ public static class TransactionDescriptionBuilder
     public static string ForInventoryExit(ExitReason reason, Coin coin)
     {
         return $"خروج سکه '{coin.Title}' از انبار به دلیل {reason.GetDisplayName()}";
+    }
+
+    public static string ForInventoryExit(ExitReason reason, PriceUnit priceUnit, FinancialAccount financialAccount)
+    {
+        return $"خروج ارز {priceUnit.Title} از حساب {financialAccount.GetAccountDisplayText()} به دلیل {reason.GetDisplayName()}";
     }
 
     #endregion
