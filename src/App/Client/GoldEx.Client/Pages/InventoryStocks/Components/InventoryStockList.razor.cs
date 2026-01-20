@@ -29,6 +29,7 @@ public partial class InventoryStockList
     [Parameter] public ItemType ItemType { get; set; }
     [Parameter] public ItemStatus ItemStatus { get; set; } = ItemStatus.Available;
     [Parameter] public Guid? InventoryEntryId { get; set; }
+    [Parameter] public Guid? InventoryExitId { get; set; }
     [Parameter] public EventCallback<HashSet<InventoryStockVm>?> SelectedItemsChanged { get; set; }
     [Parameter] public ItemType[] SelectableTypes { get; set; } = Enum.GetValues<ItemType>();
 
@@ -196,7 +197,13 @@ public partial class InventoryStockList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var inventoryFilter = new InventoryFilter(_actionType, ItemType, _categoryFilter?.Id, _filterDateRange.Start, _filterDateRange.End, InventoryEntryId);
+        var inventoryFilter = new InventoryFilter(_actionType,
+            ItemType,
+            _categoryFilter?.Id,
+            _filterDateRange.Start,
+            _filterDateRange.End,
+            InventoryEntryId,
+            InventoryExitId);
 
         await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
             action: (s, token) => s.GetListAsync(filter, inventoryFilter, token),

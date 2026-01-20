@@ -31,12 +31,4 @@ internal class InventoryExitService(HttpClient client, JsonSerializerOptions jso
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
-
-    public async Task RollbackAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        using var response = await client.DeleteAsync(ApiUrls.InventoryExits.Rollback(id), cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-            throw HttpRequestFailedException.GetException(response.StatusCode, response);
-    }
 }

@@ -1,5 +1,7 @@
-﻿using GoldEx.Sdk.Common.Data;
+﻿using GoldEx.Client.Pages.InventoryExits.ViewModels;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.InventoryExits;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -8,17 +10,17 @@ namespace GoldEx.Client.Pages.InventoryExits.Components;
 
 public partial class InventoryExitList
 {
-    private MudTable<InventoryExitResponse> _table = default!;
+    private MudTable<InventoryExitListVm> _table = default!;
 
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public string? SearchQuery { get; set; }
 
-    private async Task<TableData<InventoryExitResponse>> LoadInventoryExitsAsync(TableState state,
+    private async Task<TableData<InventoryExitListVm>> LoadInventoryExitsAsync(TableState state,
         CancellationToken cancellationToken)
     {
-        var result = new TableData<InventoryExitResponse>();
+        var result = new TableData<InventoryExitListVm>();
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, SearchQuery, state.SortLabel,
             state.SortDirection switch
@@ -33,10 +35,10 @@ public partial class InventoryExitList
             action: (s, token) => s.GetListAsync(filter, token),
             afterSend: response =>
             {
-                result = new TableData<InventoryExitResponse>
+                result = new TableData<InventoryExitListVm>
                 {
                     TotalItems = response.Total,
-                    Items = response.Data
+                    Items = response.Data.Select(InventoryExitListVm.CreateFrom).ToList()
                 };
             },
             createScope: true,
@@ -60,24 +62,50 @@ public partial class InventoryExitList
         _table.NavigateTo(i - 1);
     }
 
-    private async Task Delete(InventoryExitResponse context)
+    private void ShowDetails(TableRowClickEventArgs<InventoryExitListVm> args)
     {
-        var result = await DialogService.ShowMessageBox("تأیید حذف",
-            "با تایید شما تمامی اجناسی که طی این عملیات از انبار خارچ شده اند، به انبار برمیگردند.",
-            yesText: "حذف",
-            cancelText: "انصراف");
-
-        if (result == true)
+        var entryItem = _table.FilteredItems.FirstOrDefault(b => b.Equals(args.Item));
+        if (entryItem is not null)
         {
-            await SendRequestAsync<IInventoryExitService>(
-                action: (s, token) => s.RollbackAsync(context.Id, token),
-                afterSend: () =>
-                {
-                    AddSuccessToast("خروج دستی با موفقیت برگردانده شد");
-                    _ = RefreshDataAsync();
-                    return Task.CompletedTask;
-                }
-            );
+            entryItem.ShowDetails = !entryItem.ShowDetails;
         }
+    }
+
+    private string GetShowDetailsIcon(bool opened)
+    {
+        return opened ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore;
+    }
+
+    private ItemType[] GetItemTypes(InventoryExitListVm context)
+    {
+        var types = new List<ItemType>();
+
+        if (context.ProductsAmount > 0)
+        {
+            types.Add(ItemType.Product);
+            types.Add(ItemType.MoltenGold);
+        }
+
+        if (context.CoinsAmount > 0)
+            types.Add(ItemType.Coin);
+
+        if (context.CurrenciesAmount > 0)
+            types.Add(ItemType.Currency);
+
+        return types.ToArray();
+    }
+
+    private ItemType GetSelectedItemType(InventoryExitListVm context)
+    {
+        if (context.ProductsAmount > 0)
+            return ItemType.Product;
+
+        if (context.CoinsAmount > 0)
+            return ItemType.Coin;
+
+        if (context.CurrenciesAmount > 0)
+            return ItemType.Currency;
+
+        return ItemType.Product;
     }
 }

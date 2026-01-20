@@ -7,5 +7,4 @@ public interface IInventoryExitService
 {
     Task<PagedList<InventoryExitResponse>> GetListAsync(RequestFilter filter, CancellationToken cancellationToken = default);
     Task ExitAsync(CreateInventoryExitRequest request, CancellationToken cancellationToken = default);
-    Task RollbackAsync(Guid id, CancellationToken cancellationToken = default);
 }
