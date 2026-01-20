@@ -1,11 +1,9 @@
 ﻿using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
-using GoldEx.Server.Infrastructure.Specifications.Coins;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
 using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Shared.DTOs.InventoryExits;
@@ -20,7 +18,6 @@ internal class CreateInventoryExitRequestValidator : AbstractValidator<CreateInv
 {
     private readonly IInventoryStockRepository _inventoryStockRepository;
     private readonly IProductRepository _productRepository;
-    private readonly ICoinRepository _coinRepository;
     private readonly IPriceUnitRepository _priceUnitRepository;
     private readonly ITransactionService _transactionService;
     public CreateInventoryExitRequestValidator(IInventoryStockRepository inventoryStockRepository,
@@ -31,9 +28,12 @@ internal class CreateInventoryExitRequestValidator : AbstractValidator<CreateInv
     {
         _inventoryStockRepository = inventoryStockRepository;
         _productRepository = productRepository;
-        _coinRepository = coinRepository;
         _priceUnitRepository = priceUnitRepository;
-        this._transactionService = transactionService;
+        _transactionService = transactionService;
+
+        RuleFor(x => x)
+            .Must(AtLeastOneItemAvailable)
+            .WithMessage("حداقل یک آیتم برای خروج باید وارد شود");
 
         RuleForEach(x => x.Products)
             .Must(x => x.Weight > 0)
@@ -57,6 +57,8 @@ internal class CreateInventoryExitRequestValidator : AbstractValidator<CreateInv
             .MustAsync(NotResultInNegativeCurrencyAccount)
             .WithMessage((_, item) => $"حجم وارد شده {item.Quantity} ارز بیشتر از موجودی حساب می باشد");
     }
+
+    private bool AtLeastOneItemAvailable(CreateInventoryExitRequest model) => model.Products.Any() || model.Coins.Any() || model.Currencies.Any();
 
     private Task<bool> BeValidCurrency(CreateCurrencyItemExitRequest item, CancellationToken cancellationToken = default)
     {

@@ -15,7 +15,7 @@
         <div class="d-flex justify-content-center mb-2">
             <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!">
                 <ActivatorContent>
-                    <MudAvatar Size="Size.Large" Style="cursor: pointer;">
+                    <MudAvatar Size="Size.Large" Style="cursor: pointer; width: 100px; height: 100px;">
                         @if (_model.HasIcon)
                         {
                             <MudImage Src="@(ApiUrls.Icons.Get(IconType.App, _model.Id))" Alt="img" />
@@ -35,7 +35,6 @@
                               AdornmentIcon="@Icons.Material.Filled.Info"
                               @bind-Value="_model.InstitutionName"
                               Label="@_model.GetDisplayName(() => _model.InstitutionName)"
-                              AutoFocus="true"
                               Variant="Variant.Outlined"
                               For="() => _model.InstitutionName"></MudTextField>
             </MudItem>

@@ -1,5 +1,4 @@
-﻿using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.DTOs.Prices;
+﻿using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -15,14 +14,6 @@ public partial class PriceBoard
     [Parameter] public string ContainerClass { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 0;
     [Parameter] public bool ShowTitle { get; set; }
-
-    private readonly TableGroupDefinition<GetPriceResponse> _groupDefinition = new()
-    {
-        GroupName = "گروه",
-        Indentation = false,
-        Expandable = true,
-        Selector = e => e.Type.GetDisplayName()
-    };
 
     private IEnumerable<GetPriceResponse>? _items;
     private Timer? _timer;
@@ -84,24 +75,6 @@ public partial class PriceBoard
             await _timer.DisposeAsync();
 
         await base.DisposeAsync();
-    }
-
-    private Color GetRandomColor()
-    {
-        var colors = new[]
-        {
-            Color.Primary,
-            Color.Secondary,
-            Color.Tertiary,
-            Color.Info,
-            Color.Success,
-            Color.Warning,
-            Color.Error,
-            Color.Dark
-        };
-
-        var random = new Random();
-        return colors[random.Next(colors.Length)];
     }
 
     private static double ExtractPercentChange(string input)

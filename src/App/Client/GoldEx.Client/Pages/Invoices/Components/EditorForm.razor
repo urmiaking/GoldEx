@@ -557,9 +557,7 @@ else
             }
 
             <MudDivider Class="my-2" />
-
-            <MudHidden Breakpoint="Breakpoint.Xs">
-                <div class="d-flex gap-3 mt-2 flex-wrap">
+            <div class="d-flex gap-3 mt-2 flex-wrap">
 
                     @if (IsEditMode)
                     {
@@ -579,12 +577,12 @@ else
                             }
                             else
                             {
-                                <MudText>حذف فاکتور</MudText>
+                                <MudText>حذف</MudText>
                             }
 
                         </MudButton>
                     }
-                    <MudSpacer />
+                    <div class="flex-fill d-none d-md-block"></div>
                     @if (IsEditMode)
                     {
                         <MudButton Color="Color.Success"
@@ -603,7 +601,7 @@ else
                             }
                             else
                             {
-                                <MudText>چاپ فاکتور</MudText>
+                                <MudText>چاپ</MudText>
                             }
 
                         </MudButton>
@@ -625,7 +623,7 @@ else
                         }
                         else
                         {
-                            <MudText>ذخیره و چاپ فاکتور</MudText>
+                            <MudText>ذخیره و چاپ</MudText>
                         }
 
                     </MudButton>
@@ -650,31 +648,6 @@ else
                         }
                     </MudButton>
                 </div>
-            </MudHidden>
-            <MudHidden Breakpoint="Breakpoint.SmAndUp">
-                <MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0;">
-
-                    @if (IsEditMode)
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" OnClick="OnDelete" />
-                    }
-
-                    <MudSpacer />
-
-                    <MudIconButton Icon="@Icons.Material.Filled.Print" Variant="Variant.Filled" Color="Color.Info" OnClick="@(async () => await SubmitAsync(true))" />
-
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.Save"
-                               OnClick="@(async () => await SubmitAsync(false))"
-                               Class="ms-2">
-                        ذخیره
-                    </MudButton>
-
-                </MudAppBar>
-                <!-- Add padding to bottom of page so content isn't hidden behind bar -->
-                <div style="height: 64px;"></div>
-            </MudHidden>
         </MudForm>
     </MudCard>
 

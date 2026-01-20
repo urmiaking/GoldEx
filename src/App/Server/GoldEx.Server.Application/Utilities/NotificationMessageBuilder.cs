@@ -11,7 +11,7 @@ public static class NotificationMessageBuilder
         decimal totalAmount,
         decimal totalUnpaidAmount,
         string priceUnitTitle) =>
-        $"سررسید فاکتور شماره {invoiceNumber} به ارزش {totalAmount.ToCurrencyFormat(priceUnitTitle)} " +
-        $"مربوط به {customerFullName} رسیده است. " +
-        $"مانده این فاکتور {totalUnpaidAmount.ToCurrencyFormat(priceUnitTitle)} می باشد";
+        $"موعد سررسید فاکتور شماره {invoiceNumber} به نام {customerFullName} " +
+        $"به ارزش {totalAmount.ToCurrencyFormat(priceUnitTitle)} فرا رسیده است. " +
+        $"مانده فاکتور مذکور {totalUnpaidAmount.ToCurrencyFormat(priceUnitTitle)} می باشد";
 }

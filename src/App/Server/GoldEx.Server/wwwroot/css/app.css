@@ -82,8 +82,13 @@ h1:focus {
     overflow: hidden !important;
 }
 
-.mud-picker-calendar-header-switch{
+.mud-picker-calendar-header-switch {
     direction: rtl;
+}
+
+.mud-pagination {
+    gap: 0px !important;
+    padding-left: 0px !important;
 }
 
 /* Fullscreen overlay */
@@ -173,6 +178,7 @@ h1:focus {
     background-size: 200% 100%; /* اندازه بزرگ‌تر برای حرکت */
     animation: shine 10s linear infinite; /* انیمیشن اصلی */
 }
+
 @keyframes shine {
     0% {
         background-position: 200% center;
@@ -252,7 +258,7 @@ h1:focus {
 }
 
 .responsive-table-toolbar {
-    height: calc(100vh - 470px);
+    height: calc(100vh - 416px);
 }
 
 @media (min-width: 960px) {
@@ -500,3 +506,34 @@ h1:focus {
         --mud-palette-table-hover: rgba(239, 154, 154, 0.15);
     }
 }
+
+/* Mobile Navbar */
+.mud-toolbar > .mud-navmenu {
+    display: flex;
+    flex: 1 1 auto !important;
+    justify-content: space-between;
+    height: max-content;
+}
+
+    .mud-toolbar > .mud-navmenu > .mud-nav-item {
+        height: 80px;
+        align-items: center;
+    }
+
+        .mud-toolbar > .mud-navmenu > .mud-nav-item > .mud-nav-link {
+            padding: 0px !important;
+            align-items: center;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+            .mud-toolbar > .mud-navmenu > .mud-nav-item > .mud-nav-link > .mud-nav-link-text {
+                font-size: 14px;
+                text-align: center !important;
+                margin: 0px !important;
+            }
+
+.mobile-navbar {
+    height: max-content !important;
+}
+/* Mobile Navbar */

@@ -59,7 +59,7 @@ public partial class Index
         if (_isMobile)
         {
             _tabPosition = Position.Top;
-            _contentClass = "mt-5";
+            _contentClass = "";
         }
         else
         {

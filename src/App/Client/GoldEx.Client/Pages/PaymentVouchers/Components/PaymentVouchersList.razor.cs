@@ -124,11 +124,6 @@ public partial class PaymentVouchersList
         }
     }
 
-    private Task OnPrint(PaymentVoucherListVm context)
-    {
-        throw new NotImplementedException();
-    }
-
     private async Task OnEdit(PaymentVoucherListVm model)
     {
         var parameters = new DialogParameters<Editor>

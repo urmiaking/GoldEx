@@ -7,20 +7,22 @@
 <PageTitle>ورود دستی اجناس</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs" MaxItems="2">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <div class="d-flex justify-content-center gap-2">
-        <MudTooltip Text="توجه: از این قابلیت فقط هنگام راه اندازی برنامه استفاده شود. برای ورود اجناس پس از راه اندازی برنامه، از طریق فاکتور خرید اقدام کنید." 
-                    Arrow="true" Color="Color.Error">
-            <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Error" />
-        </MudTooltip>
-        <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center">ورود دستی اجناس</MudText>
-    </div>
-    <MudDivider Class="mb-2" />
+    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+        <div class="d-flex justify-content-center gap-2">
+            <MudTooltip Text="توجه: از این قابلیت فقط هنگام راه اندازی برنامه استفاده شود. برای ورود اجناس پس از راه اندازی برنامه، از طریق فاکتور خرید اقدام کنید." 
+                        Arrow="true" Color="Color.Error">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Error" />
+            </MudTooltip>
+            <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center">ورود دستی اجناس</MudText>
+        </div>
+        <MudDivider Class="mb-2" />
+    </MudHidden>
 
     <InventoryEntryContainer Class="mb-4" />
 

@@ -255,6 +255,7 @@ public static class ApiRoutes
         public const string Base = "/api/inventory-exits";
         public const string GetList = "";
         public const string Exit = "";
+        public const string Rollback = "{id}/rollback";
     }
 
     public class Files

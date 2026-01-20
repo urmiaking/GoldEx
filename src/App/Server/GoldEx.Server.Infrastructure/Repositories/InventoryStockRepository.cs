@@ -7,6 +7,7 @@ using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -122,10 +123,8 @@ internal class InventoryStockRepository(
 
         var gramPerMesghal = settings?.GramPerMesghal ?? 4.6083m;
 
-        // 1. Base Query
         var query = dbContext.Set<InventoryStock>().AsNoTracking();
 
-        // 2. Apply Stock Filters
         if (inventoryFilter.Start.HasValue)
             query = query.Where(x => x.PostingDate >= inventoryFilter.Start.Value);
 
@@ -136,6 +135,12 @@ internal class InventoryStockRepository(
         {
             var entryId = new InventoryEntryId(inventoryFilter.InventoryEntryId.Value);
             query = query.Where(x => x.InventoryEntryId == entryId);
+        }
+
+        if (inventoryFilter.InventoryExitId.HasValue)
+        {
+            var exitId = new InventoryExitId(inventoryFilter.InventoryExitId.Value);
+            query = query.Where(x => x.InventoryExitId == exitId);
         }
 
         InventoryStock? resolvedStock = null;
@@ -153,13 +158,13 @@ internal class InventoryStockRepository(
 
         if (resolvedStock != null)
         {
-            // wipe out conflicting filters
             inventoryFilter = inventoryFilter with
             {
                 ItemType = null,
                 ActionType = null,
                 CategoryId = null,
-                InventoryEntryId = null
+                InventoryEntryId = null,
+                InventoryExitId = null
             };
 
             if (resolvedStock.ProductId != null)

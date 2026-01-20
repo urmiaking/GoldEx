@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.InventoryEntry;
+namespace GoldEx.Client.Pages.InventoryExits;
 
 public partial class List
 {
@@ -10,7 +10,7 @@ public partial class List
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
         new("انبار", href: ClientRoutes.InventoryStocks.Index, icon: Icons.Material.Filled.Warehouse),
-        new("ورود دستی", href: ClientRoutes.InventoryStocks.InventoryEntry.List, icon: Icons.Material.Filled.History)
+        new("خروج دستی", href: ClientRoutes.InventoryStocks.InventoryExits.List, icon: Icons.Material.Filled.History)
     ];
 
     [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchQuery { get; set; }
