@@ -256,10 +256,13 @@ internal class InventoryStockRepository(
                                 )
                         });
 
-                    if (inventoryFilter.ActionType == WarehouseActionType.In)
-                        groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
-                    else if (inventoryFilter.ActionType == WarehouseActionType.Out)
-                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
+                    if (!inventoryFilter.InventoryExitId.HasValue)
+                    {
+                        if (inventoryFilter.ActionType == WarehouseActionType.In)
+                            groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
+                        else if (inventoryFilter.ActionType == WarehouseActionType.Out)
+                            groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
+                    }
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
 
@@ -459,10 +462,13 @@ internal class InventoryStockRepository(
                                 .Sum(s => s.ChangeAmount)
                         });
 
-                    if (inventoryFilter.ActionType == WarehouseActionType.In)
-                        groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
-                    else if (inventoryFilter.ActionType == WarehouseActionType.Out)
-                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
+                    if (!inventoryFilter.InventoryExitId.HasValue)
+                    {
+                        if (inventoryFilter.ActionType == WarehouseActionType.In)
+                            groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
+                        else if (inventoryFilter.ActionType == WarehouseActionType.Out)
+                            groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
+                    }
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
 
@@ -567,10 +573,13 @@ internal class InventoryStockRepository(
                                             .Sum(s => s.ChangeAmount)
                         });
 
-                    if (inventoryFilter.ActionType == WarehouseActionType.In)
-                        groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
-                    else if (inventoryFilter.ActionType == WarehouseActionType.Out)
-                        groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
+                    if (!inventoryFilter.InventoryExitId.HasValue)
+                    {
+                        if (inventoryFilter.ActionType == WarehouseActionType.In)
+                            groupedQuery = groupedQuery.Where(x => x.CurrentQuantity > 0);
+                        else if (inventoryFilter.ActionType == WarehouseActionType.Out)
+                            groupedQuery = groupedQuery.Where(x => x.SoldQuantity > 0 && x.CurrentQuantity <= 0);
+                    }
 
                     var total = await groupedQuery.CountAsync(cancellationToken);
 

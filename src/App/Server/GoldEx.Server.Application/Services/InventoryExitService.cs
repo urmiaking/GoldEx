@@ -64,9 +64,4 @@ internal class InventoryExitService(
             }
         }
     }
-
-    public async Task RollbackAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-}
+}   

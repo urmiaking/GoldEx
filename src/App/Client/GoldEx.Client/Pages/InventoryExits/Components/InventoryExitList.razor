@@ -1,7 +1,8 @@
-﻿@using GoldEx.Shared.DTOs.InventoryExits
+﻿@using GoldEx.Client.Pages.InventoryExits.ViewModels
 @inherits GoldExComponentBase
 
-<MudTable T="InventoryExitResponse" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+<MudTable T="InventoryExitListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
           ContainerClass="@ContainerClass" Dense="true" ServerData="LoadInventoryExitsAsync"
           SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
@@ -29,13 +30,29 @@
         <MudTd DataLabel="حجم کل ارزها">@context.CurrenciesAmount.ToCurrencyFormat()</MudTd>
         <MudTd>
             <div class="d-flex gap-2">
-                <MudTooltip Text="بازگردانی عملیات" Color="Color.Error" Arrow="true">
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled"
-                                   Size="Size.Small" Color="Color.Error" OnClick="@(() => Delete(context))" />
+                <MudTooltip Text="مشاهده جزئیات" Color="Color.Primary" Arrow="true">
+                    <MudIconButton Icon="@GetShowDetailsIcon(context.ShowDetails)" Variant="Variant.Filled"
+                                   Size="Size.Small" Color="Color.Primary" OnClick="@(() => context.ShowDetails = !context.ShowDetails)" />
                 </MudTooltip>
             </div>
         </MudTd>
     </RowTemplate>
+    <ChildRowContent>
+        <MudTr Class="mud-table-row-child">
+            <td colspan="10">
+                <MudCollapse Expanded="@context.ShowDetails">
+                    @if (context.ShowDetails)
+                    {
+                        <MudCard Elevation="2" Class="m-2">
+                            <MudCardContent>
+                                <InventoryStockList InventoryExitId="context.Id" Elevation="0" SelectableTypes="GetItemTypes(context)" ItemType="GetSelectedItemType(context)" />
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudCollapse>
+            </td>
+        </MudTr>
+    </ChildRowContent>
     <NoRecordsContent>
         <MudText>هیچ خروج دستی ثبت نشده است</MudText>
     </NoRecordsContent>

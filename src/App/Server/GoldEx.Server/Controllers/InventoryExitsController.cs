@@ -25,11 +25,4 @@ public class InventoryExitsController(IInventoryExitService service) : Controlle
         await service.ExitAsync(request, cancellationToken);
         return NoContent();
     }
-
-    [HttpDelete(ApiRoutes.InventoryExits.Rollback)]
-    public async Task<IActionResult> RollbackAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        await service.RollbackAsync(id, cancellationToken);
-        return NoContent();
-    }
 }
