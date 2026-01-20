@@ -1,45 +1,44 @@
 ﻿@inherits GoldExComponentBase
 
-@if (ShowTitle)
-{
-    <div class="d-flex justify-content-center">
-        <MudText Typo="Typo.h5" GutterBottom="true">نرخ لحظه ای</MudText>
-    </div>
-    <MudDivider />
-}
+<div class="@Class">
 
-@if (_items is null)
-{
-    <div class="@Class">
+    @if (ShowTitle)
+    {
+        <div class="d-flex justify-content-center">
+            <MudText Typo="Typo.h5" GutterBottom="true">نرخ لحظه ای</MudText>
+        </div>
+        <MudDivider/>
+    }
+
+    @if (_items is null)
+    {
         @for (var g = 0; g < 2; g++)
         {
             <div class="d-flex justify-content-center mt-4 mb-2">
-                <MudSkeleton Width="150px" Height="40px" SkeletonType="SkeletonType.Rectangle" />
+                <MudSkeleton Width="150px" Height="40px" SkeletonType="SkeletonType.Rectangle"/>
             </div>
 
-            <MudDivider Class="mb-2" DividerType="DividerType.Middle" />
+            <MudDivider Class="mb-2" DividerType="DividerType.Middle"/>
 
             <MudGrid Class="mb-8" Spacing="8">
                 @for (var i = 0; i < 4; i++)
                 {
                     <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="2">
-                        <PriceCardSkeleton />
+                        <PriceCardSkeleton/>
                     </MudItem>
                 }
             </MudGrid>
         }
-    </div>
-}
-else
-{
-    <div class="@Class">
+    }
+    else
+    {
         @foreach (var group in _items.GroupBy(x => x.Type.GetDisplayName()))
         {
             @* Group Header *@
             <MudText Typo="Typo.h4" Class="mt-4 mb-2 ml-2 text-center">
                 @group.Key
             </MudText>
-            <MudDivider Class="mb-2" DividerType="DividerType.Middle" />
+            <MudDivider Class="mb-2" DividerType="DividerType.Middle"/>
 
             @* Grid for Items in this Group *@
             <MudGrid Class="mb-8" Spacing="8">
@@ -51,10 +50,10 @@ else
                                    ChangePercent="@ExtractPercentChange(item.Change)"
                                    Price="@item.Value"
                                    PriceUnit="@item.Unit"
-                                   DateTime="@item.LastUpdate" />
+                                   DateTime="@item.LastUpdate"/>
                     </MudItem>
                 }
             </MudGrid>
         }
-    </div>
-}
+    }
+</div>

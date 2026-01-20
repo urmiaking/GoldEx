@@ -25,16 +25,41 @@
                       OnButtonAction="HandleButtonAction" />
 </MudDrawer>
 
-<MudIconButton OnClick="@(() => _drawerOpen = true)"
-               Icon="@(_unreadCount > 0 ? Icons.Material.Filled.NotificationsActive : Icons.Material.Filled.Notifications)"
-               Color="@(_unreadCount > 0 ? Color.Error : Color.Inherit)">
-    @if (_unreadCount > 0)
-    {
-        <MudBadge Content="@_unreadCount.ToString()"
-                  Color="Color.Error"
-                  Bordered="true"
-                  Dot="true"
-                  Overlap="true"
-                  Class="notification-badge" />
+<div class="pulse-icon">
+    <MudIconButton OnClick="@(() => _drawerOpen = true)"
+                   Icon="@(_unreadCount > 0 ? Icons.Material.Filled.NotificationsActive : Icons.Material.Filled.Notifications)"
+                   Color="@(_unreadCount > 0 ? Color.Error : Color.Inherit)">
+        @if (_unreadCount > 0)
+        {
+            <MudBadge Content="@_unreadCount.ToString()"
+                      Color="Color.Error"
+                      Bordered="true"
+                      Dot="true"
+                      Overlap="true"
+                      Class="notification-badge" />
+        }
+    </MudIconButton>
+</div>
+
+<style>
+    .pulse-icon {
+        animation: pulse-animation 2s infinite;
     }
-</MudIconButton>
+
+    @@keyframes pulse-animation {
+        0% {
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+    }
+</style>
