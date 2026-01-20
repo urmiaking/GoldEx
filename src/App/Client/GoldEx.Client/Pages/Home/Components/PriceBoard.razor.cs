@@ -2,7 +2,6 @@
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using MudBlazor;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
