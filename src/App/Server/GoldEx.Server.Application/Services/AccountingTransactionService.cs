@@ -78,7 +78,8 @@ internal class AccountingTransactionService(
         InvoiceId? InvoiceId,
         InvoicePaymentId? InvoicePaymentId,
         PaymentVoucherId? PaymentVoucherId,
-        MeltingBatchId? MeltingBatchId
+        MeltingBatchId? MeltingBatchId,
+        DateOnly PostingDate
     );
 
     private readonly record struct TransactionSignatureMatch(
@@ -90,16 +91,17 @@ internal class AccountingTransactionService(
         InvoiceId? InvoiceId,
         InvoicePaymentId? InvoicePaymentId,
         PaymentVoucherId? PaymentVoucherId,
-        MeltingBatchId? MeltingBatchId
+        MeltingBatchId? MeltingBatchId,
+        DateOnly PostingDate
     );
 
     private static TransactionSignatureFull SigFull(Transaction t) =>
         new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, Math.Round(t.Amount, 4), t.ExchangeRate.HasValue ? Math.Round(t.ExchangeRate.Value, 8) : null,
-            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId);
+            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId, DateOnly.FromDateTime(t.PostingDate));
 
     private static TransactionSignatureMatch SigMatch(Transaction t) =>
         new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, Math.Round(t.Amount, 4), t.ExchangeRate.HasValue ? Math.Round(t.ExchangeRate.Value, 8) : null,
-            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId);
+            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId, DateOnly.FromDateTime(t.PostingDate));
 
     private static TransactionType Invert(TransactionType t) =>
         t == TransactionType.Debit ? TransactionType.Credit : TransactionType.Debit;

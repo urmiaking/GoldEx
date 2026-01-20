@@ -67,7 +67,10 @@ internal class InvoicePrintService(
         var impact = unpaid * (item.InvoiceType == InvoiceType.Sell ? 1m : -1m); // Sell: + (بدهکار مثبت), Purchase: - (بستانکار منفی)
 
         // مانده قبلی (قبل از CreatedAt)
-        var previousRemaining = await transactionRepository.GetCustomerRemainingListAsync(item.CustomerId, null, item.CreatedAt, cancellationToken);
+        var previousRemaining = await transactionRepository.GetCustomerRemainingListAsync(item.CustomerId,
+            null,
+            item.InvoiceDate.ToDateTime(TimeOnly.FromTimeSpan(item.CreatedAt.TimeOfDay)),
+            cancellationToken);
 
         // مانده پس از فاکتور (previous + impact)
         var afterRemaining = new Dictionary<PriceUnit, decimal>(previousRemaining);
