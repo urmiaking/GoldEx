@@ -53,22 +53,6 @@
             </MudButtonGroup>
         </MudHidden>
 
-        @* <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudButtonGroup Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Class="ml-3">
-                <MudButton StartIcon="@VoucherTypeIcon"></MudButton>
-                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-                    <MudMenuItem Icon="@Icons.Material.Filled.Payment"
-                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.PrepaymentToSupplier)">
-                        @VoucherStatus.Applied.GetDisplayName()
-                    </MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.PriceCheck"
-                                 OnClick="() => SetVoucherTypeFilterText(PaymentVoucherType.RefundToCustomer)">
-                        @VoucherStatus.Pending.GetDisplayName()
-                    </MudMenuItem>
-                </MudMenu>
-            </MudButtonGroup>
-        </MudHidden> *@
-
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
                        OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">
@@ -118,17 +102,13 @@
                 {
                     <MudTooltip Text="ویرایش سند">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                       Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                                       Color="Color.Primary" OnClick="() => OnEdit(context)"></MudIconButton>
                     </MudTooltip>
                     <MudTooltip Text="حذف سند">
-                        <MudIconButton OnClick="@(_ => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
+                        <MudIconButton OnClick="@(() => OnRemove(context))" Size="@Size.Small" Variant="@Variant.Filled"
                                        Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
                     </MudTooltip>
                 }
-                <MudTooltip Text="چاپ سند">
-                    <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
-                                   Color="@Color.Success" OnClick="_ => OnPrint(context)"></MudIconButton>
-                </MudTooltip>
             </div>
         </MudTd>
     </RowTemplate>

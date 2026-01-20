@@ -1,9 +1,9 @@
-﻿@attribute [Route(ClientRoutes.PaymentVouchers.Index)]
+﻿@attribute [Route(ClientRoutes.InventoryStocks.InventoryExits.List)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
-
+@using GoldEx.Client.Pages.InventoryExits.Components
 @inherits GoldExComponentBase
 
-<PageTitle>اسناد پرداخت</PageTitle>
+<PageTitle>تاریخچه خروج دستی</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
@@ -12,9 +12,8 @@
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">لیست اسناد پرداخت</MudText>
+    <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">تاریخچه خروج دستی اجناس</MudText>
     <MudDivider Class="mb-2 d-md-block d-none" />
 
-    <PaymentVouchersList ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
-
+    <InventoryExitList Class="mb-4" ContainerClass="responsive-table-import" SearchQuery="@SearchQuery" />
 </MudContainer>

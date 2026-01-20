@@ -76,7 +76,7 @@
                 </MudStack>
                 <MudDivider />
 
-                <MudGrid Class="mt-0">
+                <MudGrid Class="mt-0" Spacing="4">
                     <MudItem xs="6" md="3" lg="3">
                         <MudText Typo="Typo.body2">نام و نام خانوادگی:</MudText>
                     </MudItem>
@@ -108,7 +108,7 @@
             </MudStack>
             <MudDivider />
             <MudGrid Class="mt-0">
-                <MudItem xs="12" md="4">
+                <MudItem xs="6" md="4">
                     <MudNumericField T="long"
                                      @bind-Value="_model.VoucherNumber"
                                      For="@(() => _model.VoucherNumber)"
@@ -118,7 +118,7 @@
                                      Variant="Variant.Outlined">
                     </MudNumericField>
                 </MudItem>
-                <MudItem xs="12" md="4">
+                <MudItem xs="6" md="4">
                     <MudSelect T="PaymentVoucherType"
                                @bind-Value="_model.VoucherType"
                                Label="@_model.GetDisplayName(() => _model.VoucherType)"

@@ -533,6 +533,14 @@ public class ApiUrls
     {
         public static string Exit() =>
             BuildUrl(ApiRoutes.InventoryExits.Base, ApiRoutes.InventoryExits.Exit);
+
+        public static string GetList(RequestFilter filter) =>
+            BuildUrl(ApiRoutes.InventoryExits.Base, ApiRoutes.InventoryExits.GetList)
+                .AppendQueryString(filter);
+
+        public static string Rollback(Guid id) =>
+            BuildUrl(ApiRoutes.InventoryExits.Base, ApiRoutes.InventoryExits.Rollback)
+                .FormatRoute(new { id });
     }
 
     public class CoinInstances
