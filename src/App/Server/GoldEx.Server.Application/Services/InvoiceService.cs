@@ -10,6 +10,7 @@ using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
@@ -27,6 +28,7 @@ namespace GoldEx.Server.Application.Services;
 internal class InvoiceService(
     IInvoiceRepository invoiceRepository,
     IInvoicePaymentRepository paymentRepository,
+    ICustomerRepository customerRepository,
     IServerProductService productService,
     IServerReminderService reminderService,
     IPriceUnitRepository priceUnitRepository,
@@ -59,12 +61,16 @@ internal class InvoiceService(
                     .Get(new PriceUnitsByIdSpecification(new PriceUnitId(request.PriceUnitId)))
                     .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Target price unit not found");
 
+                var customer = await customerRepository
+                    .Get(new CustomersByIdSpecification(new CustomerId(request.CustomerId)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Customer not found");
+
                 var invoice = Invoice.Create(request.InvoiceNumber,
                     request.UnpaidAmountExchangeRate,
                     request.ExchangeRate,
                     request.InvoiceType,
                     request.TradeScale,
-                    new CustomerId(request.CustomerId),
+                    customer.Id,
                     basePriceUnit.Id,
                     new PriceUnitId(request.PriceUnitId),
                     request.UnpaidPriceUnitId.HasValue ? new PriceUnitId(request.UnpaidPriceUnitId.Value) : null,
@@ -80,6 +86,8 @@ internal class InvoiceService(
                     InvoiceDiscount.Create(x.Amount, x.ExchangeRate, new PriceUnitId(x.PriceUnitId), x.Description)));
 
                 invoice.SetPriceUnit(targetPriceUnit);
+
+                invoice.SetCustomer(customer);
 
                 #endregion
 
@@ -132,6 +140,7 @@ internal class InvoiceService(
                 .Get(new InvoicesByIdSpecification(new InvoiceId(id)))
                 .Include(x => x.InvoicePayments!)
                     .ThenInclude(x => x.LedgerAccount!.Customer)
+                .Include(x => x.Customer)
                 .FirstOrDefaultAsync(cancellationToken)
                 ?? throw new NotFoundException();
 
@@ -221,6 +230,16 @@ internal class InvoiceService(
         };
     }
 
+    public async Task<List<GetTinyInvoiceResponse>> GetCustomerInvoicesAsync(Guid customerId, Guid priceUnitId,
+        RequestFilter filter, CancellationToken cancellationToken = default)
+    {
+        var invoices = await invoiceRepository
+            .Get(new InvoicesByCustomerIdSpecification(new CustomerId(customerId), new PriceUnitId(priceUnitId), filter))
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetTinyInvoiceResponse>>(invoices);
+    }
+
     public async Task<GetInvoiceResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await invoiceRepository
@@ -252,6 +271,8 @@ internal class InvoiceService(
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product!.MoltenGold!.Assayer)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.TargetInvoice!.InvoicePayments!)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         var result = mapper.Map<GetInvoiceResponse>(item);

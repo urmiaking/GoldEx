@@ -228,6 +228,11 @@ public class ApiUrls
 
         public static string DownloadPdf(Guid id) =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.DownloadPdf).FormatRoute(new { id });
+
+        public static string GetCustomerInvoices(RequestFilter filter, Guid customerId, Guid priceUnitId) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetCustomerInvoices)
+                .FormatRoute(new { customerId, priceUnitId })
+                .AppendQueryString(filter);
     }
 
     public class Reports

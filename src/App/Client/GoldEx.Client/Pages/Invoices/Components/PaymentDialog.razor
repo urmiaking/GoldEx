@@ -53,14 +53,17 @@
                 <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate?.ToShortDateString()</MudTd>
                 <MudTd DataLabel="عملیات">
                     <div class="d-flex gap-2">
-                        <MudTooltip Text="ویرایش">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                           Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
-                        </MudTooltip>
-                        <MudTooltip Text="حذف">
-                            <MudIconButton OnClick="@(_ => OnDelete(context))" Size="@Size.Small" Variant="@Variant.Filled"
-                                           Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
-                        </MudTooltip>
+                        @if (context.PaymentType is not PaymentType.TransferedPayment)
+                        {
+                            <MudTooltip Text="ویرایش">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                               Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                            </MudTooltip>
+                            <MudTooltip Text="حذف">
+                                <MudIconButton OnClick="@(_ => OnDelete(context))" Size="@Size.Small" Variant="@Variant.Filled"
+                                               Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                            </MudTooltip>
+                        }
                     </div>
                 </MudTd>
             </RowTemplate>

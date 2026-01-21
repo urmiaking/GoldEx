@@ -122,6 +122,7 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string GetList = "";
+        public const string GetCustomerInvoices = "customer/{customerId}/price-unit/{priceUnitId}";
         public const string Get = "{id}";
         public const string Delete = "{id}";
         public const string GetLastNumber = "last-number/{invoiceType}";

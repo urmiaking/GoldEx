@@ -61,6 +61,10 @@ internal class InvoicePrintService(
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product!.MoltenGold!.Assayer)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.SourcePayment!.Invoice!)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.TargetInvoice!)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         var unpaid = item.TotalUnpaidAmount;
