@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
@@ -10,10 +11,13 @@ namespace GoldEx.Server.Application.Validators.Invoices;
 internal class DeleteInvoiceValidator : AbstractValidator<Invoice>
 {
     private readonly IInventoryStockRepository _inventoryStockRepository;
+    private readonly IInvoicePaymentRepository _invoicePaymentRepository;
 
-    public DeleteInvoiceValidator(IInventoryStockRepository inventoryStockRepository)
+    public DeleteInvoiceValidator(IInventoryStockRepository inventoryStockRepository, 
+        IInvoicePaymentRepository invoicePaymentRepository)
     {
         _inventoryStockRepository = inventoryStockRepository;
+        _invoicePaymentRepository = invoicePaymentRepository;
 
         When(x => x.InvoiceType == InvoiceType.Purchase, () =>
         {
@@ -21,6 +25,15 @@ internal class DeleteInvoiceValidator : AbstractValidator<Invoice>
                 .MustAsync(NotResultInNegativeInventory)
                 .WithMessage("حذف این فاکتور خرید باعث منفی شدن موجودی یک یا چند کالا در انبار می‌شود.");
         });
+
+        RuleFor(x => x.Id)
+            .MustAsync(NotUsedInCustomerTransferPayments)
+            .WithMessage("این فاکتور در پرداخت حواله ای استفاده شده است. لطفا ابتدا پرداخت مربوط به حواله این فاکتور را حذف کرده سپس این فاکتور را حذف کنید");
+    }
+
+    private async Task<bool> NotUsedInCustomerTransferPayments(InvoiceId invoiceId, CancellationToken cancellationToken = default)
+    {
+        return !await _invoicePaymentRepository.ExistsAsync(new InvoicePaymentsByInvoiceIdSpecification(invoiceId), cancellationToken);
     }
 
     private async Task<bool> NotResultInNegativeInventory(Invoice invoice, CancellationToken cancellationToken = default)

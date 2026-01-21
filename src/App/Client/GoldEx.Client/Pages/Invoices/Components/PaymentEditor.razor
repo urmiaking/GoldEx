@@ -1,10 +1,11 @@
 ﻿@using GoldEx.Shared.DTOs.FinancialAccounts
+@using GoldEx.Shared.DTOs.Invoices
 @inherits GoldExComponentBase
 
 <MudForm Model="Model" @ref="@_form" Validation="@(_paymentValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            
+
             <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">
                 <MudChipSet T="PaymentSide"
                             SelectionMode="SelectionMode.SingleSelection"
@@ -39,7 +40,7 @@
                                          Variant="Variant.Outlined"
                                          Adornment="Adornment.End"
                                          AdornmentText="@Model.AmountAdornmentText"
-                                         Class="flex-grow-1"/>
+                                         Class="flex-grow-1" />
                         @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer)
                         {
                             <MudMenu @bind-Open="Model.AmountMenuOpen"
@@ -48,7 +49,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.SyncAlt"
                                                    Disabled="Model.Disabled"
                                                    Variant="Variant.Outlined"
-                                                   Color="Color.Primary"/>
+                                                   Color="Color.Primary" />
                                 </ActivatorContent>
                                 <ChildContent>
                                     @foreach (var item in PriceUnits)
@@ -94,19 +95,19 @@
                     {
                         case PaymentType.InternalCash:
                             <div class="d-flex align-center gap-2">
-                                <MudAutocomplete @bind-Value="@Model.FinancialAccount"  
-                                                 T="GetFinancialAccountTitleResponse?"  
-                                                 For="@(() => Model.FinancialAccount)"  
-                                                 Label="@FinancialAccountLabelText"  
-                                                 Margin="Margin.Dense"  
-                                                 Disabled="Model.Disabled"  
-                                                 InputClass="text-truncate"  
-                                                 Variant="Variant.Outlined"  
+                                <MudAutocomplete @bind-Value="@Model.FinancialAccount"
+                                                 T="GetFinancialAccountTitleResponse?"
+                                                 For="@(() => Model.FinancialAccount)"
+                                                 Label="@FinancialAccountLabelText"
+                                                 Margin="Margin.Dense"
+                                                 Disabled="Model.Disabled"
+                                                 InputClass="text-truncate"
+                                                 Variant="Variant.Outlined"
                                                  DebounceInterval="500"
                                                  Placeholder="جستجوی حساب مالی..."
                                                  MaxItems="100"
-                                                 ToStringFunc="@(acc => acc?.Title)"  
-                                                 SearchFunc="SearchFinancialAccountsAsync"  
+                                                 ToStringFunc="@(acc => acc?.Title)"
+                                                 SearchFunc="SearchFinancialAccountsAsync"
                                                  ResetValueOnEmptyText="true" />
                                 <MudIconButton Disabled="Model.Disabled" Icon="@Icons.Material.Filled.Add"
                                                Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
@@ -115,7 +116,8 @@
                         case PaymentType.CustomerTransfer:
                             <div class="d-flex align-center gap-2">
                                 <MudAutocomplete T="CustomerVm"
-                                                 @bind-Value="Model.Endorser"
+                                                 Value="Model.Endorser"
+                                                 ValueChanged="OnEndorserChanged"
                                                  Text="@Model.Endorser?.FullName"
                                                  For="@(() => Model.Endorser!)"
                                                  Placeholder="جستجوی طرف حساب..."
@@ -131,7 +133,7 @@
                                                  DebounceInterval="0"
                                                  ShowProgressIndicator="false">
                                 </MudAutocomplete>
-                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer"/>
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer" />
                             </div>
                             break;
                         case PaymentType.UsedGoldInventory or PaymentType.MoltenGoldInventory:
@@ -143,10 +145,33 @@
                                           For="@(() => Model.GoldFineness!)"
                                           Label="@(Model.GetDisplayName(() => Model.GoldFineness))"
                                           Margin="Margin.Dense"
-                                          Variant="Variant.Outlined"/>
+                                          Variant="Variant.Outlined" />
                             break;
                     }
                 </MudItem>
+
+                @if (Model.PaymentType is PaymentType.CustomerTransfer)
+                {
+                    <MudItem xs="12" md="6">
+                        <MudAutocomplete @bind-Value="@Model.TargetInvoice"
+                                         T="GetTinyInvoiceResponse?"
+                                         For="@(() => Model.TargetInvoice)"
+                                         Label="@Model.GetDisplayName(() => Model.TargetInvoice)"
+                                         Margin="Margin.Dense"
+                                         Disabled="@(Model.Endorser is null || Model.PaymentSide is PaymentSide.Receive)"
+                                         Adornment="Adornment.End"
+                                         AdornmentIcon="@Icons.Material.Outlined.ArrowDropDown"
+                                         InputClass="text-truncate"
+                                         Variant="Variant.Outlined"
+                                         DebounceInterval="500"
+                                         Placeholder="جستجوی فاکتور..."
+                                         MaxItems="100"
+                                         ToStringFunc="@(inv => inv is not null ? $"فاکتور {inv.InvoiceType.GetDisplayName()} شماره {inv.InvoiceNumber.ToString()} - مانده : {inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title)}" : null)"
+                                         SearchFunc="SearchCustomerInvoicesAsync"
+                                         ResetValueOnEmptyText="true" />
+                    </MudItem>
+                }
+
                 <MudItem xs="12" md="6">
                     <MudDatePicker @bind-Date="Model.PaymentDate"
                                    Color="Color.Secondary"
@@ -160,9 +185,9 @@
                                    ImmediateText="true"
                                    Margin="Margin.Dense"
                                    Rounded="true"
-                                   Variant="Variant.Outlined"/>
+                                   Variant="Variant.Outlined" />
                 </MudItem>
-                @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer)
+                @if (Model.PaymentType is PaymentType.InternalCash)
                 {
                     <MudItem xs="12" md="@(string.IsNullOrEmpty(Model.ExchangeRateLabel) ? 6 : 12)">
                         <MudTextField @bind-Value="@Model.ReferenceNumber"
@@ -174,7 +199,7 @@
                                       Disabled="Model.Disabled"
                                       AdornmentIcon="@Icons.Material.Filled.Numbers"
                                       Adornment="Adornment.End"
-                                      Variant="Variant.Outlined"/>
+                                      Variant="Variant.Outlined" />
                     </MudItem>
                 }
                 <MudItem xs="12">
@@ -187,7 +212,7 @@
                                   Adornment="Adornment.End"
                                   Lines="3"
                                   Disabled="Model.Disabled"
-                                  Variant="Variant.Outlined"/>
+                                  Variant="Variant.Outlined" />
                 </MudItem>
             </MudGrid>
         </DialogContent>

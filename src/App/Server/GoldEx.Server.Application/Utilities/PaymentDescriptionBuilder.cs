@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.InvoicePaymentAggregate;
+﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 
@@ -13,10 +14,23 @@ public static class PaymentDescriptionBuilder
             PaymentType.InternalCash => GetInternalCashTitle(payment, includeAccountDetails),
             PaymentType.UsedGoldInventory => GetGoldPaymentTitle(PaymentType.UsedGoldInventory, payment),
             PaymentType.MoltenGoldInventory => GetGoldPaymentTitle(PaymentType.MoltenGoldInventory, payment),
-            PaymentType.CustomerTransfer => $"حواله به {payment.LedgerAccount?.Customer?.FullName}",
+            PaymentType.CustomerTransfer => GetCustomerTransferTitle(payment),
+            PaymentType.TransferedPayment => GetTransferedPaymentTitle(payment),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
+
+    private static string GetCustomerTransferTitle(InvoicePayment payment)
+    {
+        var text = $"حواله مشتری؛ پرداخت توسط {payment.LedgerAccount?.Customer?.FullName}";
+
+        if (payment.TargetInvoice != null) 
+            text += $" بابت فاکتور {payment.TargetInvoice?.InvoiceType.GetDisplayName()} شماره {payment.TargetInvoice?.InvoiceNumber}";
+
+        return text;
+    }
+
+    private static string GetTransferedPaymentTitle(InvoicePayment payment) => payment.Note ?? "حواله";
 
     private static string GetGoldPaymentTitle(PaymentType paymentType, InvoicePayment payment)
     {

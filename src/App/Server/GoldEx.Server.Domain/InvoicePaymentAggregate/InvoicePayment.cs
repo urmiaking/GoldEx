@@ -23,6 +23,8 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
         FinancialAccountId? sourceFinancialAccountId,
         LedgerAccountId? ledgerAccountId,
         PaymentVoucherId? paymentVoucherId,
+        InvoicePaymentId? sourcePaymentId,
+        InvoiceId? targetInvoiceId,
         string? referenceNumber = null,
         string? note = null)
     {
@@ -41,8 +43,10 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
             PriceUnitId = priceUnitId,
             ExchangeRate = exchangeRate,
             SourceFinancialAccountId = sourceFinancialAccountId,
+            TargetInvoiceId = targetInvoiceId,
             LedgerAccountId = ledgerAccountId,
             PaymentVoucherId = paymentVoucherId,
+            SourcePaymentId = sourcePaymentId,
             ReferenceNumber = referenceNumber,
             Note = note
         };
@@ -75,6 +79,12 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
     public InvoiceId InvoiceId { get; private set; }
     public Invoice? Invoice { get; private set; }
 
+    public InvoicePaymentId? SourcePaymentId { get; private set; }
+    public InvoicePayment? SourcePayment { get; private set; }
+
+    public InvoiceId? TargetInvoiceId { get; private set; }
+    public Invoice? TargetInvoice { get; private set; }
+
     public decimal FinalAmount { get; private set; }
 
     public void SetPaymentDate(DateTime paymentDate) => PaymentDate = paymentDate;
@@ -106,5 +116,24 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
     public void SetLedgerAccount(LedgerAccount? ledgerAccount)
     {
         LedgerAccount = ledgerAccount;
+    }
+
+    /// <summary>
+    /// This method is used to set the Invoice navigation property.
+    /// </summary>
+    /// <param name="invoice"></param>
+    public void SetInvoice(Invoice invoice)
+    {
+        Invoice = invoice;
+    }
+
+    public void SetInvoiceId(InvoiceId targetInvoiceId)
+    {
+        InvoiceId = targetInvoiceId;
+    }
+
+    public void SetTargetInvoiceId(InvoiceId? targetInvoiceId)
+    {
+        TargetInvoiceId = targetInvoiceId;
     }
 }
