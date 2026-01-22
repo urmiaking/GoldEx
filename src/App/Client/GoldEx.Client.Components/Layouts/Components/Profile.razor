@@ -76,10 +76,6 @@
                         <MudIconButton Icon="@Icons.Material.Filled.ManageAccounts" OnClick="@NavigateToAccountManagement"></MudIconButton>
                     </MudTooltip>
                     
-                    <MudTooltip Text="تنظیمات" Placement="Placement.Bottom" Arrow="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Href="@ClientRoutes.Settings.Index"></MudIconButton>
-                    </MudTooltip>
-                    
                     <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" OnClick="() => _healthMonitorOpen = !_healthMonitorOpen"></MudIconButton>
                         <MudPopover Open="_healthMonitorOpen" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">

@@ -537,3 +537,17 @@ h1:focus {
     height: max-content !important;
 }
 /* Mobile Navbar */
+
+/* Notification drawer */
+
+.notification-drawer {
+    height: calc(100vh - 80px) !important;
+}
+
+@media (min-width: 960px) {
+    .notification-drawer {
+        height: 100% !important;
+    }
+}
+
+/* Notification drawer */
