@@ -75,5 +75,7 @@ public partial class Notifications
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        _drawerOpen = false;
     }
 }

@@ -30,8 +30,7 @@
                         <div>
                             <input type="hidden" name="@nameof(LoginProvider)" value="@login.LoginProvider" />
                             <input type="hidden" name="@nameof(ProviderKey)" value="@login.ProviderKey" />
-                            <MudStaticButton Size="Size.Medium"
-                                             Variant="Variant.Filled" Color="Color.Error" FormAction="FormAction.Submit">
+                            <MudStaticButton Variant="Variant.Filled" Color="Color.Error" FormAction="FormAction.Submit">
                                 <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Title="حذف"></MudIcon>
                             </MudStaticButton>
                         </div>
@@ -57,7 +56,7 @@
                     <input type="hidden" name="Provider" value="@provider.Name"/>
 
                     <MudItem xs="12">
-                        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" 
                                          FormAction="FormAction.Submit" StartIcon="@Icons.Custom.Brands.Google">@provider.DisplayName</MudStaticButton>
                     </MudItem>
                 }
