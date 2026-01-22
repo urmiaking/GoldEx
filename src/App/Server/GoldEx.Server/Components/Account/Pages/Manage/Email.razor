@@ -27,9 +27,9 @@
         <MudGrid>
             <MudItem lg="6" md="12">
                 <MudStack Row AlignItems="AlignItems.Center">
-                    <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل" Disabled="true" />
+                    <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل" Disabled="true" Margin="Margin.Dense" />
 
-                    <MudStaticButton Size="Size.Large" StartIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Filled" Color="Color.Success" FormAction="FormAction.Submit">
+                    <MudStaticButton StartIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Filled" Color="Color.Success" FormAction="FormAction.Submit">
                         فعالسازی
                     </MudStaticButton>
                 </MudStack>
@@ -43,16 +43,16 @@
 
     <MudGrid>
         <MudItem lg="4" md="12">
-            <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل فعلی" Disabled="true" />
+            <MudStaticTextField Variant="Variant.Outlined" Value="@_email" Label="ایمیل فعلی" Disabled="true" Margin="Margin.Dense" />
         </MudItem>
         
         <MudItem lg="8" md="12">
             <MudStack Row AlignItems="AlignItems.Center">
                 <MudStaticTextField @bind-Value="@Input.NewEmail" For="@(() => Input.NewEmail)"
                                     UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "email" }, { "aria-required", "true" } } )"
-                                    Label="ایمیل جدید" Variant="Variant.Outlined" />
+                                    Label="ایمیل جدید" Variant="Variant.Outlined" Margin="Margin.Dense" />
 
-                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary"
                                  FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Autorenew">ذخیره</MudStaticButton>
             </MudStack>
         </MudItem>

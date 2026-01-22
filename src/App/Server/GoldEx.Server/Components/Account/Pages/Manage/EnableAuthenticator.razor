@@ -56,10 +56,10 @@ else
                 <DataAnnotationsValidator />
                 <MudGrid Class="align-baseline">
                     <MudItem md="8" xs="12">
-                        <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="کد تایید" Variant="Variant.Outlined" />
+                        <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="کد تایید" Variant="Variant.Outlined" Margin="Margin.Dense" />
                     </MudItem>
                     <MudItem md="4" xs="12">
-                        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                        <MudStaticButton Variant="Variant.Filled" Color="Color.Primary"
                                          StartIcon="@Icons.Material.Filled.SystemSecurityUpdateGood" 
                                          FullWidth="true" FormAction="FormAction.Submit">اعتبارسنجی</MudStaticButton>
                     </MudItem>
