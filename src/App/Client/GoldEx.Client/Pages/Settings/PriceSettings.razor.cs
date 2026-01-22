@@ -11,7 +11,6 @@ public partial class PriceSettings
 {
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false };
     private List<GetPriceSettingResponse> _priceSettings = [];
-    private bool _showAlert = true;
 
     [Inject] private HelpContext HelpContext { get; set; } = default!;
 
@@ -48,14 +47,6 @@ public partial class PriceSettings
                 AddSuccessToast("تغییرات با موفقیت اعمال شد");
                 return Task.CompletedTask;
             });
-    }
-
-    private void CloseAlert(bool value)
-    {
-        if (value)
-        {
-            _showAlert = false;
-        }
     }
 
     private async Task OnPinToggleAsync(Guid id, bool currentPinState)
