@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Text.RegularExpressions;
+using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.SmsTemplateAggregate;
@@ -23,11 +24,16 @@ internal class SmsTemplateRequestsValidator : AbstractValidator<List<SmsTemplate
 internal class SmsTemplateRequestValidator : AbstractValidator<SmsTemplateRequest>
 {
     private readonly ISmsTemplateRepository _repository;
+
+    private static readonly Regex PlaceholderRegex =
+        new(@"\(([^:)]+)(?::([^)]+))?\)", RegexOptions.Compiled);
+
     public SmsTemplateRequestValidator(ISmsTemplateRepository repository)
     {
         _repository = repository;
         RuleFor(x => x.Body)
-            .MustAsync(MatchParameters);
+            .MustAsync(MatchParameters)
+            .WithMessage("پارامترهای قالب پیامک با پارامترهای تعریف شده مطابقت ندارد");
     }
 
     private async Task<bool> MatchParameters(SmsTemplateRequest request, string body, CancellationToken cancellationToken = default)
@@ -42,7 +48,30 @@ internal class SmsTemplateRequestValidator : AbstractValidator<SmsTemplateReques
 
     private bool IsMatch(string body, string parameters)
     {
-        // TODO: implement this
-        return true;
+        if (string.IsNullOrWhiteSpace(body))
+            return true;
+
+        if (string.IsNullOrWhiteSpace(parameters))
+            return !PlaceholderRegex.IsMatch(body);
+
+        var usedPlaceholders = PlaceholderRegex.Matches(body)
+            .Select(m => Normalize(m.Groups[1].Value))
+            .Distinct()
+            .ToList();
+
+        var allowedParameters = parameters
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(Normalize)
+            .ToHashSet();
+
+        return usedPlaceholders.All(p => allowedParameters.Contains(p));
+    }
+
+    private static string Normalize(string value)
+    {
+        return value
+            .Replace(" ", "")
+            .Replace("_", "")
+            .Trim();
     }
 }
