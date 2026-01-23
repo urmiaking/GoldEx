@@ -7,14 +7,13 @@ using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
+using GoldEx.Server.Domain.SmsLogAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.SmsTemplates;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
-using GoldEx.Server.Domain.SmsLogAggregate;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -31,26 +30,17 @@ internal class SmsService(ISmsSender smsSender, ISmsTemplateRepository templateR
             });
         }
 
-        // TODO: fix this
         var phoneNumber = invoice.Customer.PhoneNumber;
 
-        //var smsTemplate = await templateRepository
-        //    .Get(new SmsTemplatesBySubjectSpecification(SmsTemplateSubject.DueInvoice))
-        //    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Due invoice sms template not found");
+        var smsTemplate = await templateRepository
+            .Get(new SmsTemplatesBySubjectSpecification(SmsTemplateSubject.DueInvoice))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Due invoice sms template not found");
 
-        //var parameterMapping = smsTemplate.Parameters.Split(',')
-        //    .ToDictionary(parameter => parameter, 
-        //        parameter => GetParameterValue(parameter, invoice, appSetting));
+        var parameterMapping = smsTemplate.Parameters.Split(',')
+            .ToDictionary(parameter => parameter,
+                parameter => GetParameterValue(parameter, invoice, appSetting));
 
-        //var message = GenerateMessage(smsTemplate.Body, parameterMapping);
-
-        var message = $"""
-                       {invoice.Customer.FullName} عزیز
-                       فاکتور شماره {invoice.InvoiceNumber} شما به مبلغ {invoice.TotalAmount:N0} {invoice.PriceUnit?.Title} صادر شده است.
-                       مبلغ پرداخت نشده این فاکتور {invoice.TotalUnpaidAmount:N0} {invoice.PriceUnit?.Title} می‌باشد.
-                       لطفا در اسرع وقت نسبت به تسویه آن اقدام فرمایید.
-                       با تشکر، {appSetting.InstitutionName}
-                       """;
+        var message = GenerateMessage(smsTemplate.Body, parameterMapping);
 
         var delivered = await smsSender.SendAsync(phoneNumber, message, cancellationToken);
 
@@ -75,29 +65,20 @@ internal class SmsService(ISmsSender smsSender, ISmsTemplateRepository templateR
         };
     }
 
-    private string GenerateMessage(string template, Dictionary<string, string?> parameterMapping)
+    private string GenerateMessage(string template, IReadOnlyDictionary<string, string?> parameterMapping)
     {
-        if (template is null) 
+        if (string.IsNullOrWhiteSpace(template))
             throw new ArgumentNullException(nameof(template));
 
-        if (parameterMapping is null) 
+        if (parameterMapping is null)
             throw new ArgumentNullException(nameof(parameterMapping));
 
-        var parameters = SmsTemplateParser.ExtractParameters(template);
+        var values = parameterMapping
+            .Select(p => new PlaceholderValue(
+                Name: p.Key,
+                Value: p.Value ?? string.Empty))
+            .ToList();
 
-        var result = new StringBuilder(template);
-
-        foreach (var distinctParam in parameters.Distinct())
-        {
-            if (!parameterMapping.TryGetValue(distinctParam, out var value))
-            {
-                throw new KeyNotFoundException(
-                    $"پارامتر '{distinctParam}' در دیکشنری مقداردهی نشده است.");
-            }
-
-            result.Replace($"({distinctParam})", value ?? string.Empty);
-        }
-
-        return result.ToString();
+        return SmsTemplatePlaceholderReplacer.Replace(template, values);
     }
 }
