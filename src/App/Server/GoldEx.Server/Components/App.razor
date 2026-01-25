@@ -18,43 +18,12 @@
 
     <ImportMap />
 
-    <!-- Add MudBlazor -->
     <link href=@Assets["_content/MudBlazor/MudBlazor.min.css"] rel="stylesheet" />
-    <!-- -->
-
     <link rel="icon" type="image/png" href="favicon.ico" />
     <HeadOutlet @rendermode="RenderModeForPage" />
 </head>
 
 <body>
-    <!-- Loading indicator -->
-    @* @if (RenderModeForPage is InteractiveAutoRenderMode)
-    {
-        <div id="loading-indicator" class="loading-container">
-            <div class="loading-card">
-                <img src="/icon-512.png" alt="GoldEx Logo" class="loading-logo" />
-                <h1 class="loading-title">
-                    @if (string.IsNullOrEmpty(_institutionName))
-                    {
-                        <span>سامانه جامع حسابداری طلا و جواهر</span>
-                    }
-                    else
-                    {
-                        <span>@_institutionName</span>
-                    }
-                    <span class="brand-text" dir="ltr">GoldEx</span>
-                </h1>
-                <div class="d-flex justify-content-center align-items-center mb-4">
-                    <div class="loading-spinner" role="status">
-                        <span class="visually-hidden">در حال بارگیری...</span>
-                    </div>
-                </div>
-                <p class="loading-text"></p>
-            </div>
-        </div>
-    } *@
-
-
     <Routes @rendermode="RenderModeForPage" />
     <script src="app.js"></script>
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
@@ -63,9 +32,7 @@
             webAssembly: {}
         });
     </script>
-    
     <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
-
     <script src=@Assets["sw-events.js"]></script>
     <script>swEvents.startListening();</script>
 </body>

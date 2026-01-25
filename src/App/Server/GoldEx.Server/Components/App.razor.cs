@@ -6,7 +6,6 @@ namespace GoldEx.Server.Components;
 
 public partial class App
 {
-    private string? _institutionName;
     [Inject] private ISettingService SettingService { get; set; } = default!;
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
@@ -20,17 +19,5 @@ public partial class App
             return RenderMode.InteractiveServer;
 
         return new InteractiveAutoRenderMode(true);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadSettingsAsync();
-        await base.OnInitializedAsync();
-    }
-
-    private async Task LoadSettingsAsync()
-    {
-        var settings = await SettingService.GetAsync(CancellationToken.None);
-        _institutionName = settings?.InstitutionName;
     }
 }

@@ -1,0 +1,153 @@
+﻿@attribute [Route(ClientRoutes.Settings.BackupRestore)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<PageTitle>پشتیبان گیری و بازنشانی</PageTitle>
+
+<div class="d-flex align-center justify-space-between">
+    <MudText Typo="Typo.h6" GutterBottom="true">پشتیبان گیری و بازنشانی</MudText>
+</div>
+<MudDivider Class="my-2" />
+
+<MudAlert Severity="Severity.Error"
+          Variant="Variant.Filled"
+          Dense="false"
+          Class="mb-6 mt-4"
+          ContentAlignment="HorizontalAlignment.Start"
+          Elevation="1">
+    <MudText Typo="Typo.subtitle1" Class="fw-bold">
+        توجه
+    </MudText>
+    <MudText Typo="Typo.body2">
+        عملیات پشتیبان‌ گیری و بازیابی داده‌ها بسیار حساس است.
+        قبل از ادامه، به این توجه داشته باشید که با بازنشانی اطلاعات از فایل پشتیبان، تمامی اطلاعات با دیتای موجود در فایل جایگزین خواهد شد و این عملیات غیرقابل برگشت می باشد
+    </MudText>
+</MudAlert>
+
+<MudGrid Spacing="6" Justify="Justify.Center">
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="24" Class="h-100 d-flex flex-column">
+            <MudCardHeader>
+                <MudIcon Icon="@Icons.Material.Filled.Backup"
+                         Color="Color.Success"
+                         Size="Size.Large" />
+                <MudText Typo="Typo.h6" Class="mr-2">
+                    پشتیبان‌ گیری
+                </MudText>
+            </MudCardHeader>
+
+            <MudCardContent Class="flex-grow-1 d-flex flex-column justify-center text-center px-6">
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                    با این عملیات، یک نسخه پشتیبان کامل از داده‌های سیستم
+                    تهیه و ذخیره می‌شود.
+                </MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           Size="Size.Large"
+                           StartIcon="@Icons.Material.Filled.CloudDownload"
+                           OnClick="DownloadBackup"
+                           Class="mx-auto px-8">
+                    ایجاد نسخه پشتیبان
+                </MudButton>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="24" Class="h-100 d-flex flex-column border-warning">
+
+            <MudCardHeader>
+                <MudIcon Icon="@Icons.Material.Filled.Restore"
+                         Color="Color.Info"
+                         Size="Size.Large" />
+                <MudText Typo="Typo.h6" Class="mr-2">
+                    بازیابی اطلاعات
+                </MudText>
+            </MudCardHeader>
+
+            <MudCardContent Class="flex-grow-1 d-flex flex-column justify-center text-center px-6">
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                    این عملیات داده‌های فعلی سیستم را با اطلاعات
+                    موجود در فایل پشتیبان جایگزین می‌کند.
+                </MudText>
+
+                <MudFileUpload T="IBrowserFile" Accept=".bak" @bind-Files="_databaseFile" Class="@($"align-center justify-content-center {(_databaseFile != null ? "d-none" : "d-flex")}")">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Info"
+                                   Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.UploadFile"
+                                   Class="mx-auto px-8">
+                            انتخاب فایل پشتیبان
+                        </MudButton>
+                    </ActivatorContent>
+                    <SelectedTemplate Context="ctx">
+                        @if (ctx != null)
+                        {
+                            <MudText class="mt-1">@ctx.Name</MudText>
+                        }
+                    </SelectedTemplate>
+                </MudFileUpload>
+
+                @if (_databaseFile is not null)
+                {
+                    <div class="d-flex gap-2 align-center justify-center">
+                        <MudText>فایل انتخابی: @_databaseFile.Name</MudText>
+                        <MudIconButton Variant="Variant.Filled"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Class="m-2"
+                                       OnClick="() => _databaseFile = null"
+                                       Icon="@Icons.Material.Filled.Delete" />
+                    </div>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Info"
+                               Size="Size.Large"
+                               Disabled="_processing"
+                               OnClick="RestoreFile"
+                               StartIcon="@Icons.Material.Filled.Restore"
+                               Class="mx-auto px-8 mt-2">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1"
+                                                 Size="Size.Small"
+                                                 Indeterminate="true" />
+                            <MudText Class="ms-2">
+                                در حال بازنشانی
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText>شروع بازنشانی</MudText>
+                        }
+                    </MudButton>
+                }
+
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<MudOverlay Visible="@(_processing)" DarkBackground="true" Class="height: calc(100vh - 40px);">
+    <MudPaper Elevation="4" Class="pa-6 d-flex flex-column align-center justify-center gap-2"
+              Width="320px" Style="border-radius: 20px; background: var(--mud-palette-surface);">
+        <div class="pulse-icon mb-2">
+            <MudIcon Icon="@Icons.Material.Filled.Restore"
+                     Color="Color.Primary"
+                     Style="width: 64px; height: 64px;" />
+        </div>
+        <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Primary">
+            <b>در حال بازنشانی</b>
+        </MudText>
+        <div class="w-100">
+            <MudProgressLinear Color="Color.Info"
+                               Indeterminate="true"
+                               Rounded="true"
+                               Size="Size.Large"
+                               Striped="true"
+                               Class="my-1" />
+        </div>
+    </MudPaper>
+</MudOverlay>

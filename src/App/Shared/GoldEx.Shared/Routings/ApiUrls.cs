@@ -616,4 +616,13 @@ public class ApiUrls
         public static string GetList() =>
             BuildUrl(ApiRoutes.SmsLogs.Base, ApiRoutes.SmsLogs.GetList);
     }
+
+    public class Backups
+    {
+        public static string GetFilePath() =>
+            BuildUrl(ApiRoutes.Backups.Base, ApiRoutes.Backups.GetFile);
+
+        public static string Restore() =>
+            BuildUrl(ApiRoutes.Backups.Base, ApiRoutes.Backups.Restore);
+    }
 }

@@ -323,4 +323,11 @@ public static class ApiRoutes
         public const string Base = "/api/sms-logs";
         public const string GetList = "";
     }
+
+    public class Backups
+    {
+        public const string Base = "/api/backups";
+        public const string GetFile = "download";
+        public const string Restore = "restore";
+    }
 }

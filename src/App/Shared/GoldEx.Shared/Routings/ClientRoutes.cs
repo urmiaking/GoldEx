@@ -94,6 +94,7 @@ public static class ClientRoutes
         public const string BarcodeBuilder = $"{SettingsPrefix}/barcode-builder";
         public const string SmsTemplates = $"{SettingsPrefix}/sms-templates";
         public const string SmsLogs = $"{SettingsPrefix}/sms-logs";
+        public const string BackupRestore = $"{SettingsPrefix}/backup-restore";
     }
 
     public static class Logs
