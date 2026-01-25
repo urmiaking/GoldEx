@@ -11,10 +11,10 @@
     <MudToolBar Dense="true" Gutters="false">
         <MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Notifications" />
         <MudText Typo="Typo.h6" Class="mr-2">اعلان ها</MudText>
-        <MudSpacer/>
+        <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Close"
                        Color="Color.Inherit"
-                       OnClick="@(() => _drawerOpen = false)"/>
+                       OnClick="@(() => _drawerOpen = false)" />
     </MudToolBar>
     <MudDivider />
     <NotificationList IsOpen="_drawerOpen"
@@ -26,7 +26,7 @@
                       OnButtonAction="HandleButtonAction" />
 </MudDrawer>
 
-<div class="pulse-icon">
+<div class="@(_unreadCount > 0 ? "pulse-icon" : "")">
     <MudIconButton OnClick="@(() => _drawerOpen = true)"
                    Icon="@(_unreadCount > 0 ? Icons.Material.Filled.NotificationsActive : Icons.Material.Filled.Notifications)"
                    Color="@(_unreadCount > 0 ? Color.Error : Color.Inherit)">
@@ -37,30 +37,7 @@
                       Bordered="true"
                       Dot="true"
                       Overlap="true"
-                      Class="notification-badge" />
+                      Class="@(_unreadCount > 0 ? "notification-badge" : null)" />
         }
     </MudIconButton>
 </div>
-
-<style>
-    .pulse-icon {
-        animation: pulse-animation 2s infinite;
-    }
-
-    @@keyframes pulse-animation {
-        0% {
-            transform: scale(0.95);
-            opacity: 0.7;
-        }
-
-        50% {
-            transform: scale(1.1);
-            opacity: 1;
-        }
-
-        100% {
-            transform: scale(0.95);
-            opacity: 0.7;
-        }
-    }
-</style>

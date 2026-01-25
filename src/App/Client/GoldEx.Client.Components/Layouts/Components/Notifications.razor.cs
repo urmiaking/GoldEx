@@ -25,7 +25,7 @@ public partial class Notifications
             {
                 _unreadNotifications = response.Where(x => !x.IsRead).ToList();
                 _readNotifications = response.Where(x => x.IsRead).ToList();
-                _unreadCount = response.Count;
+                _unreadCount = _unreadNotifications.Count;
             });
     }
 
