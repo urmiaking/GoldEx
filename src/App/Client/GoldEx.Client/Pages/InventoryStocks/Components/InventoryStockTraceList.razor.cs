@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -54,5 +55,33 @@ public partial class InventoryStockTraceList
     private void OnViewSource(string sourceUrl)
     {
         Navigation.NavigateTo(sourceUrl);
+    }
+
+    private Color GetActionColor(string sourceUrl)
+    {
+        if (sourceUrl.StartsWith(ClientRoutes.Invoices.Index))
+            return Color.Info;
+
+        if (sourceUrl.StartsWith(ClientRoutes.InventoryStocks.InventoryEntry.Index))
+            return Color.Success;
+
+        if (sourceUrl.StartsWith(ClientRoutes.InventoryStocks.MeltingBatches.Index))
+            return Color.Primary;
+
+        throw new NotImplementedException();
+    }
+
+    private string GetActionText(string sourceUrl)
+    {
+        if (sourceUrl.StartsWith(ClientRoutes.Invoices.Index))
+            return "مشاهده فاکتور";
+
+        if (sourceUrl.StartsWith(ClientRoutes.InventoryStocks.InventoryEntry.Index))
+            return "مشاهده ورود انبار";
+
+        if (sourceUrl.StartsWith(ClientRoutes.InventoryStocks.MeltingBatches.Index))
+            return "مشاهده درخواست ذوب طلا";
+
+        throw new NotImplementedException();
     }
 }

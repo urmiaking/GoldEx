@@ -5,44 +5,7 @@
 <MudForm Model="_model" @ref="@_form" Validation="@(_validator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
-                <MudAutocomplete T="CustomerVm"
-                                 Value="_model.Customer"
-                                 ValueChanged="OnSupplierChanged"
-                                 Text="@_model.Customer?.FullName"
-                                 For="@(() => _model.Customer!)"
-                                 Placeholder="جستجوی طرف حساب..."
-                                 ToStringFunc="@(customer => customer != null ? $"{customer.FullName} - {customer.CustomerType.GetDisplayName()}" : null)"
-                                 Margin="Margin.Dense"
-                                 Adornment="Adornment.Start"
-                                 AdornmentIcon="@Icons.Material.Filled.Search"
-                                 Variant="Variant.Outlined"
-                                 SearchFunc="@SearchSuppliers"
-                                 AutoFocus="true"
-                                 ResetValueOnEmptyText="true"
-                                 DebounceInterval="0"
-                                 ShowProgressIndicator="false">
-                </MudAutocomplete>
-                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddSupplier"></MudIconButton>
-                <MudSpacer />
-                @if (_model.PriceUnit != _priceUnits.FirstOrDefault(x => x.IsDefault))
-                {
-                    <MudItem xs="6" md="3" lg="2">
-                        <MudNumericField T="decimal?"
-                                         @bind-Value="@_model.ExchangeRate"
-                                         dir="ltr"
-                                         Variant="Variant.Outlined"
-                                         Label="@_model.GetDisplayName(() => _model.ExchangeRate)"
-                                         For="() => _model.ExchangeRate"
-                                         Format="#,##0.##"
-                                         Immediate="true"
-                                         HideSpinButtons="true"
-                                         Adornment="Adornment.End"
-                                         AdornmentText="@_priceUnits.FirstOrDefault(x => x.IsDefault)?.Title"
-                                         Margin="Margin.Dense">
-                        </MudNumericField>
-                    </MudItem>
-                }
+            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.SpaceBetween" Spacing="2">
                 <MudSelect T="GetPriceUnitTitleResponse?"
                            Value="_model.PriceUnit"
                            ValueChanged="OnPriceUnitChanged"
@@ -58,25 +21,61 @@
                                 <MudAvatar Size="Size.Small">
                                     <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
                                 </MudAvatar>
-                                <MudText Class="d-none d-md-inline">@item.Title</MudText>
+                                <MudText>@item.Title</MudText>
                             </MudStack>
                         </MudSelectItem>
                     }
                 </MudSelect>
+                <div class="flex-fill"></div>
+                @if (_model.PriceUnit != _priceUnits.FirstOrDefault(x => x.IsDefault))
+                {
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="@_model.ExchangeRate"
+                                     dir="ltr"
+                                     Variant="Variant.Outlined"
+                                     Label="@_model.GetDisplayName(() => _model.ExchangeRate)"
+                                     For="() => _model.ExchangeRate"
+                                     Format="#,##0.##"
+                                     Immediate="true"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="@_priceUnits.FirstOrDefault(x => x.IsDefault)?.Title"
+                                     Margin="Margin.Dense">
+                    </MudNumericField>
+                }
             </MudStack>
+
+            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mt-4">
+                <MudText Typo="Typo.h6" GutterBottom="true" Class="d-none d-md-block">
+                    طرف حساب
+                    @if (_model.Customer != null)
+                    {
+                        <span class="d-none d-md-inline">(@_model.Customer.CustomerType.GetDisplayName())</span>
+                    }
+                </MudText>
+                <div Class="flex-fill d-none d-md-block"></div>
+                <MudAutocomplete T="CustomerVm"
+                                 Value="_model.Customer"
+                                 ValueChanged="OnSupplierChanged"
+                                 Text="@_model.Customer?.FullName"
+                                 For="@(() => _model.Customer!)"
+                                 Placeholder="جستجوی طرف حساب..."
+                                 ToStringFunc="@(customer => customer != null ? $"{customer.FullName} - {customer.CustomerType.GetDisplayName()}" : null)"
+                                 Margin="Margin.Dense"
+                                 Adornment="Adornment.Start"
+                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                 Variant="Variant.Outlined"
+                                 SearchFunc="@SearchSuppliers"
+                                 AutoFocus="true"
+                                 ResetValueOnEmptyText="true"
+                                 DebounceInterval="0"
+                                 ShowProgressIndicator="false" />
+                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddSupplier" />
+            </MudStack>
+            <MudDivider />
             @if (_model.Customer is not null)
             {
-                <MudStack Row AlignItems="AlignItems.End" Class="mt-2">
-                    <MudText Typo="Typo.h6">
-                        مشخصات طرف حساب @if (_model.Customer != null)
-                        {
-                            <span class="d-none d-sm-inline">(@_model.Customer.CustomerType.GetDisplayName())</span>
-                        }
-                    </MudText>
-                </MudStack>
-                <MudDivider />
-
-                <MudGrid Class="mt-0">
+                <MudGrid Class="mt-0" Spacing="4">
                     <MudItem xs="6" md="3" lg="3">
                         <MudText Typo="Typo.body2">نام و نام خانوادگی:</MudText>
                     </MudItem>
@@ -107,18 +106,19 @@
                 <MudText Typo="Typo.h6">اطلاعات رسید پرداخت</MudText>
             </MudStack>
             <MudDivider />
-            <MudGrid Class="mt-0">
-                <MudItem xs="12" md="4">
+            <MudGrid Class="mt-0" Spacing="2">
+                <MudItem xs="6" md="4">
                     <MudNumericField T="long"
                                      @bind-Value="_model.VoucherNumber"
                                      For="@(() => _model.VoucherNumber)"
                                      dir="ltr"
+                                     HideSpinButtons
                                      Label="@_model.GetDisplayName(() => _model.VoucherNumber)"
                                      Margin="Margin.Dense"
                                      Variant="Variant.Outlined">
                     </MudNumericField>
                 </MudItem>
-                <MudItem xs="12" md="4">
+                <MudItem xs="6" md="4">
                     <MudSelect T="PaymentVoucherType"
                                @bind-Value="_model.VoucherType"
                                Label="@_model.GetDisplayName(() => _model.VoucherType)"
@@ -173,7 +173,7 @@
                     </MudTextField>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
-                    <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="0">
+                    <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
                         <MudSelect T="GetFinancialAccountTitleResponse?"
                                    @bind-Value="_model.SourceFinancialAccount"
                                    Label="@_model.GetDisplayName(() => _model.SourceFinancialAccount)"
@@ -195,7 +195,7 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6" lg="6">
-                    <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="0">
+                    <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2">
                         <MudSelect T="GetFinancialAccountTitleResponse?"
                                    @bind-Value="_model.DestinationFinancialAccount"
                                    Label="@_model.GetDisplayName(() => _model.DestinationFinancialAccount)"

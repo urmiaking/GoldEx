@@ -3,14 +3,17 @@ using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static MudBlazor.Colors;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -24,6 +27,7 @@ public partial class PaymentEditor
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
 
     private List<GetCustomerResponse>? _customers;
+    private List<GetTinyInvoiceResponse>? _invoices;
     private MudForm _form = default!;
 
     private readonly InvoicePaymentValidator _paymentValidator = new();
@@ -130,6 +134,9 @@ public partial class PaymentEditor
 
         if (Model.PaymentType is PaymentType.InternalCash)
             await LoadFinancialAccountsAsync();
+
+        if (Model.TargetInvoice != null) 
+            Model.TargetInvoice = null;
     }
 
     private void ApplyTotalRemaining()
@@ -234,10 +241,7 @@ public partial class PaymentEditor
 
         await SendRequestAsync<ICustomerService, List<GetCustomerResponse>>(
             action: (s, ct) => s.GetByNameAsync(customerName, null, ct),
-            afterSend: response =>
-            {
-                _customers = response;
-            },
+            afterSend: response => _customers = response,
             cancelPrevious: true);
 
         return _customers?.Select(CustomerVm.CreateFrom);
@@ -261,6 +265,38 @@ public partial class PaymentEditor
             Model.Endorser = customerVm;
             StateHasChanged();
         }
+    }
+
+    private async Task<IEnumerable<GetTinyInvoiceResponse>?> SearchCustomerInvoicesAsync(string? value, CancellationToken cancellationToken = default)
+    {
+        if (_invoices is null) 
+            await LoadCustomerInvoicesAsync();
+
+        if (string.IsNullOrEmpty(value))
+            return _invoices;
+
+        return _invoices?.Where(inv => inv.InvoiceNumber.ToString().StartsWith(value));
+    }
+
+    private async Task LoadCustomerInvoicesAsync()
+    {
+        var request = new RequestFilter();
+
+        if (Model.Endorser?.Id is null || Model.PriceUnit is null)
+            return;
+
+        await SendRequestAsync<IInvoiceService, List<GetTinyInvoiceResponse>>(
+            action: (s, ct) => s.GetCustomerInvoicesAsync(Model.Endorser.Id.Value, Model.PriceUnit.Id, request, ct),
+            afterSend: response => _invoices = response,
+            cancelPrevious: true);
+    }
+
+    private void OnEndorserChanged(CustomerVm endorser)
+    {
+        Model.Endorser = endorser;
+        Model.TargetInvoice = null;
+
+        _invoices = null;
     }
 
     #endregion

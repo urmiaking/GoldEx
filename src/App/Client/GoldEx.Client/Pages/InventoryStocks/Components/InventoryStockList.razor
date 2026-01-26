@@ -99,7 +99,7 @@
                 </MudMenu>
             </MudButtonGroup>
 
-            @if (!Selectable)
+            @if (ShowItemStatus)
             {
                 <MudButtonGroup Size="Size.Small" Color="@ItemStatusColor" Variant="Variant.Filled" Class="ml-3">
                     <MudButton Size="Size.Small" StartIcon="@ItemStatusIcon" Class="@(ItemStatus == ItemStatus.Melted ? "black-text" : "")">
@@ -177,8 +177,6 @@
                 <MudTh><MudTableSortLabel SortLabel="CurrentAmount" T="InventoryStockVm">تعداد موجود</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="SoldAmount" T="InventoryStockVm">تعداد فروخته شده</MudTableSortLabel></MudTh>
                 break;
-            default:
-                throw new ArgumentOutOfRangeException();
         }
         @switch (ItemType)
         {

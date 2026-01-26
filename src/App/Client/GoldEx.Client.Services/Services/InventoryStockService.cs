@@ -7,7 +7,6 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
-using GoldEx.Shared.DTOs.FinancialAccounts;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -98,5 +97,17 @@ internal class InventoryStockService(HttpClient client, JsonSerializerOptions js
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task<GetInventoryItemTitleResponse> GetTitleAsync(ItemType itemType, Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.InventoryStocks.GetTitle(itemType, id), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetInventoryItemTitleResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
     }
 }

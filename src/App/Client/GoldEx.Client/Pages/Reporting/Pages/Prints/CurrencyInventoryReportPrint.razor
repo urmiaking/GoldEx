@@ -1,0 +1,42 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Print.CurrencyInventory)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"
+                 FromDate="@FromDate"
+                 ToDate="@ToDate"
+                 Data="@_items"
+                 ReportTitle="@($"گزارش موجودی ارز {TitleFilter}")">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>عنوان</th>
+            <th>موجود</th>
+            <th>فروخته شده</th>
+        </tr>
+        </thead>
+        @if (_items != null)
+        {
+            <tbody>
+            @foreach (var item in _items)
+            {
+                <tr>
+                    <td>@item.Currency.Title</td>
+                    <td>@item.CurrentAmount.ToString("G29")</td>
+                    <td>@item.SoldAmount.ToString("G29")</td>
+                </tr>
+            }
+            </tbody>
+        }
+    </table>
+</ReportPrintBase>
+
+<script src="/js/report-print.js?v=6"></script>

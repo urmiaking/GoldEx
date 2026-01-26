@@ -31,7 +31,7 @@
                         <AntiforgeryToken />
 
                         <MudStaticButton StartIcon="@Icons.Material.Filled.RemoveCircle" Variant="Variant.Filled" Color="Color.Error"
-                                         FullWidth="true" Size="Size.Large" FormAction="FormAction.Submit">فراموشی این مرورگر</MudStaticButton>
+                                         FullWidth="true" FormAction="FormAction.Submit">فراموشی این مرورگر</MudStaticButton>
 
                     </form>
                 </MudItem>
@@ -57,7 +57,7 @@
         <MudGrid Class="py-4">
             <MudItem xs="12" md="6">
                 <MudButton StartIcon="@Icons.Material.Filled.Autorenew" Href="@ClientRoutes.Accounts.Manage.GenerateRecoveryCodes" Variant="Variant.Filled"
-                           FullWidth="true" Size="Size.Large" Color="Color.Primary">بازنشانی کدهای بازیابی</MudButton>
+                           FullWidth="true" Color="Color.Primary">بازنشانی کدهای بازیابی</MudButton>
             </MudItem>
         </MudGrid>
     }
@@ -67,7 +67,7 @@
     @if (!_hasAuthenticator)
     {
         <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="@ClientRoutes.Accounts.Manage.EnableAuthenticator" Variant="Variant.Filled"
-                   FullWidth="true" Size="Size.Large" Color="Color.Primary">افزودن برنامه Authenticator</MudButton>
+                   FullWidth="true" Color="Color.Primary">افزودن برنامه Authenticator</MudButton>
         <br />
     }
     else
@@ -75,11 +75,11 @@
         <MudGrid>
             <MudItem xs="12" md="6">
                 <MudButton StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="@ClientRoutes.Accounts.Manage.EnableAuthenticator" Variant="Variant.Filled"
-                           FullWidth="true" Size="Size.Large" Color="Color.Primary">پیکربندی Authenticator</MudButton>
+                           FullWidth="true" Color="Color.Primary">پیکربندی Authenticator</MudButton>
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudButton StartIcon="@Icons.Material.Filled.Autorenew" Href="@ClientRoutes.Accounts.Manage.ResetAuthenticator" Variant="Variant.Filled"
-                           FullWidth="true" Size="Size.Large" Color="Color.Primary">بازنشانی Authenticator</MudButton>
+                           FullWidth="true" Color="Color.Primary">بازنشانی Authenticator</MudButton>
             </MudItem>
         </MudGrid>
     }

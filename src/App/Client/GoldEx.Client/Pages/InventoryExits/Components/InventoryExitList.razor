@@ -1,0 +1,87 @@
+﻿@using GoldEx.Client.Pages.InventoryExits.ViewModels
+@inherits GoldExComponentBase
+
+<MudTable T="InventoryExitListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true"
+          OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
+          ContainerClass="@ContainerClass" Dense="true" ServerData="LoadInventoryExitsAsync"
+          SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+    <ToolBarContent>
+        <div class="d-flex justify-between">
+            <MudText>
+                تاریخچه خروج دستی اجناس
+            </MudText>
+        </div>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>تاریخ خروج</MudTh>
+        <MudTh>دلیل خروج</MudTh>
+        <MudTh>توضیحات</MudTh>
+        <MudTh>تعداد کل طلا، جواهر و آبشده</MudTh>
+        <MudTh>تعداد کل سکه ها</MudTh>
+        <MudTh>حجم کل ارزها</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="تاریخ خروج">@context.ExitDate.ToString("yyyy/MM/dd")</MudTd>
+        <MudTd DataLabel="دلیل خروج">@context.ExitReason.GetDisplayName()</MudTd>
+        <MudTd DataLabel="توضیحات">@context.Description</MudTd>
+        <MudTd DataLabel="تعداد کل طلا، جواهر و آبشده">@context.ProductsAmount.ToWeightFormat(GoldUnitType.Gram)</MudTd>
+        <MudTd DataLabel="تعداد کل سکه ها">@context.CoinsAmount.ToCurrencyFormat()</MudTd>
+        <MudTd DataLabel="حجم کل ارزها">@context.CurrenciesAmount.ToCurrencyFormat()</MudTd>
+        <MudTd>
+            <div class="d-flex gap-2">
+                <MudTooltip Text="مشاهده جزئیات" Color="Color.Primary" Arrow="true">
+                    <MudIconButton Icon="@GetShowDetailsIcon(context.ShowDetails)" Variant="Variant.Filled"
+                                   Size="Size.Small" Color="Color.Primary" OnClick="@(() => context.ShowDetails = !context.ShowDetails)" />
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <ChildRowContent>
+        <MudTr Class="mud-table-row-child">
+            <td colspan="10">
+                <MudCollapse Expanded="@context.ShowDetails">
+                    @if (context.ShowDetails)
+                    {
+                        <MudCard Elevation="2" Class="m-2">
+                            <MudCardContent>
+                                <InventoryStockList InventoryExitId="context.Id" Elevation="0" SelectableTypes="GetItemTypes(context)" ItemType="GetSelectedItemType(context)" />
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudCollapse>
+            </td>
+        </MudTr>
+    </ChildRowContent>
+    <NoRecordsContent>
+        <MudText>هیچ خروج دستی ثبت نشده است</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگیری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Selected="@(_table.CurrentPage + 1)"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           ShowFirstButton="true"
+                           ShowLastButton="true" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>

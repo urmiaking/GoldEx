@@ -59,6 +59,16 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.SourcePayment)
+            .WithMany()
+            .HasForeignKey(x => x.SourcePaymentId)
+            .OnDelete(DeleteBehavior.Restrict); // We want the target payment be deleted if the source payment gone
+
+        builder.HasOne(x => x.TargetInvoice)
+            .WithMany()
+            .HasForeignKey(x => x.TargetInvoiceId)
+            .OnDelete(DeleteBehavior.Restrict); // Caution: We do not want to delete the payment if the target invoice id is deleted.
+
         builder.Navigation(x => x.PriceUnit).AutoInclude();
     }
 }

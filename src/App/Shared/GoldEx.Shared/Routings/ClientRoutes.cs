@@ -92,6 +92,9 @@ public static class ClientRoutes
         public const string LedgerAccounts = $"{SettingsPrefix}/ledger-accounts";
         public const string Coins = $"{SettingsPrefix}/coins";
         public const string BarcodeBuilder = $"{SettingsPrefix}/barcode-builder";
+        public const string SmsTemplates = $"{SettingsPrefix}/sms-templates";
+        public const string SmsLogs = $"{SettingsPrefix}/sms-logs";
+        public const string BackupRestore = $"{SettingsPrefix}/backup-restore";
     }
 
     public static class Logs
@@ -133,13 +136,11 @@ public static class ClientRoutes
         public const string CustomerTransactions = $"{ReportingPrefix}/customer-transactions";
         public const string SellInvoices = $"{ReportingPrefix}/sell-invoices";
         public const string PurchaseInvoices = $"{ReportingPrefix}/purchase-invoices";
-        public const string InvoiceSummary = $"{ReportingPrefix}/invoice-summary";
-        public const string InvoiceSettlements = $"{ReportingPrefix}/invoice-settlements";
-        public const string InvoiceAgingAnalysis = $"{ReportingPrefix}/invoice-aging-analysis";
+        public const string Payments = $"{ReportingPrefix}/payments";
         public const string InvoicePayments = $"{ReportingPrefix}/invoice-payments";
         public const string PaymentVouchers = $"{ReportingPrefix}/payment-vouchers";
         public const string InventoryKardex = $"{ReportingPrefix}/inventory-kardex";
-        public const string InventoryStockSnapshot = $"{ReportingPrefix}/inventory-stock-snapshot";
+        public const string ProductInventory = $"{ReportingPrefix}/inventory-inventory";
         public const string CoinInventory = $"{ReportingPrefix}/coin-inventory";
         public const string CurrencyInventory = $"{ReportingPrefix}/currency-inventory";
 
@@ -151,6 +152,14 @@ public static class ClientRoutes
             public const string LedgerAccountTrialBalances = $"{PrintPrefix}/ledger-account-trial-balances";
             public const string CustomerBalances = $"{PrintPrefix}/customer-balances";
             public const string CustomerTransactions = $"{PrintPrefix}/customer-transactions";
+            public const string SellInvoices = $"{PrintPrefix}/sell-invoices";
+            public const string PurchaseInvoices = $"{PrintPrefix}/purchase-invoices";
+            public const string Payments = $"{PrintPrefix}/payments";
+            public const string InvoicePayments = $"{PrintPrefix}/invoice-payments";
+            public const string InventoryKardex = $"{PrintPrefix}/inventory-kardex";
+            public const string ProductInventory = $"{PrintPrefix}/product-inventory";
+            public const string CoinInventory = $"{PrintPrefix}/coin-inventory";
+            public const string CurrencyInventory = $"{PrintPrefix}/currency-inventory";
         }
     }
 

@@ -108,6 +108,7 @@ public record GetInvoicePaymentResponse(
     string? Note,
     decimal? ExchangeRate,
     Guid? VoucherId,
+    GetTinyInvoiceResponse? TargetInvoice,
     GetFinancialAccountTitleResponse? FinancialAccount,
     GetCustomerResponse? Endorser,
     GetPriceUnitTitleResponse PriceUnit,

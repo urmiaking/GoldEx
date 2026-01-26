@@ -1,15 +1,11 @@
 ﻿@attribute [Route(ClientRoutes.Reporting.CustomerTransactions)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
-@using GoldEx.Client.Pages.Reporting.Components.Filters
-@using GoldEx.Client.Pages.Reporting.Components.Views
-@using GoldEx.Client.Pages.Reporting.Pages.Base
-
 @inherits CustomerTransactionsPageBase
 
 <PageTitle>گردش حساب مشتری</PageTitle>
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="pr-0" Items="Breadcrumbs">
+    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
@@ -19,7 +15,7 @@
         <CustomerTransactionFilters Model="@Filters" />
     </ReportFiltersBase>
 
-    <CustomerTransactionsReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
+    <CustomerTransactionsReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" OnOpenReference="OpenReference" />
 </MudContainer>
 
 <script src="/js/report-print.js?v=2"></script>

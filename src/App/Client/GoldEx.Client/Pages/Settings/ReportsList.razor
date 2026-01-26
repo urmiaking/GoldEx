@@ -12,15 +12,13 @@
 <MudDivider Class="my-2" />
 
 <MudTable T="GetReportResponse" Hover="true" FixedHeader="true" Dense="true" Items="_reports" Loading="_processing"
-          SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="24" Height="350px" Class="p-2 mt-4">
+          SelectOnRowClick="false" Breakpoint="Breakpoint.None" Elevation="24" Class="p-2 mt-4" ContainerClass="responsive-table">
     <HeaderContent>
-        <MudTh>نام</MudTh>
-        <MudTh>عنوان یکتا</MudTh>
+        <MudTh>عنوان</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="نام">@context.DisplayName</MudTd>
-        <MudTd DataLabel="عنوان یکتا">@context.Name</MudTd>
+        <MudTd DataLabel="عنوان">@context.DisplayName</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudTooltip Text="طراحی">

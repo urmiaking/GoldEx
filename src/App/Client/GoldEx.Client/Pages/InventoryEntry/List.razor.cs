@@ -10,7 +10,7 @@ public partial class List
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
         new("انبار", href: ClientRoutes.InventoryStocks.Index, icon: Icons.Material.Filled.Warehouse),
-        new("تاریخچه ورود دستی", href: ClientRoutes.InventoryStocks.InventoryEntry.List, icon: Icons.Material.Filled.History)
+        new("ورود دستی", href: ClientRoutes.InventoryStocks.InventoryEntry.List, icon: Icons.Material.Filled.History)
     ];
 
     [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchQuery { get; set; }

@@ -84,6 +84,11 @@ internal class InvoiceMapper : IRegister
                 src.PaymentVoucherId != null ? src.PaymentVoucherId.Value.Value : (Guid?)null)
             .Map(dest => dest.FinancialAccount, src => src.SourceFinancialAccount)
             .Map(dest => dest.Endorser, src =>
-                src.LedgerAccount != null && src.LedgerAccount.Customer != null ? src.LedgerAccount.Customer : null);
+                src.LedgerAccount != null && src.LedgerAccount.Customer != null ? src.LedgerAccount.Customer : null)
+            .Map(dest => dest.TargetInvoice, src => src.TargetInvoice);
+
+        config.NewConfig<Invoice, GetTinyInvoiceResponse>()
+            .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.Remaining, src => src.TotalUnpaidAmount);
     }
 }

@@ -1,0 +1,49 @@
+﻿@using GoldEx.Client.Pages.Settings.Components.SmsTemplates
+@inherits GoldExComponentBase
+
+@attribute [Route(ClientRoutes.Settings.SmsTemplates)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+<PageTitle>مدیریت قالب های پیامکی</PageTitle>
+
+<div class="d-flex align-center justify-space-start">
+    <MudText Typo="Typo.h6" GutterBottom="true">مدیریت قالب های پیامکی</MudText>
+</div>
+
+<MudDivider Class="my-2" />
+
+@if (_items is null)
+{
+    <div class="align-center d-flex flex-column gap-3 justify-content-center">
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        <MudText>در حال بارگیری</MudText>
+    </div>
+}
+else
+{
+    <MudPaper Elevation="24" Class="p-2 mt-4">
+        <EditForm Model="_model" OnValidSubmit="OnSubmit">
+            @foreach (var item in _items)
+            {
+                <SmsTemplateEditor Model="_model.Items.First(x => x.Id == item.Id)"
+                                   Parameters="item.Parameters.Split(',')"
+                                   Subject="item.Subject" />
+            }
+
+            <MudDivider Class="my-2" />
+
+            <div class="d-flex justify-end">
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           Color="Color.Primary">ذخیره</MudButton>
+            </div>
+        </EditForm>
+    </MudPaper>
+}
+
+<style>
+    .mud-input-root-outlined {
+        line-height: 1.5rem !important;
+    }
+</style>

@@ -2,7 +2,7 @@
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
-using GoldEx.Shared.DTOs.Coins;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
@@ -87,7 +87,7 @@ public partial class InventoryItemSelector
         {
             var coinItemTasks = _coins.Select(async coin =>
             {
-                var unitPrice = await GetCoinPriceAsync(coin.Id!.Value);
+                var unitPrice = await GetCoinPriceAsync(coin.Coin!.Id);
 
                 return await new CoinItemVm
                 {
@@ -110,6 +110,8 @@ public partial class InventoryItemSelector
 
                 var unitPrice = await GetCurrencyPriceAsync(currency.Id);
 
+                var financialAccount = await GetCurrencyFinancialAccountAsync(currency.Id);
+
                 if (!unitPrice.HasValue)
                     return null;
 
@@ -117,6 +119,7 @@ public partial class InventoryItemSelector
                 {
                     Currency = new GetPriceUnitTitleResponse(currency.Id, currency.Title, currency.HasIcon,
                         currency.IsDefault, false),
+                    FinancialAccount = financialAccount,
                     Amount = stock?.CurrentAmount ?? 1,
                     UnitPrice = unitPrice.Value
                 }.RecalculateAmountsAsync();
@@ -129,6 +132,17 @@ public partial class InventoryItemSelector
 
         else
             Close();
+    }
+
+    private async Task<GetFinancialAccountTitleResponse?> GetCurrencyFinancialAccountAsync(Guid currencyId)
+    {
+        GetFinancialAccountTitleResponse? financialAccount = null;
+
+        await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountTitleResponse>>(
+            (s, ct) => s.GetTitlesAsync(null, currencyId, ct),
+            afterSend: response => financialAccount = response.FirstOrDefault());
+
+        return financialAccount;
     }
 
     private async Task<decimal?> GetCurrencyPriceAsync(Guid? currencyId)

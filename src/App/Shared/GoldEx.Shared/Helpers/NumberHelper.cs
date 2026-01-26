@@ -44,6 +44,6 @@ public static class NumberHelper
     public static string FormatUnpaidAmount(this decimal amount, string? unitTitle)
     {
         var formatted = Math.Abs(amount).ToCurrencyReportFormat(unitTitle);
-        return amount < 0 ? $"{formatted} (بستانکار)" : formatted;
+        return amount < 0 ? $"{formatted} (بس)" : formatted;
     }
 }

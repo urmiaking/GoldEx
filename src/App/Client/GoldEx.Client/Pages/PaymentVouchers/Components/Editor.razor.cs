@@ -1,5 +1,4 @@
-﻿using GoldEx.Client.Pages.Customers.Components;
-using GoldEx.Client.Pages.Customers.ViewModels;
+﻿using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.PaymentVouchers.Validators;
@@ -46,14 +45,11 @@ public partial class Editor
 
     private async Task LoadVoucherNumberAsync()
     {
-        Console.WriteLine("Executing load number method...");
         await SendRequestAsync<IPaymentVoucherService, GetVoucherNumberResponse>(
             action: (s, ct) => s.GetLastNumberAsync(ct),
             afterSend: response =>
             {
-                Console.WriteLine($"Received {response.VoucherNumber} from api");
                 _model.VoucherNumber = response.VoucherNumber + 1;
-                Console.WriteLine($"voucher number is {_model.VoucherNumber}");
             },
             createScope: true);
     }
@@ -117,7 +113,8 @@ public partial class Editor
 
         var parameters = new DialogParameters<Customers.Components.Editor>
         {
-            { x => x.ReturnModel, true }
+            { x => x.ReturnModel, true },
+            { x => x.ShowFinancialAccounts, false }
         };
 
         var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);

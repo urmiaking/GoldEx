@@ -15,7 +15,7 @@
         <div class="d-flex justify-content-center mb-2">
             <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!">
                 <ActivatorContent>
-                    <MudAvatar Size="Size.Large" Style="cursor: pointer;">
+                    <MudAvatar Size="Size.Large" Style="cursor: pointer; width: 100px; height: 100px;">
                         @if (_model.HasIcon)
                         {
                             <MudImage Src="@(ApiUrls.Icons.Get(IconType.App, _model.Id))" Alt="img" />
@@ -29,13 +29,12 @@
             </MudFileUpload>
         </div>
 
-        <MudGrid Spacing="8">
+        <MudGrid Spacing="4">
             <MudItem xs="12" sm="4">
                 <MudTextField Adornment="Adornment.End"
                               AdornmentIcon="@Icons.Material.Filled.Info"
                               @bind-Value="_model.InstitutionName"
                               Label="@_model.GetDisplayName(() => _model.InstitutionName)"
-                              AutoFocus="true"
                               Variant="Variant.Outlined"
                               For="() => _model.InstitutionName"></MudTextField>
             </MudItem>
@@ -60,8 +59,8 @@
 
         <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">پیش فرض های برنامه</MudText>
         <hr />
-        <MudGrid Spacing="8">
-            <MudItem xs="12" sm="4">
+        <MudGrid Spacing="4">
+            <MudItem xs="6" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
                                  @bind-Value="_model.TaxPercent"
@@ -71,7 +70,7 @@
                                  HideSpinButtons="true"
                                  For="() => _model.TaxPercent"></MudNumericField>
             </MudItem>
-            <MudItem xs="12" sm="4">
+            <MudItem xs="6" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
                                  @bind-Value="_model.GoldProfitPercent"
@@ -81,7 +80,7 @@
                                  HideSpinButtons="true"
                                  For="() => _model.GoldProfitPercent"></MudNumericField>
             </MudItem>
-            <MudItem xs="12" sm="4">
+            <MudItem xs="6" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
                                  @bind-Value="_model.JewelryProfitPercent"
@@ -91,7 +90,7 @@
                                  HideSpinButtons="true"
                                  For="() => _model.JewelryProfitPercent"></MudNumericField>
             </MudItem>
-            <MudItem xs="12" sm="4">
+            <MudItem xs="6" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
                                  @bind-Value="_model.MoltenGoldCommissionPercent"
@@ -101,7 +100,7 @@
                                  HideSpinButtons="true"
                                  For="() => _model.MoltenGoldCommissionPercent"></MudNumericField>
             </MudItem>
-            <MudItem xs="12" sm="4">
+            <MudItem xs="6" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
                                  @bind-Value="_model.GoldSafetyMarginPercent"
@@ -111,7 +110,7 @@
                                  HideSpinButtons="true"
                                  For="() => _model.GoldSafetyMarginPercent"></MudNumericField>
             </MudItem>
-            <MudItem xs="12" sm="4">
+            <MudItem xs="6" sm="4">
                 <MudNumericField Adornment="Adornment.End"
                                  AdornmentIcon="@Icons.Material.Filled.Percent"
                                  @bind-Value="_model.UsedGoldFinenessDeductionRate"
@@ -136,7 +135,7 @@
         <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">قیمت</MudText>
         <hr />
 
-        <MudGrid Spacing="8">
+        <MudGrid Spacing="4">
             <MudItem xs="12" sm="4">
                 <MudTextField Adornment="Adornment.End"
                               AdornmentIcon="@Icons.Material.Outlined.Timer"

@@ -7,38 +7,40 @@
 <PageTitle>مدیریت حساب های مالی</PageTitle>
 
 <div class="d-flex align-items-center">
-    <MudText Typo="Typo.h6" GutterBottom="true">مدیریت حساب های مالی</MudText>
+    <MudText Typo="Typo.h6" GutterBottom="true">حساب های مالی</MudText>
     <MudSpacer />
-    
-    <MudButtonGroup Size="Size.Small" Color="@AccountTypeColor" Variant="Variant.Filled" Class="ml-3">
-        <MudButton Size="Size.Small" StartIcon="@AccountTypeIcon">
-            @(_accountType == null ? "همه" : _accountType.GetDisplayName())
-        </MudButton>
-        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
-            <MudMenuItem Icon="@Icons.Material.Filled.ViewHeadline" IconColor="Color.Default"
-                         OnClick="() => SetAccountTypeFilterText(null)">
-                همه
-            </MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.AccountBalance" IconColor="Color.Primary"
-                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.LocalBankAccount)">
-                @FinancialAccountType.LocalBankAccount.GetDisplayName()
-            </MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.Public" IconColor="Color.Success"
-                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.InternationalBankAccount)">
-                @FinancialAccountType.InternationalBankAccount.GetDisplayName()
-            </MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Info"
-                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Cash)">
-                @FinancialAccountType.Cash.GetDisplayName()
-            </MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled._18UpRating" IconColor="Color.Secondary"
-                         OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Gold)">
-                @FinancialAccountType.Gold.GetDisplayName()
-            </MudMenuItem>
-        </MudMenu>
-    </MudButtonGroup>
 
-    <div class="d-flex flex-row align-center">
+    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+        <MudButtonGroup Size="Size.Small" Color="@AccountTypeColor" Variant="Variant.Filled" Class="ml-3">
+            <MudButton Size="Size.Small" StartIcon="@AccountTypeIcon">
+                @(_accountType == null ? "همه" : _accountType.GetDisplayName())
+            </MudButton>
+            <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                <MudMenuItem Icon="@Icons.Material.Filled.ViewHeadline" IconColor="Color.Default"
+                             OnClick="() => SetAccountTypeFilterText(null)">
+                    همه
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.AccountBalance" IconColor="Color.Primary"
+                             OnClick="() => SetAccountTypeFilterText(FinancialAccountType.LocalBankAccount)">
+                    @FinancialAccountType.LocalBankAccount.GetDisplayName()
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Public" IconColor="Color.Success"
+                             OnClick="() => SetAccountTypeFilterText(FinancialAccountType.InternationalBankAccount)">
+                    @FinancialAccountType.InternationalBankAccount.GetDisplayName()
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Info"
+                             OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Cash)">
+                    @FinancialAccountType.Cash.GetDisplayName()
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled._18UpRating" IconColor="Color.Secondary"
+                             OnClick="() => SetAccountTypeFilterText(FinancialAccountType.Gold)">
+                    @FinancialAccountType.Gold.GetDisplayName()
+                </MudMenuItem>
+            </MudMenu>
+        </MudButtonGroup>
+    </MudHidden>
+
+    <div class="d-flex flex-row align-center gap-2">
         <MudTextField T="string" Clearable="true" Immediate="true"
                       ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
                       Adornment="Adornment.Start" Variant="Variant.Outlined" DebounceInterval="500"
@@ -51,8 +53,8 @@
 <MudDivider Class="my-2" />
 
 <MudTable T="FinancialAccountVm" @ref="_table" Hover="true" FixedHeader="true" Dense="true"
-          ServerData="LoadFinancialAccounts" SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" 
-          Elevation="24" RowsPerPage="10" Class="p-2 mt-4">
+          ServerData="LoadFinancialAccounts" SelectOnRowClick="false" Breakpoint="Breakpoint.Xs"
+          Elevation="24" RowsPerPage="10" Class="p-2 mt-4" ContainerClass="responsive-table-import">
     <HeaderContent>
         <MudTh>نوع حساب</MudTh>
         <MudTh>واحد ارزی</MudTh>

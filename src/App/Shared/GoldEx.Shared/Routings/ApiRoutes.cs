@@ -51,7 +51,6 @@ public static class ApiRoutes
     public class Products
     {
         public const string Base = "/api/products";
-        public const string GetList = "";
         public const string GetByBarcode = "barcode/{barcode}";
         public const string Create = "";
         public const string Update = "{id}";
@@ -123,6 +122,7 @@ public static class ApiRoutes
         public const string Create = "";
         public const string Update = "{id}";
         public const string GetList = "";
+        public const string GetCustomerInvoices = "customer/{customerId}/price-unit/{priceUnitId}";
         public const string Get = "{id}";
         public const string Delete = "{id}";
         public const string GetLastNumber = "last-number/{invoiceType}";
@@ -197,12 +197,14 @@ public static class ApiRoutes
         public const string GetTraces = "{itemType}/{itemId}/traces";
         public const string GetAvailableItemAmount = "{itemType}/{itemId}/available-amount";
         public const string DeleteProduct = "product/{productId}";
+        public const string GetTitle = "title/{itemType}/{id}";
     }
 
     public class Notifications
     {
         public const string Base = "/api/notifications";
         public const string GetList = "";
+        public const string Delete = "{id}";
         public const string MarkAsRead = "{id}/read";
         public const string MarkAllAsRead = "read-all";
     }
@@ -298,6 +300,34 @@ public static class ApiRoutes
         public const string GetLedgerAccountStatements = "ledger-account-statements";
         public const string GetLedgerAccountTrialBalance = "ledger-account-trial-balance";
         public const string GetCustomerRemainingBalance = "customer-remaining-balance";
-        public const string GetCustomerTransactions = "customer-transactions";  
+        public const string GetCustomerTransactions = "customer-transactions";
+        public const string GetSellInvoices = "sell-invoices";
+        public const string GetPurchaseInvoices = "purchase-invoices";
+        public const string GetPayments = "payments";
+        public const string GetInvoicePayments = "invoice-payments";
+        public const string GetInventoryKardex = "inventory-kardex";
+        public const string GetProductInventory = "product-inventory";
+        public const string GetCoinInventory = "coin-inventory";
+        public const string GetCurrencyInventory = "currency-inventory";
+    }
+
+    public class SmsTemplates
+    {
+        public const string Base = "/api/sms-templates";
+        public const string GetList = "";
+        public const string Update = "";
+    }
+
+    public class SmsLogs
+    {
+        public const string Base = "/api/sms-logs";
+        public const string GetList = "";
+    }
+
+    public class Backups
+    {
+        public const string Base = "/api/backups";
+        public const string GetFile = "download";
+        public const string Restore = "restore";
     }
 }

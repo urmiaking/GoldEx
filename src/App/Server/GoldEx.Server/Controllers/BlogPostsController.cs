@@ -22,6 +22,7 @@ public class BlogPostsController(
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.BlogPosts.GetSlug)]
     public async Task<IActionResult> GetBySlugAsync([FromRoute] string slug, CancellationToken cancellationToken)
     {
@@ -109,6 +110,7 @@ public class BlogPostsController(
         return Json(new { location = $"/{virtualUrl}" });
     }
 
+    [AllowAnonymous]
     [HttpGet(ApiRoutes.BlogPosts.Exists)]
     public async Task<IActionResult> ExistsAsync([FromRoute] string slug, CancellationToken cancellationToken)
     {

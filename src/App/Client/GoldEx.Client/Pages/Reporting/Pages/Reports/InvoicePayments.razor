@@ -1,0 +1,21 @@
+﻿@attribute [Route(ClientRoutes.Reporting.InvoicePayments)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits InvoicePaymentPageBase
+
+<PageTitle>ریز پرداخت های فاکتور</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
+        <InvoicePaymentFilters Model="@Filters" />
+    </ReportFiltersBase>
+
+    <InvoicePaymentReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
+</MudContainer>
+
+<script src="/js/report-print.js?v=2"></script>

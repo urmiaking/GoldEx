@@ -1,15 +1,11 @@
 ﻿@attribute [Route(ClientRoutes.Reporting.LedgerAccountDetails)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
-@using GoldEx.Client.Pages.Reporting.Components.Filters
-@using GoldEx.Client.Pages.Reporting.Components.Views
-@using GoldEx.Client.Pages.Reporting.Pages.Base
-
 @inherits LedgerAccountDetailsPageBase
 
 <PageTitle>گردش حساب</PageTitle>
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="pr-0" Items="Breadcrumbs">
+    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>

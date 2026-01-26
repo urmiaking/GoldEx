@@ -1,0 +1,74 @@
+﻿@using GoldEx.Client.Pages.Reporting.ViewModels
+
+@if (Summary != null)
+{
+    <MudCard Elevation="24" Class="mt-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">خلاصه گزارش</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (Summary.PriceUnitSummaries.Any())
+            {
+                <MudGrid Spacing="6">
+                    @foreach (var priceUnit in Summary.PriceUnitSummaries)
+                    {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="12">
+                                <MudCardHeader Class="pa-3">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5" Color="Color.Primary">@priceUnit.PriceUnitTitle</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent Class="pa-3">
+                                    <MudStack Spacing="2">
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">مجموع ارزش کل:</MudText>
+                                            <MudText Typo="Typo.body1">
+                                                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Small" Class="ml-1" />
+                                                @priceUnit.TotalPrice.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                        <MudDivider Class="my-2" />
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">مانده کل:</MudText>
+                                            <MudText Typo="Typo.body1" Color="@GetRemainingColor(priceUnit.TotalRemaining)">
+                                                <MudIcon Icon="@GetRemainingIcon(priceUnit.TotalRemaining)" Size="Size.Small" Class="ml-1" />
+                                                @Math.Abs(priceUnit.TotalRemaining).ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public PurchaseInvoiceFilterVm.PurchaseInvoiceReportSummary? Summary { get; set; }
+
+    private Color GetRemainingColor(decimal amount)
+    {
+        return amount switch
+        {
+            0 => Color.Inherit,
+            < 0 => Color.Error,
+            > 0 => Color.Success
+        };
+    }
+
+    private string? GetRemainingIcon(decimal amount)
+    {
+        return amount switch
+        {
+            0 => null,
+            < 0 => Icons.Material.Outlined.ArrowUpward,
+            > 0 => Icons.Material.Outlined.ArrowDownward
+        };
+    }
+}

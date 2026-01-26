@@ -1,0 +1,35 @@
+﻿@inherits GoldExComponentBase
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column overflow-auto">
+            <InventoryStockList Elevation="0"
+                                Selectable="true"
+                                ShowItemStatus="true"
+                                SelectedItemsChanged="OnSelectedItemsChanged">
+            </InventoryStockList>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   OnClick="Close"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   Variant="Variant.Filled">انصراف</MudButton>
+
+        <MudButton Class="m-2"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="OnSubmit"
+                   Variant="Variant.Filled">
+            <MudText>انتخاب</MudText>
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .mud-dialog-content {
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+    }
+</style>

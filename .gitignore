@@ -365,3 +365,4 @@ FodyWeavers.xsd
 
 /src/App/Server/GoldEx.Server/uploads/*
 /src/App/Server/GoldEx.Server/shared/*
+/src/App/Server/GoldEx.Server/backups/*

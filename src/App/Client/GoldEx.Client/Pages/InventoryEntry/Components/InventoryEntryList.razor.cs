@@ -139,5 +139,4 @@ public partial class InventoryEntryList
 
         return ItemType.Product;
     }
-
 }

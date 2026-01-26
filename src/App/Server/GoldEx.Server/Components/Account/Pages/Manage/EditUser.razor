@@ -16,20 +16,20 @@
 <EditForm Model="ProfileInput" FormName="profile" OnValidSubmit="OnProfileValidSubmitAsync" method="post">
     <DataAnnotationsValidator />
 
-    <MudGrid>
+    <MudGrid Spacing="4">
         <MudItem lg="4" md="12">
-            <MudStaticTextField Variant="Variant.Outlined" Value="@_username" Label="ایمیل" Disabled="true" />
+            <MudStaticTextField Variant="Variant.Outlined" Value="@_username" Label="ایمیل" Disabled="true" Margin="Margin.Dense" />
         </MudItem>
         <MudItem lg="4" md="12">
             <MudStaticTextField Variant="Variant.Outlined" For="@(() => ProfileInput.Name)" @bind-Value="ProfileInput.Name"
-                                Label="نام و نام خانوادگی" />
+                                Label="نام و نام خانوادگی" Margin="Margin.Dense" />
         </MudItem>
         <MudItem lg="4" md="12">
-            <MudStaticTextField Variant="Variant.Outlined" For="@(() => ProfileInput.PhoneNumber)" @bind-Value="ProfileInput.PhoneNumber"
+            <MudStaticTextField Variant="Variant.Outlined" For="@(() => ProfileInput.PhoneNumber)" @bind-Value="ProfileInput.PhoneNumber" Margin="Margin.Dense"
                                 Label="شماره تلفن" UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "tel-national" } })" />
         </MudItem>
         <MudItem xs="12" Class="d-flex justify-content-lg-end">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary"
                              FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Save">ذخیره</MudStaticButton>
         </MudItem>
     </MudGrid>

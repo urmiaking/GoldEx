@@ -1,0 +1,58 @@
+﻿@attribute [Route(ClientRoutes.Reporting.Print.SellInvoices)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"
+                 FromDate="@FromDate"
+                 ToDate="@ToDate"
+                 Data="@_items"
+                 ReportTitle="@($"گزارش فاکتورهای فروش {TitleFilter}")"
+                 Summary="@_summary">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>تاریخ</th>
+                <th>شماره</th>
+                <th>مشتری</th>
+                <th>ارزش کل</th>
+                <th>سود</th>
+                <th>اجرت</th>
+                <th>مالیات</th>
+                <th>مانده</th>
+            </tr>
+        </thead>
+        @if (_items != null)
+        {
+            <tbody>
+                @foreach (var item in _items)
+                {
+                    <tr>
+                        <td>@item.InvoiceDate.ToShortDateString()</td>
+                        <td>@item.InvoiceNumber</td>
+                        <td>@item.CustomerName</td>
+                        <td class="text-end">@item.TotalPrice.ToCurrencyFormat(item.PriceUnit)</td>
+                        <td class="text-end">@item.TotalProfit.ToCurrencyFormat(item.PriceUnit)</td>
+                        <td class="text-end">@item.TotalWage.ToCurrencyFormat(item.PriceUnit)</td>
+                        <td class="text-end">@item.TotalTax.ToCurrencyFormat(item.PriceUnit)</td>
+                        <td class="text-end">
+                            <div class="transaction-amount @(GetRemainingClass(item.RemainingPrice))">
+                                <span class="icon transaction-icon @(GetRemainingIconClass(item.RemainingPrice))"></span>
+                                <span>@GetRemainingAmount(item.RemainingPrice, item.PriceUnit)</span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+</ReportPrintBase>
+
+<script src="/js/report-print.js?v=6"></script>

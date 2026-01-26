@@ -6,7 +6,7 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_productValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <MudGrid>
+            <MudGrid Spacing="4">
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect For="() => Model.ProductType"
                                Label="@Model.GetDisplayName(() => Model.ProductType)"
@@ -60,7 +60,7 @@
                 @if (Model.ProductType is not ProductType.MoltenGold)
                 {
                     <MudItem xs="12" md="6" lg="6">
-                        <div class="d-flex flex-row align-center">
+                        <div class="d-flex flex-row align-center gap-2">
                             <MudSelect T="ProductCategoryVm ?"
                                        Value="Model.CategoryVm"
                                        Clearable="true"

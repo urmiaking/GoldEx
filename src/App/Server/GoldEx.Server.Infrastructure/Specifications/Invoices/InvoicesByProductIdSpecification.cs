@@ -9,7 +9,7 @@ public class InvoicesByProductIdSpecification : SpecificationBase<Invoice>
 {
     public InvoicesByProductIdSpecification(ProductId productId, InvoiceType? invoiceType = null)
     {
-        AddCriteria(x => x.ProductItems.Any(i => i.ProductId == productId));
+        AddCriteria(x => x.ProductItems.Any(i => i.ProductId == productId) || x.UsedProducts.Any(y => y.ProductId == productId));
 
         if (invoiceType.HasValue)
         {

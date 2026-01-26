@@ -1,11 +1,12 @@
 ﻿@inherits GoldExComponentBase
 
-
 <MudDialog>
     <DialogContent>
         <div class="d-flex flex-column overflow-auto">
-            <InventoryStockList ItemStatus="ItemStatus" ItemType="ItemType" Elevation="0"
+            <InventoryStockList ItemStatus="ItemStatus" 
+                                Elevation="0"
                                 SelectableTypes="SelectableTypes"
+                                ShowItemStatus="false"
                                 Selectable="true" SelectedItemsChanged="OnSelectedItemsChanged">
             </InventoryStockList>
         </div>

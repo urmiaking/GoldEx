@@ -1,0 +1,126 @@
+﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using GoldEx.Shared.DTOs.Reporting
+
+@inherits GoldExComponentBase
+
+@if (Items is null || IsLoading)
+{
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
+}
+else
+{
+    <MudTable Items="@Items"
+              Virtualize="true"
+              Dense="true"
+              Hover="true"
+              Bordered="true"
+              Striped="true"
+              FixedHeader="true"
+              Breakpoint="Breakpoint.Sm"
+              SortLabel="مرتب ‌سازی"
+              ContainerClass="responsive-table-toolbar"
+              Elevation="24">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">گزارش فاکتورهای خرید</MudText>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudButton StartIcon="@Icons.Material.Filled.Print"
+                           Class="ml-2"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           OnClick="@(() => OnPrintReport.InvokeAsync())">
+                    پرینت
+                </MudButton>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Print"
+                               Color="Color.Success"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
+            </MudHidden>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PurchaseInvoiceRpResponse, object>(x => x.InvoiceDate)">
+                    تاریخ
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PurchaseInvoiceRpResponse, object>(x => x.InvoiceNumber)">
+                    شماره
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PurchaseInvoiceRpResponse, object>(x => x.CustomerName)">
+                    طرف حساب
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PurchaseInvoiceRpResponse, object>(x => x.TotalPrice)">
+                    ارزش کل
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PurchaseInvoiceRpResponse, object>(x => x.RemainingPrice)">
+                    مانده
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                عملیات
+            </MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="تاریخ">
+                @if (context.DueDate.HasValue)
+                {
+                    <MudTooltip Text="@($"تاریخ سررسید: {context.DueDate.Value.ToShortDateString()}")" Arrow="true" Color="Color.Error">
+                        <MudText Typo="Typo.body2" Color="Color.Error">@context.InvoiceDate.ToShortDateString()</MudText>
+                    </MudTooltip>
+                }
+                else
+                {
+                    @context.InvoiceDate.ToShortDateString()
+                }
+            </MudTd>
+            <MudTd DataLabel="شماره">@context.InvoiceNumber</MudTd>
+            <MudTd DataLabel="طرف حساب">@context.CustomerName</MudTd>
+            <MudTd DataLabel="ارزش کل">@context.TotalPrice.ToCurrencyFormat(context.PriceUnit)</MudTd>
+            <MudTd DataLabel="مانده">
+                <div class="d-flex gap-2">
+                    <MudText Typo="Typo.body2" Color="@GetAmountColor(context)">
+                        @GetAmount(context)
+                    </MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="مشاهده فاکتور" Arrow="true" Color="Color.Info">
+                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                       Size="Size.Small"
+                                       Color="Color.Info"
+                                       Variant="Variant.Filled"
+                                       OnClick="@(() => OnViewInvoice(context.Id))" />
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <PurchaseInvoiceSummary Summary="_summary" />
+}

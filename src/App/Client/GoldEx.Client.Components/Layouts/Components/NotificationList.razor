@@ -1,77 +1,159 @@
-﻿<div class="notification-popover">
-    <div class="notification-list">
-        @if (Items.Any())
-        {
-            @* <div class="notification-header">
-                <MudText Typo="Typo.h6">اعلان ها</MudText>
-                <MudButton Size="Size.Small"
-                           Variant="Variant.Text"
-                           StartIcon="@Icons.Material.Filled.DoneAll"
-                           OnClick="() => OnMarkAllAsRead.InvokeAsync()">
-                    همه را خواندم
-                </MudButton>
-            </div>
-            <MudDivider /> *@
-
-            @foreach (var notification in Items)
+﻿<div class="notification-popover overflow-auto">
+    <MudTabs Centered>
+        <MudTabPanel Text="جدید" 
+                     BadgeData="@(UnreadItems.Any() ? UnreadItems.Count : null)" 
+                     BadgeColor="Color.Error"
+                     Icon="@Icons.Material.Outlined.NotificationAdd">
+            @if (UnreadItems.Any())
             {
-                <div class="swipeable-notification"
-                     @ontouchstart="(e) => HandleTouchStart(e, notification.Id)"
-                     @ontouchmove="(e) => HandleTouchMove(e, notification.Id)"
-                     @ontouchend="(e) => HandleTouchEnd(e, notification.Id)">
+                <!-- TODO: Add virtualizer -->
+                <MudList T="string" Class="notification-list">
+                    @foreach (var notification in UnreadItems)
+                    {
+                        <div class="swipeable-notification"
+                             @ontouchstart="(e) => HandleTouchStart(e, notification.Id)"
+                             @ontouchmove="(e) => HandleTouchMove(e, notification.Id)"
+                             @ontouchend="(e) => HandleTouchEnd(e, notification.Id)">
 
-                    <MudListItem Class="notification-item" T="string">
-                        <div class="notification-content d-flex flex-column gap-3">
-                            <MudText Typo="Typo.h6" Class="notification-title">
-                                @notification.Title
-                            </MudText>
-                            <MudText Typo="Typo.body2" Class="notification-message">
-                                @notification.Message
-                            </MudText>
+                            <MudListItem Class="notification-item" T="string">
+                                <div class="notification-content d-flex flex-column gap-3">
+                                    <div class="d-flex justify-content-between align-center">
+                                        <MudText Typo="Typo.h6" Class="notification-title">
+                                            @notification.Title
+                                        </MudText>
+                                        <MudText Typo="Typo.caption">
+                                            @notification.CreatedAt.ToString("hh:mm yyyy-MM-dd")
+                                        </MudText>
+                                    </div>
+                                    <MudText Typo="Typo.body2" Class="notification-message">
+                                        @notification.Message
+                                    </MudText>
 
-                            <div class="notification-actions">
-                                <div class="notification-buttons">
-                                    @if (notification.Buttons.Any())
-                                    {
-                                        @foreach (var button in notification.Buttons)
-                                        {
-                                            <MudButton Size="Size.Small"
-                                                       Variant="Variant.Filled"
-                                                       Color="@ConvertButtonColor(button.Color)"
-                                                       StartIcon="@ConvertButtonIcon(button.ButtonIcon)"
-                                                       OnClick="() => HandleButtonClick((button.Action, button.ActionType, notification.InvoiceId))">
-                                                @button.Text
-                                            </MudButton>
-                                        }
-                                    }
+                                    <div class="notification-actions">
+                                        <div class="notification-buttons">
+                                            @if (notification.Buttons.Any())
+                                            {
+                                                @foreach (var button in notification.Buttons)
+                                                {
+                                                    <MudButton Size="Size.Small"
+                                                               Variant="Variant.Filled"
+                                                               Color="@ConvertButtonColor(button.Color)"
+                                                               StartIcon="@ConvertButtonIcon(button.ButtonIcon)"
+                                                               OnClick="() => HandleButtonClick((button.Action, button.ActionType, notification.InvoiceId))">
+                                                        @button.Text
+                                                    </MudButton>
+                                                }
+                                            }
+                                        </div>
+
+                                        <MudButton Size="Size.Small"
+                                                   Variant="Variant.Text"
+                                                   Color="Color.Secondary"
+                                                   EndIcon="@Icons.Material.Filled.Done"
+                                                   OnClick="() => OnMarkAsRead.InvokeAsync(notification.Id)">
+                                            خواندم
+                                        </MudButton>
+                                    </div>
                                 </div>
+                            </MudListItem>
 
-                                <MudButton Size="Size.Small"
-                                           Variant="Variant.Text"
-                                           Color="Color.Secondary"
-                                           EndIcon="@Icons.Material.Filled.Done"
-                                           OnClick="() => OnMarkAsRead.InvokeAsync(notification.Id)">
-                                    خواندم
-                                </MudButton>
+                            <div class="swipe-action-indicator">
+                                <MudIcon Icon="@Icons.Material.Filled.Done" Color="Color.Success" />
                             </div>
                         </div>
-                    </MudListItem>
-
-                    <div class="swipe-action-indicator">
-                        <MudIcon Icon="@Icons.Material.Filled.Done" Color="Color.Success" />
+                        <MudDivider />
+                    }
+                </MudList>
+            }
+            else
+            {
+                <div class="d-flex flex-column justify-center notification-list">
+                    <div class="align-center d-flex flex-column gap-2 no-notifications">
+                        <MudIcon Icon="@Icons.Material.Outlined.NotificationsNone" Size="Size.Large" Style="font-size: 8rem;" />
+                        <MudText Typo="Typo.body1" Align="Align.Center">
+                            هیچ اعلانی وجود ندارد
+                        </MudText>
                     </div>
                 </div>
-                <MudDivider />
             }
-        }
-        else
-        {
-            <div class="no-notifications">
-                <MudText Typo="Typo.body1" Align="Align.Center">
-                    هیچ اعلانی وجود ندارد
-                </MudText>
-            </div>
-        }
-    </div>
+        </MudTabPanel>
+        <MudTabPanel Text="بایگانی"
+                     Icon="@Icons.Material.Outlined.NotificationsOff">
+            @if (ReadItems.Any())
+            {
+                <MudList T="string" Class="notification-list">
+                    @foreach (var notification in ReadItems)
+                    {
+                        <div class="swipeable-notification"
+                             @ontouchstart="(e) => HandleTouchStart(e, notification.Id)"
+                             @ontouchmove="(e) => HandleTouchMove(e, notification.Id)"
+                             @ontouchend="(e) => HandleTouchEnd(e, notification.Id)">
+
+                            <MudListItem Class="notification-item" T="string">
+                                <div class="notification-content d-flex flex-column gap-3">
+                                    <div class="d-flex justify-content-between align-center">
+                                        <MudText Typo="Typo.h6" Class="notification-title">
+                                            @notification.Title
+                                        </MudText>
+                                        <MudText Typo="Typo.caption">
+                                            @notification.CreatedAt.ToString("hh:mm yyyy-MM-dd")
+                                        </MudText>
+                                    </div>
+                                    <MudText Typo="Typo.body2" Class="notification-message">
+                                        @notification.Message
+                                    </MudText>
+
+                                    <div class="notification-actions">
+                                        <div class="notification-buttons">
+                                            @if (notification.Buttons.Any())
+                                            {
+                                                @foreach (var button in notification.Buttons)
+                                                {
+                                                    <MudButton Size="Size.Small"
+                                                               Variant="Variant.Filled"
+                                                               Color="@ConvertButtonColor(button.Color)"
+                                                               StartIcon="@ConvertButtonIcon(button.ButtonIcon)"
+                                                               OnClick="() => HandleButtonClick((button.Action, button.ActionType, notification.InvoiceId))">
+                                                        @button.Text
+                                                    </MudButton>
+                                                }
+                                            }
+                                        </div>
+                                        <MudIconButton Size="Size.Small"
+                                                       Variant="Variant.Filled"
+                                                       Color="Color.Error"
+                                                       Icon="@Icons.Material.Filled.Delete"
+                                                       OnClick="() => OnDelete.InvokeAsync(notification.Id)" />
+                                    </div>
+                                </div>
+                            </MudListItem>
+
+                            <div class="swipe-action-indicator">
+                                <MudIcon Icon="@Icons.Material.Filled.Done" Color="Color.Success" />
+                            </div>
+                        </div>
+                        <MudDivider />
+                    }
+                </MudList>
+            }
+            else
+            {
+                <div class="d-flex flex-column justify-center notification-list">
+                    <div class="align-center d-flex flex-column gap-2 no-notifications">
+                        <MudIcon Icon="@Icons.Material.Outlined.NotificationsNone" Size="Size.Large" Style="font-size: 8rem;" />
+                        <MudText Typo="Typo.body1" Align="Align.Center">
+                            هیچ اعلانی وجود ندارد
+                        </MudText>
+                    </div>
+                </div>
+            }
+        </MudTabPanel>
+    </MudTabs>
 </div>
 
+<style>
+    .mud-tab-badge {
+        margin-bottom: 16px;
+        margin-right: 8px;
+    }
+</style>

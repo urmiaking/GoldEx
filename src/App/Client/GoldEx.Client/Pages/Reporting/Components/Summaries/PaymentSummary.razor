@@ -1,0 +1,90 @@
+﻿@using GoldEx.Client.Pages.Reporting.ViewModels
+
+@if (Summary != null)
+{
+    <MudCard Elevation="24" Class="mt-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">خلاصه گزارش</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (Summary.PriceUnitSummaries.Any())
+            {
+                <MudGrid Spacing="6">
+                    @foreach (var priceUnit in Summary.PriceUnitSummaries)
+                    {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="12">
+                                <MudCardHeader Class="pa-3">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5" Color="Color.Primary">@priceUnit.PriceUnitTitle</MudText>
+                                        @* <div class="d-flex justify-content-between align-center">
+                                            <MudText Typo="Typo.h5" Color="Color.Primary">@priceUnit.PriceUnitTitle</MudText>
+                                            @if (priceUnit.AvgExchangeRate.HasValue && priceUnit.AvgExchangeRate.Value != 0)  
+                                            {  
+                                                <MudText Typo="Typo.body2" Color="Color.Info">
+                                                    نرخ تبدیل میانگین: @priceUnit.AvgExchangeRate.Value.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                                </MudText>  
+                                            }  
+                                        </div> *@
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent Class="pa-3">
+                                    <MudStack Spacing="2">
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">مجموع دریافتی ها:</MudText>
+                                            <MudText Typo="Typo.body1" Color="Color.Success">
+                                                <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="ml-1" Color="Color.Success" />
+                                                @priceUnit.TotalReceived.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">مجموع پرداختی ها:</MudText>
+                                            <MudText Typo="Typo.body1" Color="Color.Error">
+                                                <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="ml-1" Color="Color.Error" />
+                                                @priceUnit.TotalPaid.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                        <MudDivider Class="my-2"/>
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">خالص:</MudText>
+                                            <MudText Typo="Typo.body1" Color="@GetRemainingColor(priceUnit.NetAmount)">
+                                                <MudIcon Icon="@GetRemainingIcon(priceUnit.NetAmount)" Size="Size.Small" Class="ml-1"/>
+                                                @Math.Abs(priceUnit.NetAmount).ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public PaymentFilterVm.PaymentReportSummary? Summary { get; set; }
+
+    private Color GetRemainingColor(decimal amount)
+    {
+        return amount switch
+        {
+            0 => Color.Inherit,
+            < 0 => Color.Error,
+            > 0 => Color.Success
+        };
+    }
+
+    private string? GetRemainingIcon(decimal amount)
+    {
+        return amount switch
+        {
+            0 => null,
+            < 0 => Icons.Material.Outlined.ArrowUpward,
+            > 0 => Icons.Material.Outlined.ArrowDownward
+        };
+    }
+}

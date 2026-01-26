@@ -7,7 +7,7 @@ namespace GoldEx.Server.Domain.SettingAggregate;
 public readonly record struct BarcodePrintSettingsId(Guid Value);
 public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
 {
-    private readonly List<BarcodePositionItem> _positionItems = new();
+    private readonly List<BarcodePositionItem> _positionItems = [];
 
     public int LabelWidth { get; private set; }
     public int LabelHeight { get; private set; }
@@ -26,13 +26,13 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
 
     public static BarcodePrintSettings CreateDefault()
     {
-        var settings = new BarcodePrintSettings(300, 150);
+        var settings = new BarcodePrintSettings(250, 50);
 
         // تنظیمات پیش‌فرض
-        settings.AddPositionItem(BarcodePosition.TopLeft, BarcodePrintableItem.Barcode, 0, true, 14, 5);
-        settings.AddPositionItem(BarcodePosition.TopRight, BarcodePrintableItem.ProductName, 0, true, 12, 3);
-        settings.AddPositionItem(BarcodePosition.BottomLeft, BarcodePrintableItem.Weight, 0, true, 11, 3);
-        settings.AddPositionItem(BarcodePosition.BottomRight, BarcodePrintableItem.Wage, 0, true, 11, 3);
+        settings.AddPositionItem(BarcodePosition.TopLeft, BarcodePrintableItem.Weight, 0, true, 18, 5);
+        settings.AddPositionItem(BarcodePosition.TopRight, BarcodePrintableItem.Barcode, 0, true, 12, 5);
+        settings.AddPositionItem(BarcodePosition.BottomLeft, BarcodePrintableItem.Wage, 0, true, 16, 5);
+        settings.AddPositionItem(BarcodePosition.BottomRight, BarcodePrintableItem.ProductName, 0, true, 10, 5);
 
         return settings;
     }
@@ -73,27 +73,8 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
         _positionItems.Add(item);
     }
 
-    public void RemovePositionItem(BarcodePositionItemId itemId)
-    {
-        var item = _positionItems.FirstOrDefault(x => x.Id == itemId);
-        if (item != null)
-            _positionItems.Remove(item);
-    }
-
-    public void ClearPosition(BarcodePosition position)
-    {
-        _positionItems.RemoveAll(x => x.Position == position);
-    }
-
     public void ClearAll()
     {
         _positionItems.Clear();
-    }
-
-    public IEnumerable<BarcodePositionItem> GetItemsForPosition(BarcodePosition position)
-    {
-        return _positionItems
-            .Where(x => x.Position == position && x.IsVisible)
-            .OrderBy(x => x.Order);
     }
 }

@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.InvoicePaymentAggregate;
+﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 
@@ -6,17 +7,30 @@ namespace GoldEx.Server.Application.Utilities;
 
 public static class PaymentDescriptionBuilder
 {
-    public static string Build(InvoicePayment payment)
+    public static string Build(InvoicePayment payment, bool includeAccountDetails = false)
     {
         return payment.PaymentType switch
         {
-            PaymentType.InternalCash => GetInternalCashTitle(payment),
+            PaymentType.InternalCash => GetInternalCashTitle(payment, includeAccountDetails),
             PaymentType.UsedGoldInventory => GetGoldPaymentTitle(PaymentType.UsedGoldInventory, payment),
             PaymentType.MoltenGoldInventory => GetGoldPaymentTitle(PaymentType.MoltenGoldInventory, payment),
-            PaymentType.CustomerTransfer => $"حواله به {payment.LedgerAccount?.Customer?.FullName}",
+            PaymentType.CustomerTransfer => GetCustomerTransferTitle(payment),
+            PaymentType.TransferedPayment => GetTransferedPaymentTitle(payment),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
+
+    private static string GetCustomerTransferTitle(InvoicePayment payment)
+    {
+        var text = $"حواله مشتری؛ پرداخت توسط {payment.LedgerAccount?.Customer?.FullName}";
+
+        if (payment.TargetInvoice != null) 
+            text += $" بابت فاکتور {payment.TargetInvoice?.InvoiceType.GetDisplayName()} شماره {payment.TargetInvoice?.InvoiceNumber}";
+
+        return text;
+    }
+
+    private static string GetTransferedPaymentTitle(InvoicePayment payment) => payment.Note ?? "حواله";
 
     private static string GetGoldPaymentTitle(PaymentType paymentType, InvoicePayment payment)
     {
@@ -41,9 +55,24 @@ public static class PaymentDescriptionBuilder
         throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, null);
     }
 
-    private static string GetInternalCashTitle(InvoicePayment payment)
+    private static string GetInternalCashTitle(InvoicePayment payment, bool includeAccountDetails)
     {
         var text = "پرداخت نقدی";
+
+        if (includeAccountDetails)
+        {
+            switch (payment.PaymentSide)
+            {
+                case PaymentSide.Pay:
+                    text += " از حساب";
+                    break;
+                case PaymentSide.Receive:
+                    text += " به حساب";
+                    break;
+            }
+
+            text += $" {payment.SourceFinancialAccount?.GetAccountTypeText()}";
+        }
 
         var exchangeRate = payment.ExchangeRate < 1 ? Math.Round(1 / payment.ExchangeRate.Value, 2) : payment.ExchangeRate;
 

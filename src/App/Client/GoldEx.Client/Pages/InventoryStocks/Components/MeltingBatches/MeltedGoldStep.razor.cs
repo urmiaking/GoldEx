@@ -40,4 +40,13 @@ public partial class MeltedGoldStep
             used += 3; // Financial account field
         return 12 - used; // Remaining for description
     }
+
+    private Task<IEnumerable<GetFinancialAccountTitleResponse>> SearchFinancialAccountsAsync(string value, CancellationToken token)
+    {
+        // Return all accounts if search is empty, otherwise filter  
+        return Task.FromResult(string.IsNullOrEmpty(value)
+            ? FinancialAccounts
+            : FinancialAccounts.Where(acc => acc.Title.Contains(value,
+                StringComparison.InvariantCultureIgnoreCase)));
+    }
 }

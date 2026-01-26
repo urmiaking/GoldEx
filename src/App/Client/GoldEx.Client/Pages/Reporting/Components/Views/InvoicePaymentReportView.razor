@@ -1,0 +1,104 @@
+﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using GoldEx.Shared.DTOs.Reporting
+
+@inherits GoldExComponentBase
+
+@if (Items is null || IsLoading)
+{
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
+}
+else
+{
+    <MudTable Items="@Items"
+              Virtualize="true"
+              Dense="true"
+              Hover="true"
+              Bordered="true"
+              Striped="true"
+              FixedHeader="true"
+              Breakpoint="Breakpoint.Sm"
+              SortLabel="مرتب ‌سازی"
+              ContainerClass="responsive-table-toolbar"
+              Elevation="24">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">گزارش ریز پرداخت های فاکتور</MudText>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudButton StartIcon="@Icons.Material.Filled.Print"
+                           Class="ml-2"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           OnClick="@(() => OnPrintReport.InvokeAsync())">
+                    پرینت
+                </MudButton>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Print"
+                               Color="Color.Success"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
+            </MudHidden>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InvoicePaymentRpResponse, object>(x => x.PaymentDate)">
+                    تاریخ
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InvoicePaymentRpResponse, object>(x => x.Amount)">
+                    مبلغ
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InvoicePaymentRpResponse, object>(x => x.CustomerName)">
+                    طرف حساب
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>شرح</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="تاریخ">@context.PaymentDate.ToShortDateString()</MudTd>
+            <MudTd DataLabel="مبلغ">
+                <div class="d-flex gap-2">
+                    <MudIcon Size="Size.Small" Color="GetAmountColor(context)" Icon="@GetAmountIcon(context)"></MudIcon>
+                    <MudText Typo="Typo.body2" Color="@GetAmountColor(context)">
+                        @GetAmount(context)
+                    </MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="طرف حساب">@context.CustomerName</MudTd>
+            <MudTd DataLabel="شرح">@context.Description</MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="مشاهده فاکتور" Arrow="true" Color="Color.Info">
+                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                       Size="Size.Small"
+                                       Color="Color.Info"
+                                       Variant="Variant.Filled"
+                                       OnClick="@(() => OnViewInvoice(context.InvoiceId))" />
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <InvoicePaymentSummary Summary="_summary" />
+}

@@ -5,4 +5,5 @@ namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
 public interface INotificationRepository : IRepository<Notification>,
     ICreateRepository<Notification>,
-    IUpdateRepository<Notification>;
+    IUpdateRepository<Notification>,
+    IDeleteRepository<Notification>;

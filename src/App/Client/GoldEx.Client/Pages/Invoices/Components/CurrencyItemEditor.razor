@@ -60,7 +60,7 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
-                    <div class="d-flex flex-row align-center">  
+                    <div class="d-flex flex-row align-center gap-2">  
                         <MudSelect Value="@Model.FinancialAccount"  
                                    ValueChanged="OnFinancialAccountChanged"
                                    T="GetFinancialAccountTitleResponse?"  

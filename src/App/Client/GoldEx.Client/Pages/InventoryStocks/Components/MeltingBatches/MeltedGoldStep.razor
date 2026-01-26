@@ -59,43 +59,43 @@
                           Margin="Margin.Dense" />
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <div style="display: flex; gap: 8px; align-items: center;">  
-                <MudNumericField Adornment="Adornment.End"  
-                                 AdornmentText="@Model.FeePriceUnit?.Title"  
-                                 For="() => Model.FeeAmount"  
-                                 dir="ltr"  
-                                 Format="#,##0.##"  
-                                 HideSpinButtons="true"  
-                                 Immediate="true"  
-                                 Margin="Margin.Dense"  
-                                 Label="@(Model.GetDisplayName(() => Model.FeeAmount))"  
-                                 T="decimal?"  
-                                 @bind-Value="Model.FeeAmount"  
-                                 Variant="Variant.Outlined"  
-                                 Class="flex-grow-1" />  
-      
-                <MudMenu @bind-Open="_feeFieldMenuOpen"   
-                         ActivationEvent="@MouseEvent.LeftClick">  
-                    <ActivatorContent>  
-                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />  
-                    </ActivatorContent>  
-                    <ChildContent>  
-                        @foreach (var item in PriceUnits)  
-                        {  
-                            <MudMenuItem OnClick="() => OnSelectFeePriceUnit.InvokeAsync(item)">  
-                                <div style="display: flex; align-items: center; gap: 8px;">  
-                                    @if (item.HasIcon)  
-                                    {  
-                                        <MudAvatar Size="Size.Small" Color="Color.Primary">  
-                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" />  
-                                        </MudAvatar>  
-                                    }  
-                                    @item.Title  
-                                </div>  
-                            </MudMenuItem>  
-                        }  
-                    </ChildContent>  
-                </MudMenu>  
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <MudNumericField Adornment="Adornment.End"
+                                 AdornmentText="@Model.FeePriceUnit?.Title"
+                                 For="() => Model.FeeAmount"
+                                 dir="ltr"
+                                 Format="#,##0.##"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 Margin="Margin.Dense"
+                                 Label="@(Model.GetDisplayName(() => Model.FeeAmount))"
+                                 T="decimal?"
+                                 @bind-Value="Model.FeeAmount"
+                                 Variant="Variant.Outlined"
+                                 Class="flex-grow-1" />
+
+                <MudMenu @bind-Open="_feeFieldMenuOpen"
+                         ActivationEvent="@MouseEvent.LeftClick">
+                    <ActivatorContent>
+                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        @foreach (var item in PriceUnits)
+                        {
+                            <MudMenuItem OnClick="() => OnSelectFeePriceUnit.InvokeAsync(item)">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    @if (item.HasIcon)
+                                    {
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" />
+                                        </MudAvatar>
+                                    }
+                                    @item.Title
+                                </div>
+                            </MudMenuItem>
+                        }
+                    </ChildContent>
+                </MudMenu>
             </div>
         </MudItem>
 
@@ -118,21 +118,21 @@
         @if (Model.FeeAmount.HasValue)
         {
             <MudItem xs="12" sm="6" md="3">
-                <div class="d-flex align-items-center gap-1">
-                    <MudSelect @bind-Value="@Model.FinancialAccount"
-                               T="GetFinancialAccountTitleResponse?"
-                               For="@(() => Model.FinancialAccount)"
-                               Label="@Model.GetDisplayName(() => Model.FinancialAccount)"
-                               Margin="Margin.Dense"
-                               Variant="Variant.Outlined"
-                               ToStringFunc="@(acc => acc?.Title)">
-                        @foreach (var account in FinancialAccounts)
-                        {
-                            <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
-                                   Color="Color.Primary" OnClick="() => OnAddFinancialAccount.InvokeAsync()" />
+                <div class="d-flex align-center gap-2">
+                    <MudAutocomplete @bind-Value="@Model.FinancialAccount"
+                                     T="GetFinancialAccountTitleResponse?"
+                                     For="@(() => Model.FinancialAccount)"
+                                     Label="@Model.GetDisplayName(() => Model.FinancialAccount)"
+                                     Margin="Margin.Dense"
+                                     InputClass="text-truncate"
+                                     Variant="Variant.Outlined"
+                                     DebounceInterval="500"
+                                     Placeholder="جستجوی حساب مالی..."
+                                     MaxItems="100"
+                                     ToStringFunc="@(acc => acc?.Title)"
+                                     SearchFunc="SearchFinancialAccountsAsync"
+                                     ResetValueOnEmptyText="true" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount.InvokeAsync()" />
                 </div>
             </MudItem>
         }

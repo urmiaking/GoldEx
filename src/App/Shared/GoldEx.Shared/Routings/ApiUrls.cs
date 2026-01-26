@@ -95,9 +95,6 @@ public class ApiUrls
 
     public class Products
     {
-        public static string GetList(RequestFilter filter, ProductFilter productFilter) => BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetList)
-            .AppendQueryString(filter).AppendQueryString(productFilter);
-
         public static string GetList(string name, ProductType productType) =>
             BuildUrl(ApiRoutes.Products.Base, ApiRoutes.Products.GetListByName)
                 .FormatRoute(new { productType })
@@ -231,6 +228,11 @@ public class ApiUrls
 
         public static string DownloadPdf(Guid id) =>
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.DownloadPdf).FormatRoute(new { id });
+
+        public static string GetCustomerInvoices(RequestFilter filter, Guid customerId, Guid priceUnitId) =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetCustomerInvoices)
+                .FormatRoute(new { customerId, priceUnitId })
+                .AppendQueryString(filter);
     }
 
     public class Reports
@@ -363,6 +365,10 @@ public class ApiUrls
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetAvailableItemAmount)
                 .FormatRoute(new { itemId, itemType });
 
+        public static string GetTitle(ItemType itemType, Guid id) =>
+            BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.GetTitle)
+                .FormatRoute(new { itemType, id });
+
         public static string DeleteProduct(Guid productId) =>
             BuildUrl(ApiRoutes.InventoryStocks.Base, ApiRoutes.InventoryStocks.DeleteProduct)
                 .FormatRoute(new { productId });
@@ -394,12 +400,16 @@ public class ApiUrls
 
     public class Notifications
     {
-        public static string GetList()
-            => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.GetList);
+        public static string GetList(bool? isRead)
+            => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.GetList)
+                .AppendQueryString(new { isRead });
         public static string MarkAsRead(Guid id)
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAsRead).FormatRoute(new { id });
         public static string MarkAllAsRead()
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAllAsRead);
+
+        public static string Delete(Guid id) => 
+            BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.Delete).FormatRoute(new { id });
     }
 
     public class MeltingBatches
@@ -528,6 +538,10 @@ public class ApiUrls
     {
         public static string Exit() =>
             BuildUrl(ApiRoutes.InventoryExits.Base, ApiRoutes.InventoryExits.Exit);
+
+        public static string GetList(RequestFilter filter) =>
+            BuildUrl(ApiRoutes.InventoryExits.Base, ApiRoutes.InventoryExits.GetList)
+                .AppendQueryString(filter);
     }
 
     public class CoinInstances
@@ -554,5 +568,61 @@ public class ApiUrls
         public static string GetCustomerTransactions(CustomerTransactionRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCustomerTransactions)
                 .AppendQueryString(request);
+
+        public static string GetSellInvoices(SellInvoiceRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetSellInvoices)
+                .AppendQueryString(request);
+
+        public static string GetPurchaseInvoices(PurchaseInvoiceRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetPurchaseInvoices)
+                .AppendQueryString(request);
+
+        public static string GetPayments(PaymentRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetPayments)
+                .AppendQueryString(request);
+
+        public static string GetInvoicePayments(InvoicePaymentRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetInvoicePayments)
+                .AppendQueryString(request);
+
+        public static string GetInventoryKardex(InventoryKardexRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetInventoryKardex)
+                .AppendQueryString(request);
+
+        public static string GetProductInventory(ProductInventoryRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetProductInventory)
+                .AppendQueryString(request);
+
+        public static string GetCoinInventory(CoinInventoryRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCoinInventory)
+                .AppendQueryString(request);
+
+        public static string GetCurrencyInventory(CurrencyInventoryRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCurrencyInventory)
+                .AppendQueryString(request);
+    }
+
+    public class SmsTemplates
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.SmsTemplates.Base, ApiRoutes.SmsTemplates.GetList);
+
+        public static string Update() =>
+            BuildUrl(ApiRoutes.SmsTemplates.Base, ApiRoutes.SmsTemplates.Update);
+    }
+
+    public class SmsLogs
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.SmsLogs.Base, ApiRoutes.SmsLogs.GetList);
+    }
+
+    public class Backups
+    {
+        public static string GetFilePath() =>
+            BuildUrl(ApiRoutes.Backups.Base, ApiRoutes.Backups.GetFile);
+
+        public static string Restore() =>
+            BuildUrl(ApiRoutes.Backups.Base, ApiRoutes.Backups.Restore);
     }
 }

@@ -2,7 +2,7 @@
 using GoldEx.Client.Pages.Reporting.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 
-namespace GoldEx.Client.Pages.Reporting.Extensions;
+namespace GoldEx.Client.Extensions;
 
 public abstract class QueryPersistedReportPage<TFilter> : GoldExComponentBase
     where TFilter : ReportFilterVmBase, new()
@@ -13,10 +13,10 @@ public abstract class QueryPersistedReportPage<TFilter> : GoldExComponentBase
     protected abstract void ReadQueryToFilter();
     protected abstract object WriteFilterToQuery();
 
-    protected override Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         ReadQueryToFilter();
-        return Task.CompletedTask;
+        base.OnParametersSet();
     }
 
     protected void PersistFiltersToQuery()
