@@ -47,7 +47,7 @@ public partial class CustomerBalanceReportPrint
             MinimumThreshold = MinimumThreshold,
             SearchQuery = SearchQuery,
             Type = type,
-            DateRange = (FromDate.HasValue || ToDate.HasValue)
+            DateRange = FromDate.HasValue || ToDate.HasValue
                 ? new DateRange(FromDate, ToDate)
                 : null
         };
@@ -131,8 +131,7 @@ public partial class CustomerBalanceReportPrint
                         IconType = pu.TotalReceivable >= pu.TotalPayable ? "positive-icon" : "negative-icon"
                     }
                 ]
-        })
-            .ToList();
+        }).ToList();
 
         _summary = new ReportSummaryVm
         {
@@ -152,7 +151,6 @@ public partial class CustomerBalanceReportPrint
             ? "debit"
             : "credit";
     }
-
 
     private string GetTransactionIconClass(CustomerRemainingBalanceRpResponse item)
     {

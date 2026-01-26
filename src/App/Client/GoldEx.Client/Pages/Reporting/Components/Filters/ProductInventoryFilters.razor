@@ -1,0 +1,71 @@
+﻿@inherits GoldExComponentBase
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="ItemType?"
+               Label="@Model.GetDisplayName(() => Model.ItemType)"
+               @bind-Value="Model.ItemType"
+               For="@(() => Model.ItemType)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="ItemType?" Value="@((ItemType?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.SwapHoriz"></MudIcon>
+                <MudText>همه اجناس</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<ItemType>().Where(x => x is not (ItemType.Coin or ItemType.Currency)))
+        {
+            <MudSelectItem Value="item" T="ItemType?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetTypeColor(item)" Icon="@GetTypeIcon(item)"></MudIcon>
+                    <MudText Color="@GetTypeColor(item)">@item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="ItemStatus?"
+               Label="@Model.GetDisplayName(() => Model.ItemStatus)"
+               @bind-Value="Model.ItemStatus"
+               For="@(() => Model.ItemStatus)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="ItemStatus?" Value="@((ItemStatus?)null)">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Color="Color.Info" Icon="@Icons.Material.Outlined.Menu"></MudIcon>
+                <MudText>موجود/فروخته شده</MudText>
+            </MudStack>
+        </MudSelectItem>
+        @foreach (var item in Enum.GetValues<ItemStatus>().Where(x => x is not ItemStatus.Melted))
+        {
+            <MudSelectItem Value="item" T="ItemStatus?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Color="@GetStatusColor(item)" Icon="@GetStatusIcon(item)"></MudIcon>
+                    <MudText>@item.GetDisplayName()</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>
+
+<MudItem xs="12" sm="6" md="2">
+    <MudSelect T="Guid?"
+               Label="@Model.GetDisplayName(() => Model.ProductCategoryId)"
+               @bind-Value="Model.ProductCategoryId"
+               For="@(() => Model.ProductCategoryId)"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense">
+        <MudSelectItem T="Guid?" Value="@((Guid?)null)">همه دسته بندی ها</MudSelectItem>
+        @foreach (var item in _productCategories)
+        {
+            <MudSelectItem Value="item.Id" T="Guid?">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowBackIos" Color="Color.Primary"></MudIcon>
+                    <MudText>@item.Title</MudText>
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudItem>

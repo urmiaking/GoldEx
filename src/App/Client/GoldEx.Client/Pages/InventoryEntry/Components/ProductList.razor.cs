@@ -201,11 +201,6 @@ public partial class ProductList
         }
     }
 
-    private void SyncWithApi()
-    {
-        AddInfoToast("این قابلیت به زودی فعال خواهد شد");
-    }
-
     public int GetLastItemIndexNumber()
     {
         return Model.ProductItems.Count > 0 ? Model.ProductItems.Max(i => i.Index) : 0;

@@ -1,5 +1,8 @@
 ﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
 @using GoldEx.Shared.DTOs.Reporting
+
+@inherits GoldExComponentBase
+
 @if (Items is null || IsLoading)
 {
     if (IsLoading)
@@ -17,6 +20,7 @@
 else
 {
     <MudTable Items="@Items"
+              Virtualize="true"
               Dense="true"
               Hover="true"
               Bordered="true"
@@ -70,6 +74,7 @@ else
                     خالص
                 </MudTableSortLabel>
             </MudTh>
+            <MudTh>عملیات</MudTh>
         </HeaderContent>
 
         <RowTemplate>
@@ -86,6 +91,17 @@ else
                     <MudText Typo="Typo.body2" Color="@GetNetColor(context)">
                         @GetNetAmount(context)
                     </MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudButton Size="@Size.Small"
+                               Variant="@Variant.Filled"
+                               EndIcon="@Icons.Material.Filled.ArrowBack"
+                               OnClick="() => OnViewSource(context)"
+                               Color="Color.Info">
+                        ریز تراکنش ها
+                    </MudButton>
                 </div>
             </MudTd>
         </RowTemplate>

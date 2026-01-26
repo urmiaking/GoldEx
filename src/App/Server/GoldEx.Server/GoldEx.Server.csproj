@@ -50,6 +50,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="backups\" />
 	  <Folder Include="shared\content\blogs\temp\" />
 	  <Folder Include="uploads\icons\" />
 	</ItemGroup>

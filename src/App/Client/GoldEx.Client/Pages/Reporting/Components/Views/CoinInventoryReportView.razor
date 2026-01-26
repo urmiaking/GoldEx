@@ -1,0 +1,107 @@
+﻿@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using GoldEx.Shared.DTOs.Reporting
+
+@inherits GoldExComponentBase
+
+@if (Items is null || IsLoading)
+{
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
+}
+else
+{
+    <MudTable Items="@Items"
+              Virtualize="true"
+              Dense="true"
+              Hover="true"
+              Bordered="true"
+              Striped="true"
+              FixedHeader="true"
+              Breakpoint="Breakpoint.Sm"
+              SortLabel="مرتب ‌سازی"
+              ContainerClass="responsive-table-toolbar"
+              Elevation="24">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">گزارش موجودی سکه</MudText>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudButton StartIcon="@Icons.Material.Filled.Print"
+                           Class="ml-2"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           OnClick="@(() => OnPrintReport.InvokeAsync())">
+                    پرینت
+                </MudButton>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Print"
+                               Color="Color.Success"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
+            </MudHidden>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CoinInventoryRpResponse, object>(x => x.CoinInstance.Barcode)">
+                    بارکد
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CoinInventoryRpResponse, object>(x => x.CoinInstance.Coin.Title)">
+                    عنوان
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CoinInventoryRpResponse, object>(x => x.CoinInstance.Weight)">
+                    وزن
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CoinInventoryRpResponse, object>(x => x.CoinInstance.Fineness)">
+                    عیار
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CoinInventoryRpResponse, object>(x => x.CoinInstance.MintYear ?? 0)">
+                    سال ضرب
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CoinInventoryRpResponse, object>(x => x.CurrentAmount)">
+                    موجود
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<CoinInventoryRpResponse, object>(x => x.SoldAmount)">
+                    فروخته شده
+                </MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="بارکد">@context.CoinInstance.Barcode</MudTd>
+            <MudTd DataLabel="عنوان">@GetCoinTitle(context.CoinInstance)</MudTd>
+            <MudTd DataLabel="وزن">@GetCoinWeight(context.CoinInstance)</MudTd>
+            <MudTd DataLabel="عیار">@context.CoinInstance.Fineness.ToString("G29")</MudTd>
+            <MudTd DataLabel="سال ضرب">@GetCoinMintYear(context.CoinInstance)</MudTd>
+            <MudTd DataLabel="موجود">@context.CurrentAmount.ToString("G29")</MudTd>
+            <MudTd DataLabel="فروخته شده">@context.SoldAmount.ToString("G29")</MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <CoinInventorySummary Summary="@_summary" />
+}

@@ -9,6 +9,6 @@ public partial class List
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
         new("فاکتور ها", href: ClientRoutes.Invoices.Index, icon: Icons.Material.Filled.LibraryBooks),
-        new("لیست", href: null, icon: Icons.Material.Filled.List)
+        new("لیست فاکتورها", href: null, icon: Icons.Material.Filled.List)
     ];
 }

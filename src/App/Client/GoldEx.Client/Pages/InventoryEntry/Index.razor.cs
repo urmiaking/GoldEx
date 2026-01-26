@@ -11,7 +11,7 @@ public partial class Index
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
         new("انبار", href: ClientRoutes.InventoryStocks.Index, icon: Icons.Material.Filled.Warehouse),
-        new("ورود دستی اجناس", href: ClientRoutes.InventoryStocks.InventoryEntry.Index, icon: Icons.Material.Filled.Add)
+        new("ورود دستی", href: ClientRoutes.InventoryStocks.InventoryEntry.Index, icon: Icons.Material.Filled.Add)
     ];
 
     [Inject] private HelpContext HelpContext { get; set; } = default!;

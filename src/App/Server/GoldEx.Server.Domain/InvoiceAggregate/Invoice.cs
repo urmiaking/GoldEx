@@ -440,4 +440,13 @@ public class Invoice : EntityBase<InvoiceId>
     {
         PriceUnit = priceUnit;
     }
+
+    /// <summary>
+    /// Use this method only for navigation properties
+    /// </summary>
+    /// <param name="customer"></param>
+    public void SetCustomer(Customer customer)
+    {
+        Customer = customer;
+    }
 }

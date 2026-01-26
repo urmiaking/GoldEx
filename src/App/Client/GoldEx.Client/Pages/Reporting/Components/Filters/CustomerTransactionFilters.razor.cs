@@ -33,7 +33,6 @@ public partial class CustomerTransactionFilters
         }
 
         await base.OnParametersSetAsync();
-
     }
 
     private async Task<IEnumerable<GetCustomerResponse>?> SearchCustomers(string? customerName, CancellationToken cancellationToken = default)

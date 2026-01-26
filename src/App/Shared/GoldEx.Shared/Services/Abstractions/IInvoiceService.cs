@@ -10,6 +10,7 @@ public interface IInvoiceService
     Task UpdateAsync(Guid id, InvoiceRequestDto request, CancellationToken cancellationToken = default);
     Task<PagedList<GetInvoiceListResponse>> GetListAsync(RequestFilter filter, InvoiceFilter invoiceFilter, 
         Guid? customerId, CancellationToken cancellationToken = default);
+    Task<List<GetTinyInvoiceResponse>> GetCustomerInvoicesAsync(Guid customerId, Guid priceUnitId, RequestFilter filter, CancellationToken cancellationToken = default);
     Task<GetInvoiceResponse> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetInvoiceResponse> GetAsync(long invoiceNumber, InvoiceType invoiceType, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);

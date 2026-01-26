@@ -62,4 +62,100 @@ internal class ReportingService(HttpClient client, JsonSerializerOptions jsonOpt
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<List<SellInvoiceRpResponse>> GetSellInvoicesAsync(SellInvoiceRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetSellInvoices(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<SellInvoiceRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<PurchaseInvoiceRpResponse>> GetPurchaseInvoicesAsync(PurchaseInvoiceRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetPurchaseInvoices(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<PurchaseInvoiceRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<PaymentRpResponse>> GetPaymentsAsync(PaymentRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetPayments(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<PaymentRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<InvoicePaymentRpResponse>> GetInvoicePaymentsAsync(InvoicePaymentRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetInvoicePayments(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<InvoicePaymentRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<InventoryKardexRpResponse>> GetInventoryKardexAsync(InventoryKardexRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetInventoryKardex(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<InventoryKardexRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<ProductInventoryRpResponse>> GetProductInventoryAsync(ProductInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetProductInventory(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<ProductInventoryRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<CoinInventoryRpResponse>> GetCoinInventoryAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetCoinInventory(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<CoinInventoryRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<CurrencyInventoryRpResponse>> GetCurrencyInventoryAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetCurrencyInventory(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<CurrencyInventoryRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

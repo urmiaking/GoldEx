@@ -47,4 +47,76 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         var result = await service.GetCustomerTransactionsAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet(ApiRoutes.Reporting.GetSellInvoices)]
+    public async Task<IActionResult> GetSellInvoicesAsync(
+        [FromQuery] SellInvoiceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetSellInvoicesAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetPurchaseInvoices)]
+    public async Task<IActionResult> GetPurchaseInvoicesAsync(
+        [FromQuery] PurchaseInvoiceRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetPurchaseInvoicesAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetPayments)]
+    public async Task<IActionResult> GetPaymentsAsync(
+        [FromQuery] PaymentRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetPaymentsAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetInvoicePayments)]
+    public async Task<IActionResult> GetInvoicePaymentsAsync(
+        [FromQuery] InvoicePaymentRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetInvoicePaymentsAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetInventoryKardex)]
+    public async Task<IActionResult> GetInventoryKardexAsync(
+        [FromQuery] InventoryKardexRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetInventoryKardexAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetProductInventory)]
+    public async Task<IActionResult> GetProductInventoryAsync(
+        [FromQuery] ProductInventoryRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetProductInventoryAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetCoinInventory)]
+    public async Task<IActionResult> GetCoinInventoryAsync(
+        [FromQuery] CoinInventoryRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetCoinInventoryAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetCurrencyInventory)]
+    public async Task<IActionResult> GetCurrencyInventoryAsync(
+        [FromQuery] CurrencyInventoryRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetCurrencyInventoryAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }

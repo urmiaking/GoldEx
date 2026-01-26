@@ -61,13 +61,20 @@ internal class InvoicePrintService(
                 .ThenInclude(x => x.FinancialAccount)
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product!.MoltenGold!.Assayer)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.SourcePayment!.Invoice!)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.TargetInvoice!)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         var unpaid = item.TotalUnpaidAmount;
         var impact = unpaid * (item.InvoiceType == InvoiceType.Sell ? 1m : -1m); // Sell: + (بدهکار مثبت), Purchase: - (بستانکار منفی)
 
         // مانده قبلی (قبل از CreatedAt)
-        var previousRemaining = await transactionRepository.GetCustomerRemainingListAsync(item.CustomerId, null, item.CreatedAt, cancellationToken);
+        var previousRemaining = await transactionRepository.GetCustomerRemainingListAsync(item.CustomerId,
+            null,
+            item.InvoiceDate.ToDateTime(TimeOnly.FromTimeSpan(item.CreatedAt.TimeOfDay)),
+            cancellationToken);
 
         // مانده پس از فاکتور (previous + impact)
         var afterRemaining = new Dictionary<PriceUnit, decimal>(previousRemaining);

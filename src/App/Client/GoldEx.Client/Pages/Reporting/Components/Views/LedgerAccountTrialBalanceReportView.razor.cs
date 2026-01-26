@@ -13,7 +13,6 @@ public partial class LedgerAccountTrialBalanceReportView
     [Parameter] public bool IsLoading { get; set; }
 
     private LedgerAccountTrialBalanceReportSummary? _summary;
-
     private List<LedgerAccountTrialBalanceRpResponse> _flattenedItems = [];
 
     protected override void OnParametersSet()

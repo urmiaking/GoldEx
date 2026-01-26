@@ -6,6 +6,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Shared.DTOs.InventoryStocks;
+using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
@@ -30,4 +31,7 @@ public interface IInventoryStockRepository : IRepository<InventoryStock>,
         CancellationToken cancellationToken = default);
 
     Task<List<InventoryWeightChartData>> GetInventoryWeightChartDataAsync(WarehouseActionType actionType, CancellationToken cancellationToken = default);
+    Task<List<InventorySummaryData>> GetProductsReportAsync(ProductInventoryRpRequest request, CancellationToken cancellationToken = default);
+    Task<List<InventorySummaryData>> GetCoinsReportAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default);
+    Task<List<InventorySummaryData>> GetCurrenciesReportAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default);
 }

@@ -3,17 +3,17 @@
 @using GoldEx.Client.Pages.InventoryEntry.Components
 @inherits GoldExComponentBase
 
-<PageTitle>تاریخچه</PageTitle>
+<PageTitle>تاریخچه ورود دستی</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
-    <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center">تاریخچه ورود دستی اجناس</MudText>
-    <MudDivider Class="mb-2" />
+    <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">تاریخچه ورود دستی اجناس</MudText>
+    <MudDivider Class="mb-2 d-md-block d-none" />
 
-    <InventoryEntryList Class="mb-4" ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
+    <InventoryEntryList Class="mb-4" ContainerClass="responsive-table-import" SearchQuery="@SearchQuery" />
 </MudContainer>

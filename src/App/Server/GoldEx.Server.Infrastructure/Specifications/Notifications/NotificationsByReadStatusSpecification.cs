@@ -9,5 +9,7 @@ public class NotificationsByReadStatusSpecification : SpecificationBase<Notifica
     {
         if (isRead.HasValue) 
             AddCriteria(x => x.IsRead == isRead);
+
+        ApplyOrderByDescending(x => x.CreatedAt);
     }
 }

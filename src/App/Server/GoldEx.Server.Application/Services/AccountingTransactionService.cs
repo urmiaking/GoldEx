@@ -35,6 +35,8 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Coin = GoldEx.Server.Domain.CoinAggregate.Coin;
+using Product = GoldEx.Server.Domain.ProductAggregate.Product;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -76,7 +78,8 @@ internal class AccountingTransactionService(
         InvoiceId? InvoiceId,
         InvoicePaymentId? InvoicePaymentId,
         PaymentVoucherId? PaymentVoucherId,
-        MeltingBatchId? MeltingBatchId
+        MeltingBatchId? MeltingBatchId,
+        DateOnly PostingDate
     );
 
     private readonly record struct TransactionSignatureMatch(
@@ -88,16 +91,17 @@ internal class AccountingTransactionService(
         InvoiceId? InvoiceId,
         InvoicePaymentId? InvoicePaymentId,
         PaymentVoucherId? PaymentVoucherId,
-        MeltingBatchId? MeltingBatchId
+        MeltingBatchId? MeltingBatchId,
+        DateOnly PostingDate
     );
 
     private static TransactionSignatureFull SigFull(Transaction t) =>
         new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, Math.Round(t.Amount, 4), t.ExchangeRate.HasValue ? Math.Round(t.ExchangeRate.Value, 8) : null,
-            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId);
+            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId, DateOnly.FromDateTime(t.PostingDate));
 
     private static TransactionSignatureMatch SigMatch(Transaction t) =>
         new(t.TransactionType, t.LedgerAccountId, t.PriceUnitId, Math.Round(t.Amount, 4), t.ExchangeRate.HasValue ? Math.Round(t.ExchangeRate.Value, 8) : null,
-            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId);
+            t.InvoiceId, t.InvoicePaymentId, t.PaymentVoucherId, t.MeltingBatchId, DateOnly.FromDateTime(t.PostingDate));
 
     private static TransactionType Invert(TransactionType t) =>
         t == TransactionType.Debit ? TransactionType.Credit : TransactionType.Debit;
@@ -1801,11 +1805,10 @@ internal class AccountingTransactionService(
             await repository.CreateRangeAsync(transactions, cancellationToken);
     }
 
-    public async Task CreateForInventoryExitAsync(
-    InventoryExitId inventoryExitId,
-    CreateInventoryExitRequest request,
-    List<InventoryStock> inventoryStocks,
-    CancellationToken cancellationToken)
+    public async Task CreateForInventoryExitAsync(InventoryExitId inventoryExitId,
+        CreateInventoryExitRequest request,
+        List<InventoryStock> inventoryStocks,
+        CancellationToken cancellationToken)
     {
         if (inventoryStocks == null || !inventoryStocks.Any())
             throw new ArgumentException("No inventory stocks provided.", nameof(inventoryStocks));
@@ -1940,6 +1943,70 @@ internal class AccountingTransactionService(
                     TransactionType.Credit,
                     coinInventoryLedger.Id,
                     basePriceUnit.Id,
+                    inventoryExitId,
+                    inventoryStock.Id,
+                    postingDate.AddTicks(tick++)
+                );
+
+                transactions.Add(debit);
+                transactions.Add(credit);
+            }
+            else if (inventoryStock.CurrencyId.HasValue)
+            {
+                var currencyRequest = request.Currencies.FirstOrDefault(x
+                    => x.Id == inventoryStock.CurrencyId.Value.Value) ?? throw new NotFoundException();
+
+                var currency = await priceUnitRepository
+                    .Get(new PriceUnitsByIdSpecification(new PriceUnitId(currencyRequest.Id)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                var financialAccount = await financialAccountRepository
+                    .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(currencyRequest.FinancialAccountId)))
+                    .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                var financialAccountLedgerAccountId = financialAccount.LedgerAccountId ?? throw new NotFoundException();
+
+                decimal? exchangeRate = null;
+
+                if (currency.Id != basePriceUnit.Id)
+                {
+                    var currencyCurrentPrice = await priceService
+                        .GetExchangeRateAsync(currency.Id.Value, basePriceUnit.Id.Value, cancellationToken) ?? throw new NotFoundException();
+
+                    if (currencyCurrentPrice.ExchangeRate.HasValue) 
+                        exchangeRate = currencyCurrentPrice.ExchangeRate.Value;
+                }
+
+                var amount = inventoryStock.ChangeAmount;
+                var basePriceAmount = amount * (exchangeRate ?? 1);
+
+                var groupId = Guid.NewGuid();
+                var postingDate = inventoryStock.PostingDate;
+                var description = TransactionDescriptionBuilder.ForInventoryExit(request.ExitReason, currency, financialAccount);
+
+                var debit = Transaction.CreateForInventoryExit(
+                    description,
+                    amount,
+                    basePriceAmount,
+                    exchangeRate,
+                    groupId,
+                    TransactionType.Debit,
+                    exitLedgerAccount.Id,
+                    currency.Id,
+                    inventoryExitId,
+                    inventoryStock.Id,
+                    postingDate.AddTicks(tick++)
+                );
+
+                var credit = Transaction.CreateForInventoryExit(
+                    description,
+                    amount,
+                    basePriceAmount,
+                    exchangeRate,
+                    groupId,
+                    TransactionType.Credit,
+                    financialAccountLedgerAccountId,
+                    currency.Id,
                     inventoryExitId,
                     inventoryStock.Id,
                     postingDate.AddTicks(tick++)

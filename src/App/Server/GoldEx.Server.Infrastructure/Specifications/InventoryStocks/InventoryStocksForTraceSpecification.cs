@@ -20,10 +20,11 @@ public class InventoryStocksForTraceSpecification : SpecificationBase<InventoryS
         var take = filter.Take ?? 100;
 
         AddInclude(x => x.Currency!);
-        AddInclude(x => x.CoinInstance!);
+        AddInclude(x => x.CoinInstance!.Coin!);
         AddInclude(x => x.Product!);
         AddInclude(x => x.MeltingBatch!);
         AddInclude(x => x.Invoice!.Customer!);
+        AddInclude(x => x.Transactions!);
 
         switch (itemType)
         {

@@ -1,6 +1,6 @@
 ﻿@inherits GoldExComponentBase
 
-<MudPaper Elevation="0" Class="mt-2 pa-4">
+<MudPaper Elevation="0" Class="mt-2 px-4">
     <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="my-2">
         <MudText Typo="Typo.h6" GutterBottom="true" Class="d-none d-md-block">
             لیست اجناس
@@ -29,10 +29,6 @@
         <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Success" Text="آپلود فایل اکسل">
             <MudIconButton Icon="@Icons.Custom.FileFormats.FileExcel" Size="Size.Small"
                            Variant="Variant.Filled" Color="Color.Success" OnClick="UploadExcel" />
-        </MudTooltip>
-        <MudTooltip Arrow="true" Placement="Placement.Top" Color="Color.Primary" Text="همگام سازی">
-            <MudIconButton Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" 
-                           Variant="Variant.Filled" Color="Color.Primary" OnClick="SyncWithApi" />
         </MudTooltip>
     </MudStack>
     <MudTable Elevation="0" Dense="true" Hover="true" Virtualize="true" Items="@Model.ProductItems" T="ProductItemVm" FixedHeader="true"

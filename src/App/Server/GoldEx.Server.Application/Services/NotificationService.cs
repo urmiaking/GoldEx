@@ -19,10 +19,11 @@ internal class NotificationService(INotificationRepository repository, IMapper m
         return repository.CreateRangeAsync(notifications, cancellationToken);
     }
 
-    public async Task<List<GetNotificationResponse>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<List<GetNotificationResponse>> GetListAsync(bool? isRead,
+        CancellationToken cancellationToken = default)
     {
         var list = await repository
-            .Get(new NotificationsByReadStatusSpecification(false))
+            .Get(new NotificationsByReadStatusSpecification(isRead))
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -49,5 +50,14 @@ internal class NotificationService(INotificationRepository repository, IMapper m
         list.ForEach(x => x.MarkAsRead());
 
         await repository.UpdateRangeAsync(list, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var notification = await repository
+            .Get(new NotificationsByIdSpecification(new NotificationId(id)))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+        await repository.DeleteAsync(notification, cancellationToken);
     }
 }

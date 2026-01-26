@@ -48,5 +48,5 @@ public sealed class BarcodeDisplaySettings : EntityBase
         return new BarcodeDisplaySettings(width, height, displayValue, fontSize, margin);
     }
 
-    public static BarcodeDisplaySettings Default() => new(2, 50, true, 14, 0);
+    public static BarcodeDisplaySettings Default() => new(1, 10, true, 16, 0);
 }

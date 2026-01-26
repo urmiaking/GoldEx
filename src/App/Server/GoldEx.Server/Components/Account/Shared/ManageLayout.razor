@@ -2,19 +2,19 @@
 @layout MainLayout
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
     <MudGrid>
-        <MudItem md="3">
+        <MudItem xs="12" md="3">
             <MudText Typo="Typo.h6" GutterBottom="true">تنظیمات حساب کاربری</MudText>
             <hr />
             <ManageNavMenu />
         </MudItem>
-        <MudItem md="9">
+        <MudItem xs="12" md="9">
             @Body
         </MudItem>
     </MudGrid>

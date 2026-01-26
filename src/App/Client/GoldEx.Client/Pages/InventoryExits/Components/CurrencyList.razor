@@ -1,0 +1,62 @@
+﻿@inherits GoldExComponentBase
+
+<MudPaper Elevation="0" Class="mt-2 px-4">
+    <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="my-2">
+        <MudText Typo="Typo.h6" GutterBottom="true" Class="d-none d-md-block">
+            لیست ارزها
+        </MudText>
+        <div class="flex-fill d-none d-md-block"></div>
+        <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small"
+                   Variant="Variant.Filled" Color="Color.Info" OnClick="AddItem">
+            افزودن ارز از انبار
+        </MudButton>
+    </MudStack>
+    <MudTable Dense="true" Elevation="0" Hover="true" Virtualize="true" Items="@Model.CurrencyItems" FixedHeader="true"
+              T="CurrencyItemVm" ContainerClass="responsive-table-toolbar">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh>ردیف</MudTh>
+            <MudTh>عنوان</MudTh>
+            <MudTh>حجم</MudTh>
+            <MudTh>نرخ واحد</MudTh>
+            <MudTh>ارزش کل</MudTh>
+            <MudTh>حساب مالی</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ردیف">@context.Index</MudTd>
+            <MudTd DataLabel="عنوان">@context.Currency.Title</MudTd>
+            <MudTd DataLabel="حجم">@context.Amount.ToCurrencyFormat()</MudTd>
+            <MudTd DataLabel="نرخ واحد">@context.UnitPrice.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(PriceUnit?.Title)</MudTd>
+            <MudTd DataLabel="حساب مالی">@context.FinancialAccount?.Title</MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="ویرایش">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Primary" OnClick="() => EditItem(context)"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="حذف">
+                        <MudIconButton OnClick="@(_ => RemoveItem(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">هیچ ارزی ثبت نشده است</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText Typo="Typo.body2">در حال بارگیری</MudText>
+        </LoadingContent>
+    </MudTable>
+</MudPaper>

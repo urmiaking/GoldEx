@@ -28,8 +28,8 @@ public class PaymentVoucherVm
     [Required(ErrorMessage = "مبلغ الزامی است.")]
     public decimal? Amount { get; set; }
 
-    [Display(Name = "واحد مبلغ")]
-    [Required(ErrorMessage = "واحد مبلغ الزامی است.")]
+    [Display(Name = "واحد ارزی سند")]
+    [Required(ErrorMessage = "واحد ارزی سند الزامی است.")]
     public GetPriceUnitTitleResponse? PriceUnit { get; set; }
 
     [Display(Name = "حساب پرداختی")]

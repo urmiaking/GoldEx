@@ -5,7 +5,7 @@
 <PageTitle>گزارش ها</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
@@ -60,28 +60,16 @@
                            StartIcon="@Icons.Material.Filled.ShoppingCart"
                            Href="@ClientRoutes.Reporting.PurchaseInvoices" />
         </MudItem>
-        <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudActionCard Title="خلاصه خرید/فروش"
-                           Description="خلاصه خرید و فروش در بازه زمانی"
-                           StartIcon="@Icons.Material.Filled.DateRange"
-                           Href="@ClientRoutes.Reporting.InvoiceSummary" />
-        </MudItem>
     </MudGrid>
 
-    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">وصول و پرداخت</MudText>
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">پرداختی ها و دریافتی ها</MudText>
     <MudDivider Class="mb-4" />
     <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudActionCard Title="وضعیت تسویه فاکتورها"
-                           Description="فاکتورهای تسویه‌شده و باز به‌همراه مانده"
-                           StartIcon="@Icons.Material.Filled.FactCheck"
-                           Href="@ClientRoutes.Reporting.InvoiceSettlements" />
-        </MudItem>
-        <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudActionCard Title="معوقه فاکتورها"
-                           Description="دسته‌بندی مانده‌ها بر اساس روزهای سررسید"
-                           StartIcon="@Icons.Material.Filled.EventBusy"
-                           Href="@ClientRoutes.Reporting.InvoiceAgingAnalysis" />
+            <MudActionCard Title="پرداخت/دریافت ها"
+                           Description="خلاصه پرداخت‌ها/دریافت‌ها"
+                           StartIcon="@Icons.Material.Filled.Payment"
+                           Href="@ClientRoutes.Reporting.Payments" />
         </MudItem>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="ریز پرداخت‌های فاکتور"
@@ -93,7 +81,7 @@
             <MudActionCard Title="گزارش اسناد پرداخت"
                            Description="لیست اسناد پرداخت به هماره مبلغ"
                            StartIcon="@Icons.Material.Filled.RequestQuote"
-                           Href="@ClientRoutes.Reporting.PaymentVouchers" />
+                           Href="@ClientRoutes.Reporting.PaymentVouchers"/>
         </MudItem>
     </MudGrid>
 
@@ -108,10 +96,10 @@
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudActionCard Title="موجودی کالا تا تاریخ"
-                           Description="موجودی پایان دوره (Snapshot)"
+            <MudActionCard Title="موجودی کالا"
+                           Description="موجودی طلا، جواهر و آبشده"
                            StartIcon="@Icons.Material.Filled.Warehouse"
-                           Href="@ClientRoutes.Reporting.InventoryStockSnapshot" />
+                           Href="@ClientRoutes.Reporting.ProductInventory" />
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4" lg="3">

@@ -98,6 +98,7 @@ internal static class ServiceCollectionExtensions
     internal static IServiceCollection AddSettings(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
+        services.Configure<BackupSettings>(configuration.GetSection(nameof(BackupSettings)));
         services.Configure<SmsSettings>(configuration.GetSection(nameof(SmsSettings)));
         services.Configure<DefaultSetting>(configuration.GetSection(nameof(DefaultSetting)));
         services.Configure<UserSetting>(configuration.GetSection(nameof(UserSetting)));

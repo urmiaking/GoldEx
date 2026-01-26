@@ -1,12 +1,13 @@
 ﻿using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Shared.DTOs.InventoryEntries;
+using GoldEx.Shared.DTOs.InventoryExits;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.InventoryEntries;
-using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.DTOs.Settings;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
@@ -295,7 +296,6 @@ public class ProductItemVm
         );
     }
 
-    // TODO: ADD PURCHASE WAGE
     public static ProductItemVm CreateFrom(GetInvoiceProductItemResponse response, InvoiceType invoiceType)
     {
         return new ProductItemVm
@@ -390,5 +390,13 @@ public class ProductItemVm
             WageExchangeRate = entryResponse.WagePriceUnitExchangeRate,
             CostPriceUnitId = entryResponse.CostPriceUnitId
         };
+    }
+
+    public static CreateProductItemExitRequest ToInventoryExitRequest(ProductItemVm vm)
+    {
+        if (vm.Product.Id is null)
+            throw new ArgumentNullException();
+
+        return new CreateProductItemExitRequest(vm.Product.Id.Value, vm.TotalWeight ?? 0);
     }
 }

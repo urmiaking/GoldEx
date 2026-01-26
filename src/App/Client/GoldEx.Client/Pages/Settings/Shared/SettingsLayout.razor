@@ -2,14 +2,14 @@
 @layout MainLayout
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="pr-0" Items="_breadcrumbs">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
 
     <MudGrid>
-        <MudItem xs="12" md="3">
+        <MudItem xs="12" md="3" Class="d-none d-md-block">
             <MudText Typo="Typo.h6" GutterBottom="true">تنظیمات برنامه</MudText>
             <MudDivider Class="mb-4" Style="margin-top: 15px;" />
             <SettingsNavMenu />

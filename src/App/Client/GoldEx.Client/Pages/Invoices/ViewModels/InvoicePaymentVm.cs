@@ -41,6 +41,9 @@ public class InvoicePaymentVm
     [Display(Name = "طرف حساب")]
     public CustomerVm? Endorser { get; set; }
 
+    [Display(Name = "بابت فاکتور")]
+    public GetTinyInvoiceResponse? TargetInvoice { get; set; }
+
     public List<GetFinancialAccountTitleResponse>? FinancialAccounts { get; set; }
 
     [Display(Name = "نرخ تبدیل")]
@@ -61,11 +64,14 @@ public class InvoicePaymentVm
         {
             var typeTitle = PaymentType.GetDisplayTitle();
             var sideTitle = PaymentSide.GetDisplayName();
+            var sideAbbr = PaymentSide.GetDisplayTitle();
+
+            var verb = PaymentSide is PaymentSide.Pay ? "از" : "به";
 
             return PaymentType switch
             {
                 PaymentType.InternalCash when FinancialAccount is not null
-                    => $"{sideTitle} - {typeTitle} از حساب {FinancialAccount.Title}",
+                    => $"{sideTitle} - {typeTitle} {verb} حساب {FinancialAccount.Title}",
 
                 PaymentType.UsedGoldInventory when GoldFineness.HasValue
                     => $"{sideTitle} - {typeTitle} (عیار {GoldFineness.Value.ToCurrencyFormat()})",
@@ -74,7 +80,13 @@ public class InvoicePaymentVm
                     => $"{sideTitle} - {typeTitle} (عیار {GoldFineness.Value.ToCurrencyFormat()})",
 
                 PaymentType.CustomerTransfer when Endorser is not null
-                    => $"{sideTitle} - {typeTitle} توسط {Endorser.FullName}",
+                    => $"{sideTitle} - {sideAbbr} توسط {Endorser.FullName} " +
+                       $"{(TargetInvoice is not null 
+                           ? $"بابت فاکتور {TargetInvoice.InvoiceType.GetDisplayName()} شماره {TargetInvoice.InvoiceNumber}" 
+                           : "")}",
+
+                PaymentType.TransferedPayment
+                    => $"{sideTitle} - {Note}",
 
                 _ => $"{sideTitle} - {typeTitle}"
             };
@@ -207,6 +219,7 @@ public class InvoicePaymentVm
             item.Note,
             item.FinancialAccount?.Id,
             item.VoucherId,
+            item.TargetInvoice?.Id,
             item.Endorser?.Id,
             item.PriceUnit.Id);
     }
@@ -226,6 +239,7 @@ public class InvoicePaymentVm
             AmountAdornmentText = response.PriceUnit.Title,
             ExchangeRateLabel = response.PriceUnit != priceUnit ? $"نرخ تبدیل {response.PriceUnit.Title} به {priceUnit?.Title}" : null,
             VoucherId = response.VoucherId,
+            TargetInvoice = response.TargetInvoice,
             Disabled = response.VoucherId.HasValue,
             FinancialAccounts = response.FinancialAccounts,
             Endorser = response.Endorser != null ? CustomerVm.CreateFrom(response.Endorser) : null,

@@ -14,7 +14,10 @@ public enum PaymentType
     MoltenGoldInventory = 2,
 
     [Display(Name = "حواله")]
-    CustomerTransfer = 3
+    CustomerTransfer = 3,
+
+    [Display(Name = "حواله شده")]
+    TransferedPayment = 4
 }
 
 public static class PaymentTypeExtensions
@@ -26,7 +29,8 @@ public static class PaymentTypeExtensions
             PaymentType.InternalCash => "پرداخت نقدی",
             PaymentType.UsedGoldInventory => "پرداخت با طلای شکسته",
             PaymentType.MoltenGoldInventory => "پرداخت با طلای آبشده",
-            PaymentType.CustomerTransfer => "حواله به مشتری",
+            PaymentType.CustomerTransfer => "حواله مشتری",
+            PaymentType.TransferedPayment => "حواله شده",
             _ => throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, null)
         };
     }

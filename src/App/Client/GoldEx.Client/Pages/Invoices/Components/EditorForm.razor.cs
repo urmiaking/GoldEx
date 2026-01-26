@@ -325,6 +325,12 @@ public partial class EditorForm
                 if (response is null)
                     return;
 
+                if (response.Weight is 0)
+                {
+                    AddErrorToast($"{response.Name} با کد {response.Barcode} قبلا فروخته شده است");
+                    return;
+                }
+
                 decimal.TryParse(_gramPrice?.Value, out var gramPrice);
 
                 decimal? wageExchangeRate = null;
@@ -386,7 +392,6 @@ public partial class EditorForm
             { x => x.TaxPercent, _model.TradeScale is TradeScale.Retail ? _setting?.TaxPercent ?? 10 : 0 },
             { x => x.GoldProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.GoldProfitPercent ?? 7 : 0 },
             { x => x.JewelryProfitPercent, _model.TradeScale is TradeScale.Retail ? _setting?.JewelryProfitPercent ?? 20 : 0 },
-            { x => x.ItemType, ItemType.Product },
             { x => x.SelectableTypes, [ItemType.Product, ItemType.MoltenGold ]},
             { x => x.PriceUnit, _model.InvoicePriceUnit },
             { x => x.ItemStatus, ItemStatus.Available }

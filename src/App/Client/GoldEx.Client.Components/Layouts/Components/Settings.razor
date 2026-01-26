@@ -1,0 +1,68 @@
+﻿@using GoldEx.Shared.Routings
+
+@inherits GoldExComponentBase
+
+<MudIconButton OnClick="@(() => _drawerOpen = true)"
+               Icon="@Icons.Material.Filled.Settings"
+               Color="@Color.Inherit" />
+
+<MudDrawer @bind-Open="_drawerOpen"
+           Anchor="Anchor.Bottom"
+           Variant="DrawerVariant.Temporary"
+           Overlay="true"
+           OverlayAutoClose="true"
+           Elevation="8">
+    <MudToolBar Dense="true" Gutters="false">
+        <MudIcon Class="mr-2" Icon="@Icons.Material.Filled.Settings" />
+        <MudText Typo="Typo.h6" Class="mr-2">تنظیمات</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                       Color="Color.Inherit"
+                       OnClick="@(() => _drawerOpen = false)" />
+    </MudToolBar>
+    <MudDivider />
+    
+    <MudContainer Class="pb-20">
+        
+        <MudList T="string?">
+            <MudDivider />
+            <MudListItem T="string?" Text="اطلاعات پایه" OnClick="() => NavigateTo(ClientRoutes.Settings.Index)" Icon="@Icons.Material.Filled.DisplaySettings"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="دسته بندی اجناس" OnClick="() => NavigateTo(ClientRoutes.ProductCategories.Index)" Icon="@Icons.Material.Filled.Category"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="مدیریت نمادها" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceSettings)" Icon="@Icons.Material.Filled.EuroSymbol"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="مدیریت واحدهای ارزی" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceUnits)" Icon="@Icons.Material.Filled.CurrencyExchange"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="مدیریت سکه ها" OnClick="() => NavigateTo(ClientRoutes.Settings.Coins)" Icon="@Icons.Material.Filled.MonetizationOn"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="مدیریت حساب های مالی" OnClick="() => NavigateTo(ClientRoutes.Settings.FinancialAccounts)" Icon="@Icons.Material.Filled.Payments"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="مدیریت سرفصل های حسابداری" OnClick="() => NavigateTo(ClientRoutes.Settings.LedgerAccounts)" Icon="@Icons.Material.Filled.DashboardCustomize"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="طراحی گزارش ها" OnClick="() => NavigateTo(ClientRoutes.Settings.ReportsList)" Icon="@Icons.Material.Filled.DesignServices"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="طراحی بارکد محصولات" OnClick="() => NavigateTo(ClientRoutes.Settings.BarcodeBuilder)" Icon="@Icons.Material.Filled.QrCode2"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="مدیریت قالب های پیامکی" OnClick="() => NavigateTo(ClientRoutes.Settings.SmsTemplates)" Icon="@Icons.Material.Filled.Sms"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="تاریخچه پیامک ها" OnClick="() => NavigateTo(ClientRoutes.Settings.SmsLogs)" Icon="@Icons.Material.Filled.ManageHistory"></MudListItem>
+            <MudDivider />
+            <MudListItem T="string?" Text="پشتیبان گیری و بازنشانی" OnClick="() => NavigateTo(ClientRoutes.Settings.BackupRestore)" Icon="@Icons.Material.Filled.Restore"></MudListItem>
+        </MudList>
+    </MudContainer>
+    
+</MudDrawer>
+               
+@code
+{
+    private bool _drawerOpen;
+    private string? _selectedValue;
+
+    private void NavigateTo(string url)
+    {
+        _drawerOpen = false;
+        _selectedValue = null;
+        Navigation.NavigateTo(url);
+    }
+}

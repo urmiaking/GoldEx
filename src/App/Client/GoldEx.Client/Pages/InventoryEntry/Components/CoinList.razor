@@ -1,6 +1,6 @@
 ﻿@inherits GoldExComponentBase
 
-<MudPaper Elevation="2" Class="mt-2 pa-4">
+<MudPaper Elevation="0" Class="mt-2 px-4">
     <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="my-2">
         <MudText Typo="Typo.h6" GutterBottom="true">
             لیست سکه ها
@@ -11,7 +11,8 @@
                            Variant="Variant.Filled" Color="Color.Primary" OnClick="AddItem" />
         </MudTooltip>
     </MudStack>
-    <MudTable Dense="true" Hover="true" Virtualize="true" Items="@Model.CoinItems" FixedHeader="true" T="CoinItemVm" ContainerClass="responsive-table-import">
+    <MudTable Dense="true" Hover="true" Elevation="0" Virtualize="true" Items="@Model.CoinItems" FixedHeader="true" 
+              T="CoinItemVm" ContainerClass="responsive-table-import">
         <ColGroup>
             <col />
             <col />

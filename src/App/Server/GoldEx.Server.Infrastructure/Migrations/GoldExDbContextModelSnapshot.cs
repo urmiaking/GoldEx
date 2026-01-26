@@ -759,6 +759,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("SourceFinancialAccountId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("SourcePaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("TargetInvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("InvoiceId");
@@ -772,6 +778,10 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("PriceUnitId");
 
                     b.HasIndex("SourceFinancialAccountId");
+
+                    b.HasIndex("SourcePaymentId");
+
+                    b.HasIndex("TargetInvoiceId");
 
                     b.ToTable("InvoicePayments", (string)null);
                 });
@@ -1189,6 +1199,66 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Settings", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.SmsLogAggregate.SmsLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Delivered")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Receiver")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Receiver");
+
+                    b.ToTable("SmsLogs", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.SmsTemplateAggregate.SmsTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Parameters")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Subject")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Subject")
+                        .IsUnique();
+
+                    b.ToTable("SmsTemplates", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.StoneTypeAggregate.StoneType", b =>
@@ -2257,6 +2327,16 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasForeignKey("SourceFinancialAccountId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", "SourcePayment")
+                        .WithMany()
+                        .HasForeignKey("SourcePaymentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoldEx.Server.Domain.InvoiceAggregate.Invoice", "TargetInvoice")
+                        .WithMany()
+                        .HasForeignKey("TargetInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Invoice");
 
                     b.Navigation("LedgerAccount");
@@ -2266,6 +2346,10 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("PriceUnit");
 
                     b.Navigation("SourceFinancialAccount");
+
+                    b.Navigation("SourcePayment");
+
+                    b.Navigation("TargetInvoice");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.LedgerAccountAggregate.LedgerAccount", b =>

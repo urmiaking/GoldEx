@@ -2,6 +2,18 @@
 
 namespace GoldEx.Shared.DTOs.Notifications;
 
-public record GetNotificationResponse(Guid Id, string Title, string Message, List<NotificationButtonDto> Buttons, Guid? InvoiceId);
+public record GetNotificationResponse(
+    Guid Id,
+    bool IsRead,
+    DateTime CreatedAt,
+    string Title,
+    string Message,
+    List<NotificationButtonDto> Buttons,
+    Guid? InvoiceId);
 
-public record NotificationButtonDto(string Text, string Action, ButtonColor Color, ButtonActionType ActionType, ButtonIcon? ButtonIcon);
+public record NotificationButtonDto(
+    string Text,
+    string Action,
+    ButtonColor Color,
+    ButtonActionType ActionType,
+    ButtonIcon? ButtonIcon);

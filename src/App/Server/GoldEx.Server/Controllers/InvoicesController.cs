@@ -44,6 +44,16 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
         return Ok(list);
     }
 
+    [HttpGet(ApiRoutes.Invoices.GetCustomerInvoices)]
+    public async Task<IActionResult> GetCustomerInvoicesAsync(Guid customerId,
+        Guid priceUnitId,
+        [FromQuery] RequestFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await service.GetCustomerInvoicesAsync(customerId, priceUnitId, filter, cancellationToken);
+        return Ok(list);
+    }
+
     [HttpGet(ApiRoutes.Invoices.Get)]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {

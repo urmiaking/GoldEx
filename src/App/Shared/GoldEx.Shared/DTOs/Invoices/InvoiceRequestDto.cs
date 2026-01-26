@@ -67,6 +67,7 @@ public record InvoicePaymentDto(
     string? Note,
     Guid? FinancialAccountId,
     Guid? VoucherId,
+    Guid? TargetInvoiceId,
     Guid? CustomerId,
     Guid PriceUnitId);
 

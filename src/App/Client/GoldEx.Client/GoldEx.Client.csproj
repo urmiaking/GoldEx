@@ -37,7 +37,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Pages\InventoryExits\ViewModels\" />
 		<Folder Include="wwwroot\assets\screenshots\" />
 	</ItemGroup>
 

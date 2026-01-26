@@ -1,0 +1,32 @@
+﻿@using GoldEx.Shared.Routings
+
+@inherits GoldExComponentBase
+
+@code {
+    [Parameter] public string? Class { get; set; }
+}
+
+<MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0;" ToolBarClass="mobile-navbar" Class="@Class">
+    <MudNavMenu Margin="Margin.Dense" Color="Color.Primary">
+        <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">
+            خانه
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Calculator.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
+            محاسبه گر
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Success">
+            فاکتورها
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.InventoryStocks.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Error">
+            اجناس من
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Customers.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Tertiary">
+            مشتریان
+        </MudNavLink>
+    </MudNavMenu>
+</MudAppBar>
+
+<style>
+    
+
+</style>
