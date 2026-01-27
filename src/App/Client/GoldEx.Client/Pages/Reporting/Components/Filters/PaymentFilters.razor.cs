@@ -99,6 +99,7 @@ public partial class PaymentFilters
             PaymentType.UsedGoldInventory => Color.Error,
             PaymentType.MoltenGoldInventory => Color.Warning,
             PaymentType.CustomerTransfer => Color.Tertiary,
+            PaymentType.TransferedPayment => Color.Info,
             _ => throw new ArgumentOutOfRangeException(nameof(item), item, null)
         };
     }
@@ -111,6 +112,7 @@ public partial class PaymentFilters
             PaymentType.UsedGoldInventory => Icons.Material.Filled.Recycling,
             PaymentType.MoltenGoldInventory => Icons.Material.Filled.Whatshot,
             PaymentType.CustomerTransfer => Icons.Material.Filled.SwapHoriz,
+            PaymentType.TransferedPayment => Icons.Material.Filled.TrendingUp,
             _ => throw new ArgumentOutOfRangeException(nameof(item), item, null)
         };
     }
