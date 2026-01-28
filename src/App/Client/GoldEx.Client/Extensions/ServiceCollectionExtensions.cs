@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using GoldEx.Client.Abstractions.Common;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Components.Services.Abstractions;
 using GoldEx.Client.Services;
@@ -9,10 +10,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
+using MudBlazor.Extensions;
 using MudBlazor.Services;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using MudBlazor.Extensions;
 
 namespace GoldEx.Client.Extensions;
 
@@ -132,6 +133,7 @@ public static class ServiceCollectionExtensions
 
         services.AddLocalization();
         services.AddScoped<IThemeService, ThemeService>();
+        services.AddScoped<IVersionReleaseStore, VersionReleaseStore>();
 
         return services;
     }

@@ -9,7 +9,7 @@ public static class DependencyInjection
     internal static IServiceCollection AddServer(this IServiceCollection services, IConfiguration configuration)
     {
         services.InitializeDefaultCulture()
-            .AddControllers(configuration)
+            .AddControllers(configuration) 
             .AddComponents()
             .AddStorage(configuration)
             .AddDataProtectionStore(configuration)

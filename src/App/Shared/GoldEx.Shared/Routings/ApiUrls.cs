@@ -637,4 +637,10 @@ public class ApiUrls
                 .FormatRoute(new { phoneNumber });
 
     }
+
+    public class AppReleases
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.AppReleases.Base, ApiRoutes.AppReleases.GetList);
+    }
 }
