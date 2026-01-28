@@ -335,7 +335,7 @@ internal static class ServiceCollectionExtensions
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to connect to the license server.");
-            throw;
+            //throw;
         }
         finally
         {
