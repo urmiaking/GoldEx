@@ -9,6 +9,7 @@ using GoldEx.Shared.DTOs.BarcodeReservations;
 using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.Licenses;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -45,13 +46,14 @@ public partial class EditorForm
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private List<GetCustomerResponse> _customers = [];
+    private GetBarcodePrintSettingsResponse? _barcodeSettings;
+    private GetLicenseResponse? _license;
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
     private bool _processing;
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
     private bool _applyCurrentInvoice;
-    private GetBarcodePrintSettingsResponse? _barcodeSettings;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -137,10 +139,18 @@ public partial class EditorForm
         await LoadGramPriceAsync();
         await LoadIncomingProductAsync();
         await LoadBarcodeSettingsAsync();
+        await LoadLicenseAsync();
         SetHelpContext(_model.InvoiceType);
 
         _isLoadingInvoice = false;
         await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadLicenseAsync()
+    {
+        await SendRequestAsync<ILicenseService, GetLicenseResponse>(
+            action: (s, ct) => s.GetLicenseAsync(ct),
+            afterSend: response => _license = response);
     }
 
     private async Task LoadBarcodeSettingsAsync()
@@ -788,6 +798,15 @@ public partial class EditorForm
 
     private async Task OnOpenCurrencySelector()
     {
+        if (_license is null)
+            return;
+
+        if (_license.IsExpired)
+        {
+            AddErrorToast("قابلیت خرید و فروش ارز در نسخه Premium فعال است");
+            return;
+        }
+
         var parameters = new DialogParameters<InventoryItemSelector>
         {
             { x => x.ItemType, ItemType.Currency },
@@ -816,6 +835,15 @@ public partial class EditorForm
 
     private async Task OnAddCurrencyItem()
     {
+        if (_license is null)
+            return;
+
+        if (_license.IsExpired)
+        {
+            AddErrorToast("قابلیت خرید و فروش ارز در نسخه Premium فعال است");
+            return;
+        }
+
         var parameters = new DialogParameters<CurrencyItemEditor>
         {
             { x => x.PriceUnit, _model.InvoicePriceUnit },
@@ -902,6 +930,15 @@ public partial class EditorForm
 
     private async Task OnAddUsedProduct()
     {
+        if (_license is null)
+            return;
+
+        if (_license.IsExpired)
+        {
+            AddErrorToast("قابلیت طلای کهنه در نسخه Premium قابل استفاده است");
+            return;
+        }
+
         var model = new UsedProductVm();
 
         decimal.TryParse(_gramPrice?.Value, out var gramPrice);
@@ -1381,6 +1418,15 @@ public partial class EditorForm
 
     private async Task OnAddPayment(PaymentType paymentType)
     {
+        if (_license is null)
+            return;
+
+        if (paymentType is PaymentType.CustomerTransfer && _license.IsExpired)
+        {
+            AddErrorToast("قابلیت پرداخت حواله ای در نسخه Premium قابل استفاده است");
+            return;
+        }
+
         var priceUnit = paymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory
             ? _priceUnits.FirstOrDefault(pu => pu.IsGoldBased)
             : _model.InvoicePriceUnit;
