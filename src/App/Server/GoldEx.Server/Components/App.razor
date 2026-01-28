@@ -8,7 +8,7 @@
     <base href="/" />
 
     <link href="@Assets["manifest.webmanifest"]" rel="manifest" />
-    
+
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
 
@@ -24,7 +24,18 @@
 </head>
 
 <body>
-    <Routes @rendermode="RenderModeForPage" />
+    @if (_license is not null)
+    {
+        @* @if (_license.Plan is Shared.Enums.LicensePlan.Unregistered && IsLoggedIn) *@
+        @if (false)
+        {
+            <UnregisteredRoute @rendermode="RenderModeForPage" />
+        }
+        else
+        {
+            <Routes @rendermode="RenderModeForPage" />
+        }
+    }
     <script src="app.js"></script>
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
     <script>

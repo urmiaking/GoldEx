@@ -330,4 +330,13 @@ public static class ApiRoutes
         public const string GetFile = "download";
         public const string Restore = "restore";
     }
+
+    public class Licenses
+    {
+        public const string Base = "/api/licenses";
+        public const string Get = "";
+        public const string Register = "register";
+        public const string SendToken = "request-token/{phoneNumber}";
+        public const string CallbackUrl = "callback";
+    }
 }

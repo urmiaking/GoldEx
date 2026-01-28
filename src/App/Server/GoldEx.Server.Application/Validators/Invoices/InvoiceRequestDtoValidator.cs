@@ -14,6 +14,7 @@ using GoldEx.Server.Infrastructure.Specifications.Products;
 using GoldEx.Server.Infrastructure.Specifications.Transactions;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
@@ -27,11 +28,18 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
     private readonly IProductRepository _productRepository;
     private readonly IFinancialAccountRepository _financialAccountRepository;
     private readonly ITransactionRepository _transactionRepository;
+    private readonly ILicenseService _licenseService;
 
     public InvoiceRequestDtoValidator(ICustomerRepository customerRepository,
-        IPriceUnitRepository priceUnitRepository, IProductRepository productRepository, 
-        IFinancialAccountRepository financialAccountRepository, IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository,
-        ICoinRepository coinRepository, IInventoryStockRepository inventoryStockRepository, ITransactionRepository transactionRepository)
+        IPriceUnitRepository priceUnitRepository, 
+        IProductRepository productRepository, 
+        IFinancialAccountRepository financialAccountRepository,
+        IInvoiceRepository invoiceRepository,
+        IPaymentVoucherRepository paymentVoucherRepository,
+        ICoinRepository coinRepository,
+        IInventoryStockRepository inventoryStockRepository,
+        ITransactionRepository transactionRepository, 
+        ILicenseService licenseService)
     {
         _priceUnitRepository = priceUnitRepository;
         _productRepository = productRepository;
@@ -39,6 +47,11 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
         _invoiceRepository = invoiceRepository;
         _inventoryStockRepository = inventoryStockRepository;
         _transactionRepository = transactionRepository;
+        _licenseService = licenseService;
+
+        RuleFor(x => x)
+            .MustAsync(RespectLicenseLimit)
+            .WithMessage("سقف مجاز روزانه ثبت فاکتور در نسخه Trial پر شده است");
 
         RuleFor(x => x.InvoiceNumber)
             .GreaterThan(0)
@@ -126,6 +139,25 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
                 .Must(NewProductsHaveCostPrice)
                 .WithMessage("وارد کردن نرخ خرید جنس الزامی است.");
         });
+    }
+
+    private async Task<bool> RespectLicenseLimit(InvoiceRequestDto request, CancellationToken cancellationToken = default)
+    {
+        if (request.Id.HasValue)
+            return true;
+
+        var license = await _licenseService.GetLicenseAsync(cancellationToken);
+
+        if (license.IsExpired)
+        {
+            var dailyCreatedInvoiceCount = await _invoiceRepository
+                .CountAsync(new InvoicesByDateSpecification(DateTime.Today), cancellationToken);
+
+            if (dailyCreatedInvoiceCount > 5)
+                return false;
+        }
+
+        return true;
     }
 
     private async Task<bool> NotResultInNegativeLedgerBalances(InvoiceRequestDto request, CancellationToken cancellationToken)

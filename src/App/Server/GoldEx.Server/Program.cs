@@ -11,7 +11,7 @@ try
     builder.Host.ConfigureSerilog();
     Console.WriteLine($@"Environment: {builder.Environment.EnvironmentName}");
 
-    var app = builder.ConfigureServices();
+    var app = await builder.ConfigureServices();
 
     app.ApplyDatabaseMigrations<GoldExDbContext>();
     await app.SeedDatabaseAsync();
