@@ -339,4 +339,10 @@ public static class ApiRoutes
         public const string SendToken = "request-token/{phoneNumber}";
         public const string CallbackUrl = "callback";
     }
+
+    public class AppReleases
+    {
+        public const string Base = "/api/app-releases";
+        public const string GetList = "";
+    }
 }
