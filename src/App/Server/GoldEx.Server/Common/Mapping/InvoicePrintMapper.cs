@@ -214,12 +214,12 @@ internal class InvoicePrintMapper : IRegister
         return $"{baseTitle} - {issuerName} ({nationalCode})";
     }
 
-    private string GetCoinMintYear(InvoiceCoinItem coinItem)
+    private string? GetCoinMintYear(InvoiceCoinItem coinItem)
     {
         var mintYear = coinItem.CoinInstance?.MintYear;
 
         if (!mintYear.HasValue)
-            return "نامشخص";
+            return null;
 
         var date = new DateTime(mintYear.Value, 3, 21);
         var persianYear = new PersianCalendar().GetYear(date);
