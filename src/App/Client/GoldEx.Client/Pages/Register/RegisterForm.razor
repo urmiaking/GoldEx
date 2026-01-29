@@ -1,0 +1,167 @@
+﻿@attribute [Route(ClientRoutes.RegisterProduct.Form)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<PageTitle>فرم فعالسازی نرم افزار</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudStack Spacing="2" AlignItems="AlignItems.Center" Class="mb-6">
+        <MudAvatar Size="Size.Large" Color="Color.Primary">
+            <MudIcon Icon="@Icons.Material.Filled.AppRegistration" Size="Size.Large" />
+        </MudAvatar>
+
+        <MudText Typo="Typo.h4" Align="Align.Center" Color="Color.Primary">
+            فعال‌ سازی نرم‌ افزار <span class="brand-text fs-2">GoldEx</span>
+        </MudText>
+
+        <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Info">
+            لطفاً اطلاعات مجموعه خود را وارد نمایید.
+            یک کد تأیید به شماره موبایل ثبت ‌شده ارسال خواهد شد.
+        </MudText>
+    </MudStack>
+
+    <EditForm Model="_model" OnValidSubmit="OnSubmit">
+        <DataAnnotationsValidator />
+
+        <MudPaper Elevation="8" Class="pa-4 mb-4">
+            <MudGrid>
+                <MudItem xs="12" md="3">
+                    <div class="text-center">
+                        <MudText Typo="Typo.subtitle1" Class="mb-6">
+                            لوگوی مجموعه
+                        </MudText>
+
+                        <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile">
+                            <ActivatorContent>
+                                <MudAvatar Size="Size.Large"
+                                           Style="cursor:pointer;width:110px;height:110px;"
+                                           Color="Color.Surface">
+                                    @if (_model.HasIcon)
+                                    {
+                                        <MudImage Src="@ApiUrls.Icons.Get(IconType.App, Guid.Empty)" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" />
+                                    }
+                                </MudAvatar>
+                            </ActivatorContent>
+                        </MudFileUpload>
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="9">
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Class="mb-3">
+                            اطلاعات مجموعه
+                        </MudText>
+
+                        <MudGrid Spacing="3">
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.InstitutionName"
+                                              Label="@_model.GetDisplayName(() => _model.InstitutionName)"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Required
+                                              For="() => _model.InstitutionName"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Store" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.PhoneNumber"
+                                              Label="@_model.GetDisplayName(() => _model.PhoneNumber)"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Required
+                                              For="() => _model.PhoneNumber"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.PhoneAndroid" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_model.Address"
+                                              Label="@_model.GetDisplayName(() => _model.Address)"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Required
+                                              Lines="3"
+                                              For="() => _model.Address"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.LocationOn" />
+                            </MudItem>
+                        </MudGrid>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <MudPaper Elevation="12" Class="pa-4 mb-4">
+            <MudText Typo="Typo.subtitle1" Class="mb-3">
+                تأیید شماره موبایل و فعال ‌سازی
+            </MudText>
+
+            <MudGrid Spacing="2" Class="mb-2">
+                <MudItem xs="12" md="6">
+                    <div class="d-flex align-center gap-2">
+                        <MudNumericField @bind-Value="_model.Token"
+                                         Label="@_model.GetDisplayName(() => _model.Token)"
+                                         Variant="Variant.Outlined"
+                                         For="() => _model.Token"
+                                         Margin="Margin.Dense"
+                                         HideSpinButtons="true"
+                                         Immediate
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.Key"
+                                         Disabled="!_tokenSent" />
+                        <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       Disabled="_sendTokenDisabled"
+                                       OnClick="OnSendToken"
+                                       Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Send">
+                                @(_sendTokenDisabled
+                                                                ? $"ارسال مجدد ({_otpRemaining} ثانیه)"
+                                                                : "ارسال کد")
+                            </MudButton>
+                        </MudHidden>
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                            <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           Disabled="_sendTokenDisabled"
+                                           OnClick="OnSendToken" />
+
+                            @if (_sendTokenDisabled)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @_otpRemaining
+                                </MudText>
+                            }
+                        </MudHidden>
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12" md="6" Class="d-flex justify-center justify-md-end align-center gap-2">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Medium"
+                               ButtonType="ButtonType.Submit"
+                               Disabled="!_model.Token.HasValue"
+                               StartIcon="@Icons.Material.Filled.CheckCircle">
+                        ثبت و فعال ‌سازی
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.caption"
+                     Color="Color.Secondary"
+                     Align="Align.Center"
+                     Class="mt-3">
+                با فعال‌ سازی، نسخه آزمایشی ۳۰ روزه برای شما فعال خواهد شد.
+            </MudText>
+        </MudPaper>
+    </EditForm>
+</MudContainer>

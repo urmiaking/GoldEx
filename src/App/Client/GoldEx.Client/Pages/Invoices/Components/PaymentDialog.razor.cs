@@ -1,4 +1,5 @@
 ﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Shared.DTOs.Licenses;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
@@ -30,6 +31,7 @@ public partial class PaymentDialog
     };
 
     private GetSettingResponse? _settings;
+    private GetLicenseResponse? _license;
 
     private decimal TotalReceiptsAmount =>
         Items.Where(p => p.PaymentSide == PaymentSide.Receive)
@@ -67,6 +69,7 @@ public partial class PaymentDialog
     protected override async Task OnInitializedAsync()
     {
         await LoadSettingsAsync();
+        await LoadLicenseAsync();
         await base.OnInitializedAsync();
     }
 
@@ -75,6 +78,13 @@ public partial class PaymentDialog
         await SendRequestAsync<ISettingService, GetSettingResponse?>(
             action: (s, ct) => s.GetAsync(ct),
             afterSend: response => _settings = response);
+    }
+
+    private async Task LoadLicenseAsync()
+    {
+        await SendRequestAsync<ILicenseService, GetLicenseResponse>(
+            action: (s, ct) => s.GetLicenseAsync(ct),
+            afterSend: response => _license = response);
     }
 
     private void Close() => Dialog.Close();
@@ -144,6 +154,15 @@ public partial class PaymentDialog
 
     private async Task OnAddPayment(PaymentType paymentType)
     {
+        if (_license is null)
+            return;
+
+        if (paymentType is PaymentType.CustomerTransfer && _license.IsExpired)
+        {
+            AddErrorToast("قابلیت پرداخت حواله ای در نسخه Premium قابل استفاده است");
+            return;
+        }
+
         var priceUnit = paymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory
             ? PriceUnits.FirstOrDefault(pu => pu.IsGoldBased)
             : PriceUnit;

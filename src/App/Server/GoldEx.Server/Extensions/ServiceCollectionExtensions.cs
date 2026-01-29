@@ -29,6 +29,10 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using GoldEx.Sdk.Server.Application.Models;
+using GoldEx.Shared.Enums;
+using VHDLicenseManager;
+using VHDLicenseManager.Responses;
 
 namespace GoldEx.Server.Extensions;
 
@@ -294,5 +298,68 @@ internal static class ServiceCollectionExtensions
     {
         services.AddScoped<HelpContext>();
         return services;
+    }
+
+    internal static async Task<ProductLicense?> AddLicense(this IServiceCollection services)
+    {
+        services.AddScoped<License>();
+
+        var logger = GetLogger();
+
+        ProductLicense? productLicense = null;
+        GetLicenseResponse? licenseResponse = null;
+        try
+        {
+            using var license = new License();
+
+#if RELEASE
+            licenseResponse = await license.GetLicenseAsync("GoldEx");
+#endif
+
+            if (licenseResponse != null &&
+                licenseResponse.Type == LicenseType.Trial &&
+                licenseResponse.Expiry <= DateTime.Now)
+            {
+                throw new InvalidOperationException("Your trial license is expired.");
+            }
+
+            if (licenseResponse is null)
+            {
+                logger.LogWarning("No license available. You need to register and acquire a valid license.");
+            }
+            else
+            {
+                logger.LogInformation("License acquired successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to connect to the license server.");
+            //throw;
+        }
+        finally
+        {
+            productLicense = new ProductLicense(licenseResponse?.Type 
+                switch 
+                {
+                    LicenseType.Trial => LicensePlan.Trial,
+                    LicenseType.Regular => LicensePlan.Regular,
+                    _ => LicensePlan.Unregistered
+                },
+                licenseResponse?.Expiry ?? DateTime.MinValue);
+
+            services.AddSingleton(productLicense);
+        }
+
+        return productLicense;
+    }
+
+    private static ILogger GetLogger()
+    {
+        using var loggerFactory = LoggerFactory
+            .Create(loggingBuilder => loggingBuilder.SetMinimumLevel(LogLevel.Trace)
+                .AddConsole());
+
+        return loggerFactory.CreateLogger<Program>();
     }
 }

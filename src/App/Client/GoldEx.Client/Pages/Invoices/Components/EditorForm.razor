@@ -306,7 +306,8 @@ else
                                        OnPrintBarcode="OnPrintCoinBarcode"
                                        OnBarcodeChanged="OnCoinBarcodeChanged" />
                     </MudTabPanel>
-                    <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney"
+                    <MudTabPanel Text="ارز"
+                                 Icon="@Icons.Material.Filled.AttachMoney"
                                  IconColor="Color.Success"
                                  BadgeData="@(_model.CurrencyItems.Any() ? _model.CurrencyItems.Count : null)"
                                  BadgeColor="Color.Success">

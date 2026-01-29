@@ -9,7 +9,7 @@ public static class DependencyInjection
     internal static IServiceCollection AddServer(this IServiceCollection services, IConfiguration configuration)
     {
         services.InitializeDefaultCulture()
-            .AddControllers(configuration)
+            .AddControllers(configuration) 
             .AddComponents()
             .AddStorage(configuration)
             .AddDataProtectionStore(configuration)
@@ -22,11 +22,10 @@ public static class DependencyInjection
             .AddAppHealthCheck(configuration)
             .AddSerilogUiService(configuration)
             .AddDevExpress()
-            .AddHelpContext(); 
+            .AddHelpContext()
+            .AddHttpClient()
+            .DiscoverServices();
 
-        services.AddHttpClient();
-
-        services.DiscoverServices();
         return services;
     }
 }

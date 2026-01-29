@@ -209,4 +209,11 @@ public static class ClientRoutes
         private const string BlogsPrefix = "/blogs";
         public const string Index = $"{BlogsPrefix}";
     }
+
+    public static class RegisterProduct
+    {
+        private const string RegisterProductPrefix = "/register-product";
+        public const string Index = $"{RegisterProductPrefix}";
+        public const string Form = $"{RegisterProductPrefix}/form";
+    }
 }

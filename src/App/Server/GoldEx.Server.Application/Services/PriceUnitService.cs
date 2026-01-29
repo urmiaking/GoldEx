@@ -29,6 +29,7 @@ internal class PriceUnitService(
     ILedgerAccountRepository ledgerAccountRepository,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment,
+    ILicenseService licenseService,
     IMapper mapper,
     ILogger<PriceUnitService> logger,
     CreatePriceUnitRequestValidator createValidator,
@@ -75,6 +76,11 @@ internal class PriceUnitService(
             .Include(x => x.Price)
             .ToListAsync(cancellationToken);
 
+        var license = await licenseService.GetLicenseAsync(cancellationToken);
+
+        if (license.IsExpired)
+            items = items.Where(x => x.IsDefault || x.IsGoldBased).ToList();
+
         return mapper.Map<List<GetPriceUnitResponse>>(items);
     }
 
@@ -84,6 +90,11 @@ internal class PriceUnitService(
             .Get(new PriceUnitsDefaultSpecification())
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+
+        var license = await licenseService.GetLicenseAsync(cancellationToken);
+
+        if (license.IsExpired)
+            items = items.Where(x => x.IsDefault || x.IsGoldBased).ToList();
 
         return mapper.Map<List<GetPriceUnitTitleResponse>>(items);
     }

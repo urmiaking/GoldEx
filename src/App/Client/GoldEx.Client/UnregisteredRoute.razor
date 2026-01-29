@@ -1,4 +1,6 @@
-﻿@using NavigationContext = Microsoft.AspNetCore.Components.Routing.NavigationContext
+﻿@inject NavigationManager NavigationManager
+
+@using NavigationContext = Microsoft.AspNetCore.Components.Routing.NavigationContext
 
 <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="[typeof(BaseLayout).Assembly]" OnNavigateAsync="OnNavigateAsync">
     <Found Context="routeData">
@@ -11,9 +13,13 @@
     </Found>
 </Router>
 
-@code {
-    public virtual Task OnNavigateAsync(NavigationContext arg)
+@code{
+
+    public Task OnNavigateAsync(NavigationContext arg)
     {
+        if (!arg.Path.Contains(ClientRoutes.RegisterProduct.Index.Replace("/", "")))
+            NavigationManager.NavigateTo(ClientRoutes.RegisterProduct.Index);
+
         return Task.CompletedTask;
     }
 }

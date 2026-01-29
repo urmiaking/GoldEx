@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using GoldEx.Client.Components.Constants;
 using GoldEx.Client.Components.Services.Abstractions;
 using GoldEx.Client.Components.Themes;
 using MudBlazor;
@@ -27,7 +28,7 @@ public class ThemeService(ILocalStorageService localStorage) : IThemeService
         // Only persist if JS/localStorage is available
         if (OperatingSystem.IsBrowser())
         {
-            _ = localStorage.SetItemAsStringAsync("IsDarkMode", _isDarkMode.ToString());
+            _ = localStorage.SetItemAsStringAsync(LocalStorageKeys.IsDarkMode, _isDarkMode.ToString());
         }
 
         OnToggleMode?.Invoke(this, EventArgs.Empty);
@@ -41,7 +42,7 @@ public class ThemeService(ILocalStorageService localStorage) : IThemeService
 
             if (OperatingSystem.IsBrowser())
             {
-                await localStorage.SetItemAsStringAsync("SelectedPalette", paletteName);
+                await localStorage.SetItemAsStringAsync(LocalStorageKeys.SelectedPalette, paletteName);
             }
 
             OnPaletteChanged?.Invoke(this, EventArgs.Empty);
@@ -58,13 +59,13 @@ public class ThemeService(ILocalStorageService localStorage) : IThemeService
             return;
         }
 
-        var savedPalette = await localStorage.GetItemAsStringAsync("SelectedPalette");
+        var savedPalette = await localStorage.GetItemAsStringAsync(LocalStorageKeys.SelectedPalette);
         if (!string.IsNullOrEmpty(savedPalette) && ColorPalettes.Palettes.ContainsKey(savedPalette))
         {
             _currentPalette = savedPalette;
         }
 
-        var savedDarkMode = await localStorage.GetItemAsStringAsync("IsDarkMode");
+        var savedDarkMode = await localStorage.GetItemAsStringAsync(LocalStorageKeys.IsDarkMode);
         if (!string.IsNullOrEmpty(savedDarkMode) && bool.TryParse(savedDarkMode, out var isDarkMode))
         {
             _isDarkMode = isDarkMode;

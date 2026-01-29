@@ -1,48 +1,48 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);CS8669</NoWarn>
+		<NoWarn>$(NoWarn);MUD0002</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Extensions.MudBlazor.StaticInput" Version="3.2.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
-    <PackageReference Include="MudBlazor" Version="8.14.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.8" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+		<PackageReference Include="Extensions.MudBlazor.StaticInput" Version="3.2.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
+		<PackageReference Include="MudBlazor" Version="8.14.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.8" />
+	</ItemGroup>
 
-  <ItemGroup>
-	  <ProjectReference Include="..\..\..\Sdk\GoldEx.Sdk.Client\GoldEx.Sdk.Client.csproj" />
-	  <ProjectReference Include="..\..\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
-	  <ProjectReference Include="..\GoldEx.Client.Abstractions\GoldEx.Client.Abstractions.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Sdk\GoldEx.Sdk.Client\GoldEx.Sdk.Client.csproj" />
+		<ProjectReference Include="..\..\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
+		<ProjectReference Include="..\GoldEx.Client.Abstractions\GoldEx.Client.Abstractions.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Components\Resources\GoldExComponentBase.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>GoldExComponentBase.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Components\Resources\GoldExComponentBase.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>GoldExComponentBase.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Components\Resources\GoldExComponentBase.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>GoldExComponentBase.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Utilities\" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Components\Resources\GoldExComponentBase.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>GoldExComponentBase.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
 
 </Project>
