@@ -114,6 +114,8 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
                     }
                     break;
 
+                case PaymentType.TransferedPayment:
+                    break;
                 default:
                     context.AddFailure(nameof(payment.PaymentType), "نوع پرداخت نامعتبر است.");
                     break;
