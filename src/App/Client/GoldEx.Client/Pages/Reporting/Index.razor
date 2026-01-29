@@ -16,6 +16,7 @@
     <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="گردش حساب"
+                           Locked="_license?.IsExpired ?? false"
                            Description="ریز بدهکار/بستانکار حساب های دفتری"
                            StartIcon="@Icons.Material.Filled.AccountBalanceWallet"
                            Href="@ClientRoutes.Reporting.LedgerAccountDetails" />
@@ -39,6 +40,7 @@
         </MudItem>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="گردش حساب مشتری"
+                           Locked="_license?.IsExpired ?? false"
                            Description="ریز تراکنش‌های مرتبط با مشتری"
                            StartIcon="@Icons.Material.Filled.ReceiptLong"
                            Href="@ClientRoutes.Reporting.CustomerTransactions" />
@@ -73,12 +75,14 @@
         </MudItem>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="ریز پرداخت‌های فاکتور"
+                           Locked="_license?.IsExpired ?? false"
                            Description="لیست پرداخت‌ها/دریافت‌های هر فاکتور"
                            StartIcon="@Icons.Material.Filled.Payments"
                            Href="@ClientRoutes.Reporting.InvoicePayments" />
         </MudItem>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="گزارش اسناد پرداخت"
+                           Locked="_license?.IsExpired ?? false"
                            Description="لیست اسناد پرداخت به هماره مبلغ"
                            StartIcon="@Icons.Material.Filled.RequestQuote"
                            Href="@ClientRoutes.Reporting.PaymentVouchers"/>
@@ -90,6 +94,7 @@
     <MudGrid>
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="کاردکس کالا"
+                           Locked="_license?.IsExpired ?? false"
                            Description="گردش ورود/خروج کالا با سند مرجع"
                            StartIcon="@Icons.Material.Filled.Inventory2"
                            Href="@ClientRoutes.Reporting.InventoryKardex" />
@@ -104,6 +109,7 @@
 
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="موجودی سکه"
+                           Locked="_license?.IsExpired ?? false"
                            Description="موجودی و گردش سکه‌ها"
                            StartIcon="@Icons.Material.Filled.MonetizationOn"
                            Href="@ClientRoutes.Reporting.CoinInventory" />
@@ -111,6 +117,7 @@
 
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudActionCard Title="موجودی ارز"
+                           Locked="_license?.IsExpired ?? false"
                            Description="موجودی و گردش ارزها"
                            StartIcon="@Icons.Material.Filled.CurrencyExchange"
                            Href="@ClientRoutes.Reporting.CurrencyInventory" />

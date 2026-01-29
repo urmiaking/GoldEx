@@ -1,0 +1,57 @@
+﻿@using GoldEx.Shared.DTOs.AppReleases
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent> 
+        <MudExpansionPanels Elevation="0" Gutters="false">
+            @foreach (var release in AllReleases)
+            {
+                <MudExpansionPanel Expanded="@(release == Current)">
+                    <TitleContent>
+                        <div class="d-flex justify-content-between align-center">
+                            <MudText Typo="Typo.body1">نسخه @release.Version</MudText>
+                            <MudText Typo="Typo.body1" Class="ml-2" Color="Color.Primary">
+                                @release.ReleasedAt.ToString("yyyy/MM/dd")
+                            </MudText>
+                        </div>
+                    </TitleContent>
+
+                    <ChildContent>
+                        <ul class="d-flex flex-column gap-1">
+                            @foreach (var change in release.Changes)
+                            {
+                                <li>
+                                    <MudText>@change</MudText>
+                                </li>
+                            }
+                        </ul>
+
+                        @* <MudList Dense="true" Class="pl-1" T="string">
+                            @foreach (var change in release.Changes)
+                            {
+                                <MudListItem Class="py-1">
+                                    <div class="d-flex gap-2">
+                                        <MudIcon Icon="@Icons.Material.Filled.ChevronLeft"
+                                                 Color="Color.Primary"
+                                                 Size="Size.Small"/>
+                                        <MudText Class="ml-1">@change</MudText>
+                                    </div>
+                                </MudListItem>
+                            }
+                        </MudList> *@
+                    </ChildContent>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public AppReleaseResponse Current { get; set; } = default!;
+    [Parameter] public IReadOnlyList<AppReleaseResponse> AllReleases { get; set; } = [];
+
+    private void Close() => MudDialog.Close();
+}

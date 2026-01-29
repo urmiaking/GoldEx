@@ -625,4 +625,22 @@ public class ApiUrls
         public static string Restore() =>
             BuildUrl(ApiRoutes.Backups.Base, ApiRoutes.Backups.Restore);
     }
+
+    public class Licenses
+    {
+        public static string Get() => BuildUrl(ApiRoutes.Licenses.Base, ApiRoutes.Licenses.Get);
+
+        public static string Register() => BuildUrl(ApiRoutes.Licenses.Base, ApiRoutes.Licenses.Register);
+
+        public static string SendToken(string phoneNumber) =>
+            BuildUrl(ApiRoutes.Licenses.Base, ApiRoutes.Licenses.SendToken)
+                .FormatRoute(new { phoneNumber });
+
+    }
+
+    public class AppReleases
+    {
+        public static string GetList() =>
+            BuildUrl(ApiRoutes.AppReleases.Base, ApiRoutes.AppReleases.GetList);
+    }
 }
