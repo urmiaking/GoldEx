@@ -32,7 +32,6 @@ internal class InvoicePaymentService(
     {
         var existingPayments = await repository
             .Get(new InvoicePaymentsByInvoiceIdSpecification(invoice.Id))
-            .Where(p => p.PaymentType != PaymentType.TransferedPayment)
             .Include(x => x.Invoice!.Customer)
             .ToListAsync(cancellationToken);
 
@@ -120,6 +119,8 @@ internal class InvoicePaymentService(
 
                     break;
 
+                case PaymentType.TransferedPayment:
+                    break;
                 default:
                     throw new InvalidOperationException($"Unsupported payment type: {paymentDto.PaymentType}");
             }
@@ -158,6 +159,12 @@ internal class InvoicePaymentService(
                 var existingPayment = existingPayments.FirstOrDefault(p => p.Id.Value == paymentDto.Id.Value);
                 if (existingPayment is null)
                     throw new NotFoundException($"Payment with Id {paymentDto.Id} not found for update.");
+
+                if (existingPayment.PaymentType is PaymentType.TransferedPayment)
+                {
+                    // No need to update
+                    continue;
+                }
 
                 existingPayment.SetAmount(paymentDto.Amount, new PriceUnitId(paymentDto.PriceUnitId));
                 existingPayment.SetPaymentType(paymentDto.PaymentType);
