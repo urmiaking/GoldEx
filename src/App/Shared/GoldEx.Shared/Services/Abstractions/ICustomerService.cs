@@ -15,4 +15,5 @@ public interface ICustomerService
     Task<Guid> CreateAsync(CustomerRequestDto request, CancellationToken cancellationToken = default);
     Task UpdateAsync(Guid id, CustomerRequestDto request, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<GetCustomerNationalIdResponse> GenerateNationalIdAsync(CancellationToken cancellationToken = default);
 }

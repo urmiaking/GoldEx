@@ -121,4 +121,16 @@ internal class CustomerService(HttpClient client, JsonSerializerOptions jsonOpti
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
+
+    public async Task<GetCustomerNationalIdResponse> GenerateNationalIdAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Customers.GenerateNationalId(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetCustomerNationalIdResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }

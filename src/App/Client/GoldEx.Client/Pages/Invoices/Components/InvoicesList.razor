@@ -117,9 +117,9 @@
         <MudTh><MudTableSortLabel SortLabel="TradeScale" T="InvoiceListVm">نوع معامله</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره فاکتور</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Customer.PhoneNumber" T="InvoiceListVm">شماره تماس</MudTableSortLabel></MudTh>
         <MudTh>ارزش کل</MudTh>
         <MudTh><MudTableSortLabel SortLabel="InvoiceDate" T="InvoiceListVm">تاریخ فاکتور</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="DueDate" T="InvoiceListVm">تاریخ سررسید</MudTableSortLabel></MudTh>
         <MudTh>
             <div class="d-flex">
                 <MudText Typo="Typo.body2" Color="Color.Error">بدهکاری</MudText>&nbsp;/&nbsp;<MudText Color="Color.Success" Typo="Typo.body2">بستانکاری</MudText>
@@ -132,13 +132,14 @@
         <MudTd DataLabel="نوع معامله">@context.TradeScale.GetDisplayName()</MudTd>
         <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
         <MudTd DataLabel="طرف حساب">@context.CustomerFullName</MudTd>
+        <MudTd DataLabel="شماره تماس">@context.CustomerPhoneNumber</MudTd>
         <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.PriceUnit)</MudTd>
         <MudTd DataLabel="تاریخ فاکتور">
             <MudTooltip Text="@GetInvoiceDateTooltipText(context)" Arrow="true" Placement="Placement.Top">
-                @context.InvoiceDate.ToShortDateString()
+                @GetInvoiceDate(context)
             </MudTooltip>
         </MudTd>
-        <MudTd DataLabel="تاریخ سررسید">@context.DueDate?.ToShortDateString()</MudTd>
+        
         <MudTd DataLabel="مانده">
             @switch (context.PaymentStatus)
             {

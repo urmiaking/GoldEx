@@ -13,6 +13,7 @@ internal class InvoiceMapper : IRegister
         config.NewConfig<Invoice, GetInvoiceListResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
+            .Map(dest => dest.CustomerPhoneNumber, src => src.Customer != null ? src.Customer.PhoneNumber : null)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit!.Title)
             .Map(dest => dest.TotalAmount, src => src.TotalAmountWithDiscountsAndExtraCosts)
             .Map(dest => dest.TotalUnpaidAmount, src => src.TotalUnpaidAmount)

@@ -90,6 +90,7 @@ public static class ApiRoutes
         public const string Delete = "{id}";
         public const string GetByName = "name/{customerName}";
         public const string GetNames = "{type}/names";
+        public const string GenerateNationalId = "generate-national-id";
     }
 
     public class Transactions
