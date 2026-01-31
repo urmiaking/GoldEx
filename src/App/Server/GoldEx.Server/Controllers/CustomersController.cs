@@ -57,6 +57,13 @@ public class CustomersController(ICustomerService service) : ApiControllerBase
         return Ok(items);
     }
 
+    [HttpGet(ApiRoutes.Customers.GenerateNationalId)]
+    public async Task<IActionResult> GenerateNationalIdAsync(CancellationToken cancellationToken)
+    {
+        var items = await service.GenerateNationalIdAsync(cancellationToken);
+        return Ok(items);
+    }
+
     [HttpPost(ApiRoutes.Customers.Create)]
     public async Task<IActionResult> CreateAsync(CustomerRequestDto request, CancellationToken cancellationToken)
     {

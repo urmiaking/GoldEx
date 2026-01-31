@@ -169,6 +169,9 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GetNames)
                 .FormatRoute(new { type })
                 .AppendQueryString(new { name });
+
+        public static string GenerateNationalId() =>
+            BuildUrl(ApiRoutes.Customers.Base, ApiRoutes.Customers.GenerateNationalId);
     }
 
     public class PriceUnits
