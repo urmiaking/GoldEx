@@ -4,6 +4,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using GoldEx.Sdk.Common.Definitions;
 
 namespace GoldEx.Client.Pages.Home.Components;
 
@@ -45,7 +46,7 @@ public partial class PriceBoard
     {
         await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
             action: (s, ct) => s.GetListAsync(null, ct),
-            afterSend: response => _items = response,
+            afterSend: response => _items = response.OrderBy(x => x.Type.GetDisplayOrder()),
             createScope: true
         );
     }

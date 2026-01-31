@@ -171,7 +171,7 @@ public partial class CustomersList
         {
             { nameof(InvoicesList.CustomerId), customerVm.Id }
         };
-        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای های {customerVm.FullName}", parameters, _dialogOptions with { MaxWidth = MaxWidth.ExtraLarge });
+        var dialog = await DialogService.ShowAsync<InvoicesList>($"فاکتورهای {customerVm.FullName}", parameters, _dialogOptions with { MaxWidth = MaxWidth.ExtraLarge });
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {

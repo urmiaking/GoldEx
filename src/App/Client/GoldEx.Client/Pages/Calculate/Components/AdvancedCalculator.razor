@@ -252,7 +252,7 @@
             <MudText Typo="Typo.h6" GutterBottom="true">نتایج جستجو</MudText>
 
             <MudTable T="GetInventoryStockResponse" ServerData="LoadProductsAsync" RowsPerPage="20"
-                      Hover="true" Dense="true" Striped="true" @ref="_table">
+                      Hover="true" Dense="true" Striped="true" @ref="_table" ContainerClass="responsive-table-import">
                 <HeaderContent>
                     <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Barcode ?? string.Empty)">کد</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel T="GetInventoryStockResponse" SortBy="@(x => x.Product?.Name ?? string.Empty)">عنوان</MudTableSortLabel></MudTh>
@@ -317,8 +317,9 @@
                                        Selected="@(_table.CurrentPage + 1)"
                                        Color="Color.Primary"
                                        Count="@pageCount"
-                                       ShowFirstButton="true"
-                                       ShowLastButton="true" />
+                                       Class="justify-center"
+                                       BoundaryCount="1"
+                                       MiddleCount="3" />
 
                         <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
                             @infoText
