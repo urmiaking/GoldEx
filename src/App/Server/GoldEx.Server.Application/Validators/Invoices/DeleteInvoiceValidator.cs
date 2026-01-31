@@ -4,6 +4,7 @@ using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Shared.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Validators.Invoices;
 
@@ -33,7 +34,11 @@ internal class DeleteInvoiceValidator : AbstractValidator<Invoice>
 
     private async Task<bool> NotUsedInCustomerTransferPayments(InvoiceId invoiceId, CancellationToken cancellationToken = default)
     {
-        return !await _invoicePaymentRepository.ExistsAsync(new InvoicePaymentsByInvoiceIdSpecification(invoiceId), cancellationToken);
+        var existingPayments = await _invoicePaymentRepository
+            .Get(new InvoicePaymentsByInvoiceIdSpecification(invoiceId))
+            .ToListAsync(cancellationToken);
+
+        return !existingPayments.Any(x => x.SourcePaymentId.HasValue || x.TargetInvoiceId.HasValue);
     }
 
     private async Task<bool> NotResultInNegativeInventory(Invoice invoice, CancellationToken cancellationToken = default)

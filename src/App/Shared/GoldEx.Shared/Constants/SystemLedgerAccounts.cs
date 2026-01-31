@@ -16,6 +16,7 @@ public static class SystemLedgerAccounts
     public static string InternalCashAccounts => "صندوق‌های داخلی";
     public static string DepositsWithOthers => "سپرده نزد دیگران";
     public static string LoansToOthers => "وام‌های پرداختی به دیگران";
+    public static string CurrencySettlement => "حساب تسویه ارزی";
     #endregion
 
     #region Liabilities (بدهی‌ها)
@@ -53,4 +54,5 @@ public static class SystemLedgerAccounts
     public static string GiftExpense => "هزینه هدایا";
 
     #endregion
+
 }
