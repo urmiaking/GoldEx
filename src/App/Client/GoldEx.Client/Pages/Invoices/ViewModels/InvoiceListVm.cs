@@ -7,6 +7,7 @@ public class InvoiceListVm
 {
     public Guid Id { get; set; }
     public string CustomerFullName { get; set; } = default!;
+    public string? CustomerPhoneNumber { get; set; }
     public long InvoiceNumber { get; set; }
     public DateOnly InvoiceDate { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -30,6 +31,7 @@ public class InvoiceListVm
         {
             Id = listResponse.Id,
             CustomerFullName = listResponse.CustomerFullName,
+            CustomerPhoneNumber = listResponse.CustomerPhoneNumber,
             InvoiceNumber = listResponse.InvoiceNumber,
             InvoiceDate = listResponse.InvoiceDate,
             InvoiceType = listResponse.InvoiceType,

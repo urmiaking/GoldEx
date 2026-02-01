@@ -26,7 +26,7 @@ public enum MarketType
     [DisplayOrder(6)]
     ParsianCoin = 4,
 
-    [Display(Name = "فلزات گران بها")]
+    [Display(Name = "فلزات گرانبها")]
     [DisplayOrder(2)]
     Ounce = 5,
 

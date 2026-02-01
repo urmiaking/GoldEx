@@ -11,6 +11,7 @@ public record GetInvoiceListResponse(
     InvoiceType InvoiceType,
     TradeScale TradeScale,
     string CustomerFullName,
+    string? CustomerPhoneNumber,
     decimal TotalAmount,
     decimal TotalUnpaidAmount,
     string PriceUnit,
