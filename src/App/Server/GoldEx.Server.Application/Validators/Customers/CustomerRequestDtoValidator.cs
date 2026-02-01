@@ -54,6 +54,10 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
             .MustAsync(BeValidPriceUnitId)
             .WithMessage("واحد محدودیت اعتباری نامعتبر است");
 
+        RuleFor(x => x)
+            .MustAsync(BeUniqueCustomer)
+            .WithMessage("مشتری با این مشخصات از قبل موجود است");
+
         When(x => x.CreditLimit is > 0, () =>
         {
             RuleFor(x => x.CreditLimitPriceUnitId)
@@ -79,6 +83,13 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
         });
     }
 
+    private async Task<bool> BeUniqueCustomer(CustomerRequestDto request, CancellationToken cancellationToken = default)
+    {
+        return !await _repository.ExistsAsync(
+            new CustomersByNameTypePhoneNumberSpecification(request.FullName, request.PhoneNumber,
+                request.CustomerType), cancellationToken);
+    }
+
     private async Task<bool> BeValidPriceUnitId(CustomerRequestDto request, Guid? priceUnitId, CancellationToken cancellationToken = default)
     {
         if (!priceUnitId.HasValue)
@@ -94,6 +105,7 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 
         var item = await _repository
             .Get(new CustomersByIdSpecification(new CustomerId(id.Value)))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         return item is not null;
@@ -103,6 +115,7 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
     {
         var item = await _repository
             .Get(new CustomersByNationalIdSpecification(nationalId))
+            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (item is null)

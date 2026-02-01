@@ -269,4 +269,14 @@ public partial class InvoicesList
     }
 
     #endregion
+
+    private string GetInvoiceDate(InvoiceListVm context)
+    {
+        var text = context.InvoiceDate.ToShortDateString();
+
+        if (context.DueDate.HasValue) 
+            text += $" ({context.DueDate.Value.ToShortDateString()})";
+
+        return text;
+    }
 }

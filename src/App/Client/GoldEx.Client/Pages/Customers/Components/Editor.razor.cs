@@ -176,5 +176,10 @@ public partial class Editor
         }
     }
 
-    private void RenewNationalId() => Model.NationalId = StringExtensions.GenerateRandomCode(6);
+    private async Task RenewNationalIdAsync()
+    {
+        await SendRequestAsync<ICustomerService, GetCustomerNationalIdResponse>(
+            action: (s, ct) => s.GenerateNationalIdAsync(ct),
+            afterSend: response => Model.NationalId = response.NationalId);
+    } 
 }

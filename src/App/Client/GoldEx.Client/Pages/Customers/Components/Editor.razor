@@ -3,7 +3,7 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_customerValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <MudGrid>
+            <MudGrid Spacing="4">
                 <MudItem xs="12" md="6" lg="6">
                     <MudSelect T="CustomerType"
                                @bind-Value="Model.CustomerType"
@@ -20,6 +20,8 @@
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.FullName"
                                   For="@(() => Model.FullName)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Person"
                                   Label="@(Model.GetDisplayName(() => Model.FullName))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
@@ -33,12 +35,14 @@
                                   Variant="Variant.Outlined"
                                   Adornment="Adornment.End" 
                                   AdornmentIcon="@Icons.Material.Filled.Refresh" 
-                                  OnAdornmentClick="RenewNationalId" />
+                                  OnAdornmentClick="RenewNationalIdAsync" />
                 </MudItem>
                 <MudItem xs="12" md="6" lg="6">
                     <MudTextField @bind-Value="Model.PhoneNumber"
                                   For="@(() => Model.PhoneNumber)"
                                   dir="ltr"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.PhoneAndroid"
                                   Label="@(Model.GetDisplayName(() => Model.PhoneNumber))"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
@@ -83,6 +87,8 @@
                                   For="@(() => Model.Address)"
                                   AutoGrow
                                   Label="@(Model.GetDisplayName(() => Model.Address))"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>

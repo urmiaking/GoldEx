@@ -258,6 +258,28 @@ internal class CustomerService(
         }
     }
 
+    public async Task<GetCustomerNationalIdResponse> GenerateNationalIdAsync(CancellationToken cancellationToken = default)
+    {
+        const int maxAttempts = 20;
+
+        for (var attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var randomNumber = StringExtensions.GenerateRandomCode(6);
+
+            var exists = await repository.ExistsAsync(
+                new CustomersByNationalIdSpecification(randomNumber),
+                cancellationToken);
+
+            if (!exists)
+                return new GetCustomerNationalIdResponse(randomNumber);
+        }
+
+        throw new InvalidOperationException("Failed to generate a unique national ID after multiple attempts.");
+    }
+
+
     /// <summary>
     /// Synchronizes the customer's financial accounts based on the request.
     /// </summary>
