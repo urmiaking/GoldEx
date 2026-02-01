@@ -105,9 +105,9 @@ internal class InvoiceRequestDtoValidator : AbstractValidator<InvoiceRequestDto>
                 paymentVoucherRepository,
                 customerRepository));
 
-        RuleFor(x => x)
-            .MustAsync(NotResultInNegativeMoltenGoldInventory)
-            .WithMessage("موجودی طلای آبشده برای تسویه کافی نیست.");
+        //RuleFor(x => x)
+        //    .MustAsync(NotResultInNegativeMoltenGoldInventory)
+        //    .WithMessage("موجودی طلای آبشده برای تسویه کافی نیست.");
 
         RuleForEach(x => x.InvoiceProductItems)
             .SetValidator(new InvoiceProductItemDtoValidator(
