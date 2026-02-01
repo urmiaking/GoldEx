@@ -51,7 +51,9 @@
 
 	<ItemGroup>
 	  <Folder Include="backups\" />
+	  <Folder Include="shared\categories\" />
 	  <Folder Include="shared\content\blogs\temp\" />
+	  <Folder Include="shared\posts\" />
 	  <Folder Include="uploads\icons\" />
 	</ItemGroup>
 

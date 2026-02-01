@@ -17,7 +17,7 @@ public partial class CustomerRemaining
     [Parameter] public GetPriceUnitTitleResponse? PriceUnit { get; set; }
     [Parameter] public string? ItemClass { get; set; }
     [Parameter] public decimal? AddedValue { get; set; }
-    [Parameter] public bool EnableManualSlide { get; set; } = false;
+    [Parameter] public bool EnableManualSlide { get; set; }
 
     private List<CustomerRemainingVm>? _remainingList;
     private bool _isLoading = true;
@@ -27,10 +27,10 @@ public partial class CustomerRemaining
     private Guid _previousCustomerId;
     private Guid? _previousPriceUnitId;
 
-    private bool ShouldApplyAddedValue =>
+    private bool ShouldApplyAddedValue(CustomerRemainingVm remaining) =>
         AddedValue.HasValue &&
         PriceUnit != null &&
-        _remainingList?.Count == 1;
+        remaining.PriceUnit == PriceUnit.Title;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -117,9 +117,11 @@ public partial class CustomerRemaining
         _isLoading = false;
     }
 
-    private Color GetMudColor(decimal amount)
+    private Color GetMudColor(CustomerRemainingVm remaining)
     {
-        if (ShouldApplyAddedValue) 
+        var amount = remaining.Amount;
+
+        if (ShouldApplyAddedValue(remaining)) 
             amount += AddedValue!.Value;
 
         return amount switch
@@ -134,12 +136,13 @@ public partial class CustomerRemaining
     {
         var calculationAmount = remaining.Amount;
 
-        if (ShouldApplyAddedValue) 
+        if (ShouldApplyAddedValue(remaining))
             calculationAmount += AddedValue!.Value;
 
         var absoluteAmount = Math.Abs(calculationAmount);
         return absoluteAmount.ToCurrencyFormat(remaining.PriceUnit);
     }
+
 
     private string? GetClickableStyle()
     {
