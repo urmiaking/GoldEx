@@ -14,18 +14,31 @@ internal class DeleteCustomerValidator : AbstractValidator<Customer>
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPaymentVoucherRepository _paymentVoucherRepository;
-    public DeleteCustomerValidator(IInvoiceRepository invoiceRepository, IPaymentVoucherRepository paymentVoucherRepository)
+    private readonly ITransactionRepository _transactionRepository;
+    public DeleteCustomerValidator(IInvoiceRepository invoiceRepository,
+        IPaymentVoucherRepository paymentVoucherRepository,
+        ITransactionRepository transactionRepository)
     {
         _invoiceRepository = invoiceRepository;
         _paymentVoucherRepository = paymentVoucherRepository;
+        _transactionRepository = transactionRepository;
 
         RuleFor(x => x)
             .MustAsync(HasNoInvoices)
-            .WithMessage("مشتری دارای فاکتور است و نمی تواند حذف شود");
+            .WithMessage("مشتری دارای فاکتور است و نمی تواند حذف شود.");
+
+        RuleFor(x => x)
+            .MustAsync(HasNoTransactions)
+            .WithMessage("مشتری دارای تراکنش ثبت شده است و نمی تواند حذف شود");
 
         RuleFor(x => x.FinancialAccounts)
             .MustAsync(FinancialAccountsNotBeingUsed)
             .WithMessage("حساب های مالی مشتری در اسناد پرداخت استفاده شده است و نمی تواند حذف شوند");
+    }
+
+    private async Task<bool> HasNoTransactions(Customer customer, CancellationToken cancellationToken = default)
+    {
+        return !await _transactionRepository.ExistsAsync(new TransactionsByCustomerIdSpecification(customer.Id), cancellationToken);
     }
 
     private async Task<bool> FinancialAccountsNotBeingUsed(IReadOnlyList<FinancialAccount>? financialAccounts, CancellationToken cancellationToken = default)
