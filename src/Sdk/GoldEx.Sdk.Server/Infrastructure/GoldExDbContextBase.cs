@@ -1,5 +1,4 @@
 ﻿using GoldEx.Sdk.Common.Interceptors;
-using MediatR;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

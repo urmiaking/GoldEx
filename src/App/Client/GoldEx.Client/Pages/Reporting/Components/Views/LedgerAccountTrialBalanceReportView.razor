@@ -90,7 +90,7 @@ else
                         }  
                         else  
                         {  
-                            var parentAccount = _flattenedItems.FirstOrDefault(x => x.Id == Guid.Parse(context.Key.ToString()));
+                            var parentAccount = _flattenedItems.FirstOrDefault(x => x.Id == Guid.Parse(context.Key?.ToString() ?? string.Empty));
 
                             if (parentAccount is null)
                             {
