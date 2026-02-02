@@ -105,6 +105,19 @@ public class InvoiceVm
     public bool IsCreditor => TotalUnpaidAmount < -Epsilon;
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.Now && !IsPaid;
 
+    public decimal OriginalUnpaidAmount { get; set; }
+    public bool IsOriginalUnpaidCaptured { get; private set; }
+    public decimal UnpaidDelta => TotalUnpaidAmount - OriginalUnpaidAmount;
+
+    public void CaptureOriginalUnpaidIfNeeded()
+    {
+        if (!IsOriginalUnpaidCaptured)
+        {
+            OriginalUnpaidAmount = TotalUnpaidAmount;
+            IsOriginalUnpaidCaptured = true;
+        }
+    }
+
     public static InvoiceVm CreateDefaultInstance()
     {
         return new InvoiceVm

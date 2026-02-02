@@ -53,7 +53,7 @@ public partial class EditorForm
     private bool _processing;
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
-    private bool _applyCurrentInvoice;
+    private bool _applyCurrentInvoice = true;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -106,8 +106,8 @@ public partial class EditorForm
 
     private string RemainingTooltipText =>
         _applyCurrentInvoice
-            ? "عدم اعمال مانده فاکتور جاری در مانده مشتری"
-            : "اعمال مانده فاکتور جاری در مانده مشتری";
+            ? "اعمال مانده فاکتور جاری در مانده مشتری"
+            : "عدم اعمال مانده فاکتور جاری در مانده مشتری";
 
     private string InvoiceIcon => _model.InvoiceType switch
     {
@@ -185,6 +185,7 @@ public partial class EditorForm
                 afterSend: response =>
                 {
                     _model = InvoiceVm.CreateFrom(response);
+                    _model.CaptureOriginalUnpaidIfNeeded();
                 });
         }
         else
@@ -318,6 +319,16 @@ public partial class EditorForm
             StateHasChanged();
         }
     }
+
+    private decimal GetNewInvoiceCustomerBalanceEffect() =>
+        _model.InvoiceType == InvoiceType.Sell
+            ? _model.TotalUnpaidAmount
+            : -_model.TotalUnpaidAmount;
+
+    private decimal GetCustomerBalanceChange() =>
+        _model.InvoiceType == InvoiceType.Sell
+            ? _model.UnpaidDelta
+            : -_model.UnpaidDelta;
 
     #endregion
 

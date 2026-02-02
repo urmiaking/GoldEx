@@ -246,8 +246,11 @@ else
                                 <MudText>مانده: </MudText>
                                 <CustomerRemaining CustomerId="_model.Customer.Id.Value"
                                                    TextTypo="Typo.body1"
+                                                   PriceUnit="_model.InvoicePriceUnit"
                                                    EnableManualSlide="true"
-                                                   AddedValue="@(_applyCurrentInvoice && !IsEditMode ? _model.TotalUnpaidAmount : null)" />
+                                                   AddedValue="@(_applyCurrentInvoice 
+                                                                   ? (IsEditMode ? GetCustomerBalanceChange() : GetNewInvoiceCustomerBalanceEffect()) 
+                                                                   : null)" />
                                 <MudTooltip Text="@RemainingTooltipText" ShowOnHover="true" Color="Color.Success" Arrow="true">
                                     <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Success" Size="Size.Small" />
                                 </MudTooltip>
