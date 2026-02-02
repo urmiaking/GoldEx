@@ -112,9 +112,12 @@
                                    Disabled="context.Disabled"
                                    Variant="Variant.Outlined"
                                    ToStringFunc="@(acc => acc?.Title)">
-                            @foreach (var account in context.FinancialAccounts)
+                            @if (context.FinancialAccounts is not null)
                             {
-                                <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
+                                foreach (var account in context.FinancialAccounts)
+                                {
+                                    <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
+                                }
                             }
                         </MudSelect>
                         <MudIconButton Disabled="context.Disabled" Icon="@Icons.Material.Filled.Add"

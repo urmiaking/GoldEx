@@ -314,7 +314,7 @@ internal static class ServiceCollectionExtensions
             using var license = new License();
 
 #if RELEASE
-            licenseResponse = await license.GetLicenseAsync("GoldEx");
+            licenseResponse = await license.GetLicenseAsync("GoldEx", null);
 #endif
 
             if (licenseResponse != null &&

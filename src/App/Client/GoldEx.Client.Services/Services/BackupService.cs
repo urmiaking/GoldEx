@@ -1,6 +1,4 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json;
-using GoldEx.Sdk.Common.DependencyInjections;
+﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Backups;
 using GoldEx.Shared.Routings;
@@ -9,7 +7,7 @@ using GoldEx.Shared.Services.Abstractions;
 namespace GoldEx.Client.Services.Services;
 
 [ScopedService]
-internal class BackupService(HttpClient client, JsonSerializerOptions jsonOptions) : IBackupService
+internal class BackupService(HttpClient client) : IBackupService
 {
     public Task<string?> GetBackupFilePathAsync(CancellationToken cancellationToken = default) 
         => Task.FromResult(ApiUrls.Backups.GetFilePath())!;

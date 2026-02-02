@@ -1,7 +1,6 @@
-﻿using MediatR;
+﻿namespace GoldEx.Sdk.Common.Domain;
 
-namespace GoldEx.Sdk.Common.Domain;
+public interface IDomainEvent;
 
-public interface IDomainEvent : INotification { }
-public interface IPrePersistenceDomainEvent : IDomainEvent, INotification { }
-public interface IPostPersistenceDomainEvent : IDomainEvent, INotification { }
+public interface IPrePersistenceDomainEvent : IDomainEvent;
+public interface IPostPersistenceDomainEvent : IDomainEvent;
