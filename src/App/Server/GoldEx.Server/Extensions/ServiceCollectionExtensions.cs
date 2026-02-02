@@ -31,6 +31,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GoldEx.Sdk.Server.Application.Models;
 using GoldEx.Shared.Enums;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using VHDLicenseManager;
 using VHDLicenseManager.Responses;
 
@@ -131,12 +132,12 @@ internal static class ServiceCollectionExtensions
         services.AddSqlServer<GoldExDbContext>(connectionString, options =>
         {
             options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            //options.EnableRetryOnFailure(
-            //    maxRetryCount: 5,
-            //    maxRetryDelay: TimeSpan.FromSeconds(10),
-            //    errorNumbersToAdd: null
-            //);
             options.CommandTimeout(1800);
+        },
+        dbContextOptions =>
+        {
+            dbContextOptions.ConfigureWarnings(w =>
+                w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
         });
 
         return services;
