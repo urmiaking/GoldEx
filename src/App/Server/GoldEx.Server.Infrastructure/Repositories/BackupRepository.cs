@@ -1,17 +1,14 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using GoldEx.Sdk.Common.DependencyInjections;
+﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Shared.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace GoldEx.Server.Infrastructure.Repositories;
 
 [ScopedService]
-internal class BackupRepository(IConfiguration config, IHostEnvironment env, IOptions<BackupSettings> options) : IBackupRepository
+internal class BackupRepository(IConfiguration config, IOptions<BackupSettings> options) : IBackupRepository
 {
     private readonly string _maintenanceConnection = config
         .GetConnectionString("GoldEx") ?? throw new InvalidOperationException();

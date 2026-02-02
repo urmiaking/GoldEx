@@ -57,12 +57,10 @@
 @code
 {
     private bool _drawerOpen;
-    private string? _selectedValue;
 
     private void NavigateTo(string url)
     {
         _drawerOpen = false;
-        _selectedValue = null;
         Navigation.NavigateTo(url);
     }
 }
