@@ -80,7 +80,7 @@ public class InvoicePaymentVm
                     => $"{sideTitle} - {typeTitle} (عیار {GoldFineness.Value.ToCurrencyFormat()})",
 
                 PaymentType.CustomerTransfer when Endorser is not null
-                    => $"{sideTitle} - {sideAbbr} توسط {Endorser.FullName} " +
+                    => $"{sideTitle} - {sideAbbr} {typeTitle} توسط {Endorser.FullName} " +
                        $"{(TargetInvoice is not null 
                            ? $"بابت فاکتور {TargetInvoice.InvoiceType.GetDisplayName()} شماره {TargetInvoice.InvoiceNumber}" 
                            : "")}",
