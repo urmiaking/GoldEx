@@ -200,7 +200,7 @@ public partial class CoinItemEditor
         if (Model.CoinInstance.Coin.StartMintYear is 0)
             return null;
 
-        return new DateTime(Model.CoinInstance.Coin.StartMintYear, 1, 1);
+        return new DateTime(Model.CoinInstance.Coin.StartMintYear, 3, 25);
     }
 
     private DateTime? GetMaxDate()
