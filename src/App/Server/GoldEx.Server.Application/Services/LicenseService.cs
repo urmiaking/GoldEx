@@ -2,14 +2,17 @@
 using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
+using GoldEx.Sdk.Server.Application.Exceptions;
 using GoldEx.Sdk.Server.Application.Models;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.Licenses;
+using GoldEx.Server.Domain.AppLicenseAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.Licenses;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Hosting;
@@ -17,9 +20,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using GoldEx.Sdk.Server.Application.Exceptions;
-using GoldEx.Server.Domain.AppLicenseAggregate;
-using GoldEx.Shared.Enums;
+using GoldEx.Server.Application.Extensions;
 using VHDLicenseManager;
 using VHDLicenseManager.Requests;
 using VHDLicenseManager.Responses;
@@ -41,7 +42,7 @@ internal class LicenseService(
 {
     public Task<GetLicenseResponse> GetLicenseAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new GetLicenseResponse(productLicense.Plan, productLicense.ExpireDate));
+        return Task.FromResult(new GetLicenseResponse(productLicense.Plan, productLicense.RegisteredAt, productLicense.ExpireDate));
         //return Task.FromResult(new GetLicenseResponse(LicensePlan.Trial, DateTime.Now.AddDays(2)));
     }
 
@@ -63,7 +64,7 @@ internal class LicenseService(
 
                 await settingRepository.UpdateAsync(settings, cancellationToken);
 
-                var newLicenseResponse = await licenseManager.RegisterAsync("GoldEx",
+                var newLicenseResponse = await licenseManager.RegisterAsync(nameof(GoldEx),
                     GetDomainAddress(),
                     ApiUrls.Licenses.CallBack(),
                     [],
@@ -136,7 +137,10 @@ internal class LicenseService(
         switch (activationResponse.Result)
         {
             case LicenseActivationResult.Activated:
-                productLicense.UpdateLicense(LicensePlan.Trial, DateTime.Today.AddDays(30));
+                var license = await licenseManager.GetLicenseAsync(nameof(GoldEx), request.LicenseId, cancellationToken) 
+                              ?? throw new NotFoundException();
+
+                productLicense.UpdateLicense(license.Type.GetLicensePlan(), license.RegisteredAt, license.Expiry);
                 break;
             case LicenseActivationResult.InvalidIP:
             case LicenseActivationResult.NotFound:

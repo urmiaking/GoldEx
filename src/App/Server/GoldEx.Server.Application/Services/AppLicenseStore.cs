@@ -29,4 +29,12 @@ internal class AppLicenseStore(IAppLicenseRepository repository) : ILicenseStore
             await repository.UpdateAsync(existingLicense, cancellationToken);
         }
     }
+
+    public async Task DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        var appLicense = await GetAsync(cancellationToken);
+
+        if (appLicense is not null) 
+            await repository.DeleteAsync(appLicense, cancellationToken);
+    }
 }

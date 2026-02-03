@@ -304,7 +304,7 @@ internal static class ServiceCollectionExtensions
 
     internal static IServiceCollection AddLicense(this IServiceCollection services)
     {
-        services.AddScoped<License>(sp =>
+        services.AddSingleton<License>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
             var url = config["License:BaseUrl"];
