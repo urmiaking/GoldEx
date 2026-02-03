@@ -1,5 +1,4 @@
-﻿@using GoldEx.Client.Components.Extensions
-@using GoldEx.Sdk.Common.Extensions
+﻿@using GoldEx.Sdk.Common.Extensions
 @using GoldEx.Shared.Enums
 @using GoldEx.Shared.Routings
 @using Humanizer
@@ -27,26 +26,33 @@
                 </MudText>
                 @if (_licenseInfo is not null)
                 {
-                    @if (_licenseInfo.Plan is LicensePlan.Unregistered)
+                    if (_licenseInfo.Plan == LicensePlan.Unregistered)
                     {
-                        <MudButton Class="mt-2" Color="Color.Success" Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.CheckCircle" Size="Size.Small"
-                                   Href="@ClientRoutes.RegisterProduct.Index">فعالسازی نرم افزار</MudButton>
+                        <MudButton Class="mt-2"
+                                   Color="Color.Success"
+                                   Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                                   Size="Size.Small"
+                                   Href="@ClientRoutes.RegisterProduct.Index">
+                            فعالسازی نرم افزار
+                        </MudButton>
                     }
                     else
                     {
-                        <MudText Class="mt-2" Typo="Typo.body2" Color="GetLicenseColor(_licenseInfo)">
-                            @_licenseInfo.Plan.GetDisplayName() @(_licenseInfo.IsExpired ? "(منقضی شده)" : "")
+                        <MudText Class="mt-2"
+                                 Typo="Typo.body2"
+                                 Color="GetLicenseColor(_licenseInfo)">
+                            @_licenseInfo.Plan.GetDisplayName()
+                            @(_licenseInfo.IsExpired ? "(منقضی شده)" : "")
                         </MudText>
 
-                        @if (_licenseInfo.ExpireDate != DateTime.MinValue && !_licenseInfo.IsExpired)
+                        @if (!_licenseInfo.IsExpired && _licenseInfo.ExpireDate != DateTime.MinValue)
                         {
-                            var remaining = _licenseInfo.ExpireDate - DateTime.Today;
-                            var durationDays = _licenseInfo.Plan == LicensePlan.Trial ? 30 : 365;
-                            var progress = durationDays > 0 ? Math.Max(0, remaining.TotalDays / durationDays * 100) : 0;
+                            <MudProgressLinear Class="mt-2"
+                                               Value="@GetLicenseProgress(_licenseInfo)"
+                                               Color="GetLicenseColor(_licenseInfo)"
+                                               Striped="GetLicenseProgress(_licenseInfo) < 25" />
 
-                            <MudProgressLinear Class="mt-2" Value="progress" Color="GetLicenseColor(_licenseInfo)"
-                                               Striped="progress < 25" />
                             <MudText Typo="Typo.caption" Align="Align.Center">
                                 پایان اشتراک: @_licenseInfo.ExpireDate.Humanize()
                             </MudText>
@@ -64,13 +70,18 @@
                         }
                         else if (_licenseInfo.IsExpired)
                         {
-                            <MudButton Class="mt-2" Variant="Variant.Filled" Color="Color.Success"
-                                       StartIcon="@Icons.Material.Filled.CheckCircle" Size="Size.Small">
+                            <MudButton Class="mt-2"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle"
+                                       Size="Size.Small">
                                 تمدید اشتراک نرم افزار
                             </MudButton>
                         }
                     }
                 }
+
+
             </div>
 
             <MudDivider Class="my-4" />

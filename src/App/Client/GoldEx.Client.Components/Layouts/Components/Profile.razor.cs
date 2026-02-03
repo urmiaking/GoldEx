@@ -41,8 +41,8 @@ public partial class Profile
         }
         catch
         {
-            _color = Color.Error;
-            _status = "آفلاین";
+            _color = Color.Success;
+            _status = "آنلاین";
         }
         finally
         {
@@ -58,6 +58,7 @@ public partial class Profile
         {
             _username = User?.GetDisplayName();
             await CheckServerHealthAsync();
+            await LoadLicenseAsync();
         }
         else
         {
@@ -76,12 +77,6 @@ public partial class Profile
 
         _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
         Navigation.LocationChanged += OnLocationChanged;
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadLicenseAsync();
-        await base.OnInitializedAsync();
     }
 
     private async Task LoadLicenseAsync()
@@ -133,14 +128,28 @@ public partial class Profile
         };
     }
 
-    private string GetLicenseText(GetLicenseResponse licenseInfo)
+    private double GetLicenseProgress(GetLicenseResponse license)
     {
-        return licenseInfo.Plan switch
-        {
-            LicensePlan.Unregistered => licenseInfo.Plan.GetDisplayName(),
-            LicensePlan.Trial => $"{licenseInfo.Plan.GetDisplayName()}",
-            LicensePlan.Regular => licenseInfo.Plan.GetDisplayName(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+        if (license.Plan == LicensePlan.Unregistered)
+            return 0;
+
+        if (license.ExpireDate == DateTime.MinValue)
+            return 0;
+
+        var now = DateTime.UtcNow.Date;
+        var start = license.RegisteredAt.Date;
+        var end = license.ExpireDate.Date;
+
+        if (now >= end)
+            return 0;
+
+        var totalDays = (end - start).TotalDays;
+        if (totalDays <= 0)
+            return 0;
+
+        var remainingDays = (end - now).TotalDays;
+
+        return Math.Clamp((remainingDays / totalDays) * 100, 0, 100);
     }
+
 }

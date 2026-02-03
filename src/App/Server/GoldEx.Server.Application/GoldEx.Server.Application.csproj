@@ -14,7 +14,7 @@
 		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="24.2.7" />
 		<PackageReference Include="DevExpress.Drawing.Skia" Version="24.2.7" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
-		<PackageReference Include="VHDLicenseManager" Version="1.0.32" />
+		<PackageReference Include="VHDLicenseManager" Version="1.0.33" />
 	</ItemGroup>
 
 	<ItemGroup>

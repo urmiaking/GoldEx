@@ -20,6 +20,7 @@ using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Ui.Web.Extensions;
 using System.Reflection;
+using GoldEx.Server.Application.Extensions;
 using VHDLicenseManager;
 using VHDLicenseManager.Responses;
 
@@ -206,29 +207,25 @@ public static class WebHostingExtensions
         if (appLicense is null) 
         {
             logger.LogWarning("No license found. registration required.");
-            productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue);
+            productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
             return;
         }
 
         try
         {
             using var license = new License(url);
-            var response = await license.GetLicenseAsync("GoldEx", appLicense.LicenseId);
+            var response = await license.GetLicenseAsync(nameof(GoldEx), appLicense.LicenseId);
 
             if (response is null)
             {
                 logger.LogError("Invalid license.");
-                productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue);
+                productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
                 return;
             }
 
             productLicense.UpdateLicense(
-                response.Type switch
-                {
-                    LicenseType.Trial => LicensePlan.Trial,
-                    LicenseType.Regular => LicensePlan.Regular,
-                    _ => throw new ArgumentOutOfRangeException()
-                },
+                response.Type.GetLicensePlan(),
+                response.RegisteredAt,
                 response.Expiry
             );
 
@@ -237,7 +234,7 @@ public static class WebHostingExtensions
         catch (Exception ex)
         {
             logger.LogError(ex, "License server unavailable.");
-            productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue);
+            productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
         }
     }
 
