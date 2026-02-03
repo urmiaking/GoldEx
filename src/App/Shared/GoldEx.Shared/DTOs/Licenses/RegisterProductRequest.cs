@@ -1,3 +1,9 @@
 ﻿namespace GoldEx.Shared.DTOs.Licenses;
 
-public record RegisterProductRequest(string InstitutionName, string Address, string PhoneNumber, int Token, byte[]? IconContent);
+public record RegisterProductRequest(
+    string InstitutionName,
+    string Address,
+    string InstitutionPhoneNumber,
+    string PhoneNumber,
+    string Token,
+    byte[]? IconContent);

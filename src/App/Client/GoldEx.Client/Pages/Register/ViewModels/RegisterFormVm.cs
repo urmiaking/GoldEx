@@ -15,13 +15,17 @@ public class RegisterFormVm
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public string Address { get; set; } = default!;
 
-    [Display(Name = "شماره تلفن")]
+    [Display(Name = "شماره تلفن مجموعه")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public string InstitutionPhoneNumber { get; set; } = default!;
+
+    [Display(Name = "شماره همراه")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public string PhoneNumber { get; set; } = default!;
 
     [Display(Name = "کد فعالسازی")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public int? Token { get; set; }
+    public string? Token { get; set; }
 
     [Display(Name = "لوگوی گالری")]
     public IBrowserFile? IconFile { get; set; }
@@ -37,7 +41,7 @@ public class RegisterFormVm
         {
             InstitutionName = response.InstitutionName,
             Address = response.Address,
-            PhoneNumber = response.PhoneNumber,
+            InstitutionPhoneNumber = response.PhoneNumber,
             HasIcon = response.HasIcon
         };
     }
@@ -47,6 +51,6 @@ public class RegisterFormVm
         if (Token is null)
             throw new ArgumentNullException();
 
-        return new RegisterProductRequest(InstitutionName, Address, PhoneNumber, Token.Value, IconContent);
+        return new RegisterProductRequest(InstitutionName, Address, InstitutionPhoneNumber, PhoneNumber, Token, IconContent);
     }
 }

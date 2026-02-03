@@ -55,7 +55,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
         MeltingBatchId batchId,
         DateTime? postingDate = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
         return new InventoryStock
         {
@@ -77,7 +77,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
         InventoryEntryId? inventoryEntryId = null,
         InventoryExitId? inventoryExitId = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0, nameof(changeAmount));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
         return new InventoryStock
         {

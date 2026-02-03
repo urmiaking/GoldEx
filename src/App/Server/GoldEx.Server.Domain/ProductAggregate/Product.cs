@@ -16,8 +16,8 @@ public class Product : EntityBase<ProductId>
         decimal fineness,
         GoldUnitType goldUnitType)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
-        ArgumentOutOfRangeException.ThrowIfLessThan(fineness, 0, nameof(fineness));
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(fineness, 0);
 
         return new Product
         {
@@ -41,8 +41,8 @@ public class Product : EntityBase<ProductId>
         ProductCategoryId? productCategoryId,
         MoltenGold? moltenGold)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
-        ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0);
 
         if (wageType is Shared.Enums.WageType.Percent && wage > 100)
             throw new ArgumentOutOfRangeException(nameof(wage), "درصد اجرت باید بین 0 الی 100 باشد");
@@ -75,8 +75,8 @@ public class Product : EntityBase<ProductId>
         PriceUnitId? stonePriceUnitId,
         ProductCategoryId? productCategoryId)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
-        ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0, nameof(wage));
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0);
 
         if (wageType is Shared.Enums.WageType.Percent && wage > 100)
             throw new ArgumentOutOfRangeException(nameof(wage), $"درصد اجرت برای جنس {name} باید بین 0 الی 100 باشد");

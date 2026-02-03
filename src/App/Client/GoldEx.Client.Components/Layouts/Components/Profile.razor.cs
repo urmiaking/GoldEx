@@ -1,12 +1,14 @@
 ﻿using GoldEx.Client.Components.Extensions;
 using GoldEx.Client.Components.Services.Abstractions;
+using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Licenses;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MudBlazor;
-using static MudBlazor.Colors;
 
 namespace GoldEx.Client.Components.Layouts.Components;
 
@@ -19,6 +21,7 @@ public partial class Profile
     private string? _username;
     private string _status = "در حال بررسی...";
     private bool _healthMonitorOpen;
+    private GetLicenseResponse? _licenseInfo;
 
     [Inject] private IThemeService? ThemeService { get; set; }
 
@@ -75,6 +78,20 @@ public partial class Profile
         Navigation.LocationChanged += OnLocationChanged;
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLicenseAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadLicenseAsync()
+    {
+        await SendRequestAsync<ILicenseService, GetLicenseResponse>(
+            action: (s, ct) => s.GetLicenseAsync(ct),
+            afterSend: response => _licenseInfo = response,
+            createScope: true);
+    }
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _currentUrl = Navigation.ToBaseRelativePath(e.Location);
@@ -88,8 +105,6 @@ public partial class Profile
             await ThemeService.SetPaletteAsync(paletteName);
         }
     }
-
-    
 
     public override ValueTask DisposeAsync()
     {
@@ -106,5 +121,26 @@ public partial class Profile
 
             StateHasChanged();
         }
+    }
+
+    private Color GetLicenseColor(GetLicenseResponse licenseInfo)
+    {
+        return licenseInfo.Plan switch {
+            LicensePlan.Unregistered => Color.Error,
+            LicensePlan.Trial => Color.Info,
+            LicensePlan.Regular => Color.Success,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    private string GetLicenseText(GetLicenseResponse licenseInfo)
+    {
+        return licenseInfo.Plan switch
+        {
+            LicensePlan.Unregistered => licenseInfo.Plan.GetDisplayName(),
+            LicensePlan.Trial => $"{licenseInfo.Plan.GetDisplayName()}",
+            LicensePlan.Regular => licenseInfo.Plan.GetDisplayName(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 }

@@ -52,16 +52,22 @@ public partial class RegisterForm
 
         await SendRequestAsync<ILicenseService>(
             action: (s, ct) => s.RegisterProductAsync(request, ct),
-            afterSend: () =>
+            afterSend: async () =>
             {
                 AddSuccessToast("نرم افزار با موفقیت فعال شد");
+                await Task.Delay(3000);
                 Navigation.NavigateTo(ClientRoutes.Home.Index, forceLoad: true);
-                return Task.CompletedTask;
             });
     }
 
     private async Task OnSendToken()
     {
+        if (string.IsNullOrEmpty(_model.PhoneNumber))
+        {
+            AddErrorToast("لطفا شماره همراه خود را وارد کنید");
+            return;
+        }
+
         _tokenSent = true;
         _sendTokenDisabled = true;
         StartOtpTimer();

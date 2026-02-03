@@ -1,13 +1,18 @@
 ﻿using DevExpress.AspNetCore;
 using DevExpress.AspNetCore.Reporting;
+using DevExpress.Security.Resources;
 using GoldEx.Client;
 using GoldEx.Client.Extensions;
 using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Server.Application.Models;
 using GoldEx.Server.Application;
+using GoldEx.Server.Application.Services.Abstractions;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Common.Middlewares;
 using GoldEx.Server.Components;
 using GoldEx.Server.Components.Account;
 using GoldEx.Server.Infrastructure;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -15,24 +20,24 @@ using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Ui.Web.Extensions;
 using System.Reflection;
+using VHDLicenseManager;
+using VHDLicenseManager.Responses;
 
 namespace GoldEx.Server.Extensions;
 
 public static class WebHostingExtensions
 {
-    public static async Task<WebApplication> ConfigureServices(this WebApplicationBuilder builder)
+    public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         var configuration = builder.Configuration;
 
-        builder.SetupIconDirectory();
+        SetupIconDirectory(builder);
 
         builder.Services
             .AddClientServerServices()
             .AddServer(configuration)
             .AddApplication()
             .AddInfrastructure(configuration);
-
-        await builder.Services.AddLicense();
 
         return builder.Build();
     }
@@ -65,7 +70,8 @@ public static class WebHostingExtensions
 
         app.UseHttpsRedirection();
 
-        app.UseReporting(settings => {
+        app.UseReporting(settings =>
+        {
             settings.UserDesignerOptions.DataBindingMode =
                 DevExpress.XtraReports.UI.DataBindingMode.ExpressionsAdvanced;
         });
@@ -184,5 +190,65 @@ public static class WebHostingExtensions
         loggerFactory.AddSerilog(Log.Logger);
 
         return app;
+    }
+
+    public static async Task InitializeLicenseAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+
+        var licenseStore = scope.ServiceProvider.GetRequiredService<ILicenseStore>();
+        var productLicense = scope.ServiceProvider.GetRequiredService<ProductLicense>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<ProductLicense>>();
+        var url = scope.ServiceProvider.GetRequiredService<IConfiguration>()["License:BaseUrl"];
+
+        var appLicense = await licenseStore.GetAsync();
+
+        if (appLicense is null) 
+        {
+            logger.LogWarning("No license found. registration required.");
+            productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue);
+            return;
+        }
+
+        try
+        {
+            using var license = new License(url);
+            var response = await license.GetLicenseAsync("GoldEx", appLicense.LicenseId);
+
+            if (response is null)
+            {
+                logger.LogError("Invalid license.");
+                productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue);
+                return;
+            }
+
+            productLicense.UpdateLicense(
+                response.Type switch
+                {
+                    LicenseType.Trial => LicensePlan.Trial,
+                    LicenseType.Regular => LicensePlan.Regular,
+                    _ => throw new ArgumentOutOfRangeException()
+                },
+                response.Expiry
+            );
+
+            logger.LogInformation($"License applied successfully. License plan: {productLicense.Plan.ToString()}, Expire date: {productLicense.ExpireDate}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "License server unavailable.");
+            productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue);
+        }
+    }
+
+    private static void SetupIconDirectory(WebApplicationBuilder builder)
+    {
+        var env = builder.Environment;
+
+        var iconPath = env.GetAppIconDirectory();
+        var absoluteIconPath = Path.Combine(env.WebRootPath, iconPath);
+
+        AppDomain.CurrentDomain.SetData("DXResourceDirectory", absoluteIconPath);
+        AccessSettings.StaticResources.TrySetRules(DirectoryAccessRule.Allow(absoluteIconPath));
     }
 }
