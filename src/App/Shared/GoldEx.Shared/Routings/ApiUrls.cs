@@ -639,6 +639,7 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Licenses.Base, ApiRoutes.Licenses.SendToken)
                 .FormatRoute(new { phoneNumber });
 
+        public static string CallBack() => BuildUrl(ApiRoutes.Licenses.Base, ApiRoutes.Licenses.CallbackUrl);
     }
 
     public class AppReleases

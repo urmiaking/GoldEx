@@ -11,12 +11,15 @@ try
     builder.Host.ConfigureSerilog();
     Console.WriteLine($@"Environment: {builder.Environment.EnvironmentName}");
 
-    var app = await builder.ConfigureServices();
+    var app = builder.ConfigureServices();
 
     app.ApplyDatabaseMigrations<GoldExDbContext>();
+
     await app.SeedDatabaseAsync();
     
     app.ConfigureSqlSerilog();
+
+    await app.InitializeLicenseAsync();
 
     app.ConfigurePipeline();
 

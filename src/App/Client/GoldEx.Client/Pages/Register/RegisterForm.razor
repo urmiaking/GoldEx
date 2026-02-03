@@ -69,14 +69,14 @@
                             </MudItem>
 
                             <MudItem xs="12" md="6">
-                                <MudTextField @bind-Value="_model.PhoneNumber"
-                                              Label="@_model.GetDisplayName(() => _model.PhoneNumber)"
+                                <MudTextField @bind-Value="_model.InstitutionPhoneNumber"
+                                              Label="@_model.GetDisplayName(() => _model.InstitutionPhoneNumber)"
                                               Variant="Variant.Outlined"
                                               Margin="Margin.Dense"
                                               Required
-                                              For="() => _model.PhoneNumber"
+                                              For="() => _model.InstitutionPhoneNumber"
                                               Adornment="Adornment.Start"
-                                              AdornmentIcon="@Icons.Material.Filled.PhoneAndroid" />
+                                              AdornmentIcon="@Icons.Material.Filled.LocalPhone" />
                             </MudItem>
 
                             <MudItem xs="12">
@@ -104,52 +104,62 @@
             <MudGrid Spacing="2" Class="mb-2">
                 <MudItem xs="12" md="6">
                     <div class="d-flex align-center gap-2">
-                        <MudNumericField @bind-Value="_model.Token"
-                                         Label="@_model.GetDisplayName(() => _model.Token)"
-                                         Variant="Variant.Outlined"
-                                         For="() => _model.Token"
-                                         Margin="Margin.Dense"
-                                         HideSpinButtons="true"
-                                         Immediate
-                                         Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Filled.Key"
-                                         Disabled="!_tokenSent" />
-                        <MudHidden Breakpoint="Breakpoint.MdAndDown">
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Success"
-                                       Disabled="_sendTokenDisabled"
-                                       OnClick="OnSendToken"
+                    <MudTextField @bind-Value="_model.PhoneNumber"
+                                  Label="@_model.GetDisplayName(() => _model.PhoneNumber)"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Required
+                                  For="() => _model.PhoneNumber"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.PhoneAndroid"/>
+                    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Success"
+                                   Disabled="_sendTokenDisabled"
+                                   OnClick="OnSendToken"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Send">
+                            @(_sendTokenDisabled
+                                ? $"ارسال مجدد ({_otpRemaining} ثانیه)"
+                                : "ارسال کد")
+                        </MudButton>
+                    </MudHidden>
+                    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                        <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Info"
                                        Size="Size.Small"
-                                       StartIcon="@Icons.Material.Filled.Send">
-                                @(_sendTokenDisabled
-                                                                ? $"ارسال مجدد ({_otpRemaining} ثانیه)"
-                                                                : "ارسال کد")
-                            </MudButton>
-                        </MudHidden>
-                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                            <MudIconButton Icon="@Icons.Material.Filled.Send"
-                                           Variant="Variant.Filled"
-                                           Color="Color.Info"
-                                           Size="Size.Small"
-                                           Disabled="_sendTokenDisabled"
-                                           OnClick="OnSendToken" />
+                                       Disabled="_sendTokenDisabled"
+                                       OnClick="OnSendToken"/>
 
-                            @if (_sendTokenDisabled)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                    @_otpRemaining
-                                </MudText>
-                            }
-                        </MudHidden>
+                        @if (_sendTokenDisabled)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @_otpRemaining
+                            </MudText>
+                        }
+                    </MudHidden>
                     </div>
                 </MudItem>
 
-                <MudItem xs="12" md="6" Class="d-flex justify-center justify-md-end align-center gap-2">
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_model.Token"
+                                  Label="@_model.GetDisplayName(() => _model.Token)"
+                                  Variant="Variant.Outlined"
+                                  For="() => _model.Token"
+                                  Margin="Margin.Dense"
+                                  Immediate
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Key"
+                                  Disabled="!_tokenSent"/>
+                </MudItem>
+
+                <MudItem xs="12" Class="d-flex justify-center justify-md-end align-center gap-2">
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Primary"
                                Size="Size.Medium"
                                ButtonType="ButtonType.Submit"
-                               Disabled="!_model.Token.HasValue"
+                               Disabled="string.IsNullOrEmpty(_model.Token)"
                                StartIcon="@Icons.Material.Filled.CheckCircle">
                         ثبت و فعال ‌سازی
                     </MudButton>
@@ -159,7 +169,7 @@
             <MudText Typo="Typo.caption"
                      Color="Color.Secondary"
                      Align="Align.Center"
-                     Class="mt-3">
+                     Class="mt-3 d-flex justify-center">
                 با فعال‌ سازی، نسخه آزمایشی ۳۰ روزه برای شما فعال خواهد شد.
             </MudText>
         </MudPaper>

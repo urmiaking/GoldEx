@@ -1,7 +1,8 @@
 ﻿@using GoldEx.Client.Components.Extensions
-@using GoldEx.Sdk.Common
 @using GoldEx.Sdk.Common.Extensions
+@using GoldEx.Shared.Enums
 @using GoldEx.Shared.Routings
+@using Humanizer
 @inherits GoldEx.Client.Components.Components.GoldExComponentBase
 
 <AuthorizeView>
@@ -13,49 +14,96 @@
             <MudIconButton OnClick="@ToggleProfile" Class="p-0 m-0" Color="Color.Error" Icon="@Icons.Material.Filled.Close"></MudIconButton>
 
             <div class="d-flex flex-column align-center">
-                <MudTooltip Text="@_status" Placement="Placement.Right" Arrow="true">
-                    <MudBadge Color="@_color" Overlap="true" Bordered="true">
-                        <MudAvatar Size="Size.Large" Color="Color.Secondary">@context.User.GetDisplayName().GetInitialsWithPeriods()</MudAvatar>
-                    </MudBadge>
-                </MudTooltip>
+                <div class="d-flex flex-column align-center">
+                    <MudAvatar Size="Size.Large" Color="Color.Secondary">
+                        <MudImage Src="@ApiUrls.Icons.Get(IconType.App, Guid.Empty)" />
+                    </MudAvatar>
+                    <MudChip T="string" Class="mt-n2" Color="@_color" Size="Size.Small">@_status</MudChip>
+                </div>
 
                 <MudText Typo="Typo.h6" Class="mt-2">@_username</MudText>
                 <MudText Typo="Typo.body2">
                     @context.User.Identity?.Name
                 </MudText>
+                @if (_licenseInfo is not null)
+                {
+                    @if (_licenseInfo.Plan is LicensePlan.Unregistered)
+                    {
+                        <MudButton Class="mt-2" Color="Color.Success" Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.CheckCircle" Size="Size.Small"
+                                   Href="@ClientRoutes.RegisterProduct.Index">فعالسازی نرم افزار</MudButton>
+                    }
+                    else
+                    {
+                        <MudText Class="mt-2" Typo="Typo.body2" Color="GetLicenseColor(_licenseInfo)">
+                            @_licenseInfo.Plan.GetDisplayName() @(_licenseInfo.IsExpired ? "(منقضی شده)" : "")
+                        </MudText>
+
+                        @if (_licenseInfo.ExpireDate != DateTime.MinValue && !_licenseInfo.IsExpired)
+                        {
+                            var remaining = _licenseInfo.ExpireDate - DateTime.Today;
+                            var durationDays = _licenseInfo.Plan == LicensePlan.Trial ? 30 : 365;
+                            var progress = durationDays > 0 ? Math.Max(0, remaining.TotalDays / durationDays * 100) : 0;
+
+                            <MudProgressLinear Class="mt-2" Value="progress" Color="GetLicenseColor(_licenseInfo)"
+                                               Striped="progress < 25" />
+                            <MudText Typo="Typo.caption" Align="Align.Center">
+                                پایان اشتراک: @_licenseInfo.ExpireDate.Humanize()
+                            </MudText>
+
+                            @if (_licenseInfo.Plan == LicensePlan.Trial)
+                            {
+                                <MudButton Class="mt-2"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Stars"
+                                           Size="Size.Small">
+                                    ارتقا به نسخه کامل
+                                </MudButton>
+                            }
+                        }
+                        else if (_licenseInfo.IsExpired)
+                        {
+                            <MudButton Class="mt-2" Variant="Variant.Filled" Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle" Size="Size.Small">
+                                تمدید اشتراک نرم افزار
+                            </MudButton>
+                        }
+                    }
+                }
             </div>
 
             <MudDivider Class="my-4" />
-            
-      
-            <!-- Color Palette Selector -->  
-            <div class="d-flex flex-column align-center">  
-                <MudText Typo="Typo.subtitle2" Class="mb-2">انتخاب تم</MudText>  
-                <div class="d-flex gap-2 flex-wrap justify-center">  
-                    <div class="palette-collection">  
-                        @{  
-                            var predefinedColors = new Dictionary<string, string>  
-                            {  
-                                { "Gold", "#DAA520" },  
-                                { "Blue", "#1976D2" },  
-                                { "Purple", "#7B1FA2" },  
-                                { "Green", "#388E3C" },  
-                                { "Orange", "#F57C00" },  
-                                { "Red", "#D32F2F" }  
-                            };  
-                        }  
-  
-                        @foreach (var color in predefinedColors)  
-                        {  
-                            <div class="palette-dot @(ThemeService?.CurrentPalette == color.Key ? "selected" : "")"  
-                                 style="background-color: @color.Value;"  
-                                 @onclick="@(() => OnPaletteSelected(color.Key))">  
-                            </div>  
+
+
+            <!-- Color Palette Selector -->
+            <div class="d-flex flex-column align-center">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">انتخاب تم</MudText>
+                <div class="d-flex gap-2 flex-wrap justify-center">
+                    <div class="palette-collection">
+                        @{
+                            var predefinedColors = new Dictionary<string, string>
+                                                {
+                                                { "Gold", "#DAA520" },
+                                                { "Blue", "#1976D2" },
+                                                { "Purple", "#7B1FA2" },
+                                                { "Green", "#388E3C" },
+                                                { "Orange", "#F57C00" },
+                                                { "Red", "#D32F2F" }
+                                                };
+                        }
+
+                        @foreach (var color in predefinedColors)
+                        {
+                            <div class="palette-dot @(ThemeService?.CurrentPalette == color.Key ? "selected" : "")"
+                                 style="background-color: @color.Value;"
+                                 @onclick="@(() => OnPaletteSelected(color.Key))">
+                            </div>
                         }
                     </div>
-                </div>  
-            </div>  
-            
+                </div>
+            </div>
+
             <div class="d-flex align-center justify-center">
                 <MudText Typo="Typo.subtitle2">حالت تاریک</MudText>
                 <MudSwitch Value="@_isDarkMode"
@@ -75,18 +123,18 @@
                     <MudTooltip Text="مدیریت حساب" Placement="Placement.Right" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.ManageAccounts" OnClick="@NavigateToAccountManagement"></MudIconButton>
                     </MudTooltip>
-                    
+
                     <MudTooltip Text="عملکرد برنامه" Placement="Placement.Bottom" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" OnClick="() => _healthMonitorOpen = !_healthMonitorOpen"></MudIconButton>
                         <MudPopover Open="_healthMonitorOpen" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                             <HealthMonitor />
                         </MudPopover>
                     </MudTooltip>
-                    
+
                     <MudTooltip Text="گزارش خطاهای برنامه" Placement="Placement.Bottom" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.ErrorOutline" Href="@ClientRoutes.Logs.Base"></MudIconButton>
                     </MudTooltip>
-                    
+
                     <MudTooltip Text="خروج" Placement="Placement.Right" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" Href="@ApiUrls.Account.Logout(_currentUrl)"></MudIconButton>
                     </MudTooltip>

@@ -22,10 +22,10 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         ProductId? productId,
         Invoice invoice)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(finenessDeductionRate, -250, nameof(finenessDeductionRate));
-        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0, nameof(weight));
-        ArgumentOutOfRangeException.ThrowIfLessThan(gramPrice, 0, nameof(gramPrice));
-        ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 0, nameof(quantity));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(finenessDeductionRate, -250);
+        ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(gramPrice, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 0);
 
         var exchangeRate = invoice.PriceUnit!.IsGoldBased ? null : invoice.ExchangeRate;
 

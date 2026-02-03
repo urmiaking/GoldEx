@@ -11,11 +11,11 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
     private InvoiceCurrencyItem(InvoiceCurrencyItemId id, PriceUnitId currencyId, FinancialAccountId? financialAccountId, decimal unitPrice, decimal amount,
         decimal taxPercent, decimal profitPercent)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0, nameof(unitPrice));
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(amount, 0, nameof(amount));
-        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100, nameof(profitPercent));
-        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0, nameof(taxPercent));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(unitPrice, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(amount, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThan(profitPercent, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profitPercent, 100);
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0);
 
         Id = id;
         CurrencyId = currencyId;

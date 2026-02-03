@@ -35,6 +35,7 @@ public class LicensesController(ILicenseService service, IServerLicenseService l
         return NoContent();
     }
 
+    [AllowAnonymous]
     [HttpPost(ApiRoutes.Licenses.CallbackUrl)]
     public async Task<IActionResult> Callback(LicenseCallbackRequest request, CancellationToken cancellationToken = default)
     {
