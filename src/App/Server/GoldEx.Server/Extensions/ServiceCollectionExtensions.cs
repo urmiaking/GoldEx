@@ -5,7 +5,9 @@ using GoldEx.Client.Components.Services;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Api.Identity;
+using GoldEx.Sdk.Server.Application.Models;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.HealthChecks;
 using GoldEx.Server.Infrastructure.Services;
@@ -14,6 +16,7 @@ using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Settings;
 using Mapster;
 using MapsterMapper;
@@ -22,6 +25,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog.Ui.Core.Extensions;
 using Serilog.Ui.MsSqlServerProvider.Extensions;
@@ -29,9 +33,6 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using GoldEx.Sdk.Server.Application.Models;
-using GoldEx.Shared.Enums;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using VHDLicenseManager;
 using VHDLicenseManager.Responses;
 
@@ -301,66 +302,17 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static async Task<ProductLicense?> AddLicense(this IServiceCollection services)
+    internal static IServiceCollection AddLicense(this IServiceCollection services)
     {
-        services.AddScoped<License>();
-
-        var logger = GetLogger();
-
-        ProductLicense? productLicense = null;
-        GetLicenseResponse? licenseResponse = null;
-        try
+        services.AddSingleton<License>(sp =>
         {
-            using var license = new License();
+            var config = sp.GetRequiredService<IConfiguration>();
+            var url = config["License:BaseUrl"];
+            return new License(url);
+        });
 
-#if RELEASE
-            licenseResponse = await license.GetLicenseAsync("GoldEx", null);
-#endif
+        services.AddSingleton<ProductLicense>();
 
-            if (licenseResponse != null &&
-                licenseResponse.Type == LicenseType.Trial &&
-                licenseResponse.Expiry <= DateTime.Now)
-            {
-                throw new InvalidOperationException("Your trial license is expired.");
-            }
-
-            if (licenseResponse is null)
-            {
-                logger.LogWarning("No license available. You need to register and acquire a valid license.");
-            }
-            else
-            {
-                logger.LogInformation("License acquired successfully.");
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to connect to the license server.");
-            //throw;
-        }
-        finally
-        {
-            productLicense = new ProductLicense(licenseResponse?.Type 
-                switch 
-                {
-                    LicenseType.Trial => LicensePlan.Trial,
-                    LicenseType.Regular => LicensePlan.Regular,
-                    _ => LicensePlan.Unregistered
-                },
-                licenseResponse?.Expiry ?? DateTime.MinValue);
-
-            services.AddSingleton(productLicense);
-        }
-
-        return productLicense;
-    }
-
-    private static ILogger GetLogger()
-    {
-        using var loggerFactory = LoggerFactory
-            .Create(loggingBuilder => loggingBuilder.SetMinimumLevel(LogLevel.Trace)
-                .AddConsole());
-
-        return loggerFactory.CreateLogger<Program>();
+        return services;
     }
 }

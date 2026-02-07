@@ -17,7 +17,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -221,6 +221,24 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("UserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.AppLicenseAggregate.AppLicense", b =>
+                {
+                    b.Property<Guid>("LicenseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VerificationKey")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("LicenseId");
+
+                    b.ToTable("AppLicenses", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.BarcodeInquiryAggregate.BarcodeInquiry", b =>
@@ -828,6 +846,43 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasFilter("[CustomerId] IS NOT NULL AND [ParentAccountId] IS NOT NULL AND [PriceUnitId] IS NOT NULL");
 
                     b.ToTable("LedgerAccounts", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.LicensePaymentAggregate.LicensePayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrentPlan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentDescription")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PaymentReference")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("RequestedMonths")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RequestedPlan")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppLicensePayments", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.MeltingBatchAggregate.MeltingBatch", b =>

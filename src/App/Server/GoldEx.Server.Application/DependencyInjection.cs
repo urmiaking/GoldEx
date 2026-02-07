@@ -14,6 +14,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddHostedService<PriceUpdaterBackgroundService>();
+        services.AddHostedService<LicenseUpdaterBackgroundService>();
         services.AddHostedService<NotificationBackgroundService>();
         services.AddHostedService<BlogDiskSyncManager>();
 

@@ -1038,6 +1038,22 @@ internal class AccountingTransactionService(
                           ?? throw new InvalidOperationException("Settlement rate is required for cross-currency transfer.")
                         : (decimal?)null;
 
+                    // محاسبه PostingDate درست حواله
+                    var transferPostingDate = invoice.CreatedAt;
+
+                    if (payment.TargetInvoiceId.HasValue)
+                    {
+                        var targetInvoice = await invoiceRepository
+                            .Get(new InvoicesByIdSpecification(payment.TargetInvoiceId.Value))
+                            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
+
+                        if (targetInvoice.CreatedAt > transferPostingDate)
+                            transferPostingDate = targetInvoice.CreatedAt;
+                    }
+
+                    // ⬅️ فقط این خط کلید حل مشکله
+                    basePosting = transferPostingDate;
+
                     if (invoice.InvoiceType == InvoiceType.Sell)
                     {
                         // فروش: هر دو Receivable

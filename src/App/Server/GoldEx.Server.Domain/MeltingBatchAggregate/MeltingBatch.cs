@@ -27,7 +27,7 @@ public class MeltingBatch : EntityBase<MeltingBatchId>
 
     private MeltingBatch(decimal totalWeight, GoldUnitType weightUnitType)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0, nameof(totalWeight));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0);
 
         Id = new MeltingBatchId(Guid.NewGuid());
         TotalWeight = totalWeight;

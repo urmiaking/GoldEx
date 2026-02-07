@@ -346,4 +346,12 @@ public static class ApiRoutes
         public const string Base = "/api/app-releases";
         public const string GetList = "";
     }
+
+    public class LicensePayments
+    {
+        public const string Base = "/api/license-payments";
+        public const string GetList = "";
+        public const string Create = "";
+        public const string SetStatus = "{id}/{status}";
+    }
 }

@@ -1,0 +1,111 @@
+﻿@attribute [Route(ClientRoutes.RegisterProduct.Upgrade)]
+@attribute [Route(ClientRoutes.RegisterProduct.Extend)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<PageTitle>@PageTitleText</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudStack Spacing="2" AlignItems="AlignItems.Center" Class="mb-6">
+        <MudAvatar Size="Size.Large" Color="Color.Primary">
+            <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Size="Size.Large" />
+        </MudAvatar>
+
+        <MudText Typo="Typo.h4" Align="Align.Center" Color="Color.Primary">
+            @HeaderText <span class="brand-text fs-2">GoldEx</span>
+        </MudText>
+
+        <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Info">
+            @DescriptionText
+        </MudText>
+    </MudStack>
+
+    <MudGrid Spacing="4" Class="mb-8">
+        @foreach (var plan in SubscriptionPlans)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <div class="plan-card @(plan.IsSelected ? "selected" : "")"
+                     @onclick="() => SelectPlan(plan.Id)">
+                    <MudCard Elevation="8" Class="h-100">
+                        <MudCardContent Class="d-flex flex-column h-100">
+                            <MudStack Spacing="2" AlignItems="AlignItems.Center" Class="flex-grow-1">
+                                <MudAvatar Size="Size.Large" Color="@(plan.IsSelected? Color.Primary: Color.Secondary)">
+                                    <MudIcon Icon="@GetPlanIcon(plan.DurationMonths)" Size="Size.Large" />
+                                </MudAvatar>
+
+                                <MudText Typo="Typo.h6" Align="Align.Center">
+                                    @plan.Title
+                                </MudText>
+
+                                <MudChip Color="@(plan.IsSelected? Color.Primary: Color.Secondary)"
+                                         Variant="Variant.Filled" T="string">
+                                    @plan.DurationMonths ماهه
+                                </MudChip>
+
+                                <MudDivider Class="my-2" />
+
+                                <div class="text-center">
+                                    @if (plan.OriginalPrice > plan.Price)
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Error" Class="text-decoration-line-through">
+                                            @plan.OriginalPrice.ToString("N0") تومان
+                                        </MudText>
+                                    }
+                                    <MudText Typo="Typo.h5" Color="Color.Success" Class="font-weight-bold">
+                                        @plan.Price.ToString("N0") تومان
+                                    </MudText>
+                                </div>
+                                
+                                <MudList Dense="true" T="string" Class="w-100">  
+                                    @foreach (var benefit in plan.Benefits)  
+                                    {  
+                                        <MudListItem Class="pa-1">  
+                                            <div class="d-flex gap-2 align-center">  
+                                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle"   
+                                                         Color="Color.Success"   
+                                                         Size="Size.Small" />  
+                                                <MudText Typo="Typo.body2">@benefit</MudText>  
+                                            </div>  
+                                        </MudListItem>  
+                                    }  
+                                </MudList> 
+
+                                @if (plan.IsSelected)
+                                {
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Info"
+                                               StartIcon="@Icons.Material.Filled.Check"
+                                               Disabled="@SelectedPlanDisabled"
+                                               OnClick="SubmitUpgradeRequest">
+                                        ثبت درخواست
+                                    </MudButton>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </div>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .plan-card {
+        cursor: pointer;
+        height: 100%;
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .plan-card.selected {
+            transform: scale(1.02);
+        }
+
+            .plan-card.selected .mud-card {
+                border: 2px solid var(--mud-palette-primary);
+            }
+
+        .plan-card:not(.selected) .mud-card {
+            border: 2px solid var(--mud-palette-grey-default);
+        }
+</style>
