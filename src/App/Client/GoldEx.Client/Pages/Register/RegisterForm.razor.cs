@@ -1,5 +1,7 @@
 ﻿using GoldEx.Client.Pages.Register.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components.Forms;
@@ -52,11 +54,11 @@ public partial class RegisterForm
 
         await SendRequestAsync<ILicenseService>(
             action: (s, ct) => s.RegisterProductAsync(request, ct),
-            afterSend: async () =>
+            afterSend: () =>
             {
                 AddSuccessToast("نرم افزار با موفقیت فعال شد");
-                await Task.Delay(3000);
-                Navigation.NavigateTo(ClientRoutes.Home.Index, forceLoad: true);
+                Navigation.NavigateTo(ClientRoutes.RegisterProduct.Success.AppendQueryString(new { PlanType = nameof(LicensePlan.Trial) }));
+                return Task.CompletedTask;
             });
     }
 

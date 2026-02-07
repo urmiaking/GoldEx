@@ -151,5 +151,4 @@ public partial class Profile
 
         return Math.Clamp((remainingDays / totalDays) * 100, 0, 100);
     }
-
 }

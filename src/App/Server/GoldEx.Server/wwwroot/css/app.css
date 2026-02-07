@@ -249,12 +249,12 @@ h1:focus {
 
 /* Custom */
 .responsive-table {
-    height: calc(100vh - 280px);
+    height: calc(100vh - 290px);
 }
 
 @media (min-width: 960px) {
     .responsive-table {
-        height: calc(100vh - 220px);
+        height: calc(100vh - 225px);
     }
 }
 

@@ -12,5 +12,12 @@
         <MudNavLink Href="@ClientRoutes.Settings.SmsTemplates" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Sms">مدیریت قالب های پیامکی</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.SmsLogs" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ManageHistory">تاریخچه پیامک ها</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.BackupRestore" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Restore">پشتیبان گیری و بازنشانی</MudNavLink>
+        <AuthorizeView Roles="@BuiltinRoles.Administrators">
+            <Authorized>
+                <MudNavLink Href="@ClientRoutes.Settings.LicenseRequests" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ListAlt">
+                    درخواست های تمدید و ارتقاء نرم افزار
+                </MudNavLink>
+            </Authorized>
+        </AuthorizeView>
     </MudNavMenu>
 </MudCard>

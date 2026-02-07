@@ -1,0 +1,149 @@
+﻿@attribute [Route(ClientRoutes.RegisterProduct.Success)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<PageTitle>فعالسازی موفق نرم افزار</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudStack Spacing="2" AlignItems="AlignItems.Center" Class="mb-6">
+        <MudAvatar Size="Size.Large" Color="Color.Success">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" />
+        </MudAvatar>
+
+        <MudText Typo="Typo.h4" Align="Align.Center" Color="Color.Success">
+            فعال‌سازی با موفقیت انجام شد
+        </MudText>
+
+        <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Info">
+            نرم‌افزار GoldEx شما با موفقیت فعال شد.
+            اکنون می‌توانید از تمام امکانات نرم‌افزار استفاده کنید.
+        </MudText>
+    </MudStack>
+
+    <MudGrid Spacing="6">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="16" Class="h-100 border border-success">
+                <MudCardContent>
+                    <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                        <MudAvatar Size="Size.Large" Color="Color.Success">
+                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Large" />
+                        </MudAvatar>
+
+                        <MudText Typo="Typo.h6">
+                            اطلاعات فعال‌سازی
+                        </MudText>
+
+                        <MudChip Color="Color.Success" Variant="Variant.Filled" T="string">
+                            فعال شده
+                        </MudChip>
+
+                        <MudDivider Class="my-2" />
+
+                        <MudList Dense="true" T="string" Class="w-100">
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                    <MudText>کد فعال‌سازی: @($"GoldEx-{StringExtensions.GenerateRandomCode(8)}")</MudText>
+                                </div>
+                            </MudListItem>
+
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                    <MudText>تاریخ فعال‌سازی: @DateTime.Now.ToString("F")</MudText>
+                                </div>
+                            </MudListItem>
+
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                    <MudText>نوع نسخه: @_licensePlan.GetDisplayName()</MudText>
+                                </div>
+                            </MudListItem>
+
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                    <MudText>وضعیت: فعال</MudText>
+                                </div>
+                            </MudListItem>
+                        </MudList>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="20" Class="h-100 border border-primary">
+                <MudCardContent>
+                    <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                        <MudAvatar Size="Size.Large" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.Stars" Size="Size.Large" />
+                        </MudAvatar>
+
+                        <MudText Typo="Typo.h6">
+                            ویژگی‌های فعال شده
+                        </MudText>
+
+                        <MudChip Color="Color.Primary" Variant="Variant.Filled" T="string">
+                            آماده استفاده
+                        </MudChip>
+
+                        <MudDivider Class="my-2" />
+
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            تمام امکانات نرم‌افزار برای شما فعال شده است.
+                            می‌توانید همین حالا شروع به کار کنید.
+                        </MudText>
+
+                        <MudList Dense="true" T="string" Class="w-100">
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" />
+                                    <MudText>دسترسی کامل به تمام ماژول‌ها</MudText>
+                                </div>
+                            </MudListItem>
+
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" />
+                                    <MudText>گزارش‌گیری پیشرفته</MudText>
+                                </div>
+                            </MudListItem>
+
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" />
+                                    <MudText>پشتیبانی فنی ۲۴ ساعته</MudText>
+                                </div>
+                            </MudListItem>
+
+                            <MudListItem>
+                                <div class="d-flex gap-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" />
+                                    <MudText>به‌روزرسانی خودکار</MudText>
+                                </div>
+                            </MudListItem>
+                        </MudList>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Class="mt-8 pa-6 text-center" Elevation="8">
+        <MudText Typo="Typo.body1" Class="mb-3">
+            تبریک! نرم‌افزار شما با موفقیت فعال شد.
+            اکنون می‌توانید به صفحه اصلی بروید و از نرم‌افزار استفاده کنید.
+        </MudText>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   Size="Size.Large"
+                   StartIcon="@Icons.Material.Filled.Home"
+                   OnClick="GoToHomePage">
+            رفتن به صفحه اصلی
+        </MudButton>
+    </MudPaper>
+</MudContainer> 

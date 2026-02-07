@@ -644,7 +644,18 @@ public class ApiUrls
 
     public class AppReleases
     {
-        public static string GetList() =>
-            BuildUrl(ApiRoutes.AppReleases.Base, ApiRoutes.AppReleases.GetList);
+        public static string GetList() => BuildUrl(ApiRoutes.AppReleases.Base, ApiRoutes.AppReleases.GetList);
+    }
+
+    public class LicensePayments
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.LicensePayments.Base, ApiRoutes.LicensePayments.GetList);
+
+        public static string Create() => BuildUrl(ApiRoutes.LicensePayments.Base, ApiRoutes.LicensePayments.Create);
+
+        public static string SetStatus(Guid id, LicensePaymentStatus status) =>
+            BuildUrl(ApiRoutes.LicensePayments.Base, ApiRoutes.LicensePayments.SetStatus)
+                .FormatRoute(new { id, status });
+
     }
 }
