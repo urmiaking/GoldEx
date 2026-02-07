@@ -1,0 +1,125 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">ثبت درخواست</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudCard Elevation="3" Class="overflow-hidden">
+                <MudCardContent Class="pa-4">
+                    <MudStack Spacing="0">
+                        <div class="modern-info-item">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Description"
+                                             Size="Size.Small" />
+                                    <MudText Typo="Typo.body2">طرح انتخابی</MudText>
+                                </div>
+                                <MudText Typo="Typo.body2" Class="font-weight-medium">@Plan.Title</MudText>
+                            </div>
+                        </div>
+
+                        <MudDivider />
+
+                        <div class="modern-info-item">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule"
+                                             Size="Size.Small" />
+                                    <MudText Typo="Typo.body2">مدت زمان</MudText>
+                                </div>
+                                <MudText Typo="Typo.body2" Class="font-weight-medium">@Plan.DurationMonths ماه</MudText>
+                            </div>
+                        </div>
+
+                        <MudDivider />
+
+                        <div class="modern-info-item">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Payments"
+                                             Size="Size.Small" />
+                                    <MudText Typo="Typo.body2">مبلغ قابل پرداخت</MudText>
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.body2" Class="font-weight-medium">
+                                        @Plan.Price.ToString("N0") تومان
+                                    </MudText>
+                                </div>
+                            </div>
+                        </div>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+
+            <MudText Typo="Typo.body1" Class="mt-2 mb-1 text-center">
+                اطلاعات پرداخت
+            </MudText>
+
+            <MudForm @ref="form" @onsubmit="Submit">
+                <MudStack Spacing="3">
+                    <MudTextField T="string"
+                                  @bind-Value="PaymentInfo.ReferenceNumber"
+                                  Label="شماره مرجع پرداخت"
+                                  HelperText="شماره مرجع تراکنش بانکی"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  Margin="Margin.Dense"
+                                  RequiredError="شماره مرجع الزامی است"
+                                  Immediate="true"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.ReceiptLong" />
+
+                    <MudTextField T="string"
+                                  @bind-Value="PaymentInfo.Description"
+                                  Label="توضیحات (اختیاری)"
+                                  HelperText="در صورت نیاز می‌توانید توضیحی بنویسید"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Lines="3"
+                                  Immediate="true"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Notes" />
+                </MudStack>
+            </MudForm>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default" Variant="Variant.Text">
+            انصراف
+        </MudButton>
+
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                   Disabled="isSubmitting"
+                   Class="m-2"
+                   OnClick="Submit">
+            @(isSubmitting ? "در حال ثبت..." : "ثبت درخواست")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .modern-info-header {
+        padding: 8px 10px;
+    }
+
+        .modern-info-header .mud-text {
+            color: white !important;
+        }
+
+    .modern-info-item {
+        padding: 4px 0;
+    }
+
+    .modern-price-section {
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-top: 8px;
+    }
+
+        .modern-price-section .mud-icon {
+            color: var(--mud-palette-primary) !important;
+        }
+</style>

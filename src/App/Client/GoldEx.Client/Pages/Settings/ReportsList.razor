@@ -11,7 +11,7 @@
 </div>
 <MudDivider Class="my-2" />
 
-<MudTable T="GetReportResponse" Hover="true" FixedHeader="true" Dense="true" Items="_reports" Loading="_processing"
+<MudTable T="GetReportResponse" Hover="true" FixedHeader="true" Dense="true" Items="_reports" Loading="IsBusy"
           SelectOnRowClick="false" Breakpoint="Breakpoint.None" Elevation="24" Class="p-2 mt-4" ContainerClass="responsive-table">
     <HeaderContent>
         <MudTh>عنوان</MudTh>
@@ -21,10 +21,8 @@
         <MudTd DataLabel="عنوان">@context.DisplayName</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
-                <MudTooltip Text="طراحی">
-                    <MudButton StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
-                                   Color="Color.Primary" OnClick="_ => OnDesignReport(context)">طراحی</MudButton>
-                </MudTooltip>
+                <MudButton StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                           Color="Color.Primary" OnClick="_ => OnDesignReport(context)">طراحی</MudButton>
             </div>
         </MudTd>
     </RowTemplate>

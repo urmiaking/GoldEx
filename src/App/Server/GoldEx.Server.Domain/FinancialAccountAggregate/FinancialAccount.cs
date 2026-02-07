@@ -148,13 +148,13 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         switch (accountType)
         {
             case FinancialAccountType.Cash:
-                ArgumentNullException.ThrowIfNull(cashAccount, nameof(cashAccount));
+                ArgumentNullException.ThrowIfNull(cashAccount);
                 break;
             case FinancialAccountType.LocalBankAccount:
-                ArgumentNullException.ThrowIfNull(localAccount, nameof(localAccount));
+                ArgumentNullException.ThrowIfNull(localAccount);
                 break;
             case FinancialAccountType.InternationalBankAccount:
-                ArgumentNullException.ThrowIfNull(internationalAccount, nameof(internationalAccount));
+                ArgumentNullException.ThrowIfNull(internationalAccount);
                 break;
         }
 
@@ -165,8 +165,8 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
 
             if (isDepositsWithOthers || accountType != FinancialAccountType.Cash)
             {
-                ArgumentException.ThrowIfNullOrEmpty(holderName, nameof(holderName));
-                ArgumentException.ThrowIfNullOrEmpty(brokerName, nameof(brokerName));
+                ArgumentException.ThrowIfNullOrEmpty(holderName);
+                ArgumentException.ThrowIfNullOrEmpty(brokerName);
             }
         }
     }
