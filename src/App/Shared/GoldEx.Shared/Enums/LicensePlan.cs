@@ -10,6 +10,6 @@ public enum LicensePlan
     [Display(Name = "نسخه پایه")]
     Trial = 1,
 
-    [Display(Name = "نسخه کامل")]
+    [Display(Name = "نسخه طلایی")]
     Regular = 2
 }

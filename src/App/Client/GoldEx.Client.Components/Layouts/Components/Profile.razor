@@ -63,8 +63,20 @@
                                            Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            StartIcon="@Icons.Material.Filled.Stars"
+                                           Href="@ClientRoutes.RegisterProduct.Upgrade"
                                            Size="Size.Small">
                                     ارتقا به نسخه کامل
+                                </MudButton>
+                            }
+                            else if ((_licenseInfo.ExpireDate - DateTime.Now).Days <= 7)
+                            {
+                                <MudButton Class="mt-2"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.CheckCircle"
+                                           Href="@ClientRoutes.RegisterProduct.Extend.AppendQueryString(new { ModeParam = LicenseActionMode.Extend })"
+                                           Size="Size.Small">
+                                    تمدید اشتراک نرم افزار
                                 </MudButton>
                             }
                         }
@@ -74,6 +86,7 @@
                                        Variant="Variant.Filled"
                                        Color="Color.Success"
                                        StartIcon="@Icons.Material.Filled.CheckCircle"
+                                       Href="@ClientRoutes.RegisterProduct.Extend.AppendQueryString(new { ModeParam = LicenseActionMode.Extend })"
                                        Size="Size.Small">
                                 تمدید اشتراک نرم افزار
                             </MudButton>

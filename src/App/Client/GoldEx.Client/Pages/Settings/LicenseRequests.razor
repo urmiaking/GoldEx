@@ -1,0 +1,50 @@
+﻿@using GoldEx.Shared.DTOs.LicensePayments
+@inherits GoldExComponentBase
+
+@attribute [Route(ClientRoutes.Settings.LicenseRequests)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}")]
+
+<PageTitle>درخواست های تمدید و ارتقاء نرم افزار</PageTitle>
+
+<MudText Typo="Typo.h6" GutterBottom="true">درخواست های تمدید و ارتقاء نرم افزار</MudText>
+<MudDivider Class="my-4" />
+
+<MudTable T="LicensePaymentResponse" Hover="true" FixedHeader="true" Dense="true" Items="_requests" Loading="IsBusy"
+          SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="24" Class="p-2 mt-4" ContainerClass="responsive-table">
+    <HeaderContent>
+        <MudTh>پلن فعلی</MudTh>
+        <MudTh>مدت اشتراک</MudTh>
+        <MudTh>شماره پیگیری پرداخت</MudTh>
+        <MudTh>توضیحات</MudTh>
+        <MudTh>تاریخ درخواست</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="پلن فعلی">@context.CurrentPlan.GetDisplayName()</MudTd>
+        <MudTd DataLabel="مدت اشتراک">@context.RequestedMonths ماه</MudTd>
+        <MudTd DataLabel="شماره پیگیری پرداخت">@context.PaymentReference</MudTd>
+        <MudTd DataLabel="توضیحات">@context.PaymentDescription</MudTd>
+        <MudTd DataLabel="تاریخ درخواست">@context.CreatedAt.ToString("f")</MudTd>
+        <MudTd DataLabel="عملیات">
+            @if (context.Status is LicensePaymentStatus.Pending)
+            {
+                <div class="d-flex gap-2">
+                    <MudButton StartIcon="@Icons.Material.Filled.Check" Size="Size.Small" Variant="Variant.Filled"
+                               Color="Color.Success" OnClick="_ => OnSetStatus(context, LicensePaymentStatus.Approved)">تایید</MudButton>
+                    <MudButton StartIcon="@Icons.Material.Filled.Close" Size="Size.Small" Variant="Variant.Filled"
+                               Color="Color.Error" OnClick="_ => OnSetStatus(context, LicensePaymentStatus.Rejected)">رد</MudButton>
+                </div>
+            }
+            else
+            {
+                @context.Status.GetDisplayName()
+            }
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ درخواستی وجود ندارد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگیری</MudText>
+    </LoadingContent>
+</MudTable>

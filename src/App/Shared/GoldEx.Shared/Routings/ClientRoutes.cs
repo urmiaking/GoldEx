@@ -95,6 +95,7 @@ public static class ClientRoutes
         public const string SmsTemplates = $"{SettingsPrefix}/sms-templates";
         public const string SmsLogs = $"{SettingsPrefix}/sms-logs";
         public const string BackupRestore = $"{SettingsPrefix}/backup-restore";
+        public const string LicenseRequests = $"{SettingsPrefix}/license-requests";
     }
 
     public static class Logs
@@ -215,5 +216,8 @@ public static class ClientRoutes
         private const string RegisterProductPrefix = "/register-product";
         public const string Index = $"{RegisterProductPrefix}";
         public const string Form = $"{RegisterProductPrefix}/form";
+        public const string Success = $"{RegisterProductPrefix}/success";
+        public const string Upgrade = $"{RegisterProductPrefix}/upgrade-license";
+        public const string Extend = $"{RegisterProductPrefix}/extend-license";
     }
 }

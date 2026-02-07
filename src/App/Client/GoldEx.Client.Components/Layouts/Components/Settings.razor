@@ -1,4 +1,5 @@
-﻿@using GoldEx.Shared.Routings
+﻿@using GoldEx.Sdk.Common
+@using GoldEx.Shared.Routings
 
 @inherits GoldExComponentBase
 
@@ -49,6 +50,12 @@
             <MudListItem T="string?" Text="تاریخچه پیامک ها" OnClick="() => NavigateTo(ClientRoutes.Settings.SmsLogs)" Icon="@Icons.Material.Filled.ManageHistory"></MudListItem>
             <MudDivider />
             <MudListItem T="string?" Text="پشتیبان گیری و بازنشانی" OnClick="() => NavigateTo(ClientRoutes.Settings.BackupRestore)" Icon="@Icons.Material.Filled.Restore"></MudListItem>
+            <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                <Authorized>
+                    <MudDivider />
+                    <MudListItem T="string?" Text="درخواست های تمدید و ارتقاء نرم افزار" OnClick="() => NavigateTo(ClientRoutes.Settings.LicenseRequests)" Icon="@Icons.Material.Filled.ListAlt"></MudListItem>
+                </Authorized>
+            </AuthorizeView>
         </MudList>
     </MudContainer>
     
