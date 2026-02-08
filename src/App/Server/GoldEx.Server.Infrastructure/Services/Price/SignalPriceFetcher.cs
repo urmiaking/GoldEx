@@ -34,113 +34,113 @@ public class SignalPriceFetcher(
         }
     }
 
-    public async Task<List<PriceResponse>> GetCoinPriceAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var payload = SignalPayloadItem.CreateCoinPayload();
+    //public async Task<List<PriceResponse>> GetCoinPriceAsync(CancellationToken cancellationToken = default)
+    //{
+    //    try
+    //    {
+    //        var payload = SignalPayloadItem.CreateCoinPayload();
 
-            var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
+    //        var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-                throw new BadHttpRequestException("bad request");
+    //        if (!response.IsSuccessStatusCode)
+    //            throw new BadHttpRequestException("bad request");
 
-            var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
+    //        var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
 
-            return SignalApiResponseMapper.MapPrices(content);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-    }
+    //        return SignalApiResponseMapper.MapPrices(content);
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e.Message);
+    //        throw;
+    //    }
+    //}
 
-    public async Task<List<PriceResponse>> GetGoldPriceAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var payload = SignalPayloadItem.CreateGoldPayload();
+    //public async Task<List<PriceResponse>> GetGoldPriceAsync(CancellationToken cancellationToken = default)
+    //{
+    //    try
+    //    {
+    //        var payload = SignalPayloadItem.CreateGoldPayload();
 
-            var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
+    //        var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-                throw new BadHttpRequestException("bad request");
+    //        if (!response.IsSuccessStatusCode)
+    //            throw new BadHttpRequestException("bad request");
 
-            var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
+    //        var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
 
-            return SignalApiResponseMapper.MapPrices(content);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-    }
+    //        return SignalApiResponseMapper.MapPrices(content);
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e.Message);
+    //        throw;
+    //    }
+    //}
 
-    public async Task<List<PriceResponse>> GetCurrencyPriceAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var payload = SignalPayloadItem.CreateCurrencyPayload();
+    //public async Task<List<PriceResponse>> GetCurrencyPriceAsync(CancellationToken cancellationToken = default)
+    //{
+    //    try
+    //    {
+    //        var payload = SignalPayloadItem.CreateCurrencyPayload();
 
-            var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
+    //        var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-                throw new BadHttpRequestException("bad request");
+    //        if (!response.IsSuccessStatusCode)
+    //            throw new BadHttpRequestException("bad request");
 
-            var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
+    //        var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
 
-            return SignalApiResponseMapper.MapPrices(content);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-    }
+    //        return SignalApiResponseMapper.MapPrices(content);
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e.Message);
+    //        throw;
+    //    }
+    //}
 
-    public async Task<PriceResponse?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var payload = SignalPayloadItem.CreateGoldPayload();
+    //public async Task<PriceResponse?> GetGram18PriceAsync(CancellationToken cancellationToken = default)
+    //{
+    //    try
+    //    {
+    //        var payload = SignalPayloadItem.CreateGoldPayload();
 
-            var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
+    //        var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-                throw new BadHttpRequestException("bad request");
+    //        if (!response.IsSuccessStatusCode)
+    //            throw new BadHttpRequestException("bad request");
 
-            var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
+    //        var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
 
-            return SignalApiResponseMapper.GetGram18Price(content);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-    }
+    //        return SignalApiResponseMapper.GetGram18Price(content);
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e.Message);
+    //        throw;
+    //    }
+    //}
 
-    public async Task<PriceResponse?> GetDollarPriceAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var payload = SignalPayloadItem.CreateCurrencyPayload();
+    //public async Task<PriceResponse?> GetDollarPriceAsync(CancellationToken cancellationToken = default)
+    //{
+    //    try
+    //    {
+    //        var payload = SignalPayloadItem.CreateCurrencyPayload();
 
-            var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
+    //        var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, options, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-                throw new BadHttpRequestException("bad request");
+    //        if (!response.IsSuccessStatusCode)
+    //            throw new BadHttpRequestException("bad request");
 
-            var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
+    //        var content = await response.Content.ReadFromJsonAsync<SignalApiResponse>(cancellationToken);
 
-            return SignalApiResponseMapper.GetDollarPrice(content);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-    }
+    //        return SignalApiResponseMapper.GetDollarPrice(content);
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e.Message);
+    //        throw;
+    //    }
+    //}
 }

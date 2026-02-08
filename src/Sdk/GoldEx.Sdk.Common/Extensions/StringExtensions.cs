@@ -191,13 +191,27 @@ public static class StringExtensions
         return t;
     }
 
-    public static string FormatDateString(this string dateStr)
+    public static string FormatDateString(this string? dateStr)
     {
-        if (string.IsNullOrEmpty(dateStr) || dateStr.Length != 8)
-            return string.Empty;
+        if (string.IsNullOrWhiteSpace(dateStr))
+            return dateStr ?? string.Empty;
+
+        // Must be exactly yyyyMMdd and all digits
+        if (dateStr.Length != 8 || !dateStr.All(char.IsDigit))
+            return dateStr;
+
+        // Validate it is a real date
+        if (!DateTime.TryParseExact(
+                dateStr,
+                "yyyyMMdd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out _))
+            return dateStr;
 
         return $"{dateStr[..4]}/{dateStr.Substring(4, 2)}/{dateStr.Substring(6, 2)}";
     }
+
 
     public static string GetInitials(this string name)
     {
