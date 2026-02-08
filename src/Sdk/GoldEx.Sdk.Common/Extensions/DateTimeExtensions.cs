@@ -196,4 +196,24 @@ public static class DateTimeExtensions
 
         return pc.ToDateTime(year, month, day, hour, minute, second, 0);
     }
+
+    public static bool TryToGregorianDateTime(
+        this string? persianDateTime,
+        out DateTime result)
+    {
+        result = default;
+
+        if (string.IsNullOrWhiteSpace(persianDateTime))
+            return false;
+
+        try
+        {
+            result = persianDateTime.ToGregorianDateTime();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

@@ -15,169 +15,194 @@ public static class SignalApiResponseMapper
 
         if (response.Data.Gold is not null)
         {
-            priceResponses.AddRange(from item in response.Data.Gold.Data
-                let currentValue = ParseDecimal(item.Close)
-                let change = FormatChange(item.Change,
-                    item.PercentChange)
-                let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
-                let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
-                    currentValue,
-                    item.Unit,
-                    lastUpdate.ToGregorianDateTime(),
-                    change,
-                    iconUrl,
-                    GetMarketType(nameof(response.Data.Gold))));
+            priceResponses.AddRange(
+                response.Data.Gold.Data
+                    .Select(item =>
+                    {
+                        var currentValue = ParseDecimal(item.Close);
+                        var change = FormatChange(item.Change, item.PercentChange);
+                        var lastUpdateRaw = $"{item.JDate.FormatDateString()} {item.Time}";
+
+                        var lastUpdate = lastUpdateRaw.TryToGregorianDateTime(out var dt)
+                            ? dt
+                            : DateTime.UtcNow;
+
+                        return new PriceResponse(
+                            item.PersianName?.ToPersianChars() ?? item.Name,
+                            currentValue,
+                            item.Unit,
+                            lastUpdate,
+                            change,
+                            item.IconUrl,
+                            GetMarketType(nameof(response.Data.Gold))
+                        );
+                    })
+            );
         }
 
         if (response.Data.Currency is not null)
         {
-            priceResponses.AddRange(from item in response.Data.Currency.Data
-                let currentValue = ParseDecimal(item.Close)
-                let change = FormatChange(item.Change,
-                    item.PercentChange)
-                let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
-                let iconUrl = item.IconUrl
-                //where item.Name is "usDollar" or "euro"
-                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
-                    currentValue,
-                    item.Unit,
-                    lastUpdate.ToGregorianDateTime(),
-                    change,
-                    iconUrl,
-                    GetMarketType(nameof(response.Data.Currency))));
+            priceResponses.AddRange(
+                response.Data.Currency.Data
+                    .Select(item =>
+                    {
+                        var currentValue = ParseDecimal(item.Close);
+                        var change = FormatChange(item.Change, item.PercentChange);
+                        var lastUpdateRaw = $"{item.JDate.FormatDateString()} {item.Time}";
+
+                        var lastUpdate = lastUpdateRaw.TryToGregorianDateTime(out var dt)
+                            ? dt
+                            : DateTime.UtcNow;
+
+                        return new PriceResponse(
+                            item.PersianName?.ToPersianChars() ?? item.Name,
+                            currentValue,
+                            item.Unit,
+                            lastUpdate,
+                            change,
+                            item.IconUrl,
+                            GetMarketType(nameof(response.Data.Currency))
+                        );
+                    })
+            );
         }
 
         if (response.Data.Coin is not null)
         {
-            priceResponses.AddRange(from item in response.Data.Coin.Data
-                let currentValue = ParseDecimal(item.Close)
-                let change = FormatChange(item.Change,
-                    item.PercentChange)
-                let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
-                let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
-                    currentValue,
-                    item.Unit,
-                    lastUpdate.ToGregorianDateTime(),
-                    change,
-                    iconUrl,
-                    GetMarketType(nameof(response.Data.Coin))));
+            priceResponses.AddRange(
+                response.Data.Coin.Data
+                    .Select(item =>
+                    {
+                        var currentValue = ParseDecimal(item.Close);
+                        var change = FormatChange(item.Change, item.PercentChange);
+                        var lastUpdateRaw = $"{item.JDate.FormatDateString()} {item.Time}";
+
+                        var lastUpdate = lastUpdateRaw.TryToGregorianDateTime(out var dt)
+                            ? dt
+                            : DateTime.UtcNow;
+
+                        return new PriceResponse(
+                            item.PersianName?.ToPersianChars() ?? item.Name,
+                            currentValue,
+                            item.Unit,
+                            lastUpdate,
+                            change,
+                            item.IconUrl,
+                            GetMarketType(nameof(response.Data.Coin))
+                        );
+                    })
+            );
         }
 
         if (response.Data.ParsianCoin is not null)
         {
-            priceResponses.AddRange(from item in response.Data.ParsianCoin.Data
-                let currentValue = ParseDecimal(item.Close)
-                let change = FormatChange(item.Change,
-                    item.PercentChange)
-                let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
-                let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
-                    currentValue,
-                    item.Unit,
-                    lastUpdate.ToGregorianDateTime(),
-                    change,
-                    iconUrl,
-                    GetMarketType(nameof(response.Data.ParsianCoin))));
+            priceResponses.AddRange(
+                response.Data.ParsianCoin.Data
+                    .Select(item =>
+                    {
+                        var currentValue = ParseDecimal(item.Close);
+                        var change = FormatChange(item.Change, item.PercentChange);
+                        var lastUpdateRaw = $"{item.JDate.FormatDateString()} {item.Time}";
+
+                        var lastUpdate = lastUpdateRaw.TryToGregorianDateTime(out var dt)
+                            ? dt
+                            : DateTime.UtcNow;
+
+                        return new PriceResponse(
+                            item.PersianName?.ToPersianChars() ?? item.Name,
+                            currentValue,
+                            item.Unit,
+                            lastUpdate,
+                            change,
+                            item.IconUrl,
+                            GetMarketType(nameof(response.Data.ParsianCoin))
+                        );
+                    })
+            );
         }
 
         if (response.Data.BubbleCoin is not null)
         {
-            priceResponses.AddRange(from item in response.Data.BubbleCoin?.Data
-                let currentValue = ParseDecimal(item.Close)
-                let change = FormatChange(item.Change,
-                    item.PercentChange)
-                let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
-                let iconUrl = item.IconUrl
-                select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
-                    currentValue,
-                    item.Unit,
-                    lastUpdate.ToGregorianDateTime(),
-                    change,
-                    iconUrl,
-                    GetMarketType(nameof(response.Data.BubbleCoin))));
+            priceResponses.AddRange(
+                response.Data.BubbleCoin.Data
+                    .Select(item =>
+                    {
+                        var currentValue = ParseDecimal(item.Close);
+                        var change = FormatChange(item.Change, item.PercentChange);
+                        var lastUpdateRaw = $"{item.JDate.FormatDateString()} {item.Time}";
+
+                        var lastUpdate = lastUpdateRaw.TryToGregorianDateTime(out var dt)
+                            ? dt
+                            : DateTime.UtcNow;
+
+                        return new PriceResponse(
+                            item.PersianName?.ToPersianChars() ?? item.Name,
+                            currentValue,
+                            item.Unit,
+                            lastUpdate,
+                            change,
+                            item.IconUrl,
+                            GetMarketType(nameof(response.Data.BubbleCoin))
+                        );
+                    })
+            );
         }
 
         if (response.Data.Ounce is not null)
         {
-            priceResponses.AddRange(from item in response.Data.Ounce?.Data
-                                    let currentValue = ParseDecimal(item.Close)
-                                    let change = FormatChange(item.Change, item.PercentChange)
-                                    let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
-                                    let iconUrl = item.IconUrl
-                                    select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
-                                        currentValue,
-                                        item.Unit,
-                                        lastUpdate.ToGregorianDateTime(),
-                                        change,
-                                        iconUrl,
-                                        GetMarketType(nameof(response.Data.Ounce))));
+            priceResponses.AddRange(
+                response.Data.Ounce.Data
+                    .Select(item =>
+                    {
+                        var currentValue = ParseDecimal(item.Close);
+                        var change = FormatChange(item.Change, item.PercentChange);
+                        var lastUpdateRaw = $"{item.JDate.FormatDateString()} {item.Time}";
+
+                        var lastUpdate = lastUpdateRaw.TryToGregorianDateTime(out var dt)
+                            ? dt
+                            : DateTime.UtcNow;
+
+                        return new PriceResponse(
+                            item.PersianName?.ToPersianChars() ?? item.Name,
+                            currentValue,
+                            item.Unit,
+                            lastUpdate,
+                            change,
+                            item.IconUrl,
+                            GetMarketType(nameof(response.Data.Ounce))
+                        );
+                    })
+            );
         }
 
         if (response.Data.Silver is not null)
         {
-            priceResponses.AddRange(from item in response.Data.Silver?.Data
-                                    let currentValue = ParseDecimal(item.Close)
-                                    let change = FormatChange(item.Change, item.PercentChange)
-                                    let lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}"
-                                    let iconUrl = item.IconUrl
-                                    select new PriceResponse(item.PersianName?.ToPersianChars() ?? item.Name,
-                                        currentValue,
-                                        item.Unit,
-                                        lastUpdate.ToGregorianDateTime(),
-                                        change,
-                                        iconUrl,
-                                        GetMarketType(nameof(response.Data.Silver))));
+            priceResponses.AddRange(
+                response.Data.Silver.Data
+                    .Select(item =>
+                    {
+                        var currentValue = ParseDecimal(item.Close);
+                        var change = FormatChange(item.Change, item.PercentChange);
+                        var lastUpdateRaw = $"{item.JDate.FormatDateString()} {item.Time}";
+
+                        var lastUpdate = lastUpdateRaw.TryToGregorianDateTime(out var dt)
+                            ? dt
+                            : DateTime.UtcNow;
+
+                        return new PriceResponse(
+                            item.PersianName?.ToPersianChars() ?? item.Name,
+                            currentValue,
+                            item.Unit,
+                            lastUpdate,
+                            change,
+                            item.IconUrl,
+                            GetMarketType(nameof(response.Data.Silver))
+                        );
+                    })
+            );
         }
 
         return priceResponses;
-    }
-
-    public static PriceResponse? GetGram18Price(SignalApiResponse? response)
-    {
-        if (response is null)
-            return null;
-
-        if (response.Data.Gold is null)
-            throw new InvalidDataException("Gold part is missing from response. Request parameters is not correctly provided");
-
-        var item = response.Data.Gold.Data.FirstOrDefault(x => x.Name == "geram18");
-
-        if (item is null)
-            throw new NotSupportedException("geram18 is not available in response");
-
-        var title = item.PersianName?.ToPersianChars() ?? item.Name;
-        var currentValue = ParseDecimal(item.Close);
-        var unit = item.Unit;
-        var change = FormatChange(item.Change, item.PercentChange);
-        var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}".ToGregorianDateTime();
-        var iconUrl = item.IconUrl;
-
-        return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Gold.Market));
-    }
-
-    public static PriceResponse? GetDollarPrice(SignalApiResponse? response)
-    {
-        if (response is null)
-            return null;
-
-        if (response.Data.Currency is null)
-            throw new InvalidDataException("Currency part is missing from response. Request parameters is not correctly provided");
-
-        var item = response.Data.Currency.Data.FirstOrDefault(x => x.Name == "usDollar");
-
-        if (item is null)
-            throw new NotSupportedException("usDollar is not available in response");
-
-        var title = item.PersianName?.ToPersianChars() ?? item.Name;
-        var currentValue = ParseDecimal(item.Close);
-        var unit = item.Unit;
-        var change = FormatChange(item.Change, item.PercentChange);
-        var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}".ToGregorianDateTime();
-        var iconUrl = item.IconUrl;
-
-        return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Currency.Market));
     }
 
     private static decimal ParseDecimal(decimal value) => value;
@@ -204,4 +229,50 @@ public static class SignalApiResponseMapper
             _ => throw new ArgumentOutOfRangeException()
         };
     }
+
+    //public static PriceResponse? GetGram18Price(SignalApiResponse? response)
+    //{
+    //    if (response is null)
+    //        return null;
+
+    //    if (response.Data.Gold is null)
+    //        throw new InvalidDataException("Gold part is missing from response. Request parameters is not correctly provided");
+
+    //    var item = response.Data.Gold.Data.FirstOrDefault(x => x.Name == "geram18");
+
+    //    if (item is null)
+    //        throw new NotSupportedException("geram18 is not available in response");
+
+    //    var title = item.PersianName?.ToPersianChars() ?? item.Name;
+    //    var currentValue = ParseDecimal(item.Close);
+    //    var unit = item.Unit;
+    //    var change = FormatChange(item.Change, item.PercentChange);
+    //    var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}".ToGregorianDateTime();
+    //    var iconUrl = item.IconUrl;
+
+    //    return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Gold.Market));
+    //}
+
+    //public static PriceResponse? GetDollarPrice(SignalApiResponse? response)
+    //{
+    //    if (response is null)
+    //        return null;
+
+    //    if (response.Data.Currency is null)
+    //        throw new InvalidDataException("Currency part is missing from response. Request parameters is not correctly provided");
+
+    //    var item = response.Data.Currency.Data.FirstOrDefault(x => x.Name == "usDollar");
+
+    //    if (item is null)
+    //        throw new NotSupportedException("usDollar is not available in response");
+
+    //    var title = item.PersianName?.ToPersianChars() ?? item.Name;
+    //    var currentValue = ParseDecimal(item.Close);
+    //    var unit = item.Unit;
+    //    var change = FormatChange(item.Change, item.PercentChange);
+    //    var lastUpdate = $"{item.JDate.FormatDateString()} {item.Time}".ToGregorianDateTime();
+    //    var iconUrl = item.IconUrl;
+
+    //    return new PriceResponse(title, currentValue, unit, lastUpdate, change, iconUrl, GetMarketType(response.Data.Currency.Market));
+    //}
 }
