@@ -24,77 +24,7 @@
                 <MudText Typo="Typo.body2">
                     @context.User.Identity?.Name
                 </MudText>
-                @if (_licenseInfo is not null)
-                {
-                    if (_licenseInfo.Plan == LicensePlan.Unregistered)
-                    {
-                        <MudButton Class="mt-2"
-                                   Color="Color.Success"
-                                   Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.CheckCircle"
-                                   Size="Size.Small"
-                                   Href="@ClientRoutes.RegisterProduct.Index">
-                            فعالسازی نرم افزار
-                        </MudButton>
-                    }
-                    else
-                    {
-                        <MudText Class="mt-2"
-                                 Typo="Typo.body2"
-                                 Color="GetLicenseColor(_licenseInfo)">
-                            @_licenseInfo.Plan.GetDisplayName()
-                            @(_licenseInfo.IsExpired ? "(منقضی شده)" : "")
-                        </MudText>
-
-                        @if (!_licenseInfo.IsExpired && _licenseInfo.ExpireDate != DateTime.MinValue)
-                        {
-                            <MudProgressLinear Class="mt-2"
-                                               Value="@GetLicenseProgress(_licenseInfo)"
-                                               Color="GetLicenseColor(_licenseInfo)"
-                                               Striped="GetLicenseProgress(_licenseInfo) < 25" />
-
-                            <MudText Typo="Typo.caption" Align="Align.Center">
-                                پایان اشتراک: @_licenseInfo.ExpireDate.Humanize()
-                            </MudText>
-
-                            @if (_licenseInfo.Plan == LicensePlan.Trial)
-                            {
-                                <MudButton Class="mt-2"
-                                           Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.Stars"
-                                           Href="@ClientRoutes.RegisterProduct.Upgrade"
-                                           Size="Size.Small">
-                                    ارتقا به نسخه کامل
-                                </MudButton>
-                            }
-                            else if ((_licenseInfo.ExpireDate - DateTime.Now).Days <= 7)
-                            {
-                                <MudButton Class="mt-2"
-                                           Variant="Variant.Filled"
-                                           Color="Color.Success"
-                                           StartIcon="@Icons.Material.Filled.CheckCircle"
-                                           Href="@ClientRoutes.RegisterProduct.Extend.AppendQueryString(new { ModeParam = LicenseActionMode.Extend })"
-                                           Size="Size.Small">
-                                    تمدید اشتراک نرم افزار
-                                </MudButton>
-                            }
-                        }
-                        else if (_licenseInfo.IsExpired)
-                        {
-                            <MudButton Class="mt-2"
-                                       Variant="Variant.Filled"
-                                       Color="Color.Success"
-                                       StartIcon="@Icons.Material.Filled.CheckCircle"
-                                       Href="@ClientRoutes.RegisterProduct.Extend.AppendQueryString(new { ModeParam = LicenseActionMode.Extend })"
-                                       Size="Size.Small">
-                                تمدید اشتراک نرم افزار
-                            </MudButton>
-                        }
-                    }
-                }
-
-
+                <LicenseStatus />
             </div>
 
             <MudDivider Class="my-4" />
