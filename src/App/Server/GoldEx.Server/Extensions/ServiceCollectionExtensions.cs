@@ -296,9 +296,11 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddHelpContext(this IServiceCollection services)
+    // TODO: refactor
+    internal static IServiceCollection AddClientServices(this IServiceCollection services)
     {
         services.AddScoped<HelpContext>();
+        services.AddScoped<LicenseState>();
         return services;
     }
 

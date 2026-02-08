@@ -9,6 +9,8 @@ public static class DependencyInjection
     public static IServiceCollection AddClientComponents(this IServiceCollection services)
     {
         services.AddScoped<HelpContext>();
+        services.AddScoped<LicenseState>();
+
         return services.DiscoverServices();
     }
 }

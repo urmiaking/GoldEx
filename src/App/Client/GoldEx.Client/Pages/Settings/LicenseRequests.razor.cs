@@ -1,11 +1,16 @@
-﻿using GoldEx.Shared.DTOs.LicensePayments;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Shared.DTOs.LicensePayments;
+using GoldEx.Shared.DTOs.Licenses;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Pages.Settings;
 
 public partial class LicenseRequests
 {
+    [Inject] public LicenseState LicenseState { get; set; } = default!;
+
     private List<LicensePaymentResponse> _requests = [];
 
     protected override async Task OnInitializedAsync()
@@ -36,7 +41,17 @@ public partial class LicenseRequests
                 {
                     AddSuccessToast("عملیات با موفقیت انجام شد");
                     await LoadReportsAsync();
+                    await RefreshLicenseAsync();
                 });
         }
+    }
+
+    private async Task RefreshLicenseAsync()
+    {
+        var license = await SendRequestAsync<ILicenseService, GetLicenseResponse>(
+            action: (s, ct) => s.GetLicenseAsync(ct),
+            createScope: true);
+
+        LicenseState.Set(license);
     }
 }

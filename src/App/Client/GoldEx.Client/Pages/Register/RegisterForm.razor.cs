@@ -1,9 +1,12 @@
-﻿using GoldEx.Client.Pages.Register.ViewModels;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Pages.Register.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Licenses;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace GoldEx.Client.Pages.Register;
@@ -14,7 +17,9 @@ public partial class RegisterForm
     private bool _sendTokenDisabled;
     private int _otpRemaining;
     private CancellationTokenSource? _otpCts;
-    private RegisterFormVm _model = new ();
+    private RegisterFormVm _model = new();
+
+    [Inject] private LicenseState LicenseState { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,12 +59,21 @@ public partial class RegisterForm
 
         await SendRequestAsync<ILicenseService>(
             action: (s, ct) => s.RegisterProductAsync(request, ct),
-            afterSend: () =>
+            afterSend: async () =>
             {
                 AddSuccessToast("نرم افزار با موفقیت فعال شد");
+                await RefreshLicenseAsync();
                 Navigation.NavigateTo(ClientRoutes.RegisterProduct.Success.AppendQueryString(new { PlanType = nameof(LicensePlan.Trial) }));
-                return Task.CompletedTask;
             });
+    }
+
+    private async Task RefreshLicenseAsync()
+    {
+        var license = await SendRequestAsync<ILicenseService, GetLicenseResponse>(
+            action: (s, ct) => s.GetLicenseAsync(ct),
+            createScope: true);
+
+        LicenseState.Set(license);
     }
 
     private async Task OnSendToken()

@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.DTOs.Licenses;
+﻿using GoldEx.Client.Components.Services;
+using GoldEx.Shared.DTOs.Licenses;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,6 +11,7 @@ public partial class App
     private GetLicenseResponse? _license;
 
     [Inject] private ILicenseService LicenceService { get; set; } = default!;
+    [Inject] private LicenseState LicenseState { get; set; } = default!;
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
@@ -35,5 +37,6 @@ public partial class App
     private async Task GetLicenseAsync()
     {
         _license = await LicenceService.GetLicenseAsync();
+        LicenseState.Set(_license);
     }
 }
