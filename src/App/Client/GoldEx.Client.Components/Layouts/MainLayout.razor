@@ -1,4 +1,8 @@
-﻿@using Microsoft.JSInterop
+﻿@using GoldEx.Client.Components.Services
+@using GoldEx.Shared.DTOs.Licenses
+@using GoldEx.Shared.Services.Abstractions
+@using Microsoft.JSInterop
+
 @inherits LayoutComponentBase
 @layout BaseLayout
 
@@ -15,13 +19,27 @@
 @code
 {
     private bool _drawerOpen;
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+    private GetLicenseResponse? _license;
 
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+    [Inject] private ILicenseService LicenceService { get; set; } = default!;
+    [Inject] private LicenseState LicenseState { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JsRuntime.InvokeVoidAsync("removeLoadingIndicator");
-
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetLicenseAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetLicenseAsync()
+    {
+        _license = await LicenceService.GetLicenseAsync();
+        LicenseState.Set(_license);
     }
 }

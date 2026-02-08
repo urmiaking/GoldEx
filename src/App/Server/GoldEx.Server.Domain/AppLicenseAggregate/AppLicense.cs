@@ -4,20 +4,22 @@ namespace GoldEx.Server.Domain.AppLicenseAggregate;
 
 public class AppLicense : EntityBase
 {
-    public static AppLicense Create(Guid licenseId)
+    private AppLicense() { }
+
+    public static AppLicense Create(Guid licenseId, string? verificationKey = null)
     {
         return new AppLicense
         {
-            LicenseId = licenseId
+            LicenseId = licenseId,
+            VerificationKey = verificationKey
         };
     }
 
     public Guid LicenseId { get; private set; }
     public string? VerificationKey { get; private set; }
 
-    public void Update(Guid licenseId, string? verificationKey)
+    public void UpdateVerificationKey(string? verificationKey)
     {
-        LicenseId = licenseId;
         VerificationKey = verificationKey;
     }
 }
