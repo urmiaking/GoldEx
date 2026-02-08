@@ -15,19 +15,27 @@ internal class AppLicenseStore(IAppLicenseRepository repository) : ILicenseStore
         return repository.Get(new AppLicensesDefaultSpecification()).FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task SetAsync(AppLicense appLicense, CancellationToken cancellationToken = default)
+    public async Task SetAsync(AppLicense newLicense, CancellationToken cancellationToken = default)
     {
         var existingLicense = await GetAsync(cancellationToken);
 
         if (existingLicense is null)
         {
-            await repository.CreateAsync(appLicense, cancellationToken);
+            await repository.CreateAsync(newLicense, cancellationToken);
+            return;
         }
-        else
+
+        // Same License → safe update
+        if (existingLicense.LicenseId == newLicense.LicenseId)
         {
-            existingLicense.Update(appLicense.LicenseId, appLicense.VerificationKey);
+            existingLicense.UpdateVerificationKey(newLicense.VerificationKey);
             await repository.UpdateAsync(existingLicense, cancellationToken);
+            return;
         }
+
+        // License changed → recreate
+        await repository.DeleteAsync(existingLicense, cancellationToken);
+        await repository.CreateAsync(newLicense, cancellationToken);
     }
 
     public async Task DeleteAsync(CancellationToken cancellationToken = default)

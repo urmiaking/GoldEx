@@ -33,6 +33,12 @@ window.printDynamicBarcode = function (settings, data) {
 };
 
 function generateDynamicBarcodeHtml(settings, data) {
+    // Normalize margins (optional in incoming settings)
+    const marginTop = settings.marginTop ?? 0;
+    const marginRight = settings.marginRight ?? 0;
+    const marginBottom = settings.marginBottom ?? 0;
+    const marginLeft = settings.marginLeft ?? 0;
+
     return `
         <!DOCTYPE html>
         <html dir="rtl" lang="fa">
@@ -44,7 +50,7 @@ function generateDynamicBarcodeHtml(settings, data) {
                 /*@import '../fonts/IRANSANS/IRANSANS-font-face.css';*/
                 @page {
                     size: ${settings.labelWidth}px ${settings.labelHeight}px;
-                    margin: 0;
+                    margin: ${marginTop}px ${marginRight}px ${marginBottom}px ${marginLeft}px;
                 }
                 
                 * {

@@ -1,0 +1,192 @@
+﻿@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Routings
+
+@inherits GoldExComponentBase
+
+@if (LicenseState.Current is not null)
+{
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        @* UNREGISTERED *@
+        @if (LicenseState.Current?.Plan == LicensePlan.Unregistered)
+        {
+            <div class="license-badge license-danger pulse-danger">
+                <MudButton Variant="Variant.Text"
+                           Size="Size.Small"
+                           EndIcon="@Icons.Material.Filled.Key"
+                           Href="@ClientRoutes.RegisterProduct.Index">
+                    فعال‌ سازی نرم افزار
+                </MudButton>
+            </div>
+        }
+
+        @* TRIAL *@
+        else if (LicenseState.Current?.Plan == LicensePlan.Trial && RemainingDays is <= WarningDays and > 0)
+        {
+            <div class="license-badge license-warning pulse-warning">
+                <div class="license-info">
+                    <MudText Typo="Typo.caption">
+                        @RemainingDays روز تا پایان مهلت استفاده رایگان
+                    </MudText>
+
+                    @if (RemainingDays > 0)
+                    {
+                        <MudProgressLinear Value="@ProgressValue"
+                                           Max="100"
+                                           Rounded="true"
+                                           Class="license-progress" />
+                    }
+                </div>
+
+                <MudButton Variant="Variant.Outlined"
+                           Class="rounded-3"
+                           Size="Size.Small"
+                           EndIcon="@Icons.Material.Filled.ArrowBack"
+                           Href="@ClientRoutes.RegisterProduct.Upgrade">
+                    خرید اشتراک
+                </MudButton>
+            </div>
+        }
+
+        @* REGULAR *@
+        else if (LicenseState.Current?.Plan == LicensePlan.Regular && RemainingDays is <= WarningDays and > 0)
+        {
+            <div class="license-badge license-warning pulse-warning">
+                <div class="license-info">
+                    <MudText Typo="Typo.caption">
+                        @RemainingDays روز تا پایان اشتراک
+                    </MudText>
+
+                    @if (RemainingDays > 0)
+                    {
+                        <MudProgressLinear Value="@ProgressValue"
+                                           Max="100"
+                                           Rounded="true"
+                                           Class="license-progress" />
+                    }
+                </div>
+
+                <MudButton Variant="Variant.Outlined"
+                           Class="rounded-3"
+                           Size="Size.Small"
+                           EndIcon="@Icons.Material.Filled.ArrowBack"
+                           Href="@ClientRoutes.RegisterProduct.Extend">
+                    تمدید اشتراک
+                </MudButton>
+
+            </div>
+        }
+
+        @* EXPIRED – TRIAL *@
+        else if (LicenseState.Current?.Plan == LicensePlan.Trial && RemainingDays <= 0)
+        {
+            <div class="license-badge license-danger pulse-danger">
+
+                <MudText Typo="Typo.caption">
+                    مهلت استفاده رایگان به پایان رسیده
+                </MudText>
+
+                <MudButton Variant="Variant.Outlined"
+                           Class="rounded-3"
+                           Size="Size.Small"
+                           EndIcon="@Icons.Material.Filled.ArrowBack"
+                           Href="@ClientRoutes.RegisterProduct.Upgrade">
+                    خرید اشتراک
+                </MudButton>
+
+            </div>
+        }
+
+        @* EXPIRED – REGULAR *@
+        else if (LicenseState.Current?.Plan == LicensePlan.Regular && RemainingDays <= 0)
+        {
+            <div class="license-badge license-danger pulse-danger">
+
+                <MudText Typo="Typo.caption">
+                    دوره اشتراک به پایان رسیده
+                </MudText>
+
+                <MudButton Variant="Variant.Outlined"
+                           Class="rounded-3"
+                           Size="Size.Small"
+                           EndIcon="@Icons.Material.Filled.ArrowBack"
+                           Href="@ClientRoutes.RegisterProduct.Extend">
+                    تمدید اشتراک
+                </MudButton>
+
+            </div>
+        }
+    </MudHidden>
+}
+
+<style>
+    .license-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px;
+        margin-right: 8px;
+        border-radius: 8px;
+        max-height: 36px;
+        font-size: 0.7rem;
+    }
+
+    .license-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+        min-width: 140px;
+    }
+
+    .license-progress {
+        height: 4px;
+        width: 100%;
+    }
+
+    /* WARNING (yellow) */
+    .license-warning {
+        background-color: rgba(255, 193, 7, 0.25);
+    }
+
+    /* DANGER (red) */
+    .license-danger {
+        background-color: rgba(211, 47, 47, 0.25);
+    }
+
+    /* Subtle attention animation */
+    .pulse-warning {
+        animation: pulse-warning 4s ease-in-out infinite;
+    }
+
+    .pulse-danger {
+        animation: pulse-danger 3s ease-in-out infinite;
+    }
+
+    @@keyframes pulse-warning {
+        0% {
+            background-color: rgba(255, 193, 7, 0.20);
+        }
+
+        50% {
+            background-color: rgba(255, 193, 7, 0.35);
+        }
+
+        100% {
+            background-color: rgba(255, 193, 7, 0.20);
+        }
+    }
+
+    @@keyframes pulse-danger {
+        0% {
+            background-color: rgba(211, 47, 47, 0.22);
+        }
+
+        50% {
+            background-color: rgba(211, 47, 47, 0.40);
+        }
+
+        100% {
+            background-color: rgba(211, 47, 47, 0.22);
+        }
+    }
+</style>
