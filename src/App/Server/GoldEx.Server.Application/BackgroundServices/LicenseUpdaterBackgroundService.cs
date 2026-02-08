@@ -54,7 +54,6 @@ public class LicenseUpdaterBackgroundService(
                     logger.LogInformation($"License updated. new plan {incomingLicense.Type.GetLicensePlan().ToString()}, Expire date: {incomingLicense.Expiry}");
                     license.UpdateLicense(incomingLicense.Type.GetLicensePlan(), incomingLicense.RegisteredAt, incomingLicense.Expiry);
                 }
-
             }
             catch (Exception ex)
             {
