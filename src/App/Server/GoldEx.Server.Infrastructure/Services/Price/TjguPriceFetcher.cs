@@ -13,7 +13,7 @@ public class TjguPriceFetcher(HttpClient client, JsonSerializerOptions jsonOptio
     {
         try
         {
-            var url = $"{ExternalRoutes.Tjgu}?rev={Guid.NewGuid().ToString()}";
+            var url = $"{ExternalRoutes.Tjgu}?rev={Guid.CreateVersion7().ToString()}";
             var response = await client.GetAsync(url, cancellationToken);
 
             if (!response.IsSuccessStatusCode)

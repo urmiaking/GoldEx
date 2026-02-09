@@ -29,7 +29,7 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
     {
         return new LedgerAccount
         {
-            Id = new LedgerAccountId(Guid.NewGuid()),
+            Id = new LedgerAccountId(Guid.CreateVersion7()),
             Title = title,
             AccountType = accountType,
             ParentAccountId = parentAccountId,
@@ -46,7 +46,7 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
     {
         return new LedgerAccount
         {
-            Id = new LedgerAccountId(Guid.NewGuid()),
+            Id = new LedgerAccountId(Guid.CreateVersion7()),
             Title = title,
             CustomerId = customerId,
             AccountType = accountType,

@@ -58,7 +58,7 @@ public partial class UpgradeLicense
         [
             new ProductUpgradeVm
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 Title = "اشتراک یک ماهه",
                 DurationMonths = 1,
                 Price = 2799000,
@@ -73,7 +73,7 @@ public partial class UpgradeLicense
 
             new ProductUpgradeVm
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 Title = "اشتراک سه ماهه",
                 DurationMonths = 3,
                 Price = 7559000,
@@ -88,7 +88,7 @@ public partial class UpgradeLicense
 
             new ProductUpgradeVm
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 Title = "اشتراک شش ماهه",
                 DurationMonths = 6,
                 Price = 15999000,
@@ -103,7 +103,7 @@ public partial class UpgradeLicense
 
             new ProductUpgradeVm
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 Title = "اشتراک یک ساله",
                 DurationMonths = 12,
                 Price = 23499000,

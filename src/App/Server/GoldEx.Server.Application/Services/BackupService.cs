@@ -37,7 +37,7 @@ internal class BackupService(
 
         var tempFilePath = Path.Combine(
             _backupDirectory,
-            $"{Guid.NewGuid()}.bak");
+            $"{Guid.CreateVersion7()}.bak");
 
         await using (var fileStream = File.Create(tempFilePath))
         {

@@ -23,7 +23,7 @@ public class BarcodePositionItemVm
 
     public string UniqueKey => IsInToolbox
         ? $"toolbox-{ItemType}"
-        : $"{Position}-{ItemType}-{Id?.ToString() ?? Guid.NewGuid().ToString()}";
+        : $"{Position}-{ItemType}-{Id?.ToString() ?? Guid.CreateVersion7().ToString()}";
 
     public static BarcodePositionItemVm CreateToolboxItem(BarcodePrintableItem itemType)
     {

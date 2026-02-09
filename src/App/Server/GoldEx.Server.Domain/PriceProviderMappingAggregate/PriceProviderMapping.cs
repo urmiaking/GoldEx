@@ -12,7 +12,7 @@ public sealed class PriceProviderMapping : EntityBase<PriceProviderMappingId>
     {
         return new PriceProviderMapping
         {
-            Id = new PriceProviderMappingId(Guid.NewGuid()),
+            Id = new PriceProviderMappingId(Guid.CreateVersion7()),
             PriceId = priceId,
             ProviderType = providerType,
             ProviderSymbol = providerSymbol,

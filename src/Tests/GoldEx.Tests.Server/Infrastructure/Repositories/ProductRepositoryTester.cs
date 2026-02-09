@@ -22,7 +22,7 @@
 //    {
 //        // Use an in-memory database for testing
 //        var options = new DbContextOptionsBuilder<GoldExDbContext>()
-//            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+//            .UseInMemoryDatabase(databaseName: Guid.CreateVersion7().ToString())
 //            .Options;
 
 //        _dbContext = new GoldExDbContext(options, new Mediator(new ServiceContainer()));

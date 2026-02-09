@@ -36,7 +36,7 @@ public class CoinInstance : EntityBase<CoinInstanceId>
         CoinMintType mintType,
         CoinPackageType packageType,
         CoinInstancePackage? coinInstancePackage)
-        : base(new CoinInstanceId(Guid.NewGuid()))
+        : base(new CoinInstanceId(Guid.CreateVersion7()))
     {
         if (string.IsNullOrWhiteSpace(barcode))
             throw new InvalidOperationException("Barcode is required");

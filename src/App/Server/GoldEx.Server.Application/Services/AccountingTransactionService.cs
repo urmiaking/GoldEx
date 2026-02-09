@@ -138,7 +138,7 @@ internal class AccountingTransactionService(
         // 1) Reverse: با PostingDate = original.PostingDate + 1 tick
         if (toReverse.Count > 0)
         {
-            var reversalGroupId = Guid.NewGuid();
+            var reversalGroupId = Guid.CreateVersion7();
             var reversals = BuildReversalTransactions(toReverse, reversalGroupId);
             await repository.CreateRangeAsync(reversals, cancellationToken);
         }
@@ -271,7 +271,7 @@ internal class AccountingTransactionService(
 
         if (invoice.TotalAmountWithDiscountsAndExtraCosts != 0)
         {
-            var invoiceGroupId = Guid.NewGuid();
+            var invoiceGroupId = Guid.CreateVersion7();
             switch (invoice.InvoiceType)
             {
                 case InvoiceType.Sell:
@@ -320,7 +320,7 @@ internal class AccountingTransactionService(
 
                         if (totalCostOfGoods > 0)
                         {
-                            var cogsGroupId = Guid.NewGuid();
+                            var cogsGroupId = Guid.CreateVersion7();
 
                             var cogsLedger = await ledgerAccountRepository
                                 .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CostOfGoodsSold))
@@ -638,7 +638,7 @@ internal class AccountingTransactionService(
         {
             foreach (var payment in invoice.InvoicePayments)
             {
-                var paymentGroupId = Guid.NewGuid();
+                var paymentGroupId = Guid.CreateVersion7();
 
                 long payLine = 0;
                 DateTime NextPayLine()
@@ -1348,7 +1348,7 @@ internal class AccountingTransactionService(
 
         if (voucher.Amount == 0) return transactions;
 
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
 
         var sourceFinancialAccount = await financialAccountRepository
             .Get(new FinancialAccountsByIdSpecification(voucher.SourceFinancialAccountId))
@@ -1442,7 +1442,7 @@ internal class AccountingTransactionService(
         {
             if (active.Count > 0)
             {
-                var reversalGroupId = Guid.NewGuid();
+                var reversalGroupId = Guid.CreateVersion7();
                 var reversals = BuildReversalTransactions(active, reversalGroupId);
                 await repository.CreateRangeAsync(reversals, cancellationToken);
             }
@@ -1474,7 +1474,7 @@ internal class AccountingTransactionService(
         // 1) Reverse (posting = original + 1 tick)
         if (toReverse.Count > 0)
         {
-            var reversalGroupId = Guid.NewGuid();
+            var reversalGroupId = Guid.CreateVersion7();
             var reversals = BuildReversalTransactions(toReverse, reversalGroupId);
             await repository.CreateRangeAsync(reversals, cancellationToken);
         }
@@ -1531,7 +1531,7 @@ internal class AccountingTransactionService(
 
         var transactions = new List<Transaction>();
 
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
 
         foreach (var product in products)
         {
@@ -1603,7 +1603,7 @@ internal class AccountingTransactionService(
                         ?? throw new NotFoundException($"Price unit with id '{request.PriceUnitId}' not found.");
 
         var transactions = new List<Transaction>();
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
 
         // تراکنش Debit: افزایش موجودی طلای آبشده
         var entryDebit = Transaction.CreateForMoltenGold(
@@ -1663,7 +1663,7 @@ internal class AccountingTransactionService(
                 .Get(new PriceUnitsByIdSpecification(new PriceUnitId(feePriceUnitId)))
                 .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Fee price unit with id '{feePriceUnitId}' not found.");
 
-            var feeGroupId = Guid.NewGuid();
+            var feeGroupId = Guid.CreateVersion7();
 
             // تراکنش Debit: ثبت هزینه ری‌گیری
             var feeDebit = Transaction.CreateForMoltenGold(
@@ -1722,7 +1722,7 @@ internal class AccountingTransactionService(
 
         var transactions = new List<Transaction>();
 
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
 
         var description = product != null
             ? TransactionDescriptionBuilder.ForManualProductEntry(product.Name)
@@ -1827,7 +1827,7 @@ internal class AccountingTransactionService(
         var debitLedgerAccountId = usedProduct.IsBroken ? usedProductInventoryLedgerAccount.Id : inventoryLedgerAccount.Id;
 
         var transactions = new List<Transaction>();
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
         var description = TransactionDescriptionBuilder.ForUsedProductPurchase(usedProduct, customer);
 
         var postingDate = ComposePostingDate(usedProduct.Invoice.InvoiceDate, usedProduct.Invoice.CreatedAt, ticks + 200);
@@ -1893,7 +1893,7 @@ internal class AccountingTransactionService(
 
         var priceUnitId = new PriceUnitId(productItemEntryRequest.CostPriceUnitId);
         var description = TransactionDescriptionBuilder.ForManualProductEntry(product.Name);
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
         var postingDate = inventoryStock.PostingDate;
 
         var amount = productItemEntryRequest.CostPrice;
@@ -1959,7 +1959,7 @@ internal class AccountingTransactionService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("واحد ارزی پایه یافت نشد.");
 
         var description = TransactionDescriptionBuilder.ForManualCoinEntry(coin.Title);
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
         var postingDate = inventoryStock.PostingDate;
 
         // Valuation in base currency: UnitPrice * Quantity
@@ -2024,7 +2024,7 @@ internal class AccountingTransactionService(
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("حساب سرمایه افتتاحیه - تعدیلات یافت نشد.");
 
         var description = TransactionDescriptionBuilder.ForManualCurrencyEntry(currency.Title);
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
         var postingDate = inventoryStock.PostingDate;
 
         // Amount = currency units, ExchangeRate = unit price
@@ -2097,7 +2097,7 @@ internal class AccountingTransactionService(
             ?? throw new NotFoundException("Opening Balance Equity ledger account not found.");
 
         var transactions = new List<Transaction>();
-        var groupId = Guid.NewGuid();
+        var groupId = Guid.CreateVersion7();
         var now = DateTime.Now;
         var description = $"تصحیح وزن محصول (تغییر از {oldWeight.ToWeightFormat(GoldUnitType.Gram)} به {newWeight.ToWeightFormat(GoldUnitType.Gram)})";
 
@@ -2205,7 +2205,7 @@ internal class AccountingTransactionService(
                 var amount = inventoryStock.ChangeAmount;
                 var basePriceAmount = amount * pricePerGram;
 
-                var groupId = Guid.NewGuid();
+                var groupId = Guid.CreateVersion7();
                 var postingDate = inventoryStock.PostingDate;
 
                 var description = TransactionDescriptionBuilder.ForInventoryExit(request.ExitReason, product);
@@ -2272,7 +2272,7 @@ internal class AccountingTransactionService(
                 var exchangeRate = coinCurrentPrice.ExchangeRate.Value;
                 var basePriceAmount = amount * exchangeRate;
 
-                var groupId = Guid.NewGuid();
+                var groupId = Guid.CreateVersion7();
                 var postingDate = inventoryStock.PostingDate;
                 var description = TransactionDescriptionBuilder.ForInventoryExit(request.ExitReason, coin);
 
@@ -2336,7 +2336,7 @@ internal class AccountingTransactionService(
                 var amount = inventoryStock.ChangeAmount;
                 var basePriceAmount = amount * (exchangeRate ?? 1);
 
-                var groupId = Guid.NewGuid();
+                var groupId = Guid.CreateVersion7();
                 var postingDate = inventoryStock.PostingDate;
                 var description = TransactionDescriptionBuilder.ForInventoryExit(request.ExitReason, currency, financialAccount);
 

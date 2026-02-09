@@ -9,7 +9,7 @@ public class SmsLog : EntityBase<SmsLogId>
     {
         return new SmsLog
         {
-            Id = new SmsLogId(Guid.NewGuid()),
+            Id = new SmsLogId(Guid.CreateVersion7()),
             Message = message,
             Receiver = receiver,
             Delivered = delivered
