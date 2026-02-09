@@ -5,14 +5,15 @@ using GoldEx.Shared.DTOs.AppReleases;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Home;
 
 public partial class Index
 {
-    [Inject] public IVersionReleaseStore ReleaseStore { get; set; } = default!;
-    [Inject] public IAppReleaseService ReleaseService { get; set; } = default!;
+    [Inject] private IVersionReleaseStore ReleaseStore { get; set; } = default!;
+    [Inject] private IAppReleaseService ReleaseService { get; set; } = default!;
 
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
@@ -26,10 +27,13 @@ public partial class Index
 
     private async Task LoadReleasesAsync()
     {
-        await SendRequestAsync<IAppReleaseService, List<AppReleaseResponse>>(
-            action: (s, ct) => s.GetListAsync(ct),
-            afterSend: response => _releases = response,
-            createScope: true);
+        if (User?.Identity?.IsAuthenticated == true)
+        {
+            await SendRequestAsync<IAppReleaseService, List<AppReleaseResponse>>(
+                action: (s, ct) => s.GetListAsync(ct),
+                afterSend: response => _releases = response,
+                createScope: true);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
