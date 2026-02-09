@@ -22,7 +22,7 @@ public class Notification : EntityBase<NotificationId>
 
     private Notification(string title, string message, List<NotificationButton>? buttons = null, InvoiceId? invoiceId = null)
     {
-        Id = new NotificationId(Guid.NewGuid());
+        Id = new NotificationId(Guid.CreateVersion7());
         Title = title;
         Message = message;
         IsRead = false;

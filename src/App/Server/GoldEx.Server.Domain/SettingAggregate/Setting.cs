@@ -38,7 +38,7 @@ public class Setting : EntityBase<SettingsId>
 
         return new Setting
         {
-            Id = new SettingsId(Guid.NewGuid()),
+            Id = new SettingsId(Guid.CreateVersion7()),
             InstitutionName = institutionName,
             Address = address,
             PhoneNumber = phoneNumber,

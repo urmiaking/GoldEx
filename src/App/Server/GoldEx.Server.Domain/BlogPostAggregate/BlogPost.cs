@@ -21,7 +21,7 @@ public class BlogPost : EntityBase<BlogPostId>
         string content,
         BlogCategoryId categoryId)
     {
-        Id = new BlogPostId(Guid.NewGuid());
+        Id = new BlogPostId(Guid.CreateVersion7());
         Title = title;
         Content = content;
         Slug = slug;

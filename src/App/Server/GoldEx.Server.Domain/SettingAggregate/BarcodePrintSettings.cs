@@ -19,7 +19,7 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
 
     private BarcodePrintSettings(int labelWidth, int labelHeight)
     {
-        Id = new BarcodePrintSettingsId(Guid.NewGuid());
+        Id = new BarcodePrintSettingsId(Guid.CreateVersion7());
         LabelWidth = labelWidth;
         LabelHeight = labelHeight;
     }

@@ -25,7 +25,7 @@ public class BlogCategory : EntityBase<BlogCategoryId>
 
     private BlogCategory(string title, BlogCategoryId? parentCategoryId = null)
     {
-        Id = new BlogCategoryId(Guid.NewGuid());
+        Id = new BlogCategoryId(Guid.CreateVersion7());
         Title = title;
         ParentCategoryId = parentCategoryId;
         IsActive = true;

@@ -21,7 +21,7 @@ public class Product : EntityBase<ProductId>
 
         return new Product
         {
-            Id = new ProductId(Guid.NewGuid()),
+            Id = new ProductId(Guid.CreateVersion7()),
             Name = name,
             Weight = weight,
             Fineness = fineness,
@@ -49,7 +49,7 @@ public class Product : EntityBase<ProductId>
 
         return new Product
         {
-            Id = new ProductId(Guid.NewGuid()),
+            Id = new ProductId(Guid.CreateVersion7()),
             Name = name,
             Weight = weight,
             Wage = wage,
@@ -83,7 +83,7 @@ public class Product : EntityBase<ProductId>
 
         return new Product
         {
-            Id = new ProductId(Guid.NewGuid()),
+            Id = new ProductId(Guid.CreateVersion7()),
             Name = name,
             Weight = weight,
             Wage = wage,

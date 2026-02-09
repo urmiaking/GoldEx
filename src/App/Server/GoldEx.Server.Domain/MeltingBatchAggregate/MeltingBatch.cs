@@ -29,7 +29,7 @@ public class MeltingBatch : EntityBase<MeltingBatchId>
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0);
 
-        Id = new MeltingBatchId(Guid.NewGuid());
+        Id = new MeltingBatchId(Guid.CreateVersion7());
         TotalWeight = totalWeight;
         WeightUnitType = weightUnitType;
         _changeLogs = [MeltingBatchChangeLog.Create(MeltingBatchStatus.Melting)];

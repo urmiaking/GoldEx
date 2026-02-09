@@ -40,7 +40,7 @@ public class Transaction : EntityBase<TransactionId>
 
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             GroupId = groupId,
@@ -79,7 +79,7 @@ public class Transaction : EntityBase<TransactionId>
 
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             GroupId = groupId,
@@ -116,7 +116,7 @@ public class Transaction : EntityBase<TransactionId>
 
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             GroupId = groupId,
@@ -151,7 +151,7 @@ public class Transaction : EntityBase<TransactionId>
         
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             GroupId = groupId,
@@ -231,7 +231,7 @@ public class Transaction : EntityBase<TransactionId>
 
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             BaseCurrencyAmount = baseCurrencyAmount,
@@ -265,7 +265,7 @@ public class Transaction : EntityBase<TransactionId>
         
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             BaseCurrencyAmount = baseCurrencyAmount,
@@ -312,7 +312,7 @@ public class Transaction : EntityBase<TransactionId>
 
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             BaseCurrencyAmount = baseCurrencyAmount,
@@ -348,7 +348,7 @@ public class Transaction : EntityBase<TransactionId>
 
         return new Transaction
         {
-            Id = new TransactionId(Guid.NewGuid()),
+            Id = new TransactionId(Guid.CreateVersion7()),
             Description = description,
             Amount = amount,
             BaseCurrencyAmount = baseCurrencyAmount,

@@ -16,7 +16,7 @@ public class PriceUnit : EntityBase<PriceUnitId>
     {
         return new PriceUnit
         {
-            Id = new PriceUnitId(Guid.NewGuid()),
+            Id = new PriceUnitId(Guid.CreateVersion7()),
             Title = title,
             PriceId = priceId,
             UnitType = unitType,
