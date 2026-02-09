@@ -24,6 +24,7 @@
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
     [Inject] private ILicenseService LicenceService { get; set; } = default!;
     [Inject] private LicenseState LicenseState { get; set; } = default!;
+    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -33,7 +34,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await GetLicenseAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity?.IsAuthenticated == true) 
+            await GetLicenseAsync();
+
         await base.OnInitializedAsync();
     }
 
