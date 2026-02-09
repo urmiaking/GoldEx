@@ -11,7 +11,7 @@ public class ProductCategory : EntityBase<ProductCategoryId>
     {
         return new ProductCategory
         {
-            Id = new ProductCategoryId(Guid.NewGuid()),
+            Id = new ProductCategoryId(Guid.CreateVersion7()),
             Title = title,
             PrefixCode = prefixCode
         };

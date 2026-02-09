@@ -14,7 +14,7 @@ public static class FileHelpers
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
         // 1. Write to a temp file first
-        var tmpPath = Path.Combine(dir, $"{Path.GetFileName(path)}.tmp_{Guid.NewGuid():N}");
+        var tmpPath = Path.Combine(dir, $"{Path.GetFileName(path)}.tmp_{Guid.CreateVersion7():N}");
 
         try
         {

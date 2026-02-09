@@ -61,7 +61,7 @@ public class InvoiceUsedProduct : EntityBase<InvoiceUsedProductId>
         ProductId? productId,
         Invoice invoice)
     {
-        return new InvoiceUsedProduct(id ?? new InvoiceUsedProductId(Guid.NewGuid()),
+        return new InvoiceUsedProduct(id ?? new InvoiceUsedProductId(Guid.CreateVersion7()),
             description,
             weight,
             gramPrice,

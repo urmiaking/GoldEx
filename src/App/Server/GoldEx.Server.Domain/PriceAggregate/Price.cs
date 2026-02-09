@@ -13,7 +13,7 @@ public class Price : EntityBase<PriceId>
     {
         return new Price
         {
-            Id = new PriceId(Guid.NewGuid()),
+            Id = new PriceId(Guid.CreateVersion7()),
             Title = priceCatalog.GetDisplayName(),
             PriceCatalog = priceCatalog,
             MarketType = priceCatalog.GetMarketType(),

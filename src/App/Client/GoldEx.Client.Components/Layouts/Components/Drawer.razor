@@ -21,7 +21,7 @@
     private DrawerVariant _drawerVariant = DrawerVariant.Responsive;
     private bool _isMobile = true;
     private bool _isInitialized;
-    private readonly Guid _observerId = Guid.NewGuid();
+    private readonly Guid _observerId = Guid.CreateVersion7();
 
     private async Task HandleNavigate(bool shouldOpen)
     {

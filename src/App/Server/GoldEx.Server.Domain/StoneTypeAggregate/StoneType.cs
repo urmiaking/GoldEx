@@ -19,7 +19,7 @@ public class StoneType : EntityBase<StoneTypeId>
 
     private StoneType(string title, string enTitle, string symbol, StoneKind kind)
     {
-        Id = new StoneTypeId(Guid.NewGuid());
+        Id = new StoneTypeId(Guid.CreateVersion7());
         Title = title;
         EnTitle = enTitle;
         Symbol = symbol;

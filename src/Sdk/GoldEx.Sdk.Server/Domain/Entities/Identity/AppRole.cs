@@ -9,7 +9,7 @@ public class AppRole : IdentityRole<Guid>
 
     public AppRole(string name)
     {
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
         Name = name;
     }
 

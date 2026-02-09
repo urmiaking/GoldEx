@@ -13,7 +13,7 @@ public class AppUser : IdentityUser<Guid>
 
     public AppUser(string name, string username, string? email = null, string? phoneNumber = null)
     {
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
         Name = name;
         UserName = username;
         Email = email;

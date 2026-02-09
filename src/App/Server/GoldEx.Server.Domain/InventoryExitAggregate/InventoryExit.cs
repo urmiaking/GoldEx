@@ -24,7 +24,7 @@ public class InventoryExit : EntityBase<InventoryExitId>
     {
         return new InventoryExit
         {
-            Id = new InventoryExitId(Guid.NewGuid()),
+            Id = new InventoryExitId(Guid.CreateVersion7()),
             ExitReason = exitReason,
             Description = description,
             ExitDate = exitDate ?? DateTime.Now

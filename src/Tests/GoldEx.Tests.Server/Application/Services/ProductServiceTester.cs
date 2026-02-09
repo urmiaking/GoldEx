@@ -22,9 +22,9 @@
 //    {
 //        Arrange
 //       var validProduct = new Product("test", "12345453", 1.4, null, ProductType.MoltenGold, null, CaratType.Eighteen,
-//           Guid.NewGuid());
+//           Guid.CreateVersion7());
 //        var invalidProduct = new Product("test2", "12345453", 1.4, 1, ProductType.MoltenGold, WageType.Dollar,
-//            CaratType.Eighteen, Guid.NewGuid());
+//            CaratType.Eighteen, Guid.CreateVersion7());
 //        Act
 //       var validProductValidation = _createProductValidator.Validate(validProduct);
 //        var invalidProductValidation = _createProductValidator.Validate(invalidProduct);
@@ -39,9 +39,9 @@
 //    {
 //        Arrange
 //       var validProduct = new Product("test", "12345453", 1.4, null, ProductType.UsedGold, null, CaratType.Eighteen,
-//           Guid.NewGuid());
+//           Guid.CreateVersion7());
 //        var invalidProduct = new Product("test2", "12345453", 1.4, 1, ProductType.UsedGold, WageType.Dollar,
-//            CaratType.Eighteen, Guid.NewGuid());
+//            CaratType.Eighteen, Guid.CreateVersion7());
 //        Act
 //       var validProductValidation = _createProductValidator.Validate(validProduct);
 //        var invalidProductValidation = _createProductValidator.Validate(invalidProduct);
@@ -56,9 +56,9 @@
 //    {
 //        Arrange
 //       var validProduct = new Product("test", "12345453", 1.4, null, ProductType.Coin, null, CaratType.Eighteen,
-//           Guid.NewGuid());
+//           Guid.CreateVersion7());
 //        var invalidProduct = new Product("test2", "12345453", 1.4, 1, ProductType.Coin, WageType.Dollar,
-//            CaratType.Eighteen, Guid.NewGuid());
+//            CaratType.Eighteen, Guid.CreateVersion7());
 //        Act
 //       var validProductValidation = _createProductValidator.Validate(validProduct);
 //        var invalidProductValidation = _createProductValidator.Validate(invalidProduct);
@@ -73,9 +73,9 @@
 //    {
 //        Arrange
 //       var validProduct = new Product("test", "12345453", 1.4, 5, ProductType.Jewelry, WageType.Dollar,
-//           CaratType.Eighteen, Guid.NewGuid());
+//           CaratType.Eighteen, Guid.CreateVersion7());
 //        var invalidProduct = new Product("test2", "12345453", 1.4, null, ProductType.Jewelry, WageType.Percent,
-//            CaratType.Eighteen, Guid.NewGuid());
+//            CaratType.Eighteen, Guid.CreateVersion7());
 //        Act
 //       var validProductValidation = _createProductValidator.Validate(validProduct);
 //        var invalidProductValidation = _createProductValidator.Validate(invalidProduct);
@@ -90,9 +90,9 @@
 //    {
 //        Arrange
 //       var validProduct = new Product("test", "12345453", 1.4, 5, ProductType.Gold, WageType.Percent,
-//           CaratType.Eighteen, Guid.NewGuid());
+//           CaratType.Eighteen, Guid.CreateVersion7());
 //        var invalidProduct = new Product("test2", "12345453", 1.4, null, ProductType.Gold, WageType.Dollar,
-//            CaratType.Eighteen, Guid.NewGuid());
+//            CaratType.Eighteen, Guid.CreateVersion7());
 //        Act
 //       var validProductValidation = _createProductValidator.Validate(validProduct);
 //        var invalidProductValidation = _createProductValidator.Validate(invalidProduct);
