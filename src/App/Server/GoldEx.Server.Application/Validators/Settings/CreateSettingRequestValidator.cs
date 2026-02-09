@@ -11,7 +11,7 @@ internal class CreateSettingRequestValidator : AbstractValidator<CreateSettingRe
     {
         RuleFor(x => x.InstitutionName)
             .NotEmpty().WithMessage("نام گالری نمی تواند خالی باشد.")
-            .MaximumLength(100).WithMessage("نام گالری باید کمتر از 100 کاراکتر باشد.");
+            .MaximumLength(50).WithMessage("نام گالری باید کمتر از 50 کاراکتر باشد.");
 
         RuleFor(x => x.Address)
             .NotEmpty().WithMessage("آدرس نمی تواند خالی باشد.")
