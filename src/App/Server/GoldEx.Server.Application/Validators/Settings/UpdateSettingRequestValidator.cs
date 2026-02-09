@@ -11,7 +11,7 @@ internal class UpdateSettingRequestValidator : AbstractValidator<UpdateSettingRe
     {
         RuleFor(x => x.InstitutionName)
             .NotEmpty().WithMessage("نام گالری نمی تواند خالی باشد")
-            .MaximumLength(25).WithMessage("طول نام گالری نمی تواند بیشتر از 25 کاراکتر باشد");
+            .MaximumLength(50).WithMessage("طول نام گالری نمی تواند بیشتر از 50 کاراکتر باشد");
 
         RuleFor(x => x.Address)
             .NotEmpty().WithMessage("آدرس نمی تواند خالی باشد")

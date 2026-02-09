@@ -7,7 +7,7 @@ public partial class LicenseStatusBanner
 {
     [Inject] public LicenseState LicenseState { get; set; } = default!;
 
-    protected const int WarningDays = 7;
+    protected const int WarningDays = 30;
 
     protected int RemainingDays =>
         LicenseState.Current is null
