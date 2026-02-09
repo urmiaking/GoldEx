@@ -27,7 +27,7 @@ public sealed class BarcodeReservation : EntityBase<BarcodeReservationId>
         TimeSpan ttl,
         InvoiceId? invoiceId = null)
     {
-        Id = new BarcodeReservationId(Guid.NewGuid());
+        Id = new BarcodeReservationId(Guid.CreateVersion7());
         BarcodeType = barcodeType;
         Prefix = string.IsNullOrEmpty(prefix) ? null : Normalize(prefix);
         Barcode = Normalize(barcode);

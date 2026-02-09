@@ -10,7 +10,7 @@ public class SmsTemplate : EntityBase<SmsTemplateId>
     {
         return new SmsTemplate
         {
-            Id = new SmsTemplateId(Guid.NewGuid()),
+            Id = new SmsTemplateId(Guid.CreateVersion7()),
             Subject = subject,
             Body = body,
             Parameters = parameters,

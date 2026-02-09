@@ -31,7 +31,7 @@ public class InvoiceCoinItem : EntityBase<InvoiceCoinItemId>
 
     internal static InvoiceCoinItem Create(InvoiceCoinItemId? id, CoinInstanceId coinInstanceId, decimal unitPrice, int quantity, decimal profitPercent, bool isInstant)
     {
-        return new InvoiceCoinItem(id ?? new InvoiceCoinItemId(Guid.NewGuid()), coinInstanceId, unitPrice, quantity, profitPercent, isInstant);
+        return new InvoiceCoinItem(id ?? new InvoiceCoinItemId(Guid.CreateVersion7()), coinInstanceId, unitPrice, quantity, profitPercent, isInstant);
     }
 
     private InvoiceCoinItem() { }

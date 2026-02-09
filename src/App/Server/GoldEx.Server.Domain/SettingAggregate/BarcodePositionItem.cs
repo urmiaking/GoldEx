@@ -27,7 +27,7 @@ public sealed class BarcodePositionItem : EntityBase<BarcodePositionItemId>
         int itemSpacing,
         BarcodeDisplaySettings? barcodeSettings = null)
     {
-        Id = new BarcodePositionItemId(Guid.NewGuid());
+        Id = new BarcodePositionItemId(Guid.CreateVersion7());
         Position = position;
         ItemType = itemType;
         Order = order;

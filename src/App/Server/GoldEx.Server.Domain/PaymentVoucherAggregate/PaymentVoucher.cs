@@ -24,7 +24,7 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
     {
         return new PaymentVoucher
         {
-            Id = new PaymentVoucherId(Guid.NewGuid()),
+            Id = new PaymentVoucherId(Guid.CreateVersion7()),
             SourceFinancialAccountId = sourceFinancialAccountId,
             CustomerId = customerId,
             DestinationFinancialAccountId = destinationFinancialAccountId,

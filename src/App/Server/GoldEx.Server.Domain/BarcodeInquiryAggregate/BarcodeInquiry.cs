@@ -12,7 +12,7 @@ public class BarcodeInquiry : EntityBase<BarcodeInquiryId>
     private BarcodeInquiry() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    private BarcodeInquiry(string barcode) : base(new BarcodeInquiryId(Guid.NewGuid()))
+    private BarcodeInquiry(string barcode) : base(new BarcodeInquiryId(Guid.CreateVersion7()))
     {
         Barcode = barcode;
         InquiryDate = DateTime.Now;

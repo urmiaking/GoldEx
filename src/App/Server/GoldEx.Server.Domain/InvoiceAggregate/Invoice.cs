@@ -28,7 +28,7 @@ public class Invoice : EntityBase<InvoiceId>
     {
         return new Invoice
         {
-            Id = new InvoiceId(Guid.NewGuid()),
+            Id = new InvoiceId(Guid.CreateVersion7()),
             InvoiceNumber = invoiceNumber,
             InvoiceType = invoiceType,
             TradeScale = tradeScale,

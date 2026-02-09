@@ -9,7 +9,7 @@ public class InventoryEntry : EntityBase<InventoryEntryId>
 {
     private InventoryEntry()
     {
-        Id = new InventoryEntryId(Guid.NewGuid());
+        Id = new InventoryEntryId(Guid.CreateVersion7());
     }
 
     public static InventoryEntry Create() => new();

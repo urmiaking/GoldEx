@@ -25,7 +25,7 @@ public class LicensePayment : EntityBase<LicensePaymentId>
         if (!validMonths.Contains(requestedMonths))
             throw new InvalidOperationException("Invalid requested month");
 
-        Id = new LicensePaymentId(Guid.NewGuid());
+        Id = new LicensePaymentId(Guid.CreateVersion7());
         CurrentPlan = currentPlan;
         RequestedPlan = LicensePlan.Regular;
         RequestedMonths = requestedMonths;

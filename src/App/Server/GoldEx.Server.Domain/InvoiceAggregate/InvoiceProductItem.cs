@@ -88,7 +88,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal? purchaseWagePriceUnitExchangeRate,
         bool isInstantProduct)
     {
-        return new InvoiceProductItem(id ?? new InvoiceProductItemId(Guid.NewGuid()),
+        return new InvoiceProductItem(id ?? new InvoiceProductItemId(Guid.CreateVersion7()),
             gramPrice,
             profitPercent,
             taxPercent,
@@ -127,7 +127,7 @@ public class InvoiceProductItem : EntityBase<InvoiceProductItemId>
         decimal? saleWagePriceUnitExchangeRate,
         decimal? stonePriceUnitExchangeRate)
     {
-        return new InvoiceProductItem(id ?? new InvoiceProductItemId(Guid.NewGuid()),
+        return new InvoiceProductItem(id ?? new InvoiceProductItemId(Guid.CreateVersion7()),
             gramPrice,
             profitPercent,
             taxPercent,

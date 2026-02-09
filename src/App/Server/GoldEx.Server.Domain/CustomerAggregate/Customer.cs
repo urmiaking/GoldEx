@@ -16,7 +16,7 @@ public class Customer : EntityBase<CustomerId>
     {
         return new Customer
         {
-            Id = new CustomerId(Guid.NewGuid()),
+            Id = new CustomerId(Guid.CreateVersion7()),
             CustomerType = customerType,
             FullName = fullName,
             NationalId = nationalId,

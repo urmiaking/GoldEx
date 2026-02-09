@@ -11,7 +11,7 @@ public class Coin : EntityBase<CoinId>
     {
         return new Coin
         {
-            Id = new CoinId(Guid.NewGuid()),
+            Id = new CoinId(Guid.CreateVersion7()),
             Title = title,
             Weight = weight,
             Fineness = fineness,

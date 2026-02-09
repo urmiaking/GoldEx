@@ -59,7 +59,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
         return new InventoryStock
         {
-            Id = new InventoryStockId(Guid.NewGuid()),
+            Id = new InventoryStockId(Guid.CreateVersion7()),
             ProductId = productId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
@@ -81,7 +81,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
         return new InventoryStock
         {
-            Id = new InventoryStockId(Guid.NewGuid()),
+            Id = new InventoryStockId(Guid.CreateVersion7()),
             ProductId = productId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
@@ -105,7 +105,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
         return new InventoryStock
         {
-            Id = new InventoryStockId(Guid.NewGuid()),
+            Id = new InventoryStockId(Guid.CreateVersion7()),
             CoinInstanceId = coinInstanceId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
@@ -129,7 +129,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
         return new InventoryStock
         {
-            Id = new InventoryStockId(Guid.NewGuid()),
+            Id = new InventoryStockId(Guid.CreateVersion7()),
             CurrencyId = currencyId,
             ChangeAmount = changeAmount,
             ActionType = actionType,
@@ -155,7 +155,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
         return new InventoryStock
         {
-            Id = new InventoryStockId(Guid.NewGuid()),
+            Id = new InventoryStockId(Guid.CreateVersion7()),
             ProductId = productId,
             MoltenGoldDetail = moltenGoldDetail,
             MeltingBatchId = meltingBatchId,
@@ -177,7 +177,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
         return new InventoryStock
         {
-            Id = new InventoryStockId(Guid.NewGuid()),
+            Id = new InventoryStockId(Guid.CreateVersion7()),
             ProductId = productId,
             ChangeAmount = changeAmount,
             ActionType = WarehouseActionType.Out,
@@ -196,7 +196,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
 
         return new InventoryStock
         {
-            Id = new InventoryStockId(Guid.NewGuid()),
+            Id = new InventoryStockId(Guid.CreateVersion7()),
             CoinInstanceId = coinInstanceId,
             ChangeAmount = changeAmount,
             ActionType = WarehouseActionType.Out,

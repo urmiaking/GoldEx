@@ -32,7 +32,7 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
 
         return new InvoicePayment
         {
-            Id = new InvoicePaymentId(Guid.NewGuid()),
+            Id = new InvoicePaymentId(Guid.CreateVersion7()),
             PaymentType = paymentType,
             PaymentSide = paymentSide,
             PaymentDate = paymentDate,

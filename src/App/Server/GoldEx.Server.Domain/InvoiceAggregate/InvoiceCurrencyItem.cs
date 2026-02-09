@@ -38,7 +38,7 @@ public class InvoiceCurrencyItem : EntityBase<InvoiceCurrencyItemId>
         decimal taxPercent,
         decimal profitPercent)
     {
-        return new InvoiceCurrencyItem(id ?? new InvoiceCurrencyItemId(Guid.NewGuid()), currencyId, financialAccountId, unitPrice, amount, taxPercent, profitPercent);
+        return new InvoiceCurrencyItem(id ?? new InvoiceCurrencyItemId(Guid.CreateVersion7()), currencyId, financialAccountId, unitPrice, amount, taxPercent, profitPercent);
     }
 
     public PriceUnitId CurrencyId { get; private set; }

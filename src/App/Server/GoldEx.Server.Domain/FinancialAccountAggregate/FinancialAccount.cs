@@ -35,7 +35,7 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         InternationalBankAccount? internationalAccount,
         CashAccount? cashAccount)
     {
-        Id = new FinancialAccountId(Guid.NewGuid());
+        Id = new FinancialAccountId(Guid.CreateVersion7());
         AccountType = accountType;
         PriceUnitId = priceUnitId;
         IsSystemAccount = isSystemAccount;
