@@ -76,11 +76,25 @@ internal class InvoicePrintService(
             item.InvoiceDate.ToDateTime(TimeOnly.FromTimeSpan(item.CreatedAt.TimeOfDay)),
             cancellationToken);
 
+        decimal? exchangeRate = null;
+
+        if (previousRemaining.Any())
+        {
+            var customerPreviousInvoices = await invoiceRepository.Get(new InvoicesByCustomerIdSpecification(item.CustomerId))
+                .Where(x => x.CreatedAt < item.CreatedAt)
+                .ToListAsync(cancellationToken);
+
+            // Get the exchange rate from the previous invoices
+            exchangeRate = customerPreviousInvoices
+                .Select(x => x.UnpaidAmountExchangeRate)
+                .FirstOrDefault(x => x.HasValue);
+        }
+
         // مانده پس از فاکتور (previous + impact)
         var afterRemaining = new Dictionary<PriceUnit, decimal>(previousRemaining);
         afterRemaining[item.PriceUnit!] = afterRemaining.GetValueOrDefault(item.PriceUnit!, 0m) + impact; // مستقیم set
 
-        var previousFormatted = FormatRemaining(previousRemaining, item.PriceUnit!, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
+        var previousFormatted = FormatRemaining(previousRemaining, item.PriceUnit!, item.UnpaidPriceUnit, exchangeRate);
         var afterFormatted = FormatRemaining(afterRemaining, item.PriceUnit!, item.UnpaidPriceUnit, item.UnpaidAmountExchangeRate);
 
         var mapped = mapper.Map<GetInvoiceDetailResponse>(item);
