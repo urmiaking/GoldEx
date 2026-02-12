@@ -100,22 +100,22 @@
         int failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
 
         // If failedAttempts > 0, require CAPTCHA
-        if (_showCaptcha)
-        {
-            var captchaResponse = HttpContext.Request.Form["cf-turnstile-response"].ToString();
-            if (string.IsNullOrWhiteSpace(captchaResponse))
-            {
-                _errorMessage = "لطفاً captcha را تکمیل کنید.";
-                return;
-            }
+        // if (_showCaptcha)
+        // {
+        //     var captchaResponse = HttpContext.Request.Form["cf-turnstile-response"].ToString();
+        //     if (string.IsNullOrWhiteSpace(captchaResponse))
+        //     {
+        //         _errorMessage = "لطفاً captcha را تکمیل کنید.";
+        //         return;
+        //     }
 
-            var captchaValid = await VerifyCaptchaAsync(captchaResponse);
-            if (!captchaValid)
-            {
-                _errorMessage = "اعتبارسنجی captcha ناموفق بود.";
-                return;
-            }
-        }
+        //     var captchaValid = await VerifyCaptchaAsync(captchaResponse);
+        //     if (!captchaValid)
+        //     {
+        //         _errorMessage = "اعتبارسنجی captcha ناموفق بود.";
+        //         return;
+        //     }
+        // }
 
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
 
