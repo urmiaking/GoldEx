@@ -42,10 +42,10 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
-    public async Task<List<GetTinyInvoiceResponse>> GetCustomerInvoicesAsync(Guid customerId, Guid priceUnitId,
+    public async Task<List<GetTinyInvoiceResponse>> GetCustomerInvoicesAsync(Guid customerId,
         RequestFilter filter, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Invoices.GetCustomerInvoices(filter, customerId, priceUnitId), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Invoices.GetCustomerInvoices(filter, customerId), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
