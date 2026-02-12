@@ -4,12 +4,14 @@ using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -282,11 +284,11 @@ public partial class PaymentEditor
     {
         var request = new RequestFilter();
 
-        if (Model.Endorser?.Id is null || Model.PriceUnit is null)
+        if (Model.Endorser?.Id is null)
             return;
 
         await SendRequestAsync<IInvoiceService, List<GetTinyInvoiceResponse>>(
-            action: (s, ct) => s.GetCustomerInvoicesAsync(Model.Endorser.Id.Value, Model.PriceUnit.Id, request, ct),
+            action: (s, ct) => s.GetCustomerInvoicesAsync(Model.Endorser.Id.Value, request, ct),
             afterSend: response => _invoices = response,
             cancelPrevious: true);
     }
@@ -300,4 +302,13 @@ public partial class PaymentEditor
     }
 
     #endregion
+
+    private string? InvoiceToStringFunc(GetTinyInvoiceResponse? inv)
+    {
+        return inv is not null
+            ? $"فاکتور {inv.InvoiceType.GetDisplayName()} " +
+              $"شماره {inv.InvoiceNumber.ToString()} " +
+              $"- مانده : {inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title)}"
+            : null;
+    }
 }

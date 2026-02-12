@@ -7,5 +7,6 @@ public record GetTinyInvoiceResponse(
     Guid Id,
     decimal Remaining,
     GetPriceUnitTitleResponse PriceUnit,
+    decimal? ExchangeRate,
     InvoiceType InvoiceType,
     long InvoiceNumber);
