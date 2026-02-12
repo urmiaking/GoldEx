@@ -90,6 +90,7 @@ internal class InvoiceMapper : IRegister
 
         config.NewConfig<Invoice, GetTinyInvoiceResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.Remaining, src => src.TotalUnpaidAmount);
+            .Map(dest => dest.Remaining, src => src.TotalUnpaidAmount)
+            .Map(dest => dest.ExchangeRate, src => src.ExchangeRate);
     }
 }

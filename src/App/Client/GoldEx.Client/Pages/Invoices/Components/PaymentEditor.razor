@@ -166,7 +166,7 @@
                                          DebounceInterval="500"
                                          Placeholder="جستجوی فاکتور..."
                                          MaxItems="100"
-                                         ToStringFunc="@(inv => inv is not null ? $"فاکتور {inv.InvoiceType.GetDisplayName()} شماره {inv.InvoiceNumber.ToString()} - مانده : {inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title)}" : null)"
+                                         ToStringFunc="InvoiceToStringFunc"
                                          SearchFunc="SearchCustomerInvoicesAsync"
                                          ResetValueOnEmptyText="true" />
                     </MudItem>

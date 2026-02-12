@@ -230,11 +230,12 @@ internal class InvoiceService(
         };
     }
 
-    public async Task<List<GetTinyInvoiceResponse>> GetCustomerInvoicesAsync(Guid customerId, Guid priceUnitId,
+    public async Task<List<GetTinyInvoiceResponse>> GetCustomerInvoicesAsync(Guid customerId,
         RequestFilter filter, CancellationToken cancellationToken = default)
     {
         var invoices = await invoiceRepository
-            .Get(new InvoicesByCustomerIdSpecification(new CustomerId(customerId), new PriceUnitId(priceUnitId), filter))
+            .Get(new InvoicesByCustomerIdSpecification(new CustomerId(customerId), filter))
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetTinyInvoiceResponse>>(invoices);
