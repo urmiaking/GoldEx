@@ -453,7 +453,7 @@ public partial class SimpleCalculator
                      await SelectStonePriceUnit(_model.StonePriceUnit!);
                      OnProductTypeChanged(_model.ProductType);
 
-                     await InquiryBarcodeAsync(barcode);
+                     //await InquiryBarcodeAsync(barcode);
                  },
                  cancelPrevious: true);
         }
