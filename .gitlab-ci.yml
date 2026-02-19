@@ -33,5 +33,5 @@ docker-image:
         .
 
     - echo "Running initialization script"
-    - chmod +x /masoud/initialize.sh
+    - sudo chmod +x /masoud/initialize.sh
     - sudo /masoud/initialize.sh
