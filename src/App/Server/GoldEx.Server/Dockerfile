@@ -29,7 +29,7 @@ RUN dotnet restore "./src/App/Server/GoldEx.Server/GoldEx.Server.csproj"
 RUN rm -rf ./nuget ./nuget.config
 COPY . .
 WORKDIR "/src/src/App/Server/GoldEx.Server"
-RUN dotnet build "./GoldEx.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# RUN dotnet build "./GoldEx.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
