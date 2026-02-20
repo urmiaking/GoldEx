@@ -1,9 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@layout BaseLayout
 
-@Body
-
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
+<MudMainContent Class="mt-10 mb-sm-4 mb-20 pa-md-4 py-4">
+    @Body
+    <MobileNav Class="d-sm-none d-block" />
+</MudMainContent>

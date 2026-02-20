@@ -1,5 +1,10 @@
+using GoldEx.Calculator.Client;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-await builder.Build().RunAsync();
+builder.Services.AddClient(builder.HostEnvironment);
+
+var app = builder.Build();
+
+await app.RunAsync();

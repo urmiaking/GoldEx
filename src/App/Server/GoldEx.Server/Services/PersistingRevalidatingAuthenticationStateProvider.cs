@@ -1,6 +1,4 @@
-using System.Diagnostics;
-using System.Security.Claims;
-using GoldEx.Client;
+using GoldEx.Client.Components;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Components;
@@ -9,6 +7,8 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using System.Security.Claims;
 
 namespace GoldEx.Server.Services
 {
