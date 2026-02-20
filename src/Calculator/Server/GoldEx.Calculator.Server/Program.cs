@@ -1,4 +1,4 @@
-using GoldEx.Calculator.Components;
+using GoldEx.Calculator.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 

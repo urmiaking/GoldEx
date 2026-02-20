@@ -51,7 +51,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Shared", "3. Shared", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldEx.Calculator.Client", "src\Calculator\Client\GoldEx.Calculator.Client\GoldEx.Calculator.Client.csproj", "{B55CF754-A56B-17B1-6ABE-35427A07FD9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldEx.Calculator", "src\Calculator\Server\GoldEx.Calculator\GoldEx.Calculator.csproj", "{EC395E20-3408-1893-7033-FC212AEB6D57}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldEx.Calculator.Server", "src\Calculator\Server\GoldEx.Calculator.Server\GoldEx.Calculator.Server.csproj", "{00805E2C-85FD-BC02-F37A-3FB24CD6A220}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,10 +115,10 @@ Global
 		{B55CF754-A56B-17B1-6ABE-35427A07FD9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B55CF754-A56B-17B1-6ABE-35427A07FD9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B55CF754-A56B-17B1-6ABE-35427A07FD9E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EC395E20-3408-1893-7033-FC212AEB6D57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EC395E20-3408-1893-7033-FC212AEB6D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EC395E20-3408-1893-7033-FC212AEB6D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EC395E20-3408-1893-7033-FC212AEB6D57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00805E2C-85FD-BC02-F37A-3FB24CD6A220}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00805E2C-85FD-BC02-F37A-3FB24CD6A220}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00805E2C-85FD-BC02-F37A-3FB24CD6A220}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00805E2C-85FD-BC02-F37A-3FB24CD6A220}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,7 +144,7 @@ Global
 		{191F9C53-0F0D-47AC-B469-5179FA2DE847} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{C34677A7-C07C-4F26-ACB2-15175475FDCB} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{B55CF754-A56B-17B1-6ABE-35427A07FD9E} = {191F9C53-0F0D-47AC-B469-5179FA2DE847}
-		{EC395E20-3408-1893-7033-FC212AEB6D57} = {2262D950-7219-46D6-AEF7-B8082AB6FB28}
+		{00805E2C-85FD-BC02-F37A-3FB24CD6A220} = {2262D950-7219-46D6-AEF7-B8082AB6FB28}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EF529C87-6768-42CD-BDD2-F0C064BB75C2}
