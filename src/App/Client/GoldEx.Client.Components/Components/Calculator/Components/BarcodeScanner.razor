@@ -1,6 +1,4 @@
-﻿@using ZXingBlazor.Components
-
-<MudPaper Class="pa-4 my-2" Elevation="4" Outlined="true">
+﻿<MudPaper Class="pa-4 my-2" Elevation="4" Outlined="true">
     @if (!string.IsNullOrEmpty(_errorMessage))
     {
         <div class="d-flex justify-center align-center flex-column gap-2" style="height: 300px;">
@@ -15,7 +13,7 @@
         @* SHOW SPINNER UNTIL WE HAVE SELECTED A CAMERA *@
         <div class="d-flex justify-center align-center flex-column gap-2" style="height: 300px; background-color: black; border-radius: 4px;">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            <MudText Typo="Typo.caption" Class="white-text">درحال یافتن دوربین‌ها...</MudText>
+            <MudText Typo="Typo.caption" Class="white-text">درحال راه اندازی دوربین...</MudText>
         </div>
     }
     else

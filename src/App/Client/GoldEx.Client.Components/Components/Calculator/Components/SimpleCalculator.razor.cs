@@ -1,5 +1,5 @@
-﻿using GoldEx.Client.Pages.Calculate.Validators;
-using GoldEx.Client.Pages.Calculate.ViewModels;
+﻿using GoldEx.Client.Components.Calculator.Validators;
+using GoldEx.Client.Components.Calculator.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.BarcodeInquiries;
 using GoldEx.Shared.DTOs.Prices;
@@ -13,7 +13,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.Calculate.Components;
+namespace GoldEx.Client.Components.Calculator.Components;
 
 public partial class SimpleCalculator
 {

@@ -1,4 +1,4 @@
-﻿@using GoldEx.Shared.DTOs.PriceUnits
+﻿@namespace GoldEx.Client.Components.Calculator.Components
 @inherits GoldExComponentBase
 
 <MudPaper Class="@Class" Elevation="@Elevation">
@@ -186,15 +186,7 @@
             </MudGrid>
 
             <div>
-                @if (_isLoading)
-                {
-                    <MudDivider />
-                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                        <MudText Typo="Typo.body2">در حال محاسبه...</MudText>
-                    </MudStack>
-                }
-                else if (_model is { SourcePriceUnit: not null, DestinationPriceUnit: not null, SourceAmount: > 0, FinalDestinationAmount: not null })
+                @if (_model is { SourcePriceUnit: not null, DestinationPriceUnit: not null, SourceAmount: > 0, FinalDestinationAmount: not null })
                 {
                     <MudPaper Elevation="4" Class="pa-3 mt-2 rounded-b-0">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">

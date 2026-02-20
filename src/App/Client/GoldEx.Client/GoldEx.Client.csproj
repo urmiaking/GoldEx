@@ -43,7 +43,6 @@
 	<ItemGroup>
 		<PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.2.7" />
 		<PackageReference Include="TinyMCE.Blazor" Version="2.2.1" />
-		<PackageReference Include="ZXingBlazor" Version="1.1.5" />
 	</ItemGroup>
 
 	<ItemGroup>

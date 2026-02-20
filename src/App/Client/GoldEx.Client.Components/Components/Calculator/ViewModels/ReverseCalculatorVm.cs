@@ -1,8 +1,8 @@
-﻿using GoldEx.Shared.Enums;
+﻿using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
-using GoldEx.Shared.DTOs.PriceUnits;
 
-namespace GoldEx.Client.Pages.Calculate.ViewModels;
+namespace GoldEx.Client.Components.Calculator.ViewModels;
 
 public class ReverseCalculatorVm
 {

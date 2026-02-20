@@ -1,12 +1,13 @@
-﻿using GoldEx.Client.Pages.Calculate.ViewModels;
-using GoldEx.Shared.DTOs.PriceUnits;
-using GoldEx.Shared.DTOs.Prices;
-using GoldEx.Shared.Enums;
+﻿using GoldEx.Client.Components.Calculator.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.Prices;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
 
-namespace GoldEx.Client.Pages.Calculate.Components;
+namespace GoldEx.Client.Components.Calculator.Components;
 
 public partial class CurrencyExchange
 {
@@ -14,10 +15,8 @@ public partial class CurrencyExchange
     [Parameter] public int Elevation { get; set; } = 24;
 
     private readonly CurrencyExchangeVm _model = new();
-    private MudBlazor.MudForm _form = default!;
+    private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-
-    private bool _isLoading;
 
     private bool _feeFieldMenuOpen;
 
@@ -32,9 +31,9 @@ public partial class CurrencyExchange
     private string? FeeTypeAdornmentIcon =>
         _model.FeeType switch
         {
-            WageType.Percent => MudBlazor.Icons.Material.Filled.Percent,
-            WageType.Fixed => MudBlazor.Icons.Material.Filled.Money,
-            null => MudBlazor.Icons.Material.Filled.MoneyOff,
+            WageType.Percent => Icons.Material.Filled.Percent,
+            WageType.Fixed => Icons.Material.Filled.Money,
+            null => Icons.Material.Filled.MoneyOff,
             _ => throw new ArgumentOutOfRangeException(nameof(_model.FeeType), _model.FeeType, null)
         };
 
@@ -68,8 +67,6 @@ public partial class CurrencyExchange
                 _model.SourcePriceUnit ??= dollarUnit;
                 _model.DestinationPriceUnit ??= defaultUnit;
                 _model.FeePriceUnit ??= _model.DestinationPriceUnit ?? defaultUnit;
-
-                StateHasChanged();
             });
     }
 
@@ -224,7 +221,7 @@ public partial class CurrencyExchange
         if (!_model.ExchangeRate.HasValue)
             await EnsureExchangeRateLoadedAsync(force: false);
 
-        if (_model.ExchangeRate.HasValue && _model.ExchangeRate.Value > 0)
+        if (_model.ExchangeRate is > 0)
         {
             _model.DestinationAmount = _model.SourceAmount.Value * _model.ExchangeRate.Value;
             CalculateFeeAndFinalize();
@@ -232,7 +229,6 @@ public partial class CurrencyExchange
             return;
         }
 
-        _isLoading = true;
         StateHasChanged();
 
         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
@@ -250,12 +246,10 @@ public partial class CurrencyExchange
 
                 CalculateFeeAndFinalize();
 
-                _isLoading = false;
                 StateHasChanged();
             },
             cancelPrevious: true);
 
-        _isLoading = false;
         StateHasChanged();
     }
 

@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
-using GoldEx.Client.Pages.Calculate.ViewModels;
+using GoldEx.Client.Components.Calculator.ViewModels;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Client.Pages.Calculate.Validators;
+namespace GoldEx.Client.Components.Calculator.Validators;
 
 public class CalculatorValidator : AbstractValidator<CalculatorVm>
 {
