@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace GoldEx.Client;
+namespace GoldEx.Client.Components;
 
 // This is a client-side AuthenticationStateProvider that determines the user's authentication state by
 // looking for data persisted in the page when it was rendered on the server. This authentication state will
@@ -12,7 +12,7 @@ namespace GoldEx.Client;
 // This only provides a username and email for display purposes. It does not actually include any tokens
 // that authenticate to the server when making subsequent requests. That works separately using a
 // cookie that will be included on HttpClient requests to the server.
-internal class PersistentAuthenticationStateProvider : AuthenticationStateProvider
+public class PersistentAuthenticationStateProvider : AuthenticationStateProvider
 {
     private static readonly Task<AuthenticationState> DefaultUnauthenticatedTask =
         Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));

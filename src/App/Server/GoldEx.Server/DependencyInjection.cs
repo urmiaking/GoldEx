@@ -1,5 +1,5 @@
-﻿using GoldEx.Server.Extensions;
-using GoldEx.Client.Extensions;
+﻿using GoldEx.Client.Components;
+using GoldEx.Server.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 
 namespace GoldEx.Server;

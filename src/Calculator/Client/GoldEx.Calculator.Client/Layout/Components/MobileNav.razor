@@ -1,0 +1,19 @@
+﻿@inherits GoldExComponentBase
+
+@code {
+    [Parameter] public string? Class { get; set; }
+}
+
+<MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0;" ToolBarClass="mobile-navbar" Class="@Class">
+    <MudNavMenu Margin="Margin.Dense" Color="Color.Primary">
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">
+            طلا
+        </MudNavLink>
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
+            ارز
+        </MudNavLink>
+        <MudNavLink Href="" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Success">
+            کهنه
+        </MudNavLink>
+    </MudNavMenu>
+</MudAppBar>
