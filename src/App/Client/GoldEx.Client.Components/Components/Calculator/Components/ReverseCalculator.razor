@@ -1,4 +1,5 @@
-﻿@inherits GoldExComponentBase
+﻿@namespace GoldEx.Client.Components.Calculator.Components
+@inherits GoldExComponentBase
 
 <MudCard Elevation="@Elevation" Class="pa-4">
     <MudForm Model="_model" @ref="@_form" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
@@ -114,5 +115,4 @@
             </MudPaper>
         }
     </MudForm>
-
 </MudCard>

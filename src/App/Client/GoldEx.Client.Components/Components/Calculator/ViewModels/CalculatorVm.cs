@@ -1,9 +1,9 @@
-﻿using GoldEx.Shared.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.Enums;
 
-namespace GoldEx.Client.Pages.Calculate.ViewModels;
+namespace GoldEx.Client.Components.Calculator.ViewModels;
 
 public class CalculatorVm
 {
