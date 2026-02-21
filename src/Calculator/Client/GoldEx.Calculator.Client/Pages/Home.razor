@@ -1,14 +1,16 @@
 ﻿@page "/"
+@using GoldEx.Client.Components.Calculator.Components
 
 <PageTitle>ماشین حساب گلدکس</PageTitle>
 
 <div class="container">
     <div class="row">
         <div class="col-md-12 text-center">
-            <h1>ماشین حساب گلدکس</h1>
-            <p>به ماشین حساب گلدکس خوش آمدید! این ابزار به شما کمک می‌کند تا محاسبات مالی خود را به راحتی انجام دهید.</p>
-            <a href="/calculator" class="btn btn-primary">شروع به استفاده</a>
+            <MudText Typo="Typo.h4" Class="mb-2 mt-4">محاسبه قیمت طلا</MudText>
+            <MudText Typo="Typo.body1">بر اساس فرمول محاسبه اتحادیه طلا</MudText>
         </div>
     </div>
+    
+    <SimpleCalculator Class="mt-4" Elevation="24"></SimpleCalculator>
 
 </div>

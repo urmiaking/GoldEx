@@ -99,7 +99,6 @@
         {
             try
             {
-                // فقط از JS می‌پرسیم "آیا الان می‌تونی نصب کنی؟"
                 _canInstall = await JsRuntime.InvokeAsync<bool>("getPwaState");
                 if (_canInstall)
                 {
@@ -119,7 +118,7 @@
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _currentUrl = Navigation.ToBaseRelativePath(e.Location);
-        await OnNavigate.InvokeAsync(false); // Close the drawer
+        await OnNavigate.InvokeAsync(false);
         StateHasChanged();
     }
 
@@ -136,7 +135,7 @@
             var installed = await JsRuntime.InvokeAsync<bool>("installPwa");
             if (installed)
             {
-                _canInstall = false;   // بعد از نصب، دکمه را پنهان کن
+                _canInstall = false;
                 StateHasChanged();
             }
         }

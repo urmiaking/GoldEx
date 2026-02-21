@@ -1,7 +1,7 @@
 ﻿@namespace GoldEx.Client.Components.Calculator.Components
 @inherits GoldExComponentBase
 
-<MudCard Elevation="@Elevation" Class="pa-4">
+<MudCard Elevation="@Elevation" Class="@($"pa-4 {Class}")">
     <AuthorizeView>
         <Authorized>
             <MudGrid Justify="Justify.SpaceBetween" Spacing="4">
@@ -353,28 +353,30 @@
                                          OnAdornmentClick="OnStoneAdornmentClicked"
                                          Class="flex-grow-1" />
 
-                        <MudMenu @bind-Open="_stoneFieldMenuOpen"
-                                 ActivationEvent="@MouseEvent.LeftClick">
-                            <ActivatorContent>
-                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
-                            </ActivatorContent>
-                            <ChildContent>
-                                @foreach (var item in _priceUnits)
-                                {
-                                    <MudMenuItem OnClick="() => SelectStonePriceUnit(item)">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            @if (item.HasIcon)
-                                            {
-                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                </MudAvatar>
-                                            }
-                                            @item.Title
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                            </ChildContent>
-                        </MudMenu>
+                        <AuthorizeView>
+                            <MudMenu @bind-Open="_stoneFieldMenuOpen"
+                                     ActivationEvent="@MouseEvent.LeftClick">
+                                <ActivatorContent>
+                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
+                                </ActivatorContent>
+                                <ChildContent>
+                                    @foreach (var item in _priceUnits)
+                                    {
+                                        <MudMenuItem OnClick="() => SelectStonePriceUnit(item)">
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                @if (item.HasIcon)
+                                                {
+                                                    <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                    </MudAvatar>
+                                                }
+                                                @item.Title
+                                            </div>
+                                        </MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                        </AuthorizeView>
                     </div>
                 </MudItem>
                 @if (_model.PriceUnit?.Title != _model.StonePriceUnit?.Title)

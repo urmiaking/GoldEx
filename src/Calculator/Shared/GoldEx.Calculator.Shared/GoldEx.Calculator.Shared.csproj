@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\App\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Sdk\GoldEx.Sdk.Common\GoldEx.Sdk.Common.csproj" />
+  </ItemGroup>
+
+</Project>
