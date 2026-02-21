@@ -3,12 +3,12 @@
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@Class" Gutters="false">
     <AuthorizeView>
         <Authorized>
-            <MudTabs Elevation="24" Color="Color.Transparent" Centered="true" TabHeaderClass="mb-5 rounded-5" ActivePanelIndexChanged="SetHelpContext">
+            <MudTabs Elevation="24" Color="Color.Transparent" Centered="true" TabHeaderClass="rounded-5" ActivePanelIndexChanged="SetHelpContext">
                 <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate" IconColor="Color.Info">
                     <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
                 </MudTabPanel>
                 <MudTabPanel Text="تبدیل ارز" Icon="@Icons.Material.Outlined.CurrencyExchange" IconColor="Color.Error">
-                    <CurrencyExchange Elevation="@Elevation"></CurrencyExchange>
+                    <CurrencyExchange Class="@Class" Elevation="@Elevation"></CurrencyExchange>
                 </MudTabPanel>
                 <MudTabPanel Text="محاسبه گر وزن" Icon="@Icons.Material.Outlined.SwapHoriz" IconColor="Color.Primary">
                     <ReverseCalculator Class="@Class" Elevation="@Elevation"></ReverseCalculator>
