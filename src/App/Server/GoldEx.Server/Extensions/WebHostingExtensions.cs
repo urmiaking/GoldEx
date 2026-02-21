@@ -6,6 +6,7 @@ using GoldEx.Client.Extensions;
 using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Application.Models;
 using GoldEx.Server.Application;
+using GoldEx.Server.Application.Extensions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Common.Middlewares;
@@ -20,9 +21,7 @@ using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Ui.Web.Extensions;
 using System.Reflection;
-using GoldEx.Server.Application.Extensions;
 using VHDLicenseManager;
-using VHDLicenseManager.Responses;
 
 namespace GoldEx.Server.Extensions;
 
@@ -37,7 +36,7 @@ public static class WebHostingExtensions
         builder.Services
             .AddClientServerServices()
             .AddServer(configuration)
-            .AddApplication()
+            .AddApplication().AddHostedServices()
             .AddInfrastructure(configuration);
 
         return builder.Build();

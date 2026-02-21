@@ -88,9 +88,9 @@ h1:focus {
     direction: rtl; /* Persian direction */
 }
 
-/* Brand (GoldEx) */
+/* Brand */
 .brand-text {
-    font-family: "Cinzel Decorative", serif;
+    font-family: "Cinzel Decorative", "IRANSans", serif; 
     font-size: clamp(2rem, 8vw, 4rem); /* Scales with screen width */
     font-weight: 700;
     background: linear-gradient(90deg, #B8860B 0%, #DAA520 30%, #FFD700 50%, #DAA520 70%, #B8860B 100%);
@@ -98,7 +98,6 @@ h1:focus {
     -webkit-text-fill-color: transparent;
     display: inline-block;
     letter-spacing: 1px;
-    margin-top: 0.4rem;
     direction: ltr; /* Fix mixed direction rendering */
     background-size: 200% 100%; /* اندازه بزرگ‌تر برای حرکت */
     animation: shine 10s linear infinite; /* انیمیشن اصلی */

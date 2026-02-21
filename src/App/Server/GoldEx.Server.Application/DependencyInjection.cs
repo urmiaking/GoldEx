@@ -13,15 +13,20 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
+        services.AddScoped<ReportStorageWebExtension, ReportStorageExtension>();
+
+        services.DiscoverServices();
+        return services;
+    }
+
+    public static IServiceCollection AddHostedServices(this IServiceCollection services)
+    {
         services.AddHostedService<PriceUpdaterBackgroundService>();
         services.AddHostedService<LicenseUpdaterBackgroundService>();
         services.AddHostedService<NotificationBackgroundService>();
         services.AddHostedService<BlogDiskSyncManager>();
 
-        services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
-        services.AddScoped<ReportStorageWebExtension, ReportStorageExtension>();
-
-        services.DiscoverServices();
         return services;
     }
 }

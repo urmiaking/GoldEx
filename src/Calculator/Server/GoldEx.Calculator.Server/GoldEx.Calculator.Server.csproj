@@ -11,7 +11,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.13" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.1" />
+		<PackageReference Include="AspNetCore.DataProtection.SqlServer" Version="1.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>

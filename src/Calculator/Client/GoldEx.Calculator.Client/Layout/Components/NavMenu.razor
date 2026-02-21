@@ -1,0 +1,23 @@
+﻿@using GoldEx.Shared.Routings
+
+@inherits GoldExComponentBase
+
+<MudNavMenu Rounded="true" Margin="Margin.Dense" Color="Color.Primary">
+    <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
+        محاسبه گر طلا
+    </MudNavLink>
+    <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Error">
+        تبدیل ارز
+    </MudNavLink>
+    <MudNavLink Href="@ClientRoutes.InventoryStocks.Index" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Filled.SwapHoriz" IconColor="Color.Success">
+        محاسبه گر وزن
+    </MudNavLink>
+</MudNavMenu>
+
+@code
+{
+    [Parameter] public EventCallback<bool> OnNavigate { get; set; }
+}

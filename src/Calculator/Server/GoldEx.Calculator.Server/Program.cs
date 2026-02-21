@@ -1,35 +1,33 @@
-using GoldEx.Calculator.Server.Components;
-using GoldEx.Client.Components;
+using GoldEx.Calculator.Server.Extensions;
+using GoldEx.Sdk.Server.Infrastructure.Extensions;
+using GoldEx.Server.Infrastructure;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
-
-builder.Services.AddClientAndServerServices();
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseWebAssemblyDebugging();
+    Console.WriteLine(@"Starting up.");
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    Console.WriteLine($@"Environment: {builder.Environment.EnvironmentName}");
+
+    var app = builder.ConfigureServices();
+
+    app.ApplyDatabaseMigrations<GoldExDbContext>();
+
+    await app.SeedDatabaseAsync();
+
+    app.ConfigurePipeline();
+
+    app.Run();
 }
-else
+catch (Exception ex) when (ex is not HostAbortedException)
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine(@"An error occured:");
+    Console.WriteLine(ex.Message);
 }
-
-app.UseHttpsRedirection();
-
-
-app.UseAntiforgery();
-
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(GoldEx.Calculator.Client._Imports).Assembly);
-
-app.Run();
+finally
+{
+    Console.ResetColor();
+    Console.WriteLine(@"Shutting down completed.");
+}

@@ -1,0 +1,33 @@
+﻿@using GoldEx.Client.Components.Services.Abstractions
+
+@if (_isDarkMode)
+{
+    <MudIconButton Icon="@Icons.Material.Filled.DarkMode"
+                   Class="p-0"
+                   Color="Color.Inherit"
+                   OnClick="() => OnDarkModeToggleChanged(false)" />
+}
+else
+{
+    <MudIconButton Icon="@Icons.Material.Filled.LightMode"
+                   Class="p-0"
+                   Color="Color.Inherit"
+                   OnClick="() => OnDarkModeToggleChanged(true)" />
+}
+
+@code {
+    private bool _isDarkMode;
+
+    [Inject] private IThemeService? ThemeService { get; set; }
+
+    private void OnDarkModeToggleChanged(bool value)
+    {
+        if (ThemeService is not null)
+        {
+            _isDarkMode = value;
+            ThemeService.ToggleMode();
+
+            StateHasChanged();
+        }
+    }
+}

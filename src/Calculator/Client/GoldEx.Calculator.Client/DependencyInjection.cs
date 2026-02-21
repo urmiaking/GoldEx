@@ -6,7 +6,7 @@ using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 
 namespace GoldEx.Calculator.Client;
 
-internal static class DependencyInjection
+public static class DependencyInjection
 {
     internal static IServiceCollection AddClient(this IServiceCollection services, IWebAssemblyHostEnvironment environment)
     {
@@ -21,7 +21,7 @@ internal static class DependencyInjection
         return services;
     }
 
-    internal static IServiceCollection AddClientServerServices(this IServiceCollection services)
+    public static IServiceCollection AddClientServerServices(this IServiceCollection services)
     {
         if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
             services.AddClientServices();
