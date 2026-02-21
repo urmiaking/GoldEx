@@ -15,7 +15,6 @@ public static class ApiRoutes
             public const string Base = "Manage";
 
             public const string LinkExternalLogin = "LinkExternalLogin";
-
         }
     }
 

@@ -13,8 +13,7 @@ internal static class DependencyInjection
             .AddClientServerServices()
             .AddAuthServices()
             .AddServices()
-            .AddFluentValidation()
-            .AddJsonOptions()
+            .AddJsonOptions()   
             .AddHttpClientService(environment);
 
         return services;

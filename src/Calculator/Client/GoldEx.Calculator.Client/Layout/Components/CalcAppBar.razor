@@ -1,0 +1,19 @@
+﻿<MudAppBar Elevation="12" Dense="true">
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle"/>
+    <span class="brand-text fs-3 mr-2 ml-4">GoldEx Karat</span>
+    <MudSpacer />
+    <DarkModeToggler />
+</MudAppBar>
+
+@code
+{
+    [Parameter] public EventCallback<bool> DrawerOpenChanged { get; set; }
+
+    [Parameter] public bool DrawerOpen { get; set; }
+
+    private void DrawerToggle()
+    {
+        DrawerOpen = !DrawerOpen;
+        DrawerOpenChanged.InvokeAsync(DrawerOpen);
+    }
+}

@@ -1,0 +1,44 @@
+﻿using System.ComponentModel.DataAnnotations;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
+
+namespace GoldEx.Client.Components.Calculator.ViewModels;
+
+public class CurrencyExchangeVm
+{
+    [Display(Name = "ارز مبدا")]
+    [Required(ErrorMessage = "لطفا {0} را انتخاب کنید")]
+    public GetPriceUnitTitleResponse? SourcePriceUnit { get; set; }
+
+    [Display(Name = "ارز مقصد")]
+    [Required(ErrorMessage = "لطفا {0} را انتخاب کنید")]
+    public GetPriceUnitTitleResponse? DestinationPriceUnit { get; set; }
+
+    [Display(Name = "مبلغ")]
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    public decimal? SourceAmount { get; set; } = 1;
+
+    public decimal? ExchangeRate { get; set; }
+
+    public bool IsExchangeRateInverted { get; set; }
+
+    public decimal? EffectiveExchangeRate => ExchangeRate.HasValue
+        ? (IsExchangeRateInverted ? 1m / ExchangeRate.Value : ExchangeRate.Value)
+        : null;
+
+    public decimal? DestinationAmount { get; set; }
+
+    [Display(Name = "کارمزد")]
+    public decimal? Fee { get; set; } = 0.5m;
+
+    [Display(Name = "نوع کارمزد")]
+    public WageType? FeeType { get; set; } = WageType.Percent;
+
+    public GetPriceUnitTitleResponse? FeePriceUnit { get; set; }
+
+    public decimal? FeeExchangeRate { get; set; }
+
+    public decimal? FeeInDestination { get; set; }
+
+    public decimal? FinalDestinationAmount { get; set; }
+}

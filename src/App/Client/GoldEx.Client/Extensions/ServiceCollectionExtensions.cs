@@ -1,71 +1,12 @@
-﻿using Blazored.LocalStorage;
-using GoldEx.Client.Abstractions.Common;
-using GoldEx.Client.Components.Services;
-using GoldEx.Client.Components.Services.Abstractions;
+﻿using GoldEx.Client.Components;
 using GoldEx.Client.Services;
-using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
-using GoldEx.Shared;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using MudBlazor;
-using MudBlazor.Extensions;
-using MudBlazor.Services;
-using System.Globalization;
 using System.Runtime.InteropServices;
 
 namespace GoldEx.Client.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection InitializeDefaultCulture(this IServiceCollection services)
-    {
-        var culture = new CultureInfo("fa-IR")
-        {
-            NumberFormat =
-            {
-                NegativeSign = "-",
-                NumberDecimalSeparator = ".",
-                CurrencySymbol = "ریال",
-                CurrencyPositivePattern = 3, // Symbol on the left with a space  
-                CurrencyNegativePattern = 8, // Symbol on the left with a space for negative values  
-                NumberGroupSeparator = ",",     // Explicitly set this
-                CurrencyDecimalSeparator = ".", // Explicitly set this (was defaulting to /)
-                CurrencyGroupSeparator = ",",   // Explicitly set this
-            },
-            DateTimeFormat =
-            {
-                ShortDatePattern = "yyyy/MM/dd",
-                LongDatePattern = "dddd, dd MMMM yyyy",
-                FirstDayOfWeek = DayOfWeek.Saturday,
-                ShortestDayNames = ["ی", "د", "س", "چ", "پ", "ج", "ش"],
-                DayNames = ["یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"],
-                MonthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty],
-                MonthGenitiveNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty],
-                AbbreviatedMonthGenitiveNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty],
-                AbbreviatedMonthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", string.Empty]
-            }
-        };
-
-        CultureInfo.CurrentCulture = culture;
-        CultureInfo.CurrentUICulture = culture;
-        CultureInfo.DefaultThreadCurrentCulture = culture;
-        CultureInfo.DefaultThreadCurrentUICulture = culture;
-
-        return services;
-    }
-
-    internal static IServiceCollection AddAuthServices(this IServiceCollection builder)
-    {
-        builder.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
-        builder.AddAuthorizationCore();
-        builder.AddCascadingAuthenticationState();
-        builder.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
-
-        return builder;
-    }
-
     internal static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.DiscoverServices();
@@ -73,67 +14,12 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddFluentValidation(this IServiceCollection services)
-    {
-        //ValidatorOptions.Global.DisplayNameResolver = (_, member, _) =>
-        //    member.GetCustomAttribute<DisplayAttribute>()?.GetName();
-
-        return services;
-    }
-
-    internal static IServiceCollection AddJsonOptions(this IServiceCollection services)
-    {
-        var jsonOptions = Utilities.GetJsonOptions();
-        services.AddSingleton(jsonOptions);
-
-        return services;
-    }
-
-    internal static IServiceCollection AddHttpClientService(this IServiceCollection services, IWebAssemblyHostEnvironment environment)
-    {
-        var baseAddress = environment.BaseAddress;
-        services.AddScoped(sp =>
-        {
-            var client = Utilities.GetHttpClient(baseAddress);
-            client.Timeout = new TimeSpan(0, 10, 0);
-            return client;
-        });
-
-        return services;
-    }
-
     public static IServiceCollection AddClientServerServices(this IServiceCollection services)
     {
         if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
-            services.AddClientOnlyServices();
+            services.AddClientServices();
 
         services.AddClientAndServerServices();
-
-        return services;
-    }
-
-    public static IServiceCollection AddClientOnlyServices(this IServiceCollection services)
-    {
-        services.AddClientServices();
-
-        return services;
-    }
-
-    public static IServiceCollection AddClientAndServerServices(this IServiceCollection services)
-    {
-        services.AddBlazoredLocalStorage();
-
-        services.AddMudServices(config =>
-        {
-            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            config.SnackbarConfiguration.HideTransitionDuration = 1500;
-        });
-
-        MudGlobal.TransitionDefaults.Duration = TimeSpan.FromMilliseconds(500);
-
-        services.AddLocalization();
-        services.AddScoped<IThemeService, ThemeService>();
-        services.AddScoped<IVersionReleaseStore, VersionReleaseStore>();
 
         return services;
     }

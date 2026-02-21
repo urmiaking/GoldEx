@@ -1,0 +1,16 @@
+﻿@inherits LayoutComponentBase
+@layout BaseLayout
+
+<MudLayout>
+    <CalcAppBar @bind-DrawerOpen="_drawerOpen" />
+    <CalcDrawer @bind-IsDrawerOpen="_drawerOpen" BreakpointChanged="() => StateHasChanged()" />
+    <MudMainContent Class="mt-10 mb-sm-4 mb-20 pa-md-4 py-4">
+        @Body
+        <MobileNav Class="d-sm-none d-block" />
+    </MudMainContent>
+</MudLayout>
+
+@code
+{
+    private bool _drawerOpen;
+}
