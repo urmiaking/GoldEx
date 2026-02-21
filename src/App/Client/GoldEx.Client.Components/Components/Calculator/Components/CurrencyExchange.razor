@@ -75,13 +75,15 @@
                                          ValueChanged="OnExchangeRateChanged"
                                          Immediate="true"
                                          dir="ltr"
-                                         Label="@($"نرخ تبدیل هر  {_model.SourcePriceUnit?.Title} به {_model.DestinationPriceUnit?.Title}")"
+                                         Label="@(_model.IsExchangeRateInverted
+                                                     ? $"نرخ تبدیل هر  {_model.DestinationPriceUnit?.Title} به {_model.SourcePriceUnit?.Title}"
+                                                     : $"نرخ تبدیل هر  {_model.SourcePriceUnit?.Title} به {_model.DestinationPriceUnit?.Title}")"
                                          Margin="Margin.Dense"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
                                          Format="#,##0.##"
                                          Adornment="Adornment.End"
-                                         AdornmentText="@_model.DestinationPriceUnit?.Title" />
+                                         AdornmentText="@(_model.IsExchangeRateInverted ? _model.SourcePriceUnit?.Title : _model.DestinationPriceUnit?.Title)" />
                     </MudItem>
                 }
 
@@ -205,10 +207,13 @@
                                     <div class="d-flex justify-content-between align-items-center flex-wrap">
                                         <MudText>
                                             نرخ تبدیل
-                                            <span class="d-none d-md-inline">: هر 1 @_model.SourcePriceUnit?.Title به @_model.DestinationPriceUnit?.Title</span>
+                                            <span class="d-none d-md-inline">
+                                                : هر 1 @(_model.IsExchangeRateInverted ? _model.DestinationPriceUnit?.Title : _model.SourcePriceUnit?.Title)
+                                                به @(_model.IsExchangeRateInverted ? _model.SourcePriceUnit?.Title : _model.DestinationPriceUnit?.Title)
+                                            </span>
                                         </MudText>
                                         <MudText Class="font-weight-bold">
-                                            @_model.ExchangeRate.Value.ToCurrencyFormat(_model.DestinationPriceUnit?.Title)
+                                            @_model.ExchangeRate.Value.ToCurrencyFormat(_model.IsExchangeRateInverted ? _model.SourcePriceUnit?.Title : _model.DestinationPriceUnit?.Title)
                                         </MudText>
                                     </div>
                                 }
