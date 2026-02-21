@@ -20,6 +20,12 @@ public class CurrencyExchangeVm
 
     public decimal? ExchangeRate { get; set; }
 
+    public bool IsExchangeRateInverted { get; set; }
+
+    public decimal? EffectiveExchangeRate => ExchangeRate.HasValue
+        ? (IsExchangeRateInverted ? 1m / ExchangeRate.Value : ExchangeRate.Value)
+        : null;
+
     public decimal? DestinationAmount { get; set; }
 
     [Display(Name = "کارمزد")]

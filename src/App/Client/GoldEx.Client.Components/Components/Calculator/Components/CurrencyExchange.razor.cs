@@ -20,6 +20,37 @@ public partial class CurrencyExchange
 
     private bool _feeFieldMenuOpen;
 
+    private const decimal MinReasonableDisplayedRate = 0.0001m;
+
+    private void SetExchangeRateFromEffective(decimal? effectiveRate)
+    {
+        if (effectiveRate is null)
+        {
+            _model.ExchangeRate = null;
+            _model.IsExchangeRateInverted = false;
+            return;
+        }
+
+        if (effectiveRate <= 0)
+        {
+            _model.ExchangeRate = effectiveRate;
+            _model.IsExchangeRateInverted = false;
+            return;
+        }
+
+        if (effectiveRate < MinReasonableDisplayedRate)
+        {
+            _model.ExchangeRate = 1m / effectiveRate.Value;
+            _model.IsExchangeRateInverted = true;
+            return;
+        }
+
+        _model.ExchangeRate = effectiveRate;
+        _model.IsExchangeRateInverted = false;
+    }
+
+    private decimal? GetEffectiveRate() => _model.EffectiveExchangeRate;
+
     private string? FeeFieldAdornmentText => _model.FeeType switch
     {
         WageType.Percent => WageType.Percent.GetDisplayName(),
@@ -142,6 +173,8 @@ public partial class CurrencyExchange
     private async Task OnSourcePriceUnitChanged(GetPriceUnitTitleResponse? unit)
     {
         _model.SourcePriceUnit = unit;
+        _model.ExchangeRate = null;
+        _model.IsExchangeRateInverted = false;
         await EnsureExchangeRateLoadedAsync(force: true);
         await RecalculateAsync();
     }
@@ -149,6 +182,8 @@ public partial class CurrencyExchange
     private async Task OnDestinationPriceUnitChanged(GetPriceUnitTitleResponse? unit)
     {
         _model.DestinationPriceUnit = unit;
+        _model.ExchangeRate = null;
+        _model.IsExchangeRateInverted = false;
         await EnsureExchangeRateLoadedAsync(force: true);
         await RecalculateAsync();
     }
@@ -173,17 +208,19 @@ public partial class CurrencyExchange
         if (_model.SourcePriceUnit.Id == _model.DestinationPriceUnit.Id)
         {
             _model.ExchangeRate = 1;
+            _model.IsExchangeRateInverted = false;
             return;
         }
 
-        if (!force && _model.ExchangeRate.HasValue)
+        var effectiveRate = GetEffectiveRate();
+        if (!force && effectiveRate is > 0)
             return;
 
         await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
             action: (s, ct) => s.GetExchangeRateAsync(_model.SourcePriceUnit.Id, _model.DestinationPriceUnit.Id, ct),
             afterSend: response =>
             {
-                _model.ExchangeRate = response.ExchangeRate;
+                SetExchangeRateFromEffective(response.ExchangeRate);
             },
             cancelPrevious: true);
     }
@@ -203,6 +240,7 @@ public partial class CurrencyExchange
         {
             _model.DestinationAmount = 0;
             _model.ExchangeRate = _model.SourcePriceUnit.Id == _model.DestinationPriceUnit.Id ? 1 : null;
+            _model.IsExchangeRateInverted = false;
             _model.FeeInDestination = 0;
             _model.FinalDestinationAmount = 0;
             StateHasChanged();
@@ -212,18 +250,20 @@ public partial class CurrencyExchange
         if (_model.SourcePriceUnit.Id == _model.DestinationPriceUnit.Id)
         {
             _model.ExchangeRate = 1;
+            _model.IsExchangeRateInverted = false;
             _model.DestinationAmount = _model.SourceAmount;
             CalculateFeeAndFinalize();
             StateHasChanged();
             return;
         }
 
-        if (!_model.ExchangeRate.HasValue)
+        if (GetEffectiveRate() is null)
             await EnsureExchangeRateLoadedAsync(force: false);
 
-        if (_model.ExchangeRate is > 0)
+        var effectiveRate = GetEffectiveRate();
+        if (effectiveRate is > 0)
         {
-            _model.DestinationAmount = _model.SourceAmount.Value * _model.ExchangeRate.Value;
+            _model.DestinationAmount = _model.SourceAmount.Value * effectiveRate.Value;
             CalculateFeeAndFinalize();
             StateHasChanged();
             return;
@@ -239,9 +279,11 @@ public partial class CurrencyExchange
             afterSend: response =>
             {
                 var rate = response.ExchangeRate;
-                _model.ExchangeRate = rate;
-                _model.DestinationAmount = rate.HasValue
-                    ? _model.SourceAmount.Value * rate.Value
+                SetExchangeRateFromEffective(rate);
+
+                var r = GetEffectiveRate();
+                _model.DestinationAmount = r.HasValue
+                    ? _model.SourceAmount.Value * r.Value
                     : null;
 
                 CalculateFeeAndFinalize();
