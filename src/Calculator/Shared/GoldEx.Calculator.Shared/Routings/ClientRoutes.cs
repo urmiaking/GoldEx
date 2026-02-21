@@ -13,4 +13,9 @@ public static class ClientRoutes
         public const string Currency = "/currency";
         public const string Reverse = "/reverse";
     }
+
+    public static class About
+    {
+        public const string Index = "/about";
+    }
 }

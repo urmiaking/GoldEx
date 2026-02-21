@@ -6,7 +6,7 @@
                     reg.addEventListener('updatefound', () => {
                         const installingWorker = reg.installing;
                         if (installingWorker) {
-                            DotNet.invokeMethodAsync('GoldEx.Calculator.Client', 'OnServiceWorkerInstalling');
+                            DotNet.invokeMethodAsync('GoldEx.Client.Components', 'OnServiceWorkerInstalling');
                         }
                     });
 
