@@ -8,10 +8,10 @@ self.importScripts('./service-worker-assets.js');
  */
 const CACHE_PREFIX = 'blazor-cache-';
 const CACHE_NAME = `${CACHE_PREFIX}${self.assetsManifest.version}`;
+const API_CACHE = `${CACHE_NAME}-api`;
 
 /*
  * Files safe to pre-cache
- * (DO NOT pre-cache _framework/*.wasm)
  */
 const PRECACHE_INCLUDE = [
     /\.html$/,
@@ -33,17 +33,12 @@ const PRECACHE_EXCLUDE = [
     /^_framework\/.*\.blat$/
 ];
 
-/*
- * Base path (adjust if hosted in subfolder)
- */
 const BASE_PATH = '/';
 
 /* ============================
  * INSTALL
  * ============================ */
 self.addEventListener('install', event => {
-    console.info('[SW] Installing');
-
     self.skipWaiting();
 
     event.waitUntil((async () => {
@@ -61,24 +56,12 @@ self.addEventListener('install', event => {
                 })
             );
 
-        for (const request of requests) {
-            try {
-                await cache.add(request);
-            } catch (err) {
-                console.warn('[SW] Failed to pre-cache:', request.url);
-            }
-        }
+        await Promise.allSettled(requests.map(r => cache.add(r)));
 
-        // Cache root document
+        // Cache root
         try {
             await cache.add(new Request(BASE_PATH, { cache: 'reload' }));
         } catch { }
-
-        // Notify open tabs
-        const clients = await self.clients.matchAll({ type: 'window' });
-        for (const client of clients) {
-            client.postMessage({ type: 'INSTALLING_NEW_VERSION' });
-        }
     })());
 });
 
@@ -86,24 +69,16 @@ self.addEventListener('install', event => {
  * ACTIVATE
  * ============================ */
 self.addEventListener('activate', event => {
-    console.info('[SW] Activating');
-
     event.waitUntil((async () => {
-        // Remove old caches
         const keys = await caches.keys();
+
         await Promise.all(
             keys
-                .filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME)
+                .filter(k => k.startsWith(CACHE_PREFIX) && !k.includes(self.assetsManifest.version))
                 .map(k => caches.delete(k))
         );
 
         await self.clients.claim();
-
-        // Notify clients about new version
-        const clients = await self.clients.matchAll({ type: 'window' });
-        for (const client of clients) {
-            client.postMessage({ type: 'NEW_VERSION_AVAILABLE' });
-        }
     })());
 });
 
@@ -111,24 +86,41 @@ self.addEventListener('activate', event => {
  * FETCH
  * ============================ */
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') {
-        return;
-    }
+    if (event.request.method !== 'GET') return;
 
     const url = new URL(event.request.url);
 
     event.respondWith((async () => {
 
         /* ============================
-         * 0. API & AUTH REQUESTS
-         *    (NEVER CACHED)
+         * 0. API REQUESTS
+         *    NETWORK FIRST (NEW)
          * ============================ */
-        if (
-            url.pathname.startsWith('/api/') ||
-            event.request.headers.has('authorization') ||
-            event.request.credentials === 'include'
-        ) {
-            return fetch(event.request);
+        if (url.pathname.startsWith('/api/')) {
+            const cache = await caches.open(API_CACHE);
+
+            try {
+                const networkResponse = await fetch(event.request);
+
+                // Cache only valid responses
+                if (networkResponse && networkResponse.ok) {
+                    await cache.put(event.request, networkResponse.clone());
+                }
+
+                return networkResponse;
+            } catch {
+                // OFFLINE FALLBACK
+                const cached = await cache.match(event.request);
+                if (cached) return cached;
+
+                return new Response(
+                    JSON.stringify({ error: 'Offline and no cached data' }),
+                    {
+                        status: 503,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
         }
 
         /* ============================
@@ -138,18 +130,12 @@ self.addEventListener('fetch', event => {
         if (url.pathname.startsWith('/_framework/')) {
             const cache = await caches.open(CACHE_NAME);
             const cached = await cache.match(event.request);
-
-            if (cached) {
-                return cached;
-            }
+            if (cached) return cached;
 
             const response = await fetch(event.request);
             if (response.ok) {
-                try {
-                    await cache.put(event.request, response.clone());
-                } catch { }
+                await cache.put(event.request, response.clone());
             }
-
             return response;
         }
 
@@ -162,7 +148,8 @@ self.addEventListener('fetch', event => {
                 return await fetch(event.request);
             } catch {
                 const cache = await caches.open(CACHE_NAME);
-                return await cache.match(BASE_PATH);
+                const fallback = await cache.match(BASE_PATH);
+                return fallback || new Response('Offline', { status: 503 });
             }
         }
 
@@ -172,30 +159,16 @@ self.addEventListener('fetch', event => {
          * ============================ */
         const cache = await caches.open(CACHE_NAME);
         const cached = await cache.match(event.request);
-
-        if (cached) {
-            return cached;
-        }
+        if (cached) return cached;
 
         try {
             const response = await fetch(event.request);
             if (response.ok) {
-                try {
-                    await cache.put(event.request, response.clone());
-                } catch { }
+                await cache.put(event.request, response.clone());
             }
             return response;
         } catch {
-            // Offline notification
-            const clients = await self.clients.matchAll({ type: 'window' });
-            for (const client of clients) {
-                client.postMessage({ type: 'NETWORK_UNAVAILABLE' });
-            }
-
-            return new Response('Offline', {
-                status: 503,
-                headers: { 'Content-Type': 'text/plain' }
-            });
+            return new Response('Offline', { status: 503 });
         }
 
     })());
