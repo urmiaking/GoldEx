@@ -1,0 +1,22 @@
+﻿@inherits GoldExComponentBase
+
+@code {
+    [Parameter] public string? Class { get; set; }
+}
+
+<MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0;" ToolBarClass="mobile-navbar" Class="@Class">
+    <MudNavMenu Margin="Margin.Dense" Color="Color.Primary">
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
+            محاسبه گر طلا
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Calculator.Currency" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Error">
+            تبدیل ارز
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Calculator.Reverse" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SwapHoriz" IconColor="Color.Success">
+            محاسبه گر وزن
+        </MudNavLink>
+        <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Info" IconColor="Color.Tertiary">
+            درباره برنامه
+        </MudNavLink>
+    </MudNavMenu>
+</MudAppBar>

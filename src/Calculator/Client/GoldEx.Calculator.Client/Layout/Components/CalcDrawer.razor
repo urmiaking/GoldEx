@@ -1,0 +1,79 @@
+﻿@using MudBlazor.Services
+
+@implements IAsyncDisposable
+
+<MudDrawer @bind-Open="IsDrawerOpen"
+           Elevation="24"
+           Breakpoint="Breakpoint.Xxl"
+           Overlay="false"
+           Variant="_drawerVariant"
+           ClipMode="DrawerClipMode.Always">
+    <NavMenu OnNavigate="HandleNavigate" />
+</MudDrawer>
+
+@code
+{
+    [Parameter] public bool IsDrawerOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsDrawerOpenChanged { get; set; }
+    [Parameter] public EventCallback BreakpointChanged { get; set; }
+    [Inject] public IBrowserViewportService BrowserViewportService { get; set; } = default!;
+
+    private DrawerVariant _drawerVariant = DrawerVariant.Responsive;
+    private bool _isMobile = true;
+    private bool _isInitialized;
+    private readonly Guid _observerId = Guid.CreateVersion7();
+
+    private async Task HandleNavigate(bool shouldOpen)
+    {
+        await IsDrawerOpenChanged.InvokeAsync(shouldOpen);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await BrowserViewportService.SubscribeAsync(
+                _observerId,
+                async (eventArgs) => await OnBreakpointChanged(eventArgs),
+                new ResizeOptions { ReportRate = 250, NotifyOnBreakpointOnly = true }
+            );
+
+            // Wait for next render cycle to allow resize observer to measure
+            await Task.Yield();
+            await UpdateDrawerVariant();
+            _isInitialized = true;
+        }
+    }
+
+    private async Task OnBreakpointChanged(BrowserViewportEventArgs eventArgs)
+    {
+        if (_isInitialized)
+        {
+            await UpdateDrawerVariant();
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateDrawerVariant()
+    {
+        var breakpoint = await BrowserViewportService.GetCurrentBreakpointAsync();
+        var wasMobile = _isMobile;
+
+        _isMobile = await BrowserViewportService.IsBreakpointWithinReferenceSizeAsync(
+            Breakpoint.MdAndDown, breakpoint);
+
+        _drawerVariant = _isMobile ? DrawerVariant.Responsive : DrawerVariant.Mini;
+
+        // Only trigger state change if position actually changed
+        if (wasMobile != _isMobile)
+        {
+            StateHasChanged();
+        }
+        await BreakpointChanged.InvokeAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await BrowserViewportService.UnsubscribeAsync(_observerId);
+    }
+}

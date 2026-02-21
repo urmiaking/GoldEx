@@ -7,7 +7,6 @@ using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Api.Identity;
 using GoldEx.Sdk.Server.Application.Models;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
-using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.HealthChecks;
 using GoldEx.Server.Infrastructure.Services;
@@ -16,7 +15,6 @@ using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.DTOs.Settings;
-using GoldEx.Shared.Enums;
 using GoldEx.Shared.Settings;
 using Mapster;
 using MapsterMapper;
@@ -34,7 +32,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using VHDLicenseManager;
-using VHDLicenseManager.Responses;
 
 namespace GoldEx.Server.Extensions;
 

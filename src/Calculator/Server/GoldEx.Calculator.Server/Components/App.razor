@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#daa520" />
+    <base href="/" />
+
+    <link rel="manifest" href="@Assets["manifest.webmanifest"]" />
+    <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["css/app.css"]" />
+    <link rel="stylesheet" href="@Assets["GoldEx.Calculator.Server.styles.css"]" />
+    <link rel="stylesheet" href=@Assets["_content/MudBlazor/MudBlazor.min.css"] />
+
+    <ImportMap />
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="icons/touch/apple-touch-icon-iphone-60x60.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="icons/touch/apple-touch-icon-ipad-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="icons/touch/apple-touch-icon-iphone-retina-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/touch/apple-touch-icon-ipad-retina-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/touch/apple-touch-icon-180x180.png">
+
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveAuto" />
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
+
+    <script>
+        Blazor.start({
+            webAssembly: {}
+        });
+    </script>
+
+    <script src=@Assets["sw-events.js"]></script>
+    <script>swEvents.startListening();</script>
+</body>
+</html>

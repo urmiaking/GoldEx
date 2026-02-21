@@ -23,7 +23,7 @@ docker-image:
     - when: manual
 
   script:
-    - echo "Building Docker image version $Version"
+    - echo "Building Docker image for GoldEx with version $Version"
 
     - |
       docker build --push \
@@ -31,6 +31,19 @@ docker-image:
         -t localhost:5000/goldex:$Version \
         -f src/App/Server/GoldEx.Server/Dockerfile \
         .
+
+    - echo "Docker image for GoldEx with version $Version built and pushed successfully"
+
+    - echo "Building Docker image for GoldEx Karat with version $Version"
+
+    - |
+      docker build --push \
+        -t localhost:5000/goldex-karat:latest \
+        -t localhost:5000/goldex-karat:$Version \
+        -f src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile \
+        .
+
+    - echo "Docker image for GoldEx Karat with version $Version built and pushed successfully"
 
     - echo "Running initialization script"
     - sudo chmod +x /masoud/initialize.sh
