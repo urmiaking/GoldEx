@@ -10,6 +10,7 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY nuget ./nuget
 COPY ["nuget.config", "."]
 COPY ["src/Calculator/Server/GoldEx.Calculator.Server/GoldEx.Calculator.Server.csproj", "src/Calculator/Server/GoldEx.Calculator.Server/"]
 COPY ["src/App/Server/GoldEx.Server.Application/GoldEx.Server.Application.csproj", "src/App/Server/GoldEx.Server.Application/"]
@@ -25,6 +26,7 @@ COPY ["src/App/Client/GoldEx.Client.Abstractions/GoldEx.Client.Abstractions.cspr
 COPY ["src/App/Client/GoldEx.Client.Services/GoldEx.Client.Services.csproj", "src/App/Client/GoldEx.Client.Services/"]
 COPY ["src/Calculator/Shared/GoldEx.Calculator.Shared/GoldEx.Calculator.Shared.csproj", "src/Calculator/Shared/GoldEx.Calculator.Shared/"]
 RUN dotnet restore "./src/Calculator/Server/GoldEx.Calculator.Server/GoldEx.Calculator.Server.csproj"
+RUN rm -rf ./nuget ./nuget.config
 COPY . .
 WORKDIR "/src/src/Calculator/Server/GoldEx.Calculator.Server"
 
