@@ -22,5 +22,55 @@
       "type": "image/png",
       "purpose": "any"
     }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshots/screenshot1.png",
+      "sizes": "1920x1020",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "اپلیکیشن ماشین حساب گلدکس",
+      "description": "محاسبه گر طلا"
+    },
+    {
+      "src": "assets/screenshots/screenshot2.png",
+      "sizes": "1920x1020",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "اپلیکیشن ماشین حساب گلدکس",
+      "description": "مبدل ارز"
+    },
+    {
+      "src": "assets/screenshots/screenshot3.png",
+      "sizes": "1920x1020",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "اپلیکیشن ماشین حساب گلدکس",
+      "description": "محاسبه گر وزن"
+    },
+    {
+      "src": "assets/screenshots/screenshot-mobile1.jpg",
+      "sizes": "397x883",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "اپلیکیشن ماشین حساب گلدکس",
+      "description": "محاسبه گر طلا"
+    },
+    {
+      "src": "assets/screenshots/screenshot-mobile2.jpg",
+      "sizes": "397x883",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "اپلیکیشن ماشین حساب گلدکس",
+      "description": "مبدل ارز"
+    },
+    {
+      "src": "assets/screenshots/screenshot-mobile3.jpg",
+      "sizes": "397x883",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "اپلیکیشن ماشین حساب گلدکس",
+      "description": "محاسبه گر وزن"
+    }
   ]
 }
