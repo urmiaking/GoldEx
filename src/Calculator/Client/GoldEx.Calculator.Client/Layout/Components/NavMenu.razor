@@ -22,4 +22,22 @@
 @code
 {
     [Parameter] public EventCallback<bool> OnNavigate { get; set; }
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        await OnNavigate.InvokeAsync(false);
+        StateHasChanged();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        return base.DisposeAsync();
+    }
 }
