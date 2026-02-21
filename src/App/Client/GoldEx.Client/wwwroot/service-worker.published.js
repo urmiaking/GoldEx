@@ -22,15 +22,15 @@ const PRECACHE_INCLUDE = [
     /\.png$/,
     /\.jpe?g$/,
     /\.gif$/,
-    /\.ico$/
+    /\.ico$/,
+    /\.wasm$/,
+    /\.dll$/,
+    /\.dat$/,
+    /\.blat$/
 ];
 
 const PRECACHE_EXCLUDE = [
-    /^service-worker\.js$/,
-    /^_framework\/.*\.wasm$/,
-    /^_framework\/.*\.dll$/,
-    /^_framework\/.*\.dat$/,
-    /^_framework\/.*\.blat$/
+    /^service-worker\.js$/
 ];
 
 const BASE_PATH = '/';
@@ -129,14 +129,24 @@ self.addEventListener('fetch', event => {
          * ============================ */
         if (url.pathname.startsWith('/_framework/')) {
             const cache = await caches.open(CACHE_NAME);
-            const cached = await cache.match(event.request);
+
+            // Add ignoreSearch and ignoreVary to match Blazor's requested URLs reliably
+            const cached = await cache.match(event.request, { ignoreSearch: true, ignoreVary: true });
             if (cached) return cached;
 
-            const response = await fetch(event.request);
-            if (response.ok) {
-                await cache.put(event.request, response.clone());
+            try {
+                const response = await fetch(event.request);
+                if (response.ok) {
+                    await cache.put(event.request, response.clone());
+                }
+                return response;
+            } catch (error) {
+                // Safely handle the offline scenario without crashing the Service Worker
+                return new Response('Offline framework file missing', {
+                    status: 503,
+                    headers: { 'Content-Type': 'text/plain' }
+                });
             }
-            return response;
         }
 
         /* ============================
