@@ -1,0 +1,47 @@
+﻿@attribute [Route(ClientRoutes.Home.Index)]
+@attribute [Route(ClientRoutes.Calculator.Simple)]
+
+@inherits GoldExComponentBase
+
+<PageTitle>ماشین حساب گلدکس</PageTitle>
+
+<div class="container">
+    <div class="row">
+
+        <MudGrid Class="position-relative">
+            <MudItem xs="12" Class="text-center">
+                <MudText Typo="Typo.h4" Class="mb-2 mt-4">محاسبه قیمت طلا</MudText>
+                <MudText Typo="Typo.body1">بر اساس فرمول محاسبه اتحادیه طلا</MudText>
+            </MudItem>
+
+            @if (_canInstall)
+            {
+                <!-- Desktop Button -->
+                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.InstallDesktop"
+                               OnClick="InstallPwa"
+                               Class="position-absolute start-0 top-50 ml-3">
+                        نصب اپلیکیشن
+                    </MudButton>
+                </MudHidden>
+
+                <!-- Mobile Button -->
+                <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                    <MudItem xs="12" Class="d-flex justify-center pt-3">
+                        <MudButton Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.InstallMobile"
+                                   OnClick="InstallPwa"
+                                   Color="Color.Primary">
+                            نصب اپلیکیشن
+                        </MudButton>
+                    </MudItem>
+                </MudHidden>
+            }
+
+        </MudGrid>
+    </div>
+
+    <SimpleCalculator Class="mt-4" Elevation="24"></SimpleCalculator>
+</div>

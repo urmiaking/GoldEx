@@ -28,6 +28,7 @@
 		<ProjectReference Include="..\..\..\App\Client\GoldEx.Client.Components\GoldEx.Client.Components.csproj" />
 		<ProjectReference Include="..\..\..\App\Client\GoldEx.Client.Services\GoldEx.Client.Services.csproj" />
 		<ProjectReference Include="..\..\..\App\Shared\GoldEx.Shared\GoldEx.Shared.csproj" />
+		<ProjectReference Include="..\..\Shared\GoldEx.Calculator.Shared\GoldEx.Calculator.Shared.csproj" />
 	</ItemGroup>
 
 </Project>

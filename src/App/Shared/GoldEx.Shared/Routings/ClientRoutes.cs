@@ -11,7 +11,6 @@ public static class ClientRoutes
     {
         private const string AccountPrefix = "/Account";
 
-
         public static class Manage
         {
             private const string ManagePrefix = $"{AccountPrefix}/Manage";

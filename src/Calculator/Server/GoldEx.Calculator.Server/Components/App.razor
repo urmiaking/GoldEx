@@ -28,7 +28,16 @@
 
 <body>
     <Routes @rendermode="InteractiveAuto" />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
+
+    <script>
+        Blazor.start({
+            webAssembly: {}
+        });
+    </script>
+
+    <script src=@Assets["sw-events.js"]></script>
+    <script>swEvents.startListening();</script>
 </body>
 </html>
