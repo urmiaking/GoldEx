@@ -1,6 +1,7 @@
 ﻿@attribute [Route(ClientRoutes.Home.Index)]
 @attribute [Route(ClientRoutes.Calculator.Simple)]
 
+@using GoldEx.Calculator.Client.Components
 @inherits GoldExComponentBase
 
 <PageTitle>ماشین حساب گلدکس</PageTitle>
@@ -43,5 +44,30 @@
         </MudGrid>
     </div>
 
-    <SimpleCalculator Class="mt-4" Elevation="24"></SimpleCalculator>
+    <SimpleCalculator Class="mt-4" 
+                      Elevation="24" 
+                      EnableQuickInvoice="true"
+                      OnAddToInvoice="HandleAddToInvoiceAsync" />
 </div>
+
+@if (_basketCount > 0)
+{
+    <div class="quick-invoice-fab">
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <QuickInvoiceSpeedDial Count="@_basketCount"
+                                   OnOpenList="OpenBasketDialogAsync"
+                                   OnFinalize="FinalizeInvoiceAsync" />
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+                <MudButton StartIcon="@Icons.Material.Filled.ShoppingCartCheckout" OnClick="FinalizeInvoiceAsync">
+                    صدور فاکتور (@_basketCount)
+                </MudButton>
+                <MudTooltip Text="مشاهده اقلام">
+                    <MudIconButton Icon="@Icons.Material.Filled.ListAlt" Color="Color.Info" Variant="Variant.Filled" OnClick="OpenBasketDialogAsync" />
+                </MudTooltip>
+            </MudButtonGroup>
+        </MudHidden>
+    </div>
+}

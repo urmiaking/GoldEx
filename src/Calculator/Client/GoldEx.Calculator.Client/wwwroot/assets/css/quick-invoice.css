@@ -1,0 +1,255 @@
+﻿@import '/fonts/IRANSANS/IRANSANS-font-face.css';
+
+:root {
+    --qi-font: "IRANSans", "Segoe UI", Tahoma, Arial, sans-serif;
+    --qi-bg: #ffffff;
+    --qi-ink: #0f172a;
+    --qi-muted: #64748b;
+    --qi-border: #e2e8f0;
+    --qi-brand-1: #0ea5e9;
+    --qi-brand-2: #6366f1;
+    --qi-success: #16a34a;
+    --qi-radius-lg: 18px;
+    --qi-radius-md: 12px;
+    --qi-shadow: 0 18px 45px rgba(2, 6, 23, 0.10);
+}
+
+.qi-table thead th:first-child,
+.qi-table tbody td:first-child {
+    width: 32px;
+    text-align: center;
+}
+
+@page {
+    size: A5 landscape;
+    margin: 8mm;
+}
+
+html, body {
+    height: 100%;
+}
+
+    body.qi-body {
+        margin: 0;
+        background: linear-gradient(135deg, rgba(14,165,233,0.10), rgba(99,102,241,0.08));
+        color: var(--qi-ink);
+        font-family: var(--qi-font);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+.qi-sheet {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.qi-card {
+    background: var(--qi-bg);
+    border: 1px solid var(--qi-border);
+    border-radius: var(--qi-radius-lg);
+    box-shadow: var(--qi-shadow);
+    overflow: hidden;
+}
+
+.qi-header {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(14,165,233,0.16), rgba(99,102,241,0.14));
+    border-bottom: 1px solid var(--qi-border);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.qi-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+    .qi-title h1 {
+        margin: 0;
+        font-size: 16px;
+        letter-spacing: -0.2px;
+    }
+
+    .qi-title .sub {
+        margin: 0;
+        font-size: 12px;
+        color: var(--qi-muted);
+    }
+
+.qi-meta {
+    text-align: left;
+    display: grid;
+    gap: 4px;
+    align-content: start;
+    font-size: 12px;
+}
+
+.qi-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(99,102,241,0.25);
+    background: rgba(99,102,241,0.08);
+    color: #3730a3;
+    width: fit-content;
+}
+
+.qi-content {
+    padding: 14px 16px 12px;
+    display: grid;
+    gap: 12px;
+}
+
+.qi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.qi-panel {
+    border: 1px solid var(--qi-border);
+    border-radius: var(--qi-radius-md);
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(248,250,252,0.9), rgba(255,255,255,1));
+}
+
+.qi-panel-title {
+    font-size: 12px;
+    color: var(--qi-muted);
+    margin: 0 0 8px 0;
+}
+
+.qi-kv {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 10px;
+    font-size: 12px;
+}
+
+    .qi-kv .k {
+        color: var(--qi-muted);
+    }
+
+    .qi-kv .v {
+        font-weight: 600;
+    }
+
+.qi-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: var(--qi-radius-md);
+    border: 1px solid var(--qi-border);
+}
+
+    .qi-table thead th {
+        font-size: 12px;
+        text-align: right;
+        padding: 10px 10px;
+        background: rgba(15, 23, 42, 0.04);
+        border-bottom: 1px solid var(--qi-border);
+        color: #0f172a;
+        white-space: nowrap;
+    }
+
+    .qi-table tbody td {
+        padding: 10px 10px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--qi-border);
+        color: var(--qi-ink);
+    }
+
+    .qi-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+.qi-amount {
+    font-weight: 800;
+    color: #052e16;
+}
+
+.qi-summary {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+}
+
+.qi-total {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--qi-radius-md);
+    border: 1px solid rgba(22, 163, 74, 0.25);
+    background: rgba(22, 163, 74, 0.08);
+}
+
+    .qi-total .label {
+        color: #166534;
+        font-size: 12px;
+    }
+
+    .qi-total .value {
+        font-size: 16px;
+        font-weight: 900;
+        color: #14532d;
+    }
+
+.qi-footer {
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--qi-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    color: var(--qi-muted);
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.qi-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.qi-btn {
+    appearance: none;
+    border: 1px solid var(--qi-border);
+    background: #fff;
+    color: #0f172a;
+    border-radius: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-family: var(--qi-font);
+    font-size: 12px;
+}
+
+    .qi-btn.primary {
+        border-color: rgba(14,165,233,0.35);
+        background: rgba(14,165,233,0.10);
+    }
+
+    .qi-btn:active {
+        transform: translateY(1px);
+    }
+
+@media print {
+    body.qi-body {
+        background: white !important;
+    }
+
+    .qi-card {
+        box-shadow: none !important;
+    }
+
+    .qi-actions {
+        display: none !important;
+    }
+}

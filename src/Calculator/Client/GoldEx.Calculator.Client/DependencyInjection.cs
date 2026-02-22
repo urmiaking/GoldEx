@@ -1,8 +1,9 @@
-﻿using GoldEx.Client.Components;
+﻿using GoldEx.Calculator.Client.Services;
+using GoldEx.Client.Components;
 using GoldEx.Client.Services;
+using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Runtime.InteropServices;
-using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 
 namespace GoldEx.Calculator.Client;
 
@@ -27,6 +28,7 @@ public static class DependencyInjection
             services.AddClientServices();
 
         services.AddClientAndServerServices();
+        services.AddScoped<QuickInvoiceBasketStore>();
 
         return services;
     }

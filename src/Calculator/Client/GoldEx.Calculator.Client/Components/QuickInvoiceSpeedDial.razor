@@ -1,0 +1,56 @@
+﻿<div class="qi-speed-dial">
+    @if (_open)
+    {
+        <MudPaper Elevation="8" Class="qi-speed-dial-menu pa-2">
+            <MudButton FullWidth="true"
+                       Variant="Variant.Filled"
+                       Color="Color.Info"
+                       StartIcon="@Icons.Material.Filled.ListAlt"
+                       OnClick="OnListClickedAsync">
+                مشاهده اقلام
+            </MudButton>
+
+            <MudButton FullWidth="true"
+                       Variant="Variant.Filled"
+                       Color="Color.Success"
+                       StartIcon="@Icons.Material.Filled.ShoppingCartCheckout"
+                       OnClick="OnFinalizeClickedAsync"
+                       Class="mt-2">
+                نهایی سازی
+            </MudButton>
+        </MudPaper>
+
+        <div class="qi-speed-dial-backdrop" @onclick="Toggle"></div>
+    }
+
+    <MudBadge Content="@Count" Color="Color.Error" Overlap="true">
+        <MudFab StartIcon="@(_open ? Icons.Material.Filled.Close : Icons.Material.Filled.ShoppingCart)"
+                Color="Color.Primary"
+                Size="Size.Large"
+                OnClick="Toggle" />
+    </MudBadge>
+</div>
+
+@code {
+    [Parameter] public int Count { get; set; }
+    [Parameter] public EventCallback OnOpenList { get; set; }
+    [Parameter] public EventCallback OnFinalize { get; set; }
+
+    private bool _open;
+
+    private void Toggle() => _open = !_open;
+
+    private async Task OnListClickedAsync()
+    {
+        _open = false;
+        if (OnOpenList.HasDelegate)
+            await OnOpenList.InvokeAsync();
+    }
+
+    private async Task OnFinalizeClickedAsync()
+    {
+        _open = false;
+        if (OnFinalize.HasDelegate)
+            await OnFinalize.InvokeAsync();
+    }
+}
