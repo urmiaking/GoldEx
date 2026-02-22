@@ -1,6 +1,13 @@
 ﻿window.quickInvoice = {
     printFromPayload: function (payloadJson) {
-        const p = JSON.parse(payloadJson);
+        const parsed = JSON.parse(payloadJson);
+        const items = Array.isArray(parsed) ? parsed : [parsed];
+
+        if (!items.length) {
+            return;
+        }
+
+        const p = items[0];
 
         const esc = (v) => {
             if (v === null || v === undefined) return "";
@@ -12,6 +19,24 @@
                 .replaceAll("'", "&#39;");
         };
 
+        const toNumber = (value) => {
+            if (value === null || value === undefined) return 0;
+            const s = String(value);
+            const normalized = s.replace(/[^0-9.\-]/g, "");
+            const n = parseFloat(normalized);
+            return Number.isFinite(n) ? n : 0;
+        };
+
+        const formatNumber = (n) => {
+            try {
+                return new Intl.NumberFormat("fa-IR").format(n);
+            } catch {
+                return String(n);
+            }
+        };
+
+        const total = items.reduce((acc, x) => acc + toNumber(x.finalPrice), 0);
+
         const html = `<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
@@ -19,7 +44,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>فاکتور ${esc(p.invoiceNumber)}</title>
 
-  <link rel="stylesheet" href="/assets/css/quick-invoice.css?v=3" />
+  <link rel="stylesheet" href="/assets/css/quick-invoice.css?v=4" />
 </head>
 <body class="qi-body">
   <div class="qi-sheet">
@@ -49,6 +74,7 @@
         <table class="qi-table" aria-label="اقلام">
           <thead>
             <tr>
+              <th>#</th>
               <th>کالا</th>
               <th>وزن</th>
               <th>عیار</th>
@@ -57,13 +83,16 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>${esc(p.productName || p.productType)}</td>
-              <td>${esc(p.weight)}</td>
-              <td>${esc(p.fineness)}</td>
-              <td>${esc(p.wage ?? "-")} ${p.wageType ? "(" + esc(p.wageType) + ")" : ""}</td>
-              <td class="qi-amount">${esc(p.finalPrice)}</td>
-            </tr>
+            ${items.map((x, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${esc(x.productName || x.productType)}</td>
+                <td>${esc(x.weight)}</td>
+                <td>${esc(x.fineness)}</td>
+                <td>${esc(x.wage ?? "-")} ${x.wageType ? "(" + esc(x.wageType) + ")" : ""}</td>
+                <td class="qi-amount">${esc(x.finalPrice)}</td>
+              </tr>
+            `).join("")}
           </tbody>
         </table>
 
@@ -75,14 +104,14 @@
 
           <div class="qi-total">
             <span class="label">جمع کل</span>
-            <span class="value">${esc(p.finalPrice)}</span>
+            <span class="value">${formatNumber(total)} تومان</span>
           </div>
         </div>
       </div>
 
       <footer class="qi-footer">
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <div>* اجناس فوق با اجرت مشخص و سود ${esc(p.profitPercent)} و مالیات ارزش افزوده ${esc(p.taxPercent)} از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.</div>
+          <div>* اجناس فوق با اجرت مشخص و سود ${esc(p.profitPercent)} درصد و مالیات ارزش افزوده ${esc(p.taxPercent)} درصد از اجرت و سود عرضه شده و در موقع فروش با فاکتور و به نرخ روز خریداری خواهد شد.</div>
           <div>* اجناس فروخته شده بدون علت پس گرفته نمی‌شود.</div>
         </div>
       </footer>

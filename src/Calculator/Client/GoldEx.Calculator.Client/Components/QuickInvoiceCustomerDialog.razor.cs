@@ -13,6 +13,7 @@ public partial class QuickInvoiceCustomerDialog
 
     private MudForm _form = default!;
     private readonly QuickInvoiceCustomerVm _model = new();
+    private bool _companyInfoHasSavedValue;
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,6 +40,11 @@ public partial class QuickInvoiceCustomerDialog
 
             if (!string.IsNullOrWhiteSpace(stored.CompanyAddress))
                 _model.CompanyAddress = stored.CompanyAddress;
+
+            _companyInfoHasSavedValue =
+                !string.IsNullOrWhiteSpace(_model.CompanyName)
+                || !string.IsNullOrWhiteSpace(_model.CompanyPhone)
+                || !string.IsNullOrWhiteSpace(_model.CompanyAddress);
         }
         catch
         {

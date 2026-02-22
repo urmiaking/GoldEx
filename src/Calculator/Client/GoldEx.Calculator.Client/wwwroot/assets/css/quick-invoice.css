@@ -14,6 +14,12 @@
     --qi-shadow: 0 18px 45px rgba(2, 6, 23, 0.10);
 }
 
+.qi-table thead th:first-child,
+.qi-table tbody td:first-child {
+    width: 32px;
+    text-align: center;
+}
+
 @page {
     size: A5 landscape;
     margin: 8mm;

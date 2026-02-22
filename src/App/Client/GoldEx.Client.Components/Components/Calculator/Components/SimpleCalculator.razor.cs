@@ -20,7 +20,7 @@ public partial class SimpleCalculator
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
     [Parameter] public bool EnableQuickInvoice { get; set; }
-    [Parameter] public EventCallback<QuickInvoicePayload> OnProductSold { get; set; }
+    [Parameter] public EventCallback<QuickInvoicePayload> OnAddToInvoice { get; set; }
 
     private readonly CalculatorVm _model = new();
     private MudForm _form = default!;
@@ -38,6 +38,7 @@ public partial class SimpleCalculator
     private decimal? _finalPrice;
     private decimal? _stoneCost;
     private string? _barcode;
+    private string? _quickInvoiceProductName;
 
     private bool _applySafetyMargin = true;
     private bool _wageFieldMenuOpen;
@@ -73,10 +74,10 @@ public partial class SimpleCalculator
             ? $"نرخ تبدیل {_model.StonePriceUnit.Title} به {_model.PriceUnit.Title}"
             : null;
 
-    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault) 
+    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault)
                                                            ?? new GetPriceUnitTitleResponse(Guid.Empty, "تومان", false, true, false);
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
         try
         {
@@ -88,7 +89,8 @@ public partial class SimpleCalculator
         {
             StateHasChanged();
         }
-        await base.OnParametersSetAsync();
+
+        await base.OnInitializedAsync();
     }
 
     #region Load Initial Data
@@ -570,21 +572,26 @@ public partial class SimpleCalculator
 
     #region Quick Invoice
 
-    private async Task SellProductAsync()
+    private async Task AddToInvoiceAsync()
     {
         if (!EnableQuickInvoice || _finalPrice is null)
-        {
             return;
-        }
 
-        if (!OnProductSold.HasDelegate)
-        {
+        if (!OnAddToInvoice.HasDelegate)
             return;
-        }
 
-        var payload = QuickInvoicePayload.Create(_model, _finalPrice.Value);
+        var payload = QuickInvoicePayload.Create(_model, _finalPrice.Value) with
+        {
+            ProductName = _quickInvoiceProductName
+        };
 
-        await OnProductSold.InvokeAsync(payload);
+        await OnAddToInvoice.InvokeAsync(payload);
+
+        ResetModel();
+        _quickInvoiceProductName = null;
+        StateHasChanged();
+
+        AddSuccessToast("کالا با موفقیت به فاکتور اضافه شد");
     }
 
     #endregion

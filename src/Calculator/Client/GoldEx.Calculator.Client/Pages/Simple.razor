@@ -46,5 +46,27 @@
     <SimpleCalculator Class="mt-4" 
                       Elevation="24" 
                       EnableQuickInvoice="true"
-                      OnProductSold="HandleProductSoldAsync" />
+                      OnAddToInvoice="HandleAddToInvoiceAsync" />
 </div>
+
+@if (_basketCount > 0)
+{
+    <div class="quick-invoice-fab">
+        <MudBadge Content="@_basketCount" Color="Color.Error" Overlap="true">
+            <MudFab StartIcon="@Icons.Material.Filled.ShoppingCartCheckout"
+                    Color="Color.Primary"
+                    Size="Size.Large"
+                    Class="d-md-none d-flex"
+                    OnClick="FinalizeInvoiceAsync" />
+            
+            <MudButton EndIcon="@Icons.Material.Filled.ArrowBack"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       Size="Size.Large"
+                       Class="d-none d-md-flex"
+                       OnClick="FinalizeInvoiceAsync">
+                صدور فاکتور
+            </MudButton>
+        </MudBadge>
+    </div>
+}
