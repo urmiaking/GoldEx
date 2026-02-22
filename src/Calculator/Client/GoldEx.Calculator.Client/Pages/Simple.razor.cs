@@ -101,6 +101,18 @@ public partial class Simple
         _basketCount = 0;
     }
 
+    private async Task OpenBasketDialogAsync()
+    {
+        var dialog = await DialogService.ShowAsync<QuickInvoiceBasketDialog>(
+            title: "اقلام فاکتور",
+            options: new DialogOptions { CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium });
+
+        await dialog.Result;
+
+        _basketCount = await BasketStore.GetCountAsync();
+        StateHasChanged();
+    }
+
     public override ValueTask DisposeAsync()
     {
         BasketStore.Changed -= OnBasketChanged;
