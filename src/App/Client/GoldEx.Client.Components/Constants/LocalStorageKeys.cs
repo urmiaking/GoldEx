@@ -7,4 +7,6 @@ public static class LocalStorageKeys
     public const string LastSeenReleaseVersion = "LastSeenReleaseVersion";
 
     public const string QuickInvoiceCompanyInfo = "QuickInvoiceCompanyInfo";
+
+    public const string QuickInvoiceBasket = "QuickInvoiceBasket";
 }

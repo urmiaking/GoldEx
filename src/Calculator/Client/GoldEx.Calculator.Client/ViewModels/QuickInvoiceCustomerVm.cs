@@ -4,8 +4,6 @@ namespace GoldEx.Calculator.Client.ViewModels;
 
 public class QuickInvoiceCustomerVm
 {
-    public string? ProductName { get; set; }
-
     [Required(ErrorMessage = "نام مشتری را وارد کنید")]
     public string CustomerName { get; set; } = string.Empty;
 

@@ -6,15 +6,6 @@
                     <MudText Typo="Typo.subtitle1" Class="mb-2">اطلاعات مشتری</MudText>
                 </MudItem>
 
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_model.ProductName"
-                                  Label="نام محصول (اختیاری)"
-                                  Margin="Margin.Dense"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.ShoppingBag"
-                                  Variant="Variant.Outlined" />
-                </MudItem>
-
                 <MudItem xs="12" md="6">
                     <MudTextField @bind-Value="_model.CustomerName"
                                   Label="نام مشتری"
@@ -38,41 +29,88 @@
                 </MudItem>
 
                 <MudItem xs="12" Class="mt-3">
-                    <MudText Typo="Typo.subtitle1" Class="mb-2">اطلاعات فروشگاه</MudText>
-                </MudItem>
+                    @if (_companyInfoHasSavedValue)
+                    {
+                        <MudExpansionPanels Elevation="0">
+                            <MudExpansionPanel Text="اطلاعات فروشگاه" Expanded="false">
+                                <MudGrid Spacing="2">
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="_model.CompanyName"
+                                                      Label="نام فروشگاه"
+                                                      Required="true"
+                                                      RequiredError="نام فروشگاه الزامی است"
+                                                      Margin="Margin.Dense"
+                                                      Adornment="Adornment.End"
+                                                      AdornmentIcon="@Icons.Material.Filled.Storefront"
+                                                      Variant="Variant.Outlined" />
+                                    </MudItem>
 
-                <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_model.CompanyName"
-                                  Label="نام فروشگاه"
-                                  Required="true"
-                                  RequiredError="نام فروشگاه الزامی است"
-                                  Margin="Margin.Dense"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.Storefront"
-                                  Variant="Variant.Outlined" />
-                </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="_model.CompanyPhone"
+                                                      Label="شماره تماس فروشگاه"
+                                                      Required="true"
+                                                      RequiredError="شماره تماس فروشگاه الزامی است"
+                                                      Margin="Margin.Dense"
+                                                      Adornment="Adornment.End"
+                                                      AdornmentIcon="@Icons.Material.Filled.Call"
+                                                      Variant="Variant.Outlined" />
+                                    </MudItem>
 
-                <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_model.CompanyPhone"
-                                  Label="شماره تماس فروشگاه"
-                                  Required="true"
-                                  RequiredError="شماره تماس فروشگاه الزامی است"
-                                  Margin="Margin.Dense"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.Call"
-                                  Variant="Variant.Outlined" />
-                </MudItem>
+                                    <MudItem xs="12">
+                                        <MudTextField @bind-Value="_model.CompanyAddress"
+                                                      Label="آدرس فروشگاه"
+                                                      Required="true"
+                                                      RequiredError="آدرس فروشگاه الزامی است"
+                                                      Margin="Margin.Dense"
+                                                      Adornment="Adornment.End"
+                                                      AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                                      Variant="Variant.Outlined"
+                                                      Lines="2" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudExpansionPanel>
+                        </MudExpansionPanels>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">اطلاعات فروشگاه</MudText>
 
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_model.CompanyAddress"
-                                  Label="آدرس فروشگاه"
-                                  Required="true"
-                                  RequiredError="آدرس فروشگاه الزامی است"
-                                  Margin="Margin.Dense"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
-                                  Variant="Variant.Outlined"
-                                  Lines="2" />
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.CompanyName"
+                                              Label="نام فروشگاه"
+                                              Required="true"
+                                              RequiredError="نام فروشگاه الزامی است"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.Storefront"
+                                              Variant="Variant.Outlined" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.CompanyPhone"
+                                              Label="شماره تماس فروشگاه"
+                                              Required="true"
+                                              RequiredError="شماره تماس فروشگاه الزامی است"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.Call"
+                                              Variant="Variant.Outlined" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_model.CompanyAddress"
+                                              Label="آدرس فروشگاه"
+                                              Required="true"
+                                              RequiredError="آدرس فروشگاه الزامی است"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                              Variant="Variant.Outlined"
+                                              Lines="2" />
+                            </MudItem>
+                        </MudGrid>
+                    }
                 </MudItem>
             </MudGrid>
         </MudForm>

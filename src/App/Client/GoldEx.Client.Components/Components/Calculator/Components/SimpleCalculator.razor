@@ -9,18 +9,18 @@
                 <MudItem xs="12" sm="6" md="3">
                     <div class="d-flex gap-2 align-start">
                         <MudTextField T="string"
-                                         Adornment="Adornment.End"
-                                         AdornmentIcon="@Icons.Material.Filled.QrCode"
-                                         Clearable="true"
-                                         Label="بارکد جنس"
-                                         dir="ltr"
-                                         Margin="Margin.Dense"
-                                         OnClearButtonClick="OnBarcodeCleared"
-                                         Value="_barcode"
-                                         ValueChanged="OnBarcodeChanged"
-                                         Variant="Variant.Outlined"
-                                         DebounceInterval="200"
-                                         Class="flex-grow-1" />
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.QrCode"
+                                      Clearable="true"
+                                      Label="بارکد جنس"
+                                      dir="ltr"
+                                      Margin="Margin.Dense"
+                                      OnClearButtonClick="OnBarcodeCleared"
+                                      Value="_barcode"
+                                      ValueChanged="OnBarcodeChanged"
+                                      Variant="Variant.Outlined"
+                                      DebounceInterval="200"
+                                      Class="flex-grow-1" />
 
                         <MudHidden Breakpoint="Breakpoint.MdAndUp">
                             <MudIconButton Icon="@Icons.Material.Filled.CameraAlt"
@@ -521,13 +521,21 @@
 
             @if (EnableQuickInvoice)
             {
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Success"
-                           Class="mt-5"
-                           StartIcon="@Icons.Material.Filled.ReceiptLong"
-                           OnClick="SellProductAsync">
-                    فروش جنس و صدور فاکتور
-                </MudButton>
+                <div class="d-flex gap-2 mt-5 flex-wrap align-center">
+                    <MudTextField @bind-Value="_quickInvoiceProductName"
+                                  Label="نام محصول"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.ShoppingBag"
+                                  Variant="Variant.Outlined" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.ReceiptLong"
+                               OnClick="AddToInvoiceAsync">
+                        افزودن به فاکتور
+                    </MudButton>
+                </div>
             }
         }
     </MudForm>
