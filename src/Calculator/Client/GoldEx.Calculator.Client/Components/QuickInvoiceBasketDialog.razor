@@ -1,0 +1,74 @@
+﻿@using GoldEx.Calculator.Client.Services
+@using GoldEx.Client.Components.Calculator.ViewModels
+
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>#</MudTh>
+                <MudTh>کالا</MudTh>
+                <MudTh>وزن</MudTh>
+                <MudTh>عیار</MudTh>
+                <MudTh>اجرت</MudTh>
+                <MudTh>عملیات</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="#">@context.Index</MudTd>
+                <MudTd DataLabel="کالا">@(context.Item.ProductName ?? context.Item.ProductType)</MudTd>
+                <MudTd DataLabel="وزن">@context.Item.Weight</MudTd>
+                <MudTd DataLabel="عیار">@context.Item.Fineness</MudTd>
+                <MudTd DataLabel="اجرت">@GetWageText(context.Item)</MudTd>
+                <MudTd DataLabel="عملیات">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   OnClick="() => RemoveAsync(context.Index - 1)" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>سبد خالی است</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Close">بستن</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Inject] private QuickInvoiceBasketStore BasketStore { get; set; } = default!;
+
+    private List<QuickInvoicePayload> _items = [];
+    private List<Row> _rows = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await BasketStore.GetItemsAsync();
+        _rows = _items.Select((x, i) => new Row(i + 1, x)).ToList();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task RemoveAsync(int index)
+    {
+        await BasketStore.RemoveAtAsync(index);
+        _items = await BasketStore.GetItemsAsync();
+        _rows = _items.Select((x, i) => new Row(i + 1, x)).ToList();
+        StateHasChanged();
+    }
+
+    private static string GetWageText(QuickInvoicePayload item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Wage))
+            return "-";
+
+        return string.IsNullOrWhiteSpace(item.WageType)
+            ? item.Wage
+            : $"{item.Wage} ({item.WageType})";
+    }
+
+    private sealed record Row(int Index, QuickInvoicePayload Item);
+
+    private void Close() => MudDialog.Close();
+}
