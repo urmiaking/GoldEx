@@ -518,6 +518,17 @@
                     </div>
                 </MudExpansionPanel>
             </MudExpansionPanels>
+
+            @if (EnableQuickInvoice)
+            {
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           Class="mt-5"
+                           StartIcon="@Icons.Material.Filled.ReceiptLong"
+                           OnClick="SellProductAsync">
+                    فروش جنس و صدور فاکتور
+                </MudButton>
+            }
         }
     </MudForm>
 </MudCard>

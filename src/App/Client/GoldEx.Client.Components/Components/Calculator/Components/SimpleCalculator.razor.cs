@@ -19,6 +19,8 @@ public partial class SimpleCalculator
 {
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
+    [Parameter] public bool EnableQuickInvoice { get; set; }
+    [Parameter] public EventCallback<QuickInvoicePayload> OnProductSold { get; set; }
 
     private readonly CalculatorVm _model = new();
     private MudForm _form = default!;
@@ -565,4 +567,25 @@ public partial class SimpleCalculator
         Navigation.NavigateTo(ClientRoutes.Invoices.Create.AppendQueryString(new { barcode = product.Barcode })
             .AppendQueryString(new { TradeScale = TradeScale.Retail }));
     }
+
+    #region Quick Invoice
+
+    private async Task SellProductAsync()
+    {
+        if (!EnableQuickInvoice || _finalPrice is null)
+        {
+            return;
+        }
+
+        if (!OnProductSold.HasDelegate)
+        {
+            return;
+        }
+
+        var payload = QuickInvoicePayload.Create(_model, _finalPrice.Value);
+
+        await OnProductSold.InvokeAsync(payload);
+    }
+
+    #endregion
 }

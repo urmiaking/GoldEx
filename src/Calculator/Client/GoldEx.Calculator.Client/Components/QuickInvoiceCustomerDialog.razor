@@ -1,0 +1,87 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">اطلاعات مشتری</MudText>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.ProductName"
+                                  Label="نام محصول (اختیاری)"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.ShoppingBag"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_model.CustomerName"
+                                  Label="نام مشتری"
+                                  Required="true"
+                                  RequiredError="نام مشتری الزامی است"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Person"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_model.CustomerPhone"
+                                  Label="شماره تماس مشتری"
+                                  Required="true"
+                                  RequiredError="شماره تماس مشتری الزامی است"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Phone"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" Class="mt-3">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">اطلاعات فروشگاه</MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_model.CompanyName"
+                                  Label="نام فروشگاه"
+                                  Required="true"
+                                  RequiredError="نام فروشگاه الزامی است"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Storefront"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_model.CompanyPhone"
+                                  Label="شماره تماس فروشگاه"
+                                  Required="true"
+                                  RequiredError="شماره تماس فروشگاه الزامی است"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Call"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.CompanyAddress"
+                                  Label="آدرس فروشگاه"
+                                  Required="true"
+                                  RequiredError="آدرس فروشگاه الزامی است"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                  Variant="Variant.Outlined"
+                                  Lines="2" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <div class="p-3 d-flex gap-2">
+            <MudButton Variant="Variant.Text" OnClick="Cancel">انصراف</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">چاپ فاکتور</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
