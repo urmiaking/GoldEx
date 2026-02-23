@@ -88,13 +88,13 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddHttpClientService(this IServiceCollection services, IWebAssemblyHostEnvironment environment)
+    public static IServiceCollection AddHttpClientService(this IServiceCollection services, IWebAssemblyHostEnvironment environment, TimeSpan timeOut)
     {
         var baseAddress = environment.BaseAddress;
         services.AddScoped(_ =>
         {
             var client = Shared.Utilities.GetHttpClient(baseAddress);
-            client.Timeout = new TimeSpan(0, 10, 0);
+            client.Timeout = timeOut;
             return client;
         });
 

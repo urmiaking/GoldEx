@@ -21,7 +21,7 @@
     bottom: 70px;
     left: -23px;
     right: auto;
-    width: min(280px, calc(100vw - 32px));
+    width: min(150px, calc(100vw - 32px));
     border-radius: 14px;
     z-index: 1302;
 }
