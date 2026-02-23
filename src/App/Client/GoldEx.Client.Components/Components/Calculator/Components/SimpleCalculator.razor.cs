@@ -1,7 +1,6 @@
 ﻿using GoldEx.Client.Components.Calculator.Validators;
 using GoldEx.Client.Components.Calculator.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
-using GoldEx.Shared.DTOs.BarcodeInquiries;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -22,14 +21,18 @@ public partial class SimpleCalculator
     [Parameter] public bool EnableQuickInvoice { get; set; }
     [Parameter] public EventCallback<QuickInvoicePayload> OnAddToInvoice { get; set; }
 
-    private readonly CalculatorVm _model = new();
-    private MudForm _form = default!;
-    private readonly CalculatorValidator _calculatorValidator = new();
+    private const string DefaultPriceUnitKey = "DefaultPriceUnit";
+    private const string PriceUnitsKey = "PriceUnits";
+    private const string GramPriceKey = "GramPrice";
 
+    private readonly CalculatorVm _model = new();
+    private readonly CalculatorValidator _calculatorValidator = new();
+    private MudForm _form = default!;
     private Timer? _timer;
     private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
     private GetSettingResponse? _settings;
-    private List<GetPriceUnitTitleResponse> _priceUnits = [];
+    private GetProductResponse? _searchedProduct;
+    private List<GetPriceUnitTitleResponse>? _priceUnits;
 
     private decimal? _rawPrice;
     private decimal? _wage;
@@ -45,7 +48,6 @@ public partial class SimpleCalculator
     private bool _weightFieldMenuOpen;
     private bool _stoneFieldMenuOpen;
     private bool _scannerOpen;
-    private GetProductResponse? _searchedProduct;
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
@@ -74,7 +76,7 @@ public partial class SimpleCalculator
             ? $"نرخ تبدیل {_model.StonePriceUnit.Title} به {_model.PriceUnit.Title}"
             : null;
 
-    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault)
+    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits?.FirstOrDefault(x => x.IsDefault)
                                                            ?? new GetPriceUnitTitleResponse(Guid.Empty, "تومان", false, true, false);
 
     protected override async Task OnInitializedAsync()
@@ -97,37 +99,47 @@ public partial class SimpleCalculator
 
     private async Task LoadPriceUnitsAsync()
     {
+        if (RestoreStateFromJson(DefaultPriceUnitKey, out GetPriceUnitTitleResponse? defaultPriceUnit))
+        {
+            _model.PriceUnit = defaultPriceUnit;
+            _model.WagePriceUnit = defaultPriceUnit;
+        }
+
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
         if (authenticationState.User.Identity is { IsAuthenticated: false })
         {
-            var defaultPriceUnit = await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse?>(
-                action: (s, ct) => s.GetDefaultAsync(ct));
+            if (defaultPriceUnit is null)
+            {
+                var fetchedPriceUnit = await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse?>(
+                    action: (s, ct) => s.GetDefaultAsync(ct));
 
-            var priceUnit = new GetPriceUnitTitleResponse(defaultPriceUnit?.Id ?? Guid.Empty, defaultPriceUnit?.Title ?? "تومان", false, true, false);
+                var priceUnit = new GetPriceUnitTitleResponse(fetchedPriceUnit?.Id ?? Guid.Empty, fetchedPriceUnit?.Title ?? "تومان", false, true, false);
 
-            _model.PriceUnit = priceUnit;
-            _model.WagePriceUnit = priceUnit;
-
-            await OnPriceUnitChanged(_model.PriceUnit);
+                _model.PriceUnit = priceUnit;
+                _model.WagePriceUnit = priceUnit;
+            }
 
             return;
         }
 
-        await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
-            action: (s, ct) => s.GetTitlesAsync(ct),
-            afterSend: async response =>
-            {
-                _priceUnits = response;
-
-                if (_model.PriceUnit is null)
+        if (!RestoreStateFromJson(PriceUnitsKey, out _priceUnits))
+        {
+            await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
+                action: (s, ct) => s.GetTitlesAsync(ct),
+                afterSend: response =>
                 {
-                    _model.PriceUnit = response.FirstOrDefault(x => x.IsDefault);
-                    await OnPriceUnitChanged(_model.PriceUnit);
-                }
+                    _priceUnits = response;
 
-                _model.WagePriceUnit ??= response.FirstOrDefault(x => x.IsDefault);
-            });
+                    if (defaultPriceUnit is null)
+                    {
+                        _model.PriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                        _model.WagePriceUnit = response.FirstOrDefault(x => x.IsDefault);
+                    }
+                });
+        }
+
+        await OnPriceUnitChanged(_model.PriceUnit);
     }
 
     private async Task LoadSettingsAsync()
@@ -169,6 +181,15 @@ public partial class SimpleCalculator
     }
 
     #endregion
+
+    protected override Task OnPersisting()
+    {
+        PersistStateAsJson(DefaultPriceUnitKey, _model.PriceUnit);
+        PersistStateAsJson(PriceUnitsKey, _priceUnits);
+        PersistStateAsJson(GramPriceKey, _model.GramPrice);
+
+        return base.OnPersisting();
+    }
 
     private async Task Calculate()
     {
@@ -448,8 +469,8 @@ public partial class SimpleCalculator
 
                      _searchedProduct = response;
 
-                     var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
-                     var stonePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.StonePriceUnit?.Id);
+                     var wagePriceUnit = _priceUnits?.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
+                     var stonePriceUnit = _priceUnits?.FirstOrDefault(x => x.Id == response.StonePriceUnit?.Id);
 
                      _model.CreateFrom(response, wagePriceUnit, stonePriceUnit);
 
@@ -466,8 +487,6 @@ public partial class SimpleCalculator
             await Calculate();
         }
     }
-
-    private Task InquiryBarcodeAsync(string barcode) => SendRequestAsync<IBarcodeInquiryService>(action: (service, ct) => service.InquiryAsync(barcode, ct));
 
     private void OnBarcodeCleared()
     {
@@ -499,21 +518,6 @@ public partial class SimpleCalculator
         _tax = null;
         _finalPrice = null;
         _stoneCost = null;
-    }
-
-    private async Task<IEnumerable<string>?> SearchBarcodes(string? barcode, CancellationToken cancellationToken)
-    {
-        var result = await SendRequestAsync<IBarcodeInquiryService, List<GetBarcodeInquiryResponse>>(
-            action: (service, _) => service.GetListAsync(barcode, cancellationToken));
-
-        //if (!string.IsNullOrEmpty(barcode))
-        //{
-        //    await OnBarcodeChanged(barcode);
-        //}
-
-        return result != null && result.Any()
-            ? result.Select(x => x.Barcode)
-            : [];
     }
 
     private void ToggleScanner() => _scannerOpen = !_scannerOpen;
