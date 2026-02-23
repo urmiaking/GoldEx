@@ -14,7 +14,7 @@ internal static class DependencyInjection
             .AddAuthServices()
             .AddServices()
             .AddJsonOptions()   
-            .AddHttpClientService(environment);
+            .AddHttpClientService(environment, new TimeSpan(0, 10, 0));
 
         return services;
     }

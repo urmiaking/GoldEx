@@ -15,12 +15,13 @@ public partial class CurrencyExchange
     [Parameter] public int Elevation { get; set; } = 24;
 
     private readonly CurrencyExchangeVm _model = new();
-    private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     private bool _feeFieldMenuOpen;
 
     private const decimal MinReasonableDisplayedRate = 0.0001m;
+    private const string PriceUnitsKey = "PriceUnits";
+    private const string ExchangeRateKey = "ExchangeRate";
 
     private void SetExchangeRateFromEffective(decimal? effectiveRate)
     {
@@ -73,18 +74,44 @@ public partial class CurrencyExchange
             ? $"نرخ تبدیل {_model.FeePriceUnit.Title} به {_model.DestinationPriceUnit.Title}"
             : null;
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
+        RestorePersistedState();
         await LoadPriceUnitsAsync();
         await EnsureExchangeRateLoadedAsync(force: true);
         await RecalculateAsync();
-        await base.OnParametersSetAsync();
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override Task OnPersisting()
+    {
+        PersistStateAsJson(PriceUnitsKey, _priceUnits);
+        PersistStateAsJson(ExchangeRateKey, _model.ExchangeRate);
+
+        return base.OnPersisting();
+    }
+
+    private void RestorePersistedState()
+    {
+        if (RestoreStateFromJson(PriceUnitsKey, out List<GetPriceUnitTitleResponse>? persistedUnits) && persistedUnits is not null)
+        {
+            _priceUnits = persistedUnits;
+        }
+
+        if (RestoreStateFromJson(ExchangeRateKey, out decimal? persistedRate) && persistedRate is not null)
+        {
+            SetExchangeRateFromEffective(persistedRate);
+        }
     }
 
     private async Task LoadPriceUnitsAsync()
     {
         if (_priceUnits.Count > 0)
+        {
+            EnsureDefaultUnitsSelected();
             return;
+        }
 
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
@@ -92,13 +119,18 @@ public partial class CurrencyExchange
             {
                 _priceUnits = response;
 
-                var defaultUnit = _priceUnits.FirstOrDefault(x => x.IsDefault);
-                var dollarUnit = _priceUnits.FirstOrDefault(x => x.Title.Contains("دلار"));
-
-                _model.SourcePriceUnit ??= dollarUnit;
-                _model.DestinationPriceUnit ??= defaultUnit;
-                _model.FeePriceUnit ??= _model.DestinationPriceUnit ?? defaultUnit;
+                EnsureDefaultUnitsSelected();
             });
+    }
+
+    private void EnsureDefaultUnitsSelected()
+    {
+        var defaultUnit = _priceUnits.FirstOrDefault(x => x.IsDefault);
+        var dollarUnit = _priceUnits.FirstOrDefault(x => x.Title.Contains("دلار"));
+
+        _model.SourcePriceUnit ??= dollarUnit;
+        _model.DestinationPriceUnit ??= defaultUnit;
+        _model.FeePriceUnit ??= _model.DestinationPriceUnit ?? defaultUnit;
     }
 
     private async Task OnFeeTypeChanged(WageType? feeType)

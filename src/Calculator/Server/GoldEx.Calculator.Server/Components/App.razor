@@ -24,11 +24,11 @@
     <link rel="apple-touch-icon" sizes="144x144" href="icons/touch/apple-touch-icon-ipad-retina-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/touch/apple-touch-icon-180x180.png">
 
-    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="RenderModeForPage" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveAuto" />
+    <Routes @rendermode="RenderModeForPage" />
     <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
     <script src="@Assets["quick-invoice.js"]"></script>
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>

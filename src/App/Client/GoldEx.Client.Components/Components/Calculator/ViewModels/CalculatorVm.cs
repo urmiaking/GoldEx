@@ -43,7 +43,7 @@ public class CalculatorVm
     public decimal UsedGoldFinenessDeductionRate { get; set; } = 15;
 
     [Display(Name = "مالیات")]
-    public decimal TaxPercent { get; set; } = 9;
+    public decimal TaxPercent { get; set; } = 10;
 
     [Display(Name = "هزینه های جانبی")]
     public decimal? ExtraCosts { get; set; }
