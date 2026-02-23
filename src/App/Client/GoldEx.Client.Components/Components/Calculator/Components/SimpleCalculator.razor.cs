@@ -29,10 +29,11 @@ public partial class SimpleCalculator
     private readonly CalculatorValidator _calculatorValidator = new();
     private MudForm _form = default!;
     private Timer? _timer;
+    private bool _timerDisposed;
     private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
     private GetSettingResponse? _settings;
     private GetProductResponse? _searchedProduct;
-    private List<GetPriceUnitTitleResponse>? _priceUnits;
+    private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     private decimal? _rawPrice;
     private decimal? _wage;
@@ -76,15 +77,27 @@ public partial class SimpleCalculator
             ? $"نرخ تبدیل {_model.StonePriceUnit.Title} به {_model.PriceUnit.Title}"
             : null;
 
-    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits?.FirstOrDefault(x => x.IsDefault)
+    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault)
                                                            ?? new GetPriceUnitTitleResponse(Guid.Empty, "تومان", false, true, false);
+
+    private bool IsAuthenticated { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            await LoadPriceUnitsAsync();
-            await LoadSettingsAsync();
+            IsAuthenticated = await GetIsAuthenticatedAsync();
+
+            RestorePersistedState();
+
+            await EnsurePriceUnitsLoadedAsync();
+            await EnsureGramPriceLoadedAsync();
+
+            if (IsAuthenticated)
+            {
+                await LoadSettingsAsync();
+            }
+
             await StartTimer();
         }
         finally
@@ -97,56 +110,90 @@ public partial class SimpleCalculator
 
     #region Load Initial Data
 
-    private async Task LoadPriceUnitsAsync()
+    private void RestorePersistedState()
     {
-        if (RestoreStateFromJson(DefaultPriceUnitKey, out GetPriceUnitTitleResponse? defaultPriceUnit))
+        if (RestoreStateFromJson(DefaultPriceUnitKey, out GetPriceUnitTitleResponse? defaultPriceUnit) && defaultPriceUnit is not null)
         {
             _model.PriceUnit = defaultPriceUnit;
             _model.WagePriceUnit = defaultPriceUnit;
         }
 
-        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-        if (authenticationState.User.Identity is { IsAuthenticated: false })
+        if (RestoreStateFromJson(PriceUnitsKey, out List<GetPriceUnitTitleResponse>? persistedUnits) && persistedUnits is not null)
         {
-            if (defaultPriceUnit is null)
+            _priceUnits = persistedUnits;
+        }
+
+        if (RestoreStateFromJson(GramPriceKey, out decimal? persistedGramPrice) && persistedGramPrice is not null)
+        {
+            _model.GramPrice = persistedGramPrice.Value;
+        }
+    }
+
+    private async Task EnsurePriceUnitsLoadedAsync()
+    {
+        if (_model.PriceUnit is not null && _priceUnits.Count > 0)
+        {
+            EnsureModelDefaultsFromPriceUnits();
+            return;
+        }
+
+        if (!IsAuthenticated)
+        {
+            if (_model.PriceUnit is null)
             {
-                var fetchedPriceUnit = await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse?>(
+                var fetchedDefault = await SendRequestAsync<IPriceUnitService, GetPriceUnitResponse?>(
                     action: (s, ct) => s.GetDefaultAsync(ct));
 
-                var priceUnit = new GetPriceUnitTitleResponse(fetchedPriceUnit?.Id ?? Guid.Empty, fetchedPriceUnit?.Title ?? "تومان", false, true, false);
+                var unit = new GetPriceUnitTitleResponse(
+                    fetchedDefault?.Id ?? Guid.Empty,
+                    fetchedDefault?.Title ?? "تومان",
+                    false,
+                    true,
+                    false);
 
-                _model.PriceUnit = priceUnit;
-                _model.WagePriceUnit = priceUnit;
+                _model.PriceUnit = unit;
+                _model.WagePriceUnit = unit;
             }
 
             return;
         }
 
-        if (!RestoreStateFromJson(PriceUnitsKey, out _priceUnits))
+        if (_priceUnits.Count == 0)
         {
             await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
                 action: (s, ct) => s.GetTitlesAsync(ct),
-                afterSend: response =>
-                {
-                    _priceUnits = response;
-
-                    if (defaultPriceUnit is null)
-                    {
-                        _model.PriceUnit = response.FirstOrDefault(x => x.IsDefault);
-                        _model.WagePriceUnit = response.FirstOrDefault(x => x.IsDefault);
-                    }
-                });
+                afterSend: response => _priceUnits = response);
         }
 
-        await OnPriceUnitChanged(_model.PriceUnit);
+        EnsureModelDefaultsFromPriceUnits();
+    }
+
+    private void EnsureModelDefaultsFromPriceUnits()
+    {
+        if (_priceUnits.Count == 0)
+            return;
+
+        _model.PriceUnit ??= _priceUnits.FirstOrDefault(x => x.IsDefault);
+        _model.WagePriceUnit ??= _priceUnits.FirstOrDefault(x => x.IsDefault);
+    }
+
+    private async Task EnsureGramPriceLoadedAsync()
+    {
+        if (_model.GramPrice > 0)
+            return;
+
+        await LoadGramPriceAsync();
+    }
+
+    private async Task<bool> GetIsAuthenticatedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        return authenticationState.User.Identity is { IsAuthenticated: true };
     }
 
     private async Task LoadSettingsAsync()
     {
-        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-        if (authenticationState.User.Identity is { IsAuthenticated: false })
+        if (!IsAuthenticated)
             return;
 
         await SendRequestAsync<ISettingService, GetSettingResponse?>(
@@ -167,6 +214,9 @@ public partial class SimpleCalculator
 
     private async Task LoadGramPriceAsync()
     {
+        if (_model.PriceUnit is null)
+            return;
+
         await SendRequestAsync<IPriceService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(_model.GoldUnitType, _model.PriceUnit?.Id, _applySafetyMargin, ct),
             afterSend: response =>
@@ -174,8 +224,6 @@ public partial class SimpleCalculator
                 decimal.TryParse(response?.Value, out var gramPriceValue);
 
                 _model.GramPrice = gramPriceValue;
-
-                StateHasChanged();
             },
             createScope: true);
     }
@@ -432,7 +480,7 @@ public partial class SimpleCalculator
     {
         _model.PriceUnit = priceUnit;
 
-        await LoadGramPriceAsync();
+        await EnsureGramPriceLoadedAsync();
 
         if (_model.WagePriceUnit != null)
             await SelectWagePriceUnit(_model.WagePriceUnit);
@@ -469,8 +517,8 @@ public partial class SimpleCalculator
 
                      _searchedProduct = response;
 
-                     var wagePriceUnit = _priceUnits?.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
-                     var stonePriceUnit = _priceUnits?.FirstOrDefault(x => x.Id == response.StonePriceUnit?.Id);
+                     var wagePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.WagePriceUnitId);
+                     var stonePriceUnit = _priceUnits.FirstOrDefault(x => x.Id == response.StonePriceUnit?.Id);
 
                      _model.CreateFrom(response, wagePriceUnit, stonePriceUnit);
 
@@ -547,21 +595,34 @@ public partial class SimpleCalculator
 
     private async void TimerCallback(object? state)
     {
-        if (IsDisposed)
+        if (IsDisposed || _timerDisposed)
             return;
 
-        await InvokeAsync(async () =>
+        try
         {
-            if (IsDisposed) return;
+            await InvokeAsync(async () =>
+            {
+                if (IsDisposed || _timerDisposed) return;
 
-            await LoadGramPriceAsync();
-            await Calculate();
-        });
+                await LoadGramPriceAsync();
+                await Calculate();
+            });
+        }
+        catch (ObjectDisposedException)
+        {
+            _timerDisposed = true;
+        }
     }
 
     public override async ValueTask DisposeAsync()
     {
-        if (_timer is not null) await _timer.DisposeAsync();
+        _timerDisposed = true;
+
+        if (_timer is not null)
+        {
+            await _timer.DisposeAsync();
+            _timer = null;
+        }
 
         await base.DisposeAsync();
     }
@@ -583,6 +644,12 @@ public partial class SimpleCalculator
 
         if (!OnAddToInvoice.HasDelegate)
             return;
+
+        if (string.IsNullOrWhiteSpace(_quickInvoiceProductName))
+        {
+            AddErrorToast("نام محصول را وارد کنید");
+            return;
+        }
 
         var payload = QuickInvoicePayload.Create(_model, _finalPrice.Value) with
         {
