@@ -15,16 +15,38 @@ public partial class PriceBoard
     [Parameter] public int Elevation { get; set; } = 0;
     [Parameter] public bool ShowTitle { get; set; }
 
+    private string ItemsKey => $"PriceBoard:Items:{Class}:{ContainerClass}";
+
     private IEnumerable<GetPriceResponse>? _items;
     private Timer? _timer;
     private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
 
     protected override async Task OnInitializedAsync()
     {
+        RestorePersistedState();
         await LoadSettingsAsync();
-        await LoadPricesAsync();
+        if (_items is null)
+        {
+            await LoadPricesAsync();
+        }
         await StartTimer();
         await base.OnInitializedAsync();
+    }
+
+    protected override Task OnPersisting()
+    {
+        if (_items is not null)
+            PersistStateAsJson(ItemsKey, _items);
+
+        return base.OnPersisting();
+    }
+
+    private void RestorePersistedState()
+    {
+        if (RestoreStateFromJson(ItemsKey, out List<GetPriceResponse>? persistedItems) && persistedItems is not null)
+        {
+            _items = persistedItems;
+        }
     }
 
     private async Task LoadSettingsAsync()
