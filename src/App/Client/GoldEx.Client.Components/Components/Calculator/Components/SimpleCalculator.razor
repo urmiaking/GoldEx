@@ -82,16 +82,19 @@
                                For="() => _model.PriceUnit"
                                Margin="Margin.Dense"
                                Variant="Variant.Outlined">
-                        @foreach (var item in _priceUnits)
+                        @if (_priceUnits is not null)
                         {
-                            <MudSelectItem Value="item">
-                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudAvatar Size="Size.Small">
-                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
-                                    </MudAvatar>
-                                    <MudText>@item.Title</MudText>
-                                </MudStack>
-                            </MudSelectItem>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudSelectItem Value="item">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudAvatar Size="Size.Small">
+                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                        </MudAvatar>
+                                        <MudText>@item.Title</MudText>
+                                    </MudStack>
+                                </MudSelectItem>
+                            }
                         }
                     </MudSelect>
                 </MudItem>

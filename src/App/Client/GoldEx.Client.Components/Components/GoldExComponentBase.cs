@@ -45,7 +45,9 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
     [Inject] protected AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
     [Inject] protected IAuthorizationService AuthorizationService { get; set; } = default!;
     [Inject] private IStringLocalizer<Resources.GoldExComponentBase> Localizer { get; set; } = default!;
+    [Inject] private PersistentComponentState PersistentState { get; set; } = default!;
 
+    private PersistingComponentStateSubscription _persistSubscription;
     public bool IsBusy => _busyCount > 0;
     protected ClaimsPrincipal? User { get; private set; }
     protected CancellationTokenSource CancellationTokenSource
@@ -71,17 +73,35 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
+    #region PersistingState
+
     protected override async Task OnInitializedAsync()
     {
         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         User = state.User;
-
         AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChanged;
+
+        _persistSubscription = PersistentState.RegisterOnPersisting(OnPersisting);
 
         await base.OnInitializedAsync();
     }
 
+    protected virtual Task OnPersisting()
+    {
+        return Task.CompletedTask;
+    }
 
+    protected void PersistStateAsJson<TValue>(string key, TValue instance)
+    {
+        PersistentState.PersistAsJson(key, instance);
+    }
+
+    protected bool RestoreStateFromJson<TValue>(string key, out TValue? restored)
+    {
+        return PersistentState.TryTakeFromJson(key, out restored);
+    }
+
+    #endregion
 
     #region Render
 
@@ -481,6 +501,7 @@ public class GoldExComponentBase : ComponentBase, IAsyncDisposable
 
         // 2. Unsubscribe from events
         AuthenticationStateProvider.AuthenticationStateChanged -= AuthenticationStateChanged;
+        _persistSubscription.Dispose();
 
         // 3. Dispose of managed resources
         _cancellationTokenSource?.Cancel();
