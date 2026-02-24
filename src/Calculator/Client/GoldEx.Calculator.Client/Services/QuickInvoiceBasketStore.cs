@@ -12,9 +12,6 @@ public sealed class QuickInvoiceBasketStore(ILocalStorageService localStorage)
 
     public async Task<List<QuickInvoicePayload>> GetItemsAsync()
     {
-        if (!OperatingSystem.IsBrowser())
-            return [];
-
         try
         {
             return await localStorage.GetItemAsync<List<QuickInvoicePayload>>(LocalStorageKeys.QuickInvoiceBasket)
@@ -31,9 +28,6 @@ public sealed class QuickInvoiceBasketStore(ILocalStorageService localStorage)
 
     public async Task AddAsync(QuickInvoicePayload item)
     {
-        if (!OperatingSystem.IsBrowser())
-            return;
-
         var items = await GetItemsAsync();
 
         if (items.Count >= MaxItems)
@@ -55,9 +49,6 @@ public sealed class QuickInvoiceBasketStore(ILocalStorageService localStorage)
 
     public async Task RemoveAtAsync(int index)
     {
-        if (!OperatingSystem.IsBrowser())
-            return;
-
         var items = await GetItemsAsync();
 
         if (index < 0 || index >= items.Count)
@@ -79,9 +70,6 @@ public sealed class QuickInvoiceBasketStore(ILocalStorageService localStorage)
 
     public async Task ClearAsync()
     {
-        if (!OperatingSystem.IsBrowser())
-            return;
-
         try
         {
             await localStorage.RemoveItemAsync(LocalStorageKeys.QuickInvoiceBasket);
