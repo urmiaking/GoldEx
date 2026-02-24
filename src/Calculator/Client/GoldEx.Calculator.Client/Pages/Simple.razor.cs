@@ -6,16 +6,25 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Text.Json;
+using GoldEx.Shared.Routings;
 
 namespace GoldEx.Calculator.Client.Pages;
 
 public partial class Simple
 {
     private bool _canInstall;
+    private bool _isLoggedIn;
     private int _basketCount;
 
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
     [Inject] private QuickInvoiceBasketStore BasketStore { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoggedIn = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated == true;
+
+        await base.OnInitializedAsync();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -73,6 +82,16 @@ public partial class Simple
 
     private async Task FinalizeInvoiceAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity?.IsAuthenticated is false)
+        {
+            AddInfoToast("لطفا جهت صدور فاکتور وارد حساب کاربری خود شوید");
+            await Task.Delay(2000);
+            Navigation.NavigateTo(ClientRoutes.Accounts.Login, forceLoad: true);
+            return;
+        }
+
         var items = await BasketStore.GetItemsAsync();
         if (items.Count == 0)
             return;

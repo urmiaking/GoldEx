@@ -1,6 +1,4 @@
-﻿@using System.Text.Json
-@using GoldEx.Sdk.Common
-@attribute [Route(ClientRoutes.Accounts.Login)]
+﻿@attribute [Route(ClientRoutes.Accounts.Login)]
 
 @inject SignInManager<AppUser> SignInManager
 @inject ILogger<Login> Logger
@@ -15,7 +13,7 @@
 
 <MudStack AlignItems="AlignItems.Center">
     <MudItem>
-        <span class="brand-text" dir="ltr">GoldEx</span>
+        <span class="brand-text fs-1" dir="ltr">GoldEx Karat</span>
     </MudItem>
 </MudStack>
 
@@ -24,7 +22,7 @@
     <MudGrid>
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.Username)" @bind-Value="Input.Username"
-                                Label="نام کاربری" 
+                                Label="نام کاربری"
                                 UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } })" />
         </MudItem>
         <MudItem xs="12">
@@ -57,19 +55,9 @@
     </MudGrid>
 </EditForm>
 
-<MudGrid Class="mt-1">
-    <MudItem xs="6">
-        <MudButton StartIcon="@Icons.Material.Filled.Phone" Variant="Variant.Filled" FullWidth="true"
-                   Color="Color.Primary" Href="@ClientRoutes.Accounts.LoginWithPhoneNumber">ارسال پیامک</MudButton>
-    </MudItem>
-    <MudItem xs="6">
-        <ExternalLoginPicker ExternalLoginPickerSource="ExternalLoginSource.Login" />
-    </MudItem>
-</MudGrid>
-
 <MudGrid>
     <MudItem xs="12" Class="text-center mt-3">
-        <MudLink Href="@ClientRoutes.Accounts.ForgotPassword">رمز عبور خود را فراموش کرده اید؟</MudLink><br />
+        <MudLink Href="@ClientRoutes.Home.Index">بازگشت به صفحه اصلی</MudLink><br />
     </MudItem>
 </MudGrid>
 
@@ -88,7 +76,7 @@
 
         // Check failed attempts from session
         var failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
-        _showCaptcha = failedAttempts > 5;
+        _showCaptcha = failedAttempts >= 5;
 
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
@@ -100,7 +88,7 @@
     {
         var failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
 
-        //If failedAttempts > 5, require CAPTCHA
+        //If failedAttempts >= 5, require CAPTCHA
         if (_showCaptcha)
         {
             var captchaResponse = HttpContext.Request.Form["cf-turnstile-response"].ToString();
@@ -118,31 +106,31 @@
             }
         }
 
-        var result = await SignInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+        var result = await SignInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
-			var user = await SignInManager.UserManager.FindByNameAsync(Input.Username);
-			if (user is null)
-			{
-				failedAttempts++;
-				HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
-				_errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
-				await SignInManager.SignOutAsync();
-				return;
-			}
+            var user = await SignInManager.UserManager.FindByNameAsync(Input.Username);
+            if (user is null)
+            {
+                failedAttempts++;
+                HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
+                _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
+                await SignInManager.SignOutAsync();
+                return;
+            }
 
-			var roles = await SignInManager.UserManager.GetRolesAsync(user);
-            var allowedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { BuiltinRoles.Owners, BuiltinRoles.Administrators };
-			var onlyAllowedRoles = roles.Count > 0 && roles.All(r => allowedRoles.Contains(r));
-			if (!onlyAllowedRoles)
-			{
-				failedAttempts++;
-				HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
-				_errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
-				await SignInManager.SignOutAsync();
-				return;
-			}
+            var roles = await SignInManager.UserManager.GetRolesAsync(user);
+            var allowedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { BuiltinRoles.Karats, BuiltinRoles.Administrators };
+            var onlyAllowedRoles = roles.Count > 0 && roles.All(r => allowedRoles.Contains(r));
+            if (!onlyAllowedRoles)
+            {
+                failedAttempts++;
+                HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
+                _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
+                await SignInManager.SignOutAsync();
+                return;
+            }
 
             // reset failed attempts
             HttpContext.Session.SetInt32("FailedLoginCount", 0);
@@ -155,15 +143,13 @@
             failedAttempts++;
             HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
 
-            if (result.RequiresTwoFactor)
-            {
-                RedirectManager.RedirectTo(ClientRoutes.Accounts.LoginWith2Fa,
-                    new Dictionary<string, object?> { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-            }
-            else if (result.IsLockedOut)
+            // show CAPTCHA next time
+            _showCaptcha = true;
+
+            if (result.IsLockedOut)
             {
                 Logger.LogWarning("User account locked out.");
-                RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
+                _errorMessage = "حساب شما مسدود شده است. لطفا بعدا تلاش کنید.";
             }
             else
             {

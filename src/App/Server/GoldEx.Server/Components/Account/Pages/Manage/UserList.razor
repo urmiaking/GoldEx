@@ -17,13 +17,13 @@
 
 <MudTable Items="@_users" Hover="true" Breakpoint="Breakpoint.Xs" Elevation="3" Dense="true" Loading="@_loading" FixedHeader="true" LoadingProgressColor="Color.Info">
     <HeaderContent>
-        <MudTh>ایمیل</MudTh>
-        <MudTh>نام کاربر</MudTh>
+        <MudTh>نام کاربری</MudTh>
+        <MudTh>نام و نام خانوادگی</MudTh>
         <MudTh>عملیات</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="ایمیل">@context.Email</MudTd>
-        <MudTd DataLabel="نام کاربر">@context.Name</MudTd>
+        <MudTd DataLabel="نام کاربری">@context.UserName</MudTd>
+        <MudTd DataLabel="نام و نام خانوادگی">@context.Name</MudTd>
         <MudTd DataLabel="عملیات">
             <div class="d-flex gap-2">
                 <MudButton Size="Size.Small" Href="@ClientRoutes.Accounts.Manage.EditUser.FormatRoute(new { id = context.Id })" Variant="Variant.Filled"
@@ -38,6 +38,7 @@
                     <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Lock" Color="Color.Error" Variant="Variant.Filled"
                                OnClick="@(() => LockUser(context.Id))">غیرفعالسازی</MudButton>
                 }
+
             </div>
         </MudTd>
     </RowTemplate>

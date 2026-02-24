@@ -1,0 +1,52 @@
+﻿@using GoldEx.Shared.Routings
+@using ClientRoutes = GoldEx.Shared.Routings.ClientRoutes
+
+@inherits GoldExComponentBase
+
+@if (_loggedIn)
+{
+    <MudIconButton Icon="@Icons.Material.Filled.Logout"
+                   Class="@($"p-0 {Class}")"
+                   Color="Color.Inherit"
+                   Href="@ApiUrls.Account.Logout(_currentUrl)" />
+}
+else
+{
+    <MudIconButton Icon="@Icons.Material.Filled.Key"
+                   Class="@($"p-0 {Class}")"
+                   Color="Color.Inherit"
+                   Href="@ClientRoutes.Accounts.Login" />
+}
+
+@code {
+    private bool _loggedIn;
+    private string? _currentUrl;
+
+    [Parameter] public string? Class { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loggedIn = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated is true;
+
+        AuthenticationStateProvider.AuthenticationStateChanged += async (task) =>
+        {
+            var authState = await task;
+            _loggedIn = authState.User.Identity?.IsAuthenticated is true;
+            StateHasChanged();
+        };
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _currentUrl = Navigation.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+}

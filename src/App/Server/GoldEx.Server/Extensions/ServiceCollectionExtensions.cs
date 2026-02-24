@@ -20,6 +20,7 @@ using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -147,7 +148,8 @@ internal static class ServiceCollectionExtensions
         services.AddDataProtection()
             .PersistKeysToSqlServer(connectionString: configuration.GetConnectionString("GoldEx"),
                 schema: "dbo",
-                table: "DataProtectionKeys");
+                table: "DataProtectionKeys")
+            .SetApplicationName("GoldExSuite");
 
         return services;
     }
@@ -189,6 +191,7 @@ internal static class ServiceCollectionExtensions
             // Ensure we are configuring the scheme Identity uses
             // (Optional if you just want to use the default 'Identity.Application')
             // config.Cookie.Name = "GoldExToken"; 
+            config.Cookie.Name = "GoldExAuthCookie";
 
             var defaultEvents = config.Events;
 
@@ -232,7 +235,7 @@ internal static class ServiceCollectionExtensions
             options.Lockout.AllowedForNewUsers = true;
 
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            options.User.RequireUniqueEmail = true;
+            options.User.RequireUniqueEmail = false;
         });
 
         services.ConfigureOptions<ConfigureSecurityStampOptions>();
