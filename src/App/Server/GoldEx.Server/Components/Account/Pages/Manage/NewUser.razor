@@ -19,7 +19,7 @@
 
     <MudGrid>
         <MudItem lg="4" md="12">
-            <MudStaticTextField Variant="Variant.Outlined" @bind-Value="@Input.Email" Label="ایمیل" Margin="Margin.Dense" />
+            <MudStaticTextField Variant="Variant.Outlined" @bind-Value="@Input.Username" Label="نام کاربری" Margin="Margin.Dense" />
         </MudItem>
         <MudItem lg="4" md="12">
             <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.Name)" @bind-Value="Input.Name" Margin="Margin.Dense"
@@ -35,7 +35,19 @@
         </MudItem>
         <MudItem lg="6" md="12">
             <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword" Margin="Margin.Dense"
-                                Label="تکرار رمز عبور" InputType="InputType.Password" />
+                                Label="تکرار رمز عبور" InputType="InputType.Password"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "off" }, { "aria-required", "true" } })" />
+        </MudItem>
+        <MudItem xs="12">
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                <MudText Typo="Typo.body1" GutterBottom="true">نقش کاربر</MudText>
+                <MudStaticRadioGroup T="string" @bind-Value="Input.Role" Color="Color.Primary">
+                    @foreach (var role in BuiltinRoles.Roles)
+                    {
+                        <MudStaticRadio T="string" Value="@role" Color="Color.Secondary">@role</MudStaticRadio>
+                    }
+                </MudStaticRadioGroup>
+            </div>
         </MudItem>
         <MudItem xs="12" Class="d-flex justify-content-lg-end">
             <MudStaticButton Variant="Variant.Filled" Color="Color.Primary"
@@ -67,9 +79,8 @@
             return;
         }
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-        var emailStore = GetEmailStore();
-        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        await UserStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
+
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (!result.Succeeded)
@@ -85,9 +96,10 @@
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {
             await UserManager.ConfirmEmailAsync(user, code);
+            Logger.LogInformation("User email confirmed automatically.");
         }
 
-        await UserManager.AddToRoleAsync(user, BuiltinRoles.Owners);
+        await UserManager.AddToRoleAsync(user, Input.Role);
         await UserManager.AddClaimsAsync(user, [new Claim(ClaimTypes.Surname, Input.Name)]);
 
         RedirectManager.RedirectTo(ClientRoutes.Accounts.Manage.UserList);
@@ -97,7 +109,7 @@
     {
         try
         {
-            return model != null ? new AppUser(model.Name, model.Email, model.Email, model.PhoneNumber) : null;
+            return model != null ? new AppUser(model.Name, model.Username, null, model.PhoneNumber) : null;
         }
         catch
         {
@@ -106,18 +118,12 @@
         }
     }
 
-    private IUserEmailStore<AppUser> GetEmailStore()
-    {
-        if (!UserManager.SupportsUserEmail)
-        {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
-        }
-        return (IUserEmailStore<AppUser>)UserStore;
-    }
-
     private sealed class InputModel
     {
-        [Phone(ErrorMessage = "فرمت {0} صحیح نمی باشد")]
+        [Required(ErrorMessage = "وارد کردن {0} الزامی است")]
+        [Display(Name = "نقش کاربر")]
+        public string Role { get; set; } = BuiltinRoles.Owners;
+
         [Display(Name = "شماره تلفن")]
         public string PhoneNumber { get; set; } = default!;
 
@@ -134,7 +140,7 @@
         public string ConfirmPassword { get; set; } = default!;
 
         [Required(ErrorMessage = "وارد کردن {0} الزامی است")]
-        [Display(Name = "ایمیل")]
-        public string Email { get; set; } = default!;
+        [Display(Name = "نام کاربری")]
+        public string Username { get; set; } = default!;
     }
 }

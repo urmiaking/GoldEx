@@ -59,9 +59,8 @@ public static class WebHostingExtensions
         });
 
         app.UseRouting();
-
         app.UseAntiforgery();
-
+        app.UseSession();
         app.MapStaticAssets();
 
         app.MapControllers();

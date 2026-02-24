@@ -1,11 +1,11 @@
 ﻿@namespace GoldEx.Client.Components.Calculator.Components
+@using GoldEx.Sdk.Common
 @inherits GoldExComponentBase
 
 <MudCard Elevation="@Elevation" Class="@($"pa-4 {Class}")">
-    <AuthorizeView>
+    <AuthorizeView Roles="@($"{BuiltinRoles.Owners},{BuiltinRoles.Administrators}")">
         <Authorized>
             <MudGrid Justify="Justify.SpaceBetween" Spacing="4">
-
                 <MudItem xs="12" sm="6" md="3">
                     <div class="d-flex gap-2 align-start">
                         <MudTextField T="string"
@@ -255,7 +255,7 @@
 
                             @if (_model.WageType is WageType.Fixed)
                             {
-                                <AuthorizeView>
+                                <AuthorizeView Roles="@($"{BuiltinRoles.Owners},{BuiltinRoles.Administrators}")">
                                     <MudMenu @bind-Open="_wageFieldMenuOpen"
                                              ActivationEvent="@MouseEvent.LeftClick">
                                         <ActivatorContent>
@@ -356,7 +356,7 @@
                                          OnAdornmentClick="OnStoneAdornmentClicked"
                                          Class="flex-grow-1" />
 
-                        <AuthorizeView>
+                        <AuthorizeView Roles="@($"{BuiltinRoles.Owners},{BuiltinRoles.Administrators}")">
                             <MudMenu @bind-Open="_stoneFieldMenuOpen"
                                      ActivationEvent="@MouseEvent.LeftClick">
                                 <ActivatorContent>
