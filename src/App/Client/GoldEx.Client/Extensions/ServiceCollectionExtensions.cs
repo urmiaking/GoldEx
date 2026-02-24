@@ -1,6 +1,7 @@
 ﻿using GoldEx.Client.Components;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using MudBlazor;
 using System.Runtime.InteropServices;
 
 namespace GoldEx.Client.Extensions;
@@ -19,7 +20,7 @@ public static class ServiceCollectionExtensions
         if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
             services.AddClientServices();
 
-        services.AddClientAndServerServices();
+        services.AddClientAndServerServices(Defaults.Classes.Position.BottomLeft);
 
         return services;
     }

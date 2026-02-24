@@ -10,6 +10,21 @@
     <div class="row">
 
         <MudGrid Class="position-relative">
+            
+            @if (!_isLoggedIn)
+            {
+                <!-- Desktop Button -->
+                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Login"
+                               Href="@GoldEx.Shared.Routings.ClientRoutes.Accounts.Login"
+                               Class="position-absolute top-50 ml-3">
+                        ورود به حساب کاربری
+                    </MudButton>
+                </MudHidden>
+            }
+
             <MudItem xs="12" Class="text-center">
                 <MudText Typo="Typo.h4" Class="mb-2 mt-4">محاسبه قیمت طلا</MudText>
                 <MudText Typo="Typo.body1">بر اساس فرمول محاسبه اتحادیه طلا</MudText>
@@ -40,6 +55,22 @@
                     </MudItem>
                 </MudHidden>
             }
+            
+            @if (!_isLoggedIn)
+            {
+
+                <!-- Mobile Button -->
+                <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                    <MudItem xs="12" Class="d-flex justify-center pt-3">
+                        <MudButton Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.Login"
+                                   Href="@GoldEx.Shared.Routings.ClientRoutes.Accounts.Login"
+                                   Color="Color.Primary">
+                            ورود به حساب کاربری
+                        </MudButton>
+                    </MudItem>
+                </MudHidden>
+            }
 
         </MudGrid>
     </div>
@@ -60,7 +91,7 @@
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
+            <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary" Class="shadow">
                 <MudButton StartIcon="@Icons.Material.Filled.ShoppingCartCheckout" OnClick="FinalizeInvoiceAsync">
                     صدور فاکتور (@_basketCount)
                 </MudButton>

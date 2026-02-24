@@ -2,9 +2,10 @@
 
 public static class BuiltinRoles
 {
-    public static string[] Roles = [Administrators, Owners, Customers];
+    public static string[] Roles = [Administrators, Owners, Customers, Karats];
 
     public const string Administrators = "Administrators";
     public const string Owners = "Owners";
     public const string Customers = "Customers";
+    public const string Karats = "Karats";
 }

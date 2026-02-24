@@ -3,7 +3,7 @@ using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Shared.Routings;
 using Microsoft.AspNetCore.Identity;
 
-namespace GoldEx.Server.Services;
+namespace GoldEx.Calculator.Server.Services;
 
 [ScopedService]
 internal sealed class IdentityUserAccessor(UserManager<AppUser> userManager, IdentityRedirectManager redirectManager)
