@@ -61,13 +61,13 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddClientAndServerServices(this IServiceCollection services)
+    public static IServiceCollection AddClientAndServerServices(this IServiceCollection services, string snackBarPositionClass)
     {
         services.AddBlazoredLocalStorage();
 
         services.AddMudServices(config =>
         {
-            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            config.SnackbarConfiguration.PositionClass = snackBarPositionClass;
             config.SnackbarConfiguration.HideTransitionDuration = 1500;
         });
 

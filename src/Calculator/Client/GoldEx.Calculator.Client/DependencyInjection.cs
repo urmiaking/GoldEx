@@ -3,6 +3,7 @@ using GoldEx.Client.Components;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor;
 using System.Runtime.InteropServices;
 
 namespace GoldEx.Calculator.Client;
@@ -27,7 +28,7 @@ public static class DependencyInjection
         if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
             services.AddClientServices();
 
-        services.AddClientAndServerServices();
+        services.AddClientAndServerServices(Defaults.Classes.Position.BottomRight);
         services.AddScoped<QuickInvoiceBasketStore>();
 
         return services;

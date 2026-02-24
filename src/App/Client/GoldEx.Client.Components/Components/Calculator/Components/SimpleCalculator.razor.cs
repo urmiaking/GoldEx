@@ -645,12 +645,6 @@ public partial class SimpleCalculator
         if (!OnAddToInvoice.HasDelegate)
             return;
 
-        if (string.IsNullOrWhiteSpace(_quickInvoiceProductName))
-        {
-            AddErrorToast("نام محصول را وارد کنید");
-            return;
-        }
-
         var payload = QuickInvoicePayload.Create(_model, _finalPrice.Value) with
         {
             ProductName = _quickInvoiceProductName

@@ -11,6 +11,7 @@ using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -55,6 +56,14 @@ public static class DependencyInjection
 
     internal static IServiceCollection AddServices(this IServiceCollection services)
     {
+        services.AddDistributedMemoryCache();
+        services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
+
         services.DiscoverServices();
 
         return services;
@@ -124,6 +133,7 @@ public static class DependencyInjection
         {
             config.ExpireTimeSpan = TimeSpan.FromDays(90);
             config.SlidingExpiration = true;
+            config.Cookie.Name = "KaratAuthCookie";
 
             var defaultEvents = config.Events;
 
@@ -160,11 +170,11 @@ public static class DependencyInjection
             options.Password.RequiredUniqueChars = 1;
 
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.MaxFailedAccessAttempts = 10;
             options.Lockout.AllowedForNewUsers = true;
 
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            options.User.RequireUniqueEmail = true;
+            options.User.RequireUniqueEmail = false;
         });
 
         services.ConfigureOptions<ConfigureSecurityStampOptions>();
@@ -178,7 +188,8 @@ public static class DependencyInjection
         services.AddDataProtection()
             .PersistKeysToSqlServer(connectionString: configuration.GetConnectionString("GoldEx"),
                 schema: "dbo",
-                table: "DataProtectionKeys");
+                table: "DataProtectionKeys")
+            .SetApplicationName("GoldExSuite");
 
         return services;
     }
