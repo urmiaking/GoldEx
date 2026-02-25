@@ -9,13 +9,16 @@
                             DotNet.invokeMethodAsync('GoldEx.Client.Components', 'OnServiceWorkerInstalling');
                         }
                     });
-
-                    navigator.serviceWorker.addEventListener('message', event => {
-                        if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
-                            window.location.reload();
-                        }
-                    });
                 });
+
+            // Listen for the new Service Worker taking control, then reload automatically
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
         }
 
         // ---- PWA install state ----
