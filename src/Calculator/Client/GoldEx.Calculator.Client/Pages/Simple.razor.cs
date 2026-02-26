@@ -104,7 +104,7 @@ public partial class Simple
         if (result is { Canceled: true })
             return;
 
-        var customer = (QuickInvoiceCustomerVm)result.Data!;
+        var customer = (QuickInvoiceCustomerVm)result?.Data!;
 
         // Apply customer + company info to all items
         items = items
