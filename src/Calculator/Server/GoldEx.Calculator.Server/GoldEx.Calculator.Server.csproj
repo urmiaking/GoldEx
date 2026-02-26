@@ -8,6 +8,7 @@
 
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);DX1000</NoWarn>
+		<NoWarn>$(NoWarn);BL0008</NoWarn>
 		<UserSecretsId>47e171e0-405d-463c-9bf8-488242482dd8</UserSecretsId>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerfileContext>..\..\..\..</DockerfileContext>
