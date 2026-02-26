@@ -18,7 +18,7 @@ services:
     container_name: goldex-app
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_URLS: "http://+:10000"
       TZ: "Asia/Tehran"
       # override connection string for dockerized SQL Server
       ConnectionStrings__GoldEx: "Server=sqldb,1433;Database=GoldEx;User Id=sa;Password=YourStrong!Passw0rd;MultipleActiveResultSets=True;TrustServerCertificate=True"
@@ -27,7 +27,7 @@ services:
     depends_on:
       - sqldb
     ports:
-      - "8080:8080"
+      - "10000:10000"
 
     volumes:
       - uploads_data:/app/uploads
