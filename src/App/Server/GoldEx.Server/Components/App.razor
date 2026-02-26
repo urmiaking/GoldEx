@@ -24,18 +24,25 @@
 </head>
 
 <body>
-    @if (_license is not null)
+    @if (Env.IsDevelopment())
     {
-        @* @if (_license.Plan is Shared.Enums.LicensePlan.Unregistered && IsLoggedIn) *@
-        @if (false)
+        <Routes @rendermode="RenderModeForPage" />
+    }
+    else
+    {
+        @if (_license is not null)
         {
-            <UnregisteredRoute @rendermode="RenderModeForPage" />
-        }
-        else
-        {
-            <Routes @rendermode="RenderModeForPage" />
+            @if (_license.Plan is Shared.Enums.LicensePlan.Unregistered && IsLoggedIn)
+            {
+                <UnregisteredRoute @rendermode="RenderModeForPage" />
+            }
+            else
+            {
+                <Routes @rendermode="RenderModeForPage" />
+            }
         }
     }
+
     <script src="app.js"></script>
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
     <script>
