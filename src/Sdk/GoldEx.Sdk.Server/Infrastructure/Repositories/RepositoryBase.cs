@@ -158,20 +158,20 @@ public abstract class RepositoryBase<TEntity>(DbContext context) :
         await SaveAsync(cancellationToken);
     }
 
-    public virtual Task<int> ExecuteUpdateAsync(ISpecification<TEntity> specification,
-        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
-        CancellationToken cancellationToken = default)
-    {
-        IQueryable<TEntity> query = context.Set<TEntity>();
+    //public virtual Task<int> ExecuteUpdateAsync(ISpecification<TEntity> specification,
+    //    Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    IQueryable<TEntity> query = context.Set<TEntity>();
 
-        if (specification.Criteria == null)
-            throw new InvalidOperationException(
-                "ExecuteUpdate requires a specification with Criteria.");
+    //    if (specification.Criteria == null)
+    //        throw new InvalidOperationException(
+    //            "ExecuteUpdate requires a specification with Criteria.");
 
-        query = query.Where(specification.Criteria);
+    //    query = query.Where(specification.Criteria);
 
-        return query.ExecuteUpdateAsync(setPropertyCalls, cancellationToken);
-    }
+    //    return query.ExecuteUpdateAsync(setPropertyCalls, cancellationToken);
+    //}
 
     public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
