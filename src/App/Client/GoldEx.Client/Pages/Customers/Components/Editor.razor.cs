@@ -24,12 +24,12 @@ public partial class Editor
     private readonly CustomerValidator _customerValidator = new();
     private MudForm _form = default!;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private string? _creditLimitAdornmentText;
     private bool _processing;
 
     protected override async Task OnParametersSetAsync()
     {
         await LoadPriceUnitsAsync();
+        await PopulateCustomerNationalId();
         await base.OnParametersSetAsync();
     }
 
@@ -49,20 +49,13 @@ public partial class Editor
     {
         await SendRequestAsync<IPriceUnitService, List<GetPriceUnitTitleResponse>>(
             action: (s, ct) => s.GetTitlesAsync(ct),
-            afterSend: response =>
-            {
-                _priceUnits = response;
+            afterSend: response => _priceUnits = response);
+    }
 
-                if (Model.CreditLimitPriceUnit is null)
-                {
-                    var selectedUnit = _priceUnits.FirstOrDefault(u => u.IsDefault);
-                    _creditLimitAdornmentText = selectedUnit?.Title;
-                }
-                else
-                {
-                    _creditLimitAdornmentText = Model.CreditLimitPriceUnit?.Title;
-                }
-            });
+    private async Task PopulateCustomerNationalId()
+    {
+        if (string.IsNullOrEmpty(Model.NationalId))
+            await RenewNationalIdAsync();
     }
 
     private async Task Submit()
@@ -115,19 +108,6 @@ public partial class Editor
     }
 
     private void Close() => MudDialog.Cancel();
-
-    private void OnCreditLimitUnitChanged(GetPriceUnitTitleResponse? unitType)
-    {
-        Model.CreditLimitPriceUnit = unitType;
-    }
-
-    private void SelectCreditLimitUnit(GetPriceUnitTitleResponse selectedUnit)
-    {
-        OnCreditLimitUnitChanged(selectedUnit);
-
-        _creditLimitAdornmentText = selectedUnit.Title;
-        Model.CreditLimitMenuOpen = false;
-    }
 
     private async Task OnEditFinancialAccount(FinancialAccountVm financialAccount)
     {

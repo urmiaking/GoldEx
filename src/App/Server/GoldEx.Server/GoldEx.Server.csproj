@@ -11,6 +11,7 @@
 
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);DX1000</NoWarn>
+		<NoWarn>$(NoWarn);BL0008</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

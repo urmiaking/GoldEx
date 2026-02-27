@@ -12,6 +12,7 @@ public partial class App
 
     [Inject] private ILicenseService LicenceService { get; set; } = default!;
     [Inject] private LicenseState LicenseState { get; set; } = default!;
+    [Inject] private IWebHostEnvironment Env { get; set; } = default!;
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
