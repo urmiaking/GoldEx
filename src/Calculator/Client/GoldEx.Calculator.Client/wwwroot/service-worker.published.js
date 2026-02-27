@@ -125,23 +125,27 @@ self.addEventListener('fetch', event => {
 
         /* ============================
          * 1. Blazor framework files
-         *    cache-first
+         * cache-first (Optimized)
          * ============================ */
         if (url.pathname.startsWith('/_framework/')) {
-            const cache = await caches.open(CACHE_NAME);
+            // OPTIMIZATION 1: Strip query string manually for an instant O(1) lookup
+            // This avoids the massive performance penalty of ignoreSearch: true
+            const cleanUrl = new URL(event.request.url);
+            cleanUrl.search = '';
 
-            // Add ignoreSearch and ignoreVary to match Blazor's requested URLs reliably
-            const cached = await cache.match(event.request, { ignoreSearch: true, ignoreVary: true });
+            // OPTIMIZATION 2: Use global caches.match to avoid opening the cache 100+ times
+            const cached = await caches.match(cleanUrl.toString()) || await caches.match(event.request);
             if (cached) return cached;
 
             try {
                 const response = await fetch(event.request);
                 if (response.ok) {
+                    // Only open the cache if we actually need to save a missing file
+                    const cache = await caches.open(CACHE_NAME);
                     await cache.put(event.request, response.clone());
                 }
                 return response;
             } catch (error) {
-                // Safely handle the offline scenario without crashing the Service Worker
                 return new Response('Offline framework file missing', {
                     status: 503,
                     headers: { 'Content-Type': 'text/plain' }
