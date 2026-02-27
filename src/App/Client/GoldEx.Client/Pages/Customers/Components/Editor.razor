@@ -47,41 +47,7 @@
                                   Margin="Margin.Dense"
                                   Variant="Variant.Outlined" />
                 </MudItem>
-                @* <MudItem xs="12" md="6" lg="6">
-                    <MudMenu @bind-Open="Model.CreditLimitMenuOpen" ActivationEvent="@MouseEvent.LeftClick" Class="w-100">
-                        <ActivatorContent>
-                            <MudNumericField @bind-Value="Model.CreditLimit"
-                                             T="decimal?"
-                                             HideSpinButtons="true"
-                                             Format="#,##0.##"
-                                             dir="ltr"
-                                             Immediate="true"
-                                             For="@(() => Model.CreditLimit)"
-                                             Label="@(Model.GetDisplayName(() => Model.CreditLimit))"
-                                             Margin="Margin.Dense"
-                                             Variant="Variant.Outlined"
-                                             Adornment="Adornment.End"
-                                             AdornmentText="@_creditLimitAdornmentText"
-                                             OnAdornmentClick="() => Model.CreditLimitMenuOpen = true" />
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (var item in _priceUnits)
-                            {
-                                <MudMenuItem OnClick="() => SelectCreditLimitUnit(item)">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        @if (item.HasIcon)
-                                        {
-                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                            </MudAvatar>
-                                        }
-                                        @item.Title
-                                    </div>
-                                </MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
-                </MudItem> *@
+               
                 <MudItem xs="12">
                     <MudTextField @bind-Value="Model.Address"
                                   For="@(() => Model.Address)"
