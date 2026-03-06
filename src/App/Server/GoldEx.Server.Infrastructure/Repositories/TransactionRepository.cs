@@ -129,7 +129,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                     t.LedgerAccount.ParentAccount.Title == SystemLedgerAccounts.AccountsReceivable
                 ))
             .Where(t => t.ReverseTransactionId == null)
-            .Where(x => x.ReversedBy == null || !x.ReversedBy.Any());
+            .Where(x => !x.ReversedBy!.Any());
 
         var result = await query
             .GroupBy(t => new { t.PriceUnitId, t.PriceUnit!.Title })
