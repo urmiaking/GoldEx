@@ -6,6 +6,7 @@ namespace GoldEx.Client.Pages.Calculate.Components;
 public partial class Calculator
 {
     [Parameter] public string Class { get; set; } = default!;
+    [Parameter] public string? ContainerClass { get; set; }
     [Parameter] public int Elevation { get; set; } = 24;
     [Inject] private HelpContext HelpContext { get; set; } = default!;
 

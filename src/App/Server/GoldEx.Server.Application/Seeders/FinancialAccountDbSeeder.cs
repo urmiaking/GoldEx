@@ -25,16 +25,11 @@ internal sealed class FinancialAccountDbSeeder(
     public int Order => 40;
     public async Task SeedAsync(DbSeedContext context, CancellationToken cancellationToken = default)
     {
-        await EnsureGoldAccountExistsAsync(financialAccountRepository, priceUnitRepository, ledgerAccountRepository, cancellationToken);
-        await EnsureCashAccountExistsAsync(financialAccountRepository, priceUnitRepository, ledgerAccountRepository, cancellationToken);
-
-        logger.LogInformation($"{nameof(FinancialAccountDbSeeder)}: Seeded financial accounts.");
+        await EnsureGoldAccountExistsAsync(cancellationToken);
+        await EnsureCashAccountExistsAsync(cancellationToken);
     }
 
-    private static async Task EnsureGoldAccountExistsAsync(IFinancialAccountRepository financialAccountRepository,
-        IPriceUnitRepository priceUnitRepository,
-        ILedgerAccountRepository ledgerAccountRepository,
-        CancellationToken cancellationToken = default)
+    private async Task EnsureGoldAccountExistsAsync(CancellationToken cancellationToken = default)
     {
         if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Gold), cancellationToken))
             return;
@@ -51,12 +46,11 @@ internal sealed class FinancialAccountDbSeeder(
 
         var goldAccount = FinancialAccount.CreateSystemAccount(null, null, FinancialAccountType.Gold, goldPriceUnit.Id, inventoryLedgerAccount.Id);
         await financialAccountRepository.CreateAsync(goldAccount, cancellationToken);
+
+        logger.LogInformation($"{nameof(FinancialAccountDbSeeder)}: Seeded gold financial account.");
     }
 
-    private static async Task EnsureCashAccountExistsAsync(IFinancialAccountRepository financialAccountRepository,
-        IPriceUnitRepository priceUnitRepository,
-        ILedgerAccountRepository ledgerAccountRepository,
-        CancellationToken cancellationToken = default)
+    private async Task EnsureCashAccountExistsAsync(CancellationToken cancellationToken = default)
     {
         if (await financialAccountRepository.ExistsAsync(new FinancialAccountsByTypeSpecification(FinancialAccountType.Cash), cancellationToken))
             return;
@@ -75,5 +69,7 @@ internal sealed class FinancialAccountDbSeeder(
             cashAccount: CashAccount.Create(null, CashAccountType.Internal));
 
         await financialAccountRepository.CreateAsync(cashAccount, cancellationToken);
+
+        logger.LogInformation($"{nameof(FinancialAccountDbSeeder)}: Seeded cash financial account.");
     }
 }

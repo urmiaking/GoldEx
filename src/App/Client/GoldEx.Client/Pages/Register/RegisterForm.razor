@@ -33,9 +33,10 @@
                         </MudText>
 
                         <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile">
-                            <ActivatorContent>
+                            <CustomContent Context="ctx">
                                 <MudAvatar Size="Size.Large"
                                            Style="cursor:pointer;width:110px;height:110px;"
+                                           @onclick="ctx.OpenFilePickerAsync"
                                            Color="Color.Surface">
                                     @if (_model.HasIcon)
                                     {
@@ -46,7 +47,7 @@
                                         <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" />
                                     }
                                 </MudAvatar>
-                            </ActivatorContent>
+                            </CustomContent>
                         </MudFileUpload>
                     </div>
                 </MudItem>

@@ -56,7 +56,7 @@ public sealed record QuickInvoicePayload
             Wage = model.WageType switch
             {
                 Shared.Enums.WageType.Percent => model.Wage.ToString(),
-                Shared.Enums.WageType.Fixed => model.Wage!.Value.ToCurrencyFormat("تومان"),
+                Shared.Enums.WageType.Fixed => model.Wage?.ToCurrencyFormat("تومان"),
                 null => null,
                 _ => throw new ArgumentOutOfRangeException()
             },

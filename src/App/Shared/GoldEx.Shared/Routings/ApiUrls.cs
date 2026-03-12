@@ -399,6 +399,11 @@ public class ApiUrls
         public static string GetAvailablePriceUnits(TransactionFilter transactionFilter) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetAvailablePriceUnits)
                 .AppendQueryString(transactionFilter);
+
+        public static string GetTopCustomers(TransactionType transactionType, Guid? priceUnitId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetTopCustomers)
+                .FormatRoute(new { transactionType })
+                .AppendQueryString(new { priceUnitId });
     }
 
     public class Notifications

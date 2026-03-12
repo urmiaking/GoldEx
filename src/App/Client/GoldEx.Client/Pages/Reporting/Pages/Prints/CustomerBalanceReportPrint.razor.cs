@@ -109,7 +109,7 @@ public partial class CustomerBalanceReportPrint
                     new SummaryItem
                     {
                         Label = "مجموع پرداختنی",
-                        Value = pu.TotalPayable.ToCurrencyFormat(pu.PriceUnitTitle),
+                        Value = Math.Abs(pu.TotalPayable).ToCurrencyFormat(pu.PriceUnitTitle),
                         Type = "credit",
                         ShowIcon = true,
                         IconType = "credit-icon"
@@ -117,7 +117,7 @@ public partial class CustomerBalanceReportPrint
                     new SummaryItem
                     {
                         Label = "مجموع دریافتنی",
-                        Value = pu.TotalReceivable.ToCurrencyFormat(pu.PriceUnitTitle),
+                        Value = Math.Abs(pu.TotalReceivable).ToCurrencyFormat(pu.PriceUnitTitle),
                         Type = "debit",
                         ShowIcon = true,
                         IconType = "debit-icon"
@@ -125,7 +125,7 @@ public partial class CustomerBalanceReportPrint
                     new SummaryItem
                     {
                         Label = "خالص",
-                        Value = $"{Math.Abs(pu.TotalReceivable - pu.TotalPayable).ToCurrencyFormat(pu.PriceUnitTitle)} {(pu.TotalReceivable >= pu.TotalPayable ? "بدهکار" : "بستانکار")}",
+                        Value = $"{Math.Abs(pu.TotalPayable + pu.TotalReceivable).ToCurrencyFormat(pu.PriceUnitTitle)} {(pu.TotalReceivable >= pu.TotalPayable ? "بدهکار" : "بستانکار")}",
                         Type = "net",
                         ShowIcon = true,
                         IconType = pu.TotalReceivable >= pu.TotalPayable ? "positive-icon" : "negative-icon"
@@ -140,7 +140,7 @@ public partial class CustomerBalanceReportPrint
     }
 
     private decimal GetNet(CustomerRemainingBalanceRpResponse x)
-        => x.ReceivableAmount - x.PayableAmount;
+        => x.ReceivableAmount + x.PayableAmount;
 
     private string GetTransactionClass(CustomerRemainingBalanceRpResponse item)
     {

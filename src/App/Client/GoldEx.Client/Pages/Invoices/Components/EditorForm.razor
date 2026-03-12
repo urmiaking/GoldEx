@@ -217,7 +217,9 @@ else
                                  DebounceInterval="0"
                                  ShowProgressIndicator="false">
                 </MudAutocomplete>
-                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer"></MudIconButton>
+                <MudTooltip Arrow Color="Color.Primary" Text="مشتری جدید" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer" />
+                </MudTooltip>
             </MudStack>
 
             <MudDivider Class="mb-2" />
@@ -248,14 +250,14 @@ else
                                                    TextTypo="Typo.body1"
                                                    PriceUnit="_model.InvoicePriceUnit"
                                                    EnableManualSlide="true"
-                                                   AddedValue="@(_applyCurrentInvoice 
-                                                                   ? (IsEditMode ? GetCustomerBalanceChange() : GetNewInvoiceCustomerBalanceEffect()) 
-                                                                   : null)" />
-                                <MudTooltip Text="@RemainingTooltipText" ShowOnHover="true" Color="Color.Success" Arrow="true">
-                                    <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Success" Size="Size.Small" />
-                                </MudTooltip>
-                            </div>
-                        }
+                                                   AddedValue="@(_applyCurrentInvoice
+                                                                                                                      ? (IsEditMode ? GetCustomerBalanceChange() : GetNewInvoiceCustomerBalanceEffect())
+                                                                                                                      : null)" />
+                    <MudTooltip Text="@RemainingTooltipText" ShowOnHover="true" Color="Color.Success" Arrow="true">
+                        <MudSwitch T="bool" @bind-Value="_applyCurrentInvoice" Color="Color.Success" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                                }
                     </MudItem>
                 </MudGrid>
             }
@@ -405,6 +407,7 @@ else
 
                                         <MudMenu EndIcon="@Icons.Material.Filled.ArrowDropUp"
                                                  Label="ثبت پرداخت"
+                                                 @bind-Open="_paymentMenuOpen"
                                                  AnchorOrigin="Origin.BottomCenter"
                                                  TransformOrigin="Origin.TopCenter">
                                             <MudMenuItem>
@@ -563,59 +566,37 @@ else
             <MudDivider Class="my-2" />
             <div class="d-flex gap-3 mt-2 flex-wrap">
 
-                    @if (IsEditMode)
-                    {
-                        <MudButton Color="Color.Error"
-                                   StartIcon="@Icons.Material.Filled.DeleteForever"
-                                   Disabled="@_processing"
-                                   Variant="Variant.Filled"
-                                   OnClick="OnDelete">
-                            @if (_processing)
-                            {
-                                <MudProgressCircular Class="ms-n1"
-                                                     Size="Size.Small"
-                                                     Indeterminate="true" />
-                                <MudText Class="ms-2">
-                                    در حال پردازش
-                                </MudText>
-                            }
-                            else
-                            {
-                                <MudText>حذف</MudText>
-                            }
+                @if (IsEditMode)
+                {
+                    <MudButton Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.DeleteForever"
+                               Disabled="@_processing"
+                               Variant="Variant.Filled"
+                               OnClick="OnDelete">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1"
+                                                 Size="Size.Small"
+                                                 Indeterminate="true" />
+                            <MudText Class="ms-2">
+                                در حال پردازش
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText>حذف</MudText>
+                        }
 
-                        </MudButton>
-                    }
-                    <div class="flex-fill d-none d-md-block"></div>
-                    @if (IsEditMode)
-                    {
-                        <MudButton Color="Color.Success"
-                                   StartIcon="@Icons.Material.Filled.Print"
-                                   Disabled="@_processing"
-                                   Variant="Variant.Filled"
-                                   OnClick="OnPrintAsync">
-                            @if (_processing)
-                            {
-                                <MudProgressCircular Class="ms-n1"
-                                                     Size="Size.Small"
-                                                     Indeterminate="true" />
-                                <MudText Class="ms-2">
-                                    در حال پردازش
-                                </MudText>
-                            }
-                            else
-                            {
-                                <MudText>چاپ</MudText>
-                            }
-
-                        </MudButton>
-                    }
-
-                    <MudButton Color="Color.Info"
+                    </MudButton>
+                }
+                <div class="flex-fill d-none d-md-block"></div>
+                @if (IsEditMode)
+                {
+                    <MudButton Color="Color.Success"
                                StartIcon="@Icons.Material.Filled.Print"
                                Disabled="@_processing"
                                Variant="Variant.Filled"
-                               OnClick="@(async () => await SubmitAsync(true))">
+                               OnClick="OnPrintAsync">
                         @if (_processing)
                         {
                             <MudProgressCircular Class="ms-n1"
@@ -627,31 +608,53 @@ else
                         }
                         else
                         {
-                            <MudText>ذخیره و چاپ</MudText>
+                            <MudText>چاپ</MudText>
                         }
 
                     </MudButton>
+                }
 
-                    <MudButton Color="Color.Primary"
-                               Disabled="@_processing"
-                               StartIcon="@Icons.Material.Filled.Save"
-                               OnClick="@(async () => await SubmitAsync(false))"
-                               Variant="Variant.Filled">
-                        @if (_processing)
-                        {
-                            <MudProgressCircular Class="ms-n1"
-                                                 Size="Size.Small"
-                                                 Indeterminate="true" />
-                            <MudText Class="ms-2">
-                                در حال پردازش
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudText>ذخیره</MudText>
-                        }
-                    </MudButton>
-                </div>
+                <MudButton Color="Color.Info"
+                           StartIcon="@Icons.Material.Filled.Print"
+                           Disabled="@_processing"
+                           Variant="Variant.Filled"
+                           OnClick="@(async () => await SubmitAsync(true))">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1"
+                                             Size="Size.Small"
+                                             Indeterminate="true" />
+                        <MudText Class="ms-2">
+                            در حال پردازش
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText>ذخیره و چاپ</MudText>
+                    }
+
+                </MudButton>
+
+                <MudButton Color="Color.Primary"
+                           Disabled="@_processing"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           OnClick="@(async () => await SubmitAsync(false))"
+                           Variant="Variant.Filled">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1"
+                                             Size="Size.Small"
+                                             Indeterminate="true" />
+                        <MudText Class="ms-2">
+                            در حال پردازش
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText>ذخیره</MudText>
+                    }
+                </MudButton>
+            </div>
         </MudForm>
     </MudCard>
 
@@ -661,7 +664,7 @@ else
                 OnClosed="@(() => _discountMenuOpen = false)">
         <MudPopover Open="@_discountMenuOpen"
                     Fixed="true"
-                    Class="px-4 pt-4 center-popover"
+                    Class="px-4 pt-4 responsive-popover"
                     AnchorOrigin="Origin.CenterCenter"
                     TransformOrigin="Origin.CenterCenter"
                     Elevation="24">
@@ -684,7 +687,7 @@ else
                 OnClosed="@(() => _extraCostsMenuOpen = false)">
         <MudPopover Open="@_extraCostsMenuOpen"
                     Fixed="true"
-                    Class="px-4 pt-4 center-popover"
+                    Class="px-4 pt-4 responsive-popover"
                     AnchorOrigin="Origin.CenterCenter"
                     TransformOrigin="Origin.CenterCenter"
                     Elevation="24">

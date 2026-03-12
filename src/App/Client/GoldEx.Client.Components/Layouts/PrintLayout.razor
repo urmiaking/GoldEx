@@ -1,4 +1,4 @@
-﻿@using Microsoft.JSInterop
+﻿@* @using Microsoft.JSInterop *@
 @inherits LayoutComponentBase
 
 <div class="print-container">
@@ -7,12 +7,12 @@
 
 @code
 {
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+    // [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await JsRuntime.InvokeVoidAsync("removeLoadingIndicator");
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     await JsRuntime.InvokeVoidAsync("removeLoadingIndicator");
 
-        await base.OnAfterRenderAsync(firstRender);
-    }
+    //     await base.OnAfterRenderAsync(firstRender);
+    // }
 }

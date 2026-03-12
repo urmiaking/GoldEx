@@ -1,7 +1,6 @@
 ﻿using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
-using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Dashboard.Components;

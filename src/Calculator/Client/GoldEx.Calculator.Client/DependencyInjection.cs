@@ -10,34 +10,37 @@ namespace GoldEx.Calculator.Client;
 
 public static class DependencyInjection
 {
-    internal static IServiceCollection AddClient(this IServiceCollection services, IWebAssemblyHostEnvironment environment)
+    extension(IServiceCollection services)
     {
-        services.InitializeDefaultCulture()
-            .AddClientComponents()
-            .AddClientServerServices()
-            .AddAuthServices()
-            .AddServices()
-            .AddJsonOptions()
-            .AddHttpClientService(environment, new TimeSpan(0, 0, 30));
+        internal IServiceCollection AddClient(IWebAssemblyHostEnvironment environment)
+        {
+            services.InitializeDefaultCulture()
+                .AddClientComponents()
+                .AddClientServerServices()
+                .AddAuthServices()
+                .AddServices()
+                .AddJsonOptions()
+                .AddHttpClientService(environment, new TimeSpan(0, 0, 30));
 
-        return services;
-    }
+            return services;
+        }
 
-    public static IServiceCollection AddClientServerServices(this IServiceCollection services)
-    {
-        if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
-            services.AddClientServices();
+        public IServiceCollection AddClientServerServices()
+        {
+            if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
+                services.AddClientServices();
 
-        services.AddClientAndServerServices(Defaults.Classes.Position.BottomRight);
-        services.AddScoped<QuickInvoiceBasketStore>();
+            services.AddClientAndServerServices(Defaults.Classes.Position.BottomRight);
+            services.AddScoped<QuickInvoiceBasketStore>();
 
-        return services;
-    }
+            return services;
+        }
 
-    internal static IServiceCollection AddServices(this IServiceCollection services)
-    {
-        services.DiscoverServices();
+        internal IServiceCollection AddServices()
+        {
+            services.DiscoverServices();
 
-        return services;
+            return services;
+        }
     }
 }

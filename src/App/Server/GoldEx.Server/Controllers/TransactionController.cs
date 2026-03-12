@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Transactions;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
@@ -46,6 +47,14 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     public async Task<IActionResult> GetAvailablePriceUnitsAsync([FromQuery] TransactionFilter transactionFilter, CancellationToken cancellationToken = default)
     {
         var items = await service.GetAvailablePriceUnitsAsync(transactionFilter, cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpGet(ApiRoutes.Transactions.GetTopCustomers)]
+    public async Task<IActionResult> GetTopCustomersAsync(TransactionType transactionType, [FromQuery] Guid? priceUnitId, 
+        CancellationToken cancellationToken = default)
+    {
+        var items = await service.GetTopCustomersAsync(transactionType, priceUnitId, cancellationToken);
         return Ok(items);
     }
 }

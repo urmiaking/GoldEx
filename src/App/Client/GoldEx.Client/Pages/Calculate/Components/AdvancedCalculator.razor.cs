@@ -26,13 +26,9 @@ public partial class AdvancedCalculator
 
     private GetSettingResponse? _settings;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    private AdvancedCalculatorVm _model = new();
+    private readonly AdvancedCalculatorVm _model = new();
     private MudTable<GetInventoryStockResponse> _table = default!;
-
-    private List<GetInventoryStockResponse> _results = [];
     private List<GetProductCategoryResponse> _productCategories = [];
-    private bool _minWeightFieldMenuOpen;
-    private bool _maxWeightFieldMenuOpen;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -65,7 +61,7 @@ public partial class AdvancedCalculator
 
         if (authenticationState.User.Identity is { IsAuthenticated: false })
         {
-            var priceUnit = new GetPriceUnitTitleResponse(Guid.Empty, "ریال", false, true, false);
+            var priceUnit = new GetPriceUnitTitleResponse(Guid.Empty, "تومان", false, true, false);
 
             _model.PriceUnit = priceUnit;
 
@@ -149,6 +145,11 @@ public partial class AdvancedCalculator
             _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null)
         };
 
+        if (productType is ProductType.MoltenGold)
+        {
+            _model.ProductCategory = null;
+        }
+
         await OnSearch();
     }
 
@@ -157,7 +158,6 @@ public partial class AdvancedCalculator
     private async Task ResetModel()
     {
         _model.SetNull();
-        _results.Clear();
 
         await LoadGramPriceAsync();
     }

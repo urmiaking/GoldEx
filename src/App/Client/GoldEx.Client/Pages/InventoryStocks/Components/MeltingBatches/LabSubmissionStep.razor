@@ -25,7 +25,9 @@
                              ResetValueOnEmptyText="true"
                              DebounceInterval="0"
                              ShowProgressIndicator="false" />
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddAssayer"></MudIconButton>
+            <MudTooltip Arrow="true" Text="آزمایشگاه جدید" Color="Color.Primary" Placement="Placement.Top">
+                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddAssayer" />
+            </MudTooltip>
         </MudStack>
         <MudTextField @bind-Value="Model.LabDescription"
                       Label="@Model.GetDisplayName(() => Model.LabDescription)"

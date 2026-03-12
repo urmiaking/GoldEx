@@ -65,7 +65,7 @@ public partial class InventoryEntryList
 
     private async Task DeleteEntry(InventoryEntryListVm context)
     {
-        var result = await DialogService.ShowMessageBox("تأیید حذف",
+        var result = await DialogService.ShowMessageBoxAsync("تأیید حذف",
             "با تایید شما تمامی اجناسی که طی این عملیات به انبار افزوده شده اند، حذف خواهند شد",
             yesText: "حذف",
             cancelText: "انصراف");

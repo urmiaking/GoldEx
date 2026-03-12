@@ -70,7 +70,7 @@ else
                 </MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => (x.ReceivableAmount - x.PayableAmount))">
+                <MudTableSortLabel SortBy="new Func<CustomerRemainingBalanceRpResponse, object>(x => (x.PayableAmount + x.ReceivableAmount))">
                     خالص
                 </MudTableSortLabel>
             </MudTh>
@@ -81,17 +81,19 @@ else
             <MudTd DataLabel="طرف حساب">@($"{context.CustomerName} ({context.CustomerCode})")</MudTd>
             <MudTd DataLabel="شماره تماس">@context.CustomerPhoneNumber</MudTd>
             <MudTd DataLabel="حساب پرداختنی">
-                @GetAmount(context.PayableAmount, context.PriceUnitTitle)
+                <MudText Typo="Typo.body2" Color="@GetAmountColor(context.PayableAmount)">
+                    @GetAmount(context.PayableAmount, context.PriceUnitTitle)
+                </MudText>
             </MudTd>
             <MudTd DataLabel="حساب دریافتنی">
-                @GetAmount(context.ReceivableAmount, context.PriceUnitTitle)
+                <MudText Typo="Typo.body2" Color="@GetAmountColor(context.ReceivableAmount)">
+                    @GetAmount(context.ReceivableAmount, context.PriceUnitTitle)
+                </MudText>
             </MudTd>
-            <MudTd DataLabel="مبلغ">
-                <div class="d-flex gap-2">
-                    <MudText Typo="Typo.body2" Color="@GetNetColor(context)">
-                        @GetNetAmount(context)
-                    </MudText>
-                </div>
+            <MudTd DataLabel="خالص">
+                <MudText Typo="Typo.body2" Color="@GetNetColor(context)">
+                    @GetNetAmount(context)
+                </MudText>
             </MudTd>
             <MudTd DataLabel="عملیات">
                 <div class="d-flex gap-2">

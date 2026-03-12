@@ -17,7 +17,7 @@ public partial class CurrencyList
 
     private async Task RemoveItem(CurrencyItemVm context)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             $"آیا برای حذف ارز {context.Currency.Title} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");

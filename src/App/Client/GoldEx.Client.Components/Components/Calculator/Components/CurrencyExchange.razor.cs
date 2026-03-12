@@ -17,8 +17,6 @@ public partial class CurrencyExchange
     private readonly CurrencyExchangeVm _model = new();
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
-    private bool _feeFieldMenuOpen;
-
     private const decimal MinReasonableDisplayedRate = 0.0001m;
     private const string PriceUnitsKey = "PriceUnits";
     private const string ExchangeRateKey = "ExchangeRate";
@@ -60,7 +58,7 @@ public partial class CurrencyExchange
         _ => throw new ArgumentOutOfRangeException(nameof(_model.FeeType), _model.FeeType, null)
     };
 
-    private string? FeeTypeAdornmentIcon =>
+    private string FeeTypeAdornmentIcon =>
         _model.FeeType switch
         {
             WageType.Percent => Icons.Material.Filled.Percent,

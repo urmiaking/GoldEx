@@ -19,7 +19,6 @@ public class InvoiceDiscountVm
 
     public string? ExchangeRateLabel { get; set; }
     public string AmountAdornmentText { get; set; } = default!;
-    public bool AmountMenuOpen { get; set; }
 
     public static InvoiceDiscountDto ToRequest(InvoiceDiscountVm item)
     {

@@ -22,10 +22,8 @@ public partial class Editor
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private List<GetProductResponse> _products = [];
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
-    
-    private bool _wageFieldMenuOpen;
+
     private bool _processing;
-    private bool _weightFieldMenuOpen;
 
     private string? WageFieldAdornmentText => Model.WageType switch
     {
@@ -118,14 +116,13 @@ public partial class Editor
         switch (productType)
         {
             case ProductType.Jewelry:
-                Model.WageType = WageType.Fixed;
+                OnWageTypeChanged(WageType.Fixed);
                 break;
             case ProductType.Gold:
-                Model.WageType = WageType.Percent;
+                OnWageTypeChanged(WageType.Percent);
                 break;
             case ProductType.MoltenGold:
-                Model.Wage = null;
-                Model.WageType = null;
+                OnWageTypeChanged(null);
                 break;
             case ProductType.UsedGold:
                 throw new InvalidOperationException();
@@ -138,8 +135,21 @@ public partial class Editor
     {
         Model.WageType = wageType;
 
-        if (wageType is null) 
+        if (wageType is null)
             Model.Wage = null;
+
+        if (wageType is WageType.Fixed)
+        {
+            var defaultUnit = _priceUnits.FirstOrDefault(x => x.IsDefault);
+
+            Model.WagePriceUnitId ??= defaultUnit?.Id;
+            Model.WagePriceUnitTitle ??= defaultUnit?.Title;
+        }
+        else
+        {
+            Model.WagePriceUnitId = null;
+            Model.WagePriceUnitTitle = null;
+        }
     }
 
     private void OnAddGemStone()
@@ -167,7 +177,6 @@ public partial class Editor
         Model.WagePriceUnitId = item.Id;
         Model.WagePriceUnitTitle = item.Title;
 
-        _wageFieldMenuOpen = false;
         OnWageTypeChanged(Model.WageType);
     }
 
@@ -191,14 +200,14 @@ public partial class Editor
         if (string.IsNullOrEmpty(name))
             return null;
 
-        await SendRequestAsync<IProductService, List<GetProductResponse>> (
+        await SendRequestAsync<IProductService, List<GetProductResponse>>(
             action: (s, ct) => s.GetListAsync(name, Model.ProductType, ct),
             afterSend: response => _products = response);
 
         return _products.Select(x => x.Name);
     }
 
-    private void OnProductNameChanged(string name)
+    private void OnProductNameChanged(string? name)
     {
         var product = _products.FirstOrDefault(x => x.Name == name);
 

@@ -8,6 +8,7 @@ using System.Text.Json;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -72,6 +73,19 @@ internal class TransactionService(HttpClient client, JsonSerializerOptions jsonO
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<List<GetPriceUnitTitleResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<GetTopCustomerResponse>> GetTopCustomersAsync(TransactionType transactionType, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Transactions.GetTopCustomers(transactionType, priceUnitId), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetTopCustomerResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }

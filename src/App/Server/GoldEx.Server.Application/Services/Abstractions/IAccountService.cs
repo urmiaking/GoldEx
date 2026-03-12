@@ -1,8 +1,6 @@
-﻿using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Server.Domain.Entities.Identity;
+﻿using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using GoldEx.Server.Domain.CustomerAggregate;
 
 namespace GoldEx.Server.Application.Services.Abstractions;
 

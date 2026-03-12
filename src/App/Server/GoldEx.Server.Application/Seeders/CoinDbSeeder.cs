@@ -39,7 +39,8 @@ internal sealed class CoinDbSeeder(ICoinService coinService, ILogger<CoinDbSeede
                 cancellationToken);
         }
 
-        logger.LogInformation($"{nameof(CoinDbSeeder)}: Seeded {coinPrices.Count} coins.");
+        if (coinPrices.Any())
+            logger.LogInformation($"{nameof(CoinDbSeeder)}: Seeded {coinPrices.Count} coins.");
     }
 
     private static (decimal Weight, decimal Fineness, int StartMintYear, int? EndMintYear) GetCoinSpecs(string title) =>

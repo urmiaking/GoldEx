@@ -54,6 +54,7 @@ public partial class EditorForm
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
     private bool _applyCurrentInvoice = true;
+    private bool _paymentMenuOpen;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -500,7 +501,7 @@ public partial class EditorForm
 
     private async Task OnRemoveProductItem(ProductItemVm productItem)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {productItem.Product.Name} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -771,7 +772,7 @@ public partial class EditorForm
 
     private async Task OnRemoveCoinItem(CoinItemVm coinItem)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {coinItem.CoinInstance.Coin?.Title} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -892,7 +893,7 @@ public partial class EditorForm
 
     private async Task OnRemoveCurrencyItem(CurrencyItemVm currencyItem)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {currencyItem.Currency.Title} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -928,7 +929,7 @@ public partial class EditorForm
 
     private async Task OnRemoveUsedProduct(UsedProductVm usedProduct)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {usedProduct.Description} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -1213,7 +1214,7 @@ public partial class EditorForm
     {
         if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
         {
-            var result = await DialogService.ShowMessageBox(
+            var result = await DialogService.ShowMessageBoxAsync(
                 "هشدار",
                 markupMessage: new MarkupString("تغییر نوع فاکتور باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
                 yesText: "بله", cancelText: "لغو");
@@ -1231,7 +1232,7 @@ public partial class EditorForm
 
             if (vouchers.Any())
             {
-                var result = await DialogService.ShowMessageBox(
+                var result = await DialogService.ShowMessageBoxAsync(
                     "هشدار",
                     markupMessage: new MarkupString("تغییر نوع فاکتور به فروش باعث حذف تمام رسیدهای پرداختی خواهد شد. آیا مطمئن هستید؟"),
                     yesText: "بله", cancelText: "لغو");
@@ -1266,7 +1267,7 @@ public partial class EditorForm
         {
             if (tradeScale != TradeScale)
             {
-                var result = await DialogService.ShowMessageBox(
+                var result = await DialogService.ShowMessageBoxAsync(
                     "هشدار",
                     markupMessage:
                     new MarkupString("تغییر نوع معامله باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
@@ -1320,7 +1321,7 @@ public partial class EditorForm
         if (!_model.InvoiceId.HasValue)
             return;
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای ارسال پیامک تسویه حساب به شماره همراه {_model.Customer?.PhoneNumber} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -1342,7 +1343,7 @@ public partial class EditorForm
         if (!_model.InvoiceId.HasValue)
             return;
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف فاکتور شماره {_model.InvoiceNumber} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -1380,11 +1381,13 @@ public partial class EditorForm
 
     private void OnDiscountMenuToggled()
     {
+        _paymentMenuOpen = false;
         _discountMenuOpen = !_discountMenuOpen;
     }
 
     private void OnExtraCostsMenuToggled()
     {
+        _paymentMenuOpen = false;
         _extraCostsMenuOpen = !_extraCostsMenuOpen;
     }
 
@@ -1429,6 +1432,8 @@ public partial class EditorForm
 
     private async Task OnAddPayment(PaymentType paymentType)
     {
+        _paymentMenuOpen = false;
+
         if (_license is null)
             return;
 

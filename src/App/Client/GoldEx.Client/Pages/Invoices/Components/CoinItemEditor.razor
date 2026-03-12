@@ -77,10 +77,12 @@
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
                     <div class="d-flex align-center gap-2">
-                        <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined"
-                                       OnClick="@(() => Model.Quantity--)"
-                                       Disabled="@(Model.Quantity <= 1)"
-                                       Color="Color.Primary" />
+                        <MudTooltip Arrow Color="Color.Primary" Text="کم کردن" Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined"
+                                           OnClick="@(() => Model.Quantity--)"
+                                           Disabled="@(Model.Quantity <= 1)"
+                                           Color="Color.Primary" />
+                        </MudTooltip>
 
                         <MudNumericField For="@(() => Model.Quantity)"
                                          Immediate="true"
@@ -95,9 +97,11 @@
                                          Variant="Variant.Outlined"
                                          Style="flex: 1;" />
 
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
-                                       OnClick="@(() => Model.Quantity++)"
-                                       Color="Color.Primary" />
+                        <MudTooltip Arrow Color="Color.Primary" Text="زیاد کردن" Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined"
+                                           OnClick="@(() => Model.Quantity++)"
+                                           Color="Color.Primary" />
+                        </MudTooltip>
                     </div>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
@@ -191,23 +195,25 @@
                     </MudItem>
                     <MudItem xs="12" sm="6" md="4">
                         <div class="d-flex flex-row align-center gap-2">
-                            <MudAutocomplete T="CustomerVm"  
+                            <MudAutocomplete T="CustomerVm"
                                              @bind-Value="Model.CoinInstance.CoinPackage.Issuer"
                                              Text="@(Model.CoinInstance.CoinPackage.Issuer != null ? $"{Model.CoinInstance.CoinPackage.Issuer.FullName} ({Model.CoinInstance.CoinPackage.Issuer.NationalId})" : null)"
-                                             For="@(() => Model.CoinInstance.CoinPackage.Issuer!)"  
-                                             Placeholder="جستجوی کارگاه..."  
-                                             Label="@(Model.GetDisplayName(() => Model.CoinInstance.CoinPackage.Issuer))"  
-                                             ToStringFunc="@(issuer => issuer != null ? $"{issuer.FullName} ({issuer.NationalId})" : null)"  
-                                             Margin="Margin.Dense"  
-                                             Adornment="Adornment.Start"  
-                                             AdornmentIcon="@Icons.Material.Filled.Search"  
-                                             Variant="Variant.Outlined"  
-                                             SearchFunc="@SearchCustomers"  
-                                             ResetValueOnEmptyText="true"  
-                                             DebounceInterval="0"  
-                                             ShowProgressIndicator="false">  
+                                             For="@(() => Model.CoinInstance.CoinPackage.Issuer!)"
+                                             Placeholder="جستجوی کارگاه..."
+                                             Label="@(Model.GetDisplayName(() => Model.CoinInstance.CoinPackage.Issuer))"
+                                             ToStringFunc="@(issuer => issuer != null ? $"{issuer.FullName} ({issuer.NationalId})" : null)"
+                                             Margin="Margin.Dense"
+                                             Adornment="Adornment.Start"
+                                             AdornmentIcon="@Icons.Material.Filled.Search"
+                                             Variant="Variant.Outlined"
+                                             SearchFunc="@SearchCustomers"
+                                             ResetValueOnEmptyText="true"
+                                             DebounceInterval="0"
+                                             ShowProgressIndicator="false">
                             </MudAutocomplete>
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer" />
+                            <MudTooltip Arrow Color="Color.Primary" Text="نمایندگی جدید" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer" />
+                            </MudTooltip>
                         </div>
                     </MudItem>
                     <MudItem xs="12" sm="6" md="4">
@@ -225,9 +231,9 @@
 
                             @if (!string.IsNullOrEmpty(Model.CoinInstance.CoinPackage.CardColor))
                             {
-                                <div style="width: 30px; height: 30px; border-radius: 16px; border: 1px solid #ccc; background: @Model.CoinInstance.CoinPackage.CardColor; cursor: pointer;"  
-                                     @onclick="OpenColorPicker">  
-                                </div>  
+                                <div style="width: 30px; height: 30px; border-radius: 16px; border: 1px solid #ccc; background: @Model.CoinInstance.CoinPackage.CardColor; cursor: pointer;"
+                                     @onclick="OpenColorPicker">
+                                </div>
                             }
                         </div>
                     </MudItem>

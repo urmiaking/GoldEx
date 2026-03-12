@@ -16,7 +16,7 @@
     protected override void OnInitialized()
     {
         SetCurrentTime();
-        _timer = new Timer(_ => InvokeAsync(SetCurrentTime), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        _timer = new Timer(_ => InvokeAsync(SetCurrentTime), null, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(1));
     }
 
     private void SetCurrentTime()
@@ -24,7 +24,7 @@
         var now = DateTime.Now;
 
         _currentDate = now.ToString("yyyy/MM/dd", CultureInfo.CurrentUICulture);
-        _currentTime = now.ToString("HH:mm:ss");
+        _currentTime = now.ToString("HH:mm");
 
         StateHasChanged();
     }

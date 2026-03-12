@@ -1,0 +1,67 @@
+﻿@using GoldEx.Shared.DTOs.Transactions
+@inherits GoldExComponentBase
+
+<MudCard Elevation="24" @onclick="ToggleTransactionType" Class="cursor-pointer">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex justify-content-between align-items-center">
+                <MudText Typo="Typo.h6">@CardTitle</MudText>
+                <MudTooltip Arrow="true" Text="تغییر واحد" Color="Color.Primary" Placement="Placement.Top">
+                    <MudMenu MaxHeight="200">
+                        <ActivatorContent>
+                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" OnClick="context.ToggleAsync" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem OnClick="() => SelectPriceUnit(null)">انتخاب کنید...</MudMenuItem>
+                            @foreach (var item in _priceUnits)
+                            {
+                                <MudMenuItem OnClick="() => SelectPriceUnit(item)">
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudTooltip>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTable @ref="_table" T="GetTopCustomerResponse" ServerData="TopCustomerListProvider" Elevation="0" Dense="true">
+            <HeaderContent>
+                <MudTh>
+                    <MudText Typo="Typo.body1">طرف حساب</MudText>
+                </MudTh>
+                <MudTh>
+                    <MudText Typo="Typo.body1">مقدار</MudText>
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="طرف حساب">
+                    @context.CustomerName
+                </MudTd>
+                <MudTd DataLabel="مقدار">
+                    <div class="d-flex gap-2 align-center">
+                        <MudIcon Icon="@AmountIcon" Color="@AmountColor" Size="Size.Small"></MudIcon>
+                        <MudText Typo="Typo.body2" Color="AmountColor">
+                            @context.Amount.ToCurrencyFormat(context.PriceUnit)
+                        </MudText>
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>داده ای پیدا نشد</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <MudText>درحال بارگیری ...</MudText>
+            </LoadingContent>
+        </MudTable>
+    </MudCardContent>
+</MudCard>

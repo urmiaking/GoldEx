@@ -19,10 +19,7 @@ internal sealed class StoneTypeSeeder(IStoneTypeRepository repository, ILogger<S
         var exist = await repository.ExistsAsync(new StoneTypesDefaultSpecification(), cancellationToken);
 
         if (exist)
-        {
-            logger.LogInformation("Stone types already exist. Skipping seeding.");
             return;
-        }
 
         var stoneTypes = new List<StoneType>
         {

@@ -19,7 +19,7 @@ public partial class CoinList
 
     private async Task RemoveItem(CoinItemVm context)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             $"آیا برای حذف سکه {context.CoinInstance.Coin?.Title} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");

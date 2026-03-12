@@ -16,8 +16,6 @@ public partial class MeltedGoldStep
     [Parameter] public EventCallback OnAddFinancialAccount { get; set; }
     [Parameter] public EventCallback<GetPriceUnitTitleResponse> OnSelectFeePriceUnit { get; set; }
 
-    private bool _feeFieldMenuOpen;
-
     private bool IsCompleteProcessDisabled =>
         Processing ||
         Model.MeltedGoldWeight is null ||

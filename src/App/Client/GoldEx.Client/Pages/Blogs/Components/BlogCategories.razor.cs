@@ -68,7 +68,7 @@ public partial class BlogCategories
 
     private async Task OnDeleteCategory(BlogCategoryResponse category)
     {
-        var result = await DialogService.ShowMessageBox("حذف دسته بندی",
+        var result = await DialogService.ShowMessageBoxAsync("حذف دسته بندی",
             $"آیا برای حذف دسته بندی {category.Title} اطمینان دارید؟", "بله", "انصراف");
 
         if (result == true)
@@ -116,7 +116,7 @@ public partial class BlogCategories
 
     private async Task OnDeletePost(BlogPostTitleResponse post)
     {
-        var result = await DialogService.ShowMessageBox("حذف پست",
+        var result = await DialogService.ShowMessageBoxAsync("حذف پست",
             $"آیا برای حذف پست {post.Title} اطمینان دارید؟", "بله", "انصراف");
 
         if (result == true)

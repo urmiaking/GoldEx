@@ -8,11 +8,11 @@
 
 <MudLayout>
     <AppBar @bind-DrawerOpen="_drawerOpen" />
-    <Drawer @bind-IsDrawerOpen="_drawerOpen" BreakpointChanged="() => StateHasChanged()" />
+    <Drawer @bind-IsDrawerOpen="_drawerOpen" />
     <MudMainContent Class="mt-10 mb-sm-4 mb-20 pa-md-4 py-4">
         @Body
 
-        <MobileNav Class="d-sm-none d-block" />
+        <MobileNav Class="d-md-none d-block" />
     </MudMainContent>
 </MudLayout>
 
