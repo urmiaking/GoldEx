@@ -28,7 +28,7 @@ public partial class LicenseRequests
 
     private async Task OnSetStatus(LicensePaymentResponse context, LicensePaymentStatus status)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             "آیا مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");

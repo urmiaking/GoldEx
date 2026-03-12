@@ -47,7 +47,7 @@ public partial class CustomerBalanceReportView
     }
 
     private decimal GetNet(CustomerRemainingBalanceRpResponse x)
-        => x.ReceivableAmount - x.PayableAmount;
+        => x.ReceivableAmount + x.PayableAmount;
 
     private Color GetNetColor(CustomerRemainingBalanceRpResponse x)
     {
@@ -75,5 +75,10 @@ public partial class CustomerBalanceReportView
     private void OnViewSource(CustomerRemainingBalanceRpResponse x)
     {
         Navigation.NavigateTo(ClientRoutes.Reporting.CustomerTransactions.AppendQueryString(new { x.CustomerId, x.PriceUnitId }));
+    }
+
+    private static Color GetAmountColor(decimal amount)
+    {
+        return amount > 0 ? Color.Error : Color.Success;
     }
 }

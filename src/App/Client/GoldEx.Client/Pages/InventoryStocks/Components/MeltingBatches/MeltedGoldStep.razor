@@ -73,29 +73,29 @@
                                  @bind-Value="Model.FeeAmount"
                                  Variant="Variant.Outlined"
                                  Class="flex-grow-1" />
-
-                <MudMenu @bind-Open="_feeFieldMenuOpen"
-                         ActivationEvent="@MouseEvent.LeftClick">
-                    <ActivatorContent>
-                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
-                    </ActivatorContent>
-                    <ChildContent>
-                        @foreach (var item in PriceUnits)
-                        {
-                            <MudMenuItem OnClick="() => OnSelectFeePriceUnit.InvokeAsync(item)">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    @if (item.HasIcon)
-                                    {
-                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" />
-                                        </MudAvatar>
-                                    }
-                                    @item.Title
-                                </div>
-                            </MudMenuItem>
-                        }
-                    </ChildContent>
-                </MudMenu>
+                <MudTooltip Arrow="true" Text="تغییر واحد" Color="Color.Primary" Placement="Placement.Top">
+                    <MudMenu MaxHeight="200">
+                        <ActivatorContent>
+                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" OnClick="context.ToggleAsync" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in PriceUnits)
+                            {
+                                <MudMenuItem OnClick="() => OnSelectFeePriceUnit.InvokeAsync(item)">
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (item.HasIcon)
+                                        {
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                            </MudAvatar>
+                                        }
+                                        @item.Title
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudTooltip>
             </div>
         </MudItem>
 
@@ -120,7 +120,7 @@
             <MudItem xs="12" sm="6" md="3">
                 <div class="d-flex align-center gap-2">
                     <MudAutocomplete @bind-Value="@Model.FinancialAccount"
-                                     T="GetFinancialAccountTitleResponse?"
+                                     T="GetFinancialAccountTitleResponse ?"
                                      For="@(() => Model.FinancialAccount)"
                                      Label="@Model.GetDisplayName(() => Model.FinancialAccount)"
                                      Margin="Margin.Dense"
@@ -132,7 +132,9 @@
                                      ToStringFunc="@(acc => acc?.Title)"
                                      SearchFunc="SearchFinancialAccountsAsync"
                                      ResetValueOnEmptyText="true" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount.InvokeAsync()" />
+                    <MudTooltip Arrow="true" Text="حساب مالی جدید" Color="Color.Primary" Placement="Placement.Top">
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => OnAddFinancialAccount.InvokeAsync()" />
+                    </MudTooltip>
                 </div>
             </MudItem>
         }

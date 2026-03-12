@@ -33,9 +33,6 @@ public partial class ProductItemEditor
     private List<GetProductResponse> _products = [];
     private GetSettingResponse? _settings;
 
-    private bool _weightFieldMenuOpen;
-    private bool _wageFieldMenuOpen;
-    private bool _costPriceMenuOpen;
     private bool _isProcessing;
     private List<GetCustomerResponse> _customers = [];
 
@@ -163,7 +160,7 @@ public partial class ProductItemEditor
         }
     }
 
-    private void OnProductNameChanged(string name)
+    private void OnProductNameChanged(string? name)
     {
         if (Model.InvoiceType is InvoiceType.Purchase)
         {

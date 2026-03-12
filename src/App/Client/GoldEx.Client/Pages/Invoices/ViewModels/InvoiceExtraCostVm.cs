@@ -19,7 +19,6 @@ public class InvoiceExtraCostVm
 
     public string? ExchangeRateLabel { get; set; }
     public string AmountAdornmentText { get; set; } = default!;
-    public bool AmountMenuOpen { get; set; }
 
     public static InvoiceExtraCostsDto ToRequest(InvoiceExtraCostVm item)
     {

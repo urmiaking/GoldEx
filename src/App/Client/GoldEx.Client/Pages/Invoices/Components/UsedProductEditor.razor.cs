@@ -22,7 +22,6 @@ public partial class UsedProductEditor
 
     private GetSettingResponse? _settings;
     private bool _isProcessing;
-    private bool _weightMenuOpen;
 
     protected override async Task OnParametersSetAsync()
     {

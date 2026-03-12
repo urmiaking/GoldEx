@@ -98,7 +98,7 @@ public partial class MeltingBatchForm
     private async Task HandleMeltingProducts()
     {
         if (_stepper is null) return;
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "تأیید عملیات",
             "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام انتخاب شده از انبار خارج و وارد فرایند ذوب خواهند شد",
             yesText: "بله",
@@ -130,7 +130,7 @@ public partial class MeltingBatchForm
         if (_stepper is null)
             return;
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "تأیید عملیات",
             "آیا از ثبت درخواست اطمینان دارید؟ با انجام این عملیات، اقلام ذوب شده برای آزمایشگاه ارسال خواهند شد",
             yesText: "بله",
@@ -160,7 +160,7 @@ public partial class MeltingBatchForm
     {
         if (_stepper is null) return;
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "تأیید عملیات",
             "آیا از اتمام فرایند اطمینان دارید؟ با انجام این عملیات، فرایند ذوب به پایان خواهد رسید و اطلاعات مربوط به طلای آبشده در انبار ثبت خواهد شد.",
             yesText: "بله",

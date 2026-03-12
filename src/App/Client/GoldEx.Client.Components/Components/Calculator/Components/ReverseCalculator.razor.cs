@@ -23,8 +23,12 @@ public partial class ReverseCalculator
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     private decimal? _finalValue;
-    private bool _priceListMenuOpen;
     private const bool ApplySafetyMargin = true;
+
+    private string PriceUnitAdornment => DefaultPriceUnit.Title;
+
+    private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault)
+                                                          ?? new GetPriceUnitTitleResponse(Guid.Empty, "تومان", false, true, false);
 
     #region InitialLoad
 

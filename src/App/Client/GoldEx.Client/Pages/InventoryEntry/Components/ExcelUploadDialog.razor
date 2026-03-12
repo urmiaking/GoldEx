@@ -24,13 +24,13 @@
                     <MudFileUpload @bind-Files="_files"
                                    Accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                                    OnFilesChanged="HandleFilesChanged" MaximumFileCount="1" Required="true">
-                        <ActivatorContent>
+                        <CustomContent Context="_">
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Success"
                                        StartIcon="@Icons.Material.Filled.CloudUpload">
                                 انتخاب فایل
                             </MudButton>
-                        </ActivatorContent>
+                        </CustomContent>
                     </MudFileUpload>
 
                     @if (_fileName is not null)

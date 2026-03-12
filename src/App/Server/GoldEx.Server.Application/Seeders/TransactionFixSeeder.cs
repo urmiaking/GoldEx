@@ -1,5 +1,4 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
-using GoldEx.Sdk.Server.Infrastructure.Abstractions;
+﻿using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Sdk.Server.Infrastructure.Common;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;

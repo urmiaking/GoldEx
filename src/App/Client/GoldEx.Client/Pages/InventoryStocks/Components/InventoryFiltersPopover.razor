@@ -1,99 +1,107 @@
 ﻿@using GoldEx.Client.Pages.Settings.ViewModels
 
-<MudPopover Open="Open" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="pa-3" Elevation="6">
-    <MudStack Spacing="2" Class="w-100">
-        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-            <MudText Typo="Typo.subtitle1">فیلترها</MudText>
-            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="OnClose" />
-        </MudStack>
+<MudOverlay Visible="@Open"
+            DarkBackground="true">
+    <MudPopover Open="Open"
+                Class="pa-3 responsive-popover"
+                Fixed="true"
+                AnchorOrigin="Origin.CenterCenter"
+                TransformOrigin="Origin.CenterCenter"
+                Elevation="6">
+        <MudStack Spacing="2" Class="w-100">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudText Typo="Typo.subtitle1">فیلترها</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="OnClose" />
+            </MudStack>
 
-        <!-- Item Type -->
-        <MudSelect T="ItemType"
-                   Variant="Variant.Outlined"
-                   Label="نوع آیتم"
-                   Value="@_itemType"
-                   ValueChanged="OnItemTypeChanged"
-                   Dense="true"
-                   Margin="Margin.Dense"
-                   Adornment="Adornment.Start"
-                   AdornmentIcon="@GetItemTypeIcon(_itemType)"
-                   AdornmentColor="@GetItemTypeIconColor(_itemType)"
-                   Class="w-100">
-            @foreach (var type in _selectableTypes)
-            {
-                <MudSelectItem Value="@type">
-                    @type.GetDisplayName()
-                </MudSelectItem>
-            }
-        </MudSelect>
-
-        <!-- Item Status -->
-        <MudSelect T="ItemStatus"
-                   Variant="Variant.Outlined"
-                   Label="وضعیت"
-                   Value="@_itemStatus"
-                   ValueChanged="@(v => _itemStatus = v)"
-                   Dense="true"
-                   Margin="Margin.Dense"
-                   Adornment="Adornment.Start"
-                   AdornmentIcon="@GetStatusIcon(_itemStatus)"
-                   AdornmentColor="@GetStatusColor(_itemStatus)"
-                   Class="w-100">
-            <MudSelectItem Value="@ItemStatus.Available">@ItemStatus.Available.GetDisplayName()</MudSelectItem>
-
-            @if (_itemType is not ItemType.UsedProduct)
-            {
-                <MudSelectItem Value="@ItemStatus.Sold">@ItemStatus.Sold.GetDisplayName()</MudSelectItem>
-            }
-
-            @if (_itemType is ItemType.UsedProduct)
-            {
-                <MudSelectItem Value="@ItemStatus.Melted">@ItemStatus.Melted.GetDisplayName()</MudSelectItem>
-            }
-        </MudSelect>
-
-        <!-- Category (only for Product) -->
-        @if (_itemType is ItemType.Product)
-        {
-            <MudSelect T="ProductCategoryVm"
+            <!-- Item Type -->
+            <MudSelect T="ItemType"
                        Variant="Variant.Outlined"
-                       Label="دسته‌بندی"
-                       Value="@_categoryFilter"
-                       ValueChanged="@(v => _categoryFilter = v)"
+                       Label="نوع آیتم"
+                       Value="@_itemType"
+                       ValueChanged="OnItemTypeChanged"
                        Dense="true"
                        Margin="Margin.Dense"
                        Adornment="Adornment.Start"
-                       AdornmentIcon="@Icons.Material.Filled.List"
-                       AdornmentColor="@(_categoryFilter is null ? Color.Info : Color.Success)"
+                       AdornmentIcon="@GetItemTypeIcon(_itemType)"
+                       AdornmentColor="@GetItemTypeIconColor(_itemType)"
                        Class="w-100">
-                <MudSelectItem Value="@(null as ProductCategoryVm)">همه دسته‌بندی‌ها</MudSelectItem>
-                @foreach (var cat in Categories)
+                @foreach (var type in _selectableTypes)
                 {
-                    <MudSelectItem Value="@cat">@cat.Title</MudSelectItem>
+                    <MudSelectItem Value="@type">
+                        @type.GetDisplayName()
+                    </MudSelectItem>
                 }
             </MudSelect>
-        }
 
-        <!-- Date range -->
-        <MudDateRangePicker DateRange="@_dateRange"
-                            DateRangeChanged="@(dr => _dateRange = dr)"
-                            Variant="Variant.Outlined"
-                            Label="@DateRangeLabel"
-                            Margin="Margin.Dense"
-                            MaxMonthColumns="1"
-                            DisplayMonths="1"
-                            Adornment="Adornment.Start"
-                            ShowToolbar="false"
-                            Clearable="true"
-                            Class="w-100" />
+            <!-- Item Status -->
+            <MudSelect T="ItemStatus"
+                       Variant="Variant.Outlined"
+                       Label="وضعیت"
+                       Value="@_itemStatus"
+                       ValueChanged="@(v => _itemStatus = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetStatusIcon(_itemStatus)"
+                       AdornmentColor="@GetStatusColor(_itemStatus)"
+                       Class="w-100">
+                <MudSelectItem Value="@ItemStatus.Available">@ItemStatus.Available.GetDisplayName()</MudSelectItem>
 
-        <!-- Actions -->
-        <MudStack Row="true" Spacing="1" Class="mt-3" Justify="Justify.FlexEnd">
-            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Clear" StartIcon="@Icons.Material.Filled.Delete">حذف فیلترها</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Apply" StartIcon="@Icons.Material.Filled.Check">اعمال</MudButton>
+                @if (_itemType is not ItemType.UsedProduct)
+                {
+                    <MudSelectItem Value="@ItemStatus.Sold">@ItemStatus.Sold.GetDisplayName()</MudSelectItem>
+                }
+
+                @if (_itemType is ItemType.UsedProduct)
+                {
+                    <MudSelectItem Value="@ItemStatus.Melted">@ItemStatus.Melted.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- Category (only for Product) -->
+            @if (_itemType is ItemType.Product)
+            {
+                <MudSelect T="ProductCategoryVm"
+                           Variant="Variant.Outlined"
+                           Label="دسته‌بندی"
+                           Value="@_categoryFilter"
+                           ValueChanged="@(v => _categoryFilter = v)"
+                           Dense="true"
+                           Margin="Margin.Dense"
+                           Adornment="Adornment.Start"
+                           AdornmentIcon="@Icons.Material.Filled.List"
+                           AdornmentColor="@(_categoryFilter is null ? Color.Info : Color.Success)"
+                           Class="w-100">
+                    <MudSelectItem Value="@(null as ProductCategoryVm)">همه دسته‌بندی‌ها</MudSelectItem>
+                    @foreach (var cat in Categories)
+                    {
+                        <MudSelectItem Value="@cat">@cat.Title</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            <!-- Date range -->
+            <MudDateRangePicker DateRange="@_dateRange"
+                                DateRangeChanged="@(dr => _dateRange = dr)"
+                                Variant="Variant.Outlined"
+                                Label="@DateRangeLabel"
+                                Margin="Margin.Dense"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Adornment="Adornment.Start"
+                                ShowToolbar="false"
+                                Clearable="true"
+                                Class="w-100" />
+
+            <!-- Actions -->
+            <MudStack Row="true" Spacing="1" Class="mt-3" Justify="Justify.FlexEnd">
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Clear" StartIcon="@Icons.Material.Filled.Delete">حذف فیلترها</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Apply" StartIcon="@Icons.Material.Filled.Check">اعمال</MudButton>
+            </MudStack>
         </MudStack>
-    </MudStack>
-</MudPopover>
+    </MudPopover>
+</MudOverlay>
 
 @code {
     [Parameter] public bool Open { get; set; }

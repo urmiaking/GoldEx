@@ -3,21 +3,23 @@
 
 <MudDialog>
     <DialogContent>
-        <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+        <MudTable Items="@_rows" Dense="true" Hover="true" FixedHeader Breakpoint="Breakpoint.Sm" ContainerStyle="max-height:500px;">
             <HeaderContent>
-                <MudTh>#</MudTh>
-                <MudTh>کالا</MudTh>
+                <MudTh>ردیف</MudTh>
+                <MudTh>عنوان</MudTh>
                 <MudTh>وزن</MudTh>
                 <MudTh>عیار</MudTh>
                 <MudTh>اجرت</MudTh>
+                <MudTh>نرخ نهایی</MudTh>
                 <MudTh>عملیات</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="#">@context.Index</MudTd>
-                <MudTd DataLabel="کالا">@(context.Item.ProductName ?? context.Item.ProductType)</MudTd>
+                <MudTd DataLabel="ردیف">@context.Index</MudTd>
+                <MudTd DataLabel="عنوان">@(context.Item.ProductName ?? context.Item.ProductType)</MudTd>
                 <MudTd DataLabel="وزن">@context.Item.Weight</MudTd>
                 <MudTd DataLabel="عیار">@context.Item.Fineness</MudTd>
                 <MudTd DataLabel="اجرت">@GetWageText(context.Item)</MudTd>
+                <MudTd DataLabel="نرخ نهایی">@context.Item.FinalPrice</MudTd>
                 <MudTd DataLabel="عملیات">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                    Color="Color.Error"
@@ -32,7 +34,9 @@
         </MudTable>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Close">بستن</MudButton>
+        <div class="p-3 d-flex gap-2">
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Close">بستن</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

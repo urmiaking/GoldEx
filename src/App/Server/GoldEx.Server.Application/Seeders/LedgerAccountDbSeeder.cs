@@ -70,8 +70,6 @@ internal sealed class LedgerAccountDbSeeder(
         await GetOrCreateAccount(SystemLedgerAccounts.GiftExpense, LedgerAccountType.Expense, operatingExpenses);
 
         await GetOrCreateAccount(SystemLedgerAccounts.OwnerDraw, LedgerAccountType.Equity, equity);
-
-        logger.LogInformation($"{nameof(LedgerAccountDbSeeder)}: Seeded ledger accounts.");
     }
 
     private async Task<LedgerAccount> GetOrCreateAccount(string title, LedgerAccountType type, LedgerAccount? parent = null, UnitType? unitType = null)
@@ -109,6 +107,9 @@ internal sealed class LedgerAccountDbSeeder(
 
         var newAccount = LedgerAccount.CreateSystemAccount(title, type, parent?.Id, priceUnitId);
         await ledgerAccountRepository.CreateAsync(newAccount);
+
+        logger.LogInformation($"{nameof(LedgerAccountDbSeeder)}: Seeded '{newAccount.AccountType.ToString()}' ledger account.");
+
         return newAccount;
     }
 }

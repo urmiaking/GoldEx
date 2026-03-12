@@ -174,7 +174,7 @@ h1:focus {
     -webkit-text-fill-color: transparent;
     display: inline-block;
     letter-spacing: 1px;
-    margin-top: 0.4rem;
+    margin-top: 0.2rem;
     direction: ltr; /* Fix mixed direction rendering */
     background-size: 200% 100%; /* اندازه بزرگ‌تر برای حرکت */
     animation: shine 10s linear infinite; /* انیمیشن اصلی */
@@ -577,3 +577,17 @@ h1:focus {
 }
 
 /* Animation */
+
+/* Filter popover */
+
+.responsive-popover {
+    right: 24px;
+}
+
+@media (min-width: 960px) {
+    .responsive-popover {
+        right: auto;
+    }
+}
+
+/* Filter popover */

@@ -4,8 +4,22 @@
     <MudCardHeader>
         <CardHeaderContent>
             <div class="d-flex justify-content-between align-items-center">
-                <MudText Typo="Typo.h6">نمودار ارزش موجودی (گرم)</MudText>
-                <MudIcon Icon="@Icons.Material.Filled.Warehouse" Color="Color.Info"></MudIcon>
+                <MudText Typo="Typo.h6">@CardTitle</MudText>
+                <MudTooltip Arrow="true" Text="تغییر نوع گزارش" Color="Color.Info" Placement="Placement.Top">
+                    <MudMenu>
+                        <ActivatorContent>
+                            <MudIconButton Icon="@Icons.Material.Filled.Warehouse" Variant="Variant.Outlined" Color="Color.Info" OnClick="context.ToggleAsync" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var item in Enum.GetValues<WarehouseActionType>())
+                            {
+                                <MudMenuItem OnClick="() => OnActionTypeChanged(item)">
+                                    @GetDisplayName(item)
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </MudTooltip>
             </div>
         </CardHeaderContent>
     </MudCardHeader>
@@ -29,21 +43,10 @@
             {
                 <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
                     <MudChart ChartType="ChartType.Pie"
-                              InputData="@_chartData"
-                              InputLabels="@_chartLabels" />
+                              ChartSeries="@_chartSeries"
+                              ChartLabels="@_chartLabels" />
                 </MudStack>
             }
-            <MudSelect T="WarehouseActionType"
-                       Label="نوع گزارش"
-                       Variant="Variant.Outlined"
-                       Margin="Margin.Dense"
-                       Value="_selectedActionType"
-                       ValueChanged="OnActionTypeChanged">
-                @foreach (var actionType in Enum.GetValues<WarehouseActionType>())
-                {
-                    <MudSelectItem Value="@actionType">@GetDisplayName(actionType)</MudSelectItem>
-                }
-            </MudSelect>
         }
 
     </MudCardContent>

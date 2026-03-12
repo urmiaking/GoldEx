@@ -101,7 +101,7 @@ public partial class FinancialAccounts
         if (!model.Id.HasValue)
             return;
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             $"آیا برای حذف حساب مالی {model.FinancialAccountType.GetDisplayName()} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");

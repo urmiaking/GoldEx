@@ -1,6 +1,7 @@
 ﻿using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
+using MudBlazor;
 
 namespace GoldEx.Client.Pages.Dashboard.Components;
 
@@ -10,6 +11,11 @@ public partial class InventoryWeightChart
     private List<GetInventoryWeightChartResponse>? _chartResponse;
     private double[] _chartData = [];
     private string[] _chartLabels = [];
+    private List<ChartSeries<double>> _chartSeries = [];
+
+    private string CardTitle => _selectedActionType is WarehouseActionType.In
+        ? "ارزش اجناس موجود (گرم)"
+        : "ارزش اجناس فروخته شده (گرم)";
 
     protected override async Task OnInitializedAsync()
     {
@@ -19,6 +25,8 @@ public partial class InventoryWeightChart
 
     private async Task LoadChartAsync()
     {
+        _chartResponse = null;
+
         await SendRequestAsync<IInventoryStockService, List<GetInventoryWeightChartResponse>>(
             action: (s, ct) => s.GetInventoryWeightChartAsync(_selectedActionType, ct),
             afterSend: response =>
@@ -40,6 +48,7 @@ public partial class InventoryWeightChart
 
         _chartData = _chartResponse.Select(x => (double)x.Weight).ToArray();
         _chartLabels = _chartResponse.Select(x => x.Label).ToArray();
+        _chartSeries = [new ChartSeries<double> { Data = _chartData }];
     }
 
     private string GetDisplayName(WarehouseActionType actionType)
