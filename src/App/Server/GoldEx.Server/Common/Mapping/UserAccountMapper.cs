@@ -13,7 +13,8 @@ internal class UserAccountMapper : IRegister
         config.NewConfig<AppUser, GetUserAccountResponse>()
             .Map(dest => dest.Username, src => src.UserName)
             .Map(dest => dest.FullName, src => src.Name)
-            .Map(dest => dest.Role, src => src.UserRoles.First().Role.Name);
+            .Map(dest => dest.Role, src => src.UserRoles.First().Role.Name)
+            .Map(dest => dest.IsActive, src => !src.LockoutEnd.HasValue || src.LockoutEnd.Value < DateTimeOffset.Now);
 
         config.NewConfig<UserPasskeyInfo, GetPasskeyResponse>()
             .Map(dest => dest.CredentialId, 

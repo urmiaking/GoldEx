@@ -716,5 +716,16 @@ public class ApiUrls
         public static string RemovePasskey(string credentialId) =>
             BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.RemovePasskey)
                 .FormatRoute(new { credentialId });
+
+        public static string GetAccountsList() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetAccountsList);
+
+        public static string LockUser(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.LockUser)
+                .FormatRoute(new { id });
+
+        public static string UnlockUser(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UnlockUser)
+                .FormatRoute(new { id });
     }
 }

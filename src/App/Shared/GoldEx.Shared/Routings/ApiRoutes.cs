@@ -377,5 +377,8 @@ public static class ApiRoutes
         public const string GetPasskeyRequestOptions = "passkeys/request-options";
         public const string AddPasskey = "passkeys/add";
         public const string RemovePasskey = "passkeys/{credentialId}/remove";
+        public const string GetAccountsList = "list";
+        public const string LockUser = "{id}/lock-user";
+        public const string UnlockUser = "{id}/unlock-user";
     }
 }

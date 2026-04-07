@@ -287,6 +287,37 @@ internal sealed class UserAccountService(
             throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
     }
 
+    public async Task<List<GetUserAccountResponse>> GetAccountsListAsync(CancellationToken cancellationToken = default)
+    {
+        var users = await userManager.Users
+            .Include(x => x.UserRoles)
+            .ThenInclude(x => x.Role)
+            .OrderBy(x => x.UserName)
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetUserAccountResponse>>(users);
+    }
+
+    public async Task LockUserAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(id.ToString()) ?? throw new NotFoundException();
+
+        var result = await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+
+        if (!result.Succeeded)
+            throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+    }
+
+    public async Task UnlockUserAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(id.ToString()) ?? throw new NotFoundException();
+
+        var result = await userManager.SetLockoutEndDateAsync(user, null);
+
+        if (!result.Succeeded)
+            throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+    }
+
     private async Task<AppUser> GetRequiredUserAsync(CancellationToken cancellationToken = default)
     {
         var userId = userContext.GetUserId() ?? throw new UnauthorizedAccessException();
