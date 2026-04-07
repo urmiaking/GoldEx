@@ -219,4 +219,24 @@ public static class ClientRoutes
         public const string Upgrade = $"{RegisterProductPrefix}/upgrade-license";
         public const string Extend = $"{RegisterProductPrefix}/extend-license";
     }
+
+    public static class UserAccounts
+    {
+        private const string UserAccountsPrefix = "user-accounts";
+
+        public const string Index = $"{UserAccountsPrefix}";
+        public const string ChangePassword = $"{UserAccountsPrefix}/change-password";
+        public const string Disable2Fa = $"{UserAccountsPrefix}/disable-2fa";
+        public const string Email = $"{UserAccountsPrefix}/email";
+        public const string ExternalLogins = $"{UserAccountsPrefix}/external-logins";
+        public const string Passkeys = $"{UserAccountsPrefix}/passkeys";
+        public const string EnableAuthenticator = $"{UserAccountsPrefix}/enable-authenticator";
+        public const string GenerateRecoveryCodes = $"{UserAccountsPrefix}/generate-recovery-codes";
+        public const string ResetAuthenticator = $"{UserAccountsPrefix}/reset-authenticator";
+        public const string SetPassword = $"{UserAccountsPrefix}/set-password";
+        public const string TwoFactorAuthentication = $"{UserAccountsPrefix}/two-factor-authentication";
+        public const string AccountsList = $"{UserAccountsPrefix}/list";
+        public const string EditAccount = $"{UserAccountsPrefix}/edit/{{id:guid}}";
+        public const string CreateAccount = $"{UserAccountsPrefix}/create-account";
+    }
 }

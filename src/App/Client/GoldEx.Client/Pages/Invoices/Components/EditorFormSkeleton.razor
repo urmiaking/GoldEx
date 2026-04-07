@@ -1,114 +1,64 @@
 ﻿<MudCard Class="p-4" Elevation="24">
-    <MudSkeleton SkeletonType="SkeletonType.Text" Width="200" Height="30" Class="mb-2" />
-    <MudGrid Class="align-end mb-2">
-        <MudItem xs="12" md="6" lg="4">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Width="250" Height="20" />
-            <MudSkeleton SkeletonType="SkeletonType.Text" Width="100" Height="20" Class="mt-1" />
-        </MudItem>
+    <div class="d-flex justify-content-between w-100 gap-2">
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="200px" Height="60px" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="200px" Height="60px" />
+    </div>
+    <div class="d-flex justify-content-between w-100 gap-2">
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="200px" Height="60px" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="200px" Height="60px" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="200px" Height="60px" />
         <MudSpacer />
-        <MudItem xs="6" md="3" lg="2">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Height="40" />
-        </MudItem>
-        <MudItem xs="6" md="3" lg="2">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Height="40" />
-        </MudItem>
-    </MudGrid>
-    <MudDivider Class="mb-2" />
-    <MudGrid Class="mb-2">
-        <MudItem xs="12" md="2">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Height="40" />
-        </MudItem>
-        <MudItem xs="12" md="2">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Height="40" />
-        </MudItem>
-        <MudSpacer />
-        <MudItem xs="12" md="2">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Height="40" />
-        </MudItem>
-        <MudItem xs="12" md="@(3)">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Height="40" />
-            <MudSkeleton SkeletonType="SkeletonType.Text" Width="40" Height="40" Class="ml-2" />
-        </MudItem>
-    </MudGrid>
-
-    <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mb-2">
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="150" Height="25" />
-        <MudSpacer />
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="300" Height="40" />
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="40" Height="40" Class="ml-2" />
-    </MudStack>
-
-    <MudDivider Class="mb-2" />
-
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="200px" Height="60px" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="200px" Height="60px" />
+    </div>
+    <div class="d-flex justify-content-between w-100 gap-2">
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="150px" Height="60px" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="700px" Height="60px" />
+    </div>
     <MudGrid Class="mt-0 mb-2">
         <MudItem xs="12" md="3">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Width="200" Height="20" />
+            <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Height="25px" />
         </MudItem>
         <MudItem xs="12" md="3">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Width="150" Height="20" />
+            <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Height="25px" />
         </MudItem>
         <MudItem xs="12" md="3">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Width="120" Height="20" />
+            <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Height="25px" />
         </MudItem>
         <MudItem xs="12" md="3">
-            <MudSkeleton SkeletonType="SkeletonType.Text" Width="250" Height="20" />
+            <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Height="25px" />
         </MudItem>
     </MudGrid>
+    <div class="d-flex justify-content-between w-100 gap-2">
+        <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="150px" Height="60px" />
+    </div>
 
-    <MudStack Row AlignItems="AlignItems.Center" Class="my-2 mb-2">
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="100" Height="25" />
-        <MudSpacer />
-    </MudStack>
-
-    <MudDivider Class="mb-2" />
+    <MudDivider Class="mb-2"/>
 
     <div class="my-2">
-        <MudTabs Elevation="2" Rounded="true" Centered="true">
-            <MudTabPanel Text="طلا و جواهر" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
+        <MudTabs Elevation="2" Rounded="true" Centered="true" MinimumTabWidth="50px">
+            <MudTabPanel Text="طلا، جواهر و آبشده" Icon="@Icons.Material.Filled.Diamond" IconColor="Color.Info">
                 <div class="mt-2 pa-4">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="200px"/>
                 </div>
             </MudTabPanel>
             <MudTabPanel Text="سکه" Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Primary">
                 <div class="mt-2 pa-4">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="200px"/>
                 </div>
             </MudTabPanel>
             <MudTabPanel Text="ارز" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Success">
                 <div class="mt-2 pa-4">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="200px"/>
                 </div>
             </MudTabPanel>
-            <MudTabPanel Text="طلای مستعمل" Icon="@Icons.Material.Filled.Recycling" IconColor="Color.Error">
+            <MudTabPanel Text="خرید طلای مستعمل" Icon="@Icons.Material.Filled.Recycling" IconColor="Color.Error">
                 <div class="mt-2 pa-4">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="200px"/>
                 </div>
             </MudTabPanel>
         </MudTabs>
     </div>
 
-    <MudSkeleton SkeletonType="SkeletonType.Text" Width="100" Height="25" Class="mt-2" />
-    <MudDivider Class="my-2" />
-
-    <MudGrid Spacing="2" Class="mb-2">
-        @for (int i = 0; i < 10; i++)
-        {
-            <MudItem xs="6" md="3">
-                <MudSkeleton SkeletonType="SkeletonType.Text" Width="100" Height="20" />
-            </MudItem>
-            <MudItem xs="6" md="3">
-                <MudSkeleton SkeletonType="SkeletonType.Text" Width="100" Height="20" />
-            </MudItem>
-        }
-    </MudGrid>
-
-    <MudDivider Class="my-2" />
-
-    <div class="d-flex gap-3 mt-2">
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="120" Height="40" />
-        <MudSpacer />
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="120" Height="40" />
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="150" Height="40" />
-        <MudSkeleton SkeletonType="SkeletonType.Text" Width="100" Height="40" />
-    </div>
+    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" Width="100%" Height="35px" Class="mt-2"/>
 </MudCard>

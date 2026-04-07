@@ -7,7 +7,7 @@ namespace GoldEx.Server.Infrastructure;
 
 public class GoldExDbContext(
     DbContextOptions<GoldExDbContext> options)
-    : GoldExDbContextBase<AppUser, AppRole, Guid, AppUserClaim, AppUserRole, AppUserLogin, AppRoleClaim, AppUserToken>(
+    : GoldExDbContextBase<AppUser, AppRole, Guid, AppUserClaim, AppUserRole, AppUserLogin, AppRoleClaim, AppUserToken, AppUserPasskey>(
         options)
 {
     protected override void OnModelCreating(ModelBuilder builder)

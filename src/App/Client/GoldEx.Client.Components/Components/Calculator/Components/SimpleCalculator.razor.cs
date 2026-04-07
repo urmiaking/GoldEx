@@ -47,7 +47,7 @@ public partial class SimpleCalculator
     private bool _applySafetyMargin = true;
     private bool _scannerOpen;
 
-    private string PriceUnitAdornment => DefaultPriceUnit.Title;
+    private string PriceUnitAdornment => _model.PriceUnit?.Title ?? string.Empty;
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
@@ -467,7 +467,11 @@ public partial class SimpleCalculator
 
     private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
+        if (priceUnit == _model.PriceUnit)
+            return;
+
         _model.PriceUnit = priceUnit;
+        _model.GramPrice = 0;
 
         await EnsureGramPriceLoadedAsync();
 

@@ -1,0 +1,98 @@
+﻿@attribute [Route(ClientRoutes.UserAccounts.TwoFactorAuthentication)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>رمز دو مرحله ای</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <div class="flex-column gap-2 align-center justify-content-center w-100 mb-6 d-md-flex d-none">
+        <MudText Typo="Typo.h4">رمز دو مرحله ای</MudText>
+        <MudText Typo="Typo.h6">با رمز دو مرحله ای و تولید رمز توسط برنامه های رمزساز، امنیت حساب کاربری خود را تضمین کنید</MudText>
+    </div>
+
+    @if (TwoFactorAuthStatus is not null)
+    {
+        @if (TwoFactorAuthStatus.Enabled)
+        {
+            <MudAlert Severity="Severity.Success" ContentAlignment="HorizontalAlignment.Start" Variant="Variant.Text" Class="mb-6" Elevation="10">
+                <MudText>احراز هویت دو مرحله ای حساب شما فعال می باشد</MudText>
+            </MudAlert>
+
+            @if (TwoFactorAuthStatus.RecoveryCodesLeft is <= 3 and > 0)
+            {
+                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Start" Variant="Variant.Text" Class="mb-6" Elevation="10">
+                    <MudText>
+                        شما تنها @TwoFactorAuthStatus.RecoveryCodesLeft کد بازیابی استفاده نشده دارید.
+                        برای تولید کدهای بازیابی بیشتر <MudLink Href="@ClientRoutes.UserAccounts.GenerateRecoveryCodes" Color="Color.Info">اینجا</MudLink> را کلیک کنید
+                    </MudText>
+                </MudAlert>
+            }
+            else if (TwoFactorAuthStatus.RecoveryCodesLeft == 0)
+            {
+                <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Start" Variant="Variant.Text" Class="mb-6" Elevation="10">
+                    <MudText>
+                        تمامی کدهای بازیابی رمز دو مرحله ای حساب شما مصرف شده اند
+                        برای تولید کدهای بازیابی جدید <MudLink Href="@ClientRoutes.UserAccounts.GenerateRecoveryCodes" Color="Color.Info">اینجا</MudLink> را کلیک کنید
+                    </MudText>
+                </MudAlert>
+            }
+
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Start" Variant="Variant.Text" Class="mb-6" Elevation="10">
+                <MudText>احراز هویت دو مرحله ای برای حساب شما فعال نمی باشد</MudText>
+            </MudAlert>
+        }
+
+        <MudGrid>
+            @if (TwoFactorAuthStatus.Enabled)
+            {
+                @if (TwoFactorAuthStatus.MachineRemembered)
+                {
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudActionCard Title="فراموشی این دستگاه"
+                                       Description="حذف قابلیت دور زدن رمز دو مرحله ای در این دستگاه"
+                                       StartIcon="@Icons.Material.Filled.DeleteSweep"
+                                       OnClick="OnForgetBrowser" />
+                    </MudItem>
+                }
+
+                <MudItem xs="12" md="6" lg="4">
+                    <MudActionCard Title="تولید کدهای بازیابی"
+                                   Description="بازنشانی و تولید کدهای بازیابی جدید"
+                                   StartIcon="@Icons.Material.Filled.GeneratingTokens"
+                                   Href="@ClientRoutes.UserAccounts.GenerateRecoveryCodes" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <MudActionCard Title="بازنشانی رمز دو مرحله ای"
+                                   Description="ریسیت کردن تنظیمات رمز دو مرحله ای"
+                                   StartIcon="@Icons.Material.Filled.SyncLock"
+                                   Href="@ClientRoutes.UserAccounts.ResetAuthenticator" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <MudActionCard Title="غیرفعال سازی"
+                                   Description="غیرفعال سازی احراز هویت دو مرحله ای"
+                                   StartIcon="@Icons.Material.Filled.UpdateDisabled"
+                                   OnClick="OnDisable2Fa" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudActionCard Title="فعال سازی"
+                                   Description="فعال سازی احراز هویت دو مرحله ای"
+                                   StartIcon="@Icons.Material.Filled.Check"
+                                   Href="@ClientRoutes.UserAccounts.EnableAuthenticator" />
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+</MudContainer>

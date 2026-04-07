@@ -1,0 +1,144 @@
+﻿@attribute [Route(ClientRoutes.UserAccounts.EnableAuthenticator)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>فعالسازی رمز دو مرحله ای</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <div class="flex-column gap-2 align-center justify-content-center w-100 mb-6 d-md-flex d-none">
+        <MudText Typo="Typo.h4">فعالسازی رمز دو مرحله ای</MudText>
+        <MudText Typo="Typo.h6">با اتصال حساب کاربری خود به یکی از برنامه های رمزساز، رمز دو مرحله ای را فعال کنید</MudText>
+    </div>
+
+    <MudText Class="mb-4">1. ابتدا یکی از نرم افزارهای زیر را بر روی تلفن همراه خود نصب کنید</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="24">
+                <MudCardHeader>
+                    <MudAvatar Size="Size.Large">
+                        <MudImage Src="assets/authenticators/google-authenticator.webp" Alt="Google Authenticator" />
+                    </MudAvatar>
+                    <MudCardHeader>
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.h6">Google Authenticator</MudText>
+                            <MudText Typo="Typo.body2">Google LLC</MudText>
+                        </div>
+                    </MudCardHeader>
+                </MudCardHeader>
+                <MudCardContent Class="pt-0">
+                    <MudGrid Spacing="3">
+                        <MudItem xs="6">
+                            <MudCard Elevation="1" Class="pt-0">
+                                <MudCardContent Style="text-align: center;">
+                                    <MudImage Src="assets/os/apple.svg" Alt="apple OS" Height="64" />
+                                    <MudText Typo="Typo.subtitle1" Class="mt-2">iOS and iPadOS</MudText>
+                                </MudCardContent>
+                                <MudCardActions Class="pa-4">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Info" FullWidth="true" Href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8" Target="_blank">App Store</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudCard Elevation="1" Class="pt-0">
+                                <MudCardContent Style="text-align: center;">
+                                    <MudImage Src="assets/os/android.svg" Alt="Android OS" Height="64" />
+                                    <MudText Typo="Typo.subtitle1" Class="mt-2">Android</MudText>
+                                </MudCardContent>
+                                <MudCardActions Class="pa-4">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" Href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en" Target="_blank">Play Store</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="24">
+                <MudCardHeader>
+                    <MudAvatar Size="Size.Large">
+                        <MudImage Src="assets/authenticators/microsoft-authenticator.webp" Alt="Microsoft Authenticator" />
+                    </MudAvatar>
+                    <MudCardHeader>
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.h6">Microsoft Authenticator</MudText>
+                            <MudText Typo="Typo.body2">Microsoft Corporation</MudText>
+                        </div>
+                    </MudCardHeader>
+                </MudCardHeader>
+                <MudCardContent Class="pt-0">
+                    <MudGrid Spacing="3">
+                        <MudItem xs="6">
+                            <MudCard Elevation="1" Class="pt-0">
+                                <MudCardContent Style="text-align: center;">
+                                    <MudImage Src="assets/os/apple.svg" Alt="apple OS" Height="64" />
+                                    <MudText Typo="Typo.subtitle1" Class="mt-2">iOS and iPadOS</MudText>
+                                </MudCardContent>
+                                <MudCardActions Class="pa-4">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Info" FullWidth="true" Href="https://go.microsoft.com/fwlink/?Linkid=825073" Target="_blank">App Store</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudCard Elevation="1" Class="pt-0">
+                                <MudCardContent Style="text-align: center;">
+                                    <MudImage Src="assets/os/android.svg" Alt="Android OS" Height="64" />
+                                    <MudText Typo="Typo.subtitle1" Class="mt-2">Android</MudText>
+                                </MudCardContent>
+                                <MudCardActions Class="pa-4">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" Href="https://go.microsoft.com/fwlink/?Linkid=825072" Target="_blank">Play Store</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudText Class="mt-6 mb-4">
+        2. در نرم افزار رمزساز، که بر روی گوشی تلفن همراه خود نصب نموده اید،
+        بارکد زیر را اسکن کنید و یا کد نمایش داده شده را در نرم افزار وارد نمائید
+    </MudText>
+
+    <MudPaper Elevation="24" Class="pa-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-100" width="200" height="200" viewBox="0 0 40 40" stroke="none" version="1.1">
+            <path d="@_svgGraphicsPath" fill="#000000" />
+        </svg>
+        <div class="align-center d-flex justify-center justify-content-between w-100">
+            <MudAlert Variant="Variant.Text" Severity="Severity.Info" Icon="@Icons.Material.Filled.Key" ContentAlignment="HorizontalAlignment.Start">
+                @_formattedKey
+            </MudAlert>
+        </div>
+    </MudPaper>
+    
+    <MudText Class="mt-6 mb-4">
+        3. پس از انجام مراحل فوق، نرم افزار رمزساز، یک کد به عنوان رمز برای شما نمایش خواهد داد. این کد را به عنوان کد تایید، در فرم زیر وارد کنید
+    </MudText>
+    
+    <MudPaper Elevation="24" Class="pa-4">
+        <div class="align-center d-flex justify-center justify-content-between gap-2 w-100">
+            <MudTextField @bind-Value="_code"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Key"
+                          Label="کد تایید" 
+                          Immediate
+                          Required RequiredError="وارد کردن کد تایید الزامی است"
+                          Margin="Margin.Dense" />
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.Check"
+                       Disabled="@(string.IsNullOrEmpty(_code) || _code.Length != 6)"
+                       OnClick="OnEnable">فعالسازی</MudButton>
+        </div>
+    </MudPaper>
+
+</MudContainer>

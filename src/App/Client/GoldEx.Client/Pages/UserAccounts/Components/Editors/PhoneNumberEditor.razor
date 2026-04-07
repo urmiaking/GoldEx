@@ -1,0 +1,89 @@
+﻿@inherits GoldExComponentBase
+
+<MudForm Model="this" @ref="@_form">
+    <MudDialog>
+        <DialogContent>
+            <MudAlert Dense Class="mb-4" Icon="@Icons.Material.Filled.Info" Severity="Severity.Info" Variant="Variant.Filled" ContentAlignment="HorizontalAlignment.Center">
+                به منظور حفظ امنیت حساب کاربری شما، قبل از تغییر شماره تلفن خود، کد تاییدی به شماره فعلی شما ارسال خواهد شد و
+                با وارد کردن شماره جدید و کد تایید ارسال شده به شماره قبلی، می توانید شماره تلفن حساب کاربری خود را تغییر دهید
+            </MudAlert>
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <div class="d-flex gap-2 align-center">
+                        <MudTextField @bind-Value="PhoneNumber"
+                                      For="@(() => PhoneNumber)"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.PhoneIphone"
+                                      Label="شماره تلفن جدید"
+                                      dir="ltr"
+                                      Immediate
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined"/>
+                        @if (!_tokenSent)
+                        {
+                            <MudTooltip Arrow Text="ارسال کد فعالسازی">
+                                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                               Variant="Variant.Filled"
+                                               Size="Size.Small"
+                                               OnClick="SendToken"
+                                               Disabled="@(!PhoneNumberChanged || PhoneNumber.Length != 11)"
+                                               Color="Color.Success"/>
+                            </MudTooltip>
+                        }
+                    </div>
+                </MudItem>
+                @if (_tokenSent)
+                {
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_token"
+                                      For="@(() => _token)"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.Numbers"
+                                      Label="کد تایید"
+                                      dir="ltr"
+                                      Immediate
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined"/>
+                    </MudItem>
+                    <MudItem xs="12" Class="d-flex justify-content-center">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Success"
+                                   Disabled="_sendTokenDisabled"
+                                   OnClick="SendToken"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Send">
+                            @(_sendTokenDisabled ? $"ارسال مجدد ({_otpRemaining} ثانیه)" : "ارسال کد")
+                        </MudButton>
+                    </MudItem>
+                }
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">انصراف</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@(IsBusy || !PhoneNumberChanged || string.IsNullOrEmpty(_token))"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (IsBusy)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>

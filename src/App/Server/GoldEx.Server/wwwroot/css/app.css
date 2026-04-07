@@ -92,6 +92,11 @@ h1:focus {
     padding-left: 0px !important;
 }
 
+.mud-alert-message {
+    line-height: normal;
+    text-align: justify;
+}
+
 /* Fullscreen overlay */
 .loading-container {
     position: fixed;
