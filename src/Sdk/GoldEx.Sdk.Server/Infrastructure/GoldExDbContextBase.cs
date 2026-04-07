@@ -7,9 +7,9 @@ using GoldEx.Sdk.Server.Infrastructure.Extensions.Configurations;
 namespace GoldEx.Sdk.Server.Infrastructure;
 
 public abstract class
-    GoldExDbContextBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>(
+    GoldExDbContextBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken, TUserPasskey>(
         DbContextOptions options)
-    : IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>(options)
+    : IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken, TUserPasskey>(options)
     where TUser : IdentityUser<TKey>
     where TRole : IdentityRole<TKey>
     where TKey : IEquatable<TKey>
@@ -18,6 +18,7 @@ public abstract class
     where TUserLogin : IdentityUserLogin<TKey>
     where TRoleClaim : IdentityRoleClaim<TKey>
     where TUserToken : IdentityUserToken<TKey>
+    where TUserPasskey : IdentityUserPasskey<TKey>
 {
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
