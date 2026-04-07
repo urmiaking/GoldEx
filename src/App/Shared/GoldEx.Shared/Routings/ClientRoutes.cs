@@ -236,7 +236,5 @@ public static class ClientRoutes
         public const string SetPassword = $"{UserAccountsPrefix}/set-password";
         public const string TwoFactorAuthentication = $"{UserAccountsPrefix}/two-factor-authentication";
         public const string AccountsList = $"{UserAccountsPrefix}/list";
-        public const string EditAccount = $"{UserAccountsPrefix}/edit/{{id:guid}}";
-        public const string CreateAccount = $"{UserAccountsPrefix}/create-account";
     }
 }

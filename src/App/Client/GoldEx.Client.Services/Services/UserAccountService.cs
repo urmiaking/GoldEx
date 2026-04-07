@@ -5,6 +5,7 @@ using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using System.Net.Http.Json;
 using System.Text.Json;
+using GoldEx.Sdk.Common.Data;
 
 namespace GoldEx.Client.Services.Services;
 
@@ -177,6 +178,34 @@ internal sealed class UserAccountService(HttpClient client, JsonSerializerOption
     public async Task RemovePasskeyAsync(string credentialId, CancellationToken cancellationToken = default)
     {
         using var response = await client.DeleteAsync(ApiUrls.UserAccounts.RemovePasskey(credentialId), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task<List<GetUserAccountResponse>> GetAccountsListAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.UserAccounts.GetAccountsList(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetUserAccountResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task LockUserAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PutAsync(ApiUrls.UserAccounts.LockUser(id), null, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task UnlockUserAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PutAsync(ApiUrls.UserAccounts.UnlockUser(id), null, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

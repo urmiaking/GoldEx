@@ -1,4 +1,5 @@
-﻿using GoldEx.Shared.DTOs.UserAccounts;
+﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Shared.DTOs.UserAccounts;
 
 namespace GoldEx.Shared.Services.Abstractions;
 
@@ -41,4 +42,11 @@ public interface IUserAccountService
 
     #endregion
 
+    #region Users
+
+    Task<List<GetUserAccountResponse>> GetAccountsListAsync(CancellationToken cancellationToken = default);
+    Task LockUserAsync(Guid id, CancellationToken cancellationToken = default);
+    Task UnlockUserAsync(Guid id, CancellationToken cancellationToken = default);
+
+    #endregion
 }

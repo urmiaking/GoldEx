@@ -1,0 +1,60 @@
+﻿@attribute [Route(ClientRoutes.UserAccounts.AccountsList)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>مدیریت کاربران</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+    
+    <div class="flex-column gap-2 align-center justify-content-center w-100 mb-6 d-md-flex d-none">
+        <MudText Typo="Typo.h4">مدیریت کاربران</MudText>
+        <MudText Typo="Typo.h6">در این قسمت می توانید حساب کاربری جدیدی ایجاد کرده و یا حساب های موجود را ویرایش و یا غیرفعال کنید</MudText>
+    </div>
+    
+    <MudTable Items="@UserAccounts" Hover="true" Breakpoint="Breakpoint.Xs" Elevation="24" Dense="true" FixedHeader="true" Class="pb-2">
+        <ToolBarContent>
+            <MudText Typo="Typo.body1">لیست کاربران سایت</MudText>
+            <MudSpacer />
+            
+            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">حساب جدید</MudButton>
+
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>نام کاربری</MudTh>
+            <MudTh>نام و نام خانوادگی</MudTh>
+            <MudTh>شماره تماس</MudTh>
+            <MudTh>نقش</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="نام کاربری">@context.Username</MudTd>
+            <MudTd DataLabel="نام و نام خانوادگی">@context.FullName</MudTd>
+            <MudTd DataLabel="شماره تماس">@(string.IsNullOrEmpty(context.PhoneNumber) ? "-" : context.PhoneNumber)</MudTd>
+            <MudTd DataLabel="نقش">@context.Role.GetRoleName()</MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudButton Size="Size.Small" Href="@ClientRoutes.Accounts.Manage.EditUser.FormatRoute(new { id = context.Id })" Variant="Variant.Filled"
+                               Color="Color.Info" StartIcon="@Icons.Material.Filled.Edit">ویرایش</MudButton>
+
+                    @if (context.IsActive)
+                    {
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Lock" Color="Color.Error" Variant="Variant.Filled"
+                                   OnClick="@(() => LockUser(context))">قفل کردن</MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.LockOpen" Color="Color.Success" Variant="Variant.Filled"
+                                   OnClick="@(() => UnlockUser(context))">فعالسازی</MudButton>
+                    }
+
+                </div>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+</MudContainer>
