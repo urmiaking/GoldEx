@@ -3,9 +3,11 @@ using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Server.Application.Abstractions;
+using GoldEx.Sdk.Server.Application.Exceptions;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
 using GoldEx.Server.Application.Extensions;
+using GoldEx.Server.Application.Validators.UserAccounts;
 using GoldEx.Shared.DTOs.UserAccounts;
 using GoldEx.Shared.Services.Abstractions;
 using MapsterMapper;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -21,7 +24,10 @@ namespace GoldEx.Server.Application.Services;
 internal sealed class UserAccountService(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
+    AccountRequestDtoValidator userAccountValidator,
     IUserStore<AppUser> userStore,
+    ILogger<UserAccountService> logger,
+    ITransactionContext transactionContext,
     IMemoryCache cache,
     ISmsSender smsSender,
     IUserContext userContext,
@@ -316,6 +322,120 @@ internal sealed class UserAccountService(
 
         if (!result.Succeeded)
             throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+    }
+
+    public async Task CreateAccountAsync(UserAccountRequestDto request, CancellationToken cancellationToken = default)
+    {
+        await userAccountValidator.ValidateAndThrowAsync(request, cancellationToken);
+
+        await using var dbTransaction = await transactionContext.BeginTransactionAsync(cancellationToken);
+        {
+            try
+            {
+                var user = new AppUser(request.FullName, request.Username, request.Email, request.PhoneNumber);
+
+                var result = await userManager.CreateAsync(user);
+
+                if (!result.Succeeded)
+                    throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+
+                var passwordResult = await userManager.AddPasswordAsync(user, request.Password!);
+
+                if (!passwordResult.Succeeded)
+                    throw new InvalidOperationException(string.Join(",", passwordResult.Errors.Select(x => x.Description)));
+
+                await userManager.AddToRoleAsync(user, request.Role);
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                await dbTransaction.RollbackAsync(cancellationToken);
+                logger.LogError(e, e.Message);
+                throw;
+            }
+        }
+    }
+
+    public async Task UpdateAccountAsync(Guid id, UserAccountRequestDto request, CancellationToken cancellationToken = default)
+    {
+        if (id != request.Id)
+            throw new BadRequestException();
+
+        await userAccountValidator.ValidateAndThrowAsync(request, cancellationToken);
+
+        await using var dbTransaction = await transactionContext.BeginTransactionAsync(cancellationToken);
+        {
+            try
+            {
+                var user = await userManager.Users
+                    .Include(x => x.UserRoles)
+                    .ThenInclude(x => x.Role)
+                    .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+                           ?? throw new NotFoundException();
+
+                if (!string.Equals(user.Name, request.FullName, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    var result = await userManager.SetFullNameAsync(user, request.FullName);
+
+                    if (!result.Succeeded)
+                        throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+                }
+
+                if (!string.Equals(user.UserName, request.Username, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    var result = await userManager.SetUserNameAsync(user, request.Username);
+
+                    if (!result.Succeeded)
+                        throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+                }
+
+                if (!string.Equals(user.PhoneNumber, request.PhoneNumber, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    var result = await userManager.SetPhoneNumberAsync(user, request.PhoneNumber);
+
+                    if (!result.Succeeded)
+                        throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+                }
+
+                if (!string.Equals(user.Email, request.Email, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    var result = await userManager.SetEmailAsync(user, request.Email);
+
+                    if (!result.Succeeded)
+                        throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
+                }
+
+                if (!string.IsNullOrEmpty(request.Password))
+                {
+                    await userManager.RemovePasswordAsync(user);
+                    var passwordResult = await userManager.AddPasswordAsync(user, request.Password);
+
+                    if (!passwordResult.Succeeded)
+                        throw new InvalidOperationException(string.Join(",", passwordResult.Errors.Select(x => x.Description)));
+                }
+
+                if (user.UserRoles.All(x => x.Role.Name != request.Role))
+                {
+                    await userManager.RemoveFromRoleAsync(user, user.UserRoles.FirstOrDefault()!.Role.Name!);
+                    await userManager.AddToRoleAsync(user, request.Role);
+                }
+
+                await dbTransaction.CommitAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                await dbTransaction.RollbackAsync(cancellationToken);
+                logger.LogError(e, e.Message);
+                throw;
+            }
+        }
+    }
+
+    public async Task DeleteAccountAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(id.ToString()) ?? throw new NotFoundException();
+        await userManager.DeleteAsync(user);
     }
 
     private async Task<AppUser> GetRequiredUserAsync(CancellationToken cancellationToken = default)

@@ -14,7 +14,7 @@ public partial class Passkeys
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
-        new("مدیریت حساب", href: ClientRoutes.UserAccounts.Index, icon: Icons.Material.Filled.Person),
+        new("مدیریت حساب", href: ClientRoutes.UserAccounts.Index, icon: Icons.Material.Filled.ManageAccounts),
         new("مدیریت کلیدهای عبور", href: ClientRoutes.UserAccounts.Passkeys, icon: Icons.Material.Filled.Fingerprint)
     ];
 

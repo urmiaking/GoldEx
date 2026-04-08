@@ -1,0 +1,96 @@
+﻿@inherits GoldExComponentBase
+
+<MudForm Model="Model" @ref="@_form" Validation="@(_userValidator.ValidateValue)" ValidationDelay="0">
+    <MudDialog>
+        <DialogContent>
+            <MudGrid Spacing="4">
+                <MudItem xs="12" md="6" lg="4">
+                    <MudTextField @bind-Value="Model.FullName"
+                                  For="@(() => Model.FullName)"
+                                  Label="@Model.GetDisplayName(() => Model.FullName)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Person"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <MudTextField @bind-Value="Model.PhoneNumber"
+                                  For="@(() => Model.PhoneNumber)"
+                                  Label="@Model.GetDisplayName(() => Model.PhoneNumber)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.PhoneIphone"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <MudTextField @bind-Value="Model.Username"
+                                  For="@(() => Model.Username)"
+                                  Label="@Model.GetDisplayName(() => Model.Username)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Person4"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <MudTextField @bind-Value="Model.Email"
+                                  For="@(() => Model.Email)"
+                                  Label="@Model.GetDisplayName(() => Model.Email)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Email"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <MudTextField @bind-Value="Model.Password"
+                                  For="@(() => Model.Password)"
+                                  Label="@Model.GetDisplayName(() => Model.Password)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Password"
+                                  InputType="InputType.Password"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <MudSelect T="string?"
+                               @bind-Value="Model.Role"
+                               Label="@Model.GetDisplayName(() => Model.Role)"
+                               For="() => Model.Role"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var item in BuiltinRoles.Roles)
+                        {
+                            <MudSelectItem Value="item">@item.GetRoleName()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">انصراف</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@IsBusy"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="@(async () => await Submit())"
+                       Variant="Variant.Filled">
+                @if (IsBusy)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">
+                        در حال ذخیره
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>

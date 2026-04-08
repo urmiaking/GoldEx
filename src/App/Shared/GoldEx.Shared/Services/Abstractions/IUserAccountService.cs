@@ -47,6 +47,9 @@ public interface IUserAccountService
     Task<List<GetUserAccountResponse>> GetAccountsListAsync(CancellationToken cancellationToken = default);
     Task LockUserAsync(Guid id, CancellationToken cancellationToken = default);
     Task UnlockUserAsync(Guid id, CancellationToken cancellationToken = default);
+    Task CreateAccountAsync(UserAccountRequestDto request, CancellationToken cancellationToken = default);
+    Task UpdateAccountAsync(Guid id, UserAccountRequestDto request, CancellationToken cancellationToken = default);
+    Task DeleteAccountAsync(Guid id, CancellationToken cancellationToken = default);
 
     #endregion
 }
