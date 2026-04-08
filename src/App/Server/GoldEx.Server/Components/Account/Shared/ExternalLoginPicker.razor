@@ -1,5 +1,4 @@
 ﻿@inject SignInManager<AppUser> SignInManager
-@inject IdentityRedirectManager RedirectManager
 
 @if (_externalLogins.Length > 0)
 {
@@ -15,13 +14,13 @@
                     if (!string.IsNullOrEmpty(provider.DisplayName) && provider.DisplayName.Contains("Google"))
                     {
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit" StartIcon="@Icons.Custom.Brands.Google">
-                            گوگل
+                            ورود با گوگل
                         </MudButton>
                     }
                     else
                     {
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" ButtonType="ButtonType.Submit">
-                            @provider.DisplayName
+                            ورود با @provider.DisplayName
                         </MudButton>
                     }
                 }
