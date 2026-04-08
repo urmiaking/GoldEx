@@ -210,4 +210,28 @@ internal sealed class UserAccountService(HttpClient client, JsonSerializerOption
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
     }
+
+    public async Task CreateAccountAsync(UserAccountRequestDto request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PostAsJsonAsync(ApiUrls.UserAccounts.CreateAccount(), request, jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task UpdateAccountAsync(Guid id, UserAccountRequestDto request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PutAsJsonAsync(ApiUrls.UserAccounts.UpdateAccount(id), request, jsonOptions, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task DeleteAccountAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.DeleteAsync(ApiUrls.UserAccounts.DeleteAccount(id), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
 }

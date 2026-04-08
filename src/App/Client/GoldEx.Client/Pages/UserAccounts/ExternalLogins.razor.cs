@@ -14,7 +14,7 @@ public partial class ExternalLogins
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
-        new("مدیریت حساب", href: ClientRoutes.UserAccounts.Index, icon: Icons.Material.Filled.Person),
+        new("مدیریت حساب", href: ClientRoutes.UserAccounts.Index, icon: Icons.Material.Filled.ManageAccounts),
         new("احراز هویت خارجی", href: ClientRoutes.UserAccounts.ExternalLogins, icon: Icons.Material.Filled.AddLink)
     ];
 

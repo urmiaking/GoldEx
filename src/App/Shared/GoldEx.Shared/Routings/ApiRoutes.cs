@@ -380,5 +380,8 @@ public static class ApiRoutes
         public const string GetAccountsList = "list";
         public const string LockUser = "{id}/lock-user";
         public const string UnlockUser = "{id}/unlock-user";
+        public const string CreateAccount = "user";
+        public const string UpdateAccount = "user/{id}";
+        public const string DeleteAccount = "user/{id}";
     }
 }

@@ -1,5 +1,4 @@
 ﻿using GoldEx.Sdk.Common;
-using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Sdk.Server.Api;
@@ -192,6 +191,27 @@ public class UserAccountsController(
     public async Task<IActionResult> UnlockUserAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await service.UnlockUserAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost(ApiRoutes.UserAccounts.CreateAccount)]
+    public async Task<IActionResult> CreateAccountAsync([FromBody] UserAccountRequestDto request, CancellationToken cancellationToken = default)
+    {
+        await service.CreateAccountAsync(request, cancellationToken);
+        return Accepted();
+    }
+
+    [HttpPut(ApiRoutes.UserAccounts.UpdateAccount)]
+    public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] UserAccountRequestDto request, CancellationToken cancellationToken = default)
+    {
+        await service.UpdateAccountAsync(id, request, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete(ApiRoutes.UserAccounts.DeleteAccount)]
+    public async Task<IActionResult> DeleteAccountAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await service.DeleteAccountAsync(id, cancellationToken);
         return NoContent();
     }
 

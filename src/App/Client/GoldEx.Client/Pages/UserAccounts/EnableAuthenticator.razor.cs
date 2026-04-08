@@ -17,7 +17,7 @@ public partial class EnableAuthenticator
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
         new("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
-        new("مدیریت حساب", href: ClientRoutes.UserAccounts.Index, icon: Icons.Material.Filled.Person),
+        new("مدیریت حساب", href: ClientRoutes.UserAccounts.Index, icon: Icons.Material.Filled.ManageAccounts),
         new("رمز دو مرحله ای", href: ClientRoutes.UserAccounts.TwoFactorAuthentication, icon: Icons.Material.Filled.Password),
         new("فعالسازی", href: ClientRoutes.UserAccounts.EnableAuthenticator, icon: Icons.Material.Filled.Check),
     ];

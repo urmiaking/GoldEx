@@ -412,7 +412,7 @@ public class ApiUrls
         public static string MarkAllAsRead()
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAllAsRead);
 
-        public static string Delete(Guid id) => 
+        public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.Delete).FormatRoute(new { id });
     }
 
@@ -726,6 +726,17 @@ public class ApiUrls
 
         public static string UnlockUser(Guid id) =>
             BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UnlockUser)
+                .FormatRoute(new { id });
+
+        public static string CreateAccount() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.CreateAccount);
+
+        public static string UpdateAccount(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UpdateAccount)
+                .FormatRoute(new { id });
+
+        public static string DeleteAccount(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.DeleteAccount)
                 .FormatRoute(new { id });
     }
 }
