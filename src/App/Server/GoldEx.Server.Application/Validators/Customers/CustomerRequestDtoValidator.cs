@@ -85,9 +85,10 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 
     private async Task<bool> BeUniqueCustomer(CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
-        return !await _repository.ExistsAsync(
-            new CustomersByNameTypePhoneNumberSpecification(request.FullName, request.PhoneNumber,
-                request.CustomerType), cancellationToken);
+        var customer = await _repository.Get(new CustomersByNameTypePhoneNumberSpecification(request.FullName,
+            request.PhoneNumber, request.CustomerType)).FirstOrDefaultAsync(cancellationToken);
+
+        return customer is null || customer.Id.Value == request.Id;
     }
 
     private async Task<bool> BeValidPriceUnitId(CustomerRequestDto request, Guid? priceUnitId, CancellationToken cancellationToken = default)
