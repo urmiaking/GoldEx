@@ -432,7 +432,7 @@ public partial class SimpleCalculator
     private async Task OnUsedGoldFinenessDeductionRateChanged(decimal deductionRate)
     {
         _model.UsedGoldFinenessDeductionRate = deductionRate;
-        _model.Fineness = 750m - deductionRate;
+        // _model.Fineness = 750m - deductionRate;
 
         await Calculate();
     }
