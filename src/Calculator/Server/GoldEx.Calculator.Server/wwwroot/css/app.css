@@ -232,3 +232,7 @@ h1:focus {
     height: max-content !important;
 }
 /* Mobile Navbar */
+
+.text-justify {
+    text-align: justify;
+}

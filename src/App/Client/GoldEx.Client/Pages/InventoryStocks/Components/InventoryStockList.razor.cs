@@ -35,7 +35,6 @@ public partial class InventoryStockList
 
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
-    private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
     private MudTable<InventoryStockVm> _table = default!;
 
     private bool _mobileFiltersOpen;

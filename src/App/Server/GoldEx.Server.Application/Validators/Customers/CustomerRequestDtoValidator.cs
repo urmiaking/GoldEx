@@ -16,14 +16,12 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 {
     private readonly ICustomerRepository _repository;
     private readonly IPriceUnitRepository _priceUnitRepository;
-    private readonly IFinancialAccountRepository _financialAccountRepository;
 
     public CustomerRequestDtoValidator(ICustomerRepository repository,
         IPriceUnitRepository priceUnitRepository, IFinancialAccountRepository financialAccountRepository)
     {
         _repository = repository;
         _priceUnitRepository = priceUnitRepository;
-        _financialAccountRepository = financialAccountRepository;
 
         RuleFor(x => x.Id)
             .MustAsync(BeValidId).WithMessage("شناسه نامعتبر است")

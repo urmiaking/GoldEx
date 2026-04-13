@@ -34,15 +34,17 @@
         <RowTemplate>
             <MudTd DataLabel="ردیف">@context.Index</MudTd>
             <MudTd DataLabel="عنوان">
-                @if (context.IsBroken)
-                {
-                    <MudIcon Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.BrokenImage" />
-                }
-                else
-                {
-                    <MudIcon Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle" />
-                }
-                @context.Description
+                <div class="d-flex gap-2">
+                    @if (context.IsBroken)
+                    {
+                        <MudIcon Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.BrokenImage" />
+                    }
+                    else
+                    {
+                        <MudIcon Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle" />
+                    }
+                    @context.Description
+                </div>
             </MudTd>
             <MudTd DataLabel="کسری عیار">@context.FinenessDeductionRate.ToString("G29")</MudTd>
             <MudTd DataLabel="وزن">@context.Weight?.ToString("G29") @context.UnitType.GetDisplayName()</MudTd>
