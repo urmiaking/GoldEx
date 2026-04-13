@@ -128,6 +128,7 @@ public partial class AdvancedCalculator
         _model.PriceUnit = priceUnit;
 
         await LoadGramPriceAsync();
+        await RefreshAsync();
 
         StateHasChanged();
     }
