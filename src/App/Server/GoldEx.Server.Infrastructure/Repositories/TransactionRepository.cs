@@ -599,7 +599,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
 
         if (request.PriceUnitId.HasValue)
         {
-            decimal running = 0m;
+            var running = 0m;
             foreach (var t in list)
             {
                 var signed = t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount;

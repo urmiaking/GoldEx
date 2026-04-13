@@ -44,21 +44,14 @@ internal class CustomerService(
         var skip = filter.Skip ?? 0;
         var take = filter.Take ?? 100;
 
-        var data = await repository
-            .Get(new CustomersByFilterSpecification(filter, customerFilter))
-            .AsNoTracking()
-            .Include(x => x.FinancialAccounts!)
-                .ThenInclude(x => x.PriceUnit)
-            .ToListAsync(cancellationToken);
-
-        var totalCount = await repository.CountAsync(new CustomersByFilterSpecification(filter, customerFilter), cancellationToken);
+        var customers = await repository.GetListAsync(customerFilter, filter, cancellationToken);
 
         return new PagedList<GetCustomerResponse>
         {
-            Data = mapper.Map<List<GetCustomerResponse>>(data),
+            Data = mapper.Map<List<GetCustomerResponse>>(customers.Data),
             Skip = skip,
             Take = take,
-            Total = totalCount
+            Total = customers.Total
         };
     }
 
