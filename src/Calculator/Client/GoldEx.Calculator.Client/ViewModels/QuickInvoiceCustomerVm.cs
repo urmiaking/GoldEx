@@ -7,8 +7,7 @@ public class QuickInvoiceCustomerVm
     [Required(ErrorMessage = "نام مشتری را وارد کنید")]
     public string CustomerName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "شماره تماس مشتری را وارد کنید")]
-    public string CustomerPhone { get; set; } = string.Empty;
+    public string? CustomerPhone { get; set; }
 
     [Required(ErrorMessage = "نام فروشگاه را وارد کنید")]
     public string CompanyName { get; set; } = string.Empty;

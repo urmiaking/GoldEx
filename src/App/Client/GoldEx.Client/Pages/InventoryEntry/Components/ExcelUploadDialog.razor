@@ -24,9 +24,10 @@
                     <MudFileUpload @bind-Files="_files"
                                    Accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                                    OnFilesChanged="HandleFilesChanged" MaximumFileCount="1" Required="true">
-                        <CustomContent Context="_">
+                        <CustomContent Context="ctx">
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Success"
+                                       OnClick="ctx.OpenFilePickerAsync"
                                        StartIcon="@Icons.Material.Filled.CloudUpload">
                                 انتخاب فایل
                             </MudButton>

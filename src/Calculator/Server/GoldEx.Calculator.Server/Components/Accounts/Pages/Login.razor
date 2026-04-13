@@ -13,22 +13,22 @@
 
 <MudStack AlignItems="AlignItems.Center">
     <MudItem>
-        <span class="brand-text fs-1" dir="ltr">GoldEx Karat</span>
+        <span class="brand-text fs-1" dir="ltr">GoldEx Mini</span>
     </MudItem>
 </MudStack>
 
 <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
     <DataAnnotationsValidator />
-    <MudGrid>
+    <MudGrid Spacing="4">
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.Username)" @bind-Value="Input.Username"
-                                Label="نام کاربری"
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } })" />
+                                Label="نام کاربری" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" }, { "dir", "ltr" } })" />
         </MudItem>
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                Label="رمز عبور" InputType="InputType.Password"
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" } })" />
+                                Label="رمز عبور" InputType="InputType.Password" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" }, { "dir", "ltr" } })" />
         </MudItem>
         <MudItem xs="12" Class="m-0 p-0">
             <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>

@@ -1,6 +1,7 @@
 ﻿using GoldEx.Sdk.Common.Definitions;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using GoldEx.Shared.Attributes;
 
 namespace GoldEx.Shared.Enums;
 
@@ -255,20 +256,22 @@ public enum PriceCatalog
     MesghalSilver
 }
 
-// Custom attribute
-[AttributeUsage(AttributeTargets.Field)]
-public class MarketAttribute(MarketType marketType) : Attribute
-{
-    public MarketType MarketType { get; } = marketType;
-}
-
-// Extension for Market extraction
 public static class PriceCatalogExtensions
 {
-    public static MarketType GetMarketType(this PriceCatalog value)
+    extension(PriceCatalog value)
     {
-        var member = value.GetType().GetMember(value.ToString())[0];
-        var attribute = member.GetCustomAttribute<MarketAttribute>();
-        return attribute?.MarketType ?? throw new InvalidOperationException($"Market type not defined for {value}");
+        public MarketType GetMarketType()
+        {
+            var member = value.GetType().GetMember(value.ToString())[0];
+            var attribute = member.GetCustomAttribute<MarketAttribute>();
+            return attribute?.MarketType ?? throw new InvalidOperationException($"Market type not defined for {value}");
+        }
+
+        public string GetIcon()
+        {
+            var member = value.GetType().GetMember(value.ToString())[0];
+            var attribute = member.GetCustomAttribute<IconAttribute>();
+            return attribute?.Title ?? throw new InvalidOperationException($"icon not defined for {value}");
+        }
     }
 }

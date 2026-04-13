@@ -65,7 +65,7 @@ public sealed record QuickInvoicePayload
         };
     }
 
-    public QuickInvoicePayload WithCustomer(string customerName, string customerPhone) =>
+    public QuickInvoicePayload WithCustomer(string customerName, string? customerPhone) =>
         this with
         {
             CustomerName = customerName,

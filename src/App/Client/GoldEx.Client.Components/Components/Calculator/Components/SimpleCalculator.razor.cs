@@ -547,6 +547,7 @@ public partial class SimpleCalculator
         _model.WageType = WageType.Percent;
         _model.ExtraCosts = null;
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+        _model.StonePrice = null;
 
         _applySafetyMargin = true;
     }
@@ -647,6 +648,7 @@ public partial class SimpleCalculator
 
         ResetModel();
         _quickInvoiceProductName = null;
+        await Calculate();
         StateHasChanged();
 
         AddSuccessToast("کالا با موفقیت به فاکتور اضافه شد");

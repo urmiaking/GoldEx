@@ -10,7 +10,7 @@ else
 {
     <MudCard Class="p-4" Elevation="24">
         <MudForm Model="_model" @ref="@_form" Validation="@(_invoiceValidator.ValidateValue)" ValidationDelay="0">
-            <MudGrid Class="align-end">
+            <MudGrid Class="align-end" Spacing="2">
                 <MudItem xs="12" md="6" lg="4">
                     <MudText Typo="Typo.h6" GutterBottom="true" Color="@InvoiceColor" Class="align-center d-flex gap-2">
                         <MudIcon Icon="@InvoiceIcon"
@@ -57,7 +57,7 @@ else
                 <MudSpacer />
                 @if (_model.InvoicePriceUnit != _priceUnits.FirstOrDefault(x => x.IsDefault))
                 {
-                    <MudItem xs="6" md="3" lg="2">
+                    <MudItem xs="6" md="3" lg="2" Class="order-md-1 order-2">
                         <MudNumericField T="decimal?"
                                          @bind-Value="@_model.ExchangeRate"
                                          Variant="Variant.Outlined"
@@ -73,7 +73,7 @@ else
                         </MudNumericField>
                     </MudItem>
                 }
-                <MudItem xs="@(_model.InvoicePriceUnit != DefaultPriceUnit ? 6 : 12)" md="3" lg="2">
+                <MudItem xs="@(_model.InvoicePriceUnit != DefaultPriceUnit ? 6 : 12)" md="3" lg="2" Class="order-md-2 order-1">
                     <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="_model.InvoicePriceUnit"
                                ValueChanged="OnInvoicePriceUnitChanged"
@@ -95,8 +95,8 @@ else
                     </MudSelect>
                 </MudItem>
             </MudGrid>
-            <MudDivider Class="mb-2" />
-            <MudGrid>
+            <MudDivider Class="mb-2 d-none d-md-block" />
+            <MudGrid Spacing="2" Class="mt-0">
                 @if (!IsEditMode) // this section is only shown when creating a new invoice
                 {
                     <MudItem xs="6" md="2">
@@ -192,7 +192,7 @@ else
                 </MudItem>
             </MudGrid>
 
-            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mt-4">
+            <MudStack AlignItems="AlignItems.Center" Row Justify="Justify.Center" Spacing="2" Class="mt-3 mt-md-4">
                 <MudText Typo="Typo.h6" GutterBottom="true" Class="d-none d-md-block">
                     طرف حساب
                     @if (_model.Customer != null)
@@ -226,7 +226,7 @@ else
 
             @if (_model.Customer is not null)
             {
-                <MudGrid Class="mt-0 mb-2">
+                <MudGrid Class="mt-0 mb-2" Spacing="4">
                     <MudItem xs="12" md="3">
                         <div class="d-flex align-items-center gap-1">
                             <MudText>نام و نام خانوادگی: @_model.Customer.FullName</MudText>
@@ -566,22 +566,22 @@ else
             }
 
             <MudDivider Class="my-2" />
-            <div class="d-flex gap-3 mt-2 flex-wrap">
+            <div class="d-flex gap-2 mt-2 flex-wrap justify-end">
 
                 @if (IsEditMode)
                 {
                     <MudButton Color="Color.Error"
                                StartIcon="@Icons.Material.Filled.DeleteForever"
-                               Disabled="@_processing"
+                               Disabled="@IsBusy"
                                Variant="Variant.Filled"
                                OnClick="OnDelete">
-                        @if (_processing)
+                        @if (_deleting)
                         {
                             <MudProgressCircular Class="ms-n1"
                                                  Size="Size.Small"
                                                  Indeterminate="true" />
                             <MudText Class="ms-2">
-                                در حال پردازش
+                                درحال حذف
                             </MudText>
                         }
                         else
@@ -591,56 +591,22 @@ else
 
                     </MudButton>
                 }
-                <div class="flex-fill d-none d-md-block"></div>
+                <div class="flex-fill"></div>
                 @if (IsEditMode)
                 {
                     <MudButton Color="Color.Success"
                                StartIcon="@Icons.Material.Filled.Print"
-                               Disabled="@_processing"
+                               Disabled="@IsBusy"
                                Variant="Variant.Filled"
                                OnClick="OnPrintAsync">
-                        @if (_processing)
-                        {
-                            <MudProgressCircular Class="ms-n1"
-                                                 Size="Size.Small"
-                                                 Indeterminate="true" />
-                            <MudText Class="ms-2">
-                                در حال پردازش
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudText>چاپ</MudText>
-                        }
-
+                        <MudText>چاپ</MudText>
                     </MudButton>
                 }
 
-                <MudButton Color="Color.Info"
-                           StartIcon="@Icons.Material.Filled.Print"
-                           Disabled="@_processing"
-                           Variant="Variant.Filled"
-                           OnClick="@(async () => await SubmitAsync(true))">
-                    @if (_processing)
-                    {
-                        <MudProgressCircular Class="ms-n1"
-                                             Size="Size.Small"
-                                             Indeterminate="true" />
-                        <MudText Class="ms-2">
-                            در حال پردازش
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudText>ذخیره و چاپ</MudText>
-                    }
-
-                </MudButton>
-
                 <MudButton Color="Color.Primary"
                            Disabled="@_processing"
-                           StartIcon="@Icons.Material.Filled.Save"
-                           OnClick="@(async () => await SubmitAsync(false))"
+                           StartIcon="@(_processing ? null : Icons.Material.Filled.Save)"
+                           OnClick="@(async () => await SubmitAsync())"
                            Variant="Variant.Filled">
                     @if (_processing)
                     {
@@ -648,12 +614,12 @@ else
                                              Size="Size.Small"
                                              Indeterminate="true" />
                         <MudText Class="ms-2">
-                            در حال پردازش
+                            درحال ذخیره
                         </MudText>
                     }
                     else
                     {
-                        <MudText>ذخیره</MudText>
+                        <MudText>@(IsEditMode ? "اعمال تغییرات" : "ذخیره")</MudText>
                     }
                 </MudButton>
             </div>
@@ -706,8 +672,8 @@ else
     </MudOverlay>
 }
 
-<script src="/js/libs/jsbarcode.all.min.js"></script>
-<script src="/js/print.js?v=@_jsVersion"></script>
+<script src="@Assets["js/libs/jsbarcode.all.min.js"]"></script>
+<script src="@Assets["js/print.js"]"></script>
 
 <style>
     .mud-tab-badge {

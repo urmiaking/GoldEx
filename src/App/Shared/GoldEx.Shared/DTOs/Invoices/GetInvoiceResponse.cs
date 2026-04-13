@@ -65,7 +65,7 @@ public record GetInvoiceProductItemResponse(
     decimal? PurchaseWage,
     WageType? PurchaseWageType,
     Guid? PurchaseWagePriceUnitId,
-    string ? PurchaseWagePriceUnitTitle,
+    string? PurchaseWagePriceUnitTitle,
     decimal? PurchaseWagePriceUnitExchangeRate,
     decimal? StonePriceUnitExchangeRate,
     bool IsInstantProduct,
