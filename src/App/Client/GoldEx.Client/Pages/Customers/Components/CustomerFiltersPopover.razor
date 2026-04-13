@@ -1,0 +1,162 @@
+﻿<MudOverlay Visible="@Open"
+            DarkBackground="true">
+    <MudPopover Open="Open"
+                Class="pa-3 responsive-popover"
+                Fixed="true"
+                AnchorOrigin="Origin.CenterCenter"
+                TransformOrigin="Origin.CenterCenter"
+                Elevation="6">
+        <MudStack Spacing="2" Class="w-100">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudText Typo="Typo.subtitle1">فیلترها</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="OnClose" />
+            </MudStack>
+
+            <!-- TransactionType -->
+            <MudSelect T="TransactionType?"
+                       Variant="Variant.Outlined"
+                       Label="وضعیت حساب"
+                       Value="@_transactionType"
+                       ValueChanged="@(v => _transactionType = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetTransactionTypeIcon(_transactionType)"
+                       AdornmentColor="@GetTransactionTypeIconColor(_transactionType)"
+                       Class="w-100">
+                <MudSelectItem T="TransactionType?" Value="@(null as TransactionType?)">همه</MudSelectItem>
+                @foreach (var type in Enum.GetValues<TransactionType>())
+                {
+                    <MudSelectItem T="TransactionType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- CustomerType -->
+            <MudSelect T="CustomerType?"
+                       Variant="Variant.Outlined"
+                       Label="نوع مشتری"
+                       Value="@_customerType"
+                       ValueChanged="@(v => _customerType = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetCustomerTypeIcon(_customerType)"
+                       AdornmentColor="@GetCustomerTypeIconColor(_customerType)"
+                       Class="w-100">
+                <MudSelectItem T="CustomerType?" Value="@(null as CustomerType?)">همه</MudSelectItem>
+                @foreach (var type in Enum.GetValues<CustomerType>())
+                {
+                    <MudSelectItem T="CustomerType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- Date range -->
+            <MudDateRangePicker DateRange="@_dateRange"
+                                DateRangeChanged="@(dr => _dateRange = dr)"
+                                Variant="Variant.Outlined"
+                                Label="تاریخ فاکتور"
+                                Margin="Margin.Dense"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Adornment="Adornment.Start"
+                                ShowToolbar="false"
+                                Clearable="true"
+                                Class="w-100" />
+
+            <!-- Actions -->
+            <MudStack Row="true" Spacing="1" Class="mt-3" Justify="Justify.FlexEnd">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Error"
+                           OnClick="Clear"
+                           StartIcon="@Icons.Material.Filled.Delete">
+                    حذف فیلترها
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           OnClick="Apply"
+                           StartIcon="@Icons.Material.Filled.Check">
+                    اعمال
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    </MudPopover>
+</MudOverlay>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    [Parameter] public DateRange DateRange { get; set; } = new();
+    [Parameter] public TransactionType? TransactionTypeParam { get; set; }
+    [Parameter] public CustomerType? CustomerTypeParam { get; set; }
+
+    [Parameter] public EventCallback<CustomersList.CustomerMobileFiltersResult> OnApply { get; set; }
+
+    private DateRange _dateRange = new();
+    private TransactionType? _transactionType;
+    private CustomerType? _customerType;
+
+    protected override void OnParametersSet()
+    {
+        _dateRange = new DateRange(DateRange.Start, DateRange.End);
+        _transactionType = TransactionTypeParam;
+        _customerType = CustomerTypeParam;
+    }
+
+    private string? GetTransactionTypeIcon(TransactionType? type) => type switch
+    {
+        TransactionType.Debit => Icons.Material.Filled.AccountBalanceWallet,
+        TransactionType.Credit => Icons.Material.Filled.Payments,
+        null => Icons.Material.Filled.CompareArrows,
+        _ => null
+    };
+
+    private Color GetTransactionTypeIconColor(TransactionType? type) => type switch
+    {
+        TransactionType.Debit => Color.Error,
+        TransactionType.Credit => Color.Success,
+        _ => Color.Info
+    };
+
+    private string? GetCustomerTypeIcon(CustomerType? type) => type switch
+    {
+        CustomerType.RetailCustomer => Icons.Material.Filled.ShoppingCart,
+        CustomerType.Wholesaler => Icons.Material.Filled.Warehouse,
+        CustomerType.Workshop => Icons.Material.Filled.Build,
+        CustomerType.Retailer => Icons.Material.Filled.Store,
+        CustomerType.AssayingLab => Icons.Material.Filled.Science,
+        CustomerType.MeltedGoldDealer => Icons.Material.Filled.LocalFireDepartment,
+        null => Icons.Material.Filled.List,
+        _ => null
+    };
+
+    private Color GetCustomerTypeIconColor(CustomerType? type) => type switch
+    {
+        CustomerType.RetailCustomer => Color.Info,
+        CustomerType.Wholesaler => Color.Primary,
+        CustomerType.Workshop => Color.Tertiary,
+        CustomerType.Retailer => Color.Error,
+        CustomerType.AssayingLab => Color.Info,
+        CustomerType.MeltedGoldDealer => Color.Success,
+        _ => Color.Info
+    };
+
+    private async Task Apply()
+    {
+        var result = new CustomersList.CustomerMobileFiltersResult(
+            new DateRange(_dateRange.Start, _dateRange.End),
+            _customerType,
+            _transactionType
+        );
+
+        await OnApply.InvokeAsync(result);
+    }
+
+    private async Task Clear()
+    {
+        _dateRange = new DateRange();
+        _transactionType = null;
+        _customerType = null;
+        await Apply();
+    }
+}

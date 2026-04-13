@@ -24,6 +24,8 @@ public partial class CustomersList
     private MudTable<CustomerVm> _table = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private CustomerType? _customerType;
+    private TransactionType? _transactionType;
+    private bool _mobileFiltersOpen;
 
     protected override void OnInitialized()
     {
@@ -50,7 +52,7 @@ public partial class CustomersList
                 _ => throw new ArgumentOutOfRangeException()
             });
 
-        var customerFilter = new CustomerFilter(_customerType, _filterDateRange.Start, _filterDateRange.End);
+        var customerFilter = new CustomerFilter(_customerType, _transactionType, _filterDateRange.Start, _filterDateRange.End);
 
         await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
             action: (s, token) => s.GetListAsync(filter, customerFilter, token),
@@ -235,7 +237,6 @@ public partial class CustomersList
         CustomerType.Retailer => Color.Error,
         CustomerType.AssayingLab => Color.Info,
         CustomerType.MeltedGoldDealer => Color.Success,
-        null => Color.Info,
         _ => Color.Info
     };
 
@@ -245,4 +246,74 @@ public partial class CustomersList
 
         await RefreshAsync();
     }
+
+    public string? TransactionTypeIcon => _transactionType switch
+    {
+        TransactionType.Debit => Icons.Material.Filled.AccountBalanceWallet,
+        TransactionType.Credit => Icons.Material.Filled.Payments,
+        null => Icons.Material.Filled.CompareArrows,
+        _ => null
+    };
+
+    public Color TransactionTypeColor => _transactionType switch
+    {
+        TransactionType.Debit => Color.Error,
+        TransactionType.Credit => Color.Success,
+        null => Color.Info,
+        _ => Color.Default
+    };
+
+    private string? GetTransactionTypeIcon(TransactionType? type) => type switch
+    {
+        TransactionType.Debit => Icons.Material.Filled.AccountBalanceWallet,
+        TransactionType.Credit => Icons.Material.Filled.Payments,
+        null => Icons.Material.Filled.CompareArrows,
+        _ => null
+    };
+
+    private Color GetTransactionTypeIconColor(TransactionType? type) => type switch
+    {
+        TransactionType.Debit => Color.Error,
+        TransactionType.Credit => Color.Success,
+        _ => Color.Info
+    };
+
+    private async Task SetTransactionTypeFilterText(TransactionType? transactionType)
+    {
+        _transactionType = transactionType;
+
+        await RefreshAsync();
+    }
+
+    #region Mobile filters
+
+    public record CustomerMobileFiltersResult(
+        DateRange DateRange,
+        CustomerType? CustomerType,
+        TransactionType? TransactionType
+    );
+
+    private void OpenMobileFilters()
+    {
+        _mobileFiltersOpen = true;
+        StateHasChanged();
+    }
+
+    private void CloseMobileFilters()
+    {
+        _mobileFiltersOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task ApplyMobileFilters(CustomerMobileFiltersResult result)
+    {
+        _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
+        _customerType = result.CustomerType;
+        _transactionType = result.TransactionType;
+
+        _mobileFiltersOpen = false;
+        await RefreshAsync();
+    }
+
+    #endregion
 }
