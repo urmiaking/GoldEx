@@ -3,7 +3,6 @@ using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
-using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.CustomerAggregate;
@@ -43,7 +42,6 @@ public class Customer : EntityBase<CustomerId>
 
     public IReadOnlyList<LedgerAccount>? LedgerAccounts { get; private set; }
 
-    public IReadOnlyList<Transaction>? Transactions { get; private set; }
     public IReadOnlyList<FinancialAccount>? FinancialAccounts { get; private set; }
     public IReadOnlyList<PaymentVoucher>? PaymentVouchers { get; private set; }
 
