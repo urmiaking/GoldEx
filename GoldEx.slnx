@@ -1,0 +1,36 @@
+<Solution>
+  <Folder Name="/1. App/" />
+  <Folder Name="/1. App/1. Server/">
+    <Project Path="src/App/Server/GoldEx.Server.Application/GoldEx.Server.Application.csproj" />
+    <Project Path="src/App/Server/GoldEx.Server.Domain/GoldEx.Server.Domain.csproj" />
+    <Project Path="src/App/Server/GoldEx.Server.Infrastructure/GoldEx.Server.Infrastructure.csproj" />
+    <Project Path="src/App/Server/GoldEx.Server/GoldEx.Server.csproj" />
+  </Folder>
+  <Folder Name="/1. App/2. Client/">
+    <Project Path="src/App/Client/GoldEx.Client.Abstractions/GoldEx.Client.Abstractions.csproj" />
+    <Project Path="src/App/Client/GoldEx.Client.Components/GoldEx.Client.Components.csproj" />
+    <Project Path="src/App/Client/GoldEx.Client.Services/GoldEx.Client.Services.csproj" />
+    <Project Path="src/App/Client/GoldEx.Client/GoldEx.Client.csproj" />
+  </Folder>
+  <Folder Name="/1. App/3. Shared/">
+    <Project Path="src/App/Shared/GoldEx.Shared/GoldEx.Shared.csproj" />
+  </Folder>
+  <Folder Name="/2. Calculator/" />
+  <Folder Name="/2. Calculator/1. Server/">
+    <Project Path="src/Calculator/Server/GoldEx.Calculator.Server/GoldEx.Calculator.Server.csproj" />
+  </Folder>
+  <Folder Name="/2. Calculator/2. Client/">
+    <Project Path="src/Calculator/Client/GoldEx.Calculator.Client/GoldEx.Calculator.Client.csproj" />
+  </Folder>
+  <Folder Name="/2. Calculator/3. Shared/">
+    <Project Path="src/Calculator/Shared/GoldEx.Calculator.Shared/GoldEx.Calculator.Shared.csproj" />
+  </Folder>
+  <Folder Name="/2. Sdk/">
+    <Project Path="src/Sdk/GoldEx.Sdk.Client/GoldEx.Sdk.Client.csproj" />
+    <Project Path="src/Sdk/GoldEx.Sdk.Common/GoldEx.Sdk.Common.csproj" />
+    <Project Path="src/Sdk/GoldEx.Sdk.Server/GoldEx.Sdk.Server.csproj" />
+  </Folder>
+  <Folder Name="/3. Tests/">
+    <Project Path="src/Tests/GoldEx.Tests.Server/GoldEx.Tests.Server.csproj" />
+  </Folder>
+</Solution>
