@@ -328,7 +328,9 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         // 4. FETCH TRANSACTIONS
         var txAgg = await Query
             .AsNoTracking()
+            .Include(x => x.ReversedBy)
             .Where(t => t.ReverseTransactionId == null)
+            .Where(t => !t.ReversedBy!.Any())
             .Where(t => request.FromDate == null || t.PostingDate >= request.FromDate.Value)
             .Where(t => request.ToDate == null || t.PostingDate <= request.ToDate.Value)
             .Where(t => subtreeLedgerIds.Contains(t.LedgerAccountId))
