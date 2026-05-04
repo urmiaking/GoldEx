@@ -5,7 +5,7 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_financialAccountValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <MudGrid>
+            <MudGrid Spacing="4">
                 <MudItem xs="12">
                     <MudChipSet T="FinancialAccountType"
                                 SelectionMode="SelectionMode.SingleSelection"

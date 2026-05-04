@@ -148,6 +148,7 @@ public static class ApiRoutes
         public const string Update = "{id}";
         public const string Delete = "{id}";
         public const string GetTitles = "titles";
+        public const string GetCustomerAccounts = "customer/{customerId}";
     }
 
     public class PaymentVouchers

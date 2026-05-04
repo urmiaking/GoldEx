@@ -40,6 +40,7 @@ internal sealed class LedgerAccountDbSeeder(
 
         // سطح ۳ (زیرمجموعه‌های نهایی)
         await GetOrCreateAccount(SystemLedgerAccounts.AccountsReceivable, LedgerAccountType.Asset, currentAssets);
+        await GetOrCreateAccount(SystemLedgerAccounts.ChecksReceivable, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.PrepaymentsToSuppliers, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.Inventory, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.UsedProductInventory, LedgerAccountType.Asset, currentAssets, UnitType.Gold18K);
@@ -53,6 +54,7 @@ internal sealed class LedgerAccountDbSeeder(
         var cashAccounts = await GetOrCreateAccount(SystemLedgerAccounts.CashAccounts, LedgerAccountType.Asset, currentAssets);
         await GetOrCreateAccount(SystemLedgerAccounts.InternalCashAccounts, LedgerAccountType.Asset, cashAccounts);
 
+        await GetOrCreateAccount(SystemLedgerAccounts.ChecksPayable, LedgerAccountType.Liability, currentLiabilities);
         await GetOrCreateAccount(SystemLedgerAccounts.AccountsPayable, LedgerAccountType.Liability, currentLiabilities);
 
         await GetOrCreateAccount(SystemLedgerAccounts.SalesRevenue, LedgerAccountType.Revenue, revenue);

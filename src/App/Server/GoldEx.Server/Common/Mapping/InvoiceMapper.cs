@@ -1,4 +1,6 @@
-﻿using GoldEx.Server.Domain.InvoiceAggregate;
+﻿using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
@@ -92,5 +94,7 @@ internal class InvoiceMapper : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Remaining, src => src.TotalUnpaidAmount)
             .Map(dest => dest.ExchangeRate, src => src.ExchangeRate);
+
+        config.NewConfig<CheckPayment, GetCheckPaymentResponse>();
     }
 }

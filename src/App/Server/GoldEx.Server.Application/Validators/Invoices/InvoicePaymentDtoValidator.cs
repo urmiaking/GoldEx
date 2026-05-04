@@ -94,7 +94,7 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
                     if (!payment.CustomerId.HasValue)
                     {
                         context.AddFailure(nameof(payment.CustomerId),
-                            "برای حواله‌کرد مشتری، شناسه مشتری الزامی است.");
+                            "برای حواله‌ مشتری، شناسه مشتری الزامی است.");
                     }
                     else
                     {
@@ -115,6 +115,58 @@ internal class InvoicePaymentDtoValidator : AbstractValidator<InvoicePaymentDto>
                     break;
 
                 case PaymentType.TransferedPayment:
+                    break;
+                case PaymentType.Check:
+                    if (!payment.CheckIssuerId.HasValue)
+                    {
+                        context.AddFailure("وارد کردن صادر کننده چک برای پرداخت از نوع چک الزامی است");
+                    }
+                    else
+                    {
+                        var exists = await customerRepository.ExistsAsync(new CustomersByIdSpecification(new CustomerId(payment.CheckIssuerId.Value)), cancellationToken);
+                        if (!exists)
+                        {
+                            context.AddFailure(nameof(payment.CustomerId),
+                                "صادر کننده چک معتبر نمی باشد.");
+                        }
+                    }
+
+                    if (!payment.CheckIssuerFinancialAccountId.HasValue)
+                    {
+                        context.AddFailure("وارد کردن حساب مالی صادر کننده چک برای پرداخت از نوع چک الزامی است");
+                    }
+                    else
+                    {
+                        var exists = await financialAccountRepository
+                            .ExistsAsync(new FinancialAccountsByIdSpecification(
+                                new FinancialAccountId(payment.CheckIssuerFinancialAccountId.Value)), cancellationToken);
+
+                        if (!exists)
+                        {
+                            context.AddFailure(nameof(payment.CustomerId), "حساب مالی صادرکننده چک معتبر نمی باشد.");
+                        }
+
+                        var financialAccountBelongToCustomer = await financialAccountRepository
+                            .ExistsAsync(new FinancialAccountsByIdAndCustomerIdSpecification(
+                                new FinancialAccountId(payment.CheckIssuerFinancialAccountId.Value),
+                                new CustomerId(payment.CheckIssuerId!.Value)), cancellationToken);
+
+                        if (!financialAccountBelongToCustomer)
+                        {
+                            context.AddFailure("این حساب مالی متعلق به صادرکننده چک وارد شده نمی باشد");
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(payment.CheckNumber) && string.IsNullOrEmpty(payment.CheckSayadiCode))
+                    {
+                        context.AddFailure("وارد کردن حداقل یکی از موارد (شماره چک یا کد صیادی) برای پرداخت از نوع چک الزامی است");
+                    }
+
+                    if (!payment.CheckDueDate.HasValue)
+                    {
+                        context.AddFailure("وارد کردن تاریخ سررسید چک برای پرداخت از نوع چک الزامی است");
+                    }
+
                     break;
                 default:
                     context.AddFailure(nameof(payment.PaymentType), "نوع پرداخت نامعتبر است.");

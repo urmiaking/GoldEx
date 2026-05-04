@@ -1253,7 +1253,156 @@ internal class AccountingTransactionService(
                     }
                 }
 
-                // 4) پرداخت فاکتور از محل سند پرداخت (PaymentVoucher)
+                // 4) پرداخت با چک
+                else if (payment.PaymentType == PaymentType.Check)
+                {
+                    var checksLedgerTitle =
+                        payment.PaymentSide == PaymentSide.Receive
+                            ? SystemLedgerAccounts.ChecksReceivable
+                            : SystemLedgerAccounts.ChecksPayable;
+
+                    var checksLedger = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(checksLedgerTitle))
+                        .FirstOrDefaultAsync(cancellationToken)
+                        ?? throw new NotFoundException($"Ledger '{checksLedgerTitle}' not found.");
+
+                    // حساب طرف مقابل
+                    var counterpartyRole = invoice.InvoiceType == InvoiceType.Sell
+                        ? LedgerAccountRole.Receivable
+                        : LedgerAccountRole.Payable;
+
+                    var counterpartyLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+                        customer.Id,
+                        invoice.PriceUnitId,
+                        counterpartyRole,
+                        cancellationToken);
+
+                    var description = TransactionDescriptionBuilder.ForInvoicePayment(invoice, payment);
+
+                    var invoiceUnit = invoice.PriceUnitId;
+                    var paymentUnit = payment.PriceUnitId;
+
+                    var sameCurrency = invoiceUnit == paymentUnit;
+
+                    if (sameCurrency)
+                    {
+                        // ثبت مستقیم چک ↔ حساب شخص
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount,
+                            exchangeRate,
+                            paymentGroupId,
+                            payment.PaymentSide == PaymentSide.Receive
+                                ? TransactionType.Debit
+                                : TransactionType.Credit,
+                            checksLedger.Id,
+                            paymentUnit,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
+
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount,
+                            exchangeRate,
+                            paymentGroupId,
+                            payment.PaymentSide == PaymentSide.Receive
+                                ? TransactionType.Credit
+                                : TransactionType.Debit,
+                            counterpartyLedger.Id,
+                            invoiceUnit,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
+                    }
+                    else
+                    {
+                        var settlementRate = ResolveInvoiceSettlementRate(invoice, payment);
+
+                        if (!settlementRate.HasValue)
+                            throw new InvalidOperationException("Settlement rate is required for cross-currency invoice payment.");
+
+                        decimal? paymentExchangeRate =
+                            paymentUnit == basePriceUnit.Id
+                                ? null
+                                : payment.ExchangeRate
+                                  ?? throw new InvalidOperationException(
+                                      "Payment exchange rate is required when payment unit is not base unit.");
+
+                        // ---------- STEP 1: ثبت چک با ارز پرداخت ----------
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount,
+                            paymentExchangeRate,
+                            paymentGroupId,
+                            payment.PaymentSide == PaymentSide.Receive
+                                ? TransactionType.Debit
+                                : TransactionType.Credit,
+                            checksLedger.Id,
+                            paymentUnit,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
+
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            payment.FinalAmount,
+                            paymentExchangeRate,
+                            paymentGroupId,
+                            payment.PaymentSide == PaymentSide.Receive
+                                ? TransactionType.Credit
+                                : TransactionType.Debit,
+                            settlementLedger.Id,
+                            paymentUnit,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
+
+                        // ---------- STEP 2: تسویه فاکتور ----------
+                        var invoiceAmount = payment.FinalAmount * settlementRate.Value;
+
+                        var invoiceExchangeRate =
+                            invoiceUnit == basePriceUnit.Id
+                                ? null
+                                : invoice.ExchangeRate;
+
+                        var settlementDebitType =
+                            payment.PaymentSide == PaymentSide.Receive
+                                ? TransactionType.Debit
+                                : TransactionType.Credit;
+
+                        var counterpartyDebitType =
+                            payment.PaymentSide == PaymentSide.Receive
+                                ? TransactionType.Credit
+                                : TransactionType.Debit;
+
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            invoiceAmount,
+                            invoiceExchangeRate,
+                            paymentGroupId,
+                            settlementDebitType,
+                            settlementLedger.Id,
+                            invoiceUnit,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
+
+                        transactions.Add(Transaction.CreateForInvoicePayment(
+                            description,
+                            invoiceAmount,
+                            invoiceExchangeRate,
+                            paymentGroupId,
+                            counterpartyDebitType,
+                            counterpartyLedger.Id,
+                            invoiceUnit,
+                            invoice.Id,
+                            payment.Id,
+                            NextPayLine()));
+                    }
+                }
+
+                // 5) پرداخت فاکتور از محل سند پرداخت (PaymentVoucher)
                 else if (payment is { PaymentVoucherId: not null, PaymentVoucher: not null })
                 {
                     // فقط برای فاکتور خرید

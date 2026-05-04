@@ -14,8 +14,9 @@ using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
 using MudBlazor;
-using static MudBlazor.Colors;
 
 namespace GoldEx.Client.Pages.Invoices.Components;
 
@@ -27,11 +28,13 @@ public partial class PaymentEditor
     [Parameter, EditorRequired] public GetPriceUnitTitleResponse BasePriceUnit { get; set; }
     [Parameter, EditorRequired] public InvoiceType InvoiceType { get; set; }
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     private List<GetCustomerResponse>? _customers;
     private List<GetTinyInvoiceResponse>? _invoices;
+    private List<FinancialAccountVm> _customerFinancialAccounts = [];
     private MudForm _form = default!;
-
+    private string? _checkImagePreviewUrl;
     private readonly InvoicePaymentValidator _paymentValidator = new();
     private readonly DialogOptions _dialogOptions = new()
     {
@@ -88,6 +91,28 @@ public partial class PaymentEditor
             _ => throw new ArgumentOutOfRangeException()
         };
 
+    protected override async Task OnInitializedAsync()
+    {
+        // If we have CheckImage bytes but no preview URL, recreate the blob
+        if (Model.CheckImage is { Length: > 0 } && string.IsNullOrEmpty(_checkImagePreviewUrl))
+        {
+            var base64 = Convert.ToBase64String(Model.CheckImage);
+            _checkImagePreviewUrl = $"data:{Model.CheckImageContentType ?? "image/jpeg"};base64,{base64}";
+        }
+        else if (!string.IsNullOrEmpty(Model.CheckImageUrl))
+        {
+            _checkImagePreviewUrl = Model.CheckImageUrl + $"?v={Random.Shared.Next()}";
+        }
+
+        if (Model.PaymentType is PaymentType.InternalCash && Model.FinancialAccounts == null)
+            await LoadFinancialAccountsAsync();
+
+        if (Model.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory && Model.PriceUnit?.Id != BasePriceUnit.Id && !Model.Id.HasValue)
+            await LoadExchangeRateAsync();
+
+        await base.OnInitializedAsync();
+    }
+
     private static decimal GetBalanceEffect(InvoiceType invoiceType, InvoicePaymentVm model)
     {
         var baseAmount = model.FinalAmount * (model.ExchangeRate ?? 1);
@@ -102,28 +127,25 @@ public partial class PaymentEditor
 
     private void Close() => Dialog.Cancel();
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (Model.PaymentType is PaymentType.InternalCash && Model.FinancialAccounts == null)
-            await LoadFinancialAccountsAsync();
-
-        if (Model.PaymentType is PaymentType.MoltenGoldInventory or PaymentType.UsedGoldInventory && Model.PriceUnit?.Id != BasePriceUnit.Id && !Model.Id.HasValue)
-            await LoadExchangeRateAsync();
-
-        await base.OnParametersSetAsync();
-    }
-
     private async Task Submit()
     {
         await _form.Validate();
 
         if (!_form.IsValid)
-        {
             return;
+
+        if (Model.CheckImageFile != null)
+        {
+            var imageBytes = await ReadFileBytes(Model.CheckImageFile);
+            Model.CheckImageContentType = Path.GetExtension(Model.CheckImageFile.Name).TrimStart('.').ToLower(); // "jpg", "png", etc.
+            Model.CheckImage = imageBytes;
+            Model.CheckImageUrl = _checkImagePreviewUrl;
+            Model.CheckImageFile = null;
         }
 
         Dialog.Close(DialogResult.Ok(Model));
     }
+
 
     #region Amounts
 
@@ -137,7 +159,7 @@ public partial class PaymentEditor
         if (Model.PaymentType is PaymentType.InternalCash)
             await LoadFinancialAccountsAsync();
 
-        if (Model.TargetInvoice != null) 
+        if (Model.TargetInvoice != null)
             Model.TargetInvoice = null;
     }
 
@@ -232,6 +254,37 @@ public partial class PaymentEditor
         }
     }
 
+    private async Task OnAddCustomerFinancialAccount(CustomerVm customer)
+    {
+        var parameters = new DialogParameters<FinancialAccountEditor>
+        {
+            { x => x.PriceUnits, PriceUnits },
+            { x => x.IsSystemAccount, false },
+            { x => x.CustomerId, customer.Id },
+            { x => x.SubmitIndependently, true },
+            { x => x.AccountHolderName, customer.FullName }
+        };
+
+        var dialog = await DialogService.ShowAsync<FinancialAccountEditor>($"افزودن حساب مالی برای {customer.FullName}",
+            parameters, _dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: FinancialAccountVm financialAccount })
+        {
+            await LoadFinancialAccountsAsync(customer.Id!.Value);
+            Model.CheckIssuerFinancialAccount = financialAccount;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadFinancialAccountsAsync(Guid customerId)
+    {
+        await SendRequestAsync<IFinancialAccountService, List<GetFinancialAccountResponse>>(
+            action: (s, ct) => s.GetCustomerAccountsAsync(customerId, Model.PriceUnit?.Id, ct),
+            afterSend: response => _customerFinancialAccounts = response.Select(FinancialAccountVm.CreateFrom).ToList());
+    }
+
     #endregion
 
     #region Customer
@@ -249,7 +302,7 @@ public partial class PaymentEditor
         return _customers?.Select(CustomerVm.CreateFrom);
     }
 
-    private async Task OnAddCustomer()
+    private async Task OnAddCustomer(string title)
     {
         DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
 
@@ -258,7 +311,7 @@ public partial class PaymentEditor
             { x => x.ReturnModel, true }
         };
 
-        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن طرف حساب جدید", parameters, dialogOptions);
+        var dialog = await DialogService.ShowAsync<Customers.Components.Editor>($"افزودن {title} جدید", parameters, dialogOptions);
 
         var result = await dialog.Result;
 
@@ -271,7 +324,7 @@ public partial class PaymentEditor
 
     private async Task<IEnumerable<GetTinyInvoiceResponse>?> SearchCustomerInvoicesAsync(string? value, CancellationToken cancellationToken = default)
     {
-        if (_invoices is null) 
+        if (_invoices is null)
             await LoadCustomerInvoicesAsync();
 
         if (string.IsNullOrEmpty(value))
@@ -301,6 +354,20 @@ public partial class PaymentEditor
         _invoices = null;
     }
 
+    private async Task OnCheckIssuerChanged(CustomerVm? issuer)
+    {
+        Model.CheckIssuer = issuer;
+
+        if (issuer?.Id is null)
+        {
+            Model.CheckIssuerFinancialAccount = null;
+            return;
+        }
+
+        await LoadFinancialAccountsAsync(issuer.Id.Value);
+        StateHasChanged();
+    }
+
     #endregion
 
     private string? InvoiceToStringFunc(GetTinyInvoiceResponse? inv)
@@ -310,5 +377,54 @@ public partial class PaymentEditor
               $"شماره {inv.InvoiceNumber.ToString()} " +
               $"- مانده : {inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title)}"
             : null;
+    }
+
+    private async Task OnCheckImageChanged(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+
+        // Revoke previous object URL if it was a blob (not a server URL)
+        if (_checkImagePreviewUrl != null && _checkImagePreviewUrl.StartsWith("blob:"))
+            await JsRuntime.InvokeVoidAsync("URL.revokeObjectURL", _checkImagePreviewUrl);
+
+        // Generate local preview URL
+        var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // 5MB
+        var dotnetStream = new DotNetStreamReference(stream);
+        _checkImagePreviewUrl = await JsRuntime.InvokeAsync<string>("createObjectURL", dotnetStream);
+    }
+
+    private async Task ClearCheckImage()
+    {
+        if (_checkImagePreviewUrl?.StartsWith("blob:") == true)
+            await JsRuntime.InvokeVoidAsync("URL.revokeObjectURL", _checkImagePreviewUrl);
+
+        _checkImagePreviewUrl = null;
+        Model.CheckImageFile = null;
+        Model.RemoveExistingImage = true;
+    }
+
+    private async Task<byte[]?> ReadFileBytes(IBrowserFile? file)
+    {
+        if (file is null) return null;
+
+        await using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
+    }
+
+    private async Task<string> CreateBlobUrlFromBytes(byte[] imageBytes, string contentType)
+    {
+        var base64 = Convert.ToBase64String(imageBytes);
+        var dataUrl = $"data:{contentType};base64,{base64}";
+        return await JsRuntime.InvokeAsync<string>("createBlobUrl", dataUrl);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        if (_checkImagePreviewUrl?.StartsWith("blob:") == true)
+            await JsRuntime.InvokeVoidAsync("URL.revokeObjectURL", _checkImagePreviewUrl);
+
+        await base.DisposeAsync();
     }
 }
