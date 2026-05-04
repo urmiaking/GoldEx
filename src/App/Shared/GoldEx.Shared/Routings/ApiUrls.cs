@@ -259,6 +259,11 @@ public class ApiUrls
             BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetTitles)
                 .AppendQueryString(new { customerId })
                 .AppendQueryString(new { priceUnitId });
+
+        public static string GetCustomerAccounts(Guid customerId, Guid? priceUnitId) =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetCustomerAccounts)
+                .FormatRoute(new { customerId })
+                .AppendQueryString(new { priceUnitId });
     }
 
     public class PaymentVouchers

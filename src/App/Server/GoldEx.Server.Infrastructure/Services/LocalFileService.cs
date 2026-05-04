@@ -78,12 +78,23 @@ internal class LocalFileService(ILogger<LocalFileService> logger, IWebHostEnviro
     {
         try
         {
-            if (File.Exists(filePath))
-                File.Delete(filePath);
+            var directory = Path.GetDirectoryName(filePath);
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+
+            if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+                return;
+
+            var matchingFiles = Directory.GetFiles(directory, $"{fileNameWithoutExtension}.*");
+
+            foreach (var file in matchingFiles)
+            {
+                File.Delete(file);
+                _logger.LogInformation("Deleted file: {FilePath}", file);
+            }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
         {
-            _logger.LogError(ex, "Failed to delete file: {FilePath}", filePath);
+            _logger.LogError(ex, "Failed to delete file(s): {FilePath}", filePath);
         }
     }
 }

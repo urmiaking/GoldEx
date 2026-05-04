@@ -55,6 +55,7 @@
 	  <Folder Include="shared\categories\" />
 	  <Folder Include="shared\content\blogs\temp\" />
 	  <Folder Include="shared\posts\" />
+	  <Folder Include="uploads\check-payments\" />
 	  <Folder Include="uploads\icons\" />
 	</ItemGroup>
 

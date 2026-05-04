@@ -596,3 +596,68 @@ h1:focus {
 }
 
 /* Filter popover */
+
+/* Check image */
+
+.image-preview-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    transition: opacity 0.5s ease;
+}
+
+.image-preview-container:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-overlay .mud-icon-button {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+    .image-overlay .mud-icon-button:hover {
+        background-color: rgba(255, 255, 255, 1);
+    }
+
+.check-image {
+    max-width: 250px;
+    width: 100%;
+}
+
+@media (min-width: 960px) {
+    .check-image {
+        max-width: 400px;
+    }
+}
+
+.image-fieldset fieldset {
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-radius: 20px;
+    padding: 12px 16px;
+    margin: 0;
+}
+
+    .image-fieldset fieldset legend {
+        font-size: 0.75rem;
+        color: var(--mud-palette-text-secondary);
+        padding: 0 6px;
+        margin-right: 8px;
+        font-family: inherit;
+    }
+
+/* Check image */

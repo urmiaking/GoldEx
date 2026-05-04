@@ -168,6 +168,7 @@ public static class TransactionDescriptionBuilder
             PaymentType.CustomerTransfer => "حواله",
             PaymentType.UsedGoldInventory => "طلای شکسته",
             PaymentType.MoltenGoldInventory => "طلای آبشده",
+            PaymentType.Check => "چک",
             _ => "پرداخت"
         };
 

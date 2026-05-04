@@ -15,10 +15,11 @@
                 </MudItem>
                 <MudItem xs="12" md="4" lg="4" Class="mt-2">
                     <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="Model.IconFile" >
-                        <CustomContent Context="_">  
+                        <CustomContent Context="ctx">  
                             <MudButton Variant="Variant.Filled"  
                                        Color="Color.Success"  
                                        FullWidth="true"  
+                                       OnClick="ctx.OpenFilePickerAsync"
                                        StartIcon="@Icons.Material.Filled.AttachFile">  
                                 انتخاب لوگو  
                             </MudButton>  

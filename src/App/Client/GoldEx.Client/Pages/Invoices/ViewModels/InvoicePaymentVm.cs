@@ -1,11 +1,14 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+﻿using GoldEx.Client.Components.Attributes;
+using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
-using System.ComponentModel.DataAnnotations;
-using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.Helpers;
+using Microsoft.AspNetCore.Components.Forms;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
 
@@ -51,7 +54,6 @@ public class InvoicePaymentVm
 
     public string? ExchangeRateLabel { get; set; }
     public string AmountAdornmentText { get; set; } = default!;
-    public bool AmountMenuOpen { get; set; }
     public bool Disabled { get; set; }
 
     public Guid? VoucherId { get; set; }
@@ -87,6 +89,12 @@ public class InvoicePaymentVm
 
                 PaymentType.TransferedPayment
                     => $"{sideTitle} - {Note}",
+
+                PaymentType.Check
+                    => $"{sideTitle} - {typeTitle} " +
+                       $"{(string.IsNullOrWhiteSpace(CheckNumber) ? $"صیادی {CheckSayadiCode}" : $"شماره {CheckNumber}")} " +
+                       $"{(CheckDueDate.HasValue ? $"- سررسید {CheckDueDate.Value.ToShortDateString()}" : "")} " + 
+                       $"{(CheckIssuer is not null ? $"- صادرکننده {CheckIssuer.FullName}" : "")}".TrimEnd(),
 
                 _ => $"{sideTitle} - {typeTitle}"
             };
@@ -194,6 +202,39 @@ public class InvoicePaymentVm
 
     #endregion
 
+    #region Check
+
+    [Display(Name = "صادرکننده چک")]
+    public CustomerVm? CheckIssuer { get; set; }
+
+    [Display(Name = "حساب بانکی صادرکننده")]
+    public FinancialAccountVm? CheckIssuerFinancialAccount { get; set; }
+
+    [Display(Name = "تاریخ سررسید چک")]
+    [DateGreaterThanOrEqual(nameof(PaymentDate), ErrorMessage = "تاریخ سررسید نمی‌تواند قبل تر از تاریخ پرداخت باشد")]
+    public DateTime? CheckDueDate { get; set; }
+
+    [Display(Name = "شماره چک")]
+    public string? CheckNumber { get; set; }
+
+    [Display(Name = "کد صیادی")]
+    public string? CheckSayadiCode { get; set; }
+
+    // For new upload
+    [Display(Name = "تصویر چک")]
+    public IBrowserFile? CheckImageFile { get; set; }
+
+    // For displaying existing image in edit mode
+    public string? CheckImageUrl { get; set; }  // e.g. "/uploads/checks/abc.jpg"
+
+    public bool RemoveExistingImage { get; set; }
+
+    public byte[]? CheckImage { get; set; }
+
+    public string? CheckImageContentType { get; set; }
+
+    #endregion
+
     public static InvoicePaymentDto ToRequest(InvoicePaymentVm item)
     {
         if (item.PriceUnit is null)
@@ -221,7 +262,14 @@ public class InvoicePaymentVm
             item.VoucherId,
             item.TargetInvoice?.Id,
             item.Endorser?.Id,
-            item.PriceUnit.Id);
+            item.PriceUnit.Id,
+            item.CheckIssuer?.Id,
+            item.CheckIssuerFinancialAccount?.Id,
+            item.CheckNumber,
+            item.CheckSayadiCode,
+            item.CheckDueDate,
+            item.CheckImage,
+            item.CheckImageContentType);
     }
 
     public static InvoicePaymentVm CreateFrom(GetInvoicePaymentResponse response, GetPriceUnitTitleResponse? priceUnit)
@@ -245,7 +293,13 @@ public class InvoicePaymentVm
             Endorser = response.Endorser != null ? CustomerVm.CreateFrom(response.Endorser) : null,
             PaymentType = response.PaymentType,
             PaymentSide = response.PaymentSide,
-            GoldFineness = response.GoldFineness
+            GoldFineness = response.GoldFineness,
+            CheckNumber = response.CheckPayment?.Number,
+            CheckDueDate = response.CheckPayment?.DueDate,
+            CheckIssuer = response.CheckPayment?.Issuer != null ? CustomerVm.CreateFrom(response.CheckPayment.Issuer) : null,
+            CheckIssuerFinancialAccount = response.CheckPayment?.IssuerFinancialAccount != null ? FinancialAccountVm.CreateFrom(response.CheckPayment.IssuerFinancialAccount) : null,
+            CheckSayadiCode = response.CheckPayment?.SayadiCode,
+            CheckImageUrl = response.CheckPayment?.ImageUrl
         };
     }
 }

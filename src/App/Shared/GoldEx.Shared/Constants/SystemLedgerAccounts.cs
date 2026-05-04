@@ -6,6 +6,7 @@ public static class SystemLedgerAccounts
     public static string Assets => "دارایی‌ها";
     public static string CurrentAssets => "دارایی‌های جاری";
     public static string AccountsReceivable => "حساب‌های دریافتنی";
+    public static string ChecksReceivable => "اسناد دریافتنی (چک‌ها)";
     public static string PrepaymentsToSuppliers => "پیش‌پرداخت به تامین‌کنندگان";
     public static string Inventory => "موجودی کالا";
     public static string UsedProductInventory => "موجودی کالای آب کردنی (مواد اولیه)";
@@ -22,6 +23,7 @@ public static class SystemLedgerAccounts
     #region Liabilities (بدهی‌ها)
     public static string Liabilities => "بدهی‌ها";
     public static string CurrentLiabilities => "بدهی‌های جاری";
+    public static string ChecksPayable => "اسناد پرداختنی (چک‌ها)";
     public static string AccountsPayable => "حساب‌های پرداختنی";
     #endregion
 

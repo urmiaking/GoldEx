@@ -1,4 +1,5 @@
 ﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.CheckPaymentAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -85,6 +86,8 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
     public InvoiceId? TargetInvoiceId { get; private set; }
     public Invoice? TargetInvoice { get; private set; }
 
+    public CheckPayment? CheckPayment { get; private set; }
+
     public decimal FinalAmount { get; private set; }
 
     public void SetPaymentDate(DateTime paymentDate) => PaymentDate = paymentDate;
@@ -125,6 +128,15 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
     public void SetInvoice(Invoice invoice)
     {
         Invoice = invoice;
+    }
+
+    /// <summary>
+    /// This method is used to set the CheckPayment navigation property.
+    /// </summary>
+    /// <param name="checkPayment"></param>
+    public void SetCheck(CheckPayment checkPayment)
+    {
+        CheckPayment = checkPayment;
     }
 
     public void SetInvoiceId(InvoiceId targetInvoiceId)
