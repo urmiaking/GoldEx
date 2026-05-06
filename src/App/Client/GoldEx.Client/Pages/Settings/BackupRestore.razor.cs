@@ -24,7 +24,7 @@ public partial class BackupRestore
         if (_databaseFile is null)
             return;
 
-        var result = await DialogService.ShowMessageBox("آیا مطمئن هستید؟",
+        var result = await DialogService.ShowMessageBoxAsync("آیا مطمئن هستید؟",
             $"آیا برای بازنشانی دیتابیس با فایل '{_databaseFile.Name}' اطمینان دارید؟", "بله", "انصراف");
 
         if (result == true)

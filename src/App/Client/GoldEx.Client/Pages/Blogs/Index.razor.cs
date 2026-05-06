@@ -13,7 +13,6 @@ public partial class Index
         new ("صفحه اصلی", href: ClientRoutes.Home.Index, icon: Icons.Material.Filled.Home),
         new ("راهنما", href: ClientRoutes.Blogs.Index, icon: Icons.Material.Filled.Help)
     ];
-    private readonly int _jsVersion = new Random().Next(0, 1000);
     private BlogPostTitleResponse? _selectedPost;
     private bool _isEditMode;
     private bool _isCreateMode;

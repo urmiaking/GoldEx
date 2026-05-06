@@ -129,7 +129,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                     t.LedgerAccount.ParentAccount.Title == SystemLedgerAccounts.AccountsReceivable
                 ))
             .Where(t => t.ReverseTransactionId == null)
-            .Where(x => x.ReversedBy == null || !x.ReversedBy.Any());
+            .Where(x => !x.ReversedBy!.Any());
 
         var result = await query
             .GroupBy(t => new { t.PriceUnitId, t.PriceUnit!.Title })
@@ -144,15 +144,15 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
     }
 
     public async Task<List<LedgerAccountStatementModel>> GetLedgerAccountStatementsAsync(
-    LedgerAccountStatementRpRequest request,
-    CancellationToken cancellationToken = default)
+        LedgerAccountStatementRpRequest request,
+        CancellationToken cancellationToken = default)
     {
         var q = Query
             .AsNoTracking()
             .Include(t => t.PriceUnit)
             .Include(t => t.ReversedBy)
             .Where(t => t.ReverseTransactionId == null)
-            .Where(t => t.ReversedBy == null || !t.ReversedBy.Any())
+            .Where(t => !t.ReversedBy!.Any())
             .Where(t => t.LedgerAccountId == new LedgerAccountId(request.LedgerAccountId))
             .Where(t => request.PriceUnitId == null || t.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value))
             .Where(t => request.FromDate == null || t.PostingDate >= request.FromDate.Value)
@@ -328,7 +328,9 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         // 4. FETCH TRANSACTIONS
         var txAgg = await Query
             .AsNoTracking()
+            .Include(x => x.ReversedBy)
             .Where(t => t.ReverseTransactionId == null)
+            .Where(t => !t.ReversedBy!.Any())
             .Where(t => request.FromDate == null || t.PostingDate >= request.FromDate.Value)
             .Where(t => request.ToDate == null || t.PostingDate <= request.ToDate.Value)
             .Where(t => subtreeLedgerIds.Contains(t.LedgerAccountId))
@@ -457,7 +459,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                 t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable ||
                 t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
             .Where(t => t.ReverseTransactionId == null)
-            .Where(t => t.ReversedBy == null || !t.ReversedBy.Any())
+            .Where(t => !t.ReversedBy!.Any())
             .Where(t => !request.UntilDate.HasValue || t.PostingDate < request.UntilDate.Value)
             .Where(t => !request.PriceUnitId.HasValue || t.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value));
 
@@ -491,44 +493,44 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
                 ReceivableSigned = g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
                     .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount),
                 PayableSigned = g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable)
-                    .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount)
+                    .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount),
+                Amount =
+                    g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
+                        .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount)
+                    +
+                    g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable)
+                        .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount)
             })
             .ToListAsync(cancellationToken);
 
         var rows = grouped
-            .Select(x =>
+            .Select(x => new CustomerRemainingBalanceModel
             {
-                var receivable = x.ReceivableSigned >= 0m ? x.ReceivableSigned : 0m;
-                var payable = x.PayableSigned <= 0m ? Math.Abs(x.PayableSigned) : 0m;
-
-                return new CustomerRemainingBalanceModel
-                {
-                    CustomerId = x.CustomerId,
-                    CustomerName = x.CustomerName,
-                    CustomerCode = x.CustomerCode,
-                    CustomerPhoneNumber = x.CustomerPhoneNumber ?? string.Empty,
-                    PriceUnitId = x.PriceUnitId,
-                    PriceUnitTitle = x.PriceUnitTitle,
-                    ReceivableAmount = receivable,
-                    PayableAmount = payable
-                };
+                CustomerId = x.CustomerId,
+                CustomerName = x.CustomerName,
+                CustomerCode = x.CustomerCode,
+                CustomerPhoneNumber = x.CustomerPhoneNumber ?? string.Empty,
+                PriceUnitId = x.PriceUnitId,
+                PriceUnitTitle = x.PriceUnitTitle,
+                ReceivableAmount = x.ReceivableSigned,
+                PayableAmount = x.PayableSigned
             });
 
         if (request.TransactionType.HasValue)
         {
             rows = request.TransactionType.Value == TransactionType.Debit
-                ? rows.Where(x => x.ReceivableAmount - x.PayableAmount > 0m)
-                : rows.Where(x => x.ReceivableAmount - x.PayableAmount < 0m);
+                ? rows.Where(x => x.ReceivableAmount + x.PayableAmount > 0m)
+                : rows.Where(x => x.ReceivableAmount + x.PayableAmount < 0m);
         }
 
         if (request.MinimumThreshold.HasValue)
         {
             var th = request.MinimumThreshold.Value;
-            rows = rows.Where(x => Math.Abs(x.ReceivableAmount - x.PayableAmount) >= th);
+            rows = rows.Where(x => Math.Abs(x.ReceivableAmount + x.PayableAmount) >= th);
         }
         else
         {
-            rows = rows.Where(x => (x.ReceivableAmount - x.PayableAmount) != 0m);
+            rows = rows.Where(x => (x.ReceivableAmount + x.PayableAmount) != 0m);
         }
 
         return rows
@@ -549,7 +551,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
             .Where(t => t.LedgerAccount!.CustomerId == new CustomerId(request.CustomerId))
             .Where(t => request.PriceUnitId == null || t.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value))
             .Where(t => t.ReverseTransactionId == null)
-            .Where(t => t.ReversedBy == null || !t.ReversedBy.Any())
+            .Where(t => !t.ReversedBy!.Any())
             .Where(t => request.FromDate == null || t.PostingDate >= request.FromDate.Value)
             .Where(t => request.ToDate == null || t.PostingDate <= request.ToDate.Value);
 
@@ -599,7 +601,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
 
         if (request.PriceUnitId.HasValue)
         {
-            decimal running = 0m;
+            var running = 0m;
             foreach (var t in list)
             {
                 var signed = t.TransactionType == TransactionType.Debit ? t.Amount : -t.Amount;
@@ -652,5 +654,52 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         }
 
         return result;
+    }
+
+    public async Task<List<TopCustomersSummaryModel>> GetTopCustomersAsync(TransactionType transactionType, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = Query
+            .AsNoTracking()
+            .Include(t => t.ReversedBy)
+            .Include(t => t.PriceUnit)
+            .Include(t => t.LedgerAccount!).ThenInclude(la => la.ParentAccount)
+            .Include(t => t.LedgerAccount!).ThenInclude(la => la.Customer)
+            .Where(t => t.LedgerAccount != null)
+            .Where(t => t.LedgerAccount!.CustomerId != null)
+            .Where(t => t.LedgerAccount!.ParentAccount != null)
+            .Where(t =>
+                t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable ||
+                t.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
+            .Where(t => t.ReverseTransactionId == null)
+            .Where(t => !t.ReversedBy!.Any())
+            .Where(t => !priceUnitId.HasValue || t.PriceUnitId == new PriceUnitId(priceUnitId.Value));
+
+        var grouped = await query
+            .GroupBy(t => new { CustomerName = t.LedgerAccount!.Customer!.FullName, PriceUnit = t.PriceUnit!.Title })
+            .Select(g => new
+            {
+                g.Key,
+                Amount = 
+                    g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsReceivable)
+                        .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount) 
+                    + 
+                    g.Where(x => x.LedgerAccount!.ParentAccount!.Title == SystemLedgerAccounts.AccountsPayable)
+                        .Sum(x => x.TransactionType == TransactionType.Debit ? x.Amount : -x.Amount)
+            })
+            .Where(x => transactionType == TransactionType.Debit ? x.Amount > 0 : x.Amount < 0)
+            .OrderByDescending(x => transactionType == TransactionType.Debit ? x.Amount : -x.Amount)
+            .Take(5)
+            .ToListAsync(cancellationToken);
+
+        var rows = grouped
+            .Select(x => new TopCustomersSummaryModel
+            {
+                CustomerName = x.Key.CustomerName,
+                PriceUnit = x.Key.PriceUnit,
+                Amount = Math.Abs(x.Amount)
+            });
+
+        return rows.ToList();
     }
 }

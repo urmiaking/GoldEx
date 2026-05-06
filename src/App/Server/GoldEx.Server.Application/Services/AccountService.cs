@@ -1,14 +1,15 @@
-﻿using System.Security.Claims;
-using GoldEx.Sdk.Common.DependencyInjections;
+﻿using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.Services.Abstractions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace GoldEx.Server.Application.Services;
 
 [ScopedService]
-public class AccountService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager) : IAccountService
+public class AccountService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, ILogger<AccountService> logger) : IAccountService
 {
     public async Task<IdentityResult> CreateUserAsync(AppUser user, string? password = null, string[]? roles = null, CancellationToken cancellationToken = default)
     {
@@ -110,6 +111,8 @@ public class AccountService(UserManager<AppUser> userManager, RoleManager<AppRol
         {
             role = new AppRole(roleName);
             await roleManager.CreateAsync(role);
+
+            logger.LogInformation($"{nameof(AccountService)}: Created role '{role}'.");
         }
     }
 

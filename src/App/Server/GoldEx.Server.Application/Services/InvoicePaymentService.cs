@@ -2,6 +2,7 @@
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.CheckPaymentAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -10,11 +11,14 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Services.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.CheckPayments;
 using GoldEx.Server.Infrastructure.Specifications.InvoicePayments;
 using GoldEx.Server.Infrastructure.Specifications.LedgerAccounts;
 using GoldEx.Shared.Constants;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Application.Services;
@@ -24,6 +28,9 @@ internal class InvoicePaymentService(
     IInvoicePaymentRepository repository,
     IInvoicePaymentRepository paymentRepository,
     ILedgerAccountRepository ledgerAccountRepository,
+    ICheckPaymentRepository checkPaymentRepository,
+    IFileService fileService,
+    IWebHostEnvironment webHostEnvironment,
     IServerLedgerAccountService ledgerAccountService)
     : IServerInvoicePaymentService
 {
@@ -37,6 +44,8 @@ internal class InvoicePaymentService(
 
         var paymentsToCreate = new List<InvoicePayment>();
         var paymentsToUpdate = new List<InvoicePayment>();
+        var checkPaymentsToCreate = new List<(InvoicePayment Payment, InvoicePaymentDto Dto)>();
+        var checkPaymentsToUpdate = new List<(InvoicePayment Payment, InvoicePaymentDto Dto)>();
 
         var dtoById = invoicePayments
             .Where(p => p.Id.HasValue)
@@ -119,6 +128,15 @@ internal class InvoicePaymentService(
 
                     break;
 
+                case PaymentType.Check:
+                    if (!paymentDto.CheckIssuerId.HasValue)
+                        throw new NotFoundException("CheckIssuer is required for check payments");
+
+                    if (!paymentDto.CheckIssuerFinancialAccountId.HasValue)
+                        throw new NotFoundException("CheckIssuerFinancialAccountId is required for check payments");
+
+                    // Later, after saving InvoicePayment, we will create CheckPayment
+                    break;
                 case PaymentType.TransferedPayment:
                     break;
                 default:
@@ -151,6 +169,9 @@ internal class InvoicePaymentService(
 
                 paymentsToCreate.Add(newPayment);
 
+                if (paymentDto.PaymentType == PaymentType.Check) 
+                    checkPaymentsToCreate.Add((newPayment, paymentDto));
+
                 if (paymentDto.TargetInvoiceId.HasValue)
                     await UpdateTargetInvoicePaymentsAsync(newPayment, cancellationToken);
             }
@@ -182,6 +203,9 @@ internal class InvoicePaymentService(
 
                 paymentsToUpdate.Add(existingPayment);
 
+                if (paymentDto.PaymentType == PaymentType.Check)
+                    checkPaymentsToUpdate.Add((existingPayment, paymentDto));
+
                 if (paymentDto.TargetInvoiceId.HasValue)
                     await UpdateTargetInvoicePaymentsAsync(existingPayment, cancellationToken);
             }
@@ -204,6 +228,80 @@ internal class InvoicePaymentService(
         invoice.SetPayments(finalPayments);
 
         await repository.SaveAsync(cancellationToken);
+
+        foreach (var (payment, dto) in checkPaymentsToCreate)
+        {
+            var check = CheckPayment.Create(
+                payment.Id,
+                new CustomerId(dto.CheckIssuerId!.Value),
+                new FinancialAccountId(dto.CheckIssuerFinancialAccountId!.Value),
+                dto.CheckNumber,
+                dto.CheckSayadiCode,
+                dto.CheckDueDate!.Value
+            );
+
+            await checkPaymentRepository.CreateAsync(check, cancellationToken);
+
+            if (dto.CheckImage != null && !string.IsNullOrEmpty(dto.CheckImageContentType))
+            {
+                await fileService.SaveLocalFileAsync(
+                    webHostEnvironment.GetCheckPaymentFilePath(payment.Id.Value, dto.CheckImageContentType), dto.CheckImage,
+                    cancellationToken);
+            }
+        }
+
+        foreach (var (payment, dto) in checkPaymentsToUpdate)
+        {
+            var existingCheck = await checkPaymentRepository
+                .Get(new CheckPaymentsByPaymentIdSpecification(payment.Id))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existingCheck is null)
+            {
+                var newCheck = CheckPayment.Create(
+                    payment.Id,
+                    new CustomerId(dto.CheckIssuerId!.Value),
+                    new FinancialAccountId(dto.CheckIssuerFinancialAccountId!.Value),
+                    dto.CheckNumber,
+                    dto.CheckSayadiCode,
+                    dto.CheckDueDate!.Value
+                );
+
+                await checkPaymentRepository.CreateAsync(newCheck, cancellationToken);
+
+                if (dto.CheckImage != null && !string.IsNullOrEmpty(dto.CheckImageContentType))
+                {
+                    await fileService.SaveLocalFileAsync(
+                        webHostEnvironment.GetCheckPaymentFilePath(payment.Id.Value, dto.CheckImageContentType), dto.CheckImage,
+                        cancellationToken);
+                }
+            }
+            else
+            {
+                existingCheck.SetIssuer(new CustomerId(dto.CheckIssuerId!.Value));
+                existingCheck.SetIssuerFinancialAccount(new FinancialAccountId(dto.CheckIssuerFinancialAccountId!.Value));
+                existingCheck.SetNumber(dto.CheckNumber);
+                existingCheck.SetSayadiCode(dto.CheckSayadiCode);
+                existingCheck.SetDueDate(dto.CheckDueDate!.Value);
+
+                await checkPaymentRepository.UpdateAsync(existingCheck, cancellationToken);
+
+                if (dto.CheckImage != null && !string.IsNullOrEmpty(dto.CheckImageContentType))
+                {
+                    await fileService.ReplaceLocalFileAsync(
+                        webHostEnvironment.GetCheckPaymentFilePath(payment.Id.Value, dto.CheckImageContentType), dto.CheckImage,
+                        cancellationToken);
+                }
+            }
+        }
+
+        foreach (var payment in paymentsToDelete.Where(payment => payment.PaymentType == PaymentType.Check))
+        {
+            if (payment.CheckPayment is not null)
+            {
+                fileService.DeleteLocalFile(webHostEnvironment.GetCheckPaymentFilePath(payment.Id.Value));
+            }
+        }
     }
 
     private async Task UpdateTargetInvoicePaymentsAsync(InvoicePayment sourcePayment, CancellationToken cancellationToken = default)

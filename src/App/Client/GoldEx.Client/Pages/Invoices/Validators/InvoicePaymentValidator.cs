@@ -33,6 +33,26 @@ public class InvoicePaymentValidator : AbstractValidator<InvoicePaymentVm>
                 .NotNull().WithMessage("عیار طلا الزامی است");
         });
 
+        When(x => x.PaymentType is PaymentType.Check, () =>
+        {
+            RuleFor(x => x.CheckIssuer)
+                .NotNull().WithMessage("صادر کننده چک الزامی است");
+
+            RuleFor(x => x.CheckIssuerFinancialAccount)
+                .NotNull().WithMessage("حساب بانکی صادرکننده الزامی است");
+
+            RuleFor(x => x.CheckDueDate)
+                .NotNull().WithMessage("تاریخ سررسید چک الزامی است");
+
+            RuleFor(x => x.CheckNumber)
+                .Must((model, checkNumber) => !string.IsNullOrWhiteSpace(checkNumber) || !string.IsNullOrWhiteSpace(model.CheckSayadiCode))
+                .WithMessage("وارد کردن حداقل یکی از موارد (شماره چک یا کد صیادی) الزامی است.");
+
+            RuleFor(x => x.CheckSayadiCode)
+                .Must((model, sayadiCode) => !string.IsNullOrWhiteSpace(sayadiCode) || !string.IsNullOrWhiteSpace(model.CheckNumber))
+                .WithMessage("وارد کردن حداقل یکی از موارد (شماره چک یا کد صیادی) الزامی است.");
+        });
+
         RuleFor(p => p.PriceUnit)
             .NotNull().WithMessage("واحد ارزی پرداخت الزامی است");
     }

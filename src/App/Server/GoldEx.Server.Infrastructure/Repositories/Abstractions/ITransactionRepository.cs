@@ -8,6 +8,7 @@ using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Shared.DTOs.Reporting;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
@@ -44,5 +45,8 @@ public interface ITransactionRepository : IRepository<Transaction>,
         CancellationToken cancellationToken = default);
 
     Task<List<CustomerTransactionModel>> GetCustomerTransactionsAsync(CustomerTransactionRpRequest request, 
+        CancellationToken cancellationToken = default);
+
+    Task<List<TopCustomersSummaryModel>> GetTopCustomersAsync(TransactionType transactionType, Guid? priceUnitId, 
         CancellationToken cancellationToken = default);
 }

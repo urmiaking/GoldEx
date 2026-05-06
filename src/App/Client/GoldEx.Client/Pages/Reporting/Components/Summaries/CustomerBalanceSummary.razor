@@ -27,14 +27,14 @@
                                             <MudText Typo="Typo.body1">مجموع پرداختنی:</MudText>
                                             <MudText Typo="Typo.body1" Color="Color.Success">
                                                 <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="ml-1" />
-                                                @priceUnit.TotalPayable.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                                @Math.Abs(priceUnit.TotalPayable).ToCurrencyFormat(priceUnit.PriceUnitTitle)
                                             </MudText>
                                         </div>
                                         <div class="d-flex justify-space-between align-center">
                                             <MudText Typo="Typo.body1">مجموع دریافتنی:</MudText>
                                             <MudText Typo="Typo.body1" Color="Color.Error">
                                                 <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="ml-1" />
-                                                @priceUnit.TotalReceivable.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                                @Math.Abs(priceUnit.TotalReceivable).ToCurrencyFormat(priceUnit.PriceUnitTitle)
                                             </MudText>
                                         </div>
                                         <MudDivider Class="my-2" />

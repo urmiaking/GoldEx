@@ -1,0 +1,48 @@
+﻿@inherits GoldExComponentBase
+
+<MudDialog>
+    <DialogContent>
+        
+        <MudAlert ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Success" Variant="Variant.Filled" Class="mb-4">
+            رمز دو مرحله ای با موفقیت برای حساب شما فعال شد
+        </MudAlert>
+
+        <MudAlert ContentAlignment="HorizontalAlignment.Start" Severity="Severity.Info" Variant="Variant.Filled">
+            <p>
+                <strong>کدهای بازیابی زیر را در مکان امنی قرار دهید</strong>
+            </p>
+            <p>
+                اگر دستگاه خود را گم کنید و کدهای بازیابی را نداشته باشید، دسترسی به حساب خود را از دست خواهید داد.
+            </p>
+        </MudAlert>
+        <div class="row">
+            <div class="col-md-12 mt-4 text-center">
+                @foreach (var recoveryCode in RecoveryCodes)
+                {
+                    <div>
+                        <code class="recovery-code">@recoveryCode</code>
+                    </div>
+                }
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class="m-2"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Check"
+                   OnClick="Close"
+                   Variant="Variant.Filled">
+            متوجه شدم
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter, EditorRequired] public IEnumerable<string> RecoveryCodes { get; set; }
+    [CascadingParameter] public IMudDialogInstance Dialog { get; set; } = default!;
+
+    private void Close()
+    {
+        Dialog.Close();
+    }
+}

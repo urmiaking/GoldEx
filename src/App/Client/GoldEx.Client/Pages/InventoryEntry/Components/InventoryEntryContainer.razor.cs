@@ -69,7 +69,7 @@ public partial class InventoryEntryContainer
 
         var promptDescription = $"آیا از ثبت ورود موجودی {string.Join("، ", parts)} اطمینان دارید؟";
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "تأیید نهایی",
             promptDescription,
             yesText: "بله", cancelText: "لغو");

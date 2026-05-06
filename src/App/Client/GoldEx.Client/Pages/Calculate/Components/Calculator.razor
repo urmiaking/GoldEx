@@ -1,19 +1,19 @@
 ﻿@inherits GoldExComponentBase
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@Class" Gutters="false">
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@ContainerClass" Gutters="false">
     <AuthorizeView>
         <Authorized>
-            <MudTabs Elevation="24" Color="Color.Transparent" Centered="true" TabHeaderClass="rounded-5" ActivePanelIndexChanged="SetHelpContext">
+            <MudTabs Elevation="24" Centered Rounded MinimumTabWidth="50px" ActivePanelIndexChanged="SetHelpContext">
                 <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate" IconColor="Color.Info">
                     <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
                 </MudTabPanel>
                 <MudTabPanel Text="تبدیل ارز" Icon="@Icons.Material.Outlined.CurrencyExchange" IconColor="Color.Error">
                     <CurrencyExchange Class="@Class" Elevation="@Elevation"></CurrencyExchange>
                 </MudTabPanel>
-                <MudTabPanel Text="محاسبه گر وزن" Icon="@Icons.Material.Outlined.SwapHoriz" IconColor="Color.Primary">
+                <MudTabPanel Text="ارز به طلا" Icon="@Icons.Material.Outlined.SwapHoriz" IconColor="Color.Primary">
                     <ReverseCalculator Class="@Class" Elevation="@Elevation"></ReverseCalculator>
                 </MudTabPanel>
-                <MudTabPanel Text="محاسبه گر پیشرفته" Icon="@Icons.Material.Outlined.ShoppingBag" IconColor="Color.Success">
+                <MudTabPanel Text="جستجو گر" Icon="@Icons.Material.Outlined.ShoppingBag" IconColor="Color.Success">
                     <AdvancedCalculator Class="@Class" Elevation="@Elevation"></AdvancedCalculator>
                 </MudTabPanel>
             </MudTabs>

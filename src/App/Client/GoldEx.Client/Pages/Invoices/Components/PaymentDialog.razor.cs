@@ -142,7 +142,7 @@ public partial class PaymentDialog
 
     private async Task OnDelete(InvoicePaymentVm model)
     {
-        var result = await DialogService.ShowMessageBox("حذف پرداخت",
+        var result = await DialogService.ShowMessageBoxAsync("حذف پرداخت",
             $"آیا مطمئن هستید که می‌خواهید پرداخت با مبلغ {model.Amount.ToCurrencyFormat(model.PriceUnit?.Title)} را حذف کنید؟",
             yesText: "بله", noText: "خیر");
 

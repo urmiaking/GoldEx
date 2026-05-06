@@ -1,4 +1,5 @@
-﻿@using GoldEx.Shared.DTOs.FinancialAccounts
+﻿@using GoldEx.Client.Pages.FinancialAccounts.ViewModels
+@using GoldEx.Shared.DTOs.FinancialAccounts
 @using GoldEx.Shared.DTOs.Invoices
 @inherits GoldExComponentBase
 
@@ -43,19 +44,15 @@
                                          Class="flex-grow-1" />
                         @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer)
                         {
-                            <MudMenu @bind-Open="Model.AmountMenuOpen"
-                                     ActivationEvent="@MouseEvent.LeftClick">
+                            <MudMenu>
                                 <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt"
-                                                   Disabled="Model.Disabled"
-                                                   Variant="Variant.Outlined"
-                                                   Color="Color.Primary" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" OnClick="context.ToggleAsync" />
                                 </ActivatorContent>
                                 <ChildContent>
                                     @foreach (var item in PriceUnits)
                                     {
                                         <MudMenuItem OnClick="() => SelectPriceUnit(item)">
-                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div class="d-flex align-items-center gap-2">
                                                 @if (item.HasIcon)
                                                 {
                                                     <MudAvatar Size="Size.Small" Color="Color.Primary">
@@ -90,13 +87,13 @@
                     </MudItem>
                 }
 
-                <MudItem xs="12" md="6">
-                    @switch (Model.PaymentType)
-                    {
-                        case PaymentType.InternalCash:
+                @switch (Model.PaymentType)
+                {
+                    case PaymentType.InternalCash:
+                        <MudItem xs="12" md="6">
                             <div class="d-flex align-center gap-2">
                                 <MudAutocomplete @bind-Value="@Model.FinancialAccount"
-                                                 T="GetFinancialAccountTitleResponse?"
+                                                 T="GetFinancialAccountTitleResponse ?"
                                                  For="@(() => Model.FinancialAccount)"
                                                  Label="@FinancialAccountLabelText"
                                                  Margin="Margin.Dense"
@@ -112,8 +109,22 @@
                                 <MudIconButton Disabled="Model.Disabled" Icon="@Icons.Material.Filled.Add"
                                                Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddFinancialAccount"></MudIconButton>
                             </div>
-                            break;
-                        case PaymentType.CustomerTransfer:
+                        </MudItem>
+                        <MudItem xs="12" md="@(string.IsNullOrEmpty(Model.ExchangeRateLabel) ? 6 : 12)">
+                            <MudTextField @bind-Value="@Model.ReferenceNumber"
+                                          T="string"
+                                          dir="ltr"
+                                          For="@(() => Model.ReferenceNumber!)"
+                                          Label="@(Model.GetDisplayName(() => Model.ReferenceNumber))"
+                                          Margin="Margin.Dense"
+                                          Disabled="Model.Disabled"
+                                          AdornmentIcon="@Icons.Material.Filled.Numbers"
+                                          Adornment="Adornment.End"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        break;
+                    case PaymentType.CustomerTransfer:
+                        <MudItem xs="12" md="6">
                             <div class="d-flex align-center gap-2">
                                 <MudAutocomplete T="CustomerVm"
                                                  Value="Model.Endorser"
@@ -133,10 +144,30 @@
                                                  DebounceInterval="0"
                                                  ShowProgressIndicator="false">
                                 </MudAutocomplete>
-                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnAddCustomer" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OnAddCustomer("طرف حساب"))" />
                             </div>
-                            break;
-                        case PaymentType.UsedGoldInventory or PaymentType.MoltenGoldInventory:
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudAutocomplete @bind-Value="@Model.TargetInvoice"
+                                             T="GetTinyInvoiceResponse ?"
+                                             For="@(() => Model.TargetInvoice)"
+                                             Label="@Model.GetDisplayName(() => Model.TargetInvoice)"
+                                             Margin="Margin.Dense"
+                                             Disabled="@(Model.Endorser is null || Model.PaymentSide is PaymentSide.Receive)"
+                                             Adornment="Adornment.End"
+                                             AdornmentIcon="@Icons.Material.Outlined.ArrowDropDown"
+                                             InputClass="text-truncate"
+                                             Variant="Variant.Outlined"
+                                             DebounceInterval="500"
+                                             Placeholder="جستجوی فاکتور..."
+                                             MaxItems="100"
+                                             ToStringFunc="InvoiceToStringFunc"
+                                             SearchFunc="SearchCustomerInvoicesAsync"
+                                             ResetValueOnEmptyText="true" />
+                        </MudItem>
+                        break;
+                    case PaymentType.UsedGoldInventory or PaymentType.MoltenGoldInventory:
+                        <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="@Model.GoldFineness"
                                           T="decimal?"
                                           Format="G29"
@@ -146,30 +177,93 @@
                                           Label="@(Model.GetDisplayName(() => Model.GoldFineness))"
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined" />
-                            break;
-                    }
-                </MudItem>
-
-                @if (Model.PaymentType is PaymentType.CustomerTransfer)
-                {
-                    <MudItem xs="12" md="6">
-                        <MudAutocomplete @bind-Value="@Model.TargetInvoice"
-                                         T="GetTinyInvoiceResponse?"
-                                         For="@(() => Model.TargetInvoice)"
-                                         Label="@Model.GetDisplayName(() => Model.TargetInvoice)"
-                                         Margin="Margin.Dense"
-                                         Disabled="@(Model.Endorser is null || Model.PaymentSide is PaymentSide.Receive)"
-                                         Adornment="Adornment.End"
-                                         AdornmentIcon="@Icons.Material.Outlined.ArrowDropDown"
-                                         InputClass="text-truncate"
-                                         Variant="Variant.Outlined"
-                                         DebounceInterval="500"
-                                         Placeholder="جستجوی فاکتور..."
-                                         MaxItems="100"
-                                         ToStringFunc="InvoiceToStringFunc"
-                                         SearchFunc="SearchCustomerInvoicesAsync"
-                                         ResetValueOnEmptyText="true" />
-                    </MudItem>
+                        </MudItem>
+                        break;
+                    case PaymentType.Check:
+                        <MudItem xs="12" md="6">
+                            <div class="d-flex align-center gap-2">
+                                <MudAutocomplete T="CustomerVm?"
+                                                 Value="Model.CheckIssuer"
+                                                 ValueChanged="OnCheckIssuerChanged"
+                                                 Text="@Model.CheckIssuer?.FullName"
+                                                 For="@(() => Model.CheckIssuer!)"
+                                                 Placeholder="جستجوی صادر کننده چک..."
+                                                 Label="@(Model.GetDisplayName(() => Model.CheckIssuer))"
+                                                 ToStringFunc="@(customer => customer != null ? $"{customer.FullName}" : null)"
+                                                 Margin="Margin.Dense"
+                                                 FullWidth="true"
+                                                 Adornment="Adornment.Start"
+                                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                                 Variant="Variant.Outlined"
+                                                 SearchFunc="@SearchCustomers"
+                                                 ResetValueOnEmptyText="true"
+                                                 DebounceInterval="0"
+                                                 ShowProgressIndicator="false">
+                                </MudAutocomplete>
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OnAddCustomer("صادر کننده چک"))" />
+                            </div>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <div class="d-flex align-center gap-2">
+                                <div style="min-width: 0; flex: 1;">
+                                    <MudSelect T="FinancialAccountVm"
+                                               @bind-Value="Model.CheckIssuerFinancialAccount"
+                                               Text="@Model.CheckIssuerFinancialAccount?.GetAccountTypeText()"
+                                               For="@(() => Model.CheckIssuerFinancialAccount!)"
+                                               Label="@(Model.GetDisplayName(() => Model.CheckIssuerFinancialAccount))"
+                                               ToStringFunc="@(fa => fa != null ? $"{fa.GetAccountTypeText()}" : null)"
+                                               Margin="Margin.Dense"
+                                               FullWidth="true"
+                                               Variant="Variant.Outlined"
+                                               Disabled="@(Model.CheckIssuer == null)">
+                                        @foreach (var item in _customerFinancialAccounts)
+                                        {
+                                            <MudSelectItem T="FinancialAccountVm" Value="@item">@item.GetAccountTypeText()</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary"
+                                               Disabled="@(Model.CheckIssuer == null)"
+                                               OnClick="@(() => OnAddCustomerFinancialAccount(Model.CheckIssuer!))" />
+                            </div>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="@Model.CheckNumber"
+                                          T="string?"
+                                          dir="ltr"
+                                          For="@(() => Model.CheckNumber!)"
+                                          Label="@(Model.GetDisplayName(() => Model.CheckNumber))"
+                                          Margin="Margin.Dense"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.ConfirmationNumber"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="@Model.CheckSayadiCode"
+                                          T="string?"
+                                          dir="ltr"
+                                          For="@(() => Model.CheckSayadiCode!)"
+                                          Label="@(Model.GetDisplayName(() => Model.CheckSayadiCode))"
+                                          Margin="Margin.Dense"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Numbers"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudDatePicker @bind-Date="Model.CheckDueDate"
+                                           Color="Color.Secondary"
+                                           Editable="true"
+                                           dir="ltr"
+                                           AnchorOrigin="Origin.TopCenter"
+                                           TransformOrigin="Origin.BottomCenter"
+                                           For="@(() => Model.CheckDueDate)"
+                                           Label="@(Model.GetDisplayName(() => Model.CheckDueDate))"
+                                           ImmediateText="true"
+                                           Margin="Margin.Dense"
+                                           Rounded="true"
+                                           Variant="Variant.Outlined" />
+                        </MudItem>
+                        break;
                 }
 
                 <MudItem xs="12" md="6">
@@ -187,21 +281,69 @@
                                    Rounded="true"
                                    Variant="Variant.Outlined" />
                 </MudItem>
-                @if (Model.PaymentType is PaymentType.InternalCash)
+
+                @if (Model.PaymentType is PaymentType.Check)
                 {
-                    <MudItem xs="12" md="@(string.IsNullOrEmpty(Model.ExchangeRateLabel) ? 6 : 12)">
-                        <MudTextField @bind-Value="@Model.ReferenceNumber"
-                                      T="string"
-                                      dir="ltr"
-                                      For="@(() => Model.ReferenceNumber!)"
-                                      Label="@(Model.GetDisplayName(() => Model.ReferenceNumber))"
-                                      Margin="Margin.Dense"
-                                      Disabled="Model.Disabled"
-                                      AdornmentIcon="@Icons.Material.Filled.Numbers"
-                                      Adornment="Adornment.End"
-                                      Variant="Variant.Outlined" />
+                    <MudItem xs="12" md="6">
+                        <MudFileUpload T="IBrowserFile"
+                                       @bind-Files="Model.CheckImageFile"
+                                       For="@(() => Model.CheckImageFile!)"
+                                       Accept="image/*"
+                                       Style="margin-top: 9px;"
+                                       OnFilesChanged="OnCheckImageChanged">
+                            <CustomContent Context="ctx">
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                                           OnClick="ctx.OpenFilePickerAsync"
+                                           FullWidth="true">
+                                    @(_checkImagePreviewUrl == null ? "بارگذاری تصویر چک" : "تغییر تصویر چک")
+                                </MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
                     </MudItem>
                 }
+
+                @if (_checkImagePreviewUrl != null)
+                {
+                    <MudItem xs="12">
+                        <div class="image-fieldset rounded-5">
+                            <fieldset>
+                                <legend>تصویر چک</legend>
+                                <div class="image-preview-container">
+                                    <MudImage Src="@_checkImagePreviewUrl"
+                                              Alt="تصویر چک"
+                                              ObjectFit="ObjectFit.Cover"
+                                              Class="rounded check-image" />
+                                    <div class="image-overlay rounded-5">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                       Color="Color.Default"
+                                                       Size="Size.Medium"
+                                                       OnClick="@(() => JsRuntime.InvokeVoidAsync("openImageInNewTab", _checkImagePreviewUrl))" />
+                                        <MudFileUpload T="IBrowserFile"
+                                                       @bind-Files="Model.CheckImageFile"
+                                                       For="@(() => Model.CheckImageFile!)"
+                                                       Accept="image/*"
+                                                       OnFilesChanged="OnCheckImageChanged">
+                                            <CustomContent Context="ctx">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                               Color="Color.Default"
+                                                               Size="Size.Medium"
+                                                               OnClick="ctx.OpenFilePickerAsync" />
+                                            </CustomContent>
+                                        </MudFileUpload>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Default"
+                                                       Size="Size.Medium"
+                                                       OnClick="ClearCheckImage" />
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </MudItem>
+                }
+
+
                 <MudItem xs="12">
                     <MudTextField @bind-Value="@Model.Note"
                                   T="string"
@@ -243,3 +385,22 @@
         </DialogActions>
     </MudDialog>
 </MudForm>
+
+<script>
+    window.createObjectURL = async (streamRef) => {
+        const buffer = await streamRef.arrayBuffer();
+        const blob = new Blob([buffer], { type: "image/*" });
+        return URL.createObjectURL(blob);
+    };
+
+    window.openImageInNewTab = (url) => {
+        const newTab = window.open();
+        newTab.document.body.innerHTML = `<img src="${url}" style="max-width: 100%; height: auto;" />`;
+    };
+</script>
+
+<style>
+    .mud-file-upload-files {
+        display: none;
+    }
+</style>

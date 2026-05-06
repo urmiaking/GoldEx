@@ -1,5 +1,4 @@
-﻿@using System.Text.Json
-@using GoldEx.Sdk.Common
+﻿@using GoldEx.Shared.Enums
 @attribute [Route(ClientRoutes.Accounts.Login)]
 
 @inject SignInManager<AppUser> SignInManager
@@ -20,17 +19,16 @@
 </MudStack>
 
 <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-    <DataAnnotationsValidator />
-    <MudGrid>
+    <MudGrid Spacing="4">
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.Username)" @bind-Value="Input.Username"
-                                Label="نام کاربری" 
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" } })" />
+                                Label="نام کاربری" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "username" }, { "aria-required", "true" }, { "dir", "ltr" } })" />
         </MudItem>
         <MudItem xs="12">
             <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                Label="رمز عبور" InputType="InputType.Password"
-                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "current-password" }, { "aria-required", "true" } })" />
+                                Label="رمز عبور" InputType="InputType.Password" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                UserAttributes="@(new Dictionary<string, object?> { { "autocomplete", "password" }, { "aria-required", "true" }, { "dir", "ltr" } })" />
         </MudItem>
         <MudItem xs="12" Class="m-0 p-0">
             <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">مرا بخاطر بسپار</MudStaticCheckBox>
@@ -49,10 +47,18 @@
         }
 
         <MudItem xs="12" Class="mt-0">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                             FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Login">
-                ورود به سامانه
-            </MudStaticButton>
+            <div class="d-flex align-center gap-2 w-100">
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                 FormAction="FormAction.Submit" StartIcon="@Icons.Material.Filled.Login">
+                    ورود به سامانه
+                </MudStaticButton>
+
+                <div id="passkey-login-section" style="display: none">
+                    <PasskeySubmit Name="Input.Passkey"
+                                   Auto="true"
+                                   Username="Input.Username"/>
+                </div>
+            </div>
         </MudItem>
     </MudGrid>
 </EditForm>
@@ -73,148 +79,36 @@
     </MudItem>
 </MudGrid>
 
-@code {
-    private string? _errorMessage;
-    private string _siteKey = string.Empty;
-    private bool _showCaptcha;
+<script>
+    function initPasskeyAutoOpen() {
+        const containerId = 'passkey-login-section';
+        const storageKey = 'device_registered_passkey';
+        const container = document.getElementById(containerId);
 
-    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
-    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+        if (!container) return;
 
-    protected override async Task OnInitializedAsync()
-    {
-        _siteKey = Config["Turnstile:SiteKey"] ?? throw new InvalidOperationException("Turnstile:SiteKey is missing");
+        const isRegistered = localStorage.getItem(storageKey) === 'true';
 
-        // Check failed attempts from session
-        var failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
-        _showCaptcha = failedAttempts > 5;
+        if (isRegistered) {
+            container.style.display = 'flex';
+            customElements.whenDefined('passkey-submit').then(() => {
+                const passkeyComponent = container.querySelector('passkey-submit');
 
-        if (HttpMethods.IsGet(HttpContext.Request.Method))
-        {
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-        }
-    }
-
-    private async Task LoginUser()
-    {
-        var failedAttempts = HttpContext.Session.GetInt32("FailedLoginCount") ?? 0;
-
-        //If failedAttempts > 5, require CAPTCHA
-        if (_showCaptcha)
-        {
-            var captchaResponse = HttpContext.Request.Form["cf-turnstile-response"].ToString();
-            if (string.IsNullOrWhiteSpace(captchaResponse))
-            {
-                _errorMessage = "لطفاً captcha را تکمیل کنید.";
-                return;
-            }
-
-            var captchaValid = await VerifyCaptchaAsync(captchaResponse);
-            if (!captchaValid)
-            {
-                _errorMessage = "اعتبارسنجی captcha ناموفق بود.";
-                return;
-            }
-        }
-
-        var result = await SignInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: true);
-
-        if (result.Succeeded)
-        {
-			var user = await SignInManager.UserManager.FindByNameAsync(Input.Username);
-			if (user is null)
-			{
-				failedAttempts++;
-				HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
-				_errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
-				await SignInManager.SignOutAsync();
-				return;
-			}
-
-			var roles = await SignInManager.UserManager.GetRolesAsync(user);
-            var allowedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { BuiltinRoles.Owners, BuiltinRoles.Administrators };
-			var onlyAllowedRoles = roles.Count > 0 && roles.All(r => allowedRoles.Contains(r));
-			if (!onlyAllowedRoles)
-			{
-				failedAttempts++;
-				HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
-				_errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
-				await SignInManager.SignOutAsync();
-				return;
-			}
-
-            // reset failed attempts
-            HttpContext.Session.SetInt32("FailedLoginCount", 0);
-            Logger.LogInformation($"User '{Input.Username}' logged in at {DateTime.Now}");
-            RedirectManager.RedirectTo(ReturnUrl);
-        }
-        else
-        {
-            // increment failed attempts
-            failedAttempts++;
-            HttpContext.Session.SetInt32("FailedLoginCount", failedAttempts);
-
-            if (result.RequiresTwoFactor)
-            {
-                RedirectManager.RedirectTo(ClientRoutes.Accounts.LoginWith2Fa,
-                    new Dictionary<string, object?> { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-            }
-            else if (result.IsLockedOut)
-            {
-                Logger.LogWarning("User account locked out.");
-                RedirectManager.RedirectTo(ClientRoutes.Accounts.Lockout);
-            }
-            else
-            {
-                _errorMessage = "خطا: اطلاعات ورودی معتبر نیست";
-            }
-        }
-    }
-
-    private async Task<bool> VerifyCaptchaAsync(string captchaResponse)
-    {
-        try
-        {
-            var secretKey = Config["Turnstile:SecretKey"];
-            var client = HttpClientFactory.CreateClient();
-
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                ["secret"] = secretKey ?? "",
-                ["response"] = captchaResponse,
-                ["remoteip"] = HttpContext.Connection.RemoteIpAddress?.ToString() ?? ""
+                if (passkeyComponent && typeof passkeyComponent.obtainAndSubmitCredential === 'function') {
+                    if (!passkeyComponent.hasAttribute('data-auto-triggered')) {
+                        passkeyComponent.setAttribute('data-auto-triggered', 'true');
+                        console.log("Auto-triggering passkey modal...");
+                        passkeyComponent.obtainAndSubmitCredential(false);
+                    }
+                }
             });
-
-            var response = await client.PostAsync("https://challenges.cloudflare.com/turnstile/v0/siteverify", content);
-            var json = await response.Content.ReadAsStringAsync();
-
-            var result = JsonSerializer.Deserialize<TurnstileVerifyResponse>(json);
-            return result?.success == true;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error verifying Turnstile CAPTCHA");
-            return false;
         }
     }
 
-    private sealed class InputModel
-    {
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        public string Username { get; set; } = "";
+    initPasskeyAutoOpen();
 
-        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = "";
-
-        [Display(Name = "مرا بخاطر بسپار")]
-        public bool RememberMe { get; set; }
+    if (typeof Blazor !== 'undefined') {
+        Blazor.removeEventListener('enhancedload', initPasskeyAutoOpen);
+        Blazor.addEventListener('enhancedload', initPasskeyAutoOpen);
     }
-
-    private sealed class TurnstileVerifyResponse
-    {
-        public bool success { get; set; }
-        public string[]? error_codes { get; set; }
-    }
-}
+</script>

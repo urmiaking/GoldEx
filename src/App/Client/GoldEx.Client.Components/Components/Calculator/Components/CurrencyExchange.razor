@@ -13,7 +13,6 @@
                                For="() => _model.SourcePriceUnit"
                                Margin="Margin.Dense"
                                Variant="Variant.Outlined">
-                        <MudSelectItem T="GetPriceUnitTitleResponse?" Value="null">انتخاب کنید...</MudSelectItem>
                         @foreach (var item in _priceUnits)
                         {
                             <MudSelectItem Value="item">
@@ -47,7 +46,6 @@
                                For="() => _model.DestinationPriceUnit"
                                Margin="Margin.Dense"
                                Variant="Variant.Outlined">
-                        <MudSelectItem T="GetPriceUnitTitleResponse?" Value="null">انتخاب کنید...</MudSelectItem>
                         @foreach (var item in _priceUnits)
                         {
                             <MudSelectItem Value="item">
@@ -75,9 +73,7 @@
                                          ValueChanged="OnExchangeRateChanged"
                                          Immediate="true"
                                          dir="ltr"
-                                         Label="@(_model.IsExchangeRateInverted
-                                                     ? $"نرخ تبدیل هر  {_model.DestinationPriceUnit?.Title} به {_model.SourcePriceUnit?.Title}"
-                                                     : $"نرخ تبدیل هر  {_model.SourcePriceUnit?.Title} به {_model.DestinationPriceUnit?.Title}")"
+                                         Label="@(_model.IsExchangeRateInverted ? $"نرخ تبدیل هر  {_model.DestinationPriceUnit?.Title} به {_model.SourcePriceUnit?.Title}" : $"نرخ تبدیل هر  {_model.SourcePriceUnit?.Title} به {_model.DestinationPriceUnit?.Title}")"
                                          Margin="Margin.Dense"
                                          HideSpinButtons="true"
                                          Variant="Variant.Outlined"
@@ -124,7 +120,7 @@
                 @if (_model.FeeType.HasValue)
                 {
                     <MudItem xs="12" md="3">
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="d-flex align-items-center gap-2">
                             <MudNumericField Adornment="Adornment.End"
                                              AdornmentText="@FeeFieldAdornmentText"
                                              For="() => _model.Fee"
@@ -142,28 +138,29 @@
 
                             @if (_model.FeeType is WageType.Fixed)
                             {
-                                <MudMenu @bind-Open="_feeFieldMenuOpen"
-                                         ActivationEvent="@MouseEvent.LeftClick">
-                                    <ActivatorContent>
-                                        <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        @foreach (var item in _priceUnits)
-                                        {
-                                            <MudMenuItem OnClick="() => SelectFeePriceUnit(item)">
-                                                <div style="display: flex; align-items: center; gap: 8px;">
-                                                    @if (item.HasIcon)
-                                                    {
-                                                        <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                            <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                                        </MudAvatar>
-                                                    }
-                                                    @item.Title
-                                                </div>
-                                            </MudMenuItem>
-                                        }
-                                    </ChildContent>
-                                </MudMenu>
+                                <MudTooltip Arrow="true" Text="تغییر واحد" Color="Color.Primary" Placement="Placement.Top">
+                                    <MudMenu MaxHeight="200">
+                                        <ActivatorContent>
+                                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" OnClick="context.ToggleAsync" />
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            @foreach (var item in _priceUnits)
+                                            {
+                                                <MudMenuItem OnClick="() => SelectFeePriceUnit(item)">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        @if (item.HasIcon)
+                                                        {
+                                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                            </MudAvatar>
+                                                        }
+                                                        @item.Title
+                                                    </div>
+                                                </MudMenuItem>
+                                            }
+                                        </ChildContent>
+                                    </MudMenu>
+                                </MudTooltip>
                             }
                         </div>
                     </MudItem>
@@ -186,74 +183,68 @@
                     </MudItem>
                 }
             </MudGrid>
-
-            <div>
-                @if (_model is { SourcePriceUnit: not null, DestinationPriceUnit: not null, SourceAmount: > 0, FinalDestinationAmount: not null })
-                {
-                    <MudPaper Elevation="4" Class="pa-3 mt-2 rounded-b-0">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap">
-                            <MudText Typo="Typo.h6">قیمت نهایی:</MudText>
-                            <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">
-                                @_model.FinalDestinationAmount.Value.ToCurrencyFormat(_model.DestinationPriceUnit?.Title)
-                            </MudText>
-                        </div>
-                    </MudPaper>
-
-                    <MudExpansionPanels Class="rounded-t-0" Elevation="4">
-                        <MudExpansionPanel Text="نمایش جزئیات محاسبه">
-                            <div class="d-flex flex-column gap-4 mt-2">
-                                @if (_model.ExchangeRate.HasValue && _model.SourcePriceUnit?.Id != _model.DestinationPriceUnit?.Id)
-                                {
-                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                        <MudText>
-                                            نرخ تبدیل
-                                            <span class="d-none d-md-inline">
-                                                : هر 1 @(_model.IsExchangeRateInverted ? _model.DestinationPriceUnit?.Title : _model.SourcePriceUnit?.Title)
-                                                به @(_model.IsExchangeRateInverted ? _model.SourcePriceUnit?.Title : _model.DestinationPriceUnit?.Title)
-                                            </span>
-                                        </MudText>
-                                        <MudText Class="font-weight-bold">
-                                            @_model.ExchangeRate.Value.ToCurrencyFormat(_model.IsExchangeRateInverted ? _model.SourcePriceUnit?.Title : _model.DestinationPriceUnit?.Title)
-                                        </MudText>
-                                    </div>
-                                }
-
-                                @if (_model.DestinationAmount.HasValue)
-                                {
-                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                        <MudText>قیمت خام</MudText>
-                                        <MudText Class="font-weight-bold">
-                                            @_model.DestinationAmount.Value.ToCurrencyFormat(_model.DestinationPriceUnit?.Title)
-                                        </MudText>
-                                    </div>
-                                }
-
-                                @if (_model is { FeeType: not null, FeeInDestination: not null } && _model.FeeInDestination.Value != 0)
-                                {
-                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                        <MudText>
-                                            کارمزد
-                                            <span class="d-none d-md-inline">
-                                                : @(_model.FeeType is WageType.Fixed
-                                                                                        ? $"مبلغ ثابت ({_model.Fee?.ToCurrencyFormat(_model.FeePriceUnit?.Title)})"
-                                                                                        : $"{_model.Fee?.ToCurrencyFormat()}%")
-                                    </span>
-                                </MudText>
-                                <MudText Class="font-weight-bold">
-                                    @_model.FeeInDestination.Value.ToCurrencyFormat(_model.DestinationPriceUnit?.Title)
-                                </MudText>
-                            </div>
-                                                        }
-                            </div>
-                        </MudExpansionPanel>
-                    </MudExpansionPanels>
-                }
-                else
-                {
-                    <MudDivider />
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">واحدها و مبلغ را وارد کنید.</MudText>
-                }
-            </div>
         </MudStack>
     </MudForm>
 </MudCard>
+
+@if (_model is { SourcePriceUnit: not null, DestinationPriceUnit: not null, SourceAmount: > 0, FinalDestinationAmount: not null })
+{
+    <MudExpansionPanels Elevation="24" Class="mt-4">
+        <MudExpansionPanel Expanded="false" Icon="@Icons.Material.Filled.ExpandMore">
+            <TitleContent>
+                <div class="d-flex justify-content-between align-items-center flex-wrap ml-0 ml-md-3">
+                    <MudText Typo="Typo.h6" Class="d-none d-md-block">نرخ نهایی:</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">
+                        @_model.FinalDestinationAmount.Value.ToCurrencyFormat(_model.DestinationPriceUnit?.Title)
+                    </MudText>
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <div class="d-flex flex-column gap-4 mt-2">
+                    @if (_model.ExchangeRate.HasValue && _model.SourcePriceUnit?.Id != _model.DestinationPriceUnit?.Id)
+                    {
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <MudText>
+                                نرخ تبدیل
+                                <span class="d-none d-md-inline">
+                                    : هر 1 @(_model.IsExchangeRateInverted? _model.DestinationPriceUnit?.Title : _model.SourcePriceUnit?.Title)
+                                    به @(_model.IsExchangeRateInverted? _model.SourcePriceUnit?.Title : _model.DestinationPriceUnit?.Title)
+                                </span>
+                            </MudText>
+                            <MudText Class="font-weight-bold">
+                                @_model.ExchangeRate.Value.ToCurrencyFormat(_model.IsExchangeRateInverted ? _model.SourcePriceUnit?.Title : _model.DestinationPriceUnit?.Title)
+                            </MudText>
+                        </div>
+                    }
+
+                    @if (_model.DestinationAmount.HasValue)
+                    {
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <MudText>قیمت خام</MudText>
+                            <MudText Class="font-weight-bold">
+                                @_model.DestinationAmount.Value.ToCurrencyFormat(_model.DestinationPriceUnit?.Title)
+                            </MudText>
+                        </div>
+                    }
+
+                    @if (_model is { FeeType: not null, FeeInDestination: not null } && _model.FeeInDestination.Value != 0)
+                    {
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <MudText>
+                                کارمزد
+                                <span class="d-none d-md-inline">
+                                    : @(_model.FeeType is WageType.Fixed
+                                                                ? $"مبلغ ثابت ({_model.Fee?.ToCurrencyFormat(_model.FeePriceUnit?.Title)})"
+                                                                : $"{_model.Fee?.ToCurrencyFormat()}%")
+                                </span>
+                            </MudText>
+                            <MudText Class="font-weight-bold">
+                                @_model.FeeInDestination.Value.ToCurrencyFormat(_model.DestinationPriceUnit?.Title)
+                            </MudText>
+                        </div>
+                    }
+                </div>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+}

@@ -6,7 +6,7 @@
     </TitleContent>
     <DialogContent>
         <MudTable T="InvoicePaymentVm" Hover="true" FixedHeader="true" Dense="true" Items="Items"
-                  SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="2">
+                  SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="2" ContainerStyle="max-height: 300px;">
             <ToolBarContent>
                 <div class="d-flex flex-1 gap-2 justify-content-md-center justify-content-between">
                     <MudHidden Breakpoint="Breakpoint.SmAndDown">
@@ -15,6 +15,9 @@
                         </MudButton>
                         <MudButton Class="ml-4" Color="Color.Tertiary" EndIcon="@Icons.Material.Filled.SwapHoriz" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)">
                             <MudText>حواله</MudText>
+                        </MudButton>
+                        <MudButton Class="ml-4" Color="Color.Info" EndIcon="@Icons.Material.Filled.Money" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Check)">
+                            <MudText>چک بانکی</MudText>
                         </MudButton>
                         <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Recycling" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)">
                             <MudText>طلای شکسته</MudText>
@@ -30,6 +33,9 @@
                         </MudTooltip>
                         <MudTooltip Color="Color.Tertiary" Text="حواله" Arrow="true">
                             <MudIconButton Color="@Color.Tertiary" Icon="@Icons.Material.Filled.SwapHoriz" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.CustomerTransfer)" />
+                        </MudTooltip>
+                        <MudTooltip Color="Color.Info" Text="چک بانکی" Arrow="true">
+                            <MudIconButton Color="@Color.Info" Icon="@Icons.Material.Filled.Money" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.Check)" />
                         </MudTooltip>
                         <MudTooltip Color="Color.Primary" Text="طلای شکسته" Arrow="true">
                             <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Recycling" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.UsedGoldInventory)" />

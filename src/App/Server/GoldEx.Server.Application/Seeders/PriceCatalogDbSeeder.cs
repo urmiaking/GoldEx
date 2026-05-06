@@ -32,7 +32,8 @@ internal sealed class PriceCatalogDbSeeder(
 
         context.Set(SeedContextKeys.NewlyCreatedPrices, newPrices);
 
-        logger.LogInformation($"{nameof(PriceCatalogDbSeeder)}: Seeded price catalogs.");
+        if (newPrices.Any())
+            logger.LogInformation($"{nameof(PriceCatalogDbSeeder)}: Seeded {newPrices.Count} price catalogs.");
     }
 
     private static async Task<List<Price>> MigrateAndSeedPriceCatalogsAsync(IPriceRepository priceRepository, IPriceUnitRepository priceUnitRepository, ILogger<PriceCatalogDbSeeder> logger, CancellationToken cancellationToken = default)

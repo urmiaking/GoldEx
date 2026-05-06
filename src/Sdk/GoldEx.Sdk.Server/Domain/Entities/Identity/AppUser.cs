@@ -10,6 +10,7 @@ public class AppUser : IdentityUser<Guid>
     public virtual ICollection<AppUserLogin> Logins { get; set; } = default!;
     public virtual ICollection<AppUserToken> Tokens { get; set; } = default!;
     public virtual ICollection<AppUserRole> UserRoles { get; set; } = default!;
+    public virtual ICollection<AppUserPasskey> Passkeys { get; set; } = default!;
 
     public AppUser(string name, string username, string? email = null, string? phoneNumber = null)
     {

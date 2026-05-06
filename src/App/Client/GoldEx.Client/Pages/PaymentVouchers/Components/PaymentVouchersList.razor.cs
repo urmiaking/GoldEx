@@ -144,7 +144,7 @@ public partial class PaymentVouchersList
 
     private async Task OnRemove(PaymentVoucherListVm model)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             $"آیا برای حذف سند پرداخت شماره {model.VoucherNumber} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");

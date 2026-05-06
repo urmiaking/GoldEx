@@ -1,10 +1,8 @@
-﻿@using Microsoft.Extensions.Caching.Memory
-@attribute [Route(ClientRoutes.Accounts.LoginWithPhoneNumber)]
+﻿@attribute [Route(ClientRoutes.Accounts.LoginWithPhoneNumber)]
 
 @inject UserManager<AppUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 @inject IMemoryCache MemoryCache
-@inject ILogger<LoginWithPhoneNumber> Logger
 @inject ISmsSender SmsSender
 @layout EmptyBoxLayout
 

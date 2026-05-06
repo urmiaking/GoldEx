@@ -3,13 +3,13 @@ using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Sdk.Server.Infrastructure.Abstractions;
+using GoldEx.Sdk.Server.Infrastructure.Common;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.Settings;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
-using GoldEx.Sdk.Server.Infrastructure.Common;
-using Microsoft.Extensions.Logging;
 
 namespace GoldEx.Server.Application.Seeders;
 
@@ -31,7 +31,7 @@ internal class UserDbSeeder(
 
         await PopulateAdministratorClaimsAsync(policyProviders, accountService);
 
-        var admin = await accountService.FindUserAsync("admin");
+        var admin = await accountService.FindUserAsync(_userSetting.UserName);
 
         if (admin is null)
         {
@@ -45,7 +45,7 @@ internal class UserDbSeeder(
                 ],
                 cancellationToken);
 
-            logger.LogInformation($"{nameof(UserDbSeeder)}: Created default administrator user.");
+            logger.LogInformation($"{nameof(UserDbSeeder)}: Created user '{_userSetting.UserName}' with role '{BuiltinRoles.Administrators}'.");
         }
     }
 

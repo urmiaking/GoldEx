@@ -28,7 +28,7 @@ public class AdvancedCalculatorVm
     [Required(ErrorMessage = "لطفا نرخ گرم را وارد کنید")]
     public decimal GramPrice { get; set; }
 
-    [Display(Name = "حداکثر اجرت ساخت")]
+    [Display(Name = "حداکثر اجرت")]
     public decimal? MaxWage { get; set; }
 
     [Display(Name = "حداقل وزن")]
@@ -45,7 +45,7 @@ public class AdvancedCalculatorVm
 
     public decimal TaxPercent { get; set; } = 10;
 
-    [Display(Name = "دسته بندی محصول")]
+    [Display(Name = "دسته بندی")]
     public GetProductCategoryResponse? ProductCategory { get; set; }
 
     public ProductType ProductType { get; set; } = ProductType.Gold;

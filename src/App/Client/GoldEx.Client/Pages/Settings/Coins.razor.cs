@@ -90,7 +90,7 @@ public partial class Coins
     {
         var coinId = context.Id ?? throw new InvalidOperationException();
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "حذف سکه",
             $"آیا از حذف سکه '{context.Title}' اطمینان دارید؟ این عملیات قابل بازگشت نیست.",
             yesText: "حذف کن",

@@ -40,6 +40,6 @@ public class CustomerBalanceFilterVm : ReportFilterVmBase
         public string PriceUnitTitle { get; set; } = string.Empty;
         public decimal TotalPayable { get; set; }
         public decimal TotalReceivable { get; set; }
-        public decimal NetAmount => TotalReceivable - TotalPayable;
+        public decimal NetAmount => TotalPayable + TotalReceivable;
     }
 }

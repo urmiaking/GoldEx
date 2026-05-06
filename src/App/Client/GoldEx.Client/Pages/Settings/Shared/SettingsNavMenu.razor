@@ -6,7 +6,11 @@
         <MudNavLink Href="@ClientRoutes.Settings.PriceUnits" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CurrencyExchange">مدیریت واحدهای ارزی</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.Coins" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.MonetizationOn">مدیریت سکه ها</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.FinancialAccounts" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Payments">مدیریت حساب های مالی</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.LedgerAccounts" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DashboardCustomize">مدیریت سرفصل های حسابداری</MudNavLink>
+        <AuthorizeView Roles="@BuiltinRoles.Administrators">
+            <Authorized>
+                <MudNavLink Href="@ClientRoutes.Settings.LedgerAccounts" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DashboardCustomize">مدیریت سرفصل های حسابداری</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavLink Href="@ClientRoutes.Settings.ReportsList" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DesignServices">طراحی گزارش ها</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.BarcodeBuilder" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.QrCode2">طراحی بارکد محصولات</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.SmsTemplates" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Sms">مدیریت قالب های پیامکی</MudNavLink>

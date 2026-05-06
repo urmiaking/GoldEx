@@ -21,6 +21,8 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using GoldEx.Server.Application.Utilities;
+using Microsoft.AspNetCore.Hosting;
 
 namespace GoldEx.Server.Application.Services;
 
@@ -39,6 +41,7 @@ internal class InvoiceService(
     IFinancialAccountService financialAccountService,
     IReportProvider reportProvider,
     IMapper mapper,
+    IWebHostEnvironment environment,
     ILogger<InvoiceService> logger,
     InvoiceRequestDtoValidator validator,
     DeleteInvoiceValidator deleteValidator) : IInvoiceService, IServerInvoiceService
@@ -274,6 +277,10 @@ internal class InvoiceService(
                 .ThenInclude(x => x.Product!.MoltenGold!.Assayer)
             .Include(x => x.InvoicePayments!)
                 .ThenInclude(x => x.TargetInvoice!.InvoicePayments!)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.CheckPayment!.Issuer)
+            .Include(x => x.InvoicePayments!)
+                .ThenInclude(x => x.CheckPayment!.IssuerFinancialAccount)
             .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException();
 
         var result = mapper.Map<GetInvoiceResponse>(item);
@@ -285,7 +292,32 @@ internal class InvoiceService(
             var financialAccounts = await financialAccountService
                 .GetTitlesAsync(null, priceUnitId, cancellationToken);
 
-            updatedPayments.Add(payment with { FinancialAccounts = financialAccounts });
+            string? paymentCheckImageUrl = null;
+
+            if (payment.PaymentType == PaymentType.Check)
+            {
+                var imageDirectoryPath = environment.GetCheckPaymentDirectoryPath();
+                var filePath = Directory.GetFiles(imageDirectoryPath, payment.Id + ".*")
+                    .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    var fileName = Path.GetFileName(filePath);
+
+                    paymentCheckImageUrl = $"/uploads/check-payments/{fileName}";
+                }
+            }
+
+            updatedPayments.Add(payment with
+            {
+                FinancialAccounts = financialAccounts,
+                CheckPayment = payment.CheckPayment != null
+                    ? payment.CheckPayment with
+                    {
+                        ImageUrl = paymentCheckImageUrl
+                    }
+                    : null
+            });
         }
 
         return result with { InvoicePayments = updatedPayments };

@@ -14,21 +14,22 @@
                                   Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" md="4" lg="4" Class="mt-2">
-                    <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="Model.IconFile" For="() => Model.IconFile!">
-                        <ActivatorContent>
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Success"
-                                       FullWidth="true"
-                                       StartIcon="@Icons.Material.Filled.AttachFile">
-                                انتخاب لوگو
-                            </MudButton>
-                        </ActivatorContent>
-                        <SelectedTemplate Context="ctx">
-                            @if (ctx != null)
-                            {
-                                <MudText>@ctx.Name</MudText>
-                            }
-                        </SelectedTemplate>
+                    <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="Model.IconFile" >
+                        <CustomContent Context="ctx">  
+                            <MudButton Variant="Variant.Filled"  
+                                       Color="Color.Success"  
+                                       FullWidth="true"  
+                                       OnClick="ctx.OpenFilePickerAsync"
+                                       StartIcon="@Icons.Material.Filled.AttachFile">  
+                                انتخاب لوگو  
+                            </MudButton>  
+                        </CustomContent>  
+                        <SelectedTemplate Context="ctx">  
+                            @if (ctx != null)  
+                            {  
+                                <MudText>@ctx.Name</MudText>  
+                            }  
+                        </SelectedTemplate>  
                     </MudFileUpload>
                 </MudItem>
                 <MudItem xs="12" md="12" lg="12">

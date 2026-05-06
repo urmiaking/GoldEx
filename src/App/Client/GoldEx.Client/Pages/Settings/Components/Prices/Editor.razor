@@ -48,7 +48,7 @@
 
             @if (_lastValidation is not null)
             {
-                <MudAlert Severity="@(_lastValidation.IsSupported? Severity.Success: Severity.Error)" ContentAlignment="HorizontalAlignment.Start">
+                <MudAlert Severity="@(_lastValidation.IsSupported? Severity.Success: Severity.Error)" ContentAlignment="HorizontalAlignment.Start" Class="mt-2">
                     @_lastValidation.Message
                 </MudAlert>
 
@@ -65,13 +65,14 @@
 
         <DialogActions>
             <MudFileUpload T="IBrowserFile" Accept=".png" @bind-Files="_model.IconFile" For="() => _model.IconFile!" Class="align-center d-flex justify-content-center">
-                <ActivatorContent>
+                <CustomContent Context="ctx">
                     <MudIconButton Variant="Variant.Filled"
                                    Color="Color.Success"
                                    Size="Size.Medium"
                                    Class="m-2"
+                                   OnClick="ctx.OpenFilePickerAsync"
                                    Icon="@Icons.Material.Filled.AttachFile" />
-                </ActivatorContent>
+                </CustomContent>
                 <SelectedTemplate Context="ctx">
                     @if (ctx != null)
                     {

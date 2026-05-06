@@ -61,11 +61,6 @@ public partial class Profile
         }
     }
 
-    private void NavigateToAccountManagement()
-    {
-        Navigation.NavigateTo(ClientRoutes.Accounts.Manage.Index, forceLoad: true);
-    }
-
     protected override void OnInitialized()
     {
         _isDarkMode = ThemeService?.IsDarkMode ?? false;

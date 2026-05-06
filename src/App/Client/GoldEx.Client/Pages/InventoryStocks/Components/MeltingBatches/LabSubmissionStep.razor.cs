@@ -37,7 +37,8 @@ public partial class LabSubmissionStep
         var parameters = new DialogParameters<Customers.Components.Editor>
         {
             { x => x.ReturnModel, true },
-            { x => x.CustomerType, CustomerType.AssayingLab }
+            { x => x.CustomerType, CustomerType.AssayingLab },
+            { x => x.ShowFinancialAccounts, false }
         };
 
         var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن آزمایشگاه جدید", parameters, dialogOptions);

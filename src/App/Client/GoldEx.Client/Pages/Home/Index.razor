@@ -40,18 +40,18 @@
         <MudTabPanel Text="نرخ لحظه ای" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Primary" Class="w-100">
             <PriceBoard Class="mt-5" Elevation="24" ContainerClass="@PriceBoardClass" />
         </MudTabPanel>
-        <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate"  Class="w-100">
-            <Calculator Class="mt-5" Elevation="24" />
+        <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate" IconColor="Color.Info" Class="w-100">
+            <Calculator Class="mt-5" ContainerClass="mt-5" Elevation="24" />
         </MudTabPanel>
         <AuthorizeView>
             <Authorized>
-                <MudTabPanel Text="فاکتور ها" Icon="@Icons.Material.Filled.LibraryBooks" Class="w-100">
+                <MudTabPanel Text="فاکتور ها" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Success" Class="w-100">
                     <InvoicesList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
-                <MudTabPanel Text="اجناس من" Icon="@Icons.Material.Filled.Warehouse" Class="w-100">
+                <MudTabPanel Text="اجناس من" Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Error" Class="w-100">
                     <InventoryStockList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
-                <MudTabPanel Text="مشتریان" Icon="@Icons.Material.Filled.PeopleAlt" Class="w-100">
+                <MudTabPanel Text="مشتریان" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Tertiary" Class="w-100">
                     <CustomersList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
                 <MudTabPanel Text="اسناد پرداخت" Icon="@Icons.Material.Filled.Payment" Class="w-100">

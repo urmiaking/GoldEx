@@ -90,13 +90,27 @@ internal static class ModelBuilderExtensions
         {
             b.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
 
-
             b.ToTable("UserTokens");
 
             b.HasOne(e => e.User)
                 .WithMany(e => e.Tokens)
                 .HasForeignKey(ut => ut.UserId)
                 .IsRequired();
+        });
+        builder.Entity<AppUserPasskey>(b =>
+        {
+            b.ToTable("UserPasskeys");
+            b.HasKey(x => x.CredentialId);
+
+            b.HasOne(x => x.User)
+                .WithMany(x => x.Passkeys)
+                .HasForeignKey(ut => ut.UserId)
+                .IsRequired();
+
+            b.OwnsOne(x => x.Data, b =>
+            {
+                b.ToJson();
+            });
         });
     }
 }

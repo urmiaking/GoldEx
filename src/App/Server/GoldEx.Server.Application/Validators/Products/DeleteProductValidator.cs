@@ -26,7 +26,7 @@ internal class DeleteProductValidator: AbstractValidator<Product>
     private async Task<bool> HasPositiveQuantityAsync(ProductId id, CancellationToken cancellationToken = default)
     {
         var quantity = await _inventoryStockRepository.GetQuantityAsync(id, cancellationToken);
-        return quantity > 0;
+        return quantity >= 0;
     }
 
     //private async Task<bool> NotInUse(ProductId id, CancellationToken cancellationToken = default)

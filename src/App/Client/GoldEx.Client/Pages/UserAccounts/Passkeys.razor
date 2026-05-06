@@ -1,0 +1,74 @@
+﻿@attribute [Route(ClientRoutes.UserAccounts.Passkeys)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>مدیریت کلیدهای عبور</PageTitle>
+
+<script src="@Assets["js/webauthn.js"]"></script>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <div class="flex-column gap-2 align-center justify-content-center w-100 mb-6 d-md-flex d-none">
+        <MudText Typo="Typo.h4">مدیریت کلیدهای عبور</MudText>
+        <MudText Typo="Typo.h6">کلید عبور به شما امکان می‌دهد بدون نیاز به رمز عبور، با استفاده از اثر انگشت، چهره یا PIN دستگاه خود وارد شوید</MudText>
+    </div>
+    
+    <MudPaper Class="pa-4" Elevation="24">
+        <div class="d-flex justify-space-between align-center mb-4">
+            <MudText Typo="Typo.h5">کلیدهای عبور ثبت ‌شده</MudText>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Variant="Variant.Filled" Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="AddNewPasskey" />
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddNewPasskey">
+                    افزودن کلید عبور جدید
+                </MudButton>
+            </MudHidden>
+        </div>
+
+        @if (_passkeys == null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (_passkeys.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Start">
+                هیچ کلید عبوری ثبت نشده است.
+            </MudAlert>
+        }
+        else
+        {
+            <MudGrid Spacing="3">
+                @foreach (var pk in _passkeys)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Class="pa-3">
+                            <MudCardHeader>
+                                <div class="d-flex gap-2 align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Fingerprint" Color="Color.Primary" Size="Size.Large"/>
+
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.h6">@pk.Name</MudText>
+                                        <MudText Class="text-secondary">کلید عبور بیومتریک</MudText>
+                                    </div>
+                                </div>
+                                
+                                <MudSpacer/>
+
+                                <MudTooltip Arrow="true" Color="Color.Error" Text="حذف">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled"
+                                                   OnClick="@(() => RemovePasskey(pk))"/>
+                                </MudTooltip>
+                            </MudCardHeader>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </MudPaper>
+</MudContainer>
