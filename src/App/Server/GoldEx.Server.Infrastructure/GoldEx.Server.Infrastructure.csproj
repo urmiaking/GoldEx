@@ -1,20 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\GoldEx.Server.Domain\GoldEx.Server.Domain.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);NU1903</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\GoldEx.Server.Domain\GoldEx.Server.Domain.csproj" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Castle.Core" Version="5.2.1" />
 		<PackageReference Include="EPPlus" Version="8.4.2" />
 		<PackageReference Include="IPE.SmsIr" Version="1.2.7" />
-		<PackageReference Include="MailKit" Version="4.15.0" />
+		<PackageReference Include="MailKit" Version="4.16.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
 		<PackageReference Include="Microsoft.Extensions.ML" Version="5.0.0" />
@@ -23,7 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\Spreadsheets\" />
+		<Folder Include="Models\Spreadsheets\" />
 	</ItemGroup>
 
 </Project>

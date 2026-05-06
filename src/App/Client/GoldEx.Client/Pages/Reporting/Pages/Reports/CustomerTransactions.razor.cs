@@ -33,7 +33,7 @@ public partial class CustomerTransactions
             }
             case nameof(CustomerTransactionRpResponse.PaymentVoucherId):
             {
-                var url = ClientRoutes.PaymentVouchers.Index.AppendQueryString(new { q = reference.RefId.Value });
+                var url = ClientRoutes.Finances.PaymentVouchers.AppendQueryString(new { q = reference.RefId.Value });
                 Navigation.NavigateTo(url);
                 break;
             }

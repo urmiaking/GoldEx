@@ -5,7 +5,7 @@ using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 
-namespace GoldEx.Client.Pages.PaymentVouchers.ViewModels;
+namespace GoldEx.Client.Pages.Finances.PaymentVouchers.ViewModels;
 
 public class PaymentVoucherVm
 {

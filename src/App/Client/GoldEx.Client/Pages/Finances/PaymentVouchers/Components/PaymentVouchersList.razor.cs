@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
+﻿using GoldEx.Client.Pages.Finances.PaymentVouchers.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.PaymentVouchers;
@@ -8,7 +8,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.PaymentVouchers.Components;
+namespace GoldEx.Client.Pages.Finances.PaymentVouchers.Components;
 
 public partial class PaymentVouchersList
 {
