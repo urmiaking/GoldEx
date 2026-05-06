@@ -94,7 +94,7 @@ self.addEventListener('fetch', event => {
 
         /* ============================
          * 0. API REQUESTS
-         *    NETWORK FIRST (NEW)
+         *    NETWORK FIRST
          * ============================ */
         if (url.pathname.startsWith('/api/')) {
             const cache = await caches.open(API_CACHE);
@@ -102,14 +102,12 @@ self.addEventListener('fetch', event => {
             try {
                 const networkResponse = await fetch(event.request);
 
-                // Cache only valid responses
                 if (networkResponse && networkResponse.ok) {
                     await cache.put(event.request, networkResponse.clone());
                 }
 
                 return networkResponse;
             } catch {
-                // OFFLINE FALLBACK
                 const cached = await cache.match(event.request);
                 if (cached) return cached;
 
@@ -124,28 +122,40 @@ self.addEventListener('fetch', event => {
         }
 
         /* ============================
-         * 1. Blazor framework files
-         * cache-first (Optimized)
+         * 1. Video / Range requests
+         *    BYPASS CACHE
+         * ============================ */
+        const isRangeRequest = event.request.headers.has('range');
+        const isVideoRequest =
+            event.request.destination === 'video' ||
+            /\.mp4$|\.webm$|\.ogg$|\.mov$|\.m4v$/i.test(url.pathname);
+
+        if (isRangeRequest || isVideoRequest) {
+            return fetch(event.request);
+        }
+
+        /* ============================
+         * 2. Blazor framework files
+         *    cache-first
          * ============================ */
         if (url.pathname.startsWith('/_framework/')) {
-            // OPTIMIZATION 1: Strip query string manually for an instant O(1) lookup
-            // This avoids the massive performance penalty of ignoreSearch: true
             const cleanUrl = new URL(event.request.url);
             cleanUrl.search = '';
 
-            // OPTIMIZATION 2: Use global caches.match to avoid opening the cache 100+ times
-            const cached = await caches.match(cleanUrl.toString()) || await caches.match(event.request);
+            const cached =
+                await caches.match(cleanUrl.toString()) ||
+                await caches.match(event.request);
+
             if (cached) return cached;
 
             try {
                 const response = await fetch(event.request);
                 if (response.ok) {
-                    // Only open the cache if we actually need to save a missing file
                     const cache = await caches.open(CACHE_NAME);
                     await cache.put(event.request, response.clone());
                 }
                 return response;
-            } catch (error) {
+            } catch {
                 return new Response('Offline framework file missing', {
                     status: 503,
                     headers: { 'Content-Type': 'text/plain' }
@@ -154,7 +164,7 @@ self.addEventListener('fetch', event => {
         }
 
         /* ============================
-         * 2. Navigation requests
+         * 3. Navigation requests
          *    network-first
          * ============================ */
         if (event.request.mode === 'navigate') {
@@ -168,7 +178,7 @@ self.addEventListener('fetch', event => {
         }
 
         /* ============================
-         * 3. Static assets
+         * 4. Static assets
          *    cache-first
          * ============================ */
         const cache = await caches.open(CACHE_NAME);
@@ -177,9 +187,12 @@ self.addEventListener('fetch', event => {
 
         try {
             const response = await fetch(event.request);
-            if (response.ok) {
+
+            // فقط responseهای کامل و موفق cache شوند
+            if (response.ok && response.status === 200) {
                 await cache.put(event.request, response.clone());
             }
+
             return response;
         } catch {
             return new Response('Offline', { status: 503 });
