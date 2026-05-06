@@ -1,0 +1,35 @@
+﻿@attribute [Route(ClientRoutes.Finances.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>اسناد مالی</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <MudText Typo="Typo.h5" GutterBottom="true">مدیریت اسناد پرداختی</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="اسناد پرداخت"
+                           Description="ایجاد، ویرایش و حذف اسناد پرداخت"
+                           StartIcon="@Icons.Material.Filled.LibraryBooks"
+                           Href="@ClientRoutes.Finances.PaymentVouchers" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom="true">مدیریت چک ها</MudText>
+    <MudDivider Class="mb-4" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="لیست چک ها"
+                           Description="عملیات چک مانند مشاهده، وصول و برگشت"
+                           StartIcon="@Icons.Material.Filled.Money"
+                           Href="@ClientRoutes.Finances.Checks" />
+        </MudItem>
+    </MudGrid>
+</MudContainer>

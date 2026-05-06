@@ -8,20 +8,23 @@ namespace GoldEx.Client.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    internal static IServiceCollection AddServices(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services.DiscoverServices();
+        internal IServiceCollection AddServices()
+        {
+            services.DiscoverServices();
 
-        return services;
-    }
+            return services;
+        }
 
-    public static IServiceCollection AddClientServerServices(this IServiceCollection services)
-    {
-        if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
-            services.AddClientServices();
+        public IServiceCollection AddClientServerServices()
+        {
+            if (RuntimeInformation.OSArchitecture == Architecture.Wasm)
+                services.AddClientServices();
 
-        services.AddClientAndServerServices(Defaults.Classes.Position.BottomLeft);
+            services.AddClientAndServerServices(Defaults.Classes.Position.BottomLeft);
 
-        return services;
+            return services;
+        }
     }
 }
