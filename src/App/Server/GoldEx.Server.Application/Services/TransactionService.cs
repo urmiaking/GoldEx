@@ -88,10 +88,17 @@ internal class TransactionService(IMapper mapper,
             .Get(new TransactionsByFilterSpecification(transactionFilter, null))
             .AsNoTracking()
             .Where(x => x.PriceUnit != null)
-            .Select(t => t.PriceUnit!)
-            .Distinct()
+            .GroupBy(x => x.PriceUnit)
+            .Select(t => t.Key!)
             .ToListAsync(cancellationToken);
 
         return mapper.Map<List<GetPriceUnitTitleResponse>>(priceUnits);
+    }
+
+    public async Task<List<GetTopCustomerResponse>> GetTopCustomersAsync(TransactionType transactionType, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await repository.GetTopCustomersAsync(transactionType, priceUnitId, cancellationToken);
+        return mapper.Map<List<GetTopCustomerResponse>>(result);
     }
 }

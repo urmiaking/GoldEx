@@ -117,7 +117,7 @@ public partial class LedgerAccounts
         //{
         //    return;
         //}
-        //var result = await DialogService.ShowMessageBox(
+        //var result = await DialogService.ShowMessageBoxAsync(
         //    "حذف سرفصل",
         //    $"آیا از حذف سرفصل '{selectedItem.Title}' مطمئن هستید؟",
         //    yesText: "حذف",

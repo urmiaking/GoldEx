@@ -7,13 +7,14 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 public class CoinPackageSpecVm
 {
     [Display(Name = "وزن با وکیوم")]
+    [Required(ErrorMessage = "{0} الزامی است")]
     public decimal? VacuumedWeight { get; set; }
 
     [Display(Name = "کارگاه/نمایندگی")]
     public CustomerVm? Issuer { get; set; }
 
     [Display(Name = "کد استاندارد")]
-    [Required(ErrorMessage = "کد استاندارد الزامی است")]
+    [Required(ErrorMessage = "{0} الزامی است")]
     public string? StandardCode { get; set; }
 
     [Display(Name = "رنگ کارت")]

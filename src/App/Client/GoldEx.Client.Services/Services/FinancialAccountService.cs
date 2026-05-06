@@ -51,6 +51,18 @@ internal class FinancialAccountService(HttpClient client, JsonSerializerOptions 
         return result ?? throw new UnexpectedHttpResponseException();
     }
 
+    public async Task<List<GetFinancialAccountResponse>> GetCustomerAccountsAsync(Guid customerId, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.FinancialAccounts.GetCustomerAccounts(customerId, priceUnitId), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<GetFinancialAccountResponse>>(jsonOptions, cancellationToken);
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
     public async Task<GetFinancialAccountResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.FinancialAccounts.Get(id), cancellationToken);

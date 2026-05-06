@@ -5,7 +5,6 @@ using GoldEx.Shared.DTOs.AppReleases;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 
 namespace GoldEx.Client.Pages.Home;
@@ -13,7 +12,6 @@ namespace GoldEx.Client.Pages.Home;
 public partial class Index
 {
     [Inject] private IVersionReleaseStore ReleaseStore { get; set; } = default!;
-    [Inject] private IAppReleaseService ReleaseService { get; set; } = default!;
 
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [

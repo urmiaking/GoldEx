@@ -14,8 +14,6 @@ try
 
     app.ApplyDatabaseMigrations<GoldExDbContext>();
 
-    await app.SeedDatabaseAsync();
-
     app.ConfigurePipeline();
 
     app.Run();

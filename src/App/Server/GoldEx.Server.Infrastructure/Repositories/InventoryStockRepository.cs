@@ -654,6 +654,7 @@ internal class InventoryStockRepository(
             .ToList();
 
         var filtered = groupedByProduct
+            .Where(x => !calculatorFilter.ProductCategoryId.HasValue || x.Product!.ProductCategoryId == new ProductCategoryId(calculatorFilter.ProductCategoryId.Value))
             .Where(x => string.IsNullOrEmpty(calculatorFilter.Name) || x.Product!.Name.Contains(calculatorFilter.Name))
             .Where(x => !calculatorFilter.Fineness.HasValue || x.Product!.Fineness == calculatorFilter.Fineness.Value)
             .Where(x => !calculatorFilter.MaxWage.HasValue || (x.Product!.WageType == WageType.Percent && x.Product!.Wage <= calculatorFilter.MaxWage.Value))

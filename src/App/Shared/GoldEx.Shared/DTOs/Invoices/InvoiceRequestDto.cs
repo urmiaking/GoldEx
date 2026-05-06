@@ -69,7 +69,14 @@ public record InvoicePaymentDto(
     Guid? VoucherId,
     Guid? TargetInvoiceId,
     Guid? CustomerId,
-    Guid PriceUnitId);
+    Guid PriceUnitId,
+    Guid? CheckIssuerId,
+    Guid? CheckIssuerFinancialAccountId,
+    string? CheckNumber,
+    string? CheckSayadiCode,
+    DateTime? CheckDueDate,
+    byte[]? CheckImage,
+    string? CheckImageContentType);
 
 public record InvoiceProductItemDto(
     Guid? Id,

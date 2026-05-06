@@ -18,7 +18,7 @@
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="Model.Body"
                               For="@(() => Model.Body)"
-                              AutoGrow
+                              Sizing="InputSizing.Auto"
                               Label="@(Model.GetDisplayName(() => Model.Body))"
                               Variant="Variant.Outlined" />
             </MudItem>

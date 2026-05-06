@@ -1,0 +1,183 @@
+﻿@using Microsoft.AspNetCore.Antiforgery
+@inject IServiceProvider Services
+
+<MudIconButton ButtonType="ButtonType.Submit" name="__passkeySubmit" 
+               Icon="@Icons.Material.Filled.Fingerprint" Variant="Variant.Filled" Color="Color.Primary" />
+
+<passkey-submit
+    name="@Name"
+    username-name="@Username"
+    request-token-name="@_tokens?.HeaderName"
+    request-token-value="@_tokens?.RequestToken"
+    auto="@(Auto ? "true" : null)">
+</passkey-submit>
+
+@code {
+    private AntiforgeryTokenSet? _tokens;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [Parameter]
+    [EditorRequired]
+    public string Name { get; set; } = default!;
+
+    [Parameter]
+    public string? Username { get; set; }
+
+    [Parameter]
+    public bool Auto { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _tokens = Services.GetService<IAntiforgery>()?.GetTokens(HttpContext);
+    }
+}
+<script>
+    const browserSupportsPasskeys =
+        typeof navigator.credentials !== 'undefined' &&
+        typeof window.PublicKeyCredential !== 'undefined' &&
+        typeof window.PublicKeyCredential.parseCreationOptionsFromJSON === 'function' &&
+        typeof window.PublicKeyCredential.parseRequestOptionsFromJSON === 'function';
+
+    async function fetchWithErrorHandling(url, options = {}) {
+        const response = await fetch(url, {
+            credentials: 'include',
+            ...options
+        });
+        if (!response.ok) {
+            const text = await response.text();
+            console.error(text);
+            throw new Error(`The server responded with status ${response.status}.`);
+        }
+        return response;
+    }
+
+    async function requestCredential(username, mediation, headers, signal) {
+        // If mediation is conditional, we usually need the username.
+        // If it's the auto-popup (mediation undefined), we often send an empty username to trigger "Discoverable Credential" flow.
+        const url = mediation === 'conditional'
+            ? `/api/user-accounts/passkeys/request-options?username=${username || ''}`
+            : `/api/user-accounts/passkeys/request-options`; // Requesting Discoverable Credential
+
+        const optionsResponse = await fetchWithErrorHandling(url, {
+            method: 'GET',
+            headers,
+            signal,
+        });
+        const optionsJson = await optionsResponse.json();
+        const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJson);
+        return await navigator.credentials.get({ publicKey: options, mediation, signal });
+    }
+
+    customElements.define('passkey-submit', class extends HTMLElement {
+        static formAssociated = true;
+
+        connectedCallback() {
+            this.internals = this.attachInternals();
+            this.attrs = {
+                name: this.getAttribute('name'),
+                username: this.getAttribute('username-name'),
+                requestTokenName: this.getAttribute('request-token-name'),
+                requestTokenValue: this.getAttribute('request-token-value'),
+                auto: this.hasAttribute('auto')
+            };
+
+            this.internals.form.addEventListener('submit', (event) => {
+                if (event.submitter?.name === '__passkeySubmit') {
+                    event.preventDefault();
+                    this.obtainAndSubmitCredential();
+                }
+            });
+
+            // LOGIC CHANGE: Check if this device has used passkeys before
+            const isKnownDevice = localStorage.getItem('device_registered_passkey') === 'true';
+
+            // If Auto is requested AND we know this device, try to pop up immediately
+            if (this.attrs.auto && isKnownDevice) {
+                // Pass false to disable 'conditional' (autofill) and force the modal
+                this.obtainAndSubmitCredential(false);
+            } else {
+                // Otherwise, just show the icon in the input field
+                this.tryAutofillPasskey();
+            }
+        }
+
+        disconnectedCallback() {
+            this.abortController?.abort();
+        }
+
+        async obtainCredential(useConditionalMediation, signal) {
+            if (!browserSupportsPasskeys) {
+                throw new Error('Some passkey features are missing. Please update your browser.');
+            }
+
+            const headers = {
+                [this.attrs.requestTokenName]: this.attrs.requestTokenValue,
+            };
+
+            const username = new FormData(this.internals.form).get(this.attrs.username);
+                const mediation = useConditionalMediation ? 'conditional' : undefined;
+                return await requestCredential(username, mediation, headers, signal);
+        }
+
+        async obtainAndSubmitCredential(useConditionalMediation = false) {
+            this.abortController?.abort();
+            this.abortController = new AbortController();
+            const signal = this.abortController.signal;
+            const formData = new FormData();
+            try {
+                const credential = await this.obtainCredential(useConditionalMediation, signal);
+
+                // SUCCESS: Save the flag to LocalStorage!
+                // This ensures next time they visit, it opens automatically.
+                localStorage.setItem('device_registered_passkey', 'true');
+
+                const credentialJson = JSON.stringify(credential);
+                formData.append(`${this.attrs.name}.CredentialJson`, credentialJson);
+
+                this.internals.setFormValue(formData);
+                this.internals.form.submit();
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    return;
+                }
+                console.error(error);
+
+                // FALLBACK:
+                // If the Auto-popup failed (user cancelled, or browser blocked it),
+                // we must activate the "Conditional UI" (input field icon) so they can still log in manually.
+                if (this.attrs.auto && !useConditionalMediation) {
+                    console.log("Auto-passkey cancelled or failed, falling back to conditional UI.");
+                    this.tryAutofillPasskey();
+                    return;
+                }
+
+                if (useConditionalMediation) {
+                    // Silent failure for conditional UI
+                    return;
+                }
+
+                const errorMessage = error.name === 'NotAllowedError'
+                    ? 'No passkey was provided by the authenticator.'
+                    : error.message;
+                formData.append(`${this.attrs.name}.Error`, errorMessage);
+
+                // Only submit the form with an error if it was a manual click, not an auto attempt
+                if(!this.attrs.auto) {
+                    this.internals.setFormValue(formData);
+                    this.internals.form.submit();
+                }
+            }
+        }
+
+        async tryAutofillPasskey() {
+            if (browserSupportsPasskeys && await PublicKeyCredential.isConditionalMediationAvailable?.()) {
+                await this.obtainAndSubmitCredential(/* useConditionalMediation */ true);
+            }
+        }
+    });
+</script>

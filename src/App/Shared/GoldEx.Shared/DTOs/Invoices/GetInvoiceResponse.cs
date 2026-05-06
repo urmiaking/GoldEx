@@ -65,7 +65,7 @@ public record GetInvoiceProductItemResponse(
     decimal? PurchaseWage,
     WageType? PurchaseWageType,
     Guid? PurchaseWagePriceUnitId,
-    string ? PurchaseWagePriceUnitTitle,
+    string? PurchaseWagePriceUnitTitle,
     decimal? PurchaseWagePriceUnitExchangeRate,
     decimal? StonePriceUnitExchangeRate,
     bool IsInstantProduct,
@@ -112,8 +112,19 @@ public record GetInvoicePaymentResponse(
     GetFinancialAccountTitleResponse? FinancialAccount,
     GetCustomerResponse? Endorser,
     GetPriceUnitTitleResponse PriceUnit,
-    List<GetFinancialAccountTitleResponse> FinancialAccounts);
+    List<GetFinancialAccountTitleResponse> FinancialAccounts,
+    GetCheckPaymentResponse? CheckPayment);
 
 public record GetInvoiceExtraCostsResponse(decimal Amount, decimal? ExchangeRate, string? Description, GetPriceUnitTitleResponse PriceUnit);
 
 public record GetInvoiceDiscountResponse(decimal Amount, decimal? ExchangeRate, string? Description, GetPriceUnitTitleResponse PriceUnit);
+
+public record GetCheckPaymentResponse(
+    GetCustomerResponse Issuer,
+    GetFinancialAccountResponse IssuerFinancialAccount,
+    string? Number,
+    string? SayadiCode,
+    string? ImageUrl,
+    DateTime DueDate,
+    CheckPaymentStatus CurrentStatus,
+    DateTime LastModifiedAt);

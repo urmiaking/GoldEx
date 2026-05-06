@@ -100,6 +100,7 @@ public static class ApiRoutes
         public const string GetFinancialAccountBalance = "financial-account/{financialAccountId}/balance";
         public const string GetAccountBalance = "account-balance";
         public const string GetAvailablePriceUnits = "available-price-units";
+        public const string GetTopCustomers = "top-customers-balance/{transactionType}";
     }
 
     public class PriceUnits
@@ -147,6 +148,7 @@ public static class ApiRoutes
         public const string Update = "{id}";
         public const string Delete = "{id}";
         public const string GetTitles = "titles";
+        public const string GetCustomerAccounts = "customer/{customerId}";
     }
 
     public class PaymentVouchers
@@ -352,5 +354,35 @@ public static class ApiRoutes
         public const string GetList = "";
         public const string Create = "";
         public const string SetStatus = "{id}/{status}";
+    }
+
+    public class UserAccounts
+    {
+        public const string Base = "/api/user-accounts";
+        public const string GetCurrentUser = "current-user";
+        public const string UpdateFullName = "full-name";
+        public const string UpdatePhoneNumber = "phone-number";
+        public const string SendVerificationToken = "send-verification-token";
+        public const string UpdateEmail = "email";
+        public const string UpdatePassword = "password";
+        public const string Get2FaStatus = "2fa";
+        public const string ForgetDevice = "2fa/forget-device";
+        public const string Disable2Fa = "2fa/disable";
+        public const string GetAuthenticatorKey = "authenticator-key";
+        public const string Enable2Fa = "2fa/enable";
+        public const string GetExternalProviders = "external-providers";
+        public const string ExternalLogin = "external-login";
+        public const string ExternalLoginCallback = "external-login-callback";
+        public const string GetPasskeys = "passkeys";
+        public const string GetPasskeyCreationOptions = "passkeys/creation-options";
+        public const string GetPasskeyRequestOptions = "passkeys/request-options";
+        public const string AddPasskey = "passkeys/add";
+        public const string RemovePasskey = "passkeys/{credentialId}/remove";
+        public const string GetAccountsList = "list";
+        public const string LockUser = "{id}/lock-user";
+        public const string UnlockUser = "{id}/unlock-user";
+        public const string CreateAccount = "user";
+        public const string UpdateAccount = "user/{id}";
+        public const string DeleteAccount = "user/{id}";
     }
 }

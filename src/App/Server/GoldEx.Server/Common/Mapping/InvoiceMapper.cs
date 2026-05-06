@@ -1,4 +1,6 @@
-﻿using GoldEx.Server.Domain.InvoiceAggregate;
+﻿using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
@@ -49,17 +51,17 @@ internal class InvoiceMapper : IRegister
             .Map(dest => dest.CostPriceUnitId,
                 src => src.CostPriceUnitId.HasValue ? src.CostPriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.CostPriceUnitTitle,
-                src => src.CostPriceUnit != null ? src.CostPriceUnit.Title : string.Empty)
+                src => src.CostPriceUnit != null ? src.CostPriceUnit.Title : null)
             .Map(dest => dest.WageExchangeRate,
                 src => src.SaleWagePriceUnitExchangeRate ?? src.PurchaseWagePriceUnitExchangeRate)
             .Map(dest => dest.SaleWagePriceUnitId,
                 src => src.SaleWagePriceUnitId.HasValue ? src.SaleWagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.SaleWagePriceUnitTitle,
-                src => src.SaleWagePriceUnit != null ? src.SaleWagePriceUnit.Title : string.Empty)
+                src => src.SaleWagePriceUnit != null ? src.SaleWagePriceUnit.Title : null)
             .Map(dest => dest.PurchaseWagePriceUnitId,
                 src => src.PurchaseWagePriceUnitId.HasValue ? src.PurchaseWagePriceUnitId.Value.Value : (Guid?)null)
             .Map(dest => dest.PurchaseWagePriceUnitTitle,
-                src => src.PurchaseWagePriceUnit != null ? src.PurchaseWagePriceUnit.Title : string.Empty)
+                src => src.PurchaseWagePriceUnit != null ? src.PurchaseWagePriceUnit.Title : null)
             .Map(dest => dest.StonePriceUnitExchangeRate, src => src.StonePriceUnitExchangeRate);
 
         config.NewConfig<InvoiceCoinItem, GetInvoiceCoinItemResponse>()
@@ -92,5 +94,7 @@ internal class InvoiceMapper : IRegister
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.Remaining, src => src.TotalUnpaidAmount)
             .Map(dest => dest.ExchangeRate, src => src.ExchangeRate);
+
+        config.NewConfig<CheckPayment, GetCheckPaymentResponse>();
     }
 }

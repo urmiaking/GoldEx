@@ -134,7 +134,7 @@ public partial class ProductList
 
     private async Task RemoveItem(ProductItemVm context)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             $"آیا برای حذف جنس {context.Product.Name} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");

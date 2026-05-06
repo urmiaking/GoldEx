@@ -40,7 +40,6 @@ public partial class EditorForm
     private InvoiceVm _model = InvoiceVm.CreateDefaultInstance();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private readonly InvoiceValidator _invoiceValidator = new();
-    private readonly string _jsVersion = new Random().Next(1, 1000).ToString();
     private GetSettingResponse? _setting;
     private GetPriceResponse? _gramPrice;
     private MudForm _form = default!;
@@ -51,9 +50,11 @@ public partial class EditorForm
     private bool _discountMenuOpen;
     private bool _extraCostsMenuOpen;
     private bool _processing;
+    private bool _deleting;
     private bool _totalUnpaidMenuOpen;
     private bool _isLoadingInvoice;
     private bool _applyCurrentInvoice = true;
+    private bool _paymentMenuOpen;
 
     private GetPriceUnitTitleResponse? DefaultPriceUnit =>
         _priceUnits.FirstOrDefault(x => x.IsDefault);
@@ -111,8 +112,10 @@ public partial class EditorForm
 
     private string InvoiceIcon => _model.InvoiceType switch
     {
-        InvoiceType.Sell => Icons.Material.Filled.KeyboardArrowDown,
-        InvoiceType.Purchase => Icons.Material.Filled.KeyboardArrowUp,
+        InvoiceType.Sell when _model.TradeScale is TradeScale.Retail => Icons.Material.Filled.ShoppingBasket,
+        InvoiceType.Sell when _model.TradeScale is TradeScale.Wholesale => Icons.Material.Filled.ShoppingCart,
+        InvoiceType.Purchase when _model.TradeScale is TradeScale.Retail => Icons.Material.Filled.ShoppingBasket,
+        InvoiceType.Purchase when _model.TradeScale is TradeScale.Wholesale => Icons.Material.Filled.ShoppingCart,
         _ => Icons.Material.Filled.Receipt
     };
 
@@ -132,7 +135,6 @@ public partial class EditorForm
         _model.InvoiceType = InvoiceType;
 
         await LoadPriceUnitsAsync();
-
         await LoadCustomerAsync();
         await LoadInvoiceAsync();
         await LoadSettingsAsync();
@@ -392,6 +394,8 @@ public partial class EditorForm
                     GramPrice = gramPrice,
                     WageExchangeRate = wageExchangeRate,
                     StonePriceUnitExchangeRate = stoneExchangeRate,
+                    CostPriceUnitId = _model.InvoicePriceUnit?.Id, // loading from invoice model
+                    CostPriceUnitTitle = _model.InvoicePriceUnit?.Title,
                     InvoiceType = InvoiceType.Sell,
                     TaxPercent = _model.TradeScale is TradeScale.Retail ? _setting?.TaxPercent ?? 9 : 0,
                     ProfitPercent = _model.TradeScale is TradeScale.Retail ? response.ProductType == ProductType.Gold
@@ -500,7 +504,7 @@ public partial class EditorForm
 
     private async Task OnRemoveProductItem(ProductItemVm productItem)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {productItem.Product.Name} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -771,7 +775,7 @@ public partial class EditorForm
 
     private async Task OnRemoveCoinItem(CoinItemVm coinItem)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {coinItem.CoinInstance.Coin?.Title} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -892,7 +896,7 @@ public partial class EditorForm
 
     private async Task OnRemoveCurrencyItem(CurrencyItemVm currencyItem)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {currencyItem.Currency.Title} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -928,7 +932,7 @@ public partial class EditorForm
 
     private async Task OnRemoveUsedProduct(UsedProductVm usedProduct)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف {usedProduct.Description} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -1168,7 +1172,7 @@ public partial class EditorForm
             afterSend: response => _model.ExchangeRate = response.ExchangeRate);
     }
 
-    private async Task SubmitAsync(bool printInvoice)
+    private async Task SubmitAsync(bool? skipPrint = false)
     {
         if (_processing)
             return;
@@ -1179,6 +1183,7 @@ public partial class EditorForm
             return;
 
         _processing = true;
+        StateHasChanged();
 
         try
         {
@@ -1195,12 +1200,22 @@ public partial class EditorForm
 
         await SendRequestAsync<IInvoiceService>(
             action: (s, ct) => request.Id.HasValue ? s.UpdateAsync(request.Id.Value, request, ct) : s.CreateAsync(request, ct),
-            afterSend: () =>
+            afterSend: async () =>
             {
-                AddSuccessToast("فاکتور با موفقیت ذخیره شد");
                 _processing = false;
-                Navigation.NavigateTo(printInvoice ? PrintUrl : ClientRoutes.Invoices.List);
-                return Task.CompletedTask;
+                StateHasChanged();
+                AddSuccessToast("فاکتور با موفقیت ذخیره شد");
+
+                if (skipPrint == true)
+                    return;
+
+                var result = await DialogService.ShowMessageBoxAsync("چاپ فاکتور",
+                    "آیا مایل به پرینت فاکتور هستید؟",
+                    "بله، چاپ کن",
+                    "خیر",
+                    options: new DialogOptions { BackdropClick = false });
+
+                Navigation.NavigateTo(result == true ? PrintUrl : ClientRoutes.Invoices.List);
             },
             onFailure: () =>
             {
@@ -1213,7 +1228,7 @@ public partial class EditorForm
     {
         if (_model.ProductItems.Any() || _model.CoinItems.Any() || _model.CurrencyItems.Any())
         {
-            var result = await DialogService.ShowMessageBox(
+            var result = await DialogService.ShowMessageBoxAsync(
                 "هشدار",
                 markupMessage: new MarkupString("تغییر نوع فاکتور باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
                 yesText: "بله", cancelText: "لغو");
@@ -1231,7 +1246,7 @@ public partial class EditorForm
 
             if (vouchers.Any())
             {
-                var result = await DialogService.ShowMessageBox(
+                var result = await DialogService.ShowMessageBoxAsync(
                     "هشدار",
                     markupMessage: new MarkupString("تغییر نوع فاکتور به فروش باعث حذف تمام رسیدهای پرداختی خواهد شد. آیا مطمئن هستید؟"),
                     yesText: "بله", cancelText: "لغو");
@@ -1266,7 +1281,7 @@ public partial class EditorForm
         {
             if (tradeScale != TradeScale)
             {
-                var result = await DialogService.ShowMessageBox(
+                var result = await DialogService.ShowMessageBoxAsync(
                     "هشدار",
                     markupMessage:
                     new MarkupString("تغییر نوع معامله باعث حذف اقلام فاکتور خواهد شد. آیا مطمئن هستید؟"),
@@ -1293,7 +1308,20 @@ public partial class EditorForm
         await OnInvoicePriceUnitChanged(priceUnit);
     }
 
-    private async Task OnPrintAsync() => await JsRuntime.InvokeVoidAsync("open", PrintUrl, "_blank");
+    private async Task OnPrintAsync()
+    {
+        var result = await DialogService.ShowMessageBoxAsync(
+            "هشدار", "آیا قبل از چاپ مایل به ذخیره تغییرات هستید؟",
+            yesText: "بله",
+            noText: "خیر",
+            options: new DialogOptions { BackdropClick = false });
+
+        if (result == true) 
+            await SubmitAsync(skipPrint: true);
+
+        // await JsRuntime.InvokeVoidAsync("open", PrintUrl, "_blank");
+        Navigation.NavigateTo(PrintUrl);
+    }
 
     private string FormatCompleteUnpaidAmount(decimal totalUnpaidAmount, string? primaryUnit, decimal? exchangeRate, decimal totalUnpaidSecondaryAmount, string? secondaryUnit)
     {
@@ -1320,7 +1348,7 @@ public partial class EditorForm
         if (!_model.InvoiceId.HasValue)
             return;
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای ارسال پیامک تسویه حساب به شماره همراه {_model.Customer?.PhoneNumber} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -1342,7 +1370,7 @@ public partial class EditorForm
         if (!_model.InvoiceId.HasValue)
             return;
 
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             markupMessage: new MarkupString($"آیا برای حذف فاکتور شماره {_model.InvoiceNumber} اطمینان دارید؟ <br> <br> "),
             yesText: "بله", cancelText: "لغو");
@@ -1350,11 +1378,14 @@ public partial class EditorForm
         if (result is null)
             return;
 
+        _deleting = true;
+
         await SendRequestAsync<IInvoiceService>(
             action: (s, ct) => s.DeleteAsync(_model.InvoiceId.Value, ct),
             afterSend: () =>
             {
                 AddSuccessToast("فاکتور با موفقیت حذف شد");
+                _deleting = false;
                 Navigation.NavigateTo(ClientRoutes.Invoices.Index);
                 return Task.CompletedTask;
             });
@@ -1380,11 +1411,13 @@ public partial class EditorForm
 
     private void OnDiscountMenuToggled()
     {
+        _paymentMenuOpen = false;
         _discountMenuOpen = !_discountMenuOpen;
     }
 
     private void OnExtraCostsMenuToggled()
     {
+        _paymentMenuOpen = false;
         _extraCostsMenuOpen = !_extraCostsMenuOpen;
     }
 
@@ -1429,6 +1462,8 @@ public partial class EditorForm
 
     private async Task OnAddPayment(PaymentType paymentType)
     {
+        _paymentMenuOpen = false;
+
         if (_license is null)
             return;
 

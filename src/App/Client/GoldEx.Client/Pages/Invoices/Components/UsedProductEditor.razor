@@ -19,7 +19,7 @@
                                      Variant="Variant.Outlined" />
                 </div>
             }
-            <MudGrid Class="mb-0">
+            <MudGrid Class="mb-0" Spacing="4">
                 <MudItem xs="12" md="6">
                     <MudTextField T="string"
                                   @bind-Value="Model.Description"
@@ -32,36 +32,36 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <div style="display: flex; gap: 8px; align-items: center;">  
-                        <MudNumericField Adornment="Adornment.End"  
-                                         AdornmentText="@Model.UnitType.GetDisplayName()"  
-                                         For="() => Model.Weight"  
-                                         dir="ltr"  
-                                         Format="G29"  
-                                         HideSpinButtons="true"  
-                                         Margin="Margin.Dense"  
-                                         Label="@(Model.GetDisplayName(() => Model.Weight))"  
-                                         T="decimal?"  
-                                         @bind-Value="Model.Weight"  
-                                         Variant="Variant.Outlined"  
-                                         Class="flex-grow-1" />  
-      
-                        <MudMenu @bind-Open="_weightMenuOpen"   
-                                 ActivationEvent="@MouseEvent.LeftClick">  
-                            <ActivatorContent>  
-                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />  
-                            </ActivatorContent>  
-                            <ChildContent>  
-                                @foreach (var item in Enum.GetValues<GoldUnitType>())  
-                                {  
-                                    <MudMenuItem OnClick="() => OnUnitTypeSelected(item)">  
-                                        <div style="display: flex; align-items: center; gap: 8px;">  
-                                            @item.GetDisplayName()  
-                                        </div>  
-                                    </MudMenuItem>  
-                                }  
-                            </ChildContent>  
-                        </MudMenu>  
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <MudNumericField Adornment="Adornment.End"
+                                         AdornmentText="@Model.UnitType.GetDisplayName()"
+                                         For="() => Model.Weight"
+                                         dir="ltr"
+                                         Format="G29"
+                                         HideSpinButtons="true"
+                                         Margin="Margin.Dense"
+                                         Label="@(Model.GetDisplayName(() => Model.Weight))"
+                                         T="decimal?"
+                                         @bind-Value="Model.Weight"
+                                         Variant="Variant.Outlined"
+                                         Class="flex-grow-1" />
+                        <MudTooltip Arrow Color="Color.Primary" Text="تغییر واحد" Placement="Placement.Top">
+                            <MudMenu>
+                                <ActivatorContent>
+                                    <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" OnClick="context.ToggleAsync" />
+                                </ActivatorContent>
+                                <ChildContent>
+                                    @foreach (var item in Enum.GetValues<GoldUnitType>())
+                                    {
+                                        <MudMenuItem OnClick="() => OnUnitTypeSelected(item)">
+                                            <div class="d-flex align-items-center gap-2">
+                                                @item.GetDisplayName()
+                                            </div>
+                                        </MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                        </MudTooltip>
                     </div>
                 </MudItem>
                 <MudItem xs="12" md="6">

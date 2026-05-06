@@ -4,10 +4,9 @@
     <MudStack Row AlignItems="AlignItems.Center" Class="mt-2">
         <MudText Typo="Typo.h6">مخارج جانبی</MudText>
         <MudSpacer />
-        <MudPaper Width="40px" Elevation="0">
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info"
-                           OnClick="AddItem"></MudIconButton>
-        </MudPaper>
+        <MudTooltip Arrow Color="Color.Info" Text="ردیف جدید" Placement="Placement.Top">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info" OnClick="AddItem" />
+        </MudTooltip>
     </MudStack>
 
     <MudTable Items="@Items" Elevation="0">
@@ -18,7 +17,7 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="مبلغ" Class="p-1">
-                <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="d-flex align-items-center gap-2">
                     <MudNumericField @bind-Value="context.Amount"
                                      T="decimal"
                                      HideSpinButtons="true"
@@ -30,35 +29,35 @@
                                      Variant="Variant.Outlined"
                                      Adornment="Adornment.End"
                                      AdornmentText="@context.AmountAdornmentText"
-                                     Class="flex-grow-1"/>
-
-                    <MudMenu @bind-Open="context.AmountMenuOpen"
-                             ActivationEvent="@MouseEvent.LeftClick">
-                        <ActivatorContent>
-                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary"/>
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (var item in PriceUnits)
-                            {
-                                <MudMenuItem OnClick="() => SelectPriceUnit(item, context)">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        @if (item.HasIcon)
-                                        {
-                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                            </MudAvatar>
-                                        }
-                                        @item.Title
-                                    </div>
-                                </MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
+                                     Class="flex-grow-1" />
+                    <MudTooltip Arrow Color="Color.Primary" Text="تغییر واحد" Placement="Placement.Top">
+                        <MudMenu MaxHeight="200">
+                            <ActivatorContent Context="ctx">
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" OnClick="ctx.ToggleAsync" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in PriceUnits)
+                                {
+                                    <MudMenuItem OnClick="() => SelectPriceUnit(item, context)">
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if (item.HasIcon)
+                                            {
+                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                </MudAvatar>
+                                            }
+                                            @item.Title
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </MudTooltip>
                 </div>
             </MudTd>
             @if (context.PriceUnit != PriceUnit)
             {
-                <MudTd DataLabel="@context.ExchangeRateLabel">
+                <MudTd DataLabel="نرخ تبدیل" Class="p-1">
                     <MudNumericField For="@(() => context.ExchangeRate)"
                                      Format="#,##0.########"
                                      Immediate="true"
@@ -67,7 +66,7 @@
                                      T="decimal?"
                                      @bind-Value="context.ExchangeRate"
                                      HideSpinButtons="true"
-                                     Variant="Variant.Outlined"/>
+                                     Variant="Variant.Outlined" />
                 </MudTd>
             }
             <MudTd DataLabel="بابت" Class="p-1">
@@ -80,20 +79,22 @@
                               Margin="Margin.Dense"
                               AdornmentIcon="@Icons.Material.Filled.QuestionMark"
                               Adornment="Adornment.End"
-                              Variant="Variant.Outlined"/>
+                              Variant="Variant.Outlined" />
             </MudTd>
-            <MudTd DataLabel="عملیات">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Variant="Variant.Filled"
-                               Color="Color.Error" OnClick="() => RemoveItem(context)"></MudIconButton>
+            <MudTd DataLabel="عملیات" Class="p-1">
+                <MudTooltip Arrow Color="Color.Error" Text="حذف" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Error" OnClick="() => RemoveItem(context)"></MudIconButton>
+                </MudTooltip>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText Typo="Typo.body1">مخارج اضافی وجود ندارد.</MudText>
         </NoRecordsContent>
     </MudTable>
-    
+
     <MudDivider Class="my-2" />
-    
+
     <div class="d-flex flex-row justify-content-center">
         <MudText Color="Color.Primary" Typo="Typo.h6">
             جمع کل مخارج جانبی: @Items.Sum(x => x.Amount * (x.ExchangeRate ?? 1)).ToCurrencyFormat(PriceUnit.Title)

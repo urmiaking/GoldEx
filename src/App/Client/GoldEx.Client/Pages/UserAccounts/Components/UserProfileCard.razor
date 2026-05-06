@@ -1,0 +1,102 @@
+﻿@inherits GoldExComponentBase
+
+@if (UserInfo is null)
+{
+    <MudCard Elevation="24" Class="pa-4">
+        <div class="d-flex flex-column gap-1">
+            <div class="d-flex justify-content-between align-center mb-4">
+                <div class="d-flex gap-3">
+                    <MudAvatar Color="Color.Info" Size="Size.Large" Elevation="6">
+                        <MudText Typo="Typo.h6">??</MudText>
+                    </MudAvatar>
+                    <div class="d-flex flex-column justify-content-start">
+                        <MudSkeleton Height="32px" Width="100px" Animation="Animation.Wave" />
+                        <MudSkeleton Height="20px" Width="100px" Animation="Animation.Wave" />
+                    </div>
+                </div>
+                <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                    <MudButton EndIcon="@Icons.Material.Filled.Password" Variant="Variant.Filled"
+                               Color="Color.Primary" Size="Size.Small" OnClick="ChangePassword">
+                        تغییر رمز عبور
+                    </MudButton>
+                </AuthorizeView>
+            </div>
+
+            <div class="d-flex justify-content-between align-center w-100">
+                <div class="d-flex gap-2">
+                    <MudText>نام کاربری: </MudText><MudSkeleton Height="24px" Width="60px" Animation="Animation.Wave" />
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-center w-100">
+                <div class="d-flex gap-2">
+                    <MudText>نام و نام خانوادگی: </MudText><MudSkeleton Height="24px" Width="80px" Animation="Animation.Wave" />
+                </div>
+                <MudTooltip Arrow Placement="Placement.Right" Color="Color.Primary" Text="تغییر نام">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Size="Size.Small" OnClick="ChangeFullName" />
+                </MudTooltip>
+            </div>
+            <div class="d-flex justify-content-between align-center w-100">
+                <div class="d-flex gap-2">
+                    <MudText>شماره تلفن: </MudText><MudSkeleton Height="24px" Width="80px" Animation="Animation.Wave" />
+                </div>
+                <MudTooltip Arrow Placement="Placement.Right" Color="Color.Primary" Text="تغییر شماره تلفن">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Size="Size.Small" OnClick="ChangePhoneNumber" />
+                </MudTooltip>
+            </div>
+            <div class="d-flex justify-content-between align-center w-100">
+                <div class="d-flex gap-2">
+                    <MudText>آدرس ایمیل: </MudText><MudSkeleton Height="24px" Width="80px" Animation="Animation.Wave" />
+                </div>
+                <MudTooltip Arrow Placement="Placement.Right" Color="Color.Primary" Text="تغییر ایمیل">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Size="Size.Small" OnClick="ChangeEmail" />
+                </MudTooltip>
+            </div>
+        </div>
+    </MudCard>
+}
+else
+{
+    <MudCard Elevation="24" Class="pa-4">
+        <div class="d-flex flex-column gap-1">
+            <div class="d-flex justify-content-between align-center mb-4">
+                <div class="d-flex gap-3">
+                    <MudAvatar Color="Color.Info" Size="Size.Large" Elevation="6">
+                        <MudText Typo="Typo.h6">@(UserInfo.FullName.GetInitialsWithPeriods())</MudText>
+                    </MudAvatar>
+                    <div class="d-flex flex-column justify-content-start">
+                        <MudText Typo="Typo.h6">@UserInfo.FullName</MudText>
+                        <MudText Typo="Typo.body2">@UserInfo.Role.GetRoleName()</MudText>
+                    </div>
+                </div>
+                <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                    <MudButton EndIcon="@Icons.Material.Filled.Password" Variant="Variant.Filled"
+                               Color="Color.Primary" Size="Size.Small" OnClick="ChangePassword">
+                        تغییر رمز عبور
+                    </MudButton>
+                </AuthorizeView>
+            </div>
+
+            <div class="d-flex justify-content-between align-center w-100">
+                <MudText>نام کاربری: @UserInfo.Username</MudText>
+            </div>
+            <div class="d-flex justify-content-between align-center w-100">
+                <MudText>نام و نام خانوادگی: @UserInfo.FullName</MudText>
+                <MudTooltip Arrow Placement="Placement.Right" Color="Color.Primary" Text="تغییر نام">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Size="Size.Small" OnClick="ChangeFullName" />
+                </MudTooltip>
+            </div>
+            <div class="d-flex justify-content-between align-center w-100">
+                <MudText>شماره تلفن: @(UserInfo.PhoneNumber ?? "-")</MudText>
+                <MudTooltip Arrow Placement="Placement.Right" Color="Color.Primary" Text="تغییر شماره تلفن">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Size="Size.Small" OnClick="ChangePhoneNumber" />
+                </MudTooltip>
+            </div>
+            <div class="d-flex justify-content-between align-center w-100">
+                <MudText>آدرس ایمیل: @(UserInfo.Email ?? "-")</MudText>
+                <MudTooltip Arrow Placement="Placement.Right" Color="Color.Primary" Text="تغییر ایمیل">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Text" Size="Size.Small" OnClick="ChangeEmail" />
+                </MudTooltip>
+            </div>
+        </div>
+    </MudCard>
+}

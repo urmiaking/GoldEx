@@ -5,7 +5,7 @@
 <MudForm Model="Model" @ref="@_form" Validation="@(_currencyItemValidator.ValidateValue)" ValidationDelay="0">
     <MudDialog>
         <DialogContent>
-            <MudGrid>
+            <MudGrid Spacing="4">
                 <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
                     <MudSelect T="GetPriceUnitTitleResponse?"
                                Value="Model.Currency"
@@ -60,27 +60,29 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6" lg="@(InvoiceType is InvoiceType.Sell ? 4 : 6)">
-                    <div class="d-flex flex-row align-center gap-2">  
-                        <MudSelect Value="@Model.FinancialAccount"  
+                    <div class="d-flex flex-row gap-2">
+                        <MudSelect Value="@Model.FinancialAccount"
                                    ValueChanged="OnFinancialAccountChanged"
-                                   T="GetFinancialAccountTitleResponse?"  
-                                   For="@(() => Model.FinancialAccount)"  
-                                   Label="@FinancialAccountLabel"  
-                                   Margin="Margin.Dense"  
-                                   Variant="Variant.Outlined"  
-                                   HelperText="@GetAvailableFinancialAccountAmountHelperText()"  
-                                   OuterClass="w-50"  
-                                   ToStringFunc="@(acc => acc?.Title)">  
-                            @foreach (var account in _financialAccounts)  
-                            {  
-                                <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>  
-                            }  
-                        </MudSelect>  
-                        <MudIconButton Icon="@Icons.Material.Filled.Add"   
-                                       Variant="Variant.Outlined"  
-                                       Color="Color.Primary"   
-                                       Class="align-self-start mt-2"  
-                                       OnClick="OnAddFinancialAccount"></MudIconButton>  
+                                   T="GetFinancialAccountTitleResponse?"
+                                   For="@(() => Model.FinancialAccount)"
+                                   Label="@FinancialAccountLabel"
+                                   Margin="Margin.Dense"
+                                   Variant="Variant.Outlined"
+                                   HelperText="@GetAvailableFinancialAccountAmountHelperText()"
+                                   OuterClass="w-50"
+                                   ToStringFunc="@(acc => acc?.Title)">
+                            @foreach (var account in _financialAccounts)
+                            {
+                                <MudSelectItem T="GetFinancialAccountTitleResponse" Value="@account">@account.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudTooltip Arrow Color="Color.Primary" Text="حساب مالی جدید" Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                           Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           Class="align-self-start mt-2"
+                                           OnClick="OnAddFinancialAccount"></MudIconButton>
+                        </MudTooltip>
                     </div>
                 </MudItem>
                 @if (InvoiceType is InvoiceType.Sell)

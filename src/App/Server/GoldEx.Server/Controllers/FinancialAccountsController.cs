@@ -35,6 +35,13 @@ public class FinancialAccountsController(IFinancialAccountService service) : Api
         return Ok(titles);
     }
 
+    [HttpGet(ApiRoutes.FinancialAccounts.GetCustomerAccounts)]
+    public async Task<IActionResult> GetCustomerAccountsAsync([FromRoute] Guid customerId, [FromQuery] Guid? priceUnitId, CancellationToken cancellationToken = default)
+    {
+        var titles = await service.GetCustomerAccountsAsync(customerId, priceUnitId, cancellationToken);
+        return Ok(titles);
+    }
+
     [HttpGet(ApiRoutes.FinancialAccounts.Get)]
     public async Task<IActionResult> GetAsync(Guid id, CancellationToken cancellationToken)
     {

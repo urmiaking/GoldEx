@@ -125,7 +125,7 @@ public partial class Editor
 
     private async Task OnRemoveFinancialAccount(FinancialAccountVm financialAccount)
     {
-        var result = await DialogService.ShowMessageBox(
+        var result = await DialogService.ShowMessageBoxAsync(
             "هشدار",
             $"آیا برای حذف حساب مالی {financialAccount.FinancialAccountType.GetDisplayName()} مطمئن هستید؟",
             yesText: "بله", cancelText: "لغو");

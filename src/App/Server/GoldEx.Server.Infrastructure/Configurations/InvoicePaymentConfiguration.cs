@@ -70,5 +70,6 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
             .OnDelete(DeleteBehavior.Restrict); // Caution: We do not want to delete the payment if the target invoice id is deleted.
 
         builder.Navigation(x => x.PriceUnit).AutoInclude();
+        builder.Navigation(x => x.CheckPayment).AutoInclude();
     }
 }

@@ -1,26 +1,22 @@
 ﻿using GoldEx.Sdk.Common.Data;
-using GoldEx.Sdk.Common.Extensions;
-using System.Globalization;
 using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
+using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.MeltingBatches;
 using GoldEx.Shared.DTOs.PaymentVouchers;
-using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
-using GoldEx.Shared.DTOs.InventoryStocks;
-using GoldEx.Shared.DTOs.MeltingBatches;
-using GoldEx.Shared.DTOs.Reporting;
+using System.Globalization;
 
 namespace GoldEx.Shared.Routings;
 
 public class ApiUrls
 {
-    private static string BuildUrl(params string[] segments)
-    {
-        return string.Join('/', segments);
-    }
+    private static string BuildUrl(params string[] segments) => string.Join('/', segments);
 
     private static CultureInfo EnCulture => new("en-US")
     {
@@ -263,6 +259,11 @@ public class ApiUrls
             BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetTitles)
                 .AppendQueryString(new { customerId })
                 .AppendQueryString(new { priceUnitId });
+
+        public static string GetCustomerAccounts(Guid customerId, Guid? priceUnitId) =>
+            BuildUrl(ApiRoutes.FinancialAccounts.Base, ApiRoutes.FinancialAccounts.GetCustomerAccounts)
+                .FormatRoute(new { customerId })
+                .AppendQueryString(new { priceUnitId });
     }
 
     public class PaymentVouchers
@@ -399,6 +400,11 @@ public class ApiUrls
         public static string GetAvailablePriceUnits(TransactionFilter transactionFilter) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetAvailablePriceUnits)
                 .AppendQueryString(transactionFilter);
+
+        public static string GetTopCustomers(TransactionType transactionType, Guid? priceUnitId) =>
+            BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetTopCustomers)
+                .FormatRoute(new { transactionType })
+                .AppendQueryString(new { priceUnitId });
     }
 
     public class Notifications
@@ -411,7 +417,7 @@ public class ApiUrls
         public static string MarkAllAsRead()
             => BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.MarkAllAsRead);
 
-        public static string Delete(Guid id) => 
+        public static string Delete(Guid id) =>
             BuildUrl(ApiRoutes.Notifications.Base, ApiRoutes.Notifications.Delete).FormatRoute(new { id });
     }
 
@@ -657,5 +663,85 @@ public class ApiUrls
             BuildUrl(ApiRoutes.LicensePayments.Base, ApiRoutes.LicensePayments.SetStatus)
                 .FormatRoute(new { id, status });
 
+    }
+
+    public class UserAccounts
+    {
+        public static string GetCurrentUser() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetCurrentUser);
+
+        public static string UpdateFullName() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UpdateFullName);
+
+        public static string UpdatePhoneNumber() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UpdatePhoneNumber);
+
+        public static string SendVerificationToken() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.SendVerificationToken);
+
+        public static string UpdateEmail() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UpdateEmail);
+
+        public static string UpdatePassword() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UpdatePassword);
+
+        public static string Get2FaStatus() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.Get2FaStatus);
+
+        public static string ForgetDevice() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.ForgetDevice);
+
+        public static string Disable2Fa() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.Disable2Fa);
+
+        public static string GetAuthenticatorKey() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetAuthenticatorKey);
+
+        public static string Enable2Fa() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.Enable2Fa);
+
+        public static string GetExternalProviders() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetExternalProviders);
+
+        public static string ExternalLogin(string provider) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.ExternalLogin).AppendQueryString(new { provider });
+
+        public static string GetPasskeys() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetPasskeys);
+
+        public static string GetPasskeyCreationOptions() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetPasskeyCreationOptions);
+
+        public static string GetPasskeyRequestOptions(string? userName) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetPasskeyRequestOptions);
+
+        public static string AddPasskey() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.AddPasskey);
+
+        public static string RemovePasskey(string credentialId) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.RemovePasskey)
+                .FormatRoute(new { credentialId });
+
+        public static string GetAccountsList() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.GetAccountsList);
+
+        public static string LockUser(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.LockUser)
+                .FormatRoute(new { id });
+
+        public static string UnlockUser(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UnlockUser)
+                .FormatRoute(new { id });
+
+        public static string CreateAccount() =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.CreateAccount);
+
+        public static string UpdateAccount(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.UpdateAccount)
+                .FormatRoute(new { id });
+
+        public static string DeleteAccount(Guid id) =>
+            BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.DeleteAccount)
+                .FormatRoute(new { id });
     }
 }

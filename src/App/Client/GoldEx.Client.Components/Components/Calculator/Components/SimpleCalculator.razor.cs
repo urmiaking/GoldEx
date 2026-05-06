@@ -45,10 +45,9 @@ public partial class SimpleCalculator
     private string? _quickInvoiceProductName;
 
     private bool _applySafetyMargin = true;
-    private bool _wageFieldMenuOpen;
-    private bool _weightFieldMenuOpen;
-    private bool _stoneFieldMenuOpen;
     private bool _scannerOpen;
+
+    private string PriceUnitAdornment => _model.PriceUnit?.Title ?? string.Empty;
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
@@ -57,7 +56,7 @@ public partial class SimpleCalculator
         null => null,
         _ => throw new ArgumentOutOfRangeException(nameof(_model.WageType), _model.WageType, null)
     };
-    private string? WageTypeAdornmentIcon =>
+    private string WageTypeAdornmentIcon =>
         _model.WageType switch
         {
             WageType.Percent => Icons.Material.Filled.Percent,
@@ -327,11 +326,6 @@ public partial class SimpleCalculator
         await Calculate();
     }
 
-    private void OnStoneAdornmentClicked()
-    {
-        _stoneFieldMenuOpen = !_stoneFieldMenuOpen;
-    }
-
     private async Task OnStoneExchangeRateChanged(decimal? exchangeRate)
     {
         _model.StoneExchangeRate = exchangeRate;
@@ -391,11 +385,6 @@ public partial class SimpleCalculator
         }
     }
 
-    private void OnWeightAdornmentClicked()
-    {
-        _weightFieldMenuOpen = !_weightFieldMenuOpen;
-    }
-
     private async Task SelectGoldUnitType(GoldUnitType unitType)
     {
         _model.GoldUnitType = unitType;
@@ -443,7 +432,7 @@ public partial class SimpleCalculator
     private async Task OnUsedGoldFinenessDeductionRateChanged(decimal deductionRate)
     {
         _model.UsedGoldFinenessDeductionRate = deductionRate;
-        _model.Fineness = 750m - deductionRate;
+        // _model.Fineness = 750m - deductionRate;
 
         await Calculate();
     }
@@ -478,7 +467,11 @@ public partial class SimpleCalculator
 
     private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
+        if (priceUnit == _model.PriceUnit)
+            return;
+
         _model.PriceUnit = priceUnit;
+        _model.GramPrice = 0;
 
         await EnsureGramPriceLoadedAsync();
 
@@ -490,7 +483,7 @@ public partial class SimpleCalculator
         StateHasChanged();
     }
 
-    private async Task OnBarcodeChanged(string barcode)
+    private async Task OnBarcodeChanged(string? barcode)
     {
         try
         {
@@ -554,6 +547,7 @@ public partial class SimpleCalculator
         _model.WageType = WageType.Percent;
         _model.ExtraCosts = null;
         _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
+        _model.StonePrice = null;
 
         _applySafetyMargin = true;
     }
@@ -654,6 +648,7 @@ public partial class SimpleCalculator
 
         ResetModel();
         _quickInvoiceProductName = null;
+        await Calculate();
         StateHasChanged();
 
         AddSuccessToast("کالا با موفقیت به فاکتور اضافه شد");

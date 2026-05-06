@@ -84,6 +84,20 @@ internal class FinancialAccountService(
         return mapper.Map<List<GetFinancialAccountTitleResponse>>(list);
     }
 
+    public async Task<List<GetFinancialAccountResponse>> GetCustomerAccountsAsync(Guid customerId, Guid? priceUnitId,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await repository
+            .Get(new FinancialAccountsByCustomerIdSpecification(new CustomerId(customerId),
+                priceUnitId.HasValue
+                    ? new PriceUnitId(priceUnitId.Value)
+                    : null))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return mapper.Map<List<GetFinancialAccountResponse>>(list);
+    }
+
     public async Task<GetFinancialAccountResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await repository

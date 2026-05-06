@@ -16,14 +16,12 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 {
     private readonly ICustomerRepository _repository;
     private readonly IPriceUnitRepository _priceUnitRepository;
-    private readonly IFinancialAccountRepository _financialAccountRepository;
 
     public CustomerRequestDtoValidator(ICustomerRepository repository,
         IPriceUnitRepository priceUnitRepository, IFinancialAccountRepository financialAccountRepository)
     {
         _repository = repository;
         _priceUnitRepository = priceUnitRepository;
-        _financialAccountRepository = financialAccountRepository;
 
         RuleFor(x => x.Id)
             .MustAsync(BeValidId).WithMessage("شناسه نامعتبر است")
@@ -85,9 +83,10 @@ internal class CustomerRequestDtoValidator : AbstractValidator<CustomerRequestDt
 
     private async Task<bool> BeUniqueCustomer(CustomerRequestDto request, CancellationToken cancellationToken = default)
     {
-        return !await _repository.ExistsAsync(
-            new CustomersByNameTypePhoneNumberSpecification(request.FullName, request.PhoneNumber,
-                request.CustomerType), cancellationToken);
+        var customer = await _repository.Get(new CustomersByNameTypePhoneNumberSpecification(request.FullName,
+            request.PhoneNumber, request.CustomerType)).FirstOrDefaultAsync(cancellationToken);
+
+        return customer is null || customer.Id.Value == request.Id;
     }
 
     private async Task<bool> BeValidPriceUnitId(CustomerRequestDto request, Guid? priceUnitId, CancellationToken cancellationToken = default)

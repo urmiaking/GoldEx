@@ -1,0 +1,68 @@
+﻿@attribute [Route(ClientRoutes.UserAccounts.Index)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@using GoldEx.Client.Pages.UserAccounts.Components
+@inherits GoldExComponentBase
+
+<PageTitle>مدیریت حساب</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+    
+    <div class="flex-column gap-2 align-center justify-content-center w-100 mb-6 d-md-flex d-none">
+        <MudText Typo="Typo.h4">مدیریت حساب</MudText>
+        <MudText Typo="Typo.h6">به راحتی حساب کاربری خود را مدیریت کنید و از امکانات امنیتی پیشرفته بهره‌مند شوید</MudText>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" md="6" lg="4">
+            <UserProfileCard />
+        </MudItem>
+        <MudItem xs="12" md="6" lg="8">
+            <MudGrid>
+                <AuthorizeView Roles="@BuiltinRoles.Owners">
+                    <Authorized>
+                        <MudItem xs="12" lg="6">
+                            <MudActionCard Title="تغییر رمز عبور"
+                                           Description="تغییر رمز عبور فعلی با رمز جدید"
+                                           StartIcon="@Icons.Material.Filled.VpnKey"
+                                           OnClick="ChangePassword" />
+                        </MudItem>
+                    </Authorized>
+                </AuthorizeView>
+
+                <MudItem xs="12" lg="6">
+                    <MudActionCard Title="رمز دو مرحله ای"
+                                   Description="ورود با برنامه Authenticator"
+                                   StartIcon="@Icons.Material.Filled.Password"
+                                   Href="@ClientRoutes.UserAccounts.TwoFactorAuthentication"/>
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudActionCard Title="احراز هویت خارجی"
+                                   Description="ورود با حساب گوگل، مایکروسافت"
+                                   StartIcon="@Icons.Material.Filled.AddLink"
+                                   Href="@ClientRoutes.UserAccounts.ExternalLogins"/>
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudActionCard Title="مدیریت کلیدهای عبور"
+                                   Description="ورود با اثر انگشت، عنبیه چشم و PIN"
+                                   StartIcon="@Icons.Material.Filled.Fingerprint"
+                                   Href="@ClientRoutes.UserAccounts.Passkeys"/>
+                </MudItem>
+                <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                    <Authorized>
+                        <MudItem xs="12" lg="6">
+                            <MudActionCard Title="لیست کاربران"
+                                           Description="مدیریت کاربران سایت"
+                                           StartIcon="@Icons.Material.Filled.People"
+                                           Href="@ClientRoutes.UserAccounts.AccountsList"/>
+                        </MudItem>
+                    </Authorized>
+                </AuthorizeView>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

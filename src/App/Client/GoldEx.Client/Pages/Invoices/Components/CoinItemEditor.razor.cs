@@ -170,7 +170,8 @@ public partial class CoinItemEditor
         var parameters = new DialogParameters<Customers.Components.Editor>
         {
             { x => x.ReturnModel, true },
-            { x => x.CustomerType, CustomerType.Workshop }
+            { x => x.CustomerType, CustomerType.Workshop },
+            { x => x.ShowFinancialAccounts, false }
         };
 
         var dialog = await DialogService.ShowAsync<Customers.Components.Editor>("افزودن کارگاه جدید", parameters, dialogOptions);

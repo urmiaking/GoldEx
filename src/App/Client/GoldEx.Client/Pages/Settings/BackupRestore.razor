@@ -15,7 +15,7 @@
           Dense="false"
           Class="mb-6 mt-4"
           ContentAlignment="HorizontalAlignment.Start"
-          Elevation="1">
+          Elevation="4">
     <MudText Typo="Typo.subtitle1" Class="fw-bold">
         توجه
     </MudText>
@@ -69,20 +69,21 @@
 
             <MudCardContent Class="flex-grow-1 d-flex flex-column justify-center text-center px-6">
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-                    این عملیات داده‌های فعلی سیستم را با اطلاعات
+                    این عملیات داده‌های فعلی را با اطلاعات
                     موجود در فایل پشتیبان جایگزین می‌کند.
                 </MudText>
 
                 <MudFileUpload T="IBrowserFile" Accept=".bak" @bind-Files="_databaseFile" Class="@($"align-center justify-content-center {(_databaseFile != null ? "d-none" : "d-flex")}")">
-                    <ActivatorContent>
+                    <CustomContent Context="ctx">
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Info"
                                    Size="Size.Large"
                                    StartIcon="@Icons.Material.Filled.UploadFile"
+                                   OnClick="ctx.OpenFilePickerAsync"
                                    Class="mx-auto px-8">
                             انتخاب فایل پشتیبان
                         </MudButton>
-                    </ActivatorContent>
+                    </CustomContent>
                     <SelectedTemplate Context="ctx">
                         @if (ctx != null)
                         {

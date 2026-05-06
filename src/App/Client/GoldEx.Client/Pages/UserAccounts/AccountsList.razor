@@ -1,0 +1,110 @@
+﻿@attribute [Route(ClientRoutes.UserAccounts.AccountsList)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@inherits GoldExComponentBase
+
+<PageTitle>مدیریت کاربران</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <div class="flex-column gap-2 align-center justify-content-center w-100 mb-6 d-md-flex d-none">
+        <MudText Typo="Typo.h4">مدیریت کاربران</MudText>
+        <MudText Typo="Typo.h6">در این قسمت می توانید حساب کاربری جدیدی ایجاد کرده و یا حساب های موجود را ویرایش و یا غیرفعال کنید</MudText>
+    </div>
+
+    @if (UserAccounts is null)
+    {
+        <div class="d-flex gap-2 flex-column justify-content-center align-center">
+            <MudProgressCircular Color="Color.Primary" Indeterminate />
+            <MudText>در حال بارگیری</MudText>
+        </div>
+    }
+    else
+    {
+        <MudTable Items="@UserAccounts" Hover="true" Breakpoint="Breakpoint.Xs" Elevation="24" Dense="true" FixedHeader="true" Class="pb-2"
+                  Loading="IsBusy">
+            <ToolBarContent>
+                <MudText Typo="Typo.body1">لیست کاربران سایت</MudText>
+                <MudSpacer />
+
+                <MudButton Class="me-2" Size="Size.Small" Variant="Variant.Filled"
+                           OnClick="OnAddAccount"
+                           Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">حساب جدید</MudButton>
+
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>نام کاربری</MudTh>
+                <MudTh>نام و نام خانوادگی</MudTh>
+                <MudTh>شماره تماس</MudTh>
+                <MudTh>نقش</MudTh>
+                <MudTh>عملیات</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="نام کاربری">@context.Username</MudTd>
+                <MudTd DataLabel="نام و نام خانوادگی">@context.FullName</MudTd>
+                <MudTd DataLabel="شماره تماس">@(string.IsNullOrEmpty(context.PhoneNumber) ? "-" : context.PhoneNumber)</MudTd>
+                <MudTd DataLabel="نقش">@context.Role.GetRoleName()</MudTd>
+                <MudTd DataLabel="عملیات">
+                    <div class="d-flex gap-2">
+                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                            <MudButton Size="Size.Small" Variant="Variant.Filled"
+                                       OnClick="_ => OnEditAccount(context)"
+                                       Color="Color.Info" StartIcon="@Icons.Material.Filled.Edit">ویرایش</MudButton>
+                        </MudHidden>
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                            <MudIconButton Size="Size.Small" Variant="Variant.Filled"
+                                           OnClick="_ => OnEditAccount(context)"
+                                           Color="Color.Info" Icon="@Icons.Material.Filled.Edit" />
+                        </MudHidden>
+
+                        @if (context.IsActive)
+                        {
+                            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                                <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Lock"
+                                           Color="Color.Error" Variant="Variant.Filled"
+                                           OnClick="@(() => LockUser(context))">قفل</MudButton>
+                            </MudHidden>
+                            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Lock"
+                                               Color="Color.Error" Variant="Variant.Filled"
+                                               OnClick="@(() => LockUser(context))" />
+                            </MudHidden>
+
+                        }
+                        else
+                        {
+                            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                                <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.LockOpen"
+                                           Color="Color.Success" Variant="Variant.Filled"
+                                           OnClick="@(() => UnlockUser(context))">فعالسازی</MudButton>
+                            </MudHidden>
+                            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.LockOpen"
+                                               Color="Color.Success" Variant="Variant.Filled"
+                                               OnClick="@(() => UnlockUser(context))" />
+                            </MudHidden>
+                        }
+                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                            <MudButton Size="Size.Small" Variant="Variant.Filled"
+                                       OnClick="_ => OnDeleteAccount(context)"
+                                       Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete">حذف</MudButton>
+                        </MudHidden>
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                            <MudIconButton Size="Size.Small" Variant="Variant.Filled"
+                                           OnClick="_ => OnDeleteAccount(context)"
+                                           Color="Color.Error" Icon="@Icons.Material.Filled.Delete" />
+                        </MudHidden>
+
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <LoadingContent>
+                <MudText>در حال بارگیری</MudText>
+            </LoadingContent>
+        </MudTable>
+    }
+</MudContainer>

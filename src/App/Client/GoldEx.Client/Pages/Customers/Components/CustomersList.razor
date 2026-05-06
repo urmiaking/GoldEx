@@ -32,9 +32,33 @@
                                 PlaceholderEnd="تا"
                                 Label="تاریخ ثبت مشتری"
                                 Clearable="true" />
-        </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Size="Size.Small" Color="@TransactionTypeColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@TransactionTypeIcon">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        @(_transactionType?.GetDisplayName() ?? "وضعیت حساب")
+                    </MudHidden>
+                </MudButton>
+
+                <MudMenu Size="Size.Small"
+                         Icon="@Icons.Material.Filled.ArrowDropDown"
+                         Style="align-self: auto;">
+                    <MudMenuItem OnClick="() => SetTransactionTypeFilterText(null)">
+                        <MudIcon Icon="@GetTransactionTypeIcon(null)" Color="@GetTransactionTypeIconColor(null)" Class="mr-2" />
+                        بدهکار / بستانکار
+                    </MudMenuItem>
+
+                    @foreach (var type in Enum.GetValues<TransactionType>())
+                    {
+                        <MudMenuItem OnClick="() => SetTransactionTypeFilterText(type)">
+                            <MudIcon Icon="@GetTransactionTypeIcon(type)" Color="@GetTransactionTypeIconColor(type)" Class="mr-2" />
+                            فقط @type.GetDisplayName()
+                        </MudMenuItem>
+                    }
+
+                </MudMenu>
+            </MudButtonGroup>
+
             <MudButtonGroup Size="Size.Small" Color="@CustomerTypeColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@CustomerTypeIcon">
                     <MudHidden Breakpoint="Breakpoint.SmAndDown">
@@ -60,14 +84,29 @@
 
                 </MudMenu>
             </MudButtonGroup>
-        </MudHidden>
 
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">ثبت مشتری جدید</MudButton>
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add" Class="mr-3" OnClick="@(_ => OnCreate())" Size="@Size.Small" Variant="@Variant.Filled"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           Class="mr-3"
+                           Size="Size.Small"
+                           OnClick="OpenMobileFilters" />
+
+            <MudIconButton Color="@Color.Primary"
+                           Icon="@Icons.Material.Filled.Add"
+                           Class="mr-3" OnClick="@(_ => OnCreate())"
+                           Size="@Size.Small" Variant="@Variant.Filled"/>
+
+            <CustomerFiltersPopover Open="@_mobileFiltersOpen"
+                                    OnClose="CloseMobileFilters"
+                                    DateRange="_filterDateRange"
+                                    CustomerTypeParam="_customerType"
+                                    TransactionTypeParam="_transactionType"
+                                    OnApply="ApplyMobileFilters"/>
         </MudHidden>
     </ToolBarContent>
     <HeaderContent>

@@ -17,7 +17,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.12")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -116,7 +116,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -171,10 +172,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppUserLogin", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -187,6 +190,22 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppUserPasskey", b =>
+                {
+                    b.Property<byte[]>("CredentialId")
+                        .HasMaxLength(1024)
+                        .HasColumnType("varbinary(1024)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("CredentialId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPasskeys", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppUserRole", b =>
@@ -210,10 +229,12 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -375,6 +396,54 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("BlogPosts", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.CheckPaymentAggregate.CheckPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InvoicePaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IssuerFinancialAccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IssuerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Number")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SayadiCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoicePaymentId")
+                        .IsUnique();
+
+                    b.HasIndex("IssuerFinancialAccountId");
+
+                    b.HasIndex("IssuerId");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasFilter("[Number] IS NOT NULL");
+
+                    b.HasIndex("SayadiCode")
+                        .IsUnique()
+                        .HasFilter("[SayadiCode] IS NOT NULL");
+
+                    b.ToTable("CheckPayments", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.CoinAggregate.Coin", b =>
@@ -1375,9 +1444,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -1427,8 +1493,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
 
                     b.HasIndex("InventoryEntryId");
 
@@ -1483,6 +1547,59 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .WithMany("Logins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GoldEx.Sdk.Server.Domain.Entities.Identity.AppUserPasskey", b =>
+                {
+                    b.HasOne("GoldEx.Sdk.Server.Domain.Entities.Identity.AppUser", "User")
+                        .WithMany("Passkeys")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
+                        {
+                            b1.Property<byte[]>("AppUserPasskeyCredentialId");
+
+                            b1.Property<byte[]>("AttestationObject")
+                                .IsRequired();
+
+                            b1.Property<byte[]>("ClientDataJson")
+                                .IsRequired();
+
+                            b1.Property<DateTimeOffset>("CreatedAt");
+
+                            b1.Property<bool>("IsBackedUp");
+
+                            b1.Property<bool>("IsBackupEligible");
+
+                            b1.Property<bool>("IsUserVerified");
+
+                            b1.Property<string>("Name");
+
+                            b1.Property<byte[]>("PublicKey")
+                                .IsRequired();
+
+                            b1.Property<long>("SignCount");
+
+                            b1.PrimitiveCollection<string>("Transports");
+
+                            b1.HasKey("AppUserPasskeyCredentialId");
+
+                            b1.ToTable("UserPasskeys");
+
+                            b1
+                                .ToJson("Data")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AppUserPasskeyCredentialId");
+                        });
+
+                    b.Navigation("Data")
                         .IsRequired();
 
                     b.Navigation("User");
@@ -1545,6 +1662,79 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("BlogCategory");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.CheckPaymentAggregate.CheckPayment", b =>
+                {
+                    b.HasOne("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", "InvoicePayment")
+                        .WithOne("CheckPayment")
+                        .HasForeignKey("GoldEx.Server.Domain.CheckPaymentAggregate.CheckPayment", "InvoicePaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GoldEx.Server.Domain.FinancialAccountAggregate.FinancialAccount", "IssuerFinancialAccount")
+                        .WithMany()
+                        .HasForeignKey("IssuerFinancialAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", "Issuer")
+                        .WithMany()
+                        .HasForeignKey("IssuerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsMany("GoldEx.Server.Domain.CheckPaymentAggregate.CheckPaymentChangeLog", "ChangeLogs", b1 =>
+                        {
+                            b1.Property<Guid>("CheckPaymentId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime>("DateTime")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("Description")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)");
+
+                            b1.Property<int>("Status")
+                                .HasColumnType("int");
+
+                            b1.Property<Guid?>("TargetFinancialAccountId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.HasKey("CheckPaymentId", "Id");
+
+                            b1.HasIndex("TargetFinancialAccountId");
+
+                            b1.ToTable("CheckPaymentChangeLogs", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("CheckPaymentId");
+
+                            b1.HasOne("GoldEx.Server.Domain.FinancialAccountAggregate.FinancialAccount", "TargetFinancialAccount")
+                                .WithMany()
+                                .HasForeignKey("TargetFinancialAccountId")
+                                .OnDelete(DeleteBehavior.Restrict);
+
+                            b1.Navigation("TargetFinancialAccount");
+                        });
+
+                    b.Navigation("ChangeLogs");
+
+                    b.Navigation("InvoicePayment");
+
+                    b.Navigation("Issuer");
+
+                    b.Navigation("IssuerFinancialAccount");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.CoinAggregate.Coin", b =>
@@ -2914,10 +3104,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
             modelBuilder.Entity("GoldEx.Server.Domain.TransactionAggregate.Transaction", b =>
                 {
-                    b.HasOne("GoldEx.Server.Domain.CustomerAggregate.Customer", null)
-                        .WithMany("Transactions")
-                        .HasForeignKey("CustomerId");
-
                     b.HasOne("GoldEx.Server.Domain.InventoryEntryAggregate.InventoryEntry", "InventoryEntry")
                         .WithMany("Transactions")
                         .HasForeignKey("InventoryEntryId")
@@ -3004,6 +3190,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Navigation("Logins");
 
+                    b.Navigation("Passkeys");
+
                     b.Navigation("Tokens");
 
                     b.Navigation("UserRoles");
@@ -3028,8 +3216,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("LedgerAccounts");
 
                     b.Navigation("PaymentVouchers");
-
-                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.InventoryEntryAggregate.InventoryEntry", b =>
@@ -3058,6 +3244,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment", b =>
+                {
+                    b.Navigation("CheckPayment");
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.LedgerAccountAggregate.LedgerAccount", b =>

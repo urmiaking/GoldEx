@@ -3,28 +3,28 @@
 
 <MudCard Elevation="@Elevation" Class="@($"pa-4 {Class}")">
     <MudForm Model="_model" @ref="@_form" Validation="@(_calculatorValidator.ValidateValue)" ValidationDelay="0">
-        <div class="d-flex flex-column flex-wrap align-center gap-3 my-3">  
-            <MudChipSet T="GoldUnitType"   
-                        SelectionMode="SelectionMode.SingleSelection"   
-                        Variant="Variant.Outlined"   
-                        CheckMark="true"   
-                        SelectedValue="_model.GoldUnitType"   
-                        SelectedValueChanged="OnGoldUnitTypeChanged">  
-                <MudChip Color="Color.Primary"   
-                         Value="GoldUnitType.Gram"  
-                         Size="@(_model.GoldUnitType == GoldUnitType.Gram ? Size.Large : Size.Medium)"  
-                         Variant="@(_model.GoldUnitType == GoldUnitType.Gram ? Variant.Text : Variant.Outlined)">@GoldUnitType.Gram.GetDisplayName()</MudChip>  
-                <MudChip Color="Color.Success"   
-                         Value="GoldUnitType.Mesghal"  
-                         Size="@(_model.GoldUnitType == GoldUnitType.Mesghal ? Size.Large : Size.Medium)"  
-                         Variant="@(_model.GoldUnitType == GoldUnitType.Mesghal ? Variant.Text : Variant.Outlined)">@GoldUnitType.Mesghal.GetDisplayName()</MudChip>  
-            </MudChipSet>  
+        <div class="d-flex flex-column flex-wrap align-center gap-3 mb-3">
+            <MudChipSet T="GoldUnitType"
+                        SelectionMode="SelectionMode.SingleSelection"
+                        Variant="Variant.Outlined"
+                        CheckMark="true"
+                        SelectedValue="_model.GoldUnitType"
+                        SelectedValueChanged="OnGoldUnitTypeChanged">
+                <MudChip Color="Color.Primary"
+                         Value="GoldUnitType.Gram"
+                         Size="@(_model.GoldUnitType == GoldUnitType.Gram ? Size.Large : Size.Medium)"
+                         Variant="@(_model.GoldUnitType == GoldUnitType.Gram ? Variant.Text : Variant.Outlined)">@GoldUnitType.Gram.GetDisplayName()</MudChip>
+                <MudChip Color="Color.Success"
+                         Value="GoldUnitType.Mesghal"
+                         Size="@(_model.GoldUnitType == GoldUnitType.Mesghal ? Size.Large : Size.Medium)"
+                         Variant="@(_model.GoldUnitType == GoldUnitType.Mesghal ? Variant.Text : Variant.Outlined)">@GoldUnitType.Mesghal.GetDisplayName()</MudChip>
+            </MudChipSet>
         </div>
         <MudGrid Spacing="4">
             <MudItem xs="12" sm="6" md="4" lg="3">
-                <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="d-flex align-items-center gap-2">
                     <MudNumericField Adornment="Adornment.End"
-                                     AdornmentText="@_model.PriceUnit?.Title"
+                                     AdornmentText="@PriceUnitAdornment"
                                      For="() => _model.UnitPrice"
                                      Format="#,##0.##"
                                      Immediate="true"
@@ -37,34 +37,35 @@
                                      ValueChanged="OnUnitPriceChanged"
                                      Variant="Variant.Outlined"
                                      Class="flex-grow-1" />
-                    <MudMenu @bind-Open="_priceListMenuOpen"
-                             ActivationEvent="@MouseEvent.LeftClick">
-                        <ActivatorContent>
-                            <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" />
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (var item in _priceUnits)
-                            {
-                                <MudMenuItem OnClick="() => OnPriceUnitChanged(item)">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        @if (item.HasIcon)
-                                        {
-                                            <MudAvatar Size="Size.Small" Color="Color.Primary">
-                                                <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
-                                            </MudAvatar>
-                                        }
-                                        @item.Title
-                                    </div>
-                                </MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
+                    <MudTooltip Arrow="true" Text="تغییر واحد" Color="Color.Primary" Placement="Placement.Top">
+                        <MudMenu MaxHeight="200">
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Filled.SyncAlt" Variant="Variant.Outlined" Color="Color.Primary" OnClick="context.ToggleAsync" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var item in _priceUnits)
+                                {
+                                    <MudMenuItem OnClick="() => OnPriceUnitChanged(item)">
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if (item.HasIcon)
+                                            {
+                                                <MudAvatar Size="Size.Small" Color="Color.Primary">
+                                                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))"></MudImage>
+                                                </MudAvatar>
+                                            }
+                                            @item.Title
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </MudTooltip>
                 </div>
             </MudItem>
             <MudItem xs="12" sm="6" md="4" lg="3">
                 <MudNumericField For="() => _model.Price"
                                  Adornment="Adornment.End"
-                                 AdornmentText="@_model.PriceUnit?.Title"
+                                 AdornmentText="@PriceUnitAdornment"
                                  Immediate="true"
                                  HideSpinButtons="true"
                                  Format="#,##0.##"
@@ -105,14 +106,15 @@
                                  Variant="Variant.Outlined"></MudNumericField>
             </MudItem>
         </MudGrid>
-        @if (_finalValue.HasValue && _finalValue.Value is not 0)
-        {
-            <MudPaper Elevation="4" Class="pa-3 mt-4">
-                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                    <MudText Typo="Typo.h6">وزن نهایی:</MudText>
-                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">@_finalValue?.ToWeightFormat(_model.GoldUnitType)</MudText>
-                </div>
-            </MudPaper>
-        }
     </MudForm>
 </MudCard>
+
+@if (_finalValue.HasValue && _finalValue.Value is not 0)
+{
+    <MudPaper Elevation="24" Class="pa-3 mt-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap mx-2">
+            <MudText Typo="Typo.h6">وزن نهایی:</MudText>
+            <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">@_finalValue?.ToWeightFormat(_model.GoldUnitType)</MudText>
+        </div>
+    </MudPaper>
+}
