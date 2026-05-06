@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
+using GoldEx.Client.Pages.Finances.PaymentVouchers.ViewModels;
 
-namespace GoldEx.Client.Pages.PaymentVouchers.Validators;
+namespace GoldEx.Client.Pages.Finances.PaymentVouchers.Validators;
 
 public class PaymentVoucherValidator : AbstractValidator<PaymentVoucherVm>
 {

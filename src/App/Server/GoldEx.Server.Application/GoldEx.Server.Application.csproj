@@ -8,6 +8,7 @@
 
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);DX1000</NoWarn>
+		<NoWarn>$(NoWarn);NU1903</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -3,7 +3,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.PaymentVouchers.Components;
+namespace GoldEx.Client.Pages.Finances.PaymentVouchers.Components;
 
 public partial class PaymentVouchersSelectorList
 {
