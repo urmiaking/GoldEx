@@ -6,16 +6,19 @@ namespace GoldEx.Client;
 
 internal static class DependencyInjection
 {
-    internal static IServiceCollection AddClient(this IServiceCollection services, IWebAssemblyHostEnvironment environment)
+    extension(IServiceCollection services)
     {
-        services.InitializeDefaultCulture()
-            .AddClientComponents()
-            .AddClientServerServices()
-            .AddAuthServices()
-            .AddServices()
-            .AddJsonOptions()   
-            .AddHttpClientService(environment, new TimeSpan(0, 10, 0));
+        internal IServiceCollection AddClient(IWebAssemblyHostEnvironment environment)
+        {
+            services.InitializeDefaultCulture()
+                .AddClientComponents()
+                .AddClientServerServices()
+                .AddAuthServices()
+                .AddServices()
+                .AddJsonOptions()   
+                .AddHttpClientService(environment, new TimeSpan(0, 10, 0));
 
-        return services;
+            return services;
+        }
     }
 }

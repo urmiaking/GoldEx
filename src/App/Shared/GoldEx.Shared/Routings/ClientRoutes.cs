@@ -163,10 +163,12 @@ public static class ClientRoutes
         }
     }
 
-    public static class PaymentVouchers
+    public static class Finances
     {
-        private const string PaymentVouchersPrefix = "/payment-vouchers";
-        public const string Index = $"{PaymentVouchersPrefix}";
+        private const string FinancesPrefix = "/finances";
+        public const string Index = $"{FinancesPrefix}";
+        public const string Checks = $"{FinancesPrefix}/checks";
+        public const string PaymentVouchers = $"{FinancesPrefix}/payment-vouchers";
     }
 
     public static class InventoryStocks

@@ -1,8 +1,8 @@
 ﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Finances.PaymentVouchers.Validators;
+using GoldEx.Client.Pages.Finances.PaymentVouchers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
-using GoldEx.Client.Pages.PaymentVouchers.Validators;
-using GoldEx.Client.Pages.PaymentVouchers.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PaymentVouchers;
@@ -12,7 +12,7 @@ using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace GoldEx.Client.Pages.PaymentVouchers.Components;
+namespace GoldEx.Client.Pages.Finances.PaymentVouchers.Components;
 
 public partial class Editor
 {
