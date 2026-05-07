@@ -5,6 +5,7 @@ using GoldEx.Client.Components.Services;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Api.Identity;
+using GoldEx.Sdk.Server.Application.Extensions;
 using GoldEx.Sdk.Server.Application.Models;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Infrastructure;
@@ -21,6 +22,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +34,6 @@ using Serilog.Ui.Web.Extensions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using GoldEx.Sdk.Server.Application.Extensions;
 using VHDLicenseManager;
 
 namespace GoldEx.Server.Extensions;
@@ -70,6 +71,15 @@ internal static class ServiceCollectionExtensions
             services.AddSingleton<IEmailSender<AppUser>, IdentityEmailSender>();
             services.AddSingleton<IEmailSender, EmailSender>();
             services.AddUserContext();
+
+            services.Configure<ForwardedHeadersOptions>(opts =>
+            {
+                opts.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+#pragma warning disable ASPDEPR005
+                opts.KnownNetworks.Clear();
+#pragma warning restore ASPDEPR005
+                opts.KnownProxies.Clear();
+            });
 
             services.DiscoverServices();
 

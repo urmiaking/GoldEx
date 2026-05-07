@@ -60,6 +60,7 @@ public static class WebHostingExtensions
             }
             else
             {
+                app.UseForwardedHeaders();
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
                 app.UseHsts();
             }
@@ -172,6 +173,12 @@ public static class WebHostingExtensions
             {
                 AllowCachingResponses = true,
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+
+            app.MapGet("/__test", ctx =>
+            {
+                return ctx.Response.WriteAsync(
+                    $"Scheme = {ctx.Request.Scheme}, Host = {ctx.Request.Host}");
             });
 
             AppDomain.CurrentDomain.SetData("DXResourceDirectory", app.Environment.ContentRootPath);
