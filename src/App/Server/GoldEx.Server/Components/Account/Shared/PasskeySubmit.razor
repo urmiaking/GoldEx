@@ -94,7 +94,7 @@
             });
 
             // LOGIC CHANGE: Check if this device has used passkeys before
-            const isKnownDevice = localStorage.getItem('device_registered_passkey') === 'true';
+            const isKnownDevice = localStorage.getItem('DeviceRegisteredPasskey') === 'true';
 
             // If Auto is requested AND we know this device, try to pop up immediately
             if (this.attrs.auto && isKnownDevice) {
@@ -134,7 +134,7 @@
 
                 // SUCCESS: Save the flag to LocalStorage!
                 // This ensures next time they visit, it opens automatically.
-                localStorage.setItem('device_registered_passkey', 'true');
+                localStorage.setItem('DeviceRegisteredPasskey', 'true');
 
                 const credentialJson = JSON.stringify(credential);
                 formData.append(`${this.attrs.name}.CredentialJson`, credentialJson);
