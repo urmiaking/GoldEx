@@ -34,7 +34,8 @@
         {
             @if (_license.Plan is Shared.Enums.LicensePlan.Unregistered && IsLoggedIn)
             {
-                <UnregisteredRoute @rendermode="RenderModeForPage" />
+                @* <UnregisteredRoute @rendermode="RenderModeForPage" /> *@
+                <Routes @rendermode="RenderModeForPage" />
             }
             else
             {
