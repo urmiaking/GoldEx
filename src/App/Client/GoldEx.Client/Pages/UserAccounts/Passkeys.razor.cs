@@ -1,4 +1,6 @@
-﻿using GoldEx.Client.Components.Services;
+﻿using Blazored.LocalStorage;
+using GoldEx.Client.Components.Constants;
+using GoldEx.Client.Components.Services;
 using GoldEx.Shared.DTOs.UserAccounts;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
@@ -10,6 +12,7 @@ namespace GoldEx.Client.Pages.UserAccounts;
 public partial class Passkeys
 {
     [Inject] public WebAuthnService WebAuthnService { get; set; } = default!;
+    [Inject] public ILocalStorageService LocalStorage { get; set; } = default!;
 
     private readonly List<BreadcrumbItem> _breadcrumbs =
     [
@@ -57,6 +60,7 @@ public partial class Passkeys
             afterSend: async () =>
             {
                 AddSuccessToast("کلید عبور با موفقیت افزوده شد");
+                await LocalStorage.SetItemAsync(LocalStorageKeys.DeviceRegisteredPasskey, true);
                 await LoadPasskeysAsync();
             });
     }
@@ -74,6 +78,7 @@ public partial class Passkeys
                 afterSend: async () =>
                 {
                     AddSuccessToast($"کلید عبور {passkey.Name} با موفقیت حذف شد");
+                    await LocalStorage.SetItemAsync(LocalStorageKeys.DeviceRegisteredPasskey, false);
                     await LoadPasskeysAsync();
                 });
         }

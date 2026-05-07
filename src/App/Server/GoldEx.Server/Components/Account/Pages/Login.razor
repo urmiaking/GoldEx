@@ -1,4 +1,5 @@
-﻿@using GoldEx.Shared.Enums
+﻿@using GoldEx.Client.Components.Constants
+@using GoldEx.Shared.Enums
 @attribute [Route(ClientRoutes.Accounts.Login)]
 
 @inject SignInManager<AppUser> SignInManager
@@ -82,7 +83,7 @@
 <script>
     function initPasskeyAutoOpen() {
         const containerId = 'passkey-login-section';
-        const storageKey = 'device_registered_passkey';
+        const storageKey = '@LocalStorageKeys.DeviceRegisteredPasskey';
         const container = document.getElementById(containerId);
 
         if (!container) return;
