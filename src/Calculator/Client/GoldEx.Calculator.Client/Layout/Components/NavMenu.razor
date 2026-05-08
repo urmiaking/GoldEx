@@ -5,6 +5,14 @@
                 Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
         محاسبه گر طلا
     </MudNavLink>
+    <AuthorizeView>
+        <Authorized>
+            <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"
+                        Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Primary">
+                لیست فاکتورها
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
     <MudNavLink Href="@ClientRoutes.Calculator.Currency" Match="NavLinkMatch.All"
                 Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Error">
         تبدیل ارز

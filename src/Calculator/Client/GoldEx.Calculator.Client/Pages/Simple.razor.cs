@@ -18,6 +18,7 @@ public partial class Simple
 
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
     [Inject] private QuickInvoiceBasketStore BasketStore { get; set; } = default!;
+    [Inject] private QuickInvoiceStore InvoiceStore { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,6 +113,8 @@ public partial class Simple
                 .WithCustomer(customer.CustomerName, customer.CustomerPhone)
                 .WithCompanyInfo(customer.CompanyName, customer.CompanyPhone, customer.CompanyAddress))
             .ToList();
+
+        await InvoiceStore.AddInvoiceAsync(QuickInvoice.Create(items));
 
         var json = JsonSerializer.Serialize(items, QuickInvoicePayload.JsonOptions);
         await JsRuntime.InvokeVoidAsync("quickInvoice.printFromPayload", json);

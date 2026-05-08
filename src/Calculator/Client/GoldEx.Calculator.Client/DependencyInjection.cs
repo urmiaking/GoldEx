@@ -32,6 +32,7 @@ public static class DependencyInjection
 
             services.AddClientAndServerServices(Defaults.Classes.Position.BottomRight);
             services.AddScoped<QuickInvoiceBasketStore>();
+            services.AddScoped<QuickInvoiceStore>();
 
             return services;
         }
