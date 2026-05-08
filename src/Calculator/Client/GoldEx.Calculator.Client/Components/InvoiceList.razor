@@ -1,0 +1,100 @@
+﻿@using GoldEx.Calculator.Client.ViewModels
+@inherits GoldExComponentBase
+
+@if (!_isLoggedIn)
+{
+    <div>لطفا وارد حساب کاربری خود شوید</div>
+}
+else
+{
+    <MudTable T="QuickInvoice"
+              RowsPerPage="14"
+              Hover="true"
+              @ref="_table"
+              FixedHeader="true"
+              Dense="true"
+              Class="@Class"
+              ContainerClass="responsive-table-toolbar"
+              ServerData="GetInvoiceData"
+              Breakpoint="Breakpoint.Sm"
+              Elevation="24">
+
+        <ToolBarContent>
+            <MudTextField T="string"
+                          Clearable="true"
+                          Immediate="true"
+                          ValueChanged="@(s => OnSearch(s))"
+                          DebounceInterval="500"
+                          Placeholder="جستجو ..."
+                          Adornment="Adornment.Start"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium" />
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortLabel="@nameof(QuickInvoice.InvoiceNumber)" T="QuickInvoice">شماره فاکتور</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="@nameof(QuickInvoice.CustomerName)" T="QuickInvoice">نام مشتری</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="@nameof(QuickInvoice.CustomerPhone)" T="QuickInvoice">شماره تماس</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="@nameof(QuickInvoice.DateTime)" T="QuickInvoice">تاریخ ثبت</MudTableSortLabel></MudTh>
+            <MudTh>ارزش کل</MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
+            <MudTd DataLabel="نام مشتری">@context.CustomerName</MudTd>
+            <MudTd DataLabel="شماره تماس">@(!string.IsNullOrWhiteSpace(context.CustomerPhone) ? context.CustomerPhone : "—")</MudTd>
+            <MudTd DataLabel="تاریخ ثبت">@context.DateTime</MudTd>
+            <MudTd DataLabel="ارزش کل">
+                @{
+                    var total = context.Items.Sum(x =>
+                    {
+                        decimal.TryParse(x.FinalPrice.Replace(",", "").Replace("تومان", "").Trim(), out var value);
+                        return value;
+                    });
+
+                    @($"{total:N0} تومان")
+                }
+            </MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudButton Variant="@Variant.Filled" StartIcon="@Icons.Material.Filled.Print" Size="Size.Small"
+                               Color="@Color.Success" OnClick="@(() => RePrintInvoice(context))">چاپ</MudButton>
+                    <MudButton OnClick="@(() => DeleteInvoice(context.InvoiceNumber))" Variant="@Variant.Filled" Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Delete" Color="@Color.Error">حذف</MudButton>
+                </div>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>هیچ فاکتوری یافت نشد</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText>در حال بارگیری</MudText>
+        </LoadingContent>
+        <PagerContent>
+            @{
+                var totalItems = _table.GetFilteredItemsCount();
+                var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+                var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+                var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+                var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+            }
+
+            <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 py-4" style="gap: 1rem;">
+                <div class="mud-table-pagination-caption">@infoText</div>
+
+                <MudPagination SelectedChanged="PageChanged"
+                               Selected="@(_table.CurrentPage + 1)"
+                               Color="Color.Primary"
+                               Count="@pageCount"
+                               Class="justify-center"
+                               BoundaryCount="1"
+                               MiddleCount="3" />
+
+                <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden;">@infoText</div>
+            </div>
+        </PagerContent>
+    </MudTable>
+}

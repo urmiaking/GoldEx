@@ -138,7 +138,7 @@ h1:focus {
 }
 
 .responsive-table-toolbar {
-    height: calc(100vh - 416px);
+    height: calc(100vh - 455px);
 }
 
 @media (min-width: 960px) {
