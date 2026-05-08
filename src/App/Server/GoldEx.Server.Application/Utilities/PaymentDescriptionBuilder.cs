@@ -16,8 +16,33 @@ public static class PaymentDescriptionBuilder
             PaymentType.MoltenGoldInventory => GetGoldPaymentTitle(PaymentType.MoltenGoldInventory, payment),
             PaymentType.CustomerTransfer => GetCustomerTransferTitle(payment),
             PaymentType.TransferedPayment => GetTransferedPaymentTitle(payment),
+            PaymentType.Check => GetCheckPaymentTitle(payment),
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    private static string GetCheckPaymentTitle(InvoicePayment payment)
+    {
+        var check = payment.CheckPayment;
+
+        if (check is null)
+            return "پرداخت با چک";
+
+        var parts = new List<string>
+        {
+            "پرداخت با چک"
+        };
+
+        // شماره یا صیادی
+        if (!string.IsNullOrWhiteSpace(check.Number))
+            parts.Add($"شماره {check.Number}");
+        else if (!string.IsNullOrWhiteSpace(check.SayadiCode))
+            parts.Add($"صیادی {check.SayadiCode}");
+
+        // سررسید
+        parts.Add($"سررسید {check.DueDate:yyyy/MM/dd}");
+
+        return string.Join(" - ", parts);
     }
 
     private static string GetCustomerTransferTitle(InvoicePayment payment)

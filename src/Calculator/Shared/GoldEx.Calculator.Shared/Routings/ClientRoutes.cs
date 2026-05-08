@@ -7,6 +7,11 @@ public static class ClientRoutes
         public const string Index = "/";
     }
 
+    public static class Invoices
+    {
+        public const string Index = "/invoices";
+    }
+
     public static class Calculator
     {
         public const string Simple = "/simple";
