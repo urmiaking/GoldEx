@@ -56,7 +56,7 @@
             <RowTemplate>
                 <MudTd DataLabel="مبلغ">@context.Amount.ToCurrencyFormat(context.PriceUnit?.Title)</MudTd>
                 <MudTd DataLabel="توضیحات">@context.Description</MudTd>
-                <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate?.ToShortDateString()</MudTd>
+                <MudTd DataLabel="تاریخ پرداخت">@context.PaymentDate?.ToString("f")</MudTd>
                 <MudTd DataLabel="عملیات">
                     <div class="d-flex gap-2">
                         @if (context.PaymentType is not PaymentType.TransferedPayment)
