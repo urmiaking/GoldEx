@@ -9,4 +9,5 @@ public static class LocalStorageKeys
 
     public const string QuickInvoiceCompanyInfo = "QuickInvoiceCompanyInfo";
     public const string QuickInvoiceBasket = "QuickInvoiceBasket";
+    public const string QuickInvoiceList = "QuickInvoiceList";
 }

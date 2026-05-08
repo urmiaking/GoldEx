@@ -7,8 +7,16 @@
 <MudAppBar Bottom="true" Fixed="true" Color="Color.Surface" Elevation="24" Style="top: auto; bottom: 0;" ToolBarClass="mobile-navbar" Class="@Class">
     <MudNavMenu Margin="Margin.Dense" Color="Color.Primary">
         <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
-            محاسبه گر طلا
+            محاسبه گر
         </MudNavLink>
+        <AuthorizeView>
+            <Authorized>
+                <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"
+                            Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Primary">
+                    فاکتورها
+                </MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavLink Href="@ClientRoutes.Calculator.Currency" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Error">
             تبدیل ارز
         </MudNavLink>
@@ -16,7 +24,7 @@
             ارز به طلا
         </MudNavLink>
         <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Info" IconColor="Color.Tertiary">
-            درباره برنامه
+            درباره
         </MudNavLink>
     </MudNavMenu>
 </MudAppBar>
