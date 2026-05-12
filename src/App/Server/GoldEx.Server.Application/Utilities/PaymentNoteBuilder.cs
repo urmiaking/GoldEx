@@ -8,5 +8,5 @@ public static class PaymentNoteBuilder
     public static string BuildForTransfer(string customerName,
         long invoiceNumber,
         InvoiceType invoiceType) =>
-        $"کسر از بدهی بابت پرداخت انجام‌شده به {customerName} (فاکتور {invoiceType.GetDisplayName()} شماره {invoiceNumber})";
+        $"کسر از بدهی بابت پرداخت به {customerName} (فاکتور {invoiceType.GetDisplayName()} شماره {invoiceNumber})";
 }

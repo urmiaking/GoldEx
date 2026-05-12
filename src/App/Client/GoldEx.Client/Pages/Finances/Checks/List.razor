@@ -1,0 +1,21 @@
+﻿@attribute [Route(ClientRoutes.Finances.Checks)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@using GoldEx.Client.Pages.Statics
+@inherits GoldExComponentBase
+
+<PageTitle>مدیریت چک ها</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">لیست چک ها</MudText>
+    <MudDivider Class="mb-2 d-md-block d-none" />
+
+    <UnderDevelopment />
+
+</MudContainer>
