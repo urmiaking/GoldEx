@@ -9,7 +9,7 @@
     <div class="row">
 
         <MudGrid Class="position-relative" Spacing="0">
-            
+
             @if (!_isLoggedIn)
             {
                 <!-- Desktop Button -->
@@ -54,7 +54,7 @@
                     </MudItem>
                 </MudHidden>
             }
-            
+
             @if (!_isLoggedIn)
             {
 
@@ -74,8 +74,8 @@
         </MudGrid>
     </div>
 
-    <SimpleCalculator Class="mt-4" 
-                      Elevation="24" 
+    <SimpleCalculator Class="mt-4"
+                      Elevation="24"
                       EnableQuickInvoice="true"
                       OnAddToInvoice="HandleAddToInvoiceAsync" />
 </div>
@@ -83,10 +83,26 @@
 @if (_basketCount > 0)
 {
     <div class="quick-invoice-fab">
+
+        @* <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudFabMenu Label="@($"صدور فاکتور ({_basketCount})")" Color="Color.Primary" AlignItems="AlignItems.Center" 
+                        OpenOnMouseHover="false" UseCloseIcon="false" DampenItemsBackgroundColor="false"
+                        StartIcon="@Icons.Material.Filled.ShoppingCartCheckout">
+                <MudFabMenuItem StartIcon="@Icons.Material.Outlined.ListAlt" Label="مشاهده اقلام" Color="Color.Success" OnClick="OpenBasketDialogAsync" />
+                <MudFabMenuItem StartIcon="@Icons.Material.Outlined.ShoppingCartCheckout" Label="چاپ فاکتور" Color="Color.Info" OnClick="FinalizeInvoiceAsync" />
+            </MudFabMenu>
+        </MudHidden>
+        
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <QuickInvoiceSpeedDial Count="@_basketCount"
                                    OnOpenList="OpenBasketDialogAsync"
                                    OnFinalize="FinalizeInvoiceAsync" />
+        </MudHidden> *@
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <QuickInvoiceSpeedDial Count="@_basketCount"
+                                   OnOpenList="OpenBasketDialogAsync"
+                                   OnFinalize="FinalizeInvoiceAsync"/>
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
@@ -95,7 +111,7 @@
                     صدور فاکتور (@_basketCount)
                 </MudButton>
                 <MudTooltip Text="مشاهده اقلام">
-                    <MudIconButton Icon="@Icons.Material.Filled.ListAlt" Color="Color.Info" Variant="Variant.Filled" OnClick="OpenBasketDialogAsync" />
+                    <MudIconButton Icon="@Icons.Material.Filled.ListAlt" Color="Color.Info" Variant="Variant.Filled" OnClick="OpenBasketDialogAsync"/>
                 </MudTooltip>
             </MudButtonGroup>
         </MudHidden>
