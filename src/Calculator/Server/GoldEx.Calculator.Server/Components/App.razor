@@ -7,12 +7,12 @@
     <meta name="theme-color" content="#daa520" />
     <base href="/" />
 
-    <link rel="manifest" href="@Assets["manifest.webmanifest"]" />
-    <link rel="stylesheet" href="@Assets["css/lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["css/app.css"]" />
-    <link rel="stylesheet" href="@Assets["css/quick-invoice-fab.css"]" />
-    <link rel="stylesheet" href="@Assets["GoldEx.Calculator.Server.styles.css"]" />
-    <link rel="stylesheet" href=@Assets["_content/MudBlazor/MudBlazor.min.css"] />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="css/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/quick-invoice-fab.css" />
+    <link rel="stylesheet" href="GoldEx.Calculator.Server.styles.css" />
+    <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
 
     <ImportMap />
 
@@ -29,9 +29,9 @@
 
 <body>
     <Routes @rendermode="RenderModeForPage" />
-    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
-    <script src="@Assets["quick-invoice.js"]"></script>
-    <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="quick-invoice.js"></script>
+    <script src="_framework/blazor.web.js" autostart="false"></script>
 
     <script>
         Blazor.start({
@@ -39,7 +39,7 @@
         });
     </script>
 
-    <script src=@Assets["sw-events.js"]></script>
+    <script src="sw-events.js"></script>
     <script>swEvents.startListening();</script>
 </body>
 </html>
