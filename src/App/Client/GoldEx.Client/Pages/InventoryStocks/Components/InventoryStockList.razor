@@ -59,7 +59,7 @@
                         <MudButton Size="Size.Small">
                             @(_categoryFilter?.Title ?? "دسته بندی")
                         </MudButton>
-                        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;" MaxHeight="200">
                             <MudMenuItem Icon="@Icons.Material.Filled.List" IconColor="Color.Info"
                                          OnClick="() => SetCategoryFilterText(null)">همه دسته بندی ها</MudMenuItem>
                             @foreach (var category in _categories)
