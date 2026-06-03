@@ -47,7 +47,7 @@ public partial class SimpleCalculator
     private bool _applySafetyMargin = true;
     private bool _scannerOpen;
 
-    private string PriceUnitAdornment => _model.PriceUnit?.Title ?? string.Empty;
+    private string PriceUnitAdornment => _model.PriceUnit?.Title ?? "تومان";
 
     private string? WageFieldAdornmentText => _model.WageType switch
     {
