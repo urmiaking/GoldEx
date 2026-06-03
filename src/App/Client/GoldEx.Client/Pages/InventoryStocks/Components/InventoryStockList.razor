@@ -59,7 +59,7 @@
                         <MudButton Size="Size.Small">
                             @(_categoryFilter?.Title ?? "دسته بندی")
                         </MudButton>
-                        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                        <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;" MaxHeight="200">
                             <MudMenuItem Icon="@Icons.Material.Filled.List" IconColor="Color.Info"
                                          OnClick="() => SetCategoryFilterText(null)">همه دسته بندی ها</MudMenuItem>
                             @foreach (var category in _categories)
@@ -194,12 +194,12 @@
             case ItemType.Product when context.Product is not null:
                 <MudTd DataLabel="بارکد">
                     <MudTooltip Text="@GetBarcodeTooltipText(context)" Arrow="true" Placement="Placement.Top">
-                        @context.Product.Barcode
+                        @context.Product?.Barcode
                     </MudTooltip>
                 </MudTd>
-                <MudTd DataLabel="نوع جنس">@context.Product.ProductType.GetDisplayName()</MudTd>
-                <MudTd DataLabel="دسته">@(context.Product.ProductCategoryTitle ?? "-")</MudTd>
-                <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
+                <MudTd DataLabel="نوع جنس">@context.Product?.ProductType.GetDisplayName()</MudTd>
+                <MudTd DataLabel="دسته">@(context.Product?.ProductCategoryTitle ?? "-")</MudTd>
+                <MudTd DataLabel="عنوان">@context.Product?.Name</MudTd>
                 <MudTd DataLabel="اجرت">
                     <MudTooltip Text="@GetWageTooltipText(context)" Arrow="true" Placement="Placement.Top">
                         @{
@@ -214,10 +214,10 @@
                             }
                             else
                             {
-                                @(context.Product.WageType switch
+                                @(context.Product?.WageType switch
                                 {
-                                    WageType.Fixed => $"{context.Product.Wage?.ToCurrencyFormat(context.Product.WagePriceUnitTitle)}",
-                                    WageType.Percent => context.Product.Wage?.ToString("G29") + " درصد",
+                                    WageType.Fixed => $"{context.Product?.Wage?.ToCurrencyFormat(context.Product?.WagePriceUnitTitle)}",
+                                    WageType.Percent => context.Product?.Wage?.ToString("G29") + " درصد",
                                     _ => "ندارد"
                                 })
                             }
@@ -225,21 +225,21 @@
 
                     </MudTooltip>
                 </MudTd>
-                <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
-                <MudTd DataLabel="وزن موجود">@context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
-                <MudTd DataLabel="وزن فروخته شده">@context.SoldAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
+                <MudTd DataLabel="عیار">@context.Product?.Fineness.ToString("G29")</MudTd>
+                <MudTd DataLabel="وزن موجود">@context.CurrentAmount.ToWeightFormat(context.Product?.GoldUnitType ?? GoldUnitType.Gram)</MudTd>
+                <MudTd DataLabel="وزن فروخته شده">@context.SoldAmount.ToWeightFormat(context.Product?.GoldUnitType ?? GoldUnitType.Gram)</MudTd>
                 break;
             case ItemType.MoltenGold when context.Product is not null:
                 <MudTd DataLabel="بارکد">
                     <MudTooltip Text="@GetBarcodeTooltipText(context)" Arrow="true" Placement="Placement.Top">
-                        @context.Product.Barcode
+                        @context.Product?.Barcode
                     </MudTooltip>
                 </MudTd>
-                <MudTd DataLabel="عنوان">@context.Product.Name</MudTd>
-                <MudTd DataLabel="عیار">@context.Product.Fineness.ToString("G29")</MudTd>
-                <MudTd DataLabel="شماره انگ">@context.Product.MoltenGold?.AssayNumber</MudTd>
-                <MudTd DataLabel="آزمایشگاه">@context.Product.MoltenGold?.Assayer?.FullName</MudTd>
-                <MudTd DataLabel="تاریخ ری گیری">@context.Product.MoltenGold?.AssayDate?.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd DataLabel="عنوان">@context.Product?.Name</MudTd>
+                <MudTd DataLabel="عیار">@context.Product?.Fineness.ToString("G29")</MudTd>
+                <MudTd DataLabel="شماره انگ">@context.Product?.MoltenGold?.AssayNumber</MudTd>
+                <MudTd DataLabel="آزمایشگاه">@context.Product?.MoltenGold?.Assayer?.FullName</MudTd>
+                <MudTd DataLabel="تاریخ ری گیری">@context.Product?.MoltenGold?.AssayDate?.ToString("yyyy-MM-dd")</MudTd>
                 <MudTd DataLabel="وزن موجود">@context.CurrentAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
                 <MudTd DataLabel="وزن فروخته شده">@context.SoldAmount.ToWeightFormat(context.Product.GoldUnitType)</MudTd>
                 break;

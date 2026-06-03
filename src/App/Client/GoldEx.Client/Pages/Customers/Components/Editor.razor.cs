@@ -65,7 +65,7 @@ public partial class Editor
 
         _processing = true;
 
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
         {
