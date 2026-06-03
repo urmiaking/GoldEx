@@ -39,7 +39,7 @@ public partial class InvoiceList
         if (_invoices is null)
             await LoadInvoicesAsync();
 
-        IEnumerable<QuickInvoice> data = _invoices;
+        IEnumerable<QuickInvoice> data = _invoices ?? [];
 
         // SEARCH (customer name, phone, invoice number)
         if (!string.IsNullOrWhiteSpace(_searchString))
@@ -79,9 +79,10 @@ public partial class InvoiceList
         };
 
         // PAGING
-        var total = data.Count();
+        var quickInvoices = data.ToList();
+        var total = quickInvoices.Count;
 
-        var pageData = data
+        var pageData = quickInvoices
             .Skip(state.Page * state.PageSize)
             .Take(state.PageSize)
             .ToList();

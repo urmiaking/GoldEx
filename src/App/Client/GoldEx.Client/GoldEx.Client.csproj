@@ -43,7 +43,7 @@
 	<ItemGroup>
 		<PackageReference Include="DevExpress.Blazor.Reporting.JSBasedControls.WebAssembly" Version="24.2.7" />
 		<PackageReference Include="TinyMCE.Blazor" Version="2.2.1" />
-		<PackageReference Include="Net.Codecrete.QrCodeGenerator" Version="2.1.0" />
+		<PackageReference Include="Net.Codecrete.QrCodeGenerator" Version="3.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
