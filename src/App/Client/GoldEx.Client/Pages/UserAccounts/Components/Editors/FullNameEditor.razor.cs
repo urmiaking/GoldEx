@@ -16,7 +16,7 @@ public partial class FullNameEditor
 
     private async Task Submit()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
             return;

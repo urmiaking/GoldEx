@@ -33,7 +33,7 @@ public partial class InventoryExitContainer
 
     private async Task OnSubmitAsync()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
             return;

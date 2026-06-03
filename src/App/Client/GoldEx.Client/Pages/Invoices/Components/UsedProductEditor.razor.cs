@@ -64,7 +64,7 @@ public partial class UsedProductEditor
     private async Task Submit()
     {
         _isProcessing = true;
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
         {
