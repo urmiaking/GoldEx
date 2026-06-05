@@ -20,20 +20,20 @@ public class SignalHealthCheck(IHttpClientFactory httpClientFactory, IEmailSende
             var payload = SignalPayloadItem.CreateDefaultPayload();
             var response = await httpClient.PostAsJsonAsync(ExternalRoutes.Signal, payload, Utilities.GetJsonOptions(), cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            //if (!response.IsSuccessStatusCode)
+            //{
+            //    var content = await response.Content.ReadAsStringAsync(cancellationToken);
 
-                userManager.GetUsersInRoleAsync(BuiltinRoles.Administrators).Result.ToList().ForEach(async user =>
-                {
-                    if (!string.IsNullOrEmpty(user.Email))
-                    {
-                        await emailSender.SendEmailAsync(user.Email,
-                            "سرویس استعلام قیمت آنلاین با مشکل مواجه شده است",
-                            $"کد خطا: {response.StatusCode} و متن خطا: {content}");
-                    }
-                });
-            }
+            //    userManager.GetUsersInRoleAsync(BuiltinRoles.Administrators).Result.ToList().ForEach(async user =>
+            //    {
+            //        if (!string.IsNullOrEmpty(user.Email))
+            //        {
+            //            await emailSender.SendEmailAsync(user.Email,
+            //                "سرویس استعلام قیمت آنلاین با مشکل مواجه شده است",
+            //                $"کد خطا: {response.StatusCode} و متن خطا: {content}");
+            //        }
+            //    });
+            //}
 
             return response.IsSuccessStatusCode
                 ? HealthCheckResult.Healthy()
@@ -41,22 +41,22 @@ public class SignalHealthCheck(IHttpClientFactory httpClientFactory, IEmailSende
         }
         catch (Exception e)
         {
-            try
-            {
-                userManager.GetUsersInRoleAsync(BuiltinRoles.Administrators).Result.ToList().ForEach(async user =>
-                {
-                    if (!string.IsNullOrEmpty(user.Email))
-                    {
-                        await emailSender.SendEmailAsync(user.Email,
-                            "سرویس استعلام قیمت آنلاین با مشکل مواجه شده است",
-                            $"سرویس استعلام قیمت آنلاین با مشکل مواجه شده است و خطا: {e.Message}. Stacktrace: {e.StackTrace}");
-                    }
-                });
-            }
-            catch 
-            {
-                return HealthCheckResult.Unhealthy("اختلال در سرویس");
-            }
+            //try
+            //{
+            //    userManager.GetUsersInRoleAsync(BuiltinRoles.Administrators).Result.ToList().ForEach(async user =>
+            //    {
+            //        if (!string.IsNullOrEmpty(user.Email))
+            //        {
+            //            await emailSender.SendEmailAsync(user.Email,
+            //                "سرویس استعلام قیمت آنلاین با مشکل مواجه شده است",
+            //                $"سرویس استعلام قیمت آنلاین با مشکل مواجه شده است و خطا: {e.Message}. Stacktrace: {e.StackTrace}");
+            //        }
+            //    });
+            //}
+            //catch 
+            //{
+            //    return HealthCheckResult.Unhealthy("اختلال در سرویس");
+            //}
 
             return HealthCheckResult.Unhealthy("اختلال در سرویس");
         }
