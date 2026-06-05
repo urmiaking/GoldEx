@@ -71,7 +71,14 @@
                     </MudNavLink>
                 </MudHidden>
             }
-
+        </Authorized>
+    </AuthorizeView>
+    <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Filled.Info">
+        درباره
+    </MudNavLink>
+    <AuthorizeView>
+        <Authorized>
             <MudNavLink Href="@ApiUrls.Account.Logout(_currentUrl)" Match="NavLinkMatch.Prefix"
                         Icon="@Icons.Material.Filled.Logout">
                 خروج
