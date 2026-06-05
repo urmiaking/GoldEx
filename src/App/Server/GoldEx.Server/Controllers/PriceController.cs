@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Prices;
@@ -61,6 +61,14 @@ public class PriceController(IPriceService priceService) : ApiControllerBase
     public async Task<IActionResult> GetByPriceUnitAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
     {
         var price = await priceService.GetAsync(priceUnitId, cancellationToken);
+        return price is not null ? Ok(price) : NotFound();
+    }
+
+    [AllowAnonymous]
+    [HttpGet(ApiRoutes.Price.GetByCatalog)]
+    public async Task<IActionResult> GetByCatalogAsync(PriceCatalog priceCatalog, CancellationToken cancellationToken = default)
+    {
+        var price = await priceService.GetAsync(priceCatalog, cancellationToken);
         return price is not null ? Ok(price) : NotFound();
     }
 

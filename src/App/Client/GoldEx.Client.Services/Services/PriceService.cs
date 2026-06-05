@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Prices;
@@ -71,6 +71,21 @@ internal class PriceService(HttpClient client, JsonSerializerOptions jsonOptions
     public async Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default)
     {
         using var response = await client.GetAsync(ApiUrls.Price.GetByPriceUnit(priceUnitId), cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<GetPriceResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<GetPriceResponse?> GetAsync(PriceCatalog priceCatalog, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Price.GetByCatalog(priceCatalog), cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;

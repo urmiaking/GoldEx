@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Enums;
 
@@ -21,6 +21,7 @@ public interface IPriceService
     Task<GetPriceResponse?> GetAsync(GoldUnitType unitType, Guid? priceUnitId, bool applySafetyMargin,
         CancellationToken cancellationToken = default);
     Task<GetPriceResponse?> GetAsync(Guid priceUnitId, CancellationToken cancellationToken = default);
+    Task<GetPriceResponse?> GetAsync(PriceCatalog priceCatalog, CancellationToken cancellationToken = default);
     Task<GetExchangeRateResponse> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId,
         CancellationToken cancellationToken = default);
     Task<List<GetPriceSettingResponse>> GetSettingsAsync(CancellationToken cancellationToken = default);

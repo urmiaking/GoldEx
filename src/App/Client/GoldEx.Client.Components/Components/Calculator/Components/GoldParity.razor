@@ -1,0 +1,473 @@
+@namespace GoldEx.Client.Components.Calculator.Components
+@inherits GoldExComponentBase
+
+<MudCard Class="@($"pa-4 {Class}")" Elevation="@Elevation">
+    <div class="d-flex justify-space-between align-center flex-wrap gap-4 mb-4">
+        <div class="d-none align-center gap-2 d-md-flex">
+            <MudIcon Icon="@Icons.Material.Outlined.CompareArrows" Color="Color.Primary" Size="Size.Large" />
+            <MudText Typo="Typo.h5" Class="font-weight-bold">برابری ارز و حباب طلا</MudText>
+        </div>
+        <div class="d-flex align-center gap-3">
+            <MudSwitch T="bool" Value="_isManualMode" ValueChanged="ToggleManualMode" Color="Color.Primary" Label="ویرایش دستی نرخ‌ها" />
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="LoadPricesAsync" Disabled="_isManualMode" Title="به‌روزرسانی نرخ‌ها" />
+        </div>
+    </div>
+
+    <!-- Active Rates Grid -->
+    <MudGrid Class="mb-4">
+        <!-- Ounce Card -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="3" Class="pa-3 d-flex flex-column justify-center hover-card" Style="height: 110px;">
+                <div class="d-flex justify-space-between align-center mb-1">
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-bold">انس جهانی طلا</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Public" Color="Color.Warning" Size="Size.Small" />
+                </div>
+                @if (_isManualMode)
+                {
+                    <MudNumericField T="decimal" @bind-Value="_manualOuncePrice" Margin="Margin.Dense" Variant="Variant.Outlined" HideSpinButtons="true" dir="ltr" Class="mt-1" Immediate="true" Adornment="Adornment.End" AdornmentText="دلار" />
+                }
+                else
+                {
+                    <div class="d-flex align-center justify-space-between mt-2">
+                        <MudText Typo="Typo.h5" Class="font-weight-bold">@_liveOuncePrice.ToCurrencyFormat("دلار")</MudText>
+                    </div>
+                }
+            </MudCard>
+        </MudItem>
+
+        <!-- Dollar Card -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="3" Class="pa-3 d-flex flex-column justify-center hover-card" Style="height: 110px;">
+                <div class="d-flex justify-space-between align-center mb-1">
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-bold">نرخ دلار آزاد</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Primary" Size="Size.Small" />
+                </div>
+                @if (_isManualMode)
+                {
+                    <MudNumericField T="decimal" @bind-Value="_manualUsdRate" Margin="Margin.Dense" Variant="Variant.Outlined" Format="N0" HideSpinButtons="true" dir="ltr" Class="mt-1" Immediate="true" Adornment="Adornment.End" AdornmentText="@_currencyUnit" />
+                }
+                else
+                {
+                    <div class="d-flex align-center justify-space-between mt-2">
+                        <MudText Typo="Typo.h5" Class="font-weight-bold">@_liveUsdRate.ToCurrencyFormat(_currencyUnit)</MudText>
+                    </div>
+                }
+            </MudCard>
+        </MudItem>
+
+        <!-- Dirham Card -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="3" Class="pa-3 d-flex flex-column justify-center hover-card" Style="height: 110px;">
+                <div class="d-flex justify-space-between align-center mb-1">
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-bold">نرخ درهم امارات</MudText>
+                    <div class="d-flex align-center gap-1">
+                        @if (!_isManualMode)
+                        {
+                            <MudTooltip Text="نرخ دلار بر اساس درهم (تومان)">
+                                <MudChip T="string" Color="Color.Default" Size="Size.Small" Variant="Variant.Text" Class="ma-0 pa-0 font-weight-bold" Style="height: auto; font-size: 0.75rem;">
+                                    @ImpliedUsdFromAed.ToCurrencyFormat(_currencyUnit)
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        <MudIcon Icon="@Icons.Material.Filled.CurrencyExchange" Color="Color.Error" Size="Size.Small" />
+                    </div>
+                </div>
+                @if (_isManualMode)
+                {
+                    <MudNumericField T="decimal" @bind-Value="_manualAedRate" Margin="Margin.Dense" Variant="Variant.Outlined" Format="N0" HideSpinButtons="true" dir="ltr" Class="mt-1" Immediate="true" Adornment="Adornment.End" AdornmentText="@_currencyUnit" />
+                }
+                else
+                {
+                    <div class="d-flex align-center justify-space-between mt-2">
+                        <MudText Typo="Typo.h5" Class="font-weight-bold">@_liveAedRate.ToCurrencyFormat(_currencyUnit)</MudText>
+                    </div>
+                }
+            </MudCard>
+        </MudItem>
+
+        <!-- Lira Card -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="3" Class="pa-3 d-flex flex-column justify-center hover-card" Style="height: 110px;">
+                <div class="d-flex justify-space-between align-center mb-1">
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-bold">نرخ لیر ترکیه</MudText>
+                    <div class="d-flex align-center gap-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Success" Size="Size.Small" />
+                    </div>
+                </div>
+                @if (_isManualMode)
+                {
+                    <MudNumericField T="decimal" @bind-Value="_manualTryRate" Margin="Margin.Dense" Variant="Variant.Outlined" Format="N0" HideSpinButtons="true" dir="ltr" Class="mt-1" Immediate="true" Adornment="Adornment.End" AdornmentText="@_currencyUnit" />
+                }
+                else
+                {
+                    <div class="d-flex align-center justify-space-between mt-2">
+                        <MudText Typo="Typo.h5" Class="font-weight-bold">@_liveTryRate.ToCurrencyFormat(_currencyUnit)</MudText>
+                    </div>
+                }
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Parity and Comparison Grid -->
+    <MudGrid>
+        <!-- 18K Gold Card -->
+        <MudItem xs="12" lg="4">
+            <MudCard Elevation="3" Class="pa-4 h-100 d-flex flex-column">
+                <div class="d-flex justify-space-between align-center mb-3">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">طلای ۱۸ عیار (گرم)</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Landscape" Color="Color.Primary" />
+                </div>
+                
+                <div class="d-flex justify-space-between align-center mb-4 pa-2 rounded" Style="background-color: var(--mud-palette-background-gray); height: 50px;">
+                    <MudText Typo="Typo.body2">قیمت بازار ایران:</MudText>
+                    @if (_isManualMode)
+                    {
+                        <div style="width: 160px;">
+                            <MudNumericField T="decimal" @bind-Value="_manualGold18Price" Margin="Margin.Dense" Variant="Variant.Outlined" Format="N0" HideSpinButtons="true" dir="ltr" Immediate="true" Adornment="Adornment.End" AdornmentText="@_currencyUnit" />
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body1" Class="font-weight-bold">@Gold18Price.ToCurrencyFormat(_currencyUnit)</MudText>
+                    }
+                </div>
+
+                <MudDivider Class="my-2" />
+
+                <!-- Comparison Table -->
+                <div class="flex-grow-1">
+                    <!-- USD Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">برابری دلار آزاد</MudText>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@Usd18kParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var usdBubble = Gold18Price - Usd18kParity;
+                            var usdBubblePct = Usd18kParity > 0 ? (usdBubble / Usd18kParity) * 100m : 0m;
+                            var usdSignal = GetSignal(usdBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(usdBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(usdBubble >= 0 ? "+" : "")@usdBubble.ToCurrencyFormat(_currencyUnit) (@(usdBubblePct >= 0 ? "+" : "")@usdBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@usdSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@usdSignal.Icon" Size="Size.Small" />
+                                @usdSignal.Text
+                            </span>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <!-- AED Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">برابری درهم امارات</MudText>
+                                @{
+                                    var aedGoldGram = AedUsdCrossRate > 0 ? (OuncePrice * AedUsdCrossRate * 0.750m) / TroyOunceGrams : 0m;
+                                }
+                                <span class="text-muted" style="font-size: 0.75rem;">نرخ امارات: @aedGoldGram.ToString("F1") درهم</span>
+                            </div>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@Aed18kParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var aedBubble = Gold18Price - Aed18kParity;
+                            var aedBubblePct = Aed18kParity > 0 ? (aedBubble / Aed18kParity) * 100m : 0m;
+                            var aedSignal = GetSignal(aedBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(aedBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(aedBubble >= 0 ? "+" : "")@aedBubble.ToCurrencyFormat(_currencyUnit) (@(aedBubblePct >= 0 ? "+" : "")@aedBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@aedSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@aedSignal.Icon" Size="Size.Small" />
+                                @aedSignal.Text
+                            </span>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <!-- TRY Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">برابری لیر ترکیه</MudText>
+                                @{
+                                    var tryGoldGram = TryUsdCrossRate > 0 ? (OuncePrice * TryUsdCrossRate * 0.750m) / TroyOunceGrams : 0m;
+                                }
+                                <span class="text-muted" style="font-size: 0.75rem;">نرخ ترکیه: @tryGoldGram.ToString("F1") لیر</span>
+                            </div>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@Try18kParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var tryBubble = Gold18Price - Try18kParity;
+                            var tryBubblePct = Try18kParity > 0 ? (tryBubble / Try18kParity) * 100m : 0m;
+                            var trySignal = GetSignal(tryBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(tryBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(tryBubble >= 0 ? "+" : "")@tryBubble.ToCurrencyFormat(_currencyUnit) (@(tryBubblePct >= 0 ? "+" : "")@tryBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@trySignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@trySignal.Icon" Size="Size.Small" />
+                                @trySignal.Text
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </MudCard>
+        </MudItem>
+
+        <!-- Mithqal / Mazanne Card -->
+        <MudItem xs="12" lg="4">
+            <MudCard Elevation="3" Class="pa-4 h-100 d-flex flex-column">
+                <div class="d-flex justify-space-between align-center mb-3">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">مثقال طلا (مظنه ۱۷ عیار)</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Scale" Color="Color.Warning" />
+                </div>
+                
+                <div class="d-flex justify-space-between align-center mb-4 pa-2 rounded" Style="background-color: var(--mud-palette-background-gray); height: 50px;">
+                    <MudText Typo="Typo.body2">قیمت بازار ایران:</MudText>
+                    @if (_isManualMode)
+                    {
+                        <div style="width: 160px;">
+                            <MudNumericField T="decimal" @bind-Value="_manualMesghalPrice" Margin="Margin.Dense" Variant="Variant.Outlined" Format="N0" HideSpinButtons="true" dir="ltr" Immediate="true" Adornment="Adornment.End" AdornmentText="@_currencyUnit" />
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body1" Class="font-weight-bold">@MesghalPrice.ToCurrencyFormat(_currencyUnit)</MudText>
+                    }
+                </div>
+
+                <MudDivider Class="my-2" />
+
+                <!-- Comparison Table -->
+                <div class="flex-grow-1">
+                    <!-- USD Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">برابری دلار آزاد</MudText>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@UsdMesghalParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var usdMesghalBubble = MesghalPrice - UsdMesghalParity;
+                            var usdMesghalBubblePct = UsdMesghalParity > 0 ? (usdMesghalBubble / UsdMesghalParity) * 100m : 0m;
+                            var usdMesghalSignal = GetSignal(usdMesghalBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(usdMesghalBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(usdMesghalBubble >= 0 ? "+" : "")@usdMesghalBubble.ToCurrencyFormat(_currencyUnit) (@(usdMesghalBubblePct >= 0 ? "+" : "")@usdMesghalBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@usdMesghalSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@usdMesghalSignal.Icon" Size="Size.Small" />
+                                @usdMesghalSignal.Text
+                            </span>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <!-- AED Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">برابری درهم امارات</MudText>
+                                @{
+                                    var aedGoldMesghal = AedUsdCrossRate > 0 ? (OuncePrice * AedUsdCrossRate * _gramPerMesghal * 0.705m) / TroyOunceGrams : 0m;
+                                }
+                                <span class="text-muted" style="font-size: 0.75rem;">نرخ امارات: @aedGoldMesghal.ToString("F1") درهم</span>
+                            </div>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@AedMesghalParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var aedMesghalBubble = MesghalPrice - AedMesghalParity;
+                            var aedMesghalBubblePct = AedMesghalParity > 0 ? (aedMesghalBubble / AedMesghalParity) * 100m : 0m;
+                            var aedMesghalSignal = GetSignal(aedMesghalBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(aedMesghalBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(aedMesghalBubble >= 0 ? "+" : "")@aedMesghalBubble.ToCurrencyFormat(_currencyUnit) (@(aedMesghalBubblePct >= 0 ? "+" : "")@aedMesghalBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@aedMesghalSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@aedMesghalSignal.Icon" Size="Size.Small" />
+                                @aedMesghalSignal.Text
+                            </span>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <!-- TRY Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">برابری لیر ترکیه</MudText>
+                                @{
+                                    var tryGoldMesghal = TryUsdCrossRate > 0 ? (OuncePrice * TryUsdCrossRate * _gramPerMesghal * 0.705m) / TroyOunceGrams : 0m;
+                                }
+                                <span class="text-muted" style="font-size: 0.75rem;">نرخ ترکیه: @tryGoldMesghal.ToString("F1") لیر</span>
+                            </div>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@TryMesghalParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var tryMesghalBubble = MesghalPrice - TryMesghalParity;
+                            var tryMesghalBubblePct = TryMesghalParity > 0 ? (tryMesghalBubble / TryMesghalParity) * 100m : 0m;
+                            var tryMesghalSignal = GetSignal(tryMesghalBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(tryMesghalBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(tryMesghalBubble >= 0 ? "+" : "")@tryMesghalBubble.ToCurrencyFormat(_currencyUnit) (@(tryMesghalBubblePct >= 0 ? "+" : "")@tryMesghalBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@tryMesghalSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@tryMesghalSignal.Icon" Size="Size.Small" />
+                                @tryMesghalSignal.Text
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </MudCard>
+        </MudItem>
+
+        <!-- 24K Gold Card -->
+        <MudItem xs="12" lg="4">
+            <MudCard Elevation="3" Class="pa-4 h-100 d-flex flex-column">
+                <div class="d-flex justify-space-between align-center mb-3">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">طلای ۲۴ عیار (گرم)</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Success" />
+                </div>
+                
+                <div class="d-flex justify-space-between align-center mb-4 pa-2 rounded" Style="background-color: var(--mud-palette-background-gray); height: 50px;">
+                    <MudText Typo="Typo.body2">قیمت بازار ایران:</MudText>
+                    @if (_isManualMode)
+                    {
+                        <div style="width: 160px;">
+                            <MudNumericField T="decimal" @bind-Value="_manualGold24Price" Margin="Margin.Dense" Variant="Variant.Outlined" Format="N0" HideSpinButtons="true" dir="ltr" Immediate="true" Adornment="Adornment.End" AdornmentText="@_currencyUnit" />
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body1" Class="font-weight-bold">@Gold24Price.ToCurrencyFormat(_currencyUnit)</MudText>
+                    }
+                </div>
+
+                <MudDivider Class="my-2" />
+
+                <!-- Comparison Table -->
+                <div class="flex-grow-1">
+                    <!-- USD Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">برابری دلار آزاد</MudText>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@Usd24kParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var usd24kBubble = Gold24Price - Usd24kParity;
+                            var usd24kBubblePct = Usd24kParity > 0 ? (usd24kBubble / Usd24kParity) * 100m : 0m;
+                            var usd24kSignal = GetSignal(usd24kBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(usd24kBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(usd24kBubble >= 0 ? "+" : "")@usd24kBubble.ToCurrencyFormat(_currencyUnit) (@(usd24kBubblePct >= 0 ? "+" : "")@usd24kBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@usd24kSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@usd24kSignal.Icon" Size="Size.Small" />
+                                @usd24kSignal.Text
+                            </span>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <!-- AED Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">برابری درهم امارات</MudText>
+                                @{
+                                    var aedGold24Gram = AedUsdCrossRate > 0 ? (OuncePrice * AedUsdCrossRate) / TroyOunceGrams : 0m;
+                                }
+                                <span class="text-muted" style="font-size: 0.75rem;">نرخ امارات: @aedGold24Gram.ToString("F1") درهم</span>
+                            </div>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@Aed24kParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var aed24kBubble = Gold24Price - Aed24kParity;
+                            var aed24kBubblePct = Aed24kParity > 0 ? (aed24kBubble / Aed24kParity) * 100m : 0m;
+                            var aed24kSignal = GetSignal(aed24kBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(aed24kBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(aed24kBubble >= 0 ? "+" : "")@aed24kBubble.ToCurrencyFormat(_currencyUnit) (@(aed24kBubblePct >= 0 ? "+" : "")@aed24kBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@aed24kSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@aed24kSignal.Icon" Size="Size.Small" />
+                                @aed24kSignal.Text
+                            </span>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <!-- TRY Parity -->
+                    <div class="d-flex flex-column gap-1 py-2">
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">برابری لیر ترکیه</MudText>
+                                @{
+                                    var tryGold24Gram = TryUsdCrossRate > 0 ? (OuncePrice * TryUsdCrossRate) / TroyOunceGrams : 0m;
+                                }
+                                <span class="text-muted" style="font-size: 0.75rem;">نرخ ترکیه: @tryGold24Gram.ToString("F1") لیر</span>
+                            </div>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@Try24kParity.ToCurrencyFormat(_currencyUnit)</MudText>
+                        </div>
+                        @{
+                            var try24kBubble = Gold24Price - Try24kParity;
+                            var try24kBubblePct = Try24kParity > 0 ? (try24kBubble / Try24kParity) * 100m : 0m;
+                            var try24kSignal = GetSignal(try24kBubblePct);
+                        }
+                        <div class="d-flex justify-space-between align-center mt-1">
+                            <span class="d-flex align-center gap-1" style="font-size: 0.8rem;">
+                                حباب: 
+                                <span class="@(try24kBubble >= 0 ? "text-danger" : "text-success")">
+                                    @(try24kBubble >= 0 ? "+" : "")@try24kBubble.ToCurrencyFormat(_currencyUnit) (@(try24kBubblePct >= 0 ? "+" : "")@try24kBubblePct.ToString("F2")%)
+                                </span>
+                            </span>
+                            <span class="@try24kSignal.ColorClass" style="font-size: 0.8rem;">
+                                <MudIcon Icon="@try24kSignal.Icon" Size="Size.Small" />
+                                @try24kSignal.Text
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudCard>
