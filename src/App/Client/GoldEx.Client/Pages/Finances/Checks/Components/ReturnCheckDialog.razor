@@ -1,0 +1,47 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.Helpers
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Color="Color.Error">برگشت چک بانکی</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-3">
+            آیا از برگشت زدن چک شماره <strong>@Check.Number</strong> به مبلغ <strong>@Check.Amount.ToCurrencyFormat(Check.PriceUnit)</strong> اطمینان دارید؟
+        </MudText>
+        <MudTextField T="string"
+                      Label="دلیل برگشت چک (اختیاری)"
+                      Value="_description"
+                      ValueChanged="s => _description = s"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Lines="3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   OnClick="Close"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   Variant="Variant.Filled">انصراف</MudButton>
+
+        <MudButton Class="m-2"
+                   Color="Color.Primary"
+                   Disabled="@_processing"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="@(async () => await Submit())"
+                   Variant="Variant.Filled">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1"
+                                     Size="Size.Small"
+                                     Indeterminate="true" />
+                <MudText Class="ms-2">
+                    در حال ذخیره
+                </MudText>
+            }
+            else
+            {
+                <MudText>ذخیره</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

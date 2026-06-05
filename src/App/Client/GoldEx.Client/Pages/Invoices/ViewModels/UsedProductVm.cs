@@ -85,7 +85,7 @@ public class UsedProductVm
     public decimal? ExtraCostsAmount { get; set; }
 
     [Display(Name = "آیا طلای شکسته است؟")]
-    public bool IsBroken { get; set; }
+    public bool IsBroken { get; set; } = true;
 
     [Display(Name = "مبلغ کالا")]
     public decimal ItemAmount { get; set; }

@@ -1,7 +1,7 @@
-﻿@attribute [Route(ClientRoutes.Finances.Checks)]
+@attribute [Route(ClientRoutes.Finances.Checks)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 
-@using GoldEx.Client.Pages.Statics
+@using GoldEx.Client.Pages.Finances.Checks.Components
 @inherits GoldExComponentBase
 
 <PageTitle>مدیریت چک ها</PageTitle>
@@ -16,6 +16,6 @@
     <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">لیست چک ها</MudText>
     <MudDivider Class="mb-2 d-md-block d-none" />
 
-    <UnderDevelopment />
+    <CheckPaymentsList ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
 
 </MudContainer>
