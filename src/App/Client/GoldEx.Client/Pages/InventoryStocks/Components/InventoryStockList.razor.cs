@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.InventoryStocks.ViewModels;
+using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Client.Pages.Products.Components;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Data;
@@ -37,7 +37,6 @@ public partial class InventoryStockList
 
     private MudTable<InventoryStockVm> _table = default!;
 
-    private bool _mobileFiltersOpen;
     private DateRange _filterDateRange = new();
     private WarehouseActionType _actionType = WarehouseActionType.In;
     private List<ProductCategoryVm> _categories = [];
@@ -486,16 +485,32 @@ public partial class InventoryStockList
         }
     }
 
-    private void OpenMobileFilters()
+    private async Task OpenMobileFilters()
     {
-        _mobileFiltersOpen = true;
-        StateHasChanged();
-    }
+        var parameters = new DialogParameters<InventoryFiltersDialog>
+        {
+            { x => x.ItemType, ItemType },
+            { x => x.ItemStatus, ItemStatus },
+            { x => x.CategoryFilter, _categoryFilter },
+            { x => x.Categories, _categories },
+            { x => x.DateRange, _filterDateRange },
+            { x => x.Selectable, Selectable }
+        };
 
-    private void CloseMobileFilters()
-    {
-        _mobileFiltersOpen = false;
-        StateHasChanged();
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.Small
+        };
+
+        var dialog = await DialogService.ShowAsync<InventoryFiltersDialog>("فیلترها", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false } && result.Data is MobileFiltersResult filterResult)
+        {
+            await ApplyMobileFilters(filterResult);
+        }
     }
 
     private async Task ApplyMobileFilters(MobileFiltersResult result)
@@ -515,7 +530,6 @@ public partial class InventoryStockList
         _filterDateRange = new DateRange(result.DateRange.Start, result.DateRange.End);
         _actionType = ItemStatus == ItemStatus.Available ? WarehouseActionType.In : WarehouseActionType.Out;
 
-        _mobileFiltersOpen = false;
         await RefreshAsync();
     }
 

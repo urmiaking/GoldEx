@@ -1,7 +1,8 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Domain.CheckPaymentAggregate;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
@@ -2576,5 +2577,216 @@ internal class AccountingTransactionService(
 
         // هیچ نرخ معتبری نداریم
         return null;
+    }
+
+    public async Task CreateTransactionsForCheckAcceptAsync(
+        CheckPayment checkPayment,
+        Guid? targetFinancialAccountId,
+        string? description,
+        CancellationToken cancellationToken = default)
+    {
+        var payment = checkPayment.InvoicePayment ?? throw new InvalidOperationException("Invoice payment is not loaded.");
+        var invoice = payment.Invoice ?? throw new InvalidOperationException("Invoice is not loaded.");
+
+        var groupId = Guid.CreateVersion7();
+        var transactions = new List<Transaction>();
+        var postingDate = DateTime.Now;
+
+        // Fetch checks ledger account
+        var checksLedgerTitle = payment.PaymentSide == PaymentSide.Receive
+            ? SystemLedgerAccounts.ChecksReceivable
+            : SystemLedgerAccounts.ChecksPayable;
+
+        var checksLedger = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(checksLedgerTitle))
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException($"Ledger '{checksLedgerTitle}' not found.");
+
+        var desc = TransactionDescriptionBuilder.ForCheckAccept(checkPayment.Number, invoice.InvoiceNumber, description);
+
+        if (payment.PaymentSide == PaymentSide.Receive)
+        {
+            // Received Check: Debit: Target Bank, Credit: Checks Receivable
+            if (!targetFinancialAccountId.HasValue)
+                throw new InvalidOperationException("Target financial account is required when cashing a received check.");
+
+            var targetFinancialAccount = await financialAccountRepository
+                .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(targetFinancialAccountId.Value)))
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException($"Target financial account {targetFinancialAccountId.Value} not found.");
+
+            if (!targetFinancialAccount.LedgerAccountId.HasValue)
+                throw new NotFoundException($"Target financial account {targetFinancialAccount.Id.Value} has no linked ledger account.");
+
+            var targetLedgerAccount = await ledgerAccountRepository
+                .Get(new LedgerAccountsByIdSpecification(targetFinancialAccount.LedgerAccountId.Value))
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException($"Ledger account {targetFinancialAccount.LedgerAccountId.Value} not found.");
+
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Debit,
+                targetLedgerAccount.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Credit,
+                checksLedger.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+        }
+        else
+        {
+            // Paid Check: Debit: Checks Payable, Credit: Check Issuer Financial Account (original bank)
+            var issuerFinancialAccount = await financialAccountRepository
+                .Get(new FinancialAccountsByIdSpecification(checkPayment.IssuerFinancialAccountId))
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException($"Issuer financial account {checkPayment.IssuerFinancialAccountId.Value} not found.");
+
+            if (!issuerFinancialAccount.LedgerAccountId.HasValue)
+                throw new NotFoundException($"Issuer financial account {issuerFinancialAccount.Id.Value} has no linked ledger account.");
+
+            var issuerLedgerAccount = await ledgerAccountRepository
+                .Get(new LedgerAccountsByIdSpecification(issuerFinancialAccount.LedgerAccountId.Value))
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException($"Ledger account {issuerFinancialAccount.LedgerAccountId.Value} not found.");
+
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Debit,
+                checksLedger.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Credit,
+                issuerLedgerAccount.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+        }
+
+        if (transactions.Any())
+        {
+            await repository.CreateRangeAsync(transactions, cancellationToken);
+        }
+    }
+
+    public async Task CreateTransactionsForCheckReturnAsync(
+        CheckPayment checkPayment,
+        string? description,
+        CancellationToken cancellationToken = default)
+    {
+        var payment = checkPayment.InvoicePayment ?? throw new InvalidOperationException("Invoice payment is not loaded.");
+        var invoice = payment.Invoice ?? throw new InvalidOperationException("Invoice is not loaded.");
+
+        var groupId = Guid.CreateVersion7();
+        var transactions = new List<Transaction>();
+        var postingDate = DateTime.Now;
+
+        // Fetch checks ledger account
+        var checksLedgerTitle = payment.PaymentSide == PaymentSide.Receive
+            ? SystemLedgerAccounts.ChecksReceivable
+            : SystemLedgerAccounts.ChecksPayable;
+
+        var checksLedger = await ledgerAccountRepository
+            .Get(new LedgerAccountsByTitleSpecification(checksLedgerTitle))
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException($"Ledger '{checksLedgerTitle}' not found.");
+
+        var desc = TransactionDescriptionBuilder.ForCheckReturn(checkPayment.Number, invoice.InvoiceNumber, description);
+
+        // Fetch counterparty subledger (Customer or Vendor)
+        var counterpartyRole = payment.PaymentSide == PaymentSide.Receive
+            ? LedgerAccountRole.Receivable
+            : LedgerAccountRole.Payable;
+
+        var counterpartyLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+            invoice.CustomerId,
+            payment.PriceUnitId,
+            counterpartyRole,
+            cancellationToken);
+
+        if (payment.PaymentSide == PaymentSide.Receive)
+        {
+            // Received Check returned: Debit: Customer (so they owe us again), Credit: Checks Receivable (clear the check)
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Debit,
+                counterpartyLedger.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Credit,
+                checksLedger.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+        }
+        else
+        {
+            // Paid Check returned: Debit: Checks Payable (clear the check liability), Credit: Customer/Vendor (we owe them again)
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Debit,
+                checksLedger.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+
+            transactions.Add(Transaction.CreateForInvoicePayment(
+                desc,
+                payment.FinalAmount,
+                payment.ExchangeRate,
+                groupId,
+                TransactionType.Credit,
+                counterpartyLedger.Id,
+                payment.PriceUnitId,
+                invoice.Id,
+                payment.Id,
+                postingDate));
+        }
+
+        if (transactions.Any())
+        {
+            await repository.CreateRangeAsync(transactions, cancellationToken);
+        }
     }
 }

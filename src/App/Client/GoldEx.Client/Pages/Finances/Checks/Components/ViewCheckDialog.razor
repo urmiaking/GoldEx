@@ -1,0 +1,168 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Primary">
+            جزئیات چک بانکی
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <!-- Modern Virtual Check Layout -->
+        <div class="virtual-check mb-6">
+            <!-- Header Row -->
+            <div class="check-header d-flex justify-space-between align-center flex-wrap gap-2">
+                <div class="d-flex align-center gap-2">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Primary" Size="Size.Large" />
+                    <span class="check-title">حواله چک صیادی</span>
+                </div>
+                <div class="d-flex flex-column align-end">
+                    <div class="check-meta-item">
+                        <span>شماره چک: </span>
+                        <span class="check-meta-value text-primary">@(Check.Number ?? "نامشخص")</span>
+                    </div>
+                    <div class="check-meta-item mt-1">
+                        <span>شناسه صیادی: </span>
+                        <span class="check-meta-value text-secondary">@(Check.SayadiCode ?? "نامشخص")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payee Row -->
+            <div class="d-flex align-center mb-4">
+                <span class="text-muted" style="min-width: 80px;">به حواله‌کرد:</span>
+                <span class="font-weight-bold" style="font-size: 1.15rem; color: #1a202c;">@Check.IssuerFullName</span>
+                @if (!string.IsNullOrEmpty(Check.IssuerPhoneNumber))
+                {
+                    <span class="text-muted ms-2" style="font-size: 0.85rem;">(@Check.IssuerPhoneNumber)</span>
+                }
+                <div class="check-line"></div>
+            </div>
+
+            <!-- Amount Row -->
+            <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-4">
+                <div class="d-flex align-center flex-grow-1">
+                    <span class="text-muted" style="min-width: 80px;">مبلغ چک:</span>
+                    <span class="font-weight-bold" style="font-size: 1.1rem;">
+                        @Check.Amount.ToCurrencyFormat(Check.PriceUnit)
+                    </span>
+                    <div class="check-line"></div>
+                </div>
+                <div class="check-amount-badge">
+                    @Check.Amount.ToCurrencyFormat(Check.PriceUnit)
+                </div>
+            </div>
+
+            <!-- Due Date & Bank Account Row -->
+            <div class="d-flex align-center justify-space-between flex-wrap gap-4 check-footer pt-3">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Class="me-1 text-muted" />
+                    <span class="text-muted me-1">تاریخ سررسید:</span>
+                    <span class="font-weight-bold text-dark">@Check.DueDate.ToShortDateString()</span>
+                </div>
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Small" Class="me-1 text-muted" />
+                    <span class="text-muted me-1">بانک صادرکننده:</span>
+                    <span class="font-weight-bold text-dark">@Check.IssuerFinancialAccountName</span>
+                </div>
+                <div>
+                    @Check.IssuerFullName
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata Cards Section -->
+        <MudGrid Class="mb-4">
+            <MudItem Xs="12" Sm="4">
+                <MudPaper Class="pa-3 border-solid border mud-border-primary rounded-lg d-flex align-center gap-3" Elevation="0" Style="background-color: var(--mud-palette-background-grey);">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Medium" />
+                    <div class="d-flex flex-column">
+                        <span class="text-muted" style="font-size: 0.8rem;">وضعیت چک</span>
+                        <MudChip T="string" Color="@GetStatusColor(Check.CurrentStatus)" Variant="Variant.Filled" Size="Size.Small" Class="ma-0 mt-1">
+                            @Check.CurrentStatus.GetDisplayName()
+                        </MudChip>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem Xs="12" Sm="4">
+                <MudPaper Class="pa-3 border-solid border mud-border-primary rounded-lg d-flex align-center gap-3" Elevation="0" Style="background-color: var(--mud-palette-background-grey);">
+                    <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Info" Size="Size.Medium" />
+                    <div class="d-flex flex-column">
+                        <span class="text-muted" style="font-size: 0.8rem;">مربوط به فاکتور</span>
+                        <div class="d-flex align-center gap-1 mt-1">
+                            <span class="font-weight-bold" style="font-size: 0.9rem;">#@Check.InvoiceNumber</span>
+                            <span class="text-muted" style="font-size: 0.8rem;">
+                                (@Check.InvoiceType.GetDisplayName())
+                            </span>
+                        </div>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem Xs="12" Sm="4">
+                <MudPaper Class="pa-3 border-solid border mud-border-primary rounded-lg d-flex align-center gap-3" Elevation="0" Style="background-color: var(--mud-palette-background-grey);">
+                    <MudIcon Icon="@Icons.Material.Filled.History" Color="Color.Secondary" Size="Size.Medium" />
+                    <div class="d-flex flex-column">
+                        <span class="text-muted" style="font-size: 0.8rem;">آخرین تغییرات</span>
+                        <span class="font-weight-bold mt-1" style="font-size: 0.9rem;">
+                            @(Check.LastModifiedAt == DateTime.MinValue ? "-" : Check.LastModifiedAt.ToString("yyyy/MM/dd HH:mm"))
+                        </span>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Destination Account Section -->
+        @if (Check.CurrentStatus == CheckPaymentStatus.Accepted && !string.IsNullOrEmpty(Check.TargetFinancialAccountName))
+        {
+            <MudPaper Class="pa-3 border-solid border mud-border-success rounded-lg d-flex align-center gap-3 mb-4" 
+                      Elevation="0" 
+                      Style="background-color: rgba(76, 175, 80, 0.05);">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Success" Size="Size.Medium" />
+                <div class="d-flex flex-column">
+                    <span class="text-muted" style="font-size: 0.8rem;">حساب مالی مقصد (وصول شده به)</span>
+                    <span class="font-weight-bold text-success mt-1" style="font-size: 0.95rem;">@Check.TargetFinancialAccountName</span>
+                </div>
+            </MudPaper>
+        }
+
+        <!-- Description Section -->
+        @if (!string.IsNullOrEmpty(Check.Description))
+        {
+            <MudPaper Class="@($"pa-3 border-solid border {GetDescriptionBorderClass()} rounded-lg d-flex align-start gap-3 mb-4")" 
+                      Elevation="0" 
+                      Style="@($"background-color: {GetDescriptionBgColor()};")">
+                <MudIcon Icon="@GetDescriptionIcon()" Color="@GetDescriptionColor()" Size="Size.Medium" Class="mt-1" />
+                <div class="d-flex flex-column">
+                    <span class="text-muted" style="font-size: 0.8rem;">@GetDescriptionTitle()</span>
+                    <span class="text-dark mt-1" style="font-size: 0.9rem; line-height: 1.6;">@Check.Description</span>
+                </div>
+            </MudPaper>
+        }
+
+        <!-- Check Image Presentation -->
+        @if (!string.IsNullOrEmpty(Check.ImageUrl))
+        {
+            <MudCard Outlined="true" Class="rounded-lg border-solid border mud-border-primary">
+                <MudCardHeader Class="py-2 px-4" Style="background-color: var(--mud-palette-background-grey); border-bottom: 1px solid rgba(0,0,0,0.08);">
+                    <CardHeaderContent>
+                        <div class="d-flex align-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Small" Color="Color.Primary" />
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold">تصویر چک اسکن شده</MudText>
+                        </div>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="d-flex justify-center bg-light pa-4" Style="max-height: 380px; overflow: hidden;">
+                    <img src="@Check.ImageUrl" alt="تصویر چک" style="max-width: 100%; max-height: 340px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+                </MudCardContent>
+            </MudCard>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   OnClick="Close"
+                   Class="m-2"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   Variant="Variant.Filled">بستن</MudButton>
+    </DialogActions>
+</MudDialog>

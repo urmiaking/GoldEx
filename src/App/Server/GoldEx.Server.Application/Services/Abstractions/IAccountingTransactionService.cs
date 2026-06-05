@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.InventoryEntryAggregate;
+using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
@@ -57,4 +58,7 @@ public interface IAccountingTransactionService
         CreateInventoryExitRequest request,
         List<InventoryStock> inventoryStocks,
         CancellationToken cancellationToken = default);
+
+    Task CreateTransactionsForCheckAcceptAsync(CheckPayment checkPayment, Guid? targetFinancialAccountId, string? description, CancellationToken cancellationToken = default);
+    Task CreateTransactionsForCheckReturnAsync(CheckPayment checkPayment, string? description, CancellationToken cancellationToken = default);
 }

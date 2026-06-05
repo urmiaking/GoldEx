@@ -1,0 +1,97 @@
+@inherits GoldExComponentBase
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">فیلترهای فاکتور</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="4" Class="w-100 py-2">
+            <!-- Date range -->
+            <MudDateRangePicker DateRange="@_dateRange"
+                                DateRangeChanged="@(dr => _dateRange = dr)"
+                                Variant="Variant.Outlined"
+                                Label="تاریخ فاکتور"
+                                Margin="Margin.Dense"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Adornment="Adornment.Start"
+                                ShowToolbar="false"
+                                Clearable="true"
+                                Class="w-100" />
+
+            <!-- Invoice Type -->
+            <MudSelect T="InvoiceType?"
+                       Variant="Variant.Outlined"
+                       Label="نوع فاکتور"
+                       Value="@_invoiceType"
+                       ValueChanged="@(v => _invoiceType = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetInvoiceTypeIcon(_invoiceType)"
+                       AdornmentColor="@GetInvoiceTypeColor(_invoiceType)"
+                       Class="w-100">
+                <MudSelectItem T="InvoiceType?" Value="@(null as InvoiceType?)">همه</MudSelectItem>
+                <MudSelectItem T="InvoiceType?" Value="@InvoiceType.Purchase">@InvoiceType.Purchase.GetDisplayName()</MudSelectItem>
+                <MudSelectItem T="InvoiceType?" Value="@InvoiceType.Sell">@InvoiceType.Sell.GetDisplayName()</MudSelectItem>
+            </MudSelect>
+
+            <!-- Trade Scale -->
+            <MudSelect T="TradeScale?"
+                       Variant="Variant.Outlined"
+                       Label="نوع معامله"
+                       Value="@_tradeScale"
+                       ValueChanged="@(v => _tradeScale = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetTradeScaleIcon(_tradeScale)"
+                       AdornmentColor="@GetTradeScaleColor(_tradeScale)"
+                       Class="w-100">
+                <MudSelectItem T="TradeScale?" Value="@(null as TradeScale?)">همه</MudSelectItem>
+                <MudSelectItem T="TradeScale?" Value="@TradeScale.Wholesale">@TradeScale.Wholesale.GetDisplayName()</MudSelectItem>
+                <MudSelectItem T="TradeScale?" Value="@TradeScale.Retail">@TradeScale.Retail.GetDisplayName()</MudSelectItem>
+            </MudSelect>
+
+            <!-- Payment Status -->
+            <MudSelect T="InvoicePaymentStatus?"
+                       Variant="Variant.Outlined"
+                       Label="وضعیت پرداخت"
+                       Value="@_paymentStatus"
+                       ValueChanged="@(v => _paymentStatus = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetPaymentStatusIcon(_paymentStatus)"
+                       AdornmentColor="@GetPaymentStatusColor(_paymentStatus)"
+                       Class="w-100">
+                <MudSelectItem T="InvoicePaymentStatus?" Value="@(null as InvoicePaymentStatus?)">همه</MudSelectItem>
+                <MudSelectItem T="InvoicePaymentStatus?" Value="@InvoicePaymentStatus.HasDebt">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudSelectItem>
+                <MudSelectItem T="InvoicePaymentStatus?" Value="@InvoicePaymentStatus.Overdue">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudSelectItem>
+                <MudSelectItem T="InvoicePaymentStatus?" Value="@InvoicePaymentStatus.Paid">@InvoicePaymentStatus.Paid.GetDisplayName()</MudSelectItem>
+            </MudSelect>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="d-flex align-center justify-space-between w-100 px-2 pb-2">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Error"
+                       OnClick="Clear"
+                       StartIcon="@Icons.Material.Filled.Delete">
+                حذف فیلترها
+            </MudButton>
+            <div class="d-flex gap-2">
+                <MudButton Color="Color.Default"
+                           OnClick="Cancel">
+                    انصراف
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           OnClick="Apply"
+                           StartIcon="@Icons.Material.Filled.Check">
+                    اعمال
+                </MudButton>
+            </div>
+        </div>
+    </DialogActions>
+</MudDialog>
