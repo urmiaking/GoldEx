@@ -1,4 +1,4 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@ContainerClass" Gutters="false">
     <AuthorizeView>
@@ -6,6 +6,9 @@
             <MudTabs Elevation="24" Centered Rounded MinimumTabWidth="50px" ActivePanelIndexChanged="SetHelpContext">
                 <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate" IconColor="Color.Info">
                     <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
+                </MudTabPanel>
+                <MudTabPanel Text="برابری ارز" Icon="@Icons.Material.Outlined.Money" IconColor="Color.Tertiary">
+                    <GoldParity Class="@Class" Elevation="@Elevation"></GoldParity>
                 </MudTabPanel>
                 <MudTabPanel Text="تبدیل ارز" Icon="@Icons.Material.Outlined.CurrencyExchange" IconColor="Color.Error">
                     <CurrencyExchange Class="@Class" Elevation="@Elevation"></CurrencyExchange>

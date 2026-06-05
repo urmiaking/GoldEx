@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.Routings;
+namespace GoldEx.Shared.Routings;
 
 public static class ApiRoutes
 {
@@ -35,6 +35,7 @@ public static class ApiRoutes
         public const string UpdateStatus = "status/{id}";
         public const string GetTitles = "titles";
         public const string GetByPriceUnit = "price-unit/{priceUnitId}";
+        public const string GetByCatalog = "catalog/{priceCatalog}";
         public const string GetExchange = "exchange-rate/{primaryPriceUnitId}/{secondaryPriceUnitId}";
         public const string SetPinned = "{id}/pin/{isPinned}";
         public const string UpdateSetting = "setting/{id}";

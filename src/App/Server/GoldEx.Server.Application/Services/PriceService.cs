@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
@@ -296,6 +296,32 @@ internal class PriceService(
             .FirstOrDefaultAsync(cancellationToken);
 
         return item?.Price is null ? null : mapper.Map<GetPriceResponse>(item.Price);
+    }
+
+    public async Task<GetPriceResponse?> GetAsync(PriceCatalog priceCatalog, CancellationToken cancellationToken = default)
+    {
+        var item = await repository
+            .Get(new PricesByPriceCatalogSpecification(priceCatalog))
+            .AsNoTracking()
+            .Include(x => x.PriceUnit)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (item is null)
+            return null;
+
+        var defaultUnit = await priceUnitRepository
+            .Get(new PriceUnitsSetAsDefaultSpecification())
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (item.MarketType is not MarketType.Ounce && item.PriceHistory is not null)
+        {
+            item.PriceHistory.SetCurrentValue(ConvertFromRial(item.PriceHistory.CurrentValue, defaultUnit?.UnitType));
+            item.PriceHistory.SetUnit(defaultUnit?.Title ?? item.PriceHistory.Unit);
+            item.PriceHistory.SetDailyChangeRate(ConvertFormattedPrice(item.PriceHistory.DailyChangeRate, defaultUnit?.UnitType));
+        }
+
+        return mapper.Map<GetPriceResponse>(item);
     }
 
     public async Task<GetExchangeRateResponse> GetExchangeRateAsync(Guid primaryPriceUnitId, Guid secondaryPriceUnitId,

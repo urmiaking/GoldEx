@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
@@ -56,6 +56,9 @@ public class ApiUrls
 
         public static string GetByPriceUnit(Guid priceUnitId) =>
             BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetByPriceUnit).FormatRoute(new { priceUnitId });
+
+        public static string GetByCatalog(PriceCatalog priceCatalog) =>
+            BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetByCatalog).FormatRoute(new { priceCatalog });
 
         public static string GetSettings() => BuildUrl(ApiRoutes.Price.Base, ApiRoutes.Price.GetSettings);
 
