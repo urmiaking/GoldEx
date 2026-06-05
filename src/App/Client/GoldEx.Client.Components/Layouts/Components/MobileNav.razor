@@ -26,6 +26,11 @@
                     مشتریان
                 </MudNavLink>
             </Authorized>
+            <NotAuthorized>
+                <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Info" IconColor="Color.Tertiary">
+                    درباره ما
+                </MudNavLink>
+            </NotAuthorized>
         </AuthorizeView>
     </MudNavMenu>
 </MudAppBar>
