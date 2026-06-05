@@ -1,139 +1,195 @@
-﻿@attribute [Route(ClientRoutes.About.Index)]
+@attribute [Route(ClientRoutes.About.Index)]
 
-<PageTitle>درباره گلدکس</PageTitle>
+<PageTitle>درباره گلدکیس مینی - دستیار محاسبات طلا</PageTitle>
 
-<div class="container">
-    <div class="row">
-        <!-- About Content -->
-        <div class="col-12 mt-5">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pb-8 mt-4">
+    <!-- Hero Banner Section -->
+    <MudPaper Class="pa-8 mb-6 d-flex flex-column align-center justify-center text-center relative overflow-hidden" 
+              Style="border-radius: 24px; background: linear-gradient(135deg, var(--mud-palette-surface) 0%, var(--mud-palette-background-gray) 100%); border: 1px solid var(--mud-palette-divider);">
+        <!-- Decorative subtle radial glow background -->
+        <div style="position: absolute; top: -100px; right: -100px; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(201,162,39,0.08) 0%, transparent 70%); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -100px; left: -100px; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(201,162,39,0.08) 0%, transparent 70%); pointer-events: none;"></div>
 
-            <MudPaper Class="pa-6 mb-6" Elevation="14">
-                <MudStack Spacing="3">
+        <MudIcon Icon="@Icons.Material.Filled.Diamond" Color="Color.Warning" Style="font-size: 5rem;" Class="mb-3 pulse-icon" />
+        <span class="brand-text" style="font-size: 3rem; margin-bottom: 0.5rem;">GoldEx Mini</span>
+        
+        <MudText Typo="Typo.h5" Class="font-weight-bold mb-4" Color="Color.Primary">
+            دستیار مستقل، سریع و آفلاین محاسبات و فروش گالری طلا
+        </MudText>
+        
+        <MudText Typo="Typo.body1" Class="mud-text-secondary" Style="max-width: 900px; line-height: 1.9; font-size: 1.1rem; text-align: justify;">
+            نسخه مینی سامانه نرم‌افزاری <strong>گلدکیس (GoldEx Mini)</strong> یک ابزار هوشمند، چابک و آفلاین‌محور است که با هدف تسهیل محاسبات روزانه طلا، مدیریت سبد خرید و صدور فاکتور فروشگاهی طراحی شده است. 
+            این برنامه بدون نیاز به اینترنت یا سرورهای خارجی، تمامی داده‌ها را به صورت امن روی مرورگر دستگاه شما نگهداری کرده و ابزاری مطمئن و سریع برای کار روی موبایل، تبلت یا رایانه گالری است.
+        </MudText>
+    </MudPaper>
 
-                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                        <MudIcon Icon="@Icons.Material.Filled.Diamond" Color="Color.Warning" Size="Size.Large" />
-                        <MudText Typo="Typo.h6">درباره GoldEx Mini</MudText>
-                    </MudStack>
+    <!-- Key Capabilities Section -->
+    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4 mt-8" Color="Color.Primary">
+        قابلیت‌های اصلی گلدکیس مینی
+    </MudText>
+    
+    <MudGrid Class="mb-6">
+        <!-- Cast gold pricing -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <div class="pa-2 rounded-circle" style="background-color: rgba(201,162,39,0.1);">
+                        <MudIcon Icon="@Icons.Material.Filled.Scale" Color="Color.Primary" Size="Size.Medium" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">محاسبه طلای آب‌شده</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1" Style="line-height: 1.8; text-align: justify;">
+                    محاسبه آنی قیمت طلای آب‌شده بر اساس نرخ روز مظنه (۱۷ عیار) یا طلا ۱۸ عیار با فرمول‌های دقیق اتحادیه طلا و احتساب درصد سود دلخواه گالری.
+                </MudText>
+            </MudCard>
+        </MudItem>
 
-                    <MudText Typo="Typo.body1" Class="text-justify">
-                        GoldEx Mini یک ابزار حرفه‌ای برای محاسبه دقیق قیمت طلا، طلای آبشده، طلای کهنه و تبدیل ارز است
-                        که تحت برند گلدکس توسعه داده شده است. این برنامه با هدف افزایش سرعت، دقت و اطمینان در محاسبات روزانه صنف طلا و جواهر طراحی شده است.
-                    </MudText>
+        <!-- Used gold calculation -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <div class="pa-2 rounded-circle" style="background-color: rgba(201,162,39,0.1);">
+                        <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Color="Color.Primary" Size="Size.Medium" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">خرید طلای متفرقه و دست‌دوم</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1" Style="line-height: 1.8; text-align: justify;">
+                    محاسبه بهای طلای خریداری شده از مشتریان (طلای کهنه یا شکسته) با اعمال دقیق کسر عیار، کسر اجرت و محاسبات کسورات مربوطه در چند ثانیه.
+                </MudText>
+            </MudCard>
+        </MudItem>
 
-                </MudStack>
-            </MudPaper>
+        <!-- Reverse Calculator -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <div class="pa-2 rounded-circle" style="background-color: rgba(201,162,39,0.1);">
+                        <MudIcon Icon="@Icons.Material.Filled.Straighten" Color="Color.Primary" Size="Size.Medium" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">محاسبه‌گر معکوس طلا</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1" Style="line-height: 1.8; text-align: justify;">
+                    تبدیل مستقیم بودجه ریالی مشتری به وزن دقیق طلایی که گالری می‌تواند با احتساب اجرت، سود و تخفیف‌ها به وی بفروشد (پاسخ آنی به سوال «با این پول چند گرم طلا می‌دهید؟»).
+                </MudText>
+            </MudCard>
+        </MudItem>
 
-            <MudPaper Class="pa-6 mb-6" Elevation="14">
-                <MudStack Spacing="4">
+        <!-- Basket invoicing -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <div class="pa-2 rounded-circle" style="background-color: rgba(201,162,39,0.1);">
+                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Primary" Size="Size.Medium" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">سبد فاکتور سریع</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1" Style="line-height: 1.8; text-align: justify;">
+                    امکان افزودن چندین کالا به صورت همزمان به فاکتور، بازنگری اقلام، ثبت تخفیف‌های نهایی، وارد کردن اطلاعات مشتری و نهایی‌سازی سریع فاکتور فروش.
+                </MudText>
+            </MudCard>
+        </MudItem>
 
-                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                        <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" Size="Size.Large" />
-                        <MudText Typo="Typo.h6">امکانات اصلی برنامه</MudText>
-                    </MudStack>
+        <!-- A5 print -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <div class="pa-2 rounded-circle" style="background-color: rgba(201,162,39,0.1);">
+                        <MudIcon Icon="@Icons.Material.Filled.Print" Color="Color.Primary" Size="Size.Medium" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">چاپ استاندارد A5 افقی</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1" Style="line-height: 1.8; text-align: justify;">
+                    طراحی هوشمند قالب فاکتور متناسب با ابعاد چاپگرهای حرارتی یا لیزری A5 به صورت افقی، با جدول‌بندی دقیق گرم خام، سود، اجرت و جمع کل پرداختی مشتری.
+                </MudText>
+            </MudCard>
+        </MudItem>
 
-                    <MudGrid Spacing="3">
+        <!-- Local archive history -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <div class="pa-2 rounded-circle" style="background-color: rgba(201,162,39,0.1);">
+                        <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" Color="Color.Primary" Size="Size.Medium" />
+                    </div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">آرشیو محلی فاکتورها</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1" Style="line-height: 1.8; text-align: justify;">
+                    ثبت و آرشیو امن تاریخچه فاکتورهای قبلی صادر شده به طور مستقیم در حافظه مرورگر دستگاه (بدون نیاز به سرور) جهت مرور مجدد، بازخوانی فروش روزانه و چاپ دوباره فاکتورها.
+                </MudText>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.Scale" Color="Color.Secondary" />
-                                <MudText>محاسبه قیمت طلای آبشده بر اساس نرخ روز و درصد سود</MudText>
-                            </MudStack>
-                        </MudItem>
+    <!-- Core Advantages (Why GoldEx Mini) -->
+    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4 mt-8" Color="Color.Primary">
+        مزیت‌های کاربردی گلدکیس مینی
+    </MudText>
 
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Color="Color.Secondary" />
-                                <MudText>محاسبه طلای کهنه با کسر اجرت و درصد</MudText>
-                            </MudStack>
-                        </MudItem>
+    <MudGrid Class="mb-6">
+        <!-- Advantage 1 -->
+        <MudItem xs="12" md="4">
+            <MudCard Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.WifiOff" Color="Color.Warning" />
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">کارکرد کاملاً آفلاین</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="line-height: 1.8; text-align: justify;">
+                    پس از اولین بارگذاری برنامه، برنامه بدون نیاز به اینترنت یا شبکه محلی کار می‌کند. قطع ارتباط با سرور خللی در روند فروش و محاسبات مغازه شما ایجاد نخواهد کرد.
+                </MudText>
+            </MudCard>
+        </MudItem>
 
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.CurrencyExchange" Color="Color.Secondary" />
-                                <MudText>مبدل ارز با امکان ورود نرخ دلخواه</MudText>
-                            </MudStack>
-                        </MudItem>
+        <!-- Advantage 2 -->
+        <MudItem xs="12" md="4">
+            <MudCard Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.FlashOn" Color="Color.Success" />
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">سرعت پاسخگویی بی‌نظیر</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="line-height: 1.8; text-align: justify;">
+                    به دلیل پردازش مستقیم کدهای محاسباتی در مرورگر دستگاه شما و عدم نیاز به رفت و برگشت‌های شبکه با سرور، تمامی عملیات‌ها و انتقالات صفحه در کسری از ثانیه انجام می‌شوند.
+                </MudText>
+            </MudCard>
+        </MudItem>
 
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.Straighten" Color="Color.Secondary" />
-                                <MudText>محاسبه وزن طلا بر اساس مبلغ و نرخ ورودی</MudText>
-                            </MudStack>
-                        </MudItem>
+        <!-- Advantage 3 -->
+        <MudItem xs="12" md="4">
+            <MudCard Class="pa-5 h-100 d-flex flex-column" Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider);">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Info" />
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">امنیت و حفظ حریم خصوصی</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="line-height: 1.8; text-align: justify;">
+                    تمام داده‌های محاسباتی، انبار محلی و تاریخچه فاکتورها مستقیماً در حافظه دستگاه شما ذخیره می‌شوند و بر روی هیچ سروری بارگذاری نخواهند شد که امنیت کامل داده‌ها را تضمین می‌کند.
+                </MudText>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Secondary" />
-                                <MudText>صدور فاکتور سریع: افزودن چند قلم به سبد و چاپ فاکتور در لحظه</MudText>
-                            </MudStack>
-                        </MudItem>
-
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Secondary" />
-                                <MudText>مدیریت سبد فاکتور: مشاهده اقلام و حذف هر قلم قبل از نهایی‌سازی</MudText>
-                            </MudStack>
-                        </MudItem>
-                        
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" Color="Color.Secondary" />
-                                <MudText>مشاهده تاریخچه فاکتورهای چاپ شده از این دستگاه با قابلیت چاپ مجدد</MudText>
-                            </MudStack>
-                        </MudItem>
-
-                        <MudItem xs="12" md="6">
-                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.Print" Color="Color.Secondary" />
-                                <MudText>چاپ استاندارد فاکتور (A5 افقی) با نمایش نرخ روز، اجرت و جمع کل</MudText>
-                            </MudStack>
-                        </MudItem>
-
-                    </MudGrid>
-
-                </MudStack>
-            </MudPaper>
-
-            <MudPaper Class="pa-6 mb-6" Elevation="14">
-                <MudStack Spacing="3">
-
-                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                        <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Success" Size="Size.Large" />
-                        <MudText Typo="Typo.h6">چرا GoldEx Mini؟</MudText>
-                    </MudStack>
-
-                    <MudText>
-                        • دقت بالا در محاسبات مالی حساس
-                    </MudText>
-                    <MudText>
-                        • طراحی ساده، سریع و مناسب استفاده روزانه
-                    </MudText>
-                    <MudText>
-                        • کاهش خطای انسانی در معاملات
-                    </MudText>
-                    <MudText>
-                        • قابلیت استفاده به صورت آفلاین
-                    </MudText>
-
-                </MudStack>
-            </MudPaper>
-
-            <MudPaper Class="pa-6 mb-10" Elevation="14">
-                <MudStack Spacing="3">
-
-                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                        <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Color="Color.Info" Size="Size.Large" />
-                        <MudText Typo="Typo.h6">ماموریت ما</MudText>
-                    </MudStack>
-
-                    <MudText Typo="Typo.body1" Class="text-justify">
-                        هدف ما در گلدکس، ارائه ابزارهای دقیق، قابل اعتماد و حرفه‌ای برای صنف طلا و جواهر است.
-                        GoldEx Mini گامی در مسیر دیجیتال‌سازی و استانداردسازی محاسبات مالی این حوزه می‌باشد.
-                    </MudText>
-
-                </MudStack>
-            </MudPaper>
-
+    <!-- Support & Collaboration Card -->
+    <MudCard Class="pa-6 mt-6 text-center relative overflow-hidden" 
+             Style="border-radius: 24px; border: 1px solid var(--mud-palette-divider); background: linear-gradient(135deg, var(--mud-palette-surface) 0%, var(--mud-palette-background-gray) 100%);">
+        <!-- Background decorative icon -->
+        <MudIcon Icon="@Icons.Material.Filled.SupportAgent" Style="position: absolute; right: -30px; bottom: -30px; font-size: 10rem; opacity: 0.03; pointer-events: none;" />
+        
+        <MudText Typo="Typo.h6" Class="font-weight-bold mb-3" Color="Color.Primary">پشتیبانی و اطلاعات تماس</MudText>
+        <MudText Typo="Typo.body1" Class="mud-text-secondary mb-5" Style="max-width: 800px; margin: 0 auto; line-height: 1.8;">
+            سامانه گلدکیس مینی توسط <strong>مسعود خدادادی</strong> توسعه یافته است. در صورتی که برای راه‌اندازی اولیه، اتصال به دستگاه پرینتر حرارتی فروشگاه، یا ویرایش عیارهای فرضی پیش‌فرض در گالری خود نیاز به راهنمایی دارید، می‌توانید با ما در ارتباط باشید:
+        </MudText>
+        
+        <div class="d-flex justify-center flex-wrap gap-4 mb-4">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Email" href="mailto:masoud.xpress@gmail.com" Style="border-radius: 12px; font-weight: bold; text-transform: none;">
+                ارسال ایمیل پشتیبانی: masoud.xpress@gmail.com
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Language" href="https://goldexsoft.ir" Target="_blank" Style="border-radius: 12px; font-weight: bold; text-transform: none;">
+                مشاهده وب‌سایت: goldexsoft.ir
+            </MudButton>
         </div>
-    </div>
-</div>
+        
+        <MudDivider Class="my-3" Style="max-width: 500px; margin: 0 auto;" />
+        
+        <MudText Typo="Typo.caption" Class="mud-text-disabled d-block">
+            این پلتفرم به صورت متن‌باز (Open Source) منتشر شده است و آماده هماهنگ‌سازی با نیازهای صنف طلا و جواهر در سراسر کشور می‌باشد.
+        </MudText>
+    </MudCard>
+</MudContainer>
