@@ -239,4 +239,10 @@ public static class ClientRoutes
         public const string TwoFactorAuthentication = $"{UserAccountsPrefix}/two-factor-authentication";
         public const string AccountsList = $"{UserAccountsPrefix}/list";
     }
+
+    public static class About
+    {
+        private const string Prefix = "about";
+        public const string Index = $"{Prefix}";
+    }
 }
