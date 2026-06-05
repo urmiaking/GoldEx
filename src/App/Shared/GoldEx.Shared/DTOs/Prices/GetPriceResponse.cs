@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Prices;
@@ -12,4 +12,5 @@ public record GetPriceResponse(
     DateTime? LastUpdate,
     bool HasIcon,
     MarketType Type,
-    UnitType? UnitType);
+    UnitType? UnitType,
+    PriceCatalog? PriceCatalog = null);

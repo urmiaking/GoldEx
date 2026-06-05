@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Components.Services;
 using Microsoft.AspNetCore.Components;
 
 namespace GoldEx.Client.Pages.Calculate.Components;
@@ -21,12 +21,10 @@ public partial class Calculator
         switch (index)
         {
             case 0:
-                HelpContext.Slug = "calculator-video";
-                break;
             case 1:
-                HelpContext.Slug = "calculator-video";
-                break;
             case 2:
+            case 3:
+            case 4:
                 HelpContext.Slug = "calculator-video";
                 break;
         }

@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Shared.DTOs.Prices;
 using Mapster;
@@ -19,6 +19,7 @@ internal class PriceMapper : IRegister
             .Map(dest => dest.LastUpdate, src => src.PriceHistory != null ? src.PriceHistory.LastUpdate : null)
             .Map(dest => dest.Unit, src => src.PriceHistory != null ? src.PriceHistory.Unit : "-")
             .Map(dest => dest.Type, src => src.MarketType)
+            .Map(dest => dest.PriceCatalog, src => src.PriceCatalog)
             .Map(dest => dest.HasIcon,
                 src => MapContext.Current.GetService<IWebHostEnvironment>().PriceHistoryIconExists(src.Id.Value));
 
