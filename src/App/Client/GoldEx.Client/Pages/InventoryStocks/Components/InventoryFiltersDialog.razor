@@ -1,0 +1,113 @@
+@inherits GoldExComponentBase
+@using GoldEx.Client.Pages.Settings.ViewModels
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">فیلترهای انبار</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="4" Class="w-100 py-2">
+            <!-- Item Type -->
+            <MudSelect T="ItemType"
+                       Variant="Variant.Outlined"
+                       Label="نوع آیتم"
+                       Value="@_itemType"
+                       ValueChanged="OnItemTypeChanged"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetItemTypeIcon(_itemType)"
+                       AdornmentColor="@GetItemTypeIconColor(_itemType)"
+                       Class="w-100">
+                @foreach (var type in _selectableTypes)
+                {
+                    <MudSelectItem Value="@type">
+                        @type.GetDisplayName()
+                    </MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- Item Status -->
+            <MudSelect T="ItemStatus"
+                       Variant="Variant.Outlined"
+                       Label="وضعیت"
+                       Value="@_itemStatus"
+                       ValueChanged="@(v => _itemStatus = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetStatusIcon(_itemStatus)"
+                       AdornmentColor="@GetStatusColor(_itemStatus)"
+                       Class="w-100">
+                <MudSelectItem Value="@ItemStatus.Available">@ItemStatus.Available.GetDisplayName()</MudSelectItem>
+
+                @if (_itemType is not ItemType.UsedProduct)
+                {
+                    <MudSelectItem Value="@ItemStatus.Sold">@ItemStatus.Sold.GetDisplayName()</MudSelectItem>
+                }
+
+                @if (_itemType is ItemType.UsedProduct)
+                {
+                    <MudSelectItem Value="@ItemStatus.Melted">@ItemStatus.Melted.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- Category (only for Product) -->
+            @if (_itemType is ItemType.Product)
+            {
+                <MudSelect T="ProductCategoryVm"
+                           Variant="Variant.Outlined"
+                           Label="دسته‌بندی"
+                           Value="@_categoryFilter"
+                           ValueChanged="@(v => _categoryFilter = v)"
+                           Dense="true"
+                           Margin="Margin.Dense"
+                           Adornment="Adornment.Start"
+                           AdornmentIcon="@Icons.Material.Filled.List"
+                           AdornmentColor="@(_categoryFilter is null ? Color.Info : Color.Success)"
+                           Class="w-100">
+                    <MudSelectItem Value="@(null as ProductCategoryVm)">همه دسته‌بندی‌ها</MudSelectItem>
+                    @foreach (var cat in Categories)
+                    {
+                        <MudSelectItem Value="@cat">@cat.Title</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            <!-- Date range -->
+            <MudDateRangePicker DateRange="@_dateRange"
+                                DateRangeChanged="@(dr => _dateRange = dr)"
+                                Variant="Variant.Outlined"
+                                Label="@DateRangeLabel"
+                                Margin="Margin.Dense"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Adornment="Adornment.Start"
+                                ShowToolbar="false"
+                                Clearable="true"
+                                Class="w-100" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="d-flex align-center justify-space-between w-100 px-2 pb-2">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Error"
+                       OnClick="Clear"
+                       StartIcon="@Icons.Material.Filled.Delete">
+                حذف فیلترها
+            </MudButton>
+            <div class="d-flex gap-2">
+                <MudButton Color="Color.Default"
+                           OnClick="Cancel">
+                    انصراف
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           OnClick="Apply"
+                           StartIcon="@Icons.Material.Filled.Check">
+                    اعمال
+                </MudButton>
+            </div>
+        </div>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,8 @@
+::deep .check-overdue-row {
+    background-color: rgba(244, 67, 54, 0.05) !important;
+}
+
+::deep .check-overdue-row td {
+    color: var(--mud-palette-error-dark) !important;
+    font-weight: 600;
+}

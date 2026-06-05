@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.CheckPaymentAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -61,5 +61,8 @@ internal sealed class CheckPaymentConfiguration : IEntityTypeConfiguration<Check
             .WithMany()
             .HasForeignKey(x => x.TargetFinancialAccountId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.TargetFinancialAccount)
+            .AutoInclude();
     }
 }

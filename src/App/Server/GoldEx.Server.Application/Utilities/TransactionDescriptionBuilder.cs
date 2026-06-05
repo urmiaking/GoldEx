@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
@@ -380,6 +380,26 @@ public static class TransactionDescriptionBuilder
     public static string ForInventoryExit(ExitReason reason, PriceUnit priceUnit, FinancialAccount financialAccount)
     {
         return $"خروج ارز {priceUnit.Title} از حساب {financialAccount.GetAccountDisplayText()} به دلیل {reason.GetDisplayName()}";
+    }
+
+    #endregion
+
+    #region Check Payment Descriptions
+
+    public static string ForCheckAccept(string? checkNumber, long invoiceNumber, string? description)
+    {
+        var mainDesc = $"وصول چک شماره {checkNumber ?? "نامشخص"} مربوط به فاکتور شماره {invoiceNumber}";
+        if (!string.IsNullOrWhiteSpace(description))
+            mainDesc += $" ({description})";
+        return mainDesc;
+    }
+
+    public static string ForCheckReturn(string? checkNumber, long invoiceNumber, string? description)
+    {
+        var mainDesc = $"برگشت چک شماره {checkNumber ?? "نامشخص"} مربوط به فاکتور شماره {invoiceNumber}";
+        if (!string.IsNullOrWhiteSpace(description))
+            mainDesc += $" ({description})";
+        return mainDesc;
     }
 
     #endregion

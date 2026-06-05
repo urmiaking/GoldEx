@@ -1,0 +1,146 @@
+@inherits GoldExComponentBase
+
+<MudTable T="GetCheckPaymentListResponse" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
+          Dense="true" ServerData="LoadChecksAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation"
+          RowClassFunc="GetRowClass">
+    <ToolBarContent>
+        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+        
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Icon="@Icons.Material.Filled.Tune"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           Class="mr-3"
+                           Size="Size.Small"
+                           OnClick="OpenMobileFilters" />
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
+            <MudSpacer />
+            
+            <!-- Date range picker -->
+            <MudDateRangePicker DateRange="@_filterDateRange"
+                                DateRangeChanged="OnDateRangeChanged"
+                                Margin="Margin.Dense"
+                                Variant="Variant.Outlined"
+                                Class="ml-3"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Rounded="true"
+                                ShowToolbar="false"
+                                Style="max-width: 320px;"
+                                PlaceholderStart="از"
+                                PlaceholderEnd="تا"
+                                Elevation="24"
+                                RelativeWidth="DropdownWidth.Adaptive"
+                                Label="تاریخ سررسید"
+                                Clearable="true"/>
+
+            <!-- Status dropdown -->
+            <MudButtonGroup Size="Size.Small" Color="@PaymentStatusColor" Variant="Variant.Filled" Class="ml-3">
+                <MudButton Size="Size.Small" StartIcon="@PaymentStatusIcon">
+                    @(_paymentStatus == null ? "وضعیت چک" : _paymentStatus.GetDisplayName())
+                </MudButton>
+                <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetStatusFilterText(null)">همه</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.Pending" OnClick="() => SetStatusFilterText(CheckPaymentStatus.Pending)">@CheckPaymentStatus.Pending.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="() => SetStatusFilterText(CheckPaymentStatus.Accepted)">@CheckPaymentStatus.Accepted.GetDisplayName()</MudMenuItem>
+                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Error" OnClick="() => SetStatusFilterText(CheckPaymentStatus.Returned)">@CheckPaymentStatus.Returned.GetDisplayName()</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudHidden>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="IssuerFullName" T="GetCheckPaymentListResponse">صادرکننده</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Number" T="GetCheckPaymentListResponse">شماره چک</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="SayadiCode" T="GetCheckPaymentListResponse">شناسه صیادی</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="IssuerFinancialAccountName" T="GetCheckPaymentListResponse">حساب بانکی صادرکننده</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="DueDate" T="GetCheckPaymentListResponse">تاریخ سررسید</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Amount" T="GetCheckPaymentListResponse">مبلغ چک</MudTableSortLabel></MudTh>
+        <MudTh>شماره فاکتور</MudTh>
+        <MudTh>وضعیت</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="صادرکننده">
+            <div class="d-flex flex-column">
+                <MudText Typo="Typo.body2">@context.IssuerFullName</MudText>
+                @if (!string.IsNullOrEmpty(context.IssuerPhoneNumber))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.IssuerPhoneNumber</MudText>
+                }
+            </div>
+        </MudTd>
+        <MudTd DataLabel="شماره چک">@context.Number</MudTd>
+        <MudTd DataLabel="شناسه صیادی">@context.SayadiCode</MudTd>
+        <MudTd DataLabel="حساب بانکی صادرکننده">@context.IssuerFinancialAccountName</MudTd>
+        <MudTd DataLabel="تاریخ سررسید">@context.DueDate.ToShortDateString()</MudTd>
+        <MudTd DataLabel="مبلغ چک">@context.Amount.ToCurrencyFormat(context.PriceUnit)</MudTd>
+        <MudTd DataLabel="شماره فاکتور">
+            <div class="d-flex align-center gap-1">
+                <MudText Typo="Typo.body2">@context.InvoiceNumber</MudText>
+                <MudText Typo="Typo.caption" Color="@(context.InvoiceType == InvoiceType.Purchase ? Color.Success : Color.Error)">
+                    (@context.InvoiceType.GetDisplayName())
+                </MudText>
+            </div>
+        </MudTd>
+        <MudTd DataLabel="وضعیت">
+            <MudChip Size="Size.Small" T="string" Color="@GetStatusColor(context.CurrentStatus)" Variant="Variant.Filled">
+                @context.CurrentStatus.GetDisplayName()
+            </MudChip>
+        </MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-1">
+                <MudTooltip Text="مشاهده جزئیات">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Info" OnClick="() => OnViewCheck(context)" />
+                </MudTooltip>
+                @if (context.CurrentStatus == CheckPaymentStatus.Pending)
+                {
+                    <MudTooltip Text="وصول چک">
+                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Success" OnClick="() => OnAcceptCheck(context)" />
+                    </MudTooltip>
+                    <MudTooltip Text="برگشت چک">
+                        <MudIconButton Icon="@Icons.Material.Filled.Block" Size="Size.Small" Variant="Variant.Filled"
+                                       Color="Color.Error" OnClick="() => OnReturnCheck(context)" />
+                    </MudTooltip>
+                }
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ چکی یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگیری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 py-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Selected="@(_table.CurrentPage + 1)"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           Class="justify-center"
+                           BoundaryCount="1"
+                           MiddleCount="3" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>
