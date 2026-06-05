@@ -1,0 +1,72 @@
+.virtual-check {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    position: relative;
+    padding: 24px;
+    color: #2d3748;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.virtual-check::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(rgba(0,0,0,0.02) 1px, transparent 0);
+    background-size: 12px 12px;
+    pointer-events: none;
+}
+
+.check-header {
+    border-bottom: 2px dashed rgba(0,0,0,0.1);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.check-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1a365d;
+}
+
+.check-meta-item {
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.check-meta-value {
+    font-weight: 700;
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+.check-line {
+    border-bottom: 1px dotted rgba(0,0,0,0.2);
+    padding-bottom: 4px;
+    flex-grow: 1;
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+.check-amount-badge {
+    background-color: #ffffff;
+    border: 2px solid #2b6cb0;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #2b6cb0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.check-signature {
+    text-align: left;
+    font-family: cursive, sans-serif;
+    opacity: 0.75;
+    font-size: 1.1rem;
+    font-weight: 700;
+}

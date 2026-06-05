@@ -1,0 +1,63 @@
+@inherits GoldExComponentBase
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">فیلترهای چک</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="4" Class="w-100 py-2">
+            <!-- Due Date Range -->
+            <MudDateRangePicker DateRange="@_dateRange"
+                                DateRangeChanged="@(dr => _dateRange = dr)"
+                                Variant="Variant.Outlined"
+                                Label="تاریخ سررسید"
+                                Margin="Margin.Dense"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Adornment="Adornment.Start"
+                                ShowToolbar="false"
+                                Clearable="true"
+                                Class="w-100" />
+
+            <!-- Payment Status -->
+            <MudSelect T="CheckPaymentStatus?"
+                       Variant="Variant.Outlined"
+                       Label="وضعیت چک"
+                       Value="@_paymentStatus"
+                       ValueChanged="@(v => _paymentStatus = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetPaymentStatusIcon(_paymentStatus)"
+                       AdornmentColor="@GetPaymentStatusColor(_paymentStatus)"
+                       Class="w-100">
+                <MudSelectItem T="CheckPaymentStatus?" Value="@(null as CheckPaymentStatus?)">همه</MudSelectItem>
+                <MudSelectItem T="CheckPaymentStatus?" Value="@CheckPaymentStatus.Pending">@CheckPaymentStatus.Pending.GetDisplayName()</MudSelectItem>
+                <MudSelectItem T="CheckPaymentStatus?" Value="@CheckPaymentStatus.Accepted">@CheckPaymentStatus.Accepted.GetDisplayName()</MudSelectItem>
+                <MudSelectItem T="CheckPaymentStatus?" Value="@CheckPaymentStatus.Returned">@CheckPaymentStatus.Returned.GetDisplayName()</MudSelectItem>
+            </MudSelect>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="d-flex align-center justify-space-between w-100 px-2 pb-2">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Error"
+                       OnClick="Clear"
+                       StartIcon="@Icons.Material.Filled.Delete">
+                حذف فیلترها
+            </MudButton>
+            <div class="d-flex gap-2">
+                <MudButton Color="Color.Default"
+                           OnClick="Cancel">
+                    انصراف
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           OnClick="Apply"
+                           StartIcon="@Icons.Material.Filled.Check">
+                    اعمال
+                </MudButton>
+            </div>
+        </div>
+    </DialogActions>
+</MudDialog>

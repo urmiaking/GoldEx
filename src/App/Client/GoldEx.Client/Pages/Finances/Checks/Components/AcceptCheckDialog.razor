@@ -1,0 +1,78 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.DTOs.FinancialAccounts
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">وصول چک بانکی</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" ValidationDelay="100">
+            @if (Check.InvoiceType == InvoiceType.Sell)
+            {
+                <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Secondary">
+                    این چک دریافتی است. لطفاً حساب مالی (بانک/صندوق) جهت واریز مبلغ چک را انتخاب کنید:
+                </MudText>
+
+                <MudAutocomplete T="GetFinancialAccountTitleResponse"
+                                 Label="حساب واریز کننده"
+                                 Value="_selectedAccount"
+                                 ValueChanged="OnAccountChanged"
+                                 SearchFunc="SearchFinancialAccountsAsync"
+                                 ToStringFunc="@(acc => acc == null ? "" : acc.Title)"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Required="true"
+                                 RequiredError="انتخاب حساب مالی الزامی است"
+                                 Clearable="true"
+                                 Dense="true" />
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Secondary">
+                    این چک پرداختی است و پس از وصول، مبلغ آن از حساب بانکی شما کسر خواهد شد:
+                </MudText>
+                <MudField Label="حساب کسر شونده" Variant="Variant.Outlined" InnerPadding="false" Margin="Margin.Dense">
+                    <MudText Typo="Typo.body1" Class="font-weight-bold">@Check.IssuerFinancialAccountName</MudText>
+                </MudField>
+            }
+
+            <MudTextField T="string"
+                          Label="توضیحات وصول چک"
+                          Value="_description"
+                          ValueChanged="s => _description = s"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Lines="3"
+                          Class="mt-4" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   OnClick="Close"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   Variant="Variant.Filled">انصراف</MudButton>
+
+        <MudButton Class="m-2"
+                   Color="Color.Primary"
+                   Disabled="@_processing"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="@(async () => await Submit())"
+                   Variant="Variant.Filled">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1"
+                                     Size="Size.Small"
+                                     Indeterminate="true" />
+                <MudText Class="ms-2">
+                    در حال ذخیره
+                </MudText>
+            }
+            else
+            {
+                <MudText>ذخیره</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

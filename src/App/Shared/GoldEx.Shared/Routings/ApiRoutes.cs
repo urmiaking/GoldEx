@@ -349,6 +349,14 @@ public static class ApiRoutes
         public const string GetList = "";
     }
 
+    public class CheckPayments
+    {
+        public const string Base = "/api/check-payments";
+        public const string GetList = "";
+        public const string Accept = "{id}/accept";
+        public const string Return = "{id}/return";
+    }
+
     public class LicensePayments
     {
         public const string Base = "/api/license-payments";

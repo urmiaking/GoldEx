@@ -2,6 +2,7 @@ using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.CheckPayments;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Invoices;
@@ -654,6 +655,22 @@ public class ApiUrls
     public class AppReleases
     {
         public static string GetList() => BuildUrl(ApiRoutes.AppReleases.Base, ApiRoutes.AppReleases.GetList);
+    }
+
+    public class CheckPayments
+    {
+        public static string GetList(RequestFilter filter, CheckPaymentFilter checkPaymentFilter) =>
+            BuildUrl(ApiRoutes.CheckPayments.Base, ApiRoutes.CheckPayments.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(checkPaymentFilter);
+
+        public static string Accept(Guid id) =>
+            BuildUrl(ApiRoutes.CheckPayments.Base, ApiRoutes.CheckPayments.Accept)
+                .FormatRoute(new { id });
+
+        public static string Return(Guid id) =>
+            BuildUrl(ApiRoutes.CheckPayments.Base, ApiRoutes.CheckPayments.Return)
+                .FormatRoute(new { id });
     }
 
     public class LicensePayments
