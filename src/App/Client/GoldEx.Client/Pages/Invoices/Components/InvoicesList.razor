@@ -1,4 +1,4 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 @if (ShowTitle)
 {
@@ -15,8 +15,6 @@
         <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
-        <MudSpacer />
-
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudIconButton Icon="@Icons.Material.Filled.Tune"
                            Color="Color.Success"
@@ -36,16 +34,10 @@
                     </MudMenuItem>
                 }
             </MudMenu>
-            <InvoiceFiltersPopover Open="@_mobileFiltersOpen"
-                                   OnClose="CloseMobileFilters"
-                                   DateRange="_filterDateRange"
-                                   InvoiceTypeParam="_invoiceType"
-                                   TradeScaleParam="_tradeScale"
-                                   PaymentStatus="_invoicePaymentStatus"
-                                   OnApply="ApplyMobileFilters" />
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown" Class="w-75">
+            <MudSpacer />
             <MudDateRangePicker DateRange="@_filterDateRange"
                                 DateRangeChanged="OnDateRangeChanged"
                                 Margin="Margin.Dense"
@@ -61,7 +53,7 @@
                                 Elevation="24"
                                 RelativeWidth="DropdownWidth.Adaptive"
                                 Label="تاریخ فاکتور"
-                                Clearable="true" />
+                                Clearable="true"/>
 
             <MudButtonGroup Size="Size.Small" Color="@TradeScaleColor" Variant="Variant.Filled" Class="ml-3">
                 <MudButton Size="Size.Small" StartIcon="@TradeScaleIcon">

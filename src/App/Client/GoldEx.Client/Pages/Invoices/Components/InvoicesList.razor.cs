@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Invoices;
@@ -75,7 +75,6 @@ public partial class InvoicesList
     private InvoiceType? _invoiceType;
     private TradeScale? _tradeScale;
     private string? _searchString;
-    private bool _mobileFiltersOpen;
     private MudTable<InvoiceListVm> _table = new();
     private DateRange _filterDateRange = new();
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Small };
@@ -245,16 +244,30 @@ public partial class InvoicesList
             InvoicePaymentStatus? PaymentStatus
     );
 
-    private void OpenMobileFilters()
+    private async Task OpenMobileFilters()
     {
-        _mobileFiltersOpen = true;
-        StateHasChanged();
-    }
+        var parameters = new DialogParameters<InvoiceFiltersDialog>
+        {
+            { x => x.DateRange, _filterDateRange },
+            { x => x.InvoiceTypeParam, _invoiceType },
+            { x => x.TradeScaleParam, _tradeScale },
+            { x => x.PaymentStatus, _invoicePaymentStatus }
+        };
 
-    private void CloseMobileFilters()
-    {
-        _mobileFiltersOpen = false;
-        StateHasChanged();
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.Small
+        };
+
+        var dialog = await DialogService.ShowAsync<InvoiceFiltersDialog>("فیلترها", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false } && result.Data is InvoicesMobileFiltersResult filterResult)
+        {
+            await ApplyMobileFilters(filterResult);
+        }
     }
 
     private async Task ApplyMobileFilters(InvoicesMobileFiltersResult result)
@@ -264,7 +277,6 @@ public partial class InvoicesList
         _tradeScale = result.TradeScale;
         _invoicePaymentStatus = result.PaymentStatus;
 
-        _mobileFiltersOpen = false;
         await RefreshAsync();
     }
 

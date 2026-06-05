@@ -1,4 +1,4 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 @if (ShowTitle)
 {
@@ -16,7 +16,6 @@
         <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
-        <MudSpacer />
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudIconButton Icon="@Icons.Material.Filled.Tune"
                            Color="Color.Primary"
@@ -24,18 +23,10 @@
                            Class="mr-3"
                            Size="Size.Small"
                            OnClick="OpenMobileFilters" />
-            <InventoryFiltersPopover Open="@_mobileFiltersOpen"
-                                     OnClose="CloseMobileFilters"
-                                     ItemType="ItemType"
-                                     ItemStatus="ItemStatus"
-                                     CategoryFilter="_categoryFilter"
-                                     Categories="_categories"
-                                     DateRange="_filterDateRange"
-                                     Selectable="Selectable"
-                                     OnApply="ApplyMobileFilters" />
         </MudHidden>
 
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudSpacer />
             @if (!Selectable)
             {
                 <MudDateRangePicker DateRange="@_filterDateRange"
@@ -51,7 +42,7 @@
                                     PlaceholderStart="از"
                                     PlaceholderEnd="تا"
                                     Label="@DateRangeFilterLabel"
-                                    Clearable="true" />
+                                    Clearable="true"/>
 
                 @if (ItemType is ItemType.Product)
                 {
@@ -91,7 +82,7 @@
                     @foreach (var type in SelectableTypes)
                     {
                         <MudMenuItem OnClick="() => SetItemTypeFilterText(type)">
-                            <MudIcon Icon="@GetItemTypeIcon(type)" Color="@GetItemTypeIconColor(type)" Class="mr-2" />
+                            <MudIcon Icon="@GetItemTypeIcon(type)" Color="@GetItemTypeIconColor(type)" Class="mr-2"/>
                             @type.GetDisplayName()
                         </MudMenuItem>
                     }
