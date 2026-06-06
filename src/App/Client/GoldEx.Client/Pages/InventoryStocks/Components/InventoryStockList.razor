@@ -13,7 +13,7 @@
           MultiSelection="@Selectable" SelectedItemsChanged="(arg) => SelectedItemsChanged.InvokeAsync(arg)" ContainerClass="@ContainerClass"
           Dense="true" ServerData="LoadInventoryAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
     <ToolBarContent>
-        <MudTextField T="string" Clearable="true" Immediate="true" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
+        <MudTextField T="string" Clearable="true" Immediate="true" Value="@SearchQuery" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
         <MudHidden Breakpoint="Breakpoint.MdAndUp">

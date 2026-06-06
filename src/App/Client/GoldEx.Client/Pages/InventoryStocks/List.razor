@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.InventoryStocks.List)]
+@attribute [Route(ClientRoutes.InventoryStocks.List)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 @inherits GoldExComponentBase
 
@@ -14,6 +14,6 @@
     <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">لیست موجودی انبار</MudText>
     <MudDivider Class="mb-2 d-md-block d-none" />
 
-    <InventoryStockList Class="mb-4" ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
+    <InventoryStockList Class="mb-4" ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" PersistState="true" />
 
 </MudContainer>
