@@ -1,9 +1,11 @@
-﻿using Blazored.LocalStorage;
+using Blazored.LocalStorage;
 using GoldEx.Client.Abstractions.Common;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Components.Services.Abstractions;
 using GoldEx.Sdk.Common.Authorization;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using GoldEx.Shared.Services;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -77,6 +79,7 @@ public static class DependencyInjection
             services.AddLocalization();
             services.AddScoped<IThemeService, ThemeService>();
             services.AddScoped<IVersionReleaseStore, VersionReleaseStore>();
+            services.AddSingleton<IPriceStateService, PriceStateService>();
 
             return services;
         }

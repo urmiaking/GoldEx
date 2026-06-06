@@ -1,10 +1,9 @@
-﻿using GoldEx.Shared.DTOs.Prices;
-using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using GoldEx.Sdk.Common.Definitions;
 
 namespace GoldEx.Client.Pages.Home.Components;
 
@@ -17,20 +16,28 @@ public partial class PriceBoard
 
     private string ItemsKey => $"PriceBoard:Items:{Class}:{ContainerClass}";
 
+    [Inject] private IPriceStateService PriceStateService { get; set; } = default!;
+
     private IEnumerable<GetPriceResponse>? _items;
-    private Timer? _timer;
-    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
 
     protected override async Task OnInitializedAsync()
     {
         RestorePersistedState();
-        await LoadSettingsAsync();
+        PriceStateService.OnPricesUpdated += OnPricesUpdated;
         if (_items is null)
         {
             await LoadPricesAsync();
         }
-        await StartTimer();
         await base.OnInitializedAsync();
+    }
+
+    private async void OnPricesUpdated()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadPricesAsync();
+            StateHasChanged();
+        });
     }
 
     protected override Task OnPersisting()
@@ -49,53 +56,17 @@ public partial class PriceBoard
         }
     }
 
-    private async Task LoadSettingsAsync()
-    {
-        await SendRequestAsync<ISettingService, GetSettingResponse?>(
-            action: (s, ct) => s.GetAsync(ct),
-            afterSend: response =>
-            {
-                if (response?.PriceUpdateInterval > TimeSpan.Zero)
-                {
-                    _updateInterval = response.PriceUpdateInterval;
-                }
-            },
-            createScope: true
-        );
-    }
-
     private async Task LoadPricesAsync()
     {
-        await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
+        await SendRequestAsync<IPriceStateService, List<GetPriceResponse>>(
             action: (s, ct) => s.GetListAsync(null, ct),
-            afterSend: response => _items = response.OrderBy(x => x.Type.GetDisplayOrder()),
-            createScope: true
+            afterSend: response => _items = response.OrderBy(x => x.Type.GetDisplayOrder())
         );
-    }
-
-    private Task StartTimer()
-    {
-        _timer = new Timer(
-            TimerCallback,
-            null,
-            _updateInterval,
-            _updateInterval
-        );
-
-        return Task.CompletedTask;
-    }
-
-    private async void TimerCallback(object? state)
-    {
-        await LoadPricesAsync();
-        await InvokeAsync(StateHasChanged);
     }
 
     public override async ValueTask DisposeAsync()
     {
-        if (_timer is not null)
-            await _timer.DisposeAsync();
-
+        PriceStateService.OnPricesUpdated -= OnPricesUpdated;
         await base.DisposeAsync();
     }
 
