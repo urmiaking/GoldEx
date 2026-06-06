@@ -2,6 +2,7 @@ using GoldEx.Client.Pages.InventoryStocks.ViewModels;
 using GoldEx.Client.Pages.Products.Components;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
@@ -32,6 +33,18 @@ public partial class InventoryStockList
     [Parameter] public Guid? InventoryExitId { get; set; }
     [Parameter] public EventCallback<HashSet<InventoryStockVm>?> SelectedItemsChanged { get; set; }
     [Parameter] public ItemType[] SelectableTypes { get; set; } = Enum.GetValues<ItemType>();
+
+    [Parameter] public bool PersistState { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "page")] public int? PageQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchQueryQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "type")] public string? TypeQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "status")] public string? StatusQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "category")] public string? CategoryQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "start")] public string? StartQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "end")] public string? EndQuery { get; set; }
+
+    private bool _isFirstLoad = true;
+    private int _initialPage = 0;
 
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
@@ -141,12 +154,110 @@ public partial class InventoryStockList
         }).ToArray()
     };
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
+        await base.OnParametersSetAsync();
+
         if (ItemType == default) 
             ItemType = SelectableTypes.First();
 
-        base.OnParametersSet();
+        if (PersistState)
+        {
+            var newPage = (PageQuery ?? 1) - 1;
+            if (newPage < 0) newPage = 0;
+
+            var newSearch = SearchQueryQuery;
+
+            ItemType? newType = null;
+            if (!string.IsNullOrWhiteSpace(TypeQuery) && Enum.TryParse<ItemType>(TypeQuery, true, out var parsedType))
+            {
+                newType = parsedType;
+            }
+
+            ItemStatus? newStatus = null;
+            if (!string.IsNullOrWhiteSpace(StatusQuery) && Enum.TryParse<ItemStatus>(StatusQuery, true, out var parsedStatus))
+            {
+                newStatus = parsedStatus;
+            }
+
+            Guid? newCategoryId = null;
+            if (!string.IsNullOrWhiteSpace(CategoryQuery) && Guid.TryParse(CategoryQuery, out var parsedCategory))
+            {
+                newCategoryId = parsedCategory;
+            }
+
+            DateTime? newStart = null;
+            if (!string.IsNullOrWhiteSpace(StartQuery) && DateTime.TryParseExact(StartQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedStart))
+            {
+                newStart = parsedStart;
+            }
+
+            DateTime? newEnd = null;
+            if (!string.IsNullOrWhiteSpace(EndQuery) && DateTime.TryParseExact(EndQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedEnd))
+            {
+                newEnd = parsedEnd;
+            }
+
+            bool changed = false;
+
+            if (SearchQuery != newSearch)
+            {
+                SearchQuery = newSearch;
+                changed = true;
+            }
+
+            if (newType.HasValue && ItemType != newType.Value)
+            {
+                ItemType = newType.Value;
+                changed = true;
+            }
+
+            if (newStatus.HasValue && ItemStatus != newStatus.Value)
+            {
+                ItemStatus = newStatus.Value;
+                _actionType = ItemStatus == ItemStatus.Available ? WarehouseActionType.In : WarehouseActionType.Out;
+                changed = true;
+            }
+
+            if (_categoryFilter?.Id != newCategoryId)
+            {
+                if (newCategoryId == null)
+                {
+                    _categoryFilter = null;
+                }
+                else
+                {
+                    _categoryFilter = _categories.FirstOrDefault(x => x.Id == newCategoryId) ?? new ProductCategoryVm { Id = newCategoryId.Value };
+                }
+                changed = true;
+            }
+
+            if (_filterDateRange?.Start != newStart || _filterDateRange?.End != newEnd)
+            {
+                _filterDateRange = new DateRange(newStart, newEnd);
+                changed = true;
+            }
+
+            if (_isFirstLoad)
+            {
+                _initialPage = newPage;
+            }
+            else if (_table != null && _table.CurrentPage != newPage)
+            {
+                _table.NavigateTo(newPage);
+            }
+            else if (changed && _table != null)
+            {
+                if (_table.CurrentPage != 0)
+                {
+                    _table.NavigateTo(0);
+                }
+                else
+                {
+                    await _table.ReloadServerData();
+                }
+            }
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -155,6 +266,17 @@ public partial class InventoryStockList
         {
             await LoadCategoriesAsync();
             await LoadBarcodeSettingsAsync();
+
+            if (PersistState && _initialPage > 0)
+            {
+                if (_table != null)
+                {
+#pragma warning disable BL0005
+                    _table.CurrentPage = _initialPage;
+#pragma warning restore BL0005
+                    StateHasChanged();
+                }
+            }
         }
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -175,6 +297,14 @@ public partial class InventoryStockList
             afterSend: response =>
             {
                 _categories = response.Select(ProductCategoryVm.CreateFrom).ToList();
+                if (_categoryFilter != null && string.IsNullOrEmpty(_categoryFilter.Title))
+                {
+                    var fullCategory = _categories.FirstOrDefault(x => x.Id == _categoryFilter.Id);
+                    if (fullCategory != null)
+                    {
+                        _categoryFilter = fullCategory;
+                    }
+                }
             },
             createScope: false
         );
@@ -185,6 +315,12 @@ public partial class InventoryStockList
     private async Task<TableData<InventoryStockVm>> LoadInventoryAsync(TableState state, CancellationToken cancellationToken = default)
     {
         var result = new TableData<InventoryStockVm>();
+
+        if (_isFirstLoad && PersistState)
+        {
+            _isFirstLoad = false;
+            state.Page = _initialPage;
+        }
 
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, SearchQuery, state.SortLabel,
             state.SortDirection switch
@@ -227,6 +363,11 @@ public partial class InventoryStockList
             {
                 SetFilter(item);
             }
+        }
+
+        if (PersistState)
+        {
+            UpdateUrl(state.Page);
         }
 
         return result;
@@ -584,5 +725,42 @@ public partial class InventoryStockList
         var persianYear = new PersianCalendar().GetYear(mintYear.Value);
 
         return persianYear.ToString();
+    }
+
+    private void UpdateUrl(int pageIndex)
+    {
+        if (!PersistState)
+            return;
+
+        var parameters = new Dictionary<string, object?>();
+
+        if (pageIndex > 0)
+            parameters.Add("page", pageIndex + 1);
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+            parameters.Add("q", SearchQuery);
+
+        if (ItemType != default)
+            parameters.Add("type", ItemType.ToString());
+
+        if (ItemStatus != default)
+            parameters.Add("status", ItemStatus.ToString());
+
+        if (_categoryFilter != null)
+            parameters.Add("category", _categoryFilter.Id);
+
+        if (_filterDateRange?.Start.HasValue == true)
+            parameters.Add("start", _filterDateRange.Start.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (_filterDateRange?.End.HasValue == true)
+            parameters.Add("end", _filterDateRange.End.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var baseUrl = Navigation.Uri.Split('?')[0];
+        var newUrl = baseUrl.AppendQueryString(parameters);
+
+        if (Navigation.Uri != newUrl)
+        {
+            Navigation.NavigateTo(newUrl, replace: true);
+        }
     }
 }
