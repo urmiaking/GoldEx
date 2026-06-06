@@ -21,6 +21,18 @@ public partial class InvoicesList
     [Parameter] public Guid? CustomerId { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
+    [Parameter] public bool PersistState { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "page")] public int? PageQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "search")] public string? SearchQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "status")] public string? StatusQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "type")] public string? TypeQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "scale")] public string? ScaleQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "start")] public string? StartQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "end")] public string? EndQuery { get; set; }
+
+    private bool _isFirstLoad = true;
+    private int _initialPage = 0;
+
     public string? InvoiceTypeIcon => _invoiceType switch
     {
         InvoiceType.Sell => Icons.Material.Filled.ArrowDownward,
@@ -105,6 +117,12 @@ public partial class InvoicesList
     {
         var result = new TableData<InvoiceListVm>();
 
+        if (_isFirstLoad && PersistState)
+        {
+            _isFirstLoad = false;
+            state.Page = _initialPage;
+        }
+
         var filter = new RequestFilter(state.Page * state.PageSize, state.PageSize, _searchString, state.SortLabel,
             state.SortDirection switch
             {
@@ -130,6 +148,11 @@ public partial class InvoicesList
             createScope: true,
             cancelPrevious: true
         );
+
+        if (PersistState)
+        {
+            UpdateUrl(state.Page);
+        }
 
         return result;
     }
@@ -290,5 +313,152 @@ public partial class InvoicesList
             text += $" ({context.DueDate.Value.ToShortDateString()})";
 
         return text;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (PersistState)
+        {
+            var newPage = (PageQuery ?? 1) - 1;
+            if (newPage < 0) newPage = 0;
+
+            var newSearch = SearchQuery;
+
+            InvoicePaymentStatus? newStatus = null;
+            if (!string.IsNullOrWhiteSpace(StatusQuery) && Enum.TryParse<InvoicePaymentStatus>(StatusQuery, true, out var parsedStatus))
+            {
+                newStatus = parsedStatus;
+            }
+
+            InvoiceType? newType = null;
+            if (!string.IsNullOrWhiteSpace(TypeQuery) && Enum.TryParse<InvoiceType>(TypeQuery, true, out var parsedType))
+            {
+                newType = parsedType;
+            }
+
+            TradeScale? newScale = null;
+            if (!string.IsNullOrWhiteSpace(ScaleQuery) && Enum.TryParse<TradeScale>(ScaleQuery, true, out var parsedScale))
+            {
+                newScale = parsedScale;
+            }
+
+            DateTime? newStart = null;
+            if (!string.IsNullOrWhiteSpace(StartQuery) && DateTime.TryParseExact(StartQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedStart))
+            {
+                newStart = parsedStart;
+            }
+
+            DateTime? newEnd = null;
+            if (!string.IsNullOrWhiteSpace(EndQuery) && DateTime.TryParseExact(EndQuery, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedEnd))
+            {
+                newEnd = parsedEnd;
+            }
+
+            bool changed = false;
+
+            if (_searchString != newSearch)
+            {
+                _searchString = newSearch;
+                changed = true;
+            }
+
+            if (_invoicePaymentStatus != newStatus)
+            {
+                _invoicePaymentStatus = newStatus;
+                changed = true;
+            }
+
+            if (_invoiceType != newType)
+            {
+                _invoiceType = newType;
+                changed = true;
+            }
+
+            if (_tradeScale != newScale)
+            {
+                _tradeScale = newScale;
+                changed = true;
+            }
+
+            if (_filterDateRange?.Start != newStart || _filterDateRange?.End != newEnd)
+            {
+                _filterDateRange = new DateRange(newStart, newEnd);
+                changed = true;
+            }
+
+            if (_isFirstLoad)
+            {
+                _initialPage = newPage;
+            }
+            else if (_table != null && _table.CurrentPage != newPage)
+            {
+                _table.NavigateTo(newPage);
+            }
+            else if (changed && _table != null)
+            {
+                if (_table.CurrentPage != 0)
+                {
+                    _table.NavigateTo(0);
+                }
+                else
+                {
+                    await _table.ReloadServerData();
+                }
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && PersistState && _initialPage > 0)
+        {
+            if (_table != null)
+            {
+#pragma warning disable BL0005
+                _table.CurrentPage = _initialPage;
+#pragma warning restore BL0005
+                StateHasChanged();
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void UpdateUrl(int pageIndex)
+    {
+        if (!PersistState)
+            return;
+
+        var parameters = new Dictionary<string, object?>();
+
+        if (pageIndex > 0)
+            parameters.Add("page", pageIndex + 1);
+
+        if (!string.IsNullOrWhiteSpace(_searchString))
+            parameters.Add("search", _searchString);
+
+        if (_invoicePaymentStatus.HasValue)
+            parameters.Add("status", _invoicePaymentStatus.Value.ToString());
+
+        if (_invoiceType.HasValue)
+            parameters.Add("type", _invoiceType.Value.ToString());
+
+        if (_tradeScale.HasValue)
+            parameters.Add("scale", _tradeScale.Value.ToString());
+
+        if (_filterDateRange?.Start.HasValue == true)
+            parameters.Add("start", _filterDateRange.Start.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (_filterDateRange?.End.HasValue == true)
+            parameters.Add("end", _filterDateRange.End.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var baseUrl = NavigationManager.Uri.Split('?')[0];
+        var newUrl = baseUrl.AppendQueryString(parameters);
+
+        if (NavigationManager.Uri != newUrl)
+        {
+            NavigationManager.NavigateTo(newUrl, replace: true);
+        }
     }
 }
