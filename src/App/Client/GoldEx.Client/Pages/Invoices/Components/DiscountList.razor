@@ -22,7 +22,7 @@
                                      T="decimal"
                                      HideSpinButtons="true"
                                      Format="#,##0.##"
-                                     Immediate="true"
+                                     DebounceInterval="1"
                                      For="@(() => context.Amount)"
                                      Label="@(context.GetDisplayName(() => context.Amount))"
                                      Margin="Margin.Dense"
@@ -60,7 +60,7 @@
                 <MudTd DataLabel="نرخ تبدیل" Class="p-1">
                     <MudNumericField For="@(() => context.ExchangeRate)"
                                      Format="#,##0.########"
-                                     Immediate="true"
+                                     DebounceInterval="1"
                                      Label="@context.ExchangeRateLabel"
                                      Margin="Margin.Dense"
                                      T="decimal?"
