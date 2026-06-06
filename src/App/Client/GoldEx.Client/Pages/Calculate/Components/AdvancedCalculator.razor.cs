@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Calculate.ViewModels;
+using GoldEx.Client.Pages.Calculate.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.InventoryStocks;
@@ -21,14 +21,31 @@ public partial class AdvancedCalculator
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
 
-    private Timer? _timer;
-    private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
+    [Inject] private IPriceStateService PriceStateService { get; set; } = default!;
 
     private GetSettingResponse? _settings;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
     private readonly AdvancedCalculatorVm _model = new();
     private MudTable<GetInventoryStockResponse> _table = default!;
     private List<GetProductCategoryResponse> _productCategories = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        PriceStateService.OnPricesUpdated += OnPricesUpdated;
+        await base.OnInitializedAsync();
+    }
+
+    private async void OnPricesUpdated()
+    {
+        if (IsDisposed) return;
+        await InvokeAsync(async () =>
+        {
+            if (IsDisposed) return;
+            await LoadGramPriceAsync();
+            await RefreshPricesAsync();
+            StateHasChanged();
+        });
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -37,7 +54,6 @@ public partial class AdvancedCalculator
             await LoadPriceUnitsAsync();
             await LoadSettingsAsync();
             await LoadCategoriesAsync();
-            await StartTimer();
         }
         finally
         {
@@ -106,7 +122,7 @@ public partial class AdvancedCalculator
 
     private async Task LoadGramPriceAsync()
     {
-        await SendRequestAsync<IPriceService, GetPriceResponse?>(
+        await SendRequestAsync<IPriceStateService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(_model.UnitType, _model.PriceUnit?.Id, true, ct),
             afterSend: response =>
             {
@@ -115,8 +131,7 @@ public partial class AdvancedCalculator
                 _model.GramPrice = gramPriceValue;
 
                 StateHasChanged();
-            },
-            createScope: true);
+            });
     }
 
     #endregion
@@ -232,7 +247,7 @@ public partial class AdvancedCalculator
                 if (item.Product.StonePriceUnit != null && contextPriceUnit != null &&
                     item.Product.StonePriceUnit.Id != contextPriceUnit.Id)
                 {
-                    await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                    await SendRequestAsync<IPriceStateService, GetExchangeRateResponse>(
                         action: (s, ct) => s.GetExchangeRateAsync(item.Product.StonePriceUnit.Id, contextPriceUnit.Id, ct),
                         afterSend: response =>
                         {
@@ -287,35 +302,6 @@ public partial class AdvancedCalculator
 
     #region Timer
 
-    private Task StartTimer()
-    {
-        _timer = new Timer(
-            TimerCallback,
-            null,
-            TimeSpan.FromSeconds(0),
-            _updateInterval
-        );
-
-        return Task.CompletedTask;
-    }
-
-    private async void TimerCallback(object? state)
-    {
-        if (IsDisposed)
-            return;
-
-        await InvokeAsync(async () =>
-        {
-            if (IsDisposed) return; 
-
-            await LoadGramPriceAsync();
-
-            await RefreshPricesAsync();
-
-            StateHasChanged();
-        });
-    }
-
     private async Task RefreshPricesAsync()
     {
         foreach (var item in _table.FilteredItems)
@@ -326,9 +312,7 @@ public partial class AdvancedCalculator
 
     public override async ValueTask DisposeAsync()
     {
-        if (_timer is not null) 
-            await _timer.DisposeAsync();
-
+        PriceStateService.OnPricesUpdated -= OnPricesUpdated;
         await base.DisposeAsync();
     }
 

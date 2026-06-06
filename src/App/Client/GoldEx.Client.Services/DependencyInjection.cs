@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections.Extensions;
+using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldEx.Client.Services;
