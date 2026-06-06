@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Calculator.Validators;
+using GoldEx.Client.Components.Calculator.Validators;
 using GoldEx.Client.Components.Calculator.ViewModels;
 using GoldEx.Shared.DTOs.Prices;
 using GoldEx.Shared.DTOs.PriceUnits;
@@ -15,11 +15,11 @@ public partial class ReverseCalculator
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public int Elevation { get; set; } = 24;
 
+    [Inject] private IPriceStateService PriceStateService { get; set; } = default!;
+
     private readonly ReverseCalculatorVm _model = new();
     private MudForm _form = default!;
     private readonly ReverseCalculatorValidator _calculatorValidator = new();
-    private Timer? _timer;
-    private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
 
     private decimal? _finalValue;
@@ -36,14 +36,24 @@ public partial class ReverseCalculator
     {
         try
         {
+            PriceStateService.OnPricesUpdated += OnPricesUpdated;
             await LoadPriceUnitsAsync();
-            await StartTimer();
         }
         finally
         {
             StateHasChanged();
         }
         await base.OnInitializedAsync();
+    }
+
+    private async void OnPricesUpdated()
+    {
+        await InvokeAsync(async () =>
+        {
+            if (IsDisposed) return;
+            await LoadUnitPriceAsync();
+            await Calculate();
+        });
     }
 
     private async Task LoadPriceUnitsAsync()
@@ -64,7 +74,7 @@ public partial class ReverseCalculator
 
     private async Task LoadUnitPriceAsync()
     {
-        await SendRequestAsync<IPriceService, GetPriceResponse?>(
+        await SendRequestAsync<IPriceStateService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(_model.GoldUnitType, _model.PriceUnit?.Id, ApplySafetyMargin, ct),
             afterSend: response =>
             {
@@ -73,8 +83,7 @@ public partial class ReverseCalculator
                 _model.UnitPrice = unitPriceValue;
 
                 StateHasChanged();
-            },
-            createScope: true);
+            });
     }
 
     #endregion
@@ -121,36 +130,9 @@ public partial class ReverseCalculator
 
     #region Timer
 
-    private Task StartTimer()
-    {
-        _timer = new Timer(
-            TimerCallback,
-            null,
-            TimeSpan.FromSeconds(0),
-            _updateInterval
-        );
-
-        return Task.CompletedTask;
-    }
-
-    private async void TimerCallback(object? state)
-    {
-        if (IsDisposed)
-            return;
-
-        await InvokeAsync(async () =>
-        {
-            if (IsDisposed) return;
-
-            await LoadUnitPriceAsync();
-            await Calculate();
-        });
-    }
-
     public override async ValueTask DisposeAsync()
     {
-        if (_timer is not null) await _timer.DisposeAsync();
-
+        PriceStateService.OnPricesUpdated -= OnPricesUpdated;
         await base.DisposeAsync();
     }
 

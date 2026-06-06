@@ -1,4 +1,4 @@
-﻿using DevExpress.XtraReports.Web.Extensions;
+using DevExpress.XtraReports.Web.Extensions;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
 using GoldEx.Sdk.Server.Application.Abstractions;
 using GoldEx.Sdk.Server.Application.Services;

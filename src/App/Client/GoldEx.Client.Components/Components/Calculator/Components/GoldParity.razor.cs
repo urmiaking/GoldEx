@@ -11,8 +11,6 @@ public partial class GoldParity
     [Parameter] public string? Class { get; set; }
     [Parameter] public int Elevation { get; set; } = 24;
 
-    private Timer? _timer;
-    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
     private bool _isManualMode;
     private string _currencyUnit = "تومان";
     private decimal _gramPerMesghal = 4.6083m;
@@ -48,12 +46,23 @@ public partial class GoldParity
     private const decimal TroyOunceGrams = 31.1034768m;
     private const decimal AedUsdPeg = 3.6725m; // 1 USD = 3.6725 AED
 
+    [Inject] private IPriceStateService PriceStateService { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
+        PriceStateService.OnPricesUpdated += OnPricesUpdated;
         await LoadSettingsAsync();
         await LoadPricesAsync();
-        await StartTimer();
         await base.OnInitializedAsync();
+    }
+
+    private async void OnPricesUpdated()
+    {
+        await InvokeAsync(async () =>
+        {
+            if (IsDisposed) return;
+            await LoadPricesAsync();
+        });
     }
 
     private async Task LoadSettingsAsync()
@@ -64,10 +73,6 @@ public partial class GoldParity
             {
                 if (response is not null)
                 {
-                    if (response.PriceUpdateInterval > TimeSpan.Zero)
-                    {
-                        _updateInterval = response.PriceUpdateInterval;
-                    }
                     if (response.GramPerMesghal > 0)
                     {
                         _gramPerMesghal = response.GramPerMesghal;
@@ -80,7 +85,7 @@ public partial class GoldParity
 
     private async Task LoadPricesAsync()
     {
-        await SendRequestAsync<IPriceService, List<GetPriceResponse>>(
+        await SendRequestAsync<IPriceStateService, List<GetPriceResponse>>(
             action: (s, ct) => s.GetListAsync(null, ct),
             afterSend: response =>
             {
@@ -118,8 +123,7 @@ public partial class GoldParity
                 }
 
                 StateHasChanged();
-            },
-            createScope: true
+            }
         );
     }
 
@@ -152,34 +156,9 @@ public partial class GoldParity
 
     #region Timer
 
-    private Task StartTimer()
-    {
-        _timer = new Timer(
-            TimerCallback,
-            null,
-            _updateInterval,
-            _updateInterval
-        );
-
-        return Task.CompletedTask;
-    }
-
-    private void TimerCallback(object? state)
-    {
-        _ = InvokeAsync(async () =>
-        {
-            if (IsDisposed) return;
-            await LoadPricesAsync();
-        });
-    }
-
     public override async ValueTask DisposeAsync()
     {
-        if (_timer is not null)
-        {
-            await _timer.DisposeAsync();
-        }
-
+        PriceStateService.OnPricesUpdated -= OnPricesUpdated;
         await base.DisposeAsync();
     }
 

@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Calculator.Validators;
+using GoldEx.Client.Components.Calculator.Validators;
 using GoldEx.Client.Components.Calculator.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Prices;
@@ -25,12 +25,11 @@ public partial class SimpleCalculator
     private const string PriceUnitsKey = "PriceUnits";
     private const string GramPriceKey = "GramPrice";
 
+    [Inject] private IPriceStateService PriceStateService { get; set; } = default!;
+
     private readonly CalculatorVm _model = new();
     private readonly CalculatorValidator _calculatorValidator = new();
     private MudForm _form = default!;
-    private Timer? _timer;
-    private bool _timerDisposed;
-    private TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
     private GetSettingResponse? _settings;
     private GetProductResponse? _searchedProduct;
     private List<GetPriceUnitTitleResponse> _priceUnits = [];
@@ -85,6 +84,7 @@ public partial class SimpleCalculator
     {
         try
         {
+            PriceStateService.OnPricesUpdated += OnPricesUpdated;
             IsAuthenticated = await GetIsAuthenticatedAsync();
 
             RestorePersistedState();
@@ -96,8 +96,6 @@ public partial class SimpleCalculator
             {
                 await LoadSettingsAsync();
             }
-
-            await StartTimer();
         }
         finally
         {
@@ -105,6 +103,18 @@ public partial class SimpleCalculator
         }
 
         await base.OnInitializedAsync();
+    }
+
+    private async void OnPricesUpdated()
+    {
+        if (IsDisposed) return;
+
+        await InvokeAsync(async () =>
+        {
+            if (IsDisposed) return;
+            await LoadGramPriceAsync();
+            await Calculate();
+        });
     }
 
     #region Load Initial Data
@@ -192,7 +202,7 @@ public partial class SimpleCalculator
 
     private async Task LoadSettingsAsync()
     {
-        if (!IsAuthenticated)
+        if (!IsAuthenticated) 
             return;
 
         await SendRequestAsync<ISettingService, GetSettingResponse?>(
@@ -200,11 +210,6 @@ public partial class SimpleCalculator
             afterSend: response =>
             {
                 _settings = response;
-
-                if (_settings?.PriceUpdateInterval > TimeSpan.Zero)
-                {
-                    _updateInterval = _settings.PriceUpdateInterval;
-                }
 
                 _model.ProfitPercent = _settings?.GoldProfitPercent ?? 7;
                 _model.TaxPercent = _settings?.TaxPercent ?? 10;
@@ -216,15 +221,14 @@ public partial class SimpleCalculator
         if (_model.PriceUnit is null)
             return;
 
-        await SendRequestAsync<IPriceService, GetPriceResponse?>(
+        await SendRequestAsync<IPriceStateService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(_model.GoldUnitType, _model.PriceUnit?.Id, _applySafetyMargin, ct),
             afterSend: response =>
             {
                 decimal.TryParse(response?.Value, out var gramPriceValue);
 
                 _model.GramPrice = gramPriceValue;
-            },
-            createScope: true);
+            });
     }
 
     #endregion
@@ -342,7 +346,7 @@ public partial class SimpleCalculator
                 return;
 
             if (_model.PriceUnit != _model.StonePriceUnit && _model.StonePriceUnit != null)
-                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                await SendRequestAsync<IPriceStateService, GetExchangeRateResponse>(
                     action: (s, ct) => s.GetExchangeRateAsync(_model.StonePriceUnit.Id, _model.PriceUnit.Id, ct),
                     afterSend: response =>
                     {
@@ -369,7 +373,7 @@ public partial class SimpleCalculator
                 return;
 
             if (_model.PriceUnit != _model.WagePriceUnit && _model.WagePriceUnit != null)
-                await SendRequestAsync<IPriceService, GetExchangeRateResponse>(
+                await SendRequestAsync<IPriceStateService, GetExchangeRateResponse>(
                     action: (s, ct) => s.GetExchangeRateAsync(_model.WagePriceUnit.Id, _model.PriceUnit.Id, ct),
                     afterSend: response =>
                     {
@@ -575,49 +579,9 @@ public partial class SimpleCalculator
 
     #region Timer
 
-    private Task StartTimer()
-    {
-        _timer = new Timer(
-            TimerCallback,
-            null,
-            TimeSpan.FromSeconds(0),
-            _updateInterval
-        );
-
-        return Task.CompletedTask;
-    }
-
-    private async void TimerCallback(object? state)
-    {
-        if (IsDisposed || _timerDisposed)
-            return;
-
-        try
-        {
-            await InvokeAsync(async () =>
-            {
-                if (IsDisposed || _timerDisposed) return;
-
-                await LoadGramPriceAsync();
-                await Calculate();
-            });
-        }
-        catch (ObjectDisposedException)
-        {
-            _timerDisposed = true;
-        }
-    }
-
     public override async ValueTask DisposeAsync()
     {
-        _timerDisposed = true;
-
-        if (_timer is not null)
-        {
-            await _timer.DisposeAsync();
-            _timer = null;
-        }
-
+        PriceStateService.OnPricesUpdated -= OnPricesUpdated;
         await base.DisposeAsync();
     }
 
