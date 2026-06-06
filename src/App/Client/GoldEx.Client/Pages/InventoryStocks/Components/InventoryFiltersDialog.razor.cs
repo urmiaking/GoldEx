@@ -13,14 +13,14 @@ public partial class InventoryFiltersDialog
     [Parameter] public ItemType ItemType { get; set; }
     [Parameter] public ItemStatus ItemStatus { get; set; }
     [Parameter] public ProductCategoryVm? CategoryFilter { get; set; }
-    [Parameter] public List<ProductCategoryVm> Categories { get; set; } = new();
+    [Parameter] public List<ProductCategoryVm> Categories { get; set; } = [];
     [Parameter] public DateRange DateRange { get; set; } = new();
     [Parameter] public bool Selectable { get; set; }
 
     private ItemType _itemType;
     private ItemStatus _itemStatus;
     private ProductCategoryVm? _categoryFilter;
-    private DateRange _dateRange = new();
+    private DateRange? _dateRange;
 
     private readonly ItemType[] _selectableTypes = Enum.GetValues<ItemType>();
 
@@ -92,7 +92,7 @@ public partial class InventoryFiltersDialog
             _itemType,
             _itemStatus,
             _itemType is ItemType.Product ? _categoryFilter : null,
-            new DateRange(_dateRange.Start, _dateRange.End)
+            new DateRange(_dateRange?.Start, _dateRange?.End)
         );
 
         MudDialog.Close(DialogResult.Ok(result));
