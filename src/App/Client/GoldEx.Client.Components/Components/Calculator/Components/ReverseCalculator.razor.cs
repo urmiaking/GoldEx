@@ -25,7 +25,9 @@ public partial class ReverseCalculator
     private decimal? _finalValue;
     private const bool ApplySafetyMargin = true;
 
-    private string PriceUnitAdornment => DefaultPriceUnit.Title;
+    private string PriceUnitAdornment => _model.PriceUnit is null 
+        ? DefaultPriceUnit.Title
+        : _model.PriceUnit.Title;
 
     private GetPriceUnitTitleResponse DefaultPriceUnit => _priceUnits.FirstOrDefault(x => x.IsDefault)
                                                           ?? new GetPriceUnitTitleResponse(Guid.Empty, "تومان", false, true, false);
@@ -93,6 +95,7 @@ public partial class ReverseCalculator
     private async Task OnPriceUnitChanged(GetPriceUnitTitleResponse? priceUnit)
     {
         _model.PriceUnit = priceUnit;
+        
 
         await LoadUnitPriceAsync();
 
