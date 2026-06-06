@@ -14,7 +14,7 @@ public partial class InvoiceFiltersDialog
     [Parameter] public TradeScale? TradeScaleParam { get; set; }
     [Parameter] public InvoicePaymentStatus? PaymentStatus { get; set; }
 
-    private DateRange _dateRange = new();
+    private DateRange? _dateRange;
     private InvoiceType? _invoiceType;
     private TradeScale? _tradeScale;
     private InvoicePaymentStatus? _paymentStatus;
@@ -80,7 +80,7 @@ public partial class InvoiceFiltersDialog
     private void Apply()
     {
         var result = new InvoicesList.InvoicesMobileFiltersResult(
-            new DateRange(_dateRange.Start, _dateRange.End),
+            new DateRange(_dateRange?.Start, _dateRange?.End),
             _invoiceType,
             _tradeScale,
             _paymentStatus
