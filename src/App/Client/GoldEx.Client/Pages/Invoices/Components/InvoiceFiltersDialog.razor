@@ -5,7 +5,7 @@
         <MudText Typo="Typo.h6">فیلترهای فاکتور</MudText>
     </TitleContent>
     <DialogContent>
-        <MudStack Spacing="4" Class="w-100 py-2">
+        <MudStack Spacing="3">
             <!-- Date range -->
             <MudDateRangePicker DateRange="@_dateRange"
                                 DateRangeChanged="@(dr => _dateRange = dr)"
@@ -14,10 +14,9 @@
                                 Margin="Margin.Dense"
                                 MaxMonthColumns="1"
                                 DisplayMonths="1"
-                                Adornment="Adornment.Start"
                                 ShowToolbar="false"
-                                Clearable="true"
-                                Class="w-100" />
+                                Adornment="Adornment.Start"
+                                Clearable />
 
             <!-- Invoice Type -->
             <MudSelect T="InvoiceType?"
@@ -29,8 +28,7 @@
                        Margin="Margin.Dense"
                        Adornment="Adornment.Start"
                        AdornmentIcon="@GetInvoiceTypeIcon(_invoiceType)"
-                       AdornmentColor="@GetInvoiceTypeColor(_invoiceType)"
-                       Class="w-100">
+                       AdornmentColor="@GetInvoiceTypeColor(_invoiceType)">
                 <MudSelectItem T="InvoiceType?" Value="@(null as InvoiceType?)">همه</MudSelectItem>
                 <MudSelectItem T="InvoiceType?" Value="@InvoiceType.Purchase">@InvoiceType.Purchase.GetDisplayName()</MudSelectItem>
                 <MudSelectItem T="InvoiceType?" Value="@InvoiceType.Sell">@InvoiceType.Sell.GetDisplayName()</MudSelectItem>
@@ -46,8 +44,7 @@
                        Margin="Margin.Dense"
                        Adornment="Adornment.Start"
                        AdornmentIcon="@GetTradeScaleIcon(_tradeScale)"
-                       AdornmentColor="@GetTradeScaleColor(_tradeScale)"
-                       Class="w-100">
+                       AdornmentColor="@GetTradeScaleColor(_tradeScale)">
                 <MudSelectItem T="TradeScale?" Value="@(null as TradeScale?)">همه</MudSelectItem>
                 <MudSelectItem T="TradeScale?" Value="@TradeScale.Wholesale">@TradeScale.Wholesale.GetDisplayName()</MudSelectItem>
                 <MudSelectItem T="TradeScale?" Value="@TradeScale.Retail">@TradeScale.Retail.GetDisplayName()</MudSelectItem>
@@ -63,8 +60,7 @@
                        Margin="Margin.Dense"
                        Adornment="Adornment.Start"
                        AdornmentIcon="@GetPaymentStatusIcon(_paymentStatus)"
-                       AdornmentColor="@GetPaymentStatusColor(_paymentStatus)"
-                       Class="w-100">
+                       AdornmentColor="@GetPaymentStatusColor(_paymentStatus)">
                 <MudSelectItem T="InvoicePaymentStatus?" Value="@(null as InvoicePaymentStatus?)">همه</MudSelectItem>
                 <MudSelectItem T="InvoicePaymentStatus?" Value="@InvoicePaymentStatus.HasDebt">@InvoicePaymentStatus.HasDebt.GetDisplayName()</MudSelectItem>
                 <MudSelectItem T="InvoicePaymentStatus?" Value="@InvoicePaymentStatus.Overdue">@InvoicePaymentStatus.Overdue.GetDisplayName()</MudSelectItem>

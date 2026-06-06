@@ -6,7 +6,7 @@
         <MudText Typo="Typo.h6">فیلترهای انبار</MudText>
     </TitleContent>
     <DialogContent>
-        <MudStack Spacing="4" Class="w-100 py-2">
+        <MudStack Spacing="3">
             <!-- Item Type -->
             <MudSelect T="ItemType"
                        Variant="Variant.Outlined"
@@ -17,8 +17,7 @@
                        Margin="Margin.Dense"
                        Adornment="Adornment.Start"
                        AdornmentIcon="@GetItemTypeIcon(_itemType)"
-                       AdornmentColor="@GetItemTypeIconColor(_itemType)"
-                       Class="w-100">
+                       AdornmentColor="@GetItemTypeIconColor(_itemType)">
                 @foreach (var type in _selectableTypes)
                 {
                     <MudSelectItem Value="@type">
@@ -37,8 +36,7 @@
                        Margin="Margin.Dense"
                        Adornment="Adornment.Start"
                        AdornmentIcon="@GetStatusIcon(_itemStatus)"
-                       AdornmentColor="@GetStatusColor(_itemStatus)"
-                       Class="w-100">
+                       AdornmentColor="@GetStatusColor(_itemStatus)">
                 <MudSelectItem Value="@ItemStatus.Available">@ItemStatus.Available.GetDisplayName()</MudSelectItem>
 
                 @if (_itemType is not ItemType.UsedProduct)
@@ -64,8 +62,7 @@
                            Margin="Margin.Dense"
                            Adornment="Adornment.Start"
                            AdornmentIcon="@Icons.Material.Filled.List"
-                           AdornmentColor="@(_categoryFilter is null ? Color.Info : Color.Success)"
-                           Class="w-100">
+                           AdornmentColor="@(_categoryFilter is null ? Color.Info : Color.Success)">
                     <MudSelectItem Value="@(null as ProductCategoryVm)">همه دسته‌بندی‌ها</MudSelectItem>
                     @foreach (var cat in Categories)
                     {
@@ -84,8 +81,7 @@
                                 DisplayMonths="1"
                                 Adornment="Adornment.Start"
                                 ShowToolbar="false"
-                                Clearable="true"
-                                Class="w-100" />
+                                Clearable="true" />
         </MudStack>
     </DialogContent>
     <DialogActions>
