@@ -8,6 +8,9 @@ Read these documents before generating code:
 - ./docs/ai/DEVELOPMENT_GUIDE.md
 - ./docs/ai/TOOLS.md
 
+Every time that you learn something new about the project update the AGENTS.md file with the new information.
+This file should be the single source of truth for all AI agents working on the project. Always refer to this file before generating code or making architectural decisions.
+
 ## Project Overview
 GoldEx is a modern jewelry store management, accounting, and gold trading platform for gold/jewelry stores built with .NET 10, Blazor Web App, MudBlazor, and Domain-Driven Design (DDD).
 
