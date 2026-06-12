@@ -1,5 +1,6 @@
-﻿@attribute [Route(ClientRoutes.Home.Index)]
+@attribute [Route(ClientRoutes.Home.Index)]
 
+@using GoldEx.Client.Pages.Finances.Checks.Components
 @inherits GoldExComponentBase
 
 <PageTitle>صفحه اصلی</PageTitle>
@@ -36,7 +37,9 @@
              Color="Color.Transparent"
              EnableDragAndDrop
              Class="d-sm-block d-none"
-             Position="Position.Top">
+             Position="Position.Top"
+             ActivePanelIndex="@_activePanelIndex"
+             ActivePanelIndexChanged="OnTabChanged">
         <MudTabPanel Text="نرخ لحظه ای" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Primary" Class="w-100">
             <PriceBoard Class="mt-5" Elevation="24" ContainerClass="@PriceBoardClass" />
         </MudTabPanel>
@@ -54,8 +57,8 @@
                 <MudTabPanel Text="مشتریان" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Tertiary" Class="w-100">
                     <CustomersList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
-                <MudTabPanel Text="اسناد پرداخت" Icon="@Icons.Material.Filled.Payment" Class="w-100">
-                    <PaymentVouchersList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
+                <MudTabPanel Text="چک ها" Icon="@Icons.Material.Filled.Payment" Class="w-100">
+                    <CheckPaymentsList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
                 </MudTabPanel>
             </Authorized>
         </AuthorizeView>

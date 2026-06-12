@@ -70,3 +70,10 @@
     font-size: 1.1rem;
     font-weight: 700;
 }
+
+.check-dialog-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 4px;
+}
