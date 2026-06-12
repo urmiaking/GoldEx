@@ -1,6 +1,4 @@
 @inherits GoldExComponentBase
-@using GoldEx.Shared.Enums
-@using GoldEx.Shared.Helpers
 
 <MudDialog>
     <TitleContent>
@@ -9,7 +7,8 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <!-- Modern Virtual Check Layout -->
+        <div class="check-dialog-content">
+            <!-- Modern Virtual Check Layout -->
         <div class="virtual-check mb-6">
             <!-- Header Row -->
             <div class="check-header d-flex justify-space-between align-center flex-wrap gap-2">
@@ -157,6 +156,7 @@
                 </MudCardContent>
             </MudCard>
         }
+        </div>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error"
