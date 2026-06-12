@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Abstractions.Common;
+using GoldEx.Client.Abstractions.Common;
 using GoldEx.Client.Components.Components;
 using GoldEx.Client.Components.Utilities;
 using GoldEx.Shared.DTOs.AppReleases;
@@ -22,6 +22,34 @@ public partial class Index
 
     private IReadOnlyList<AppReleaseResponse> _releases = [];
     private bool _releaseChecked;
+
+    [Parameter, SupplyParameterFromQuery(Name = "tab")]
+    public int? Tab { get; set; }
+
+    private int _activePanelIndex;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Tab.HasValue)
+        {
+            int maxIndex = (User?.Identity?.IsAuthenticated == true) ? 5 : 1;
+            _activePanelIndex = System.Math.Clamp(Tab.Value, 0, maxIndex);
+        }
+    }
+
+    private void OnTabChanged(int index)
+    {
+        if (_activePanelIndex == index)
+            return;
+
+        _activePanelIndex = index;
+        var newUri = Navigation.GetUriWithQueryParameters(new Dictionary<string, object?>
+        {
+            ["tab"] = index
+        });
+        Navigation.NavigateTo(newUri, replace: true);
+    }
 
     private async Task LoadReleasesAsync()
     {

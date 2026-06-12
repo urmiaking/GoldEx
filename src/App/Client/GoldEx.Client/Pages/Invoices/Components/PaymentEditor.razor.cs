@@ -318,6 +318,7 @@ public partial class PaymentEditor
         if (result is { Canceled: false, Data: CustomerVm customerVm })
         {
             Model.Endorser = customerVm;
+            Model.CheckIssuer = customerVm;
             StateHasChanged();
         }
     }
@@ -365,6 +366,10 @@ public partial class PaymentEditor
         }
 
         await LoadFinancialAccountsAsync(issuer.Id.Value);
+
+        if (_customerFinancialAccounts.Any()) 
+            Model.CheckIssuerFinancialAccount = _customerFinancialAccounts.First();
+
         StateHasChanged();
     }
 
@@ -411,13 +416,6 @@ public partial class PaymentEditor
         using var ms = new MemoryStream();
         await stream.CopyToAsync(ms);
         return ms.ToArray();
-    }
-
-    private async Task<string> CreateBlobUrlFromBytes(byte[] imageBytes, string contentType)
-    {
-        var base64 = Convert.ToBase64String(imageBytes);
-        var dataUrl = $"data:{contentType};base64,{base64}";
-        return await JsRuntime.InvokeAsync<string>("createBlobUrl", dataUrl);
     }
 
     public override async ValueTask DisposeAsync()
