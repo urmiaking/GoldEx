@@ -1,5 +1,6 @@
-﻿using DevExpress.XtraReports.UI;
+using DevExpress.XtraReports.UI;
 using DevExpress.XtraReports.Web.Extensions;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 
 namespace GoldEx.Server.Application.Reporting;
@@ -9,10 +10,12 @@ namespace GoldEx.Server.Application.Reporting;
 public class ReportStorageExtension : ReportStorageWebExtension
 {
     private readonly IWebHostEnvironment _hostingEnvironment;
+    private readonly IStoreContext _storeContext;
 
-    public ReportStorageExtension(IWebHostEnvironment hostingEnvironment)
+    public ReportStorageExtension(IWebHostEnvironment hostingEnvironment, IStoreContext storeContext)
     {
         _hostingEnvironment = hostingEnvironment;
+        _storeContext = storeContext;
         var reportDirectory = Path.Combine(hostingEnvironment.ContentRootPath, "Reports");
         if (!Directory.Exists(reportDirectory))
         {
@@ -54,9 +57,16 @@ public class ReportStorageExtension : ReportStorageWebExtension
 
     public override Dictionary<string, string> GetUrls()
     {
+        var slug = _storeContext.StoreSlug ?? "default";
         var reportDirectory = Path.Combine(_hostingEnvironment.ContentRootPath, "Reports");
+        var suffix = $"_{slug}";
+
         return Directory.GetFiles(reportDirectory, "*.repx")
-            .Select(Path.GetFileNameWithoutExtension).ToDictionary(x => x, x => x == "InvoiceReport" ? "فاکتور فروش" : x);
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(x => x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(
+                x => x,
+                x => x.StartsWith("InvoiceReport", StringComparison.OrdinalIgnoreCase) ? "فاکتور فروش" : x);
     }
 
     public override bool CanSetData(string url) => true;

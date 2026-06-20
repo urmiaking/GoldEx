@@ -1,17 +1,19 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.CustomerAggregate;
 
 public readonly record struct CustomerId(Guid Value);
-public class Customer : EntityBase<CustomerId>
+public class Customer : EntityBase<CustomerId>, IStoreFiltered
 {
     public static Customer Create(CustomerType customerType, string fullName, string nationalId,
-        string? phoneNumber, string? address, decimal? creditLimit, PriceUnitId? creditLimitUnit)
+        string? phoneNumber, string? address, decimal? creditLimit, PriceUnitId? creditLimitUnit, StoreId storeId = default)
     {
         return new Customer
         {
@@ -22,7 +24,8 @@ public class Customer : EntityBase<CustomerId>
             PhoneNumber = phoneNumber,
             Address = address,
             CreditLimit = creditLimit,
-            CreditLimitPriceUnitId = creditLimitUnit
+            CreditLimitPriceUnitId = creditLimitUnit,
+            StoreId = storeId
         };
     }
 
@@ -30,6 +33,7 @@ public class Customer : EntityBase<CustomerId>
     private Customer() { }
 #pragma warning restore CS8618
 
+    public StoreId StoreId { get; private set; }
     public string FullName { get; private set; }
     public string NationalId { get; private set; }
     public string?  PhoneNumber { get; private set; }

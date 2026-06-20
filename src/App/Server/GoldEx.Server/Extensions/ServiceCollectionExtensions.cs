@@ -1,4 +1,4 @@
-﻿using AspNetCore.DataProtection.SqlServer;
+using AspNetCore.DataProtection.SqlServer;
 using DevExpress.AspNetCore;
 using DevExpress.Drawing;
 using GoldEx.Client.Components.Services;
@@ -12,6 +12,8 @@ using GoldEx.Server.Infrastructure;
 using GoldEx.Server.Infrastructure.HealthChecks;
 using GoldEx.Server.Infrastructure.Services;
 using GoldEx.Server.Services;
+using GoldEx.Server.Application.Services;
+using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Reporting;
@@ -325,10 +327,11 @@ internal static class ServiceCollectionExtensions
             {
                 var config = sp.GetRequiredService<IConfiguration>();
                 var url = config["License:BaseUrl"];
-                return new License(url);
+                return new License(url); 
             });
 
-            services.AddSingleton<ProductLicense>();
+            services.AddSingleton<ILicenseCache, LicenseCache>();
+            services.AddScoped<ProductLicense>();
 
             return services;
         }

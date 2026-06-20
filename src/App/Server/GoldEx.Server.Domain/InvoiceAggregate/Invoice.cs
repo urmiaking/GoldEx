@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
@@ -6,14 +7,17 @@ using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.NotificationAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.InvoiceAggregate;
 
 public readonly record struct InvoiceId(Guid Value);
-public class Invoice : EntityBase<InvoiceId>
+public class Invoice : EntityBase<InvoiceId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
+
     public static Invoice Create(long invoiceNumber,
         decimal? unpaidAmountExchangeRate,
         decimal? exchangeRate,
@@ -24,7 +28,8 @@ public class Invoice : EntityBase<InvoiceId>
         PriceUnitId priceUnitId,
         PriceUnitId? unpaidPriceUnitId,
         DateOnly invoiceDate,
-        DateOnly? dueDate)
+        DateOnly? dueDate,
+        StoreId storeId = default)
     {
         return new Invoice
         {
@@ -39,7 +44,8 @@ public class Invoice : EntityBase<InvoiceId>
             DueDate = dueDate,
             UnpaidPriceUnitId = unpaidPriceUnitId,
             UnpaidAmountExchangeRate = unpaidAmountExchangeRate,
-            ExchangeRate = exchangeRate
+            ExchangeRate = exchangeRate,
+            StoreId = storeId
         };
     }
 

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
@@ -21,7 +21,8 @@ internal class SettingService(ISettingRepository repository,
     IFileService fileService,
     IWebHostEnvironment webHostEnvironment,
     IMapper mapper,
-    CreateSettingRequestValidator createValidator) : ISettingService,
+    CreateSettingRequestValidator createValidator,
+    IStoreContext storeContext) : ISettingService,
     IServerSettingService
 {
     #region ServerSettingService
@@ -81,7 +82,7 @@ internal class SettingService(ISettingRepository repository,
         await repository.UpdateAsync(item, cancellationToken);
 
         if (request.IconContent is not null)
-            await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetAppIconPath(), request.IconContent, cancellationToken);
+            await fileService.ReplaceLocalFileAsync(webHostEnvironment.GetAppIconPath(storeContext.StoreSlug), request.IconContent, cancellationToken);
     }
 
     #endregion

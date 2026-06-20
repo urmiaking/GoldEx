@@ -1,14 +1,17 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.LedgerAccountAggregate;
 
 public readonly record struct LedgerAccountId(Guid Value);
-public class LedgerAccount : EntityBase<LedgerAccountId>
+public class LedgerAccount : EntityBase<LedgerAccountId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
     public string Title { get; private set; }
     public LedgerAccountType AccountType { get; private set; }
     public bool IsSystemAccount { get; private set; }
@@ -25,7 +28,7 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
     public CustomerId? CustomerId { get; private set; }
     public Customer? Customer { get; private set; }
 
-    public static LedgerAccount CreateSystemAccount(string title, LedgerAccountType accountType, LedgerAccountId? parentAccountId = null, PriceUnitId? priceUnitId = null)
+    public static LedgerAccount CreateSystemAccount(string title, LedgerAccountType accountType, LedgerAccountId? parentAccountId = null, PriceUnitId? priceUnitId = null, StoreId storeId = default)
     {
         return new LedgerAccount
         {
@@ -34,7 +37,8 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
             AccountType = accountType,
             ParentAccountId = parentAccountId,
             PriceUnitId = priceUnitId,
-            IsSystemAccount = true
+            IsSystemAccount = true,
+            StoreId = storeId
         };
     }
 
@@ -42,7 +46,8 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
         CustomerId customerId,
         PriceUnitId priceUnitId,
         LedgerAccountType accountType,
-        LedgerAccountId? parentAccountId = null)
+        LedgerAccountId? parentAccountId = null,
+        StoreId storeId = default)
     {
         return new LedgerAccount
         {
@@ -52,7 +57,8 @@ public class LedgerAccount : EntityBase<LedgerAccountId>
             AccountType = accountType,
             IsSystemAccount = false,
             ParentAccountId = parentAccountId,
-            PriceUnitId = priceUnitId
+            PriceUnitId = priceUnitId,
+            StoreId = storeId
         };
     }
 

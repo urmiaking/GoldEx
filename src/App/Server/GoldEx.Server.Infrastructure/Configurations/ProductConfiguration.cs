@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -52,7 +53,7 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Navigation(x => x.StonePriceUnit).AutoInclude();
         builder.Navigation(x => x.ProductCategory).AutoInclude();
 
-        builder.HasIndex(x => x.Barcode)
+        builder.HasIndex(x => new { x.StoreId, x.Barcode })
             .IsUnique();
 
         builder.HasIndex(x => x.Name);

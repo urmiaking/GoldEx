@@ -1,20 +1,25 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.CheckPaymentAggregate;
 
 public readonly record struct CheckPaymentId(Guid Value);
-public class CheckPayment : EntityBase<CheckPaymentId>
+public class CheckPayment : EntityBase<CheckPaymentId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
+
     private CheckPayment(InvoicePaymentId invoicePaymentId,
         CustomerId issuerId,
         FinancialAccountId issuerFinancialAccountId,
         string? number,
         string? sayadiCode,
-        DateTime dueDate)
+        DateTime dueDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrEmpty(sayadiCode) && string.IsNullOrEmpty(number))
             throw new InvalidOperationException("At least sayadi code or check number must be provided");
@@ -26,6 +31,7 @@ public class CheckPayment : EntityBase<CheckPaymentId>
         Number = number;
         SayadiCode = sayadiCode;
         DueDate = dueDate;
+        StoreId = storeId;
         _changeLogs = [CheckPaymentChangeLog.Create(CheckPaymentStatus.Pending)];
     }
 
@@ -55,9 +61,10 @@ public class CheckPayment : EntityBase<CheckPaymentId>
         FinancialAccountId issuerFinancialAccountId,
         string? number,
         string? sayadiCode,
-        DateTime dueDate)
+        DateTime dueDate,
+        StoreId storeId = default)
     {
-        return new CheckPayment(invoicePaymentId, issuerId, issuerFinancialAccountId, number, sayadiCode, dueDate);
+        return new CheckPayment(invoicePaymentId, issuerId, issuerFinancialAccountId, number, sayadiCode, dueDate, storeId);
     }
 
     public void SetIssuer(CustomerId issuerId) => IssuerId = issuerId;

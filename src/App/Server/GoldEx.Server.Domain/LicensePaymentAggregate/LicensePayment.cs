@@ -1,11 +1,14 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.LicensePaymentAggregate;
 
 public readonly record struct LicensePaymentId(Guid Value);
-public class LicensePayment : EntityBase<LicensePaymentId>
+public class LicensePayment : EntityBase<LicensePaymentId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
     public LicensePlan CurrentPlan { get; private set; }
     public LicensePlan RequestedPlan { get; private set; }
     public int RequestedMonths { get; private set; }
@@ -18,7 +21,7 @@ public class LicensePayment : EntityBase<LicensePaymentId>
     public LicensePayment() {}
 #pragma warning restore CS8618
 
-    private LicensePayment(LicensePlan currentPlan, int requestedMonths, string paymentReference, string? paymentDescription)
+    private LicensePayment(LicensePlan currentPlan, int requestedMonths, string paymentReference, string? paymentDescription, StoreId storeId = default)
     {
         int[] validMonths = [1, 3, 6, 12];
 
@@ -32,11 +35,12 @@ public class LicensePayment : EntityBase<LicensePaymentId>
         PaymentReference = paymentReference;
         PaymentDescription = paymentDescription;
         Status = LicensePaymentStatus.Pending;
+        StoreId = storeId;
     }
 
-    public static LicensePayment Create(LicensePlan currentPlan, int requestedMonths, string paymentReference, string? paymentDescription)
+    public static LicensePayment Create(LicensePlan currentPlan, int requestedMonths, string paymentReference, string? paymentDescription, StoreId storeId = default)
     {
-        return new LicensePayment(currentPlan, requestedMonths, paymentReference, paymentDescription);
+        return new LicensePayment(currentPlan, requestedMonths, paymentReference, paymentDescription, storeId);
     }
 
     public void Approve()

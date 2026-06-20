@@ -1,8 +1,70 @@
-﻿<MudAppBar Elevation="12" Dense="true">
+@inherits GoldExComponentBase
+@using GoldEx.Shared.DTOs.Stores
+@using GoldEx.Shared.Services.Abstractions
+@using MudBlazor
+
+<style>
+    .store-switcher-btn {
+        background: rgba(var(--mud-palette-action-default-rgb), 0.08);
+        border: 1px solid rgba(var(--mud-palette-action-default-rgb), 0.15);
+        border-radius: 20px;
+        color: var(--mud-palette-appbar-text);
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        direction: rtl;
+    }
+    .store-switcher-btn:hover {
+        background: rgba(var(--mud-palette-primary-rgb), 0.15);
+        border-color: var(--mud-palette-primary);
+        color: var(--mud-palette-primary);
+    }
+    .store-switcher-logo {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(var(--mud-palette-action-default-rgb), 0.2);
+        border: 1px solid rgba(var(--mud-palette-action-default-rgb), 0.3);
+        font-size: 0.75rem;
+        font-weight: bold;
+        overflow: hidden;
+        color: var(--mud-palette-appbar-text);
+    }
+    .store-switcher-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+
+<MudAppBar Elevation="12" Dense="true" Color="Color.Default">
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
     @* <MudImage Src="/assets/logo/logo512.png" Alt="گلدکس" Height="32" Class="ml-3 mr-2" /> *@
-    <a class="brand-text fs-3 mr-2 ml-4" href="https://goldexsoft.ir" target="_blank">GoldEx</a>
+    <a class="brand-text fs-3 mr-2 ml-4 d-none d-sm-inline-block" href="https://goldexsoft.ir" target="_blank">GoldEx</a>
     
+    <AuthorizeView>
+        <Authorized>
+            @if (_currentStore != null)
+            {
+                <button type="button" class="store-switcher-btn d-flex align-center gap-2 px-3 py-1.5 ml-4" @onclick="OpenStoreSelector">
+                    <div class="store-switcher-logo d-flex align-center justify-center">
+                        @if (!string.IsNullOrWhiteSpace(_currentStore.LogoUrl))
+                        {
+                            <img src="@_currentStore.LogoUrl" alt="@_currentStore.Name" />
+                        }
+                        else
+                        {
+                            <span>@_currentStore.Name.Substring(0, 1)</span>
+                        }
+                    </div>
+                    <span class="store-switcher-name d-none d-sm-inline">@_currentStore.Name</span>
+                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" />
+                </button>
+            }
+        </Authorized>
+    </AuthorizeView>
+
     <AuthorizeView>
         <Authorized>
             <LicenseStatusBanner />
@@ -36,6 +98,43 @@
     [Parameter] public bool DrawerOpen { get; set; }
 
     [Inject] private IThemeService? ThemeService { get; set; }
+
+    private UserStoreDto? _currentStore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        // Register event subscription or load current store
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            await LoadCurrentStoreAsync();
+        }
+    }
+
+    private async Task LoadCurrentStoreAsync()
+    {
+        var stores = await SendRequestAsync<IStoreService, List<UserStoreDto>>(
+            (service, token) => service.GetUserStoresAsync(token));
+
+        if (stores != null)
+        {
+            _currentStore = stores.FirstOrDefault(s => s.IsCurrent);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenStoreSelector()
+    {
+        var options = new DialogOptions 
+        { 
+            CloseButton = true, 
+            MaxWidth = MaxWidth.Medium, 
+            FullWidth = true
+        };
+        await DialogService.ShowAsync<StoreSelectorDialog>("", options);
+    }
 
     private void DrawerToggle()
     {

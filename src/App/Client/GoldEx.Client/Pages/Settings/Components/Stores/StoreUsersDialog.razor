@@ -1,0 +1,78 @@
+@using GoldEx.Shared.DTOs.UserAccounts
+@inherits GoldExComponentBase
+
+<MudDialog Class="custom-store-users-dialog">
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Color="Color.Info" />
+            <MudText Typo="Typo.h6">تخصیص کاربران به فروشگاه "@StoreName"</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="d-flex align-center justify-space-between mb-4">
+            <MudTextField T="string" Clearable="true" Immediate="true"
+                          ValueChanged="OnSearchChanged" Placeholder="جستجو در کاربران ..."
+                          Adornment="Adornment.Start" Variant="Variant.Outlined" DebounceInterval="300"
+                          Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Small" Class="m-0" Style="max-width: 300px;" />
+            
+            <MudCheckBox T="bool" Value="IsAllSelected" ValueChanged="OnSelectAllChanged"
+                         Color="Color.Primary" Label="انتخاب همه کاربران" />
+        </div>
+
+        <div style="max-height: 400px; overflow-y: auto;">
+            <MudTable Items="FilteredUsers" Hover="true" Dense="true" Elevation="0" Loading="IsBusy">
+                <HeaderContent>
+                    <MudTh Style="width: 60px;"></MudTh>
+                    <MudTh>نام و نام خانوادگی</MudTh>
+                    <MudTh>نام کاربری</MudTh>
+                    <MudTh>نقش کاربری</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudCheckBox T="bool" Value="IsUserSelected(context.Id)"
+                                     ValueChanged="v => OnUserSelectionToggled(context.Id, v)"
+                                     Color="Color.Primary" />
+                    </MudTd>
+                    <MudTd>@context.FullName</MudTd>
+                    <MudTd>@context.Username</MudTd>
+                    <MudTd>
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small" Variant="Variant.Text">
+                            @context.Role
+                        </MudChip>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>هیچ کاربری یافت نشد</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   OnClick="Cancel"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   Variant="Variant.Filled"
+                   Size="Size.Small">انصراف</MudButton>
+
+        <MudButton Class="m-2"
+                   Color="Color.Primary"
+                   Disabled="@IsBusy"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="SaveAsync"
+                   Variant="Variant.Filled"
+                   Size="Size.Small">
+            @if (IsBusy)
+            {
+                <MudProgressCircular Class="ms-n1"
+                                     Size="Size.Small"
+                                     Indeterminate="true" />
+                <MudText Class="ms-2">در حال ذخیره</MudText>
+            }
+            else
+            {
+                <MudText>ذخیره</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

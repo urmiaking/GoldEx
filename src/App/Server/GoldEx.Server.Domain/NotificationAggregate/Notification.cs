@@ -1,11 +1,14 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 
 namespace GoldEx.Server.Domain.NotificationAggregate;
 
 public readonly record struct NotificationId(Guid Value);
-public class Notification : EntityBase<NotificationId>
+public class Notification : EntityBase<NotificationId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
     public string Title { get; private set; }
     public string Message { get; private set; }
     public bool IsRead { get; private set; }
@@ -20,7 +23,7 @@ public class Notification : EntityBase<NotificationId>
     private Notification() { }
 #pragma warning restore CS8618 
 
-    private Notification(string title, string message, List<NotificationButton>? buttons = null, InvoiceId? invoiceId = null)
+    private Notification(string title, string message, List<NotificationButton>? buttons = null, InvoiceId? invoiceId = null, StoreId storeId = default)
     {
         Id = new NotificationId(Guid.CreateVersion7());
         Title = title;
@@ -28,17 +31,20 @@ public class Notification : EntityBase<NotificationId>
         IsRead = false;
         InvoiceId = invoiceId;
         Buttons = buttons;
+        StoreId = storeId;
     }
 
     internal static Notification Create(string title,
         string message,
         List<NotificationButton>? buttons = null,
-        InvoiceId? invoiceId = null) => new(title, message, buttons, invoiceId);
+        InvoiceId? invoiceId = null,
+        StoreId storeId = default) => new(title, message, buttons, invoiceId, storeId);
 
     public static Notification CreateInvoiceNotification(string title,
         string message,
         List<NotificationButton> buttons,
-        InvoiceId invoiceId) => Create(title, message, buttons, invoiceId);
+        InvoiceId invoiceId,
+        StoreId storeId = default) => Create(title, message, buttons, invoiceId, storeId);
 
     public void MarkAsRead()
     {

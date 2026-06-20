@@ -1,9 +1,11 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
+using GoldEx.Server.Domain.StoreAggregate;
 
 namespace GoldEx.Server.Domain.SettingAggregate;
 
 public readonly record struct SettingsId(Guid Value);
-public class Setting : EntityBase<SettingsId>
+public class Setting : EntityBase<SettingsId>, IStoreFiltered
 {
     public static Setting Create(string institutionName,
         string address,
@@ -15,7 +17,8 @@ public class Setting : EntityBase<SettingsId>
         decimal goldSafetyMarginPercent,
         decimal usedGoldFinenessDeductionRate,
         decimal gramPerMesghal,
-        TimeSpan priceUpdateInterval)
+        TimeSpan priceUpdateInterval,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(taxPercent, 0);
         ArgumentOutOfRangeException.ThrowIfLessThan(goldProfitPercent, 0);
@@ -49,7 +52,8 @@ public class Setting : EntityBase<SettingsId>
             GoldSafetyMarginPercent = goldSafetyMarginPercent,
             UsedGoldFinenessDeductionRate = usedGoldFinenessDeductionRate,
             GramPerMesghal = gramPerMesghal,
-            PriceUpdateInterval = priceUpdateInterval
+            PriceUpdateInterval = priceUpdateInterval,
+            StoreId = storeId
         };
     }
 
@@ -57,6 +61,7 @@ public class Setting : EntityBase<SettingsId>
     private Setting() { }
 #pragma warning restore CS8618
 
+    public StoreId StoreId { get; private set; }
     public string InstitutionName { get; private set; }
     public string Address { get; private set; }
     public string PhoneNumber { get; private set; }
@@ -123,5 +128,28 @@ public class Setting : EntityBase<SettingsId>
     public void UpdateBarcodePrintSettings(BarcodePrintSettings barcodePrintSettings)
     {
         BarcodePrintSettings = barcodePrintSettings ?? throw new ArgumentNullException(nameof(barcodePrintSettings));
+    }
+
+    public Setting Clone(StoreId storeId)
+    {
+        var clone = Create(
+            InstitutionName,
+            Address,
+            PhoneNumber,
+            TaxPercent,
+            GoldProfitPercent,
+            JewelryProfitPercent,
+            MoltenGoldCommissionPercent,
+            GoldSafetyMarginPercent,
+            UsedGoldFinenessDeductionRate,
+            GramPerMesghal,
+            PriceUpdateInterval,
+            storeId
+        );
+        if (BarcodePrintSettings != null)
+        {
+            clone.UpdateBarcodePrintSettings(BarcodePrintSettings.Clone());
+        }
+        return clone;
     }
 }
