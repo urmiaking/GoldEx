@@ -1,14 +1,17 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.MeltingBatchAggregate;
 
 public readonly record struct MeltingBatchId(Guid Value);
-public class MeltingBatch : EntityBase<MeltingBatchId>
+public class MeltingBatch : EntityBase<MeltingBatchId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
     public int BatchNumber { get; private set; }
 
     public decimal TotalWeight { get; private set; }
@@ -25,13 +28,14 @@ public class MeltingBatch : EntityBase<MeltingBatchId>
     public MeltingBatchStatus CurrentStatus => ChangeLogs.Any() ? ChangeLogs.MaxBy(x => x.DateTime)!.Status : MeltingBatchStatus.Melting;
     public DateTime CurrentDateTime => ChangeLogs.Any() ? ChangeLogs.MaxBy(x => x.DateTime)!.DateTime : DateTime.MinValue;
 
-    private MeltingBatch(decimal totalWeight, GoldUnitType weightUnitType)
+    private MeltingBatch(decimal totalWeight, GoldUnitType weightUnitType, StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(totalWeight, 0);
 
         Id = new MeltingBatchId(Guid.CreateVersion7());
         TotalWeight = totalWeight;
         WeightUnitType = weightUnitType;
+        StoreId = storeId;
         _changeLogs = [MeltingBatchChangeLog.Create(MeltingBatchStatus.Melting)];
     }
 
@@ -39,9 +43,9 @@ public class MeltingBatch : EntityBase<MeltingBatchId>
     private MeltingBatch() { }
 #pragma warning restore CS8618
 
-    public static MeltingBatch Create(decimal totalWeight, GoldUnitType weightUnitType)
+    public static MeltingBatch Create(decimal totalWeight, GoldUnitType weightUnitType, StoreId storeId = default)
     {
-        return new MeltingBatch(totalWeight, weightUnitType);
+        return new MeltingBatch(totalWeight, weightUnitType, storeId);
     }
 
     private MeltingBatch AddChangeLog(MeltingBatchStatus status, string? description = null)

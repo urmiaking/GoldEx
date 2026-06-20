@@ -1,4 +1,4 @@
-﻿using DevExpress.AspNetCore;
+using DevExpress.AspNetCore;
 using DevExpress.AspNetCore.Reporting;
 using DevExpress.Security.Resources;
 using GoldEx.Client;
@@ -96,6 +96,8 @@ public static class WebHostingExtensions
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<StoreResolutionMiddleware>();
+            app.UseMiddleware<LicenseResolutionMiddleware>();
 
             app.Use(async (context, next) =>
             {
@@ -218,7 +220,7 @@ public static class WebHostingExtensions
             if (appLicense is null) 
             {
                 logger.LogWarning("No license found. registration required.");
-                productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
+                productLicense.UpdateLicense(Guid.Empty, LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
                 return;
             }
 
@@ -230,11 +232,12 @@ public static class WebHostingExtensions
                 if (response is null)
                 {
                     logger.LogError("Invalid license.");
-                    productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
+                    productLicense.UpdateLicense(Guid.Empty, LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
                     return;
                 }
 
                 productLicense.UpdateLicense(
+                    Guid.Empty,
                     response.Type.GetLicensePlan(),
                     response.RegisteredAt,
                     response.Expiry
@@ -245,7 +248,7 @@ public static class WebHostingExtensions
             catch (Exception ex)
             {
                 logger.LogError(ex, "License server unavailable.");
-                productLicense.UpdateLicense(LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
+                productLicense.UpdateLicense(Guid.Empty, LicensePlan.Unregistered, DateTime.MinValue, DateTime.MinValue);
             }
         }
     }

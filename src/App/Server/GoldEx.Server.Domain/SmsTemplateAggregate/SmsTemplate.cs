@@ -1,12 +1,16 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.SmsTemplateAggregate;
 
 public readonly record struct SmsTemplateId(Guid Value);
-public class SmsTemplate : EntityBase<SmsTemplateId>
+public class SmsTemplate : EntityBase<SmsTemplateId>, IStoreFiltered
 {
-    public static SmsTemplate Create(SmsTemplateSubject subject, string body, string parameters)
+    public StoreId StoreId { get; private set; }
+
+    public static SmsTemplate Create(SmsTemplateSubject subject, string body, string parameters, StoreId storeId = default)
     {
         return new SmsTemplate
         {
@@ -14,7 +18,8 @@ public class SmsTemplate : EntityBase<SmsTemplateId>
             Subject = subject,
             Body = body,
             Parameters = parameters,
-            IsActive = true
+            IsActive = true,
+            StoreId = storeId
         };
     }
 

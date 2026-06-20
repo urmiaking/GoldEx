@@ -1,4 +1,4 @@
-﻿using DevExpress.DataAccess.ObjectBinding;
+using DevExpress.DataAccess.ObjectBinding;
 using DevExpress.Drawing;
 using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.Services;
@@ -8,6 +8,7 @@ using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
@@ -18,7 +19,8 @@ internal class ReportFactory(
     IWebHostEnvironment hostingEnvironment,
     IIconService iconService,
     IInvoicePrintService invoicePrintService,
-    IHttpContextAccessor httpContextAccessor)
+    IHttpContextAccessor httpContextAccessor,
+    IStoreContext storeContext)
     : IReportProviderAsync, IReportProvider
 {
     public async Task<XtraReport> GetReportAsync(string id, ReportProviderContext context)
@@ -27,7 +29,21 @@ internal class ReportFactory(
         var reportName = parts[0];
         var queryString = parts.Length > 1 ? parts[1] : string.Empty;
 
-        var reportPath = Path.Combine(hostingEnvironment.ContentRootPath, "Reports", $"{reportName}.repx");
+        var reportPath = string.Empty;
+        if (!string.IsNullOrWhiteSpace(storeContext.StoreSlug))
+        {
+            var storeReportPath = Path.Combine(hostingEnvironment.ContentRootPath, "Reports", $"{reportName}_{storeContext.StoreSlug}.repx");
+            if (File.Exists(storeReportPath))
+            {
+                reportPath = storeReportPath;
+            }
+        }
+
+        if (string.IsNullOrEmpty(reportPath))
+        {
+            reportPath = Path.Combine(hostingEnvironment.ContentRootPath, "Reports", $"{reportName}.repx");
+        }
+
         if (!File.Exists(reportPath))
             throw new NotFoundException($"Report {reportName} not found");
 
@@ -59,7 +75,7 @@ internal class ReportFactory(
 
                 if (report.FindControl("logoBox", true) is XRPictureBox pictureBox)
                 {
-                    var iconBytes = await iconService.GetIconAsync(IconType.App, Guid.Empty);
+                    var iconBytes = await iconService.GetIconAsync(IconType.App, storeContext.StoreId ?? Guid.Empty);
 
                     if (iconBytes is { Length: > 0 })
                     {

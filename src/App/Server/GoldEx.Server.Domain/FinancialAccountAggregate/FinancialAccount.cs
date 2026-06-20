@@ -1,4 +1,6 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -10,7 +12,7 @@ namespace GoldEx.Server.Domain.FinancialAccountAggregate;
 
 public readonly record struct FinancialAccountId(Guid Value);
 
-public class FinancialAccount : EntityBase<FinancialAccountId>
+public class FinancialAccount : EntityBase<FinancialAccountId>, IStoreFiltered
 {
     /// <summary>
     /// Private constructor for EF Core.
@@ -33,7 +35,8 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         LedgerAccountId? ledgerAccountId,
         LocalBankAccount? localAccount,
         InternationalBankAccount? internationalAccount,
-        CashAccount? cashAccount)
+        CashAccount? cashAccount,
+        StoreId storeId)
     {
         Id = new FinancialAccountId(Guid.CreateVersion7());
         AccountType = accountType;
@@ -46,9 +49,11 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         LocalAccount = localAccount;
         InternationalAccount = internationalAccount;
         CashAccount = cashAccount;
+        StoreId = storeId;
     }
 
     // --- Core Properties ---
+    public StoreId StoreId { get; private set; }
     public FinancialAccountType AccountType { get; private set; }
     public string? HolderName { get; private set; }
     public string? BrokerName { get; private set; }
@@ -80,13 +85,14 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         CustomerId customerId,
         LocalBankAccount? localAccount = null,
         InternationalBankAccount? internationalAccount = null,
-        CashAccount? cashAccount = null)
+        CashAccount? cashAccount = null,
+        StoreId storeId = default)
     {
         ValidateAccountDetails(accountType, holderName, brokerName, localAccount, internationalAccount, cashAccount);
 
         return new FinancialAccount(
             accountType, priceUnitId, false, holderName, brokerName,
-            customerId, null, localAccount, internationalAccount, cashAccount);
+            customerId, null, localAccount, internationalAccount, cashAccount, storeId);
     }
 
     /// <summary>
@@ -100,13 +106,14 @@ public class FinancialAccount : EntityBase<FinancialAccountId>
         LedgerAccountId ledgerAccountId,
         LocalBankAccount? localAccount = null,
         InternationalBankAccount? internationalAccount = null,
-        CashAccount? cashAccount = null)
+        CashAccount? cashAccount = null,
+        StoreId storeId = default)
     {
         ValidateAccountDetails(accountType, holderName, brokerName, localAccount, internationalAccount, cashAccount);
 
         return new FinancialAccount(
             accountType, priceUnitId, true, holderName, brokerName,
-            null, ledgerAccountId, localAccount, internationalAccount, cashAccount);
+            null, ledgerAccountId, localAccount, internationalAccount, cashAccount, storeId);
     }
 
     /// <summary>

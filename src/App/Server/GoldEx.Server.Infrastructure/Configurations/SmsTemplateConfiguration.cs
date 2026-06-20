@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.SmsTemplateAggregate;
+using GoldEx.Server.Domain.SmsTemplateAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,7 +25,7 @@ internal class SmsTemplateConfiguration : IEntityTypeConfiguration<SmsTemplate>
         builder.Property(x => x.Subject)
             .IsRequired();
 
-        builder.HasIndex(x => x.Subject)
+        builder.HasIndex(x => new { x.StoreId, x.Subject })
             .IsUnique();
     }
 }

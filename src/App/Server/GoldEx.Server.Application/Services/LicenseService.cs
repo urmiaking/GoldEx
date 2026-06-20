@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -8,15 +8,18 @@ using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Application.Validators.Licenses;
 using GoldEx.Server.Domain.AppLicenseAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Services.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.Licenses;
+using GoldEx.Shared.Enums;
 using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using GoldEx.Server.Application.Extensions;
@@ -37,7 +40,10 @@ internal class LicenseService(
     IFileService fileService,
     IHttpContextAccessor httpContextAccessor,
     ILicenseStore licenseStore,
-    RegisterProductRequestValidator validator) : ILicenseService, IServerLicenseService
+    RegisterProductRequestValidator validator,
+    IStoreContext storeContext,
+    ILicenseCache licenseCache,
+    IConfiguration configuration) : ILicenseService, IServerLicenseService
 {
     public Task<GetLicenseResponse> GetLicenseAsync(CancellationToken cancellationToken = default)
     {
@@ -63,52 +69,88 @@ internal class LicenseService(
 
                 await settingRepository.UpdateAsync(settings, cancellationToken);
 
-                var newLicenseResponse = await licenseManager.RegisterAsync(nameof(GoldEx),
-                    GetDomainAddress(),
-                    ApiUrls.Licenses.CallBack(),
-                    [],
-                    [],
-                    request.InstitutionName,
-                    request.PhoneNumber,
-                    request.Token,
-                    cancellationToken);
+                var isTenant = storeContext.StoreId.HasValue && storeContext.StoreId.Value != Guid.Empty;
+                var licenseMode = configuration["License:Mode"] ?? "Hybrid";
 
-                string? errorMessage = null;
-
-                switch (newLicenseResponse.Result)
+                if (isTenant && licenseMode.Equals("Hybrid", StringComparison.OrdinalIgnoreCase))
                 {
-                    case NewLicenseResult.Issued:
-                        if (newLicenseResponse.LicenseId is null)
-                            throw new Exception("problem at license id issue");
-                        break;
-                    case NewLicenseResult.InvalidIpAddress:
-                    case NewLicenseResult.ProductNotFound:
-                    case NewLicenseResult.InvalidPingResponse:
-                    case NewLicenseResult.CallbackFailed:
-                    case NewLicenseResult.DomainAlreadyRegistered:
-                    case NewLicenseResult.IPAlreadyRegistered:
-                        errorMessage = "خطایی در فعالسازی محصول رخ داد";
-                        break; 
-                    case NewLicenseResult.InvalidMobileToken:
-                        errorMessage = "کد فعال سازی اشتباه است";
-                        break;
-                    case NewLicenseResult.InvalidMobile:
-                        errorMessage = "شماره همراه وارد شده معتبر نیست";
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    var localLicenseId = Guid.CreateVersion7();
+                    var tenantStoreId = new StoreId(storeContext.StoreId!.Value);
 
-                if (!string.IsNullOrEmpty(errorMessage))
+                    var localLicense = AppLicense.Create(
+                        localLicenseId,
+                        verificationKey: "LOCAL_BYPASS",
+                        storeId: tenantStoreId,
+                        plan: LicensePlan.Trial,
+                        registeredAt: DateTime.Now,
+                        expireDate: DateTime.Now.AddDays(14));
+
+                    await licenseStore.SetAsync(localLicense, cancellationToken);
+                    licenseCache.Remove(storeContext.StoreId.Value);
+                }
+                else
                 {
-                    logger.LogError(newLicenseResponse.Description);
-                    throw new ValidationException(new List<ValidationFailure> { new("", errorMessage) });
-                }
+                    var newLicenseResponse = await licenseManager.RegisterAsync(nameof(GoldEx),
+                        GetDomainAddress(),
+                        ApiUrls.Licenses.CallBack(),
+                        [],
+                        [],
+                        request.InstitutionName,
+                        request.PhoneNumber,
+                        request.Token,
+                        cancellationToken);
 
-                await licenseStore.SetAsync(AppLicense.Create(newLicenseResponse.LicenseId!.Value), cancellationToken);
+                    string? errorMessage = null;
+
+                    switch (newLicenseResponse.Result)
+                    {
+                        case NewLicenseResult.Issued:
+                            if (newLicenseResponse.LicenseId is null)
+                                throw new Exception("problem at license id issue");
+                            break;
+                        case NewLicenseResult.InvalidIpAddress:
+                        case NewLicenseResult.ProductNotFound:
+                        case NewLicenseResult.InvalidPingResponse:
+                        case NewLicenseResult.CallbackFailed:
+                        case NewLicenseResult.DomainAlreadyRegistered:
+                        case NewLicenseResult.IPAlreadyRegistered:
+                            errorMessage = "خطایی در فعالسازی محصول رخ داد";
+                            break; 
+                        case NewLicenseResult.InvalidMobileToken:
+                            errorMessage = "کد فعال سازی اشتباه است";
+                            break;
+                        case NewLicenseResult.InvalidMobile:
+                            errorMessage = "شماره همراه وارد شده معتبر نیست";
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        logger.LogError(newLicenseResponse.Description);
+                        throw new ValidationException(new List<ValidationFailure> { new("", errorMessage) });
+                    }
+
+                    var incomingLicense = await licenseManager.GetLicenseAsync(nameof(GoldEx), newLicenseResponse.LicenseId!.Value, cancellationToken);
+                    var plan = incomingLicense?.Type.GetLicensePlan() ?? LicensePlan.Trial;
+                    var registeredAt = incomingLicense?.RegisteredAt ?? DateTime.Now;
+                    var expiry = incomingLicense?.Expiry ?? DateTime.Now.AddDays(14);
+
+                    var appLicense = AppLicense.Create(
+                        newLicenseResponse.LicenseId!.Value,
+                        verificationKey: null,
+                        storeId: default,
+                        plan: plan,
+                        registeredAt: registeredAt,
+                        expireDate: expiry);
+
+                    await licenseStore.SetAsync(appLicense, cancellationToken);
+                    licenseCache.Remove(Guid.Empty);
+                }
 
                 if (request.IconContent is not null)
-                    await fileService.ReplaceLocalFileAsync(environment.GetAppIconPath(), request.IconContent, cancellationToken);
+                    await fileService.ReplaceLocalFileAsync(environment.GetAppIconPath(storeContext.StoreSlug), request.IconContent, cancellationToken);
 
                 await dbTransaction.CommitAsync(cancellationToken);
             }
@@ -139,7 +181,25 @@ internal class LicenseService(
                 var license = await licenseManager.GetLicenseAsync(nameof(GoldEx), request.LicenseId, cancellationToken) 
                               ?? throw new NotFoundException();
 
-                productLicense.UpdateLicense(license.Type.GetLicensePlan(), license.RegisteredAt, license.Expiry);
+                var isTenant = storeContext.StoreId.HasValue && storeContext.StoreId.Value != Guid.Empty;
+                var licenseMode = configuration["License:Mode"] ?? "Hybrid";
+                var targetStoreGuid = (isTenant && licenseMode.Equals("Hybrid", StringComparison.OrdinalIgnoreCase))
+                    ? storeContext.StoreId!.Value
+                    : Guid.Empty;
+
+                var appLicense = await licenseStore.GetAsync(cancellationToken);
+                if (appLicense is not null)
+                {
+                    appLicense.UpdateSubscription(license.Type.GetLicensePlan(), license.RegisteredAt, license.Expiry);
+                    if (appLicense.VerificationKey != request.VerificationKey.ToString())
+                    {
+                        appLicense.UpdateVerificationKey(request.VerificationKey.ToString());
+                    }
+                    await licenseStore.SetAsync(appLicense, cancellationToken);
+                }
+
+                productLicense.UpdateLicense(targetStoreGuid, license.Type.GetLicensePlan(), license.RegisteredAt, license.Expiry);
+                licenseCache.Remove(targetStoreGuid);
                 break;
             case LicenseActivationResult.InvalidIP:
             case LicenseActivationResult.NotFound:

@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
@@ -6,14 +7,16 @@ using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.InventoryStockAggregate;
 
 public readonly record struct InventoryStockId(Guid Value);
-public class InventoryStock : EntityBase<InventoryStockId>
+public class InventoryStock : EntityBase<InventoryStockId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
     public Product? Product { get; private set; }
     public ProductId? ProductId { get; private set; }
 
@@ -53,7 +56,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         decimal changeAmount,
         WarehouseActionType actionType,
         MeltingBatchId batchId,
-        DateTime? postingDate = null)
+        DateTime? postingDate = null,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
@@ -64,7 +68,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = actionType,
             MeltingBatchId = batchId,
-            PostingDate = postingDate ?? DateTime.Now
+            PostingDate = postingDate ?? DateTime.Now,
+            StoreId = storeId
         };
     }
 
@@ -75,7 +80,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         InvoiceId? invoiceId = null,
         DateTime? postingDate = null,
         InventoryEntryId? inventoryEntryId = null,
-        InventoryExitId? inventoryExitId = null)
+        InventoryExitId? inventoryExitId = null,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
@@ -88,7 +94,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             InvoiceId = invoiceId,
             PostingDate = postingDate ?? DateTime.Now,
             InventoryEntryId = inventoryEntryId,
-            InventoryExitId = inventoryExitId
+            InventoryExitId = inventoryExitId,
+            StoreId = storeId
         };
     }
 
@@ -99,7 +106,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         InvoiceId? invoiceId = null,
         DateTime? postingDate = null,
         InventoryEntryId? inventoryEntryId = null,
-        InventoryExitId? inventoryExitId = null)
+        InventoryExitId? inventoryExitId = null,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
@@ -112,7 +120,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             InvoiceId = invoiceId,
             PostingDate = postingDate ?? DateTime.Now,
             InventoryEntryId = inventoryEntryId,
-            InventoryExitId = inventoryExitId
+            InventoryExitId = inventoryExitId,
+            StoreId = storeId
         };
     }
 
@@ -123,7 +132,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         InvoiceId? invoiceId = null,
         DateTime? postingDate = null,
         InventoryEntryId? inventoryEntryId = null,
-        InventoryExitId? inventoryExitId = null)
+        InventoryExitId? inventoryExitId = null,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
 
@@ -136,7 +146,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             InvoiceId = invoiceId,
             PostingDate = postingDate ?? DateTime.Now,
             InventoryEntryId = inventoryEntryId,
-            InventoryExitId = inventoryExitId
+            InventoryExitId = inventoryExitId,
+            StoreId = storeId
         };
     }
 
@@ -148,7 +159,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
         WarehouseActionType actionType,
         InvoiceId? invoiceId = null,
         DateTime? postingDate = null,
-        InventoryEntryId? inventoryEntryId = null)
+        InventoryEntryId? inventoryEntryId = null,
+        StoreId storeId = default)
     {
         ArgumentNullException.ThrowIfNull(moltenGoldDetail);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
@@ -163,7 +175,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ActionType = actionType,
             InvoiceId = invoiceId,
             PostingDate = postingDate ?? DateTime.Now,
-            InventoryEntryId = inventoryEntryId
+            InventoryEntryId = inventoryEntryId,
+            StoreId = storeId
         };
     }
 
@@ -171,6 +184,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
         ProductId productId,
         decimal changeAmount,
         InventoryExitId inventoryExitId,
+        StoreId storeId,
         DateTime? postingDate = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
@@ -182,7 +196,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = WarehouseActionType.Out,
             InventoryExitId = inventoryExitId,
-            PostingDate = postingDate ?? DateTime.Now
+            PostingDate = postingDate ?? DateTime.Now,
+            StoreId = storeId
         };
     }
 
@@ -190,6 +205,7 @@ public class InventoryStock : EntityBase<InventoryStockId>
         CoinInstanceId coinInstanceId,
         int changeAmount,
         InventoryExitId inventoryExitId,
+        StoreId storeId,
         DateTime? postingDate = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(changeAmount, 0);
@@ -201,7 +217,8 @@ public class InventoryStock : EntityBase<InventoryStockId>
             ChangeAmount = changeAmount,
             ActionType = WarehouseActionType.Out,
             InventoryExitId = inventoryExitId,
-            PostingDate = postingDate ?? DateTime.Now
+            PostingDate = postingDate ?? DateTime.Now,
+            StoreId = storeId
         };
     }
 

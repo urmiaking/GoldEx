@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,7 +32,7 @@ internal class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(x => x.CreditLimit)
             .HasPrecision(36, 10);
 
-        builder.HasIndex(x => new { x.NationalId, x.CustomerType })
+        builder.HasIndex(x => new { x.StoreId, x.NationalId, x.CustomerType })
             .IsUnique();
 
         builder.HasIndex(x => x.FullName);

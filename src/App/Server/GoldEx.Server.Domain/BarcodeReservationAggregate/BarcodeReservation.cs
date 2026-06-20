@@ -1,13 +1,16 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.BarcodeReservationAggregate;
 
 public readonly record struct BarcodeReservationId(Guid Value);
 
-public sealed class BarcodeReservation : EntityBase<BarcodeReservationId>
+public sealed class BarcodeReservation : EntityBase<BarcodeReservationId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
     public BarcodeType BarcodeType { get; private set; }
     public string? Prefix { get; private set; }
     public string Barcode { get; private set; }
@@ -25,7 +28,8 @@ public sealed class BarcodeReservation : EntityBase<BarcodeReservationId>
         string? prefix,
         string barcode,
         TimeSpan ttl,
-        InvoiceId? invoiceId = null)
+        InvoiceId? invoiceId = null,
+        StoreId storeId = default)
     {
         Id = new BarcodeReservationId(Guid.CreateVersion7());
         BarcodeType = barcodeType;
@@ -34,13 +38,14 @@ public sealed class BarcodeReservation : EntityBase<BarcodeReservationId>
         Status = BarcodeReservationStatus.Reserved;
         ExpiresAt = DateTime.Now.Add(ttl);
         InvoiceId = invoiceId;
+        StoreId = storeId;
     }
 
-    public static BarcodeReservation Create(BarcodeType barcodeType, string? prefix, string barcode, TimeSpan ttl, InvoiceId? invoiceId = null)
+    public static BarcodeReservation Create(BarcodeType barcodeType, string? prefix, string barcode, TimeSpan ttl, InvoiceId? invoiceId = null, StoreId storeId = default)
     {
         ValidateBarcode(barcode);
 
-        return new BarcodeReservation(barcodeType, prefix, barcode, ttl, invoiceId);
+        return new BarcodeReservation(barcodeType, prefix, barcode, ttl, invoiceId, storeId);
     }
 
     public void Commit(InvoiceId? invoiceId)

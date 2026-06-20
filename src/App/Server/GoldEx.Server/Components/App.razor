@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -24,6 +24,28 @@
 </head>
 
 <body>
+
+    <!-- Loading indicator -->
+    @* @if (RenderModeForPage is InteractiveAutoRenderMode)
+    {
+        <div id="loading-indicator" class="loading-container">
+            <div class="loading-card">
+                <img src="icon-512.png" alt="GoldEx Logo" class="loading-logo" />
+                <h1 class="loading-title">
+                    سامانه جامع حسابداری طلا و جواهر
+                    <span class="brand-text" dir="ltr">GoldEx</span>
+                </h1>
+                <div class="loading-progress-wrapper">
+                    <div class="loading-progress-track">
+                        <div class="loading-progress-bar"></div>
+                    </div>
+                </div>
+                <p class="loading-text"></p>
+            </div>
+        </div>
+    } *@
+
+
     @if (Env.IsDevelopment())
     {
         <Routes @rendermode="RenderModeForPage" />
@@ -48,7 +70,7 @@
     <script src=@Assets["_framework/blazor.web.js"] autostart="false"></script>
     <script>
         Blazor.start({
-            webAssembly: {}
+        webAssembly: {}
         });
     </script>
     <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>

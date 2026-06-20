@@ -1,4 +1,5 @@
 using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -43,10 +44,10 @@ internal sealed class CheckPaymentConfiguration : IEntityTypeConfiguration<Check
         builder.HasIndex(x => x.InvoicePaymentId)
             .IsUnique();
 
-        builder.HasIndex(x => x.Number)
+        builder.HasIndex(x => new { x.StoreId, x.Number })
             .IsUnique();
 
-        builder.HasIndex(x => x.SayadiCode)
+        builder.HasIndex(x => new { x.StoreId, x.SayadiCode })
             .IsUnique();
     }
 

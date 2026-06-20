@@ -1,0 +1,127 @@
+@using GoldEx.Shared.DTOs.Stores
+@inherits GoldExComponentBase
+
+@attribute [Route(ClientRoutes.Settings.Stores)]
+@attribute [Authorize(Roles = BuiltinRoles.Administrators)]
+
+<PageTitle>مدیریت فروشگاه‌ها</PageTitle>
+
+<div class="d-flex align-center justify-space-between flex-wrap gap-4">
+    <MudText Typo="Typo.h6" GutterBottom="true">مدیریت فروشگاه‌ها</MudText>
+    
+    <div class="d-flex align-center gap-4 flex-wrap" style="flex-grow: 1; justify-content: flex-end;">
+        <MudTextField T="string" Clearable="true" Immediate="true"
+                      ValueChanged="@(s => OnSearch(s))" Placeholder="جستجو ..."
+                      Adornment="Adornment.Start" Variant="Variant.Outlined" DebounceInterval="500"
+                      Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
+                      IconSize="Size.Small" Class="m-0" Style="max-width: 250px;" />
+
+        <MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Size="Size.Small" OnClick="_ => OnCreateStore()">افزودن فروشگاه جدید</MudButton>
+    </div>
+</div>
+
+<MudDivider Class="my-2" />
+
+<MudTable T="StoreVm" @ref="_table" Hover="true" FixedHeader="true" Dense="true"
+          ServerData="LoadStoresAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Xs"
+          Elevation="24" RowsPerPage="10" Class="p-2 mt-4" ContainerClass="responsive-table-login">
+    <HeaderContent>
+        <MudTh>لوگو</MudTh>
+        <MudTh>نام فروشگاه</MudTh>
+        <MudTh>شناسه (Slug)</MudTh>
+        <MudTh>تصویر پس‌زمینه</MudTh>
+        <MudTh>وضعیت</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="لوگو">
+            <div class="d-flex align-center">
+                <MudAvatar Size="Size.Medium" Color="Color.Primary" Variant="Variant.Outlined" Class="me-2">
+                    @if (!string.IsNullOrWhiteSpace(context.LogoUrl))
+                    {
+                        <img src="@context.LogoUrl" style="width: 100%; height: 100%; object-fit: cover;" alt="@context.Name" />
+                    }
+                    else
+                    {
+                        <span>@context.Name.Substring(0, 1)</span>
+                    }
+                </MudAvatar>
+            </div>
+        </MudTd>
+        <MudTd DataLabel="نام فروشگاه">
+            <MudText Typo="Typo.body2" Style="font-weight: bold;">@context.Name</MudText>
+        </MudTd>
+        <MudTd DataLabel="شناسه (Slug)">
+            <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">@context.Slug</MudChip>
+        </MudTd>
+        <MudTd DataLabel="تصویر پس‌زمینه">
+            @if (!string.IsNullOrWhiteSpace(context.BackgroundImageUrl))
+            {
+                <div style="width: 80px; height: 45px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <img src="@context.BackgroundImageUrl" style="width: 100%; height: 100%; object-fit: cover;" alt="Background" />
+                </div>
+            }
+            else
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary">ندارد</MudText>
+            }
+        </MudTd>
+        <MudTd DataLabel="وضعیت">
+            @if (context.IsActive)
+            {
+                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">فعال</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Filled">غیرفعال</MudChip>
+            }
+        </MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="تخصیص کاربران">
+                    <MudIconButton Icon="@Icons.Material.Filled.GroupAdd" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Info" OnClick="_ => OnAssignUsers(context)" />
+                </MudTooltip>
+                <MudTooltip Text="ویرایش">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEditStore(context)" />
+                </MudTooltip>
+                <MudTooltip Text="حذف">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Error" OnClick="_ => OnRemoveStore(context)" />
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ فروشگاهی یافت نشد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگیری</MudText>
+    </LoadingContent>
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Selected="@(_table.CurrentPage + 1)"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           Class="justify-center"
+                           BoundaryCount="1"
+                           MiddleCount="3"/>
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>

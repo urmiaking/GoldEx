@@ -1,18 +1,23 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
+using GoldEx.Server.Domain.StoreAggregate;
 
 namespace GoldEx.Server.Domain.SmsLogAggregate;
 
 public readonly record struct SmsLogId(Guid Value);
-public class SmsLog : EntityBase<SmsLogId>
+public class SmsLog : EntityBase<SmsLogId>, IStoreFiltered
 {
-    public static SmsLog Create(string message, string receiver, bool delivered)
+    public StoreId StoreId { get; private set; }
+
+    public static SmsLog Create(string message, string receiver, bool delivered, StoreId storeId = default)
     {
         return new SmsLog
         {
             Id = new SmsLogId(Guid.CreateVersion7()),
             Message = message,
             Receiver = receiver,
-            Delivered = delivered
+            Delivered = delivered,
+            StoreId = storeId
         };
     }
 

@@ -105,6 +105,14 @@ public partial class SimpleCalculator
         await base.OnInitializedAsync();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) 
+            await Calculate();
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     private async void OnPricesUpdated()
     {
         if (IsDisposed) return;
@@ -202,7 +210,7 @@ public partial class SimpleCalculator
 
     private async Task LoadSettingsAsync()
     {
-        if (!IsAuthenticated) 
+        if (!IsAuthenticated)
             return;
 
         await SendRequestAsync<ISettingService, GetSettingResponse?>(
@@ -223,11 +231,11 @@ public partial class SimpleCalculator
 
         await SendRequestAsync<IPriceStateService, GetPriceResponse?>(
             action: (s, ct) => s.GetAsync(_model.GoldUnitType, _model.PriceUnit?.Id, _applySafetyMargin, ct),
-            afterSend: response =>
+            afterSend: async response =>
             {
                 decimal.TryParse(response?.Value, out var gramPriceValue);
-
                 _model.GramPrice = gramPriceValue;
+                await Calculate();
             });
     }
 
@@ -274,8 +282,6 @@ public partial class SimpleCalculator
                     _finalPrice = CalculatorHelper.Product.CalculateFinalPrice(_rawPrice.Value, _wage.Value, _profit.Value, _tax.Value, _model.ExtraCosts, _model.ProductType)
                                   + (_stoneCost ?? 0m);
                 }
-
-
             }
             else
             {

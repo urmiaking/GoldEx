@@ -1,17 +1,21 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CheckPaymentAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.InvoicePaymentAggregate;
 
 public readonly record struct InvoicePaymentId(Guid Value);
-public class InvoicePayment : EntityBase<InvoicePaymentId>
+public class InvoicePayment : EntityBase<InvoicePaymentId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
+
     public static InvoicePayment Create(
         DateTime paymentDate,
         PaymentType paymentType,
@@ -27,7 +31,8 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
         InvoicePaymentId? sourcePaymentId,
         InvoiceId? targetInvoiceId,
         string? referenceNumber = null,
-        string? note = null)
+        string? note = null,
+        StoreId storeId = default)
     {
         var finalAmount = goldFineness.HasValue ? amount * goldFineness.Value / 750m : amount;
 
@@ -49,7 +54,8 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>
             PaymentVoucherId = paymentVoucherId,
             SourcePaymentId = sourcePaymentId,
             ReferenceNumber = referenceNumber,
-            Note = note
+            Note = note,
+            StoreId = storeId
         };
     }
 

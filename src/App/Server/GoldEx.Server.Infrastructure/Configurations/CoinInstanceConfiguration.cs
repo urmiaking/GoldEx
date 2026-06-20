@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.CoinInstanceAggregate;
+using GoldEx.Server.Domain.CoinInstanceAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,7 +27,7 @@ internal class CoinInstanceConfiguration : IEntityTypeConfiguration<CoinInstance
             .HasPrecision(9, 6)
             .IsRequired();
 
-        builder.HasIndex(x => x.Barcode)
+        builder.HasIndex(x => new { x.StoreId, x.Barcode })
             .IsUnique();
 
         builder.HasOne(x => x.Coin)

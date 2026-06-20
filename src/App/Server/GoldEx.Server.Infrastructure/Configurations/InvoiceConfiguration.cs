@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,7 +21,7 @@ internal class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.ExchangeRate)
             .HasPrecision(38, 18);
 
-        builder.HasIndex(x => new { x.InvoiceNumber, x.InvoiceType })
+        builder.HasIndex(x => new { x.StoreId, x.InvoiceNumber, x.InvoiceType })
             .IsUnique();
 
         builder.HasOne(x => x.Customer)

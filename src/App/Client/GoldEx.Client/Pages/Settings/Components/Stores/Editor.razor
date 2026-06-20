@@ -1,0 +1,137 @@
+@inherits GoldExComponentBase
+
+<EditForm Model="Model" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+
+    <MudDialog Class="custom-editor-dialog">
+        <DialogContent>
+            <style>
+                .preview-box {
+                    width: 100%;
+                    border-radius: 8px;
+                    border: 1px dashed rgba(255, 255, 255, 0.2);
+                    background: rgba(255, 255, 255, 0.03);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                }
+                .logo-preview {
+                    height: 80px;
+                    width: 80px;
+                    border-radius: 12px;
+                }
+                .background-preview {
+                    height: 100px;
+                    width: 100%;
+                }
+            </style>
+
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Model.Name"
+                                  For="@(() => Model.Name)"
+                                  Label="نام فروشگاه"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Model.Slug"
+                                  For="@(() => Model.Slug)"
+                                  Label="شناسه انگلیسی (Slug)"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined"
+                                  HelperText="فقط حروف کوچک، اعداد و خط تیره (مثال: goldex-main)" />
+                </MudItem>
+
+                <!-- Logo Section -->
+                <MudItem xs="12" md="6" Class="d-flex flex-column gap-2">
+                    <MudText Typo="Typo.subtitle2">لوگو فروشگاه</MudText>
+                    <div class="preview-box pa-2" style="height: 100px;">
+                        @if (!string.IsNullOrWhiteSpace(_logoPreviewUrl))
+                        {
+                            <img src="@_logoPreviewUrl" class="logo-preview" style="object-fit: cover;" alt="Logo Preview" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Storefront" Size="Size.Large" Color="Color.Default" />
+                        }
+                    </div>
+                    <MudFileUpload T="IBrowserFile" Accept=".png,.jpg,.jpeg" FilesChanged="OnLogoFileChanged">
+                        <CustomContent Context="ctx">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       FullWidth="true"
+                                       OnClick="ctx.OpenFilePickerAsync"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                                       Size="Size.Small">
+                                انتخاب لوگو
+                            </MudButton>
+                        </CustomContent>
+                    </MudFileUpload>
+                </MudItem>
+
+                <!-- Background Image Section -->
+                <MudItem xs="12" md="6" Class="d-flex flex-column gap-2">
+                    <MudText Typo="Typo.subtitle2">تصویر پس‌زمینه کارت فروشگاه</MudText>
+                    <div class="preview-box pa-2" style="height: 100px;">
+                        @if (!string.IsNullOrWhiteSpace(_backgroundPreviewUrl))
+                        {
+                            <img src="@_backgroundPreviewUrl" class="background-preview" style="object-fit: cover; border-radius: 6px;" alt="Background Preview" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" />
+                        }
+                    </div>
+                    <MudFileUpload T="IBrowserFile" Accept=".png,.jpg,.jpeg" FilesChanged="OnBackgroundFileChanged">
+                        <CustomContent Context="ctx">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       FullWidth="true"
+                                       OnClick="ctx.OpenFilePickerAsync"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                                       Size="Size.Small">
+                                انتخاب تصویر پس‌زمینه
+                            </MudButton>
+                        </CustomContent>
+                    </MudFileUpload>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="Model.IsActive"
+                               Color="Color.Success"
+                               Label="فروشگاه فعال باشد" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                        OnClick="Close"
+                        StartIcon="@Icons.Material.Filled.Close"
+                        Variant="Variant.Filled"
+                        Size="Size.Small">انصراف</MudButton>
+
+            <MudButton Class="m-2"
+                        Color="Color.Primary"
+                        Disabled="@IsBusy"
+                        StartIcon="@Icons.Material.Filled.Save"
+                        ButtonType="ButtonType.Submit"
+                        Variant="Variant.Filled"
+                        Size="Size.Small">
+                @if (IsBusy)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">در حال ذخیره</MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>
