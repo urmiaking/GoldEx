@@ -1,4 +1,4 @@
-﻿@using GoldEx.Sdk.Common
+@using GoldEx.Sdk.Common
 @using GoldEx.Shared.Routings
 
 @inherits GoldExComponentBase
@@ -23,7 +23,7 @@
                        OnClick="@(() => _drawerOpen = false)" />
     </MudToolBar>
     <MudDivider />
-    
+
     <MudContainer Class="pb-20">
         <MudList T="string?" Dense SelectionMode="SelectionMode.ToggleSelection">
             <MudDivider />
@@ -64,7 +64,7 @@
         </MudList>
     </MudContainer>
 </MudDrawer>
-               
+
 @code
 {
     private bool _drawerOpen;

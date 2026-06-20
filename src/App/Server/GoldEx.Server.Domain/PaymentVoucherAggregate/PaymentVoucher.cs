@@ -1,15 +1,19 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.TransactionAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.PaymentVoucherAggregate;
 
 public readonly record struct PaymentVoucherId(Guid Value);
-public class PaymentVoucher : EntityBase<PaymentVoucherId>
+public class PaymentVoucher : EntityBase<PaymentVoucherId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
+
     public static PaymentVoucher Create(
         decimal amount,
         long voucherNumber,
@@ -20,7 +24,8 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
         CustomerId customerId,
         FinancialAccountId sourceFinancialAccountId,
         FinancialAccountId? destinationFinancialAccountId,
-        PriceUnitId voucherPriceUnitId)
+        PriceUnitId voucherPriceUnitId,
+        StoreId storeId = default)
     {
         return new PaymentVoucher
         {
@@ -34,7 +39,8 @@ public class PaymentVoucher : EntityBase<PaymentVoucherId>
             VoucherType = voucherType,
             Amount = amount,
             ExchangeRate = exchangeRate,
-            VoucherPriceUnitId = voucherPriceUnitId
+            VoucherPriceUnitId = voucherPriceUnitId,
+            StoreId = storeId
         };
     }
 

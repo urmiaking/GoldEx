@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.LedgerAccountAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,7 +19,7 @@ internal class LedgerAccountConfiguration : IEntityTypeConfiguration<LedgerAccou
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.HasIndex(x => x.Title)
+        builder.HasIndex(x => new { x.StoreId, x.Title })
             .IsUnique();
 
         builder.HasOne(x => x.Customer)
@@ -36,7 +37,7 @@ internal class LedgerAccountConfiguration : IEntityTypeConfiguration<LedgerAccou
             .HasForeignKey(x => x.PriceUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(x => new { x.CustomerId, x.ParentAccountId, x.PriceUnitId })
+        builder.HasIndex(x => new { x.StoreId, x.CustomerId, x.ParentAccountId, x.PriceUnitId })
             .IsUnique();
     }
 }

@@ -394,4 +394,18 @@ public static class ApiRoutes
         public const string UpdateAccount = "user/{id}";
         public const string DeleteAccount = "user/{id}";
     }
+
+    public class Stores
+    {
+        public const string Base = "/api/stores";
+        public const string Switch = "switch/{storeId}";
+        public const string GetUserStores = "my-stores";
+
+        public const string GetList = "admin";
+        public const string Create = "admin";
+        public const string Update = "admin/{id}";
+        public const string Delete = "admin/{id}";
+        public const string GetStoreUsers = "admin/{storeId:guid}/users";
+        public const string AssignStoreUsers = "admin/{storeId:guid}/users";
+    }
 }

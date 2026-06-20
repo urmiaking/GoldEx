@@ -1,13 +1,17 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 
 namespace GoldEx.Server.Domain.CoinAggregate;
 
 public readonly record struct CoinId(Guid Value);
-public class Coin : EntityBase<CoinId>
+public class Coin : EntityBase<CoinId>, IStoreFiltered
 {
-    public static Coin Create(string title, decimal weight, decimal fineness, int startMintYear, int? endMintYear, LedgerAccountId ledgerAccountId, PriceId? priceId = null)
+    public StoreId StoreId { get; private set; }
+
+    public static Coin Create(string title, decimal weight, decimal fineness, int startMintYear, int? endMintYear, LedgerAccountId ledgerAccountId, PriceId? priceId = null, StoreId storeId = default)
     {
         return new Coin
         {
@@ -19,7 +23,8 @@ public class Coin : EntityBase<CoinId>
             EndMintYear = endMintYear,
             LedgerAccountId = ledgerAccountId,
             PriceId = priceId,
-            IsActive = true
+            IsActive = true,
+            StoreId = storeId
         };
     }
 
