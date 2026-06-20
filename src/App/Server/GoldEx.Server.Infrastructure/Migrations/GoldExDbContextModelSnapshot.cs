@@ -17,7 +17,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -253,6 +253,18 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("ExpireDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Plan")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("VerificationKey")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -277,6 +289,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<DateTime>("InquiryDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -314,14 +329,17 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasIndex("Barcode")
-                        .IsUnique();
+                    b.HasKey("Id");
 
                     b.HasIndex("InvoiceId");
 
                     b.HasIndex("Prefix");
+
+                    b.HasIndex("StoreId", "Barcode")
+                        .IsUnique();
 
                     b.HasIndex("Prefix", "Status", "ExpiresAt");
 
@@ -426,6 +444,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("InvoicePaymentId")
@@ -435,11 +456,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasIndex("IssuerId");
 
-                    b.HasIndex("Number")
+                    b.HasIndex("StoreId", "Number")
                         .IsUnique()
                         .HasFilter("[Number] IS NOT NULL");
 
-                    b.HasIndex("SayadiCode")
+                    b.HasIndex("StoreId", "SayadiCode")
                         .IsUnique()
                         .HasFilter("[SayadiCode] IS NOT NULL");
 
@@ -472,6 +493,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<int>("StartMintYear")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -520,16 +544,19 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<int>("PackageType")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Weight")
                         .HasPrecision(36, 10)
                         .HasColumnType("decimal(36,10)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Barcode")
-                        .IsUnique();
-
                     b.HasIndex("CoinId");
+
+                    b.HasIndex("StoreId", "Barcode")
+                        .IsUnique();
 
                     b.ToTable("CoinInstances", (string)null);
                 });
@@ -570,13 +597,16 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("nvarchar(25)");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreditLimitPriceUnitId");
 
                     b.HasIndex("FullName");
 
-                    b.HasIndex("NationalId", "CustomerType")
+                    b.HasIndex("StoreId", "NationalId", "CustomerType")
                         .IsUnique();
 
                     b.ToTable("Customers", (string)null);
@@ -613,6 +643,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("PriceUnitId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -631,6 +664,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -654,6 +690,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<int>("ExitReason")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -700,6 +739,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ReverseInventoryStockId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StoreId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -764,6 +806,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("PriceUnitId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("TradeScale")
                         .HasColumnType("int");
 
@@ -784,7 +829,7 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasIndex("UnpaidPriceUnitId");
 
-                    b.HasIndex("InvoiceNumber", "InvoiceType")
+                    b.HasIndex("StoreId", "InvoiceNumber", "InvoiceType")
                         .IsUnique();
 
                     b.ToTable("Invoices", (string)null);
@@ -849,6 +894,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("SourcePaymentId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("TargetInvoiceId")
                         .HasColumnType("uniqueidentifier");
 
@@ -896,6 +944,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("PriceUnitId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -903,14 +954,16 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId");
+
                     b.HasIndex("ParentAccountId");
 
                     b.HasIndex("PriceUnitId");
 
-                    b.HasIndex("Title")
+                    b.HasIndex("StoreId", "Title")
                         .IsUnique();
 
-                    b.HasIndex("CustomerId", "ParentAccountId", "PriceUnitId")
+                    b.HasIndex("StoreId", "CustomerId", "ParentAccountId", "PriceUnitId")
                         .IsUnique()
                         .HasFilter("[CustomerId] IS NOT NULL AND [ParentAccountId] IS NOT NULL AND [PriceUnitId] IS NOT NULL");
 
@@ -949,6 +1002,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.ToTable("AppLicensePayments", (string)null);
@@ -970,6 +1026,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("TotalWeight")
                         .HasPrecision(36, 10)
@@ -1009,6 +1068,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -1055,6 +1117,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("SourceFinancialAccountId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<long>("VoucherNumber")
                         .HasColumnType("bigint");
 
@@ -1072,10 +1137,10 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasIndex("SourceFinancialAccountId");
 
-                    b.HasIndex("VoucherNumber")
-                        .IsUnique();
-
                     b.HasIndex("VoucherPriceUnitId");
+
+                    b.HasIndex("StoreId", "VoucherNumber")
+                        .IsUnique();
 
                     b.ToTable("PaymentVouchers", (string)null);
                 });
@@ -1207,6 +1272,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid?>("StonePriceUnitId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Wage")
                         .HasPrecision(36, 10)
                         .HasColumnType("decimal(36,10)");
@@ -1223,9 +1291,6 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Barcode")
-                        .IsUnique();
-
                     b.HasIndex("Name");
 
                     b.HasIndex("ProductCategoryId");
@@ -1233,6 +1298,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.HasIndex("StonePriceUnitId");
 
                     b.HasIndex("WagePriceUnitId");
+
+                    b.HasIndex("StoreId", "Barcode")
+                        .IsUnique();
 
                     b.ToTable("Products", (string)null);
                 });
@@ -1250,6 +1318,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasMaxLength(2)
                         .HasColumnType("nvarchar(2)");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1257,10 +1328,10 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PrefixCode")
+                    b.HasIndex("StoreId", "PrefixCode")
                         .IsUnique();
 
-                    b.HasIndex("Title")
+                    b.HasIndex("StoreId", "Title")
                         .IsUnique();
 
                     b.ToTable("ProductCategories", (string)null);
@@ -1312,6 +1383,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<TimeSpan>("PriceUpdateInterval")
                         .HasColumnType("time");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("TaxPercent")
                         .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
@@ -1346,6 +1420,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Receiver");
@@ -1374,12 +1451,15 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Subject")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Subject")
+                    b.HasIndex("StoreId", "Subject")
                         .IsUnique();
 
                     b.ToTable("SmsTemplates", (string)null);
@@ -1426,6 +1506,62 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("StoneTypes", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.StoreAggregate.Store", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BackgroundImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Stores", (string)null);
+                });
+
+            modelBuilder.Entity("GoldEx.Server.Domain.StoreAggregate.StoreUser", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.HasKey("UserId", "StoreId");
+
+                    b.ToTable("StoreUsers", (string)null);
                 });
 
             modelBuilder.Entity("GoldEx.Server.Domain.TransactionAggregate.Transaction", b =>
@@ -1487,6 +1623,9 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ReverseTransactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StoreId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("TransactionType")

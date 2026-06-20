@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.Routings;
+namespace GoldEx.Shared.Routings;
 
 public static class ClientRoutes
 {
@@ -56,6 +56,7 @@ public static class ClientRoutes
     {
         public const string UnderDevelopment = "/under-development";
         public const string NotFound = "/not-found";
+        public const string NoStore = "/NoStore";
     }
 
     public static class Health
@@ -95,6 +96,7 @@ public static class ClientRoutes
         public const string SmsLogs = $"{SettingsPrefix}/sms-logs";
         public const string BackupRestore = $"{SettingsPrefix}/backup-restore";
         public const string LicenseRequests = $"{SettingsPrefix}/license-requests";
+        public const string Stores = $"{SettingsPrefix}/stores";
     }
 
     public static class Logs

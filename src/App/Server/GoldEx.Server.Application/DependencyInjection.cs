@@ -6,7 +6,9 @@ using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Application.BackgroundServices;
 using GoldEx.Server.Application.Factories;
 using GoldEx.Server.Application.Reporting;
+using GoldEx.Server.Application.Services;
 using GoldEx.Server.Infrastructure;
+using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +24,9 @@ public static class DependencyInjection
             services.AddScoped<ReportStorageWebExtension, ReportStorageExtension>();
             services.AddScoped<ITransactionContext, TransactionContext<GoldExDbContext>>();
 
+            services.AddScoped<StoreContext>();
+            services.AddScoped<IStoreContext>(sp => sp.GetRequiredService<StoreContext>());
+
             services.DiscoverServices();
             return services;
         }
@@ -29,9 +34,10 @@ public static class DependencyInjection
         public IServiceCollection AddHostedServices()
         {
             services.AddHostedService<PriceUpdaterBackgroundService>();
-            services.AddHostedService<LicenseUpdaterBackgroundService>();
             services.AddHostedService<NotificationBackgroundService>();
-            services.AddHostedService<BlogDiskSyncManager>();
+            //services.AddHostedService<BlogDiskSyncManager>();
+
+            services.AddHostedService<LicenseUpdaterBackgroundService>();  
 
             return services;
         }

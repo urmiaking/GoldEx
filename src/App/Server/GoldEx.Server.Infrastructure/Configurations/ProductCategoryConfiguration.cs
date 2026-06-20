@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,10 +23,10 @@ internal class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCa
             .HasMaxLength(2)
             .IsRequired();
 
-        builder.HasIndex(x => x.Title)
+        builder.HasIndex(x => new { x.StoreId, x.Title })
             .IsUnique();
 
-        builder.HasIndex(x => x.PrefixCode)
+        builder.HasIndex(x => new { x.StoreId, x.PrefixCode })
             .IsUnique();
     }
 }

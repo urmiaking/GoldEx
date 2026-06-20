@@ -1,4 +1,4 @@
-﻿/*@import '../fonts/vazir/Vazirmatn-font-face.css';*/
+/*@import '../fonts/vazir/Vazirmatn-font-face.css';*/
 @import '../fonts/IRANSANS/IRANSANS-font-face.css';
 @import '../fonts/Google/google-fonts.css';
 
@@ -97,153 +97,234 @@ h1:focus {
     text-align: justify;
 }
 
-/* Fullscreen overlay */
+/* Modern Fullscreen Loading Container */
 .loading-container {
     position: fixed;
     inset: 0;
-    background-image: url('/assets/img/bg.svg');
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
-    direction: rtl; /* Persian */
-    font-family: "IRANSans", "Vazirmatn", "Helvetica", "Arial", sans-serif;
-}
-
-/* Center card */
-.loading-card {
-    background: #FAFAF8; /* Surface color */
-    border-radius: 24px; /* Matches theme */
-    padding: 2rem 3rem;
-    text-align: center;
-    position: relative; /* Needed for pseudo-element border */
-    max-width: 480px;
-    width: 90%;
-    box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12); /* Deeper multi-layer shadow */
-    overflow: hidden; /* Keep border effect aligned */
-}
-
-    .loading-card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        padding: 3px; /* Border thickness */
-        border-radius: 24px;
-        background: linear-gradient( 270deg, #FFD700, #DAA520, #B8860B, #FFD700 );
-        background-size: 400% 400%; /* Make it big so movement is visible */
-        animation: gradient-border 6s linear infinite;
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        pointer-events: none;
-    }
-
-@keyframes gradient-border {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-/* Logo */
-.loading-logo {
-    width: 140px;
-    height: 140px;
-    margin-bottom: 1rem;
-}
-
-/* Title */
-.loading-title {
-    font-size: 1.6rem;
-    font-weight: bold;
-    color: #1C2526; /* TextPrimary */
-    margin-bottom: 1.5rem;
-    line-height: 1.8;
-    direction: rtl; /* Persian direction */
-}
-
-/* Brand (GoldEx) */
-.brand-text {
-    font-family: "Cinzel Decorative", serif;
-    font-size: clamp(2rem, 8vw, 4rem); /* Scales with screen width */
-    font-weight: 700;
-    background: linear-gradient(90deg, #B8860B 0%, #DAA520 30%, #FFD700 50%, #DAA520 70%, #B8860B 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-    letter-spacing: 1px;
-    margin-top: 0.2rem;
-    direction: ltr; /* Fix mixed direction rendering */
-    background-size: 200% 100%; /* اندازه بزرگ‌تر برای حرکت */
-    animation: shine 10s linear infinite; /* انیمیشن اصلی */
-}
-
-@keyframes shine {
-    0% {
-        background-position: 200% center;
-    }
-
-    100% {
-        background-position: -200% center;
-    }
-}
-
-/* Spinner */
-.loading-spinner {
-    width: 50px;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    border: 8px solid #0000;
-    border-right-color: #ffa50097;
-    position: relative;
-    animation: l24 1s infinite linear;
-}
-
-    .loading-spinner:before,
-    .loading-spinner:after {
-        content: "";
-        position: absolute;
-        inset: -8px;
-        border-radius: 50%;
-        border: inherit;
-        animation: inherit;
-        animation-duration: 2s;
-    }
-
-    .loading-spinner:after {
-        animation-duration: 4s;
-    }
-
-@keyframes l24 {
-    100% {
-        transform: rotate(1turn)
-    }
-}
-
-/* Text */
-.loading-text {
-    font-size: 1rem;
-    color: #B8860B; /* TextSecondary (deep gold) */
-}
-
-    .loading-text:after {
-        content: var(--blazor-load-percentage-text, "در حال بارگیری...");
-    }
-
-.loading-title {
-    text-align: center;
+    z-index: 99999;
     direction: rtl;
+    font-family: "IRANSans", "Vazirmatn", "Helvetica", "Arial", sans-serif;
+    background-image: url('/assets/img/bg.svg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+
+
+/* Glassmorphic Minimal Card */
+.loading-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    max-width: 440px;
+    padding: 3rem 2.5rem;
+    border-radius: 28px;
+    text-align: center;
+    
+    /* Glassmorphism light mode */
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    
+    /* Strong premium shadows for high visibility */
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.12),
+        0 6px 18px rgba(0, 0, 0, 0.05),
+        0 15px 35px rgba(218, 165, 32, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+
+/* Breathing Logo */
+.loading-logo {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 8px 16px rgba(218, 165, 32, 0.12));
+    animation: logo-breath 4s ease-in-out infinite;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+@keyframes logo-breath {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 8px 16px rgba(218, 165, 32, 0.12));
+    }
+    50% {
+        transform: scale(1.04);
+        filter: drop-shadow(0 12px 24px rgba(218, 165, 32, 0.25));
+    }
+}
+
+/* Title Typography */
+.loading-title {
+    font-size: 1.15rem;
+    font-weight: 500;
+    margin: 0;  
+    line-height: 1.6;
+    letter-spacing: -0.01em;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    direction: rtl;
+}
+
+
+
+/* GoldEx Brand Text */
+.brand-text {
+    font-family: "Cinzel Decorative", "Outfit", "Inter", serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    background: linear-gradient(90deg, #b8860b 0%, #daa520 25%, #ffd700 50%, #daa520 75%, #b8860b 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    animation: shine-gold 6s linear infinite;
+    direction: ltr;
+    margin-top: 0.2rem;
+}
+
+@keyframes shine-gold {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* Progress Bar Layout (Google Cloud Minimal style) */
+.loading-progress-wrapper {
+    width: 100%;
+    max-width: 280px;
+    margin: 2rem auto 1rem auto;
+}
+
+.loading-progress-track {
+    position: relative;
+    height: 4px;
+    width: 100%;
+    background-color: rgba(218, 165, 32, 0.12);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+
+
+.loading-progress-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 6px;
+}
+
+/* 1. Indeterminate Mode: Google Cloud style dynamic flowing animation */
+#loading-indicator:not([style*="--blazor-load-percentage"]) .loading-progress-bar {
+    width: 100%;
+    background-color: transparent;
+}
+
+#loading-indicator:not([style*="--blazor-load-percentage"]) .loading-progress-bar::before,
+#loading-indicator:not([style*="--blazor-load-percentage"]) .loading-progress-bar::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(90deg, #b8860b, #daa520, #ffd700);
+    border-radius: 6px;
+    will-change: left, right;
+}
+
+#loading-indicator:not([style*="--blazor-load-percentage"]) .loading-progress-bar::before {
+    animation: indeterminate-first 2.2s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+}
+
+#loading-indicator:not([style*="--blazor-load-percentage"]) .loading-progress-bar::after {
+    animation: indeterminate-second 2.2s cubic-bezier(0.165, 0.84, 0.44, 1) infinite;
+    animation-delay: 1.25s;
+}
+
+/* 2. Determinate Mode: Blazor updates the width dynamically */
+#loading-indicator[style*="--blazor-load-percentage"] .loading-progress-bar {
+    width: var(--blazor-load-percentage, 0%);
+    background: linear-gradient(90deg, #b8860b, #daa520, #ffd700, #daa520, #b8860b);
+    background-size: 200% 100%;
+    animation: progress-shimmer 2.5s linear infinite;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#loading-indicator[style*="--blazor-load-percentage"] .loading-progress-bar::before,
+#loading-indicator[style*="--blazor-load-percentage"] .loading-progress-bar::after {
+    display: none !important;
+}
+
+@keyframes progress-shimmer {
+    to {
+        background-position: -200% center;
+    }
+}
+
+/* Progress Text */
+.loading-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    letter-spacing: 0.02em;
+    min-height: 1.25rem;
+}
+
+
+
+.loading-text::after {
+    content: var(--blazor-load-percentage-text, "در حال بارگیری...");
+}
+
+@keyframes indeterminate-first {
+    0% {
+        left: -35%;
+        right: 100%;
+    }
+    60% {
+        left: 100%;
+        right: -90%;
+    }
+    100% {
+        left: 100%;
+        right: -90%;
+    }
+}
+
+@keyframes indeterminate-second {
+    0% {
+        left: -200%;
+        right: 100%;
+    }
+    60% {
+        left: 107%;
+        right: -8%;
+    }
+    100% {
+        left: 107%;
+        right: -8%;
+    }
 }
 
 /* MudEx */

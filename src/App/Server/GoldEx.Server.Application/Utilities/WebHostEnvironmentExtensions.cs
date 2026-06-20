@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 
 namespace GoldEx.Server.Application.Utilities;
 
@@ -18,11 +18,13 @@ public static class WebHostEnvironmentExtensions
         public string GetPriceUnitIconPath(Guid id, string? contentType)
             => Path.Combine(environment.ContentRootPath, "uploads", "icons", "price-units", $"{id}.{(string.IsNullOrEmpty(contentType) ? "png" : contentType)}");
 
-        public bool AppIconExists()
-            => File.Exists(Path.Combine(environment.ContentRootPath, "uploads", "icons", "app", "logo.png"));
+        public bool AppIconExists(string? storeSlug = null)
+            => File.Exists(environment.GetAppIconPath(storeSlug));
 
-        public string GetAppIconPath()
-            => Path.Combine(environment.ContentRootPath, "uploads", "icons", "app", "logo.png");
+        public string GetAppIconPath(string? storeSlug = null)
+            => !string.IsNullOrWhiteSpace(storeSlug)
+                ? Path.Combine(environment.ContentRootPath, "uploads", "icons", "app", $"logo_{storeSlug}.png")
+                : Path.Combine(environment.ContentRootPath, "uploads", "icons", "app", "logo.png");
 
         public string GetAppIconDirectory()
             => Path.Combine(environment.ContentRootPath, "uploads", "icons", "app");
@@ -54,5 +56,11 @@ public static class WebHostEnvironmentExtensions
         }
 
         public string GetCheckPaymentDirectoryPath() => Path.Combine(environment.ContentRootPath, "uploads", "check-payments");
+
+        public string GetReportsDirectory() => Path.Combine(environment.ContentRootPath, "Reports");
+
+        public string GetStoreReportPath(string reportName, string storeSlug) => Path.Combine(environment.GetReportsDirectory(), $"{reportName}_{storeSlug}.repx");
+
+        public string GetReportPath(string reportName) => Path.Combine(environment.GetReportsDirectory(), $"{reportName}.repx");
     }
 }

@@ -1,20 +1,23 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.ProductAggregate;
 
 public readonly record struct ProductId(Guid Value);
-public class Product : EntityBase<ProductId>
+public class Product : EntityBase<ProductId>, IStoreFiltered
 {
     public static Product CreateBrokenProduct(
         string name,
         decimal weight,
         decimal fineness,
-        GoldUnitType goldUnitType)
+        GoldUnitType goldUnitType,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0);
         ArgumentOutOfRangeException.ThrowIfLessThan(fineness, 0);
@@ -26,7 +29,8 @@ public class Product : EntityBase<ProductId>
             Weight = weight,
             Fineness = fineness,
             GoldUnitType = goldUnitType,
-            ProductType = ProductType.UsedGold
+            ProductType = ProductType.UsedGold,
+            StoreId = storeId
         };
     }
 
@@ -39,7 +43,8 @@ public class Product : EntityBase<ProductId>
         WageType? wageType,
         PriceUnitId? wagePriceUnitId,
         ProductCategoryId? productCategoryId,
-        MoltenGold? moltenGold)
+        MoltenGold? moltenGold,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0);
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0);
@@ -59,7 +64,8 @@ public class Product : EntityBase<ProductId>
             WageType = wageType,
             WagePriceUnitId = wagePriceUnitId,
             ProductCategoryId = productCategoryId,
-            MoltenGold = moltenGold
+            MoltenGold = moltenGold,
+            StoreId = storeId
         };
     }
 
@@ -73,7 +79,8 @@ public class Product : EntityBase<ProductId>
         WageType? wageType,
         PriceUnitId? wagePriceUnitId,
         PriceUnitId? stonePriceUnitId,
-        ProductCategoryId? productCategoryId)
+        ProductCategoryId? productCategoryId,
+        StoreId storeId = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(weight, 0);
         ArgumentOutOfRangeException.ThrowIfLessThan(wage, 0);
@@ -93,7 +100,8 @@ public class Product : EntityBase<ProductId>
             WageType = wageType,
             WagePriceUnitId = wagePriceUnitId,
             StonePriceUnitId = stonePriceUnitId,
-            ProductCategoryId = productCategoryId
+            ProductCategoryId = productCategoryId,
+            StoreId = storeId
         };
     }
 
@@ -101,6 +109,7 @@ public class Product : EntityBase<ProductId>
     private Product() { }
 #pragma warning restore CS8618
 
+    public StoreId StoreId { get; private set; }
     public string Name { get; private set; }
     public string Barcode { get; private set; }
     public decimal Weight { get; private set; }

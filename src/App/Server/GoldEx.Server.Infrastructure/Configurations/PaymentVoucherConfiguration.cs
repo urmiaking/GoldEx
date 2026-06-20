@@ -1,4 +1,5 @@
-﻿using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -25,7 +26,7 @@ internal class PaymentVoucherConfiguration : IEntityTypeConfiguration<PaymentVou
             .HasMaxLength(150)
             .IsRequired();
 
-        builder.HasIndex(x => x.VoucherNumber)
+        builder.HasIndex(x => new { x.StoreId, x.VoucherNumber })
             .IsUnique();
 
         builder.HasOne(x => x.Customer)

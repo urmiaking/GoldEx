@@ -1,0 +1,29 @@
+@attribute [Route(ClientRoutes.Statics.NoStore)]
+@layout EmptyBoxLayout
+
+<MudStack AlignItems="AlignItems.Center" Spacing="6" Class="py-6">
+    <MudIcon Icon="@Icons.Material.Filled.Storefront"
+             Color="Color.Error"
+             Style="font-size: 6rem;" />
+
+    <MudText Typo="Typo.h5" Align="Align.Center" Color="Color.Error" Style="font-weight: bold;">
+        عدم دسترسی به فروشگاه
+    </MudText>
+
+    <MudText Typo="Typo.body1" Align="Align.Center" Class="mud-text-secondary" Style="line-height: 1.8;">
+        هیچ فروشگاه فعالی برای حساب کاربری شما تعریف نشده است. جهت دسترسی به سیستم، لازم است حساب کاربری شما حداقل به یک فروشگاه فعال منتسب شده باشد.
+    </MudText>
+
+    <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Default">
+        لطفاً جهت برطرف شدن مشکل با مدیر سیستم تماس بگیرید.
+    </MudText>
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               Size="Size.Large"
+               Href="@ApiUrls.Account.Logout(null)"
+               StartIcon="@Icons.Material.Filled.Logout"
+               Class="mt-4 px-6 py-2 rounded-lg">
+        خروج از حساب کاربری
+    </MudButton>
+</MudStack>

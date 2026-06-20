@@ -20,6 +20,6 @@ public partial class Success
 
     private void GoToHomePage()
     {
-        Navigation.NavigateTo(ClientRoutes.Home.Index);
+        Navigation.NavigateTo(ClientRoutes.Home.Index, forceLoad: true);
     }
 }

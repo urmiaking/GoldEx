@@ -1,4 +1,6 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Shared.Enums;
@@ -28,7 +30,6 @@ public class PriceUnit : EntityBase<PriceUnitId>
 #pragma warning disable CS8618
     private PriceUnit() { }
 #pragma warning restore CS8618
-
     public string Title { get; private set; }
     public bool IsActive { get; private set; } = true;
     public bool IsDefault { get; private set; }

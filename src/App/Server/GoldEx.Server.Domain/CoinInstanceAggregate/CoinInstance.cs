@@ -1,6 +1,8 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CoinAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.CoinInstanceAggregate;
@@ -11,8 +13,9 @@ public readonly record struct CoinInstanceId(Guid Value);
 /// Represents a uniquely identifiable batch of homogeneous coins
 /// that are packaged and moved together under a single barcode.
 /// </summary>
-public class CoinInstance : EntityBase<CoinInstanceId>
+public class CoinInstance : EntityBase<CoinInstanceId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
     public string Barcode { get; private set; }
     public int? MintYear { get; private set; }
     public decimal Weight { get; private set; }
@@ -35,7 +38,8 @@ public class CoinInstance : EntityBase<CoinInstanceId>
         CoinId coinId,
         CoinMintType mintType,
         CoinPackageType packageType,
-        CoinInstancePackage? coinInstancePackage)
+        CoinInstancePackage? coinInstancePackage,
+        StoreId storeId = default)
         : base(new CoinInstanceId(Guid.CreateVersion7()))
     {
         if (string.IsNullOrWhiteSpace(barcode))
@@ -61,6 +65,7 @@ public class CoinInstance : EntityBase<CoinInstanceId>
         MintType = mintType;
         PackageType = packageType;
         CoinInstancePackage = coinInstancePackage;
+        StoreId = storeId;
     }
 
 #pragma warning disable CS8618
@@ -72,9 +77,10 @@ public class CoinInstance : EntityBase<CoinInstanceId>
         decimal weight,
         decimal fineness,
         CoinId coinId,
-        CoinMintType mintType)
+        CoinMintType mintType,
+        StoreId storeId = default)
     {
-        return new CoinInstance(barcode, mintYear, weight, fineness, coinId, mintType, CoinPackageType.Open, null);
+        return new CoinInstance(barcode, mintYear, weight, fineness, coinId, mintType, CoinPackageType.Open, null, storeId);
     }
 
     public static CoinInstance CreateVacuumed(string barcode,
@@ -83,9 +89,10 @@ public class CoinInstance : EntityBase<CoinInstanceId>
         decimal fineness,
         CoinId coinId,
         CoinMintType mintType,
-        CoinInstancePackage coinInstancePackage)
+        CoinInstancePackage coinInstancePackage,
+        StoreId storeId = default)
     {
-        return new CoinInstance(barcode, mintYear, weight, fineness, coinId, mintType, CoinPackageType.VacuumSealed, coinInstancePackage);
+        return new CoinInstance(barcode, mintYear, weight, fineness, coinId, mintType, CoinPackageType.VacuumSealed, coinInstancePackage, storeId);
     }
 
     public void SetBarcode(string barcode) => Barcode = barcode;

@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.SettingAggregate.ValueObjects;
 using GoldEx.Shared.Enums;
 
@@ -76,5 +76,31 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
     public void ClearAll()
     {
         _positionItems.Clear();
+    }
+
+    public BarcodePrintSettings Clone()
+    {
+        var clone = new BarcodePrintSettings(LabelWidth, LabelHeight);
+        if (Margin != null)
+        {
+            clone.UpdateMargin(BarcodeMargin.Create(Margin.Top, Margin.Right, Margin.Bottom, Margin.Left));
+        }
+        if (Padding != null)
+        {
+            clone.UpdatePadding(BarcodePadding.Create(Padding.Top, Padding.Right, Padding.Bottom, Padding.Left));
+        }
+        foreach (var item in _positionItems)
+        {
+            clone.AddPositionItem(
+                item.Position,
+                item.ItemType,
+                item.Order,
+                item.IsVisible,
+                item.FontSize,
+                item.ItemSpacing,
+                item.BarcodeSettings != null ? BarcodeDisplaySettings.Create(item.BarcodeSettings.Width, item.BarcodeSettings.Height, item.BarcodeSettings.DisplayValue, item.BarcodeSettings.FontSize, item.BarcodeSettings.Margin) : null
+            );
+        }
+        return clone;
     }
 }

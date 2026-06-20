@@ -1,4 +1,5 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
@@ -8,13 +9,16 @@ using GoldEx.Server.Domain.LedgerAccountAggregate;
 using GoldEx.Server.Domain.MeltingBatchAggregate;
 using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Server.Domain.TransactionAggregate;
 
 public readonly record struct TransactionId(Guid Value);
-public class Transaction : EntityBase<TransactionId>
+public class Transaction : EntityBase<TransactionId>, IStoreFiltered
 {
+    public StoreId StoreId { get; private set; }
+
     public static Transaction CreateForInvoice(
         string description,
         decimal amount,
@@ -24,7 +28,8 @@ public class Transaction : EntityBase<TransactionId>
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
         InvoiceId invoiceId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -50,7 +55,8 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             InvoiceId = invoiceId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 
@@ -63,7 +69,8 @@ public class Transaction : EntityBase<TransactionId>
         LedgerAccountId ledgerAccountId,
         PriceUnitId priceUnitId,
         PaymentVoucherId paymentVoucherId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -89,7 +96,8 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             PaymentVoucherId = paymentVoucherId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 
@@ -103,7 +111,8 @@ public class Transaction : EntityBase<TransactionId>
         PriceUnitId priceUnitId,
         InvoiceId invoiceId,
         InvoicePaymentId invoicePaymentId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -127,7 +136,8 @@ public class Transaction : EntityBase<TransactionId>
             InvoiceId = invoiceId,
             InvoicePaymentId = invoicePaymentId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 
@@ -140,7 +150,8 @@ public class Transaction : EntityBase<TransactionId>
         PriceUnitId priceUnitId, 
         InvoiceId? invoiceId,
         InventoryStockId? inventoryStockId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -162,7 +173,8 @@ public class Transaction : EntityBase<TransactionId>
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
             InvoiceId = invoiceId,
             InventoryStockId = inventoryStockId,
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 
@@ -220,7 +232,8 @@ public class Transaction : EntityBase<TransactionId>
         LedgerAccountId ledgerAccountId,
         InvoiceId invoiceId,
         MeltingBatchId meltingBatchId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -242,7 +255,8 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             LedgerAccountId = ledgerAccountId,
             MeltingBatchId = meltingBatchId,
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 
@@ -255,7 +269,8 @@ public class Transaction : EntityBase<TransactionId>
         PriceUnitId priceUnitId,
         LedgerAccountId ledgerAccountId,
         MeltingBatchId meltingBatchId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -275,7 +290,8 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             LedgerAccountId = ledgerAccountId,
             MeltingBatchId = meltingBatchId,
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 
@@ -295,7 +311,8 @@ public class Transaction : EntityBase<TransactionId>
         PriceUnitId priceUnitId,
         InventoryEntryId inventoryEntryId,
         InventoryStockId? inventoryStockId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -323,7 +340,8 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             InventoryEntryId = inventoryEntryId,
             InventoryStockId = inventoryStockId,
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 
@@ -338,7 +356,8 @@ public class Transaction : EntityBase<TransactionId>
         PriceUnitId priceUnitId,
         InventoryExitId inventoryExitId,
         InventoryStockId? inventoryStockId,
-        DateTime postingDate)
+        DateTime postingDate,
+        StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be null or empty.", nameof(description));
@@ -359,7 +378,8 @@ public class Transaction : EntityBase<TransactionId>
             PriceUnitId = priceUnitId,
             InventoryExitId = inventoryExitId,
             InventoryStockId = inventoryStockId,
-            PostingDate = postingDate
+            PostingDate = postingDate,
+            StoreId = storeId
         };
     }
 

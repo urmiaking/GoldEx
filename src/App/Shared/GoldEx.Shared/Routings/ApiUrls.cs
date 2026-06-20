@@ -764,4 +764,32 @@ public class ApiUrls
             BuildUrl(ApiRoutes.UserAccounts.Base, ApiRoutes.UserAccounts.DeleteAccount)
                 .FormatRoute(new { id });
     }
+
+    public class Stores
+    {
+        public static string Switch(Guid storeId) =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.Switch).FormatRoute(new { storeId });
+
+        public static string GetUserStores() =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.GetUserStores);
+
+        public static string GetList(RequestFilter filter) =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.GetList)
+                .AppendQueryString(filter);
+
+        public static string Create() =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.Update).FormatRoute(new { id });
+
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.Delete).FormatRoute(new { id });
+
+        public static string GetStoreUsers(Guid storeId) =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.GetStoreUsers).FormatRoute(new { storeId });
+
+        public static string AssignStoreUsers(Guid storeId) =>
+            BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.AssignStoreUsers).FormatRoute(new { storeId });
+    }
 }

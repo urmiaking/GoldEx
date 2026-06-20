@@ -1,5 +1,6 @@
-﻿using GoldEx.Server.Domain.BarcodeReservationAggregate;
+using GoldEx.Server.Domain.BarcodeReservationAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -36,7 +37,7 @@ internal class BarcodeReservationConfiguration : IEntityTypeConfiguration<Barcod
             .OnDelete(DeleteBehavior.SetNull); // consider SetNull if you want to retain reservation history
 
         // Unique on barcode across all reservations
-        builder.HasIndex(x => x.Barcode)
+        builder.HasIndex(x => new { x.StoreId, x.Barcode })
             .IsUnique();
 
         // Supports fast queries for issuing and cleanup
