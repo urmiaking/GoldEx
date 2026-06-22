@@ -1,322 +1,1242 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 @if (_isLoading)
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
 }
+<MudCard Elevation="24" Class="rounded-xl overflow-hidden mud-width-full" Style="height: var(--designer-height);">
+    <div class="designer-layout-container">
+        
+        <!-- هدر تب‌ها برای موبایل -->
+        <div class="mobile-tabs-header">
+            <button type="button" class="mobile-tab-btn @(_activeMobileTab == 0 ? "is-active" : "")" @onclick="() => SetMobileTab(0)">
+                <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="me-1" />
+                آیتم‌ها
+            </button>
+            <button type="button" class="mobile-tab-btn @(_activeMobileTab == 1 ? "is-active" : "")" @onclick="() => SetMobileTab(1)">
+                <MudIcon Icon="@Icons.Material.Filled.AspectRatio" Size="Size.Small" Class="me-1" />
+                بوم طراحی
+            </button>
+            <button type="button" class="mobile-tab-btn @(_activeMobileTab == 2 ? "is-active" : "")" @onclick="() => SetMobileTab(2)">
+                <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" Class="me-1" />
+                تنظیمات ویژگی‌ها
+            </button>
+        </div>
+        
+        <div class="designer-main-body">
+    
+    <!-- پنل سمت چپ: فهرست و دایرکتوری آیتم‌ها -->
+    <div class="designer-panel panel-left border-solid border-l mud-border-default @(GetTabClass(0))">
+        <div class="panel-header">
+            <MudIcon Icon="@Icons.Material.Filled.Category" Color="Color.Secondary" Class="me-2" />
+            <MudText Typo="Typo.h6" Class="panel-title">دایرکتوری آیتم‌های برچسب</MudText>
+        </div>
+        
+        <div class="panel-body">
+            <MudAlert Severity="Severity.Normal" Dense="true" Class="mb-4 rounded-lg px-3 py-2 text-xs">
+                آیتم‌ها را فعال/غیرفعال کنید و برای پیکربندی دقیق، روی آن‌ها کلیک کنید.
+            </MudAlert>
 
-<MudGrid>
-    <!-- پنل تنظیمات -->
-    <MudItem xs="12" md="3">
-        <MudPaper Elevation="24" Class="pa-4">
-            <MudText Typo="Typo.h6" Class="mb-4">تنظیمات برچسب</MudText>
-
-            <MudNumericField @bind-Value="_settings.LabelWidth"
-                             Label="عرض برچسب"
-                             Variant="Variant.Outlined"
-                             Margin="Margin.Dense"
-                             Adornment="Adornment.End"
-                             AdornmentText="px"
-                             dir="ltr"
-                             Min="100"
-                             Max="1000" 
-                             Class="mb-3" />
-
-            <MudNumericField @bind-Value="_settings.LabelHeight"
-                             Label="ارتفاع برچسب"
-                             Variant="Variant.Outlined"
-                             Margin="Margin.Dense"
-                             Adornment="Adornment.End"
-                             AdornmentText="px"
-                             dir="ltr"
-                             Min="30"
-                             Max="500"
-                             Class="mb-4" />
-
-            <MudDivider Class="mb-4" />
-
-            <MudText Typo="Typo.subtitle1" Class="mb-2">حاشیه خارجی (Margin)</MudText>
-            <MudGrid Spacing="2" Class="mb-4">
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.MarginTop"
-                                     Label="بالا"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.MarginRight"
-                                     Label="راست"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.MarginBottom"
-                                     Label="پایین"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.MarginLeft"
-                                     Label="چپ"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-            </MudGrid>
-
-            <MudDivider Class="mb-4" />
-
-            <MudText Typo="Typo.subtitle1" Class="mb-2">فاصله داخلی (Padding)</MudText>
-            <MudGrid Spacing="2" Class="mb-4">
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.PaddingTop"
-                                     Label="بالا"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.PaddingRight"
-                                     Label="راست"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.PaddingBottom"
-                                     Label="پایین"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-                <MudItem xs="6">
-                    <MudNumericField @bind-Value="_settings.PaddingLeft"
-                                     Label="چپ"
-                                     Variant="Variant.Outlined"
-                                     Margin="Margin.Dense"
-                                     Immediate="true"
-                                     dir="ltr"
-                                     Adornment="Adornment.End"
-                                     AdornmentText="px"
-                                     Min="0" />
-                </MudItem>
-            </MudGrid>
-
-            <MudDivider Class="mb-4" />
-
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Success"
-                       FullWidth="true"
-                       OnClick="SaveSettings"
-                       StartIcon="@Icons.Material.Filled.Save"
-                       Disabled="_isLoading">
-                ذخیره تنظیمات
-            </MudButton>
-        </MudPaper>
-    </MudItem>
-
-    <!-- محیط طراحی - سمت چپ -->
-    <MudItem xs="12" md="9">
-        <MudDropContainer T="BarcodePositionItemVm"
-                          Items="_allItems"
-                          ItemsSelector="ItemSelector"
-                          ItemDropped="OnItemDropped"
-                          CanDrop="CanDrop"
-                          CanDropClass="can-drop"
-                          NoDropClass="no-drop">
-
-            <ChildContent>
-                <MudGrid>
-                    <!-- Toolbox - سمت راست -->
-                    <MudItem xs="12" md="3">
-                        <MudPaper Elevation="24" Class="pa-4">
-                            <MudText Typo="Typo.h6" Class="mb-3">آیتم‌های قابل چاپ</MudText>
-                            <MudText Typo="Typo.caption" Class="mb-3" Color="Color.Secondary">
-                                آیتم را انتخاب کرده و به سمت چپ بکشید
-                            </MudText>
-
-                            <MudDropZone T="BarcodePositionItemVm"
-                                         Identifier="Toolbox"
-                                         Class="toolbox-zone pa-3">
-                                <MudStack Spacing="2">
-                                </MudStack>
-                            </MudDropZone>
-                        </MudPaper>
-                    </MudItem>
-
-                    <!-- Preview - سمت چپ -->
-                    <MudItem xs="12" md="9">
-                        <MudPaper Elevation="24" Class="pa-4">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
-                                <MudText Typo="Typo.h6">پیش‌نمایش</MudText>
-
-                                <!-- کنترل زوم -->
-                                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
-                                    <MudIconButton Icon="@Icons.Material.Filled.ZoomOut"
-                                                   Size="Size.Small"
-                                                   OnClick="() => AdjustZoom(-0.1)"
-                                                   Disabled="_zoomLevel <= 0.5"
-                                                   Title="کوچک‌تر" />
-
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                                        @((_zoomLevel * 100).ToString("F0"))%
-                                    </MudChip>
-
-                                    <MudIconButton Icon="@Icons.Material.Filled.ZoomIn"
-                                                   Size="Size.Small"
-                                                   OnClick="() => AdjustZoom(0.1)"
-                                                   Disabled="_zoomLevel >= 2.0"
-                                                   Title="بزرگ‌تر" />
-
-                                    <MudIconButton Icon="@Icons.Material.Filled.FitScreen"
-                                                   Size="Size.Small"
-                                                   OnClick="ResetZoom"
-                                                   Title="بازنشانی" />
-                                </MudStack>
-                            </MudStack>
-
-                            <MudText Typo="Typo.caption" Class="mb-2" Color="Color.Secondary">
-                                ابعاد واقعی: @_settings.LabelWidth × @_settings.LabelHeight پیکسل
-                            </MudText>
-
-                            <!-- Preview Area -->
-                            <div class="preview-scroll-container d-flex justify-content-center">
-                                <div class="preview-content" style="transform: scale(@_zoomLevel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)); transform-origin: top center;">
-                                    <div class="label-preview-box" style="width: 450px; height: auto; min-height: 213px; border: 2px dashed #999; position: relative; background: white; padding: @(_settings.PaddingTop)px @(_settings.PaddingRight)px @(_settings.PaddingBottom)px @(_settings.PaddingLeft)px;">
-
-                                        <!-- Top Left Zone -->
-                                        <div style="position: absolute; top: @(_settings.PaddingTop)px; left: @(_settings.PaddingLeft)px; max-width: 45%;">
-                                            <MudDropZone T="BarcodePositionItemVm"
-                                                         Identifier="@BarcodePosition.TopLeft.ToString()"
-                                                         Class="drop-zone-compact"
-                                                         AllowReorder="true">
-                                                <MudText Typo="Typo.caption" Class="position-label-compact">
-                                                    @GetPositionLabel(BarcodePosition.TopLeft)
-                                                </MudText>
-                                            </MudDropZone>
-                                        </div>
-
-                                        <!-- Top Right Zone -->
-                                        <div style="position: absolute; top: @(_settings.PaddingTop)px; right: @(_settings.PaddingRight)px; max-width: 45%;">
-                                            <MudDropZone T="BarcodePositionItemVm"
-                                                         Identifier="@BarcodePosition.TopRight.ToString()"
-                                                         Class="drop-zone-compact"
-                                                         AllowReorder="true">
-                                                <MudText Typo="Typo.caption" Class="position-label-compact">
-                                                    @GetPositionLabel(BarcodePosition.TopRight)
-                                                </MudText>
-                                            </MudDropZone>
-                                        </div>
-
-                                        <!-- Bottom Left Zone -->
-                                        <div style="position: absolute; bottom: @(_settings.PaddingBottom)px; left: @(_settings.PaddingLeft)px; max-width: 45%;">
-                                            <MudDropZone T="BarcodePositionItemVm"
-                                                         Identifier="@BarcodePosition.BottomLeft.ToString()"
-                                                         Class="drop-zone-compact"
-                                                         AllowReorder="true">
-                                                <MudText Typo="Typo.caption" Class="position-label-compact">
-                                                    @GetPositionLabel(BarcodePosition.BottomLeft)
-                                                </MudText>
-                                            </MudDropZone>
-                                        </div>
-
-                                        <!-- Bottom Right Zone -->
-                                        <div style="position: absolute; bottom: @(_settings.PaddingBottom)px; right: @(_settings.PaddingRight)px; max-width: 45%;">
-                                            <MudDropZone T="BarcodePositionItemVm"
-                                                         Identifier="@BarcodePosition.BottomRight.ToString()"
-                                                         Class="drop-zone-compact"
-                                                         AllowReorder="true">
-                                                <MudText Typo="Typo.caption" Class="position-label-compact">
-                                                    @GetPositionLabel(BarcodePosition.BottomRight)
-                                                </MudText>
-                                            </MudDropZone>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       FullWidth="true"
-                                       OnClick="PrintTestBarcode"
-                                       StartIcon="@Icons.Material.Filled.Print"
-                                       Class="mt-3"
-                                       Disabled="_isLoading">
-                                چاپ تست
-                            </MudButton>
-                        </MudPaper>
-                    </MudItem>
-                </MudGrid>
-            </ChildContent>
-
-            <ItemRenderer>
-                <div @key="@context.UniqueKey">
-                    @if (context.IsInToolbox)
+            <!-- دکمه تنظیمات کلی قالب -->
+            <button class="global-settings-card mb-4 @(_selectedItem == null ? "is-active" : "")" @onclick="() => SelectItem(null)">
+                <div class="d-flex align-center w-full">
+                    <div class="icon-wrapper bg-primary-light">
+                        <MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Size="Size.Medium" />
+                    </div>
+                    <div class="ms-3 text-start flex-grow-1">
+                        <MudText Typo="Typo.subtitle2" Class="font-bold">تنظیمات ابعاد فیزیکی</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted d-block">اندازه کل برچسب، دم اتصال و حاشیه‌ها</MudText>
+                    </div>
+                    @if (_selectedItem == null)
                     {
-                        <MudPaper Elevation="1" Class="pa-3 mb-2 toolbox-item">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                <MudIcon Icon="@context.GetIcon()" Color="@context.GetColor()" />
-                                <MudText Typo="Typo.body2">@context.GetLabel()</MudText>
-                                <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Size="Size.Small" Class="mr-auto" />
-                            </MudStack>
-                        </MudPaper>
-                    }
-                    else
-                    {
-                        <MudPaper Elevation="2" Class="pa-2 mb-2 preview-item">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                    <MudIcon Icon="@context.GetIcon()" Size="Size.Small" Color="Color.Primary" />
-                                    <MudText Typo="Typo.caption">@context.GetLabel()</MudText>
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@context.FontSize px</MudChip>
-                                </MudStack>
-
-                                <MudStack Row="true" Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Settings"
-                                                   Size="Size.Small"
-                                                   OnClick="() => ConfigureItem(context)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Size="Size.Small"
-                                                   Color="Color.Error"
-                                                   OnClick="() => RemoveItem(context)" />
-                                </MudStack>
-                            </MudStack>
-                        </MudPaper>
+                        <div class="active-dot"></div>
                     }
                 </div>
-            </ItemRenderer>
-        </MudDropContainer>
-    </MudItem>
-</MudGrid>
+            </button>
+
+            <MudDivider Class="my-3" />
+
+            <MudText Typo="Typo.overline" Class="text-muted font-bold d-block mb-2">لیست مؤلفه‌های چاپ</MudText>
+            
+            <div class="items-list">
+                @foreach (BarcodePrintableItem itemType in Enum.GetValues(typeof(BarcodePrintableItem)))
+                {
+                    var activeItem = GetActiveItem(itemType);
+                    var isActive = activeItem != null;
+                    var label = itemType switch
+                    {
+                        BarcodePrintableItem.Barcode => "بارکد کالا",
+                        BarcodePrintableItem.ProductName => "عنوان کالا (نام)",
+                        BarcodePrintableItem.Weight => "وزن کالا (گرم)",
+                        BarcodePrintableItem.Wage => "اجرت کالا (درصد/مبلغ)",
+                        _ => "نامشخص"
+                    };
+                    var icon = itemType switch
+                    {
+                        BarcodePrintableItem.Barcode => Icons.Material.Filled.QrCode,
+                        BarcodePrintableItem.ProductName => Icons.Material.Filled.Label,
+                        BarcodePrintableItem.Weight => Icons.Material.Filled.Scale,
+                        BarcodePrintableItem.Wage => Icons.Material.Filled.AttachMoney,
+                        _ => Icons.Material.Filled.Help
+                    };
+
+                    <div class="element-list-item @(activeItem == _selectedItem && _selectedItem != null ? "is-selected" : "")" @onclick="() => { if (isActive) SelectItem(activeItem); }">
+                        <div class="d-flex align-center justify-space-between w-full">
+                            <div class="d-flex align-center">
+                                <div class="icon-avatar @(isActive ? "is-active bg-secondary-light" : "bg-grey-light")">
+                                    <MudIcon Icon="@icon" Color="@(isActive ? Color.Secondary : Color.Default)" Size="Size.Small" />
+                                </div>
+                                <div class="ms-3 text-start">
+                                    <MudText Typo="Typo.body2" Class="@(isActive ? "font-bold" : "text-muted")">@label</MudText>
+                                    @if (isActive)
+                                    {
+                                        <span class="active-badge mt-0.5">@GetPositionLabel(activeItem!.Position)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inactive-badge mt-0.5">غیرفعال</span>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <MudSwitch T="bool" 
+                                       Value="isActive" 
+                                       ValueChanged="() => ToggleItemActive(itemType)" 
+                                       Color="Color.Success" 
+                                       Size="Size.Small" 
+                                       Class="ma-0"
+                                       @onclick:stopPropagation />
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- پنل وسط: پیش‌نمایش تعاملی و بوم طراحی -->
+    <div class="designer-canvas-area @(GetTabClass(1))">
+        <div class="canvas-toolbar">
+            <div class="d-flex align-center">
+                <div class="status-indicator"></div>
+                <MudText Typo="Typo.body2" Class="font-bold text-slate-700">بوم طراحی زنده (میلی‌متر)</MudText>
+            </div>
+            
+            <!-- کنترل‌های زوم -->
+            <div class="zoom-controls">
+                <MudIconButton Icon="@Icons.Material.Filled.Remove" 
+                               Size="Size.Small" 
+                               OnClick="() => AdjustZoom(-0.2)" 
+                               Disabled="_zoomLevel <= 0.6" 
+                               Class="zoom-btn" />
+                <span class="zoom-text">@((_zoomLevel * 100).ToString("F0"))%</span>
+                <MudIconButton Icon="@Icons.Material.Filled.Add" 
+                               Size="Size.Small" 
+                               OnClick="() => AdjustZoom(0.2)" 
+                               Disabled="_zoomLevel >= 4.0" 
+                               Class="zoom-btn" />
+                <MudIconButton Icon="@Icons.Material.Filled.CropFree" 
+                               Size="Size.Small" 
+                               OnClick="ResetZoom" 
+                               Title="زوم مناسب" 
+                               Class="zoom-btn ms-2" />
+            </div>
+        </div>
+
+        <div class="canvas-workspace">
+            <div class="canvas-scroll-container">
+                <div class="canvas-scale-wrapper" style="transform: scale(@_zoomLevel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));">
+                    
+                    <!-- بدنه فیزیکی تگ دم موشی طلا -->
+                    <div class="tag-body" style="width: @($"{_settings.LabelWidth}mm"); height: @($"{_settings.LabelHeight}mm");" dir="ltr">
+                        
+                        @{
+                            var sideWidthMm = _settings.LabelWidth / 2.0;
+                        }
+
+                        <!-- بخش چپ برچسب -->
+                        <div class="tag-label-side left-side-label" style="width: @($"{sideWidthMm}mm");">
+                            
+                            <!-- خط چین حاشیه امن چاپ داخلی (پدینگ) -->
+                            <div class="safe-print-area" style="top: @($"{_settings.PaddingTop}mm"); bottom: @($"{_settings.PaddingBottom}mm"); left: @($"{_settings.PaddingLeft}mm"); right: @($"{_settings.PaddingRight}mm");">
+                                
+                                <!-- نیمه بالا (TopLeft) -->
+                                <div class="quadrant-area top-quadrant align-right" @onclick="() => SelectItem(null)" @onclick:stopPropagation>
+                                    @foreach (var item in _settings.GetItemsForPosition(BarcodePosition.TopLeft))
+                                    {
+                                        <div class="render-item @(item == _selectedItem ? "is-selected" : "")" 
+                                             style="margin-bottom: @($"{item.ItemSpacing}mm"); @(item.ItemType == BarcodePrintableItem.ProductName ? "align-self: stretch; width: 100%;" : "")"
+                                             @onclick="() => SelectItem(item)" 
+                                             @onclick:stopPropagation>
+                                            @RenderTagItem(item)
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- نیمه پایین (BottomLeft) -->
+                                <div class="quadrant-area bottom-quadrant align-right" @onclick="() => SelectItem(null)" @onclick:stopPropagation>
+                                    @foreach (var item in _settings.GetItemsForPosition(BarcodePosition.BottomLeft))
+                                    {
+                                        <div class="render-item @(item == _selectedItem ? "is-selected" : "")" 
+                                             style="margin-bottom: @($"{item.ItemSpacing}mm"); @(item.ItemType == BarcodePrintableItem.ProductName ? "align-self: stretch; width: 100%;" : "")"
+                                             @onclick="() => SelectItem(item)" 
+                                             @onclick:stopPropagation>
+                                            @RenderTagItem(item)
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- بخش راست برچسب (کنار بخش چپ) -->
+                        <div class="tag-label-side right-side-label" style="width: @($"{sideWidthMm}mm"); left: @($"{sideWidthMm}mm");">
+                            
+                            <!-- خط چین حاشیه امن چاپ داخلی (پدینگ) -->
+                            <div class="safe-print-area" style="top: @($"{_settings.PaddingTop}mm"); bottom: @($"{_settings.PaddingBottom}mm"); left: @($"{_settings.PaddingLeft}mm"); right: @($"{_settings.PaddingRight}mm");">
+                                
+                                <!-- نیمه بالا (TopRight) -->
+                                <div class="quadrant-area top-quadrant align-left" @onclick="() => SelectItem(null)" @onclick:stopPropagation>
+                                    @foreach (var item in _settings.GetItemsForPosition(BarcodePosition.TopRight))
+                                    {
+                                        <div class="render-item @(item == _selectedItem ? "is-selected" : "")" 
+                                             style="margin-bottom: @($"{item.ItemSpacing}mm"); @(item.ItemType == BarcodePrintableItem.ProductName ? "align-self: stretch; width: 100%;" : "")"
+                                             @onclick="() => SelectItem(item)" 
+                                             @onclick:stopPropagation>
+                                            @RenderTagItem(item)
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- نیمه پایین (BottomRight) -->
+                                <div class="quadrant-area bottom-quadrant align-left" @onclick="() => SelectItem(null)" @onclick:stopPropagation>
+                                    @foreach (var item in _settings.GetItemsForPosition(BarcodePosition.BottomRight))
+                                    {
+                                        <div class="render-item @(item == _selectedItem ? "is-selected" : "")" 
+                                             style="margin-bottom: @($"{item.ItemSpacing}mm"); @(item.ItemType == BarcodePrintableItem.ProductName ? "align-self: stretch; width: 100%;" : "")"
+                                             @onclick="() => SelectItem(item)" 
+                                             @onclick:stopPropagation>
+                                            @RenderTagItem(item)
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- پنل سمت راست: بازرس ویژگی‌ها (Property Inspector) -->
+    <div class="designer-panel panel-right border-solid border-r mud-border-default @(GetTabClass(2))">
+        @if (_selectedItem == null)
+        {
+            <!-- تنظیمات کلی قالب -->
+            <div class="panel-header bg-slate-50">
+                <MudIcon Icon="@Icons.Material.Filled.AspectRatio" Color="Color.Primary" Class="me-2" />
+                <MudText Typo="Typo.h6" Class="panel-title text-slate-800">ابعاد کلی قالب برچسب</MudText>
+            </div>
+            
+            <div class="panel-body">
+                <MudStack Spacing="4">
+                    
+                    <div class="dimension-section">
+                        <MudText Typo="Typo.subtitle2" Class="section-title">ابعاد فیزیکی (میلی‌متر)</MudText>
+                        
+                        <div class="mt-3">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <span class="input-label">عرض کل برچسب (Label Width)</span>
+                                <span class="badge-mm">@_settings.LabelWidth mm</span>
+                            </div>
+                            <MudSlider @bind-Value="_settings.LabelWidth" Min="30.0" Max="120.0" Step="0.5" Color="Color.Primary" Class="py-0" />
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <span class="input-label">ارتفاع برچسب (Label Height)</span>
+                                <span class="badge-mm">@_settings.LabelHeight mm</span>
+                            </div>
+                            <MudSlider @bind-Value="_settings.LabelHeight" Min="5.0" Max="40.0" Step="0.5" Color="Color.Primary" Class="py-0" />
+                        </div>
+
+                        <!-- دم اتصال از تنظیمات فیزیکی حذف شد -->
+                    </div>
+
+                    <MudDivider />
+
+                    <div class="dimension-section">
+                        <div class="d-flex align-center justify-between mb-2">
+                            <MudText Typo="Typo.subtitle2" Class="section-title">حاشیه خارجی چاپ (Margins) - mm</MudText>
+                        </div>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.MarginTop" Label="بالا" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.MarginRight" Label="راست" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.MarginBottom" Label="پایین" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.MarginLeft" Label="چپ" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                        </MudGrid>
+                    </div>
+
+                    <MudDivider />
+
+                    <div class="dimension-section">
+                        <div class="d-flex align-center justify-between mb-2">
+                            <MudText Typo="Typo.subtitle2" Class="section-title">فاصله داخلی امن (Paddings) - mm</MudText>
+                        </div>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.PaddingTop" Label="بالا" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.PaddingRight" Label="راست" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.PaddingBottom" Label="پایین" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_settings.PaddingLeft" Label="چپ" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.0" Max="10.0" Step="0.1" Format="N1" dir="ltr" />
+                            </MudItem>
+                        </MudGrid>
+                    </div>
+
+                </MudStack>
+            </div>
+        }
+        else
+        {
+            <!-- تنظیمات اختصاصی آیتم انتخابی -->
+            <div class="panel-header bg-secondary-light">
+                <MudIcon Icon="@_selectedItem.GetIcon()" Color="Color.Secondary" Class="me-2" />
+                <div class="flex-grow-1 text-start">
+                    <MudText Typo="Typo.h6" Class="panel-title text-secondary-dark">ویژگی‌های @_selectedItem.GetLabel()</MudText>
+                </div>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="() => SelectItem(null)" Title="بستن" />
+            </div>
+
+            <div class="panel-body">
+                <MudStack Spacing="4">
+                    
+                    <!-- انتخاب موقعیت (شبکه دو در دو) -->
+                    <div class="inspector-section">
+                        <MudText Typo="Typo.subtitle2" Class="section-title">موقعیت قرارگیری بر روی برچسب</MudText>
+                        
+                        <div class="quadrant-selector-grid mt-2">
+                            <button type="button" class="quadrant-btn @(_selectedItem.Position == BarcodePosition.TopLeft ? "is-active" : "")" 
+                                    @onclick="() => ChangeItemPosition(_selectedItem, BarcodePosition.TopLeft)">
+                                <div class="quadrant-badge">1</div>
+                                <span class="quadrant-lbl">چپ - بالا</span>
+                            </button>
+
+                            <button type="button" class="quadrant-btn @(_selectedItem.Position == BarcodePosition.TopRight ? "is-active" : "")" 
+                                    @onclick="() => ChangeItemPosition(_selectedItem, BarcodePosition.TopRight)">
+                                <div class="quadrant-badge">2</div>
+                                <span class="quadrant-lbl">راست - بالا</span>
+                            </button>
+
+                            <button type="button" class="quadrant-btn @(_selectedItem.Position == BarcodePosition.BottomLeft ? "is-active" : "")" 
+                                    @onclick="() => ChangeItemPosition(_selectedItem, BarcodePosition.BottomLeft)">
+                                <div class="quadrant-badge">3</div>
+                                <span class="quadrant-lbl">چپ - پایین</span>
+                            </button>
+
+                            <button type="button" class="quadrant-btn @(_selectedItem.Position == BarcodePosition.BottomRight ? "is-active" : "")" 
+                                    @onclick="() => ChangeItemPosition(_selectedItem, BarcodePosition.BottomRight)">
+                                <div class="quadrant-badge">4</div>
+                                <span class="quadrant-lbl">راست - پایین</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <MudDivider />
+
+                    <!-- ویژگی‌های فونت و چیدمان -->
+                    <div class="inspector-section">
+                        <MudText Typo="Typo.subtitle2" Class="section-title">فونت و چیدمان فیزیکی</MudText>
+                        
+                        @if (_selectedItem.ItemType != BarcodePrintableItem.Barcode)
+                        {
+                            <div class="mt-3">
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <span class="input-label">اندازه قلم متن</span>
+                                    <span class="badge-pt">@_selectedItem.FontSize pt</span>
+                                </div>
+                                <MudSlider @bind-Value="_selectedItem.FontSize" Min="4.0" Max="24.0" Step="0.5" Color="Color.Secondary" Class="py-0" />
+                            </div>
+                        }
+
+                        <div class="mt-3">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <span class="input-label">فاصله از خط بعدی</span>
+                                <span class="badge-mm">@_selectedItem.ItemSpacing mm</span>
+                            </div>
+                            <MudSlider @bind-Value="_selectedItem.ItemSpacing" Min="0.0" Max="10.0" Step="0.1" Color="Color.Secondary" Class="py-0" />
+                        </div>
+                        
+                        <div class="mt-3 d-flex align-center justify-between">
+                            <span class="input-label">نمایش در چاپ برچسب</span>
+                            <MudSwitch @bind-Value="_selectedItem.IsVisible" Color="Color.Secondary" Class="ma-0" />
+                        </div>
+                    </div>
+
+                    @if (_selectedItem.ItemType == BarcodePrintableItem.Barcode)
+                    {
+                        <MudDivider />
+
+                        <!-- پارامترهای اختصاصی بارکد فیزیکی -->
+                        <div class="inspector-section">
+                            <MudText Typo="Typo.subtitle2" Class="section-title">تنظیمات ابعاد فیزیکی بارکد</MudText>
+
+                            <div class="mt-3">
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <span class="input-label">عرض فیزیکی بارکد</span>
+                                    <span class="badge-mm">@_selectedItem.BarcodeWidth mm</span>
+                                </div>
+                                <MudSlider @bind-Value="_selectedItem.BarcodeWidth" Min="10.0" Max="50.0" Step="0.5" Color="Color.Secondary" Class="py-0" />
+                            </div>
+
+                            <div class="mt-3">
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <span class="input-label">ارتفاع فیزیکی بارکد</span>
+                                    <span class="badge-mm">@_selectedItem.BarcodeHeight mm</span>
+                                </div>
+                                <MudSlider @bind-Value="_selectedItem.BarcodeHeight" Min="3.0" Max="20.0" Step="0.5" Color="Color.Secondary" Class="py-0" />
+                            </div>
+
+                            <div class="mt-3">
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <span class="input-label">حاشیه بیرونی بارکد</span>
+                                    <span class="badge-mm">@_selectedItem.BarcodeMargin mm</span>
+                                </div>
+                                <MudSlider @bind-Value="_selectedItem.BarcodeMargin" Min="0.0" Max="5.0" Step="0.1" Color="Color.Secondary" Class="py-0" />
+                            </div>
+
+                            <div class="mt-3">
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <span class="input-label">ضریب ضخامت خطوط بارکد</span>
+                                    <span class="badge-pt">@_selectedItem.BarWidthMultiplier px</span>
+                                </div>
+                                <MudSlider @bind-Value="_selectedItem.BarWidthMultiplier" Min="1" Max="4" Step="1" Color="Color.Secondary" Class="py-0" />
+                            </div>
+
+                            <div class="mt-3 d-flex align-center justify-between">
+                                <span class="input-label">نمایش عدد بارکد در زیر آن</span>
+                                <MudSwitch @bind-Value="_selectedItem.BarcodeDisplayValue" Color="Color.Secondary" Class="ma-0" />
+                            </div>
+
+                            @if (_selectedItem.BarcodeDisplayValue)
+                            {
+                                <div class="mt-3">
+                                    <div class="d-flex justify-between align-center mb-1">
+                                        <span class="input-label">اندازه قلم عدد بارکد</span>
+                                        <span class="badge-pt">@_selectedItem.BarcodeFontSize pt</span>
+                                    </div>
+                                    <MudSlider @bind-Value="_selectedItem.BarcodeFontSize" Min="4.0" Max="14.0" Step="0.5" Color="Color.Secondary" Class="py-0" />
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- ترتیب و دکمه حذف -->
+                    <MudDivider />
+                    
+                    @{
+                        var positionItems = _settings.GetItemsForPosition(_selectedItem.Position);
+                        var isFirst = positionItems.FirstOrDefault() == _selectedItem;
+                        var isLast = positionItems.LastOrDefault() == _selectedItem;
+                        var hasReorder = positionItems.Count > 1;
+                    }
+                    
+                    @if (hasReorder)
+                    {
+                        <div class="inspector-section">
+                            <MudText Typo="Typo.subtitle2" Class="section-title">چیدمان عمودی آیتم‌ها</MudText>
+                            <div class="d-flex gap-2 mt-2">
+                                <MudButton Variant="Variant.Outlined" 
+                                           StartIcon="@Icons.Material.Filled.ArrowUpward" 
+                                           Color="Color.Secondary" 
+                                           FullWidth="true" 
+                                           OnClick="() => MoveItemOrder(_selectedItem, true)" 
+                                           Disabled="isFirst"
+                                           Size="Size.Small">
+                                    انتقال به بالا
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" 
+                                           StartIcon="@Icons.Material.Filled.ArrowDownward" 
+                                           Color="Color.Secondary" 
+                                           FullWidth="true" 
+                                           OnClick="() => MoveItemOrder(_selectedItem, false)" 
+                                           Disabled="isLast"
+                                           Size="Size.Small">
+                                    انتقال به پایین
+                                </MudButton>
+                            </div>
+                        </div>
+                        <MudDivider />
+                    }
+
+                    <div class="inspector-section">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Error"
+                                   FullWidth="true"
+                                   OnClick="() => ToggleItemActive(_selectedItem.ItemType)"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   Class="rounded-lg py-2">
+                            غیرفعال کردن و حذف از برچسب
+                        </MudButton>
+                    </div>
+
+                </MudStack>
+            </div>
+        }
+    </div>
+
+        </div> <!-- designer-main-body -->
+
+        <!-- فوتر دکمه‌های عملیاتی -->
+        <div class="designer-footer border-solid border-t mud-border-default">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="SaveSettings"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_isLoading"
+                       Class="rounded-lg px-6 py-2.5 font-bold shadow-md footer-action-btn">
+                <span class="d-none d-sm-inline">ذخیره قالب بارکد</span>
+                <span class="d-inline d-sm-none">ذخیره</span>
+            </MudButton>
+            
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Info"
+                       OnClick="PrintTestBarcode"
+                       StartIcon="@Icons.Material.Filled.Print"
+                       Class="rounded-lg px-6 py-2 font-bold border-2 footer-action-btn">
+                <span class="d-none d-sm-inline">چاپ نمونه تستی</span>
+                <span class="d-inline d-sm-none">چاپ تست</span>
+            </MudButton>
+        </div>
+
+    </div>
+</MudCard>
+
+@code {
+    private RenderFragment RenderTagItem(BarcodePositionItemVm item)
+    {
+        return __builder =>
+        {
+            <div class="visual-element-box @(item.IsVisible ? "" : "is-hidden")">
+                
+                @if (item.ItemType == BarcodePrintableItem.Barcode)
+                {
+                    <div class="barcode-preview-block" style="margin: @($"{item.BarcodeMargin}mm") 0;">
+                        <!-- خطوط شبیه‌سازی بارکد به صورت SVG با Crisp Edge واقعی -->
+                        <div class="barcode-lines" style="width: @($"{item.BarcodeWidth}mm"); height: @($"{item.BarcodeHeight}mm");"></div>
+                        @if (item.BarcodeDisplayValue)
+                        {
+                            <div class="barcode-text" style="font-size: @($"{item.BarcodeFontSize}pt");">10206610</div>
+                        }
+                    </div>
+                }
+                else if (item.ItemType == BarcodePrintableItem.ProductName)
+                {
+                    <div class="text-preview-block font-bold rtl" style="font-size: @($"{item.FontSize}pt"); text-align: center; width: 100%;">
+                        گوشواره طلا
+                    </div>
+                }
+                else if (item.ItemType == BarcodePrintableItem.Weight)
+                {
+                    <div class="text-preview-block ltr" style="font-size: @($"{item.FontSize}pt");">
+                        W: 3.250G
+                    </div>
+                }
+                else if (item.ItemType == BarcodePrintableItem.Wage)
+                {
+                    <div class="text-preview-block ltr" style="font-size: @($"{item.FontSize}pt");">
+                        F: 15% + 150T
+                    </div>
+                }
+                
+                <!-- لیبل کوچک نام آیتم در صورت عدم هاور یا هاور شدن -->
+                <div class="hover-label">@item.GetLabel()</div>
+            </div>
+        };
+    }
+}
+
+<style>
+    :root {
+        --designer-height: calc(100vh - 220px);
+    }
+
+    .designer-layout-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        background: #f8fafc;
+        overflow: hidden;
+        direction: rtl;
+        font-family: Tahoma, sans-serif;
+    }
+
+    .designer-main-body {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .designer-footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 24px;
+        background: #ffffff;
+        height: 64px;
+        flex-shrink: 0;
+    }
+
+    .designer-footer button {
+        min-width: 150px;
+    }
+
+    /* استایل پنل‌ها */
+    .designer-panel {
+        width: 320px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        flex-shrink: 0;
+    }
+
+    .panel-left {
+        border-left: 1px solid #e2e8f0;
+    }
+
+    .panel-right {
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .panel-header {
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        min-height: 57px;
+    }
+
+    .panel-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .panel-body {
+        padding: 16px;
+        flex-grow: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* کارتهای تنظیمات */
+    .global-settings-card {
+        width: 100%;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        display: block;
+    }
+
+    .global-settings-card:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .global-settings-card.is-active {
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        border-color: var(--mud-palette-primary);
+    }
+
+    .icon-wrapper {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .bg-primary-light {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.12);
+    }
+
+    .bg-secondary-light {
+        background-color: rgba(var(--mud-palette-secondary-rgb), 0.1);
+    }
+
+    .bg-grey-light {
+        background-color: #f1f5f9;
+    }
+
+    .active-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--mud-palette-primary);
+        flex-shrink: 0;
+    }
+
+    .text-muted {
+        color: #64748b;
+    }
+
+    /* لیست آیتم‌های دایرکتوری */
+    .items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .element-list-item {
+        padding: 10px 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .element-list-item:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+
+    .element-list-item.is-selected {
+        outline: 2px solid var(--mud-palette-secondary);
+        outline-offset: -1px;
+        background-color: rgba(var(--mud-palette-secondary-rgb), 0.02);
+    }
+
+    .icon-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-avatar.is-active {
+        border: 1px solid rgba(var(--mud-palette-secondary-rgb), 0.2);
+    }
+
+    .active-badge {
+        font-size: 10px;
+        color: var(--mud-palette-success-dark);
+        background: rgba(var(--mud-palette-success-rgb), 0.1);
+        padding: 1px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        font-weight: bold;
+    }
+
+    .inactive-badge {
+        font-size: 10px;
+        color: #94a3b8;
+        background: #f1f5f9;
+        padding: 1px 6px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    /* محیط وسط: بوم فیزیکی */
+    .designer-canvas-area {
+        flex-grow: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #f1f5f9;
+    }
+
+    .canvas-toolbar {
+        height: 57px;
+        padding: 0 16px;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--mud-palette-success);
+        margin-left: 8px;
+    }
+
+    .zoom-controls {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2px;
+    }
+
+    .zoom-btn {
+        padding: 4px;
+    }
+
+    .zoom-text {
+        font-size: 12px;
+        font-weight: bold;
+        color: #475569;
+        min-width: 45px;
+        text-align: center;
+    }
+
+    .canvas-workspace {
+        flex-grow: 1;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+        background-size: 16px 16px;
+        position: relative;
+    }
+
+    .canvas-scroll-container {
+        padding: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 100%;
+        min-height: 100%;
+    }
+
+    .canvas-scale-wrapper {
+        transition: transform 0.15s ease-out;
+        transform-origin: center center;
+    }
+
+    /* بدنه فیزیکی تگ طلا */
+    .tag-body {
+        background: #ffffff;
+        border-radius: 3px;
+        box-shadow: 0 12px 35px rgba(15, 23, 42, 0.15), 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: visible;
+        border: 0.5px solid #cbd5e1;
+        box-sizing: border-box;
+    }
+
+    .tag-label-side {
+        height: 100%;
+        position: absolute;
+        top: 0;
+        background: #ffffff;
+        box-sizing: border-box;
+    }
+
+    .left-side-label {
+        left: 0;
+    }
+
+    .right-side-label {
+        /* موقعیت راست براساس محاسبات در پوزیشن مطلق هندل می‌شود */
+    }
+
+    .tag-tail-bar {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 3.5mm; /* ضخامت استاندارد دم اتصال */
+        background: #f1f5f9;
+        border-top: 1px dashed #94a3b8;
+        border-bottom: 1px dashed #94a3b8;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+    .tail-ribbon {
+        width: 100%;
+        height: 100%;
+        background-image: repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 2px, transparent 2px, transparent 6px);
+        opacity: 0.5;
+        position: absolute;
+    }
+
+    .tail-label-text {
+        font-size: 5pt;
+        color: #64748b;
+        font-weight: bold;
+        position: absolute;
+        white-space: nowrap;
+        transform: scale(0.7);
+        pointer-events: none;
+    }
+
+    /* محدوده امن خط چین قرمز */
+    .safe-print-area {
+        position: absolute;
+        border: 0.5px dashed rgba(239, 68, 68, 0.35); /* قرمز کمرنگ برای نشان دادن حاشیه امن چاپ */
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* تقسیم بندی بالا و پایین */
+    .quadrant-area {
+        height: 50%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0.2mm;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .top-quadrant {
+        justify-content: flex-start;
+        border-bottom: 0.25px dashed rgba(226, 232, 240, 0.5);
+    }
+
+    .bottom-quadrant {
+        justify-content: flex-end;
+    }
+
+    .align-left {
+        align-items: flex-start;
+    }
+
+    .align-right {
+        align-items: flex-end;
+    }
+
+    /* رندر آیتم در بوم */
+    .render-item {
+        position: relative;
+        cursor: pointer;
+        padding: 0.2mm 0.5mm;
+        border-radius: 1.5px;
+        transition: all 0.15s ease;
+        display: inline-block;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .render-item:hover {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.06);
+        outline: 0.5px dashed var(--mud-palette-primary);
+    }
+
+    .render-item.is-selected {
+        background-color: rgba(var(--mud-palette-secondary-rgb), 0.08);
+        outline: 1px solid var(--mud-palette-secondary);
+        box-shadow: 0 0 4px rgba(var(--mud-palette-secondary-rgb), 0.25);
+    }
+
+    .visual-element-box {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .visual-element-box.is-hidden {
+        opacity: 0.35;
+    }
+
+    /* لیبل کمکی کوچک */
+    .hover-label {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%) scale(0.7);
+        font-size: 7px;
+        background: #334155;
+        color: #ffffff;
+        padding: 1px 4px;
+        border-radius: 2px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+        white-space: nowrap;
+        z-index: 10;
+    }
+
+    .render-item:hover .hover-label {
+        opacity: 1;
+    }
+
+    /* نمایش متون شبیه‌سازی */
+    .text-preview-block {
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.1;
+    }
+
+    .text-preview-block.rtl {
+        font-family: 'IRANSans', 'Vazirmatn', 'Helvetica', 'Arial', sans-serif;
+        direction: rtl;
+        text-align: right;
+    }
+
+    .text-preview-block.ltr {
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        direction: ltr;
+        text-align: left;
+    }
+
+    .barcode-preview-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #ffffff;
+    }
+
+    .barcode-lines {
+        background: repeating-linear-gradient(
+            90deg,
+            #000,
+            #000 1.5px,
+            #fff 1.5px,
+            #fff 3.5px
+        );
+        display: block;
+        max-width: 100%;
+        /* اندازه ها پویا از استایل اینلاین کامپوننت اعمال می‌شوند */
+    }
+
+    .barcode-text {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        color: #000;
+        margin-top: 0.2mm;
+        line-height: 1;
+        letter-spacing: 0.2px;
+        transform: scale(0.9);
+    }
+
+    /* استایل‌های بخش بازرس ویژگی‌ها */
+    .section-title {
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.85rem;
+    }
+
+    .input-label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .badge-mm {
+        font-size: 11px;
+        color: var(--mud-palette-primary-dark);
+        background: rgba(var(--mud-palette-primary-rgb), 0.1);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    .badge-pt {
+        font-size: 11px;
+        color: var(--mud-palette-secondary-dark);
+        background: rgba(var(--mud-palette-secondary-rgb), 0.1);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    /* شبکه انتخاب موقعیت */
+    .quadrant-selector-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+    }
+
+    .quadrant-btn {
+        padding: 12px 8px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .quadrant-btn:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .quadrant-btn.is-active {
+        border-color: var(--mud-palette-secondary);
+        background: rgba(var(--mud-palette-secondary-rgb), 0.05);
+    }
+
+    .quadrant-badge {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    .quadrant-btn.is-active .quadrant-badge {
+        background: var(--mud-palette-secondary);
+        color: #ffffff;
+    }
+
+    .quadrant-lbl {
+        font-size: 11px;
+        font-weight: bold;
+        color: #475569;
+    }
+
+    .quadrant-btn.is-active .quadrant-lbl {
+        color: var(--mud-palette-secondary-dark);
+    }
+
+    .text-secondary-dark {
+        color: var(--mud-palette-secondary-dark);
+    }
+
+    /* هدر تب‌ها برای موبایل */
+    .mobile-tabs-header {
+        display: none;
+        width: 100%;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        height: 50px;
+        flex-shrink: 0;
+        box-sizing: border-box;
+    }
+
+    .mobile-tab-btn {
+        flex: 1;
+        height: 100%;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: bold;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-bottom: 3px solid transparent;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .mobile-tab-btn.is-active {
+        color: var(--mud-palette-primary);
+        border-bottom-color: var(--mud-palette-primary);
+        background: rgba(var(--mud-palette-primary-rgb), 0.02);
+    }
+
+    @@media (max-width: 959px) {
+        .mobile-tabs-header {
+            display: flex; /* نمایش هدر تب‌ها در موبایل */
+        }
+
+        .designer-layout-container {
+            flex-direction: column !important;
+            height: 100% !important;
+            box-shadow: none;
+        }
+
+        .designer-main-body {
+            flex-direction: column !important;
+            height: 0 !important;
+            flex-grow: 1 !important;
+            min-height: 0 !important;
+        }
+
+        .mobile-inactive-tab {
+            display: none !important;
+        }
+
+        .mobile-active-tab {
+            display: flex !important;
+            width: 100% !important;
+            height: 100% !important;
+            flex-direction: column !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+        }
+
+        .designer-footer {
+            padding: 8px 12px;
+            height: 56px;
+            gap: 8px;
+            justify-content: space-between;
+        }
+
+        .designer-footer button, .designer-footer .footer-action-btn {
+            flex: 1;
+            min-width: unset;
+            padding: 6px 10px !important;
+            font-size: 11px !important;
+        }
+
+        .designer-panel {
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+        }
+
+        .designer-canvas-area {
+            width: 100% !important;
+            height: 100% !important;
+            flex-grow: 1 !important;
+        }
+
+        .canvas-scroll-container {
+            padding: 20px;
+        }
+        
+        .panel-body {
+            height: 100%;
+        }
+    }
+</style>

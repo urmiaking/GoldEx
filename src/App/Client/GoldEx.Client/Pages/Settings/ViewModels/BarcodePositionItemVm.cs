@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Settings.Barcodes;
+using GoldEx.Shared.DTOs.Settings.Barcodes;
 using GoldEx.Shared.Enums;
 using MudBlazor;
 
@@ -11,15 +11,16 @@ public class BarcodePositionItemVm
     public BarcodePrintableItem ItemType { get; set; }  
     public int Order { get; set; }
     public bool IsVisible { get; set; } = true;
-    public int FontSize { get; set; } = 12;
-    public int ItemSpacing { get; set; } = 5;
+    public double FontSize { get; set; } = 7.0;
+    public double ItemSpacing { get; set; } = 0.5;
     public bool IsInToolbox { get; set; }
 
-    public int BarcodeWidth { get; set; } = 2;
-    public int BarcodeHeight { get; set; } = 50;
+    public double BarcodeWidth { get; set; } = 22.0;
+    public double BarcodeHeight { get; set; } = 8.0;
     public bool BarcodeDisplayValue { get; set; } = true;
-    public int BarcodeFontSize { get; set; } = 14;
-    public int BarcodeMargin { get; set; } = 0;
+    public double BarcodeFontSize { get; set; } = 7.0;
+    public double BarcodeMargin { get; set; } = 0.0;
+    public int BarWidthMultiplier { get; set; } = 2;
 
     public string UniqueKey => IsInToolbox
         ? $"toolbox-{ItemType}"
@@ -33,13 +34,14 @@ public class BarcodePositionItemVm
             IsInToolbox = true,
             Order = 0,
             IsVisible = true,
-            FontSize = 12,
-            ItemSpacing = 5,
-            BarcodeWidth = 2,
-            BarcodeHeight = 50,
+            FontSize = 7.0,
+            ItemSpacing = 0.5,
+            BarcodeWidth = 22.0,
+            BarcodeHeight = 8.0,
             BarcodeDisplayValue = true,
-            BarcodeFontSize = 14,
-            BarcodeMargin = 0
+            BarcodeFontSize = 7.0,
+            BarcodeMargin = 0.0,
+            BarWidthMultiplier = 2
         };
     }
 
@@ -65,6 +67,7 @@ public class BarcodePositionItemVm
             vm.BarcodeDisplayValue = response.BarcodeSettings.DisplayValue;
             vm.BarcodeFontSize = response.BarcodeSettings.FontSize;
             vm.BarcodeMargin = response.BarcodeSettings.Margin;
+            vm.BarWidthMultiplier = response.BarcodeSettings.BarWidthMultiplier;
         }
 
         return vm;
@@ -81,7 +84,8 @@ public class BarcodePositionItemVm
                 BarcodeHeight,
                 BarcodeDisplayValue,
                 BarcodeFontSize,
-                BarcodeMargin);
+                BarcodeMargin,
+                BarWidthMultiplier);
         }
 
         return new BarcodePositionItemRequest(
