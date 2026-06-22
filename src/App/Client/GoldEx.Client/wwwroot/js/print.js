@@ -1,4 +1,3 @@
-﻿
 /**
  * چاپ بارکد با تنظیمات دینامیک و کیفیت بالا (SVG)
  * @param {Object} settings - تنظیمات قالب بارکد
@@ -33,11 +32,12 @@ window.printDynamicBarcode = function (settings, data) {
 };
 
 function generateDynamicBarcodeHtml(settings, data) {
-    // Normalize margins (optional in incoming settings)
-    const marginTop = settings.marginTop ?? 0;
-    const marginRight = settings.marginRight ?? 0;
-    const marginBottom = settings.marginBottom ?? 0;
-    const marginLeft = settings.marginLeft ?? 0;
+    const marginTop = settings.marginTop ?? 1.0;
+    const marginRight = settings.marginRight ?? 1.0;
+    const marginBottom = settings.marginBottom ?? 1.0;
+    const marginLeft = settings.marginLeft ?? 1.0;
+    const tailWidth = settings.tailWidth ?? 30.0;
+    const sideWidth = (settings.labelWidth - tailWidth) / 2.0;
 
     return `
         <!DOCTYPE html>
@@ -47,10 +47,9 @@ function generateDynamicBarcodeHtml(settings, data) {
             <title>چاپ بارکد</title>
             <script src="${window.location.origin}/js/libs/jsbarcode.all.min.js"></script>
             <style>
-                /*@import '../fonts/IRANSANS/IRANSANS-font-face.css';*/
                 @page {
-                    size: ${settings.labelWidth}px ${settings.labelHeight}px;
-                    margin: ${marginTop}px ${marginRight}px ${marginBottom}px ${marginLeft}px;
+                    size: ${settings.labelWidth}mm ${settings.labelHeight}mm;
+                    margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
                 }
                 
                 * {
@@ -65,59 +64,78 @@ function generateDynamicBarcodeHtml(settings, data) {
                     margin: 0;
                     padding: 0;
                     overflow: hidden;
+                    background: white;
                 }
                 
                 body {
-                    /*font-family: Tahoma, sans-serif;*/
                     direction: rtl;
-                    background: white;
                     display: flex;
                     justify-content: center;
                     align-items: center;
                 }
                 
                 .label-container {
-                    width: ${settings.labelWidth}px;
-                    height: ${settings.labelHeight}px;
-                    padding: ${settings.paddingTop}px ${settings.paddingRight}px ${settings.paddingBottom}px ${settings.paddingLeft}px;
+                    width: ${settings.labelWidth}mm;
+                    height: ${settings.labelHeight}mm;
                     position: relative;
                     background: white;
+                    overflow: hidden;
+                }
+                
+                .label-side {
+                    height: 100%;
+                    position: absolute;
+                    top: 0;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                }
+                
+                .left-side {
+                    left: 0;
+                    width: ${sideWidth}mm;
+                    padding: ${settings.paddingTop}mm ${settings.paddingRight}mm ${settings.paddingBottom}mm ${settings.paddingLeft}mm;
+                    text-align: right;
+                }
+                
+                .right-side {
+                    right: 0;
+                    width: ${sideWidth}mm;
+                    padding: ${settings.paddingTop}mm ${settings.paddingRight}mm ${settings.paddingBottom}mm ${settings.paddingLeft}mm;
+                    text-align: left;
                 }
                 
                 .position-area {
-                    position: absolute;
                     display: flex;
                     flex-direction: column;
+                    width: 100%;
+                    flex-shrink: 0;
                 }
                 
-                .top-left {
-                    top: ${settings.paddingTop}px;
-                    left: ${settings.paddingLeft}px;
+                .left-side .position-area {
+                    align-items: flex-end;
                 }
                 
-                .top-right {
-                    top: ${settings.paddingTop}px;
-                    right: ${settings.paddingRight}px;
-                }
-                
-                .bottom-left {
-                    bottom: ${settings.paddingBottom}px;
-                    left: ${settings.paddingLeft}px;
-                }
-                
-                .bottom-right {
-                    bottom: ${settings.paddingBottom}px;
-                    right: ${settings.paddingRight}px;
+                .right-side .position-area {
+                    align-items: flex-start;
                 }
                 
                 .item {
-                    line-height: 1.3;
+                    line-height: 1.0;
+                    white-space: nowrap;
+                    flex-shrink: 0;
+                }
+
+                .barcode-svg {
+                    display: block;
+                    flex-shrink: 0;
                 }
                 
                 @media print {
                     html, body {
-                        width: ${settings.labelWidth}px !important;
-                        height: ${settings.labelHeight}px !important;
+                        width: ${settings.labelWidth}mm !important;
+                        height: ${settings.labelHeight}mm !important;
                         overflow: hidden !important;
                     }
                     
@@ -130,33 +148,29 @@ function generateDynamicBarcodeHtml(settings, data) {
         </head>
         <body>
             <div class="label-container">
-                ${generatePositionHtml('TopLeft', settings, data)}
-                ${generatePositionHtml('TopRight', settings, data)}
-                ${generatePositionHtml('BottomLeft', settings, data)}
-                ${generatePositionHtml('BottomRight', settings, data)}
+                <!-- بخش چپ برچسب (حاوی بالا راست و پایین راست) -->
+                <div class="label-side left-side">
+                    ${generatePositionHtml('TopLeft', settings, data)}
+                    ${generatePositionHtml('BottomLeft', settings, data)}
+                </div>
+
+                <!-- بخش راست برچسب (حاوی بالا چپ و پایین چپ) -->
+                <div class="label-side right-side">
+                    ${generatePositionHtml('TopRight', settings, data)}
+                    ${generatePositionHtml('BottomRight', settings, data)}
+                </div>
             </div>
         </body>
         </html>
     `;
 }
 
-/**
- * دریافت کمترین مقدار spacing
- */
-function getItemSpacings(items) {
-    const spacings = items.map(x => x.itemSpacing || 5);
-    return spacings.length > 0 ? spacings : [5];
-}
-
-/**
- * تولید HTML برای هر موقعیت
- */
 function generatePositionHtml(position, settings, data) {
     const items = settings.positionItems
         .filter(x => x.position === position && x.isVisible)
         .sort((a, b) => a.order - b.order);
 
-    if (items.length === 0) return '';
+    if (items.length === 0) return '<div></div>';
 
     const positionClass = position.replace(/([A-Z])/g, '-$1').toLowerCase().substring(1);
 
@@ -171,52 +185,48 @@ function generatePositionHtml(position, settings, data) {
     return html;
 }
 
-/**
- * تولید HTML برای هر آیتم
- */
 function generateItemHtml(item, data, position) {
     const isBottom = position.startsWith('Bottom');
     const marginProp = isBottom ? 'margin-top' : 'margin-bottom';
 
-    const style = `font-size: ${item.fontSize}px; ${marginProp}: ${item.itemSpacing}px; font-weight: 500;`;
+    const style = `font-size: ${item.fontSize}pt; ${marginProp}: ${item.itemSpacing}mm; font-weight: 500;`;
 
     switch (item.itemType) {
         case 'Barcode':
             const barcodeSettings = item.barcodeSettings || {
-                width: 2,
-                height: 50,
+                width: 22.0,
+                height: 8.0,
                 displayValue: true,
-                fontSize: 14,
-                margin: 0
+                fontSize: 7.0,
+                margin: 0.0,
+                barWidthMultiplier: 2
             };
 
-            return `<svg class="barcode-svg barcode-element" 
+            let html = `<div class="item" style="display: flex; flex-direction: column; align-items: center; justify-content: center; ${marginProp}: ${item.itemSpacing}mm;">`;
+            html += `<svg class="barcode-svg barcode-element" 
                         data-barcode="${escapeHtml(data.barcode)}" 
-                        data-position="${position}"
-                        data-width="${barcodeSettings.width}"
-                        data-height="${barcodeSettings.height}"
-                        data-display-value="${barcodeSettings.displayValue}"
-                        data-font-size="${barcodeSettings.fontSize}"
-                        data-margin="${barcodeSettings.margin}"
-                        style="${marginProp}: ${item.itemSpacing}px;"></svg>`;
+                        data-width-multiplier="${barcodeSettings.barWidthMultiplier}"
+                        style="width: ${barcodeSettings.width}mm; height: ${barcodeSettings.height}mm; display: block;"></svg>`;
+            if (barcodeSettings.displayValue) {
+                html += `<div style="font-family: monospace; font-size: ${barcodeSettings.fontSize}pt; font-weight: bold; text-align: center; margin-top: 0.3mm; line-height: 1; color: #000;">${escapeHtml(data.barcode)}</div>`;
+            }
+            html += `</div>`;
+            return html;
 
         case 'ProductName':
-            if (!data.productName)
-                return '';
-            return `<div class="item" style="${style} font-family: 'B Nazanin'">
-                        <strong>${escapeHtml(data.productName)}</strong>
+            if (!data.productName) return '';
+            return `<div class="item" style="${style} font-family: 'B Nazanin', Arial; font-weight: bold; width: 100%; text-align: center; align-self: center;">
+                        ${escapeHtml(data.productName)}
                     </div>`;
 
         case 'Weight':
-            if (!data.weight)
-                return '';
+            if (!data.weight) return '';
             return `<div class="item" style="${style}">
                         ${escapeHtml(data.weight)}
                     </div>`;
 
         case 'Wage':
-            if (!data.wage)
-                return '';
+            if (!data.wage) return '';
             return `<div class="item" style="${style}">
                         ${escapeHtml(data.wage)}
                     </div>`;
@@ -236,49 +246,45 @@ function generateAllBarcodes(printWindow, barcodeValue) {
 
     barcodeElements.forEach(svg => {
         const value = svg.getAttribute('data-barcode');
-        const width = parseInt(svg.getAttribute('data-width')) || 2;
-        const height = parseInt(svg.getAttribute('data-height')) || 50;
-        const displayValue = svg.getAttribute('data-display-value') === 'true';
-        const fontSize = parseInt(svg.getAttribute('data-font-size')) || 14;
-        const margin = parseInt(svg.getAttribute('data-margin')) || 0;
+        const widthMultiplier = parseInt(svg.getAttribute('data-width-multiplier')) || 2;
 
         if (!value) return;
 
         try {
+            // Keep the user-defined physical width and height styling intact
+            const originalStyle = svg.getAttribute('style');
+
             printWindow.JsBarcode(svg, value, {
                 format: "CODE128",
-                width: width,
-                height: height,
-                displayValue: displayValue,
-                fontSize: fontSize,
-                font: "monospace",
-                fontOptions: "bold",
-                textAlign: "center",
-                textPosition: "bottom",
-                textMargin: 2,
+                width: widthMultiplier,
+                height: 100, // Render tall in SVG (defines viewbox proportions)
+                displayValue: false, // handled in HTML instead to prevent overlapping
                 background: "#ffffff",
                 lineColor: "#000000",
-                margin: margin,
-                marginTop: margin,
-                marginBottom: margin,
-                marginLeft: margin,
-                marginRight: margin,
+                margin: 0,
                 valid: function (valid) {
                     if (!valid) {
                         console.error('Invalid barcode value:', value);
                     }
                 }
             });
+
+            // Post-process the SVG to allow custom stretching via CSS
+            svg.setAttribute('preserveAspectRatio', 'none');
+            svg.removeAttribute('width');
+            svg.removeAttribute('height');
+
+            // Forcefully restore styling so that physical dimensions are applied correctly
+            if (originalStyle) {
+                svg.setAttribute('style', originalStyle);
+            }
         } catch (error) {
             console.error('Error generating barcode:', error, 'Value:', value);
-            svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" font-size="12" fill="#000">${value}</text>`;
+            svg.style.display = 'none';
         }
     });
 }
 
-/**
- * Escape HTML برای امنیت
- */
 function escapeHtml(text) {
     if (!text) return '';
 

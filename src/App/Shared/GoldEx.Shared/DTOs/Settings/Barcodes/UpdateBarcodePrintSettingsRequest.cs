@@ -1,15 +1,16 @@
-﻿namespace GoldEx.Shared.DTOs.Settings.Barcodes;
+namespace GoldEx.Shared.DTOs.Settings.Barcodes;
 
 public sealed record UpdateBarcodePrintSettingsRequest(
-    int LabelWidth,
-    int LabelHeight,
-    int MarginTop,
-    int MarginRight,
-    int MarginBottom,
-    int MarginLeft,
-    int PaddingTop,
-    int PaddingRight,
-    int PaddingBottom,
-    int PaddingLeft,
+    double LabelWidth,
+    double LabelHeight,
+    double TailWidth,
+    double MarginTop,
+    double MarginRight,
+    double MarginBottom,
+    double MarginLeft,
+    double PaddingTop,
+    double PaddingRight,
+    double PaddingBottom,
+    double PaddingLeft,
     List<BarcodePositionItemRequest> PositionItems
 );

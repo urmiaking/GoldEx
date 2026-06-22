@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Settings.Barcodes;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
@@ -11,36 +11,19 @@ namespace GoldEx.Client.Pages.Settings.Components.Settings;
 public partial class BarcodeTemplateBuilder
 {
     private BarcodePrintSettingsVm _settings = new();
-    private readonly List<BarcodePositionItemVm> _allItems = [];
+    private BarcodePositionItemVm? _selectedItem;
     private bool _isLoading;
     private double _zoomLevel = 1.0;
+    private int _activeMobileTab = 1; // 0 = Items, 1 = Preview, 2 = Properties
 
-    private const int PreviewWidth = 600;  // عرض ثابت پیش‌نمایش
-    private const int PreviewHeight = 400; // ارتفاع ثابت پیش‌نمایش
+    private const int PreviewWidth = 600;  // Fixed preview area reference width
+    private const int PreviewHeight = 400; // Fixed preview area reference height
 
     [Inject] public IJSRuntime JsRuntime { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadSettings();
-        InitializeToolbox();
-    }
-
-    private void InitializeToolbox()
-    {
-        // فقط اگر آیتم‌های Toolbox وجود نداشته باشن اضافه کن
-        if (!_allItems.Any(x => x.IsInToolbox))
-        {
-            var toolboxItems = new List<BarcodePositionItemVm>
-            {
-                BarcodePositionItemVm.CreateToolboxItem(BarcodePrintableItem.Barcode),
-                BarcodePositionItemVm.CreateToolboxItem(BarcodePrintableItem.ProductName),
-                BarcodePositionItemVm.CreateToolboxItem(BarcodePrintableItem.Weight),
-                BarcodePositionItemVm.CreateToolboxItem(BarcodePrintableItem.Wage)
-            };
-
-            _allItems.AddRange(toolboxItems);
-        }
     }
 
     private async Task LoadSettings()
@@ -52,9 +35,7 @@ public partial class BarcodeTemplateBuilder
             afterSend: response =>
             {
                 _settings = BarcodePrintSettingsVm.CreateFrom(response);
-                _allItems.Clear();
-                InitializeToolbox();
-                _allItems.AddRange(_settings.PositionItems);
+                _selectedItem = null;
                 _isLoading = false;
             },
             onFailure: () =>
@@ -70,7 +51,7 @@ public partial class BarcodeTemplateBuilder
             action: (s, ct) => s.UpdateAsync(_settings.ToRequest(), ct),
             afterSend: () =>
             {
-                AddSuccessToast("تنظیمات با موفقیت ذخیره شد");
+                AddSuccessToast("تنظیمات قالب بارکد با موفقیت ذخیره شد");
                 _isLoading = false;
                 return Task.CompletedTask;
             },
@@ -81,153 +62,130 @@ public partial class BarcodeTemplateBuilder
             });
     }
 
-    private bool ItemSelector(BarcodePositionItemVm item, string dropzone)
+    private BarcodePositionItemVm? GetActiveItem(BarcodePrintableItem itemType)
     {
-        if (dropzone == "Toolbox")
-            return item.IsInToolbox;
-
-        if (Enum.TryParse<BarcodePosition>(dropzone, out var position))
-            return !item.IsInToolbox && item.Position == position;
-
-        return false;
+        return _settings.PositionItems.FirstOrDefault(x => x.ItemType == itemType);
     }
 
-    private Func<BarcodePositionItemVm, string, bool> CanDrop => (item, dropzone) =>
+    private void ToggleItemActive(BarcodePrintableItem itemType)
     {
-        // همیشه می‌توان به Toolbox برگرداند
-        if (dropzone == "Toolbox")
-            return true;
-
-        // اگر از Toolbox میاد، چک کن که تکراری نباشه
-        if (item.IsInToolbox && Enum.TryParse<BarcodePosition>(dropzone, out var targetPosition))
+        var existing = GetActiveItem(itemType);
+        if (existing != null)
         {
-            return !_allItems.Any(x => !x.IsInToolbox &&
-                                       x.Position == targetPosition &&
-                                       x.ItemType == item.ItemType);
-        }
-
-        return true;
-    };
-
-    private void OnItemDropped(MudItemDropInfo<BarcodePositionItemVm> dropInfo)
-    {
-        if (dropInfo.Item is null) return;
-
-        var item = dropInfo.Item;
-
-        // برگشت به Toolbox
-        if (dropInfo.DropzoneIdentifier == "Toolbox")
-        {
-            if (!item.IsInToolbox)
+            _settings.RemoveItem(existing);
+            if (_selectedItem == existing)
             {
-                _settings.RemoveItem(item);
-                item.IsInToolbox = true;
-                AddInfoToast($"{item.GetLabel()} به جعبه ابزار برگشت");
+                _selectedItem = null;
             }
-            return;
+            _activeMobileTab = 0; // Stay on items list
+            AddInfoToast($"{existing.GetLabel()} غیرفعال شد");
         }
-
-        // انتقال به موقعیت
-        if (Enum.TryParse<BarcodePosition>(dropInfo.DropzoneIdentifier, out var position))
+        else
         {
-            if (item.IsInToolbox)
+            var defaultPosition = BarcodePosition.TopLeft;
+            var order = _settings.GetItemsForPosition(defaultPosition).Count;
+
+            var newItem = new BarcodePositionItemVm
             {
-                // از Toolbox به موقعیت
-                var exists = _allItems.Any(x => !x.IsInToolbox &&
-                                                x.Position == position &&
-                                                x.ItemType == item.ItemType);
+                ItemType = itemType,
+                Position = defaultPosition,
+                Order = order,
+                IsVisible = true,
+                FontSize = itemType == BarcodePrintableItem.Barcode ? 7.0 : 8.0,
+                ItemSpacing = 0.5,
+                IsInToolbox = false
+            };
 
-                if (exists)
-                {
-                    AddWarningToast("این آیتم قبلاً در این موقعیت وجود دارد");
-                    return;
-                }
-
-                var newItem = new BarcodePositionItemVm
-                {
-                    ItemType = item.ItemType,
-                    Position = position,
-                    Order = _settings.GetItemsForPosition(position).Count,
-                    IsVisible = true,
-                    FontSize = 12,
-                    ItemSpacing = 5,
-                    IsInToolbox = false
-                };
-
-                _settings.AddItem(newItem);
-                _allItems.Add(newItem);
-
-                AddSuccessToast($"{newItem.GetLabel()} به {GetPositionLabel(position)} اضافه شد");
-            }
-            else
+            if (itemType == BarcodePrintableItem.Barcode)
             {
-                // تغییر موقعیت
-                if (item.Position != position)
-                {
-                    var exists = _allItems.Any(x => !x.IsInToolbox &&
-                                                    x.Position == position &&
-                                                    x.ItemType == item.ItemType &&
-                                                    !Equals(x, item));
-
-                    if (exists)
-                    {
-                        AddWarningToast("این آیتم قبلاً در این موقعیت وجود دارد");
-                        return;
-                    }
-
-                    item.Position = position;
-                    item.Order = dropInfo.IndexInZone;
-                    AddInfoToast($"{item.GetLabel()} به {GetPositionLabel(position)} منتقل شد");
-                }
-                else
-                {
-                    // تغییر ترتیب در همان موقعیت
-                    item.Order = dropInfo.IndexInZone;
-                }
+                newItem.BarcodeWidth = 22.0;
+                newItem.BarcodeHeight = 8.0;
+                newItem.BarcodeDisplayValue = true;
+                newItem.BarcodeFontSize = 7.0;
+                newItem.BarcodeMargin = 0.0;
+                newItem.BarWidthMultiplier = 2;
             }
 
-            StateHasChanged();
+            _settings.AddItem(newItem);
+            _selectedItem = newItem;
+            _activeMobileTab = 2; // Auto switch to properties tab on mobile
+            AddSuccessToast($"{newItem.GetLabel()} فعال شد");
         }
-    }
-
-    private void RemoveItem(BarcodePositionItemVm item)
-    {
-        if (item.IsInToolbox) return; // نمی‌شه آیتم Toolbox رو حذف کرد
-
-        _settings.RemoveItem(item);
-        _allItems.Remove(item);
-        AddInfoToast($"{item.GetLabel()} حذف شد");
         StateHasChanged();
     }
 
-    private async Task ConfigureItem(BarcodePositionItemVm item)
+    private void SelectItem(BarcodePositionItemVm? item)
     {
-        var parameters = new DialogParameters<BarcodeItemConfigDialog>
-        {
-            { x => x.Item, item }
-        };
+        _selectedItem = item;
+        _activeMobileTab = 2; // Auto switch to properties tab on mobile
+        StateHasChanged();
+    }
 
-        var dialog = await DialogService.ShowAsync<BarcodeItemConfigDialog>("تنظیمات آیتم", parameters);
-        var result = await dialog.Result;
+    private void ChangeItemPosition(BarcodePositionItemVm item, BarcodePosition newPosition)
+    {
+        if (item.Position == newPosition) return;
 
-        if (result is { Canceled: false })
+        // Save old position to re-order remaining items
+        var oldPosition = item.Position;
+
+        // Shift item to new position
+        item.Position = newPosition;
+        item.Order = _settings.GetItemsForPosition(newPosition).Count;
+
+        // Re-order remaining items in old position
+        ReorderPositionItems(oldPosition);
+        ReorderPositionItems(newPosition);
+
+        StateHasChanged();
+    }
+
+    private void MoveItemOrder(BarcodePositionItemVm item, bool moveUp)
+    {
+        var positionItems = _settings.GetItemsForPosition(item.Position);
+        var index = positionItems.IndexOf(item);
+        if (index == -1) return;
+
+        if (moveUp && index > 0)
         {
-            StateHasChanged();
+            var prev = positionItems[index - 1];
+            (item.Order, prev.Order) = (prev.Order, item.Order);
+        }
+        else if (!moveUp && index < positionItems.Count - 1)
+        {
+            var next = positionItems[index + 1];
+            (item.Order, next.Order) = (next.Order, item.Order);
+        }
+
+        // Re-evaluate list order
+        ReorderPositionItems(item.Position);
+        StateHasChanged();
+    }
+
+    private void ReorderPositionItems(BarcodePosition position)
+    {
+        var items = _settings.PositionItems
+            .Where(x => x.Position == position)
+            .OrderBy(x => x.Order)
+            .ToList();
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            items[i].Order = i;
         }
     }
 
     private void AdjustZoom(double delta)
     {
-        _zoomLevel = Math.Clamp(_zoomLevel + delta, 0.5, 2.0);
+        _zoomLevel = Math.Clamp(_zoomLevel + delta, 0.5, 4.0);
         StateHasChanged();
     }
 
     private void ResetZoom()
     {
-        // محاسبه زوم خودکار
         var scaleX = (double)PreviewWidth / _settings.LabelWidth;
         var scaleY = (double)PreviewHeight / _settings.LabelHeight;
-        _zoomLevel = Math.Min(Math.Min(scaleX, scaleY), 2.0);
+        _zoomLevel = Math.Min(Math.Min(scaleX, scaleY), 3.0);
+        if (_zoomLevel < 1.0) _zoomLevel = 1.0;
         StateHasChanged();
     }
 
@@ -235,10 +193,10 @@ public partial class BarcodeTemplateBuilder
     {
         return position switch
         {
-            BarcodePosition.TopLeft => "گوشه بالا راست",
-            BarcodePosition.TopRight => "گوشه بالا چپ",
-            BarcodePosition.BottomLeft => "گوشه پایین راست",
-            BarcodePosition.BottomRight => "گوشه پایین چپ",
+            BarcodePosition.TopLeft => "چپ - بالا",
+            BarcodePosition.BottomLeft => "چپ - پایین",
+            BarcodePosition.TopRight => "راست - بالا",
+            BarcodePosition.BottomRight => "راست - پایین",
             _ => string.Empty
         };
     }
@@ -257,6 +215,7 @@ public partial class BarcodeTemplateBuilder
         {
             labelWidth = _settings.LabelWidth,
             labelHeight = _settings.LabelHeight,
+            tailWidth = _settings.TailWidth,
             marginTop = _settings.MarginTop,
             marginRight = _settings.MarginRight,
             marginBottom = _settings.MarginBottom,
@@ -280,12 +239,24 @@ public partial class BarcodeTemplateBuilder
                         height = x.BarcodeHeight,
                         displayValue = x.BarcodeDisplayValue,
                         fontSize = x.BarcodeFontSize,
-                        margin = x.BarcodeMargin
+                        margin = x.BarcodeMargin,
+                        barWidthMultiplier = x.BarWidthMultiplier
                     }
                     : null
             }).ToArray()
         };
 
         await JsRuntime.InvokeVoidAsync("printDynamicBarcode", settingsForJs, testData);
+    }
+
+    private void SetMobileTab(int tabIndex)
+    {
+        _activeMobileTab = tabIndex;
+        StateHasChanged();
+    }
+
+    private string GetTabClass(int tabIndex)
+    {
+        return _activeMobileTab == tabIndex ? "mobile-active-tab" : "mobile-inactive-tab";
     }
 }

@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.Enums;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Settings.Barcodes;
 
@@ -8,7 +8,7 @@ public sealed record BarcodePositionItemRequest(
     BarcodePrintableItem ItemType,
     int Order,
     bool IsVisible,
-    int FontSize,
-    int ItemSpacing,
+    double FontSize,
+    double ItemSpacing,
     BarcodeDisplaySettingsDto? BarcodeSettings
 );

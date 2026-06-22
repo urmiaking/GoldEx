@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
@@ -63,6 +63,7 @@ public partial class EditorForm
     {
         labelWidth = _barcodeSettings?.LabelWidth,
         labelHeight = _barcodeSettings?.LabelHeight,
+        tailWidth = _barcodeSettings?.TailWidth,
         marginTop = _barcodeSettings?.MarginTop,
         marginRight = _barcodeSettings?.MarginRight,
         marginBottom = _barcodeSettings?.MarginBottom,
@@ -86,7 +87,8 @@ public partial class EditorForm
                     height = x.BarcodeSettings.Height,
                     displayValue = x.BarcodeSettings.DisplayValue,
                     fontSize = x.BarcodeSettings.FontSize,
-                    margin = x.BarcodeSettings.Margin
+                    margin = x.BarcodeSettings.Margin,
+                    barWidthMultiplier = x.BarcodeSettings.BarWidthMultiplier
                 }
                 : null
         }).ToArray()
