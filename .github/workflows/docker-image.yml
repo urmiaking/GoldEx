@@ -28,7 +28,15 @@ jobs:
             -f src/App/Server/GoldEx.Server/Dockerfile \
             .
 
+    - name: Build and push Docker image for goldex-karat
+      run: |
+        docker build --push \
+            -t localhost:5000/goldex-karat:latest \
+            -t localhost:5000/goldex-karat:$Version \
+            -f src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile \
+            .
+
     - name: Run initialization script
       run: |
-        chmod +x /home/user/docker/refresh-apps.sh
-        /home/user/docker/refresh-apps.sh
+        chmod +x /home/user/docker/goldex/refresh-apps.sh
+        /home/user/docker/goldex/refresh-apps.sh
