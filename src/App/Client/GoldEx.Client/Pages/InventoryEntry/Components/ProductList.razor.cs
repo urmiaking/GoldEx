@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.InventoryEntry.ViewModels;
+using GoldEx.Client.Pages.InventoryEntry.ViewModels;
 using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Shared.DTOs.BarcodeReservations;
@@ -26,6 +26,7 @@ public partial class ProductList
     {
         labelWidth = _barcodeSettings?.LabelWidth,
         labelHeight = _barcodeSettings?.LabelHeight,
+        tailWidth = _barcodeSettings?.TailWidth,
         marginTop = _barcodeSettings?.MarginTop,
         marginRight = _barcodeSettings?.MarginRight,
         marginBottom = _barcodeSettings?.MarginBottom,
@@ -49,7 +50,8 @@ public partial class ProductList
                     height = x.BarcodeSettings.Height,
                     displayValue = x.BarcodeSettings.DisplayValue,
                     fontSize = x.BarcodeSettings.FontSize,
-                    margin = x.BarcodeSettings.Margin
+                    margin = x.BarcodeSettings.Margin,
+                    barWidthMultiplier = x.BarcodeSettings.BarWidthMultiplier
                 }
                 : null
         }).ToArray()

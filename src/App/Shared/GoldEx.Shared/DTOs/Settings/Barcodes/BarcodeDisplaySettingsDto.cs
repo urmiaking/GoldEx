@@ -1,9 +1,10 @@
-﻿namespace GoldEx.Shared.DTOs.Settings.Barcodes;
+namespace GoldEx.Shared.DTOs.Settings.Barcodes;
 
 public sealed record BarcodeDisplaySettingsDto(
-    int Width,
-    int Height,
+    double Width,
+    double Height,
     bool DisplayValue,
-    int FontSize,
-    int Margin
+    double FontSize,
+    double Margin,
+    int BarWidthMultiplier
 );

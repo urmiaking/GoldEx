@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.SettingAggregate;
+using GoldEx.Server.Domain.SettingAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -60,26 +60,30 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
 
         builder.Property(x => x.LabelWidth)
             .IsRequired()
-            .HasDefaultValue(300);
+            .HasDefaultValue(80.0);
 
         builder.Property(x => x.LabelHeight)
             .IsRequired()
-            .HasDefaultValue(150);
+            .HasDefaultValue(15.0);
+
+        builder.Property(x => x.TailWidth)
+            .IsRequired()
+            .HasDefaultValue(30.0);
 
         builder.OwnsOne(x => x.Margin, margin =>
         {
-            margin.Property(m => m.Top).HasColumnName("BarcodeMarginTop").HasDefaultValue(5);
-            margin.Property(m => m.Right).HasColumnName("BarcodeMarginRight").HasDefaultValue(5);
-            margin.Property(m => m.Bottom).HasColumnName("BarcodeMarginBottom").HasDefaultValue(5);
-            margin.Property(m => m.Left).HasColumnName("BarcodeMarginLeft").HasDefaultValue(5);
+            margin.Property(m => m.Top).HasColumnName("BarcodeMarginTop").HasDefaultValue(1.0);
+            margin.Property(m => m.Right).HasColumnName("BarcodeMarginRight").HasDefaultValue(1.0);
+            margin.Property(m => m.Bottom).HasColumnName("BarcodeMarginBottom").HasDefaultValue(1.0);
+            margin.Property(m => m.Left).HasColumnName("BarcodeMarginLeft").HasDefaultValue(1.0);
         });
 
         builder.OwnsOne(x => x.Padding, padding =>
         {
-            padding.Property(p => p.Top).HasColumnName("BarcodePaddingTop").HasDefaultValue(10);
-            padding.Property(p => p.Right).HasColumnName("BarcodePaddingRight").HasDefaultValue(10);
-            padding.Property(p => p.Bottom).HasColumnName("BarcodePaddingBottom").HasDefaultValue(10);
-            padding.Property(p => p.Left).HasColumnName("BarcodePaddingLeft").HasDefaultValue(10);
+            padding.Property(p => p.Top).HasColumnName("BarcodePaddingTop").HasDefaultValue(1.0);
+            padding.Property(p => p.Right).HasColumnName("BarcodePaddingRight").HasDefaultValue(1.0);
+            padding.Property(p => p.Bottom).HasColumnName("BarcodePaddingBottom").HasDefaultValue(1.0);
+            padding.Property(p => p.Left).HasColumnName("BarcodePaddingLeft").HasDefaultValue(1.0);
         });
 
         builder.OwnsMany(x => x.PositionItems, items =>
@@ -106,8 +110,8 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
 
             items.Property(i => i.Order).HasDefaultValue(0);
             items.Property(i => i.IsVisible).HasDefaultValue(true);
-            items.Property(i => i.FontSize).HasDefaultValue(12);
-            items.Property(i => i.ItemSpacing).HasDefaultValue(5);
+            items.Property(i => i.FontSize).HasDefaultValue(7.0);
+            items.Property(i => i.ItemSpacing).HasDefaultValue(0.5);
 
             items.HasIndex(i => new { i.Position, i.ItemType });
 
@@ -115,11 +119,11 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
             {
                 bs.Property(s => s.Width)
                     .HasColumnName("BarcodeWidth")
-                    .HasDefaultValue(2);
+                    .HasDefaultValue(22.0);
 
                 bs.Property(s => s.Height)
                     .HasColumnName("BarcodeHeight")
-                    .HasDefaultValue(50);
+                    .HasDefaultValue(8.0);
 
                 bs.Property(s => s.DisplayValue)
                     .HasColumnName("BarcodeDisplayValue")
@@ -127,11 +131,15 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
 
                 bs.Property(s => s.FontSize)
                     .HasColumnName("BarcodeFontSize")
-                    .HasDefaultValue(14);
+                    .HasDefaultValue(7.0);
 
                 bs.Property(s => s.Margin)
                     .HasColumnName("BarcodeMargin")
-                    .HasDefaultValue(0);
+                    .HasDefaultValue(0.0);
+
+                bs.Property(s => s.BarWidthMultiplier)
+                    .HasColumnName("BarWidthMultiplier")
+                    .HasDefaultValue(2);
             });
         });
 
