@@ -9,41 +9,47 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
 {
     private readonly List<BarcodePositionItem> _positionItems = [];
 
-    public int LabelWidth { get; private set; }
-    public int LabelHeight { get; private set; }
+    public double LabelWidth { get; private set; }
+    public double LabelHeight { get; private set; }
+    public double TailWidth { get; private set; }
     public BarcodeMargin Margin { get; private set; } = BarcodeMargin.Default();
     public BarcodePadding Padding { get; private set; } = BarcodePadding.Default();
     public IReadOnlyCollection<BarcodePositionItem> PositionItems => _positionItems.AsReadOnly();
 
     private BarcodePrintSettings() { }
 
-    private BarcodePrintSettings(int labelWidth, int labelHeight)
+    private BarcodePrintSettings(double labelWidth, double labelHeight, double tailWidth)
     {
         Id = new BarcodePrintSettingsId(Guid.CreateVersion7());
         LabelWidth = labelWidth;
         LabelHeight = labelHeight;
+        TailWidth = tailWidth;
     }
 
     public static BarcodePrintSettings CreateDefault()
     {
-        var settings = new BarcodePrintSettings(250, 50);
+        var settings = new BarcodePrintSettings(80.0, 15.0, 30.0);
 
         // تنظیمات پیش‌فرض
-        settings.AddPositionItem(BarcodePosition.TopLeft, BarcodePrintableItem.Weight, 0, true, 18, 5);
-        settings.AddPositionItem(BarcodePosition.TopRight, BarcodePrintableItem.Barcode, 0, true, 12, 5);
-        settings.AddPositionItem(BarcodePosition.BottomLeft, BarcodePrintableItem.Wage, 0, true, 16, 5);
-        settings.AddPositionItem(BarcodePosition.BottomRight, BarcodePrintableItem.ProductName, 0, true, 10, 5);
+        settings.AddPositionItem(BarcodePosition.TopLeft, BarcodePrintableItem.Weight, 0, true, 8.0, 0.5);
+        settings.AddPositionItem(BarcodePosition.TopRight, BarcodePrintableItem.Barcode, 0, true, 8.0, 0.5);
+        settings.AddPositionItem(BarcodePosition.BottomLeft, BarcodePrintableItem.Wage, 0, true, 8.0, 0.5);
+        settings.AddPositionItem(BarcodePosition.BottomRight, BarcodePrintableItem.ProductName, 0, true, 8.0, 0.5);
 
         return settings;
     }
 
-    public void UpdateLabelDimensions(int width, int height)
+    public void UpdateLabelDimensions(double width, double height, double tailWidth)
     {
-        if (width <= 0 || height <= 0)
-            throw new ArgumentException("ابعاد برچسب باید بزرگتر از صفر باشد");
+        if (width <= 0 || height <= 0 || tailWidth < 0)
+            throw new ArgumentException("ابعاد برچسب باید بزرگتر از صفر باشد و دم برچسب نمی‌تواند منفی باشد");
+
+        if (tailWidth >= width)
+            throw new ArgumentException("عرض دم برچسب نمی‌تواند بزرگتر یا مساوی عرض کل برچسب باشد");
 
         LabelWidth = width;
         LabelHeight = height;
+        TailWidth = tailWidth;
     }
 
     public void UpdateMargin(BarcodeMargin margin)
@@ -61,8 +67,8 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
         BarcodePrintableItem itemType,
         int order = 0,
         bool isVisible = true,
-        int fontSize = 12,
-        int itemSpacing = 5,
+        double fontSize = 7.0,
+        double itemSpacing = 0.5,
         BarcodeDisplaySettings? barcodeDisplaySettings = null)
     {
         // بررسی تکراری نبودن
@@ -80,7 +86,7 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
 
     public BarcodePrintSettings Clone()
     {
-        var clone = new BarcodePrintSettings(LabelWidth, LabelHeight);
+        var clone = new BarcodePrintSettings(LabelWidth, LabelHeight, TailWidth);
         if (Margin != null)
         {
             clone.UpdateMargin(BarcodeMargin.Create(Margin.Top, Margin.Right, Margin.Bottom, Margin.Left));
@@ -98,7 +104,7 @@ public sealed class BarcodePrintSettings : EntityBase<BarcodePrintSettingsId>
                 item.IsVisible,
                 item.FontSize,
                 item.ItemSpacing,
-                item.BarcodeSettings != null ? BarcodeDisplaySettings.Create(item.BarcodeSettings.Width, item.BarcodeSettings.Height, item.BarcodeSettings.DisplayValue, item.BarcodeSettings.FontSize, item.BarcodeSettings.Margin) : null
+                item.BarcodeSettings != null ? BarcodeDisplaySettings.Create(item.BarcodeSettings.Width, item.BarcodeSettings.Height, item.BarcodeSettings.DisplayValue, item.BarcodeSettings.FontSize, item.BarcodeSettings.Margin, item.BarcodeSettings.BarWidthMultiplier) : null
             );
         }
         return clone;

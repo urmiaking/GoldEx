@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.SettingAggregate.ValueObjects;
@@ -49,7 +49,7 @@ internal class BarcodePrintSettingsService(
 
         var barcodePrintSettings = BarcodePrintSettings.CreateDefault();
 
-        barcodePrintSettings.UpdateLabelDimensions(request.LabelWidth, request.LabelHeight);
+        barcodePrintSettings.UpdateLabelDimensions(request.LabelWidth, request.LabelHeight, request.TailWidth);
 
         barcodePrintSettings.UpdateMargin(BarcodeMargin.Create(
             request.MarginTop,
@@ -76,7 +76,8 @@ internal class BarcodePrintSettingsService(
                     item.BarcodeSettings.Height,
                     item.BarcodeSettings.DisplayValue,
                     item.BarcodeSettings.FontSize,
-                    item.BarcodeSettings.Margin);
+                    item.BarcodeSettings.Margin,
+                    item.BarcodeSettings.BarWidthMultiplier);
             }
 
             barcodePrintSettings.AddPositionItem(

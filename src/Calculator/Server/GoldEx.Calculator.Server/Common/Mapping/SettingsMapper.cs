@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.SettingAggregate.ValueObjects;
 using GoldEx.Shared.DTOs.Settings;
@@ -19,6 +19,7 @@ internal class SettingsMapper : IRegister
         config.NewConfig<BarcodePrintSettings, GetBarcodePrintSettingsResponse>()
             .Map(dest => dest.LabelWidth, src => src.LabelWidth)
             .Map(dest => dest.LabelHeight, src => src.LabelHeight)
+            .Map(dest => dest.TailWidth, src => src.TailWidth)
             .Map(dest => dest.MarginTop, src => src.Margin.Top)
             .Map(dest => dest.MarginRight, src => src.Margin.Right)
             .Map(dest => dest.MarginBottom, src => src.Margin.Bottom)

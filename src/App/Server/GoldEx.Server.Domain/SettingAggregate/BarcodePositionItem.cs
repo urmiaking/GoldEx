@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.SettingAggregate.ValueObjects;
 using GoldEx.Shared.Enums;
 
@@ -11,8 +11,8 @@ public sealed class BarcodePositionItem : EntityBase<BarcodePositionItemId>
     public BarcodePrintableItem ItemType { get; private set; }
     public int Order { get; private set; }
     public bool IsVisible { get; private set; }
-    public int FontSize { get; private set; }
-    public int ItemSpacing { get; private set; }
+    public double FontSize { get; private set; }
+    public double ItemSpacing { get; private set; }
 
     public BarcodeDisplaySettings? BarcodeSettings { get; private set; }
 
@@ -23,8 +23,8 @@ public sealed class BarcodePositionItem : EntityBase<BarcodePositionItemId>
         BarcodePrintableItem itemType,
         int order,
         bool isVisible,
-        int fontSize,
-        int itemSpacing,
+        double fontSize,
+        double itemSpacing,
         BarcodeDisplaySettings? barcodeSettings = null)
     {
         Id = new BarcodePositionItemId(Guid.CreateVersion7());
@@ -44,8 +44,8 @@ public sealed class BarcodePositionItem : EntityBase<BarcodePositionItemId>
         BarcodePrintableItem itemType,
         int order = 0,
         bool isVisible = true,
-        int fontSize = 12,  
-        int itemSpacing = 5,
+        double fontSize = 7.0,  
+        double itemSpacing = 0.5,
         BarcodeDisplaySettings? barcodeSettings = null)
     {
         if (fontSize <= 0)
@@ -70,7 +70,7 @@ public sealed class BarcodePositionItem : EntityBase<BarcodePositionItemId>
         Order = order;
     }
 
-    public void UpdateFontSize(int fontSize)
+    public void UpdateFontSize(double fontSize)
     {
         if (fontSize <= 0)
             throw new ArgumentException("اندازه فونت باید بزرگتر از صفر باشد");
@@ -78,7 +78,7 @@ public sealed class BarcodePositionItem : EntityBase<BarcodePositionItemId>
         FontSize = fontSize;
     }
 
-    public void UpdateItemSpacing(int spacing)
+    public void UpdateItemSpacing(double spacing)
     {
         if (spacing < 0)
             throw new ArgumentException("فاصله بین آیتم‌ها نمی‌تواند منفی باشد");

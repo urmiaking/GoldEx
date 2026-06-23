@@ -150,8 +150,9 @@ internal static class ServiceCollectionExtensions
                 },
                 dbContextOptions =>
                 {
-                    dbContextOptions.ConfigureWarnings(w =>
-                        w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
+                    dbContextOptions.ConfigureWarnings(w => w
+                        .Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS)
+                        .Ignore(RelationalEventId.PendingModelChangesWarning));
                 });
 
             return services;
