@@ -1,0 +1,83 @@
+@inherits GoldExComponentBase
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">فیلترهای مشتریان</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <!-- TransactionType -->
+            <MudSelect T="TransactionType?"
+                       Variant="Variant.Outlined"
+                       Label="وضعیت حساب"
+                       Value="@_transactionType"
+                       ValueChanged="@(v => _transactionType = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetTransactionTypeIcon(_transactionType)"
+                       AdornmentColor="@GetTransactionTypeIconColor(_transactionType)"
+                       Class="w-100">
+                <MudSelectItem T="TransactionType?" Value="@(null as TransactionType?)">همه</MudSelectItem>
+                @foreach (var type in Enum.GetValues<TransactionType>())
+                {
+                    <MudSelectItem T="TransactionType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- CustomerType -->
+            <MudSelect T="CustomerType?"
+                       Variant="Variant.Outlined"
+                       Label="نوع مشتری"
+                       Value="@_customerType"
+                       ValueChanged="@(v => _customerType = v)"
+                       Dense="true"
+                       Margin="Margin.Dense"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@GetCustomerTypeIcon(_customerType)"
+                       AdornmentColor="@GetCustomerTypeIconColor(_customerType)"
+                       Class="w-100">
+                <MudSelectItem T="CustomerType?" Value="@(null as CustomerType?)">همه</MudSelectItem>
+                @foreach (var type in Enum.GetValues<CustomerType>())
+                {
+                    <MudSelectItem T="CustomerType?" Value="@type">@type.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- Date range -->
+            <MudDateRangePicker DateRange="@_dateRange"
+                                DateRangeChanged="@(dr => _dateRange = dr)"
+                                Variant="Variant.Outlined"
+                                Label="تاریخ ثبت مشتری"
+                                Margin="Margin.Dense"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Adornment="Adornment.Start"
+                                ShowToolbar="false"
+                                Clearable="true"
+                                Class="w-100" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="d-flex align-center justify-space-between w-100 px-2 pb-2">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Error"
+                       OnClick="Clear"
+                       StartIcon="@Icons.Material.Filled.Delete">
+                حذف فیلترها
+            </MudButton>
+            <div class="d-flex gap-2">
+                <MudButton Color="Color.Default"
+                           OnClick="Cancel">
+                    انصراف
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           OnClick="Apply"
+                           StartIcon="@Icons.Material.Filled.Check">
+                    اعمال
+                </MudButton>
+            </div>
+        </div>
+    </DialogActions>
+</MudDialog>

@@ -1,4 +1,4 @@
-﻿<MudDialog>
+<MudDialog>
     <DialogContent>
         <MudForm @ref="_form" Model="_model">
             <MudGrid Spacing="2">
@@ -65,6 +65,29 @@
                                                       Variant="Variant.Outlined"
                                                       Lines="2" />
                                     </MudItem>
+                                    <MudItem xs="12" Class="d-flex align-center gap-4 mt-2">
+                                        @if (!string.IsNullOrEmpty(_model.CompanyLogo))
+                                        {
+                                            <div class="d-flex align-center gap-3 border p-2 rounded" style="border-color: var(--mud-palette-divider);">
+                                                <img src="@_model.CompanyLogo" alt="لوگوی فروشگاه" style="max-height: 80px; max-width: 120px; object-fit: contain;" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="ClearLogo" Tooltip="حذف لوگو" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex flex-column gap-1">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">لوگوی فروشگاه (تصویر، حداکثر ۵۰۰ کیلوبایت)</MudText>
+                                                <InputFile id="logoUploadPanel" OnChange="UploadLogoAsync" accept=".jpg,.jpeg,.png,.webp" style="display:none;" />
+                                                <MudButton HtmlTag="label"
+                                                           Variant="Variant.Outlined"
+                                                           Color="Color.Info"
+                                                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                                                           for="logoUploadPanel">
+                                                    بارگذاری لوگو
+                                                </MudButton>
+                                            </div>
+                                        }
+                                    </MudItem>
                                 </MudGrid>
                             </MudExpansionPanel>
                         </MudExpansionPanels>
@@ -106,6 +129,29 @@
                                               AdornmentIcon="@Icons.Material.Filled.LocationOn"
                                               Variant="Variant.Outlined"
                                               Lines="2" />
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex align-center gap-4 mt-2">
+                                @if (!string.IsNullOrEmpty(_model.CompanyLogo))
+                                {
+                                    <div class="d-flex align-center gap-3 border p-2 rounded" style="border-color: var(--mud-palette-divider);">
+                                        <img src="@_model.CompanyLogo" alt="لوگوی فروشگاه" style="max-height: 80px; max-width: 120px; object-fit: contain;" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="ClearLogo" Tooltip="حذف لوگو" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex flex-column gap-1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">لوگوی فروشگاه (تصویر، حداکثر ۵۰۰ کیلوبایت)</MudText>
+                                        <InputFile id="logoUploadDirect" OnChange="UploadLogoAsync" accept=".jpg,.jpeg,.png,.webp" style="display:none;" />
+                                        <MudButton HtmlTag="label"
+                                                   Variant="Variant.Outlined"
+                                                   Color="Color.Info"
+                                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                                   for="logoUploadDirect">
+                                            بارگذاری لوگو
+                                        </MudButton>
+                                    </div>
+                                }
                             </MudItem>
                         </MudGrid>
                     }

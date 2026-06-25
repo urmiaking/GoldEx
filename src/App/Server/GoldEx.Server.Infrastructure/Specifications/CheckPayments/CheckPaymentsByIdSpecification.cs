@@ -15,6 +15,7 @@ public class CheckPaymentsByIdSpecification : SpecificationBase<CheckPayment>
         AddInclude(x => x.InvoicePayment!);
         AddInclude(x => x.InvoicePayment!.PriceUnit!);
         AddInclude(x => x.InvoicePayment!.Invoice!);
+        AddInclude(x => x.InvoicePayment!.Invoice!.PriceUnit!);
         AddInclude(x => x.ChangeLogs);
     }
 }

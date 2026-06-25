@@ -75,8 +75,11 @@ public partial class ProductItemEditor
 
         if (TradeScale is TradeScale.Wholesale)
         {
-            Model.ProfitPercent = 0;
-            Model.TaxPercent = 0;
+            if (!Model.Id.HasValue)
+            {
+                Model.ProfitPercent = 0;
+                Model.TaxPercent = 0;
+            }
         }
 
         base.OnParametersSet();

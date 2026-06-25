@@ -22,4 +22,7 @@ public record GetCheckPaymentListResponse(
     InvoiceType InvoiceType,
     string? ImageUrl,
     string? TargetFinancialAccountName,
-    string? Description);
+    string? Description,
+    Guid InvoicePriceUnitId,
+    string InvoicePriceUnitTitle,
+    decimal? OriginalExchangeRate);

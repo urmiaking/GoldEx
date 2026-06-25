@@ -49,6 +49,9 @@ internal class CheckPaymentMapper : IRegister
                         ? src.ChangeLogs
                             .OrderByDescending(cl => cl.DateTime)
                             .First().Description
-                        : null);
+                        : null)
+            .Map(dest => dest.InvoicePriceUnitId, src => src.InvoicePayment != null && src.InvoicePayment.Invoice != null ? src.InvoicePayment.Invoice.PriceUnitId.Value : Guid.Empty)
+            .Map(dest => dest.InvoicePriceUnitTitle, src => src.InvoicePayment != null && src.InvoicePayment.Invoice != null && src.InvoicePayment.Invoice.PriceUnit != null ? src.InvoicePayment.Invoice.PriceUnit.Title : string.Empty)
+            .Map(dest => dest.OriginalExchangeRate, src => src.InvoicePayment != null ? src.InvoicePayment.ExchangeRate : null);
     }
 }

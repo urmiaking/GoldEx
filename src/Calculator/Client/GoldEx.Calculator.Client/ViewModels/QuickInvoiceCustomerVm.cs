@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoldEx.Calculator.Client.ViewModels;
 
@@ -17,4 +17,6 @@ public class QuickInvoiceCustomerVm
 
     [Required(ErrorMessage = "آدرس فروشگاه را وارد کنید")]
     public string CompanyAddress { get; set; } = string.Empty;
+
+    public string? CompanyLogo { get; set; }
 }
