@@ -1,4 +1,4 @@
-﻿@using System.Globalization
+@using System.Globalization
 @inherits GoldExComponentBase
 
 @if (ShowTitle)
@@ -100,13 +100,6 @@
                            Icon="@Icons.Material.Filled.Add"
                            Class="mr-3" OnClick="@(_ => OnCreate())"
                            Size="@Size.Small" Variant="@Variant.Filled"/>
-
-            <CustomerFiltersPopover Open="@_mobileFiltersOpen"
-                                    OnClose="CloseMobileFilters"
-                                    DateRange="_filterDateRange"
-                                    CustomerTypeParam="_customerType"
-                                    TransactionTypeParam="_transactionType"
-                                    OnApply="ApplyMobileFilters"/>
         </MudHidden>
     </ToolBarContent>
     <HeaderContent>
