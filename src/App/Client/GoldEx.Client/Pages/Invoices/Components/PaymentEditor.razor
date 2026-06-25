@@ -1,4 +1,4 @@
-﻿@using GoldEx.Client.Pages.FinancialAccounts.ViewModels
+@using GoldEx.Client.Pages.FinancialAccounts.ViewModels
 @using GoldEx.Shared.DTOs.FinancialAccounts
 @using GoldEx.Shared.DTOs.Invoices
 @inherits GoldExComponentBase
@@ -43,7 +43,7 @@
                                          Adornment="Adornment.End"
                                          AdornmentText="@Model.AmountAdornmentText"
                                          Class="flex-grow-1" />
-                        @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer)
+                        @if (Model.PaymentType is PaymentType.InternalCash or PaymentType.CustomerTransfer or PaymentType.Check)
                         {
                             <MudMenu>
                                 <ActivatorContent>

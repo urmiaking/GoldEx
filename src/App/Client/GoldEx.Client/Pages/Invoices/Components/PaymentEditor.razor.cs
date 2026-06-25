@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.FinancialAccounts.Components;
 using GoldEx.Client.Pages.FinancialAccounts.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
@@ -159,6 +159,9 @@ public partial class PaymentEditor
         if (Model.PaymentType is PaymentType.InternalCash)
             await LoadFinancialAccountsAsync();
 
+        if (Model.PaymentType is PaymentType.Check && Model.CheckIssuer != null)
+            await LoadFinancialAccountsAsync(Model.CheckIssuer.Id.Value);
+
         if (Model.TargetInvoice != null)
             Model.TargetInvoice = null;
     }
@@ -273,7 +276,7 @@ public partial class PaymentEditor
         if (result is { Canceled: false, Data: FinancialAccountVm financialAccount })
         {
             await LoadFinancialAccountsAsync(customer.Id!.Value);
-            Model.CheckIssuerFinancialAccount = financialAccount;
+            Model.CheckIssuerFinancialAccount = _customerFinancialAccounts.FirstOrDefault(x => x.Id == financialAccount.Id);
             StateHasChanged();
         }
     }

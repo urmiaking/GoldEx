@@ -1,4 +1,6 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
+@using GoldEx.Client.Pages.Finances.PaymentVouchers.Components
+@using GoldEx.Shared.DTOs.PaymentVouchers
 
 <MudDialog>
     <TitleContent>
@@ -8,7 +10,7 @@
         <MudTable T="InvoicePaymentVm" Hover="true" FixedHeader="true" Dense="true" Items="Items"
                   SelectOnRowClick="false" Breakpoint="Breakpoint.Xs" Elevation="2" ContainerStyle="max-height: 300px;">
             <ToolBarContent>
-                <div class="d-flex flex-1 gap-2 justify-content-md-center justify-content-between">
+                <div class="d-flex flex-1 gap-2 justify-content-md-center justify-content-between flex-wrap">
                     <MudHidden Breakpoint="Breakpoint.SmAndDown">
                         <MudButton Class="ml-4" Color="Color.Success" EndIcon="@Icons.Material.Filled.Payment" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.InternalCash)">
                             <MudText>پرداخت نقدی</MudText>
@@ -25,6 +27,12 @@
                         <MudButton Class="ml-4" Color="Color.Warning" EndIcon="@Icons.Material.Filled.Whatshot" Variant="Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)">
                             <MudText Color="Color.Dark">طلای آبشده</MudText>
                         </MudButton>
+                        @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
+                        {
+                            <MudButton Class="ml-4" Color="Color.Dark" EndIcon="@Icons.Material.Filled.Assignment" Variant="Variant.Filled" OnClick="OnApplyPrepaymentVouchers">
+                                <MudText>اعمال پیش‌پرداخت‌ها</MudText>
+                            </MudButton>
+                        }
                     </MudHidden>
 
                     <MudHidden Breakpoint="Breakpoint.MdAndUp">
@@ -43,6 +51,12 @@
                         <MudTooltip Color="Color.Warning" Text="طلای آبشده" Arrow="true">
                             <MudIconButton Color="@Color.Warning" Icon="@Icons.Material.Filled.Whatshot" Variant="@Variant.Filled" OnClick="() => OnAddPayment(PaymentType.MoltenGoldInventory)" />
                         </MudTooltip>
+                        @if (InvoiceType == InvoiceType.Purchase && CustomerId.HasValue)
+                        {
+                            <MudTooltip Color="Color.Dark" Text="اعمال پیش‌پرداخت‌ها" Arrow="true">
+                                <MudIconButton Color="@Color.Dark" Icon="@Icons.Material.Filled.Assignment" Variant="@Variant.Filled" OnClick="OnApplyPrepaymentVouchers" />
+                            </MudTooltip>
+                        }
                     </MudHidden>
                 </div>
                 
