@@ -89,7 +89,15 @@ internal class CheckPaymentService(
             await repository.UpdateAsync(checkPayment, cancellationToken);
 
             // 2. Generate double-entry transactions
-            await accountingTransactionService.CreateTransactionsForCheckAcceptAsync(checkPayment, request.TargetFinancialAccountId, request.Description, cancellationToken);
+            await accountingTransactionService.CreateTransactionsForCheckAcceptAsync(
+                checkPayment,
+                request.TargetFinancialAccountId,
+                request.Description,
+                request.CashingExchangeRate,
+                request.AdjustmentMode,
+                request.SettleDifference,
+                request.SettlementFinancialAccountId,
+                cancellationToken);
 
             await repository.SaveAsync(cancellationToken);
             await dbTransaction.CommitAsync(cancellationToken);

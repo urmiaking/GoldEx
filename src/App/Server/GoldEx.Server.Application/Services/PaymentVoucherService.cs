@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -22,6 +22,7 @@ namespace GoldEx.Server.Application.Services;
 [ScopedService]
 internal class PaymentVoucherService(
     IPaymentVoucherRepository repository,
+    IInvoicePaymentRepository invoicePaymentRepository,
     IAccountingTransactionService transactionService,
     IMapper mapper,
     ILogger<PaymentVoucherService> logger,
@@ -64,7 +65,14 @@ internal class PaymentVoucherService(
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        return mapper.Map<List<GetPaymentVoucherResponse>>(list);
+        var appliedVoucherIds = await invoicePaymentRepository
+            .Get(new AppliedVouchersSpecification())
+            .Select(ip => ip.PaymentVoucherId!.Value)
+            .ToListAsync(cancellationToken);
+
+        var pending = list.Where(v => !appliedVoucherIds.Contains(v.Id)).ToList();
+
+        return mapper.Map<List<GetPaymentVoucherResponse>>(pending);
     }
 
     public async Task<GetPaymentVoucherResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
@@ -195,5 +203,13 @@ internal class PaymentVoucherService(
     {
         var lastNumber = await repository.GetLastNumberAsync(cancellationToken);
         return new GetVoucherNumberResponse(lastNumber);
+    }
+}
+
+internal class AppliedVouchersSpecification : GoldEx.Sdk.Server.Infrastructure.Specifications.SpecificationBase<GoldEx.Server.Domain.InvoicePaymentAggregate.InvoicePayment>
+{
+    public AppliedVouchersSpecification()
+    {
+        AddCriteria(x => x.PaymentVoucherId != null);
     }
 }
