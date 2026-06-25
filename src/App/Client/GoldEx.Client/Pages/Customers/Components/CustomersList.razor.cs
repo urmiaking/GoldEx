@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Components.Services;
 using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Components;
 using GoldEx.Client.Pages.Transactions.Components;
@@ -25,7 +25,6 @@ public partial class CustomersList
     private readonly DialogOptions _dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
     private CustomerType? _customerType;
     private TransactionType? _transactionType;
-    private bool _mobileFiltersOpen;
 
     protected override void OnInitialized()
     {
@@ -293,16 +292,29 @@ public partial class CustomersList
         TransactionType? TransactionType
     );
 
-    private void OpenMobileFilters()
+    private async Task OpenMobileFilters()
     {
-        _mobileFiltersOpen = true;
-        StateHasChanged();
-    }
+        var parameters = new DialogParameters<CustomerFiltersDialog>
+        {
+            { x => x.DateRange, _filterDateRange },
+            { x => x.CustomerTypeParam, _customerType },
+            { x => x.TransactionTypeParam, _transactionType }
+        };
 
-    private void CloseMobileFilters()
-    {
-        _mobileFiltersOpen = false;
-        StateHasChanged();
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.Small
+        };
+
+        var dialog = await DialogService.ShowAsync<CustomerFiltersDialog>("فیلترها", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false } && result.Data is CustomerMobileFiltersResult filterResult)
+        {
+            await ApplyMobileFilters(filterResult);
+        }
     }
 
     private async Task ApplyMobileFilters(CustomerMobileFiltersResult result)
@@ -311,7 +323,6 @@ public partial class CustomersList
         _customerType = result.CustomerType;
         _transactionType = result.TransactionType;
 
-        _mobileFiltersOpen = false;
         await RefreshAsync();
     }
 

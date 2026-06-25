@@ -1,5 +1,7 @@
-﻿using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.Invoices.ViewModels;
+using GoldEx.Client.Pages.Finances.PaymentVouchers.Components;
 using GoldEx.Shared.DTOs.Licenses;
+using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Settings;
 using GoldEx.Shared.Enums;
@@ -205,6 +207,63 @@ public partial class PaymentDialog
         if (result is { Canceled: false, Data: InvoicePaymentVm addedPayment })
         {
             Items.Add(addedPayment);
+        }
+    }
+
+    private async Task OnApplyPrepaymentVouchers()
+    {
+        if (!CustomerId.HasValue)
+            return;
+
+        var selectedVoucherIds = Items
+            .Where(p => p.VoucherId.HasValue)
+            .Select(p => p.VoucherId!.Value)
+            .ToList();
+
+        var parameters = new DialogParameters<PaymentVouchersSelectorList>
+        {
+            { x => x.CustomerId, CustomerId.Value },
+            { x => x.SelectedPaymentVouchers, selectedVoucherIds }
+        };
+
+        var dialog = await DialogService.ShowAsync<PaymentVouchersSelectorList>(
+            "انتخاب اسناد پیش‌پرداخت",
+            parameters,
+            _dialogOptions with { MaxWidth = MaxWidth.Small });
+
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: HashSet<GetPaymentVoucherResponse> selectedVouchers })
+        {
+            // 1. Remove any existing payment items that are linked to a voucher
+            var existingVoucherPayments = Items.Where(p => p.VoucherId.HasValue).ToList();
+            foreach (var payment in existingVoucherPayments)
+            {
+                Items.Remove(payment);
+            }
+
+            // 2. Add the newly selected vouchers as payments
+            foreach (var voucher in selectedVouchers)
+            {
+                var voucherPriceUnit = PriceUnits.FirstOrDefault(pu => pu.Id == voucher.PriceUnit.Id);
+                
+                var paymentVm = new InvoicePaymentVm
+                {
+                    Amount = voucher.Amount,
+                    PriceUnit = voucherPriceUnit,
+                    PaymentType = PaymentType.InternalCash, // Prepayment acts as cash settled in advance
+                    PaymentSide = PaymentSide.Pay,
+                    PaymentDate = voucher.PaymentDate,
+                    VoucherId = voucher.Id,
+                    Note = $"اعمال سند پیش‌پرداخت شماره {voucher.VoucherNumber} - {voucher.Description}",
+                    ExchangeRate = voucher.ExchangeRate,
+                    AmountAdornmentText = voucherPriceUnit?.Title ?? string.Empty,
+                    Disabled = true // Disable editing since it is linked to a voucher
+                };
+
+                Items.Add(paymentVm);
+            }
+            StateHasChanged();
         }
     }
 }

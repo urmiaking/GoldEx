@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.PaymentVoucherAggregate;
+using GoldEx.Server.Domain.PaymentVoucherAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Invoices;
 using GoldEx.Server.Infrastructure.Specifications.PriceUnits;
@@ -19,7 +19,10 @@ internal class PaymentVoucherMapper : IRegister
             .Map(dest => dest.Amount, src => src.Amount * (src.ExchangeRate ?? 1))
             .Map(dest => dest.PriceUnit, src => MapContext.Current.GetService<IPriceUnitRepository>()
                 .Get(new PriceUnitsSetAsDefaultSpecification()).FirstOrDefault()!.Title)
-            .Map(dest => dest.VoucherStatus, src => VoucherStatus.Pending) // TODO: Remove this!
+            .Map(dest => dest.VoucherStatus,
+                src => MapContext.Current.GetService<IInvoiceRepository>()
+                    .Get(new InvoicesByVoucherIdSpecification(src.Id))
+                    .Any() ? VoucherStatus.Applied : VoucherStatus.Pending)
             .Map(dest => dest.SupplierName,
                 src => src.Customer != null ? src.Customer.FullName : string.Empty)
             .Map(dest => dest.SupplierPhoneNumber,

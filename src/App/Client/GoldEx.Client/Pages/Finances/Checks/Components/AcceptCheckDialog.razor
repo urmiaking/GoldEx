@@ -8,45 +8,145 @@
         <MudText Typo="Typo.h6">وصول چک بانکی</MudText>
     </TitleContent>
     <DialogContent>
-        <MudForm @ref="_form" ValidationDelay="100">
-            @if (Check.InvoiceType == InvoiceType.Sell)
-            {
-                <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Secondary">
-                    این چک دریافتی است. لطفاً حساب مالی (بانک/صندوق) جهت واریز مبلغ چک را انتخاب کنید:
-                </MudText>
+        <div style="max-height: 65vh; overflow-y: auto; padding: 4px;">
+            <MudForm @ref="_form" ValidationDelay="100">
+                @if (Check.InvoiceType == InvoiceType.Sell)
+                {
+                    <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Secondary">
+                        این چک دریافتی است. لطفاً حساب مالی (بانک/صندوق) جهت واریز مبلغ چک را انتخاب کنید:
+                    </MudText>
 
-                <MudAutocomplete T="GetFinancialAccountTitleResponse"
-                                 Label="حساب واریز کننده"
-                                 Value="_selectedAccount"
-                                 ValueChanged="OnAccountChanged"
-                                 SearchFunc="SearchFinancialAccountsAsync"
-                                 ToStringFunc="@(acc => acc == null ? "" : acc.Title)"
-                                 Variant="Variant.Outlined"
-                                 Margin="Margin.Dense"
-                                 Required="true"
-                                 RequiredError="انتخاب حساب مالی الزامی است"
-                                 Clearable="true"
-                                 Dense="true" />
-            }
-            else
-            {
-                <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Secondary">
-                    این چک پرداختی است و پس از وصول، مبلغ آن از حساب بانکی شما کسر خواهد شد:
-                </MudText>
-                <MudField Label="حساب کسر شونده" Variant="Variant.Outlined" InnerPadding="false" Margin="Margin.Dense">
-                    <MudText Typo="Typo.body1" Class="font-weight-bold">@Check.IssuerFinancialAccountName</MudText>
-                </MudField>
-            }
+                    <MudAutocomplete T="GetFinancialAccountTitleResponse"
+                                     Label="حساب واریز کننده"
+                                     Value="_selectedAccount"
+                                     ValueChanged="OnAccountChanged"
+                                     SearchFunc="SearchFinancialAccountsAsync"
+                                     ToStringFunc="@(acc => acc == null ? "" : acc.Title)"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Required="true"
+                                     RequiredError="انتخاب حساب مالی الزامی است"
+                                     Clearable="true"
+                                     Dense="true" />
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Secondary">
+                        این چک پرداختی است و پس از وصول، مبلغ آن از حساب بانکی شما کسر خواهد شد:
+                    </MudText>
+                    <MudField Label="حساب کسر شونده" Variant="Variant.Outlined" InnerPadding="false" Margin="Margin.Dense">
+                        <MudText Typo="Typo.body1" Class="font-weight-bold">@Check.IssuerFinancialAccountName</MudText>
+                    </MudField>
+                }
 
-            <MudTextField T="string"
-                          Label="توضیحات وصول چک"
-                          Value="_description"
-                          ValueChanged="s => _description = s"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Lines="3"
-                          Class="mt-4" />
-        </MudForm>
+                @if (IsMultiCurrency)
+                {
+                    <div class="mt-4 border rounded p-3 bg-light">
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2">تسویه چندارزی چک (ارز چک: @Check.PriceUnit / ارز فاکتور: @Check.InvoicePriceUnitTitle)</MudText>
+                        
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="6">
+                                <MudNumericField T="decimal?"
+                                                 Label="نرخ ارز/قیمت طلای روز وصول"
+                                                 Value="_cashingExchangeRate"
+                                                 ValueChanged="OnCashingExchangeRateChanged"
+                                                 Format="#,##0.###"
+                                                 Required="true"
+                                                 RequiredError="وارد کردن نرخ روز وصول الزامی است"
+                                                 Variant="Variant.Outlined"
+                                                 Margin="Margin.Dense"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true"
+                                                 DebounceInterval="300"
+                                                 Adornment="Adornment.End"
+                                                 AdornmentText="@Check.PriceUnit"
+                                                 dir="ltr" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="CheckCashingAdjustmentMode?"
+                                           Label="نوع تسویه مابه‌التفاوت"
+                                           Value="_adjustmentMode"
+                                           ValueChanged="OnAdjustmentModeChanged"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Required="true"
+                                           RequiredError="انتخاب نوع تسویه الزامی است">
+                                    <MudSelectItem T="CheckCashingAdjustmentMode?" Value="CheckCashingAdjustmentMode.FixedRate">قیمت قطعی فاکتور (سود/زیان تسعیر فروشگاه)</MudSelectItem>
+                                    <MudSelectItem T="CheckCashingAdjustmentMode?" Value="CheckCashingAdjustmentMode.DailyRate">محاسبه به نرخ روز (تعدیل حساب مشتری)</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+
+                        <MudCard Outlined="true" Class="mt-3 bg-white border-0 shadow-sm rounded-lg">
+                            <MudCardContent Class="py-2 px-3">
+                                <div class="d-flex flex-column gap-1 text-muted small">
+                                    <div class="d-flex justify-space-between">
+                                        <span>ارزش اولیه در ارز فاکتور:</span>
+                                        <span class="font-weight-bold">@FormatInvoiceAmount(_originalValue)</span>
+                                    </div>
+                                    <div class="d-flex justify-space-between">
+                                        <span>ارزش در روز وصول:</span>
+                                        <span class="font-weight-bold">@FormatInvoiceAmount(_cashingValue)</span>
+                                    </div>
+                                    <div class="d-flex justify-space-between border-top pt-1 mt-1 @GetDifferenceColorClass()">
+                                        <span>مابه‌التفاوت در ارز فاکتور:</span>
+                                        <span class="font-weight-bold">@FormatInvoiceAmount(_difference)</span>
+                                    </div>
+                                    @if (Check.InvoicePriceUnitTitle != "تومان")
+                                    {
+                                        <div class="d-flex justify-space-between @GetDifferenceColorClass()">
+                                            <span>معادل ریال/تومان:</span>
+                                            <span class="font-weight-bold">@FormatTomanAmount(DifferenceToman)</span>
+                                        </div>
+                                    }
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+
+                        <MudAlert Severity="@GetAlertSeverity()" Variant="Variant.Outlined" Class="mt-3 py-1 px-3">
+                            @_adjustmentExplanation
+                        </MudAlert>
+
+                        @if (_adjustmentMode == CheckCashingAdjustmentMode.DailyRate && Math.Abs(_difference) > 0.0001m)
+                        {
+                            <div class="mt-3 p-3 border rounded bg-white">
+                                <MudSwitch T="bool"
+                                           Value="_settleDifference"
+                                           ValueChanged="OnSettleDifferenceChanged"
+                                           Color="Color.Primary"
+                                           Label="تسویه فوری مابه‌التفاوت در حساب‌های مالی فروشگاه" />
+                                
+                                @if (_settleDifference)
+                                {
+                                    <MudAutocomplete T="GetFinancialAccountTitleResponse"
+                                                     Label="حساب مالی جهت تسویه مابه‌التفاوت"
+                                                     Value="_settlementAccount"
+                                                     ValueChanged="s => _settlementAccount = s"
+                                                     SearchFunc="SearchSettlementFinancialAccountsAsync"
+                                                     ToStringFunc="@(acc => acc == null ? "" : acc.Title)"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Required="true"
+                                                     RequiredError="انتخاب حساب مالی جهت تسویه الزامی است"
+                                                     Clearable="true"
+                                                     Dense="true"
+                                                     Class="mt-2" />
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                <MudTextField T="string"
+                              Label="توضیحات وصول چک"
+                              Value="_description"
+                              ValueChanged="s => _description = s"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Lines="3"
+                              Class="mt-4" />
+            </MudForm>
+        </div>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error"

@@ -2583,6 +2583,10 @@ internal class AccountingTransactionService(
         CheckPayment checkPayment,
         Guid? targetFinancialAccountId,
         string? description,
+        decimal? cashingExchangeRate = null,
+        CheckCashingAdjustmentMode? adjustmentMode = null,
+        bool settleDifference = false,
+        Guid? settlementFinancialAccountId = null,
         CancellationToken cancellationToken = default)
     {
         var payment = checkPayment.InvoicePayment ?? throw new InvalidOperationException("Invoice payment is not loaded.");
@@ -2686,6 +2690,275 @@ internal class AccountingTransactionService(
                 invoice.Id,
                 payment.Id,
                 postingDate));
+        }
+
+        // Multi-currency check cashing adjustments
+        if (payment.PriceUnitId != invoice.PriceUnitId && cashingExchangeRate.HasValue && adjustmentMode.HasValue)
+        {
+            var checkUnit = await priceUnitRepository.Get(new PriceUnitsByIdSpecification(payment.PriceUnitId)).FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException("Check price unit not found.");
+            var invoiceUnit = await priceUnitRepository.Get(new PriceUnitsByIdSpecification(invoice.PriceUnitId)).FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException("Invoice price unit not found.");
+
+            var basePriceUnit = await priceUnitRepository
+                .Get(new PriceUnitsSetAsDefaultSpecification())
+                .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException("Default price unit not found.");
+
+            bool checkIsGold = checkUnit.IsGoldBased;
+            bool invoiceIsGold = invoiceUnit.IsGoldBased;
+
+            // Resolve cashing rate converting check currency to invoice currency (R_cash)
+            decimal rCash;
+            if (checkIsGold && !invoiceIsGold)
+            {
+                rCash = cashingExchangeRate.Value;
+            }
+            else if (!checkIsGold && invoiceIsGold)
+            {
+                rCash = 1m / cashingExchangeRate.Value;
+            }
+            else
+            {
+                rCash = cashingExchangeRate.Value;
+            }
+
+            var rOrig = ResolveInvoiceSettlementRate(invoice, payment) ?? 1m;
+
+            var wOrig = payment.FinalAmount * rOrig;
+            var wCash = payment.FinalAmount * rCash;
+            var delta = wOrig - wCash;
+
+            var settlementLedger = await ledgerAccountRepository
+                .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.CurrencySettlement))
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException("CurrencySettlement ledger account not found.");
+
+            var adjDesc = $"تعدیل مابه‌التفاوت نرخ ارز/طلای چک شماره {checkPayment.Number} فاکتور شماره {invoice.InvoiceNumber}";
+
+            if (adjustmentMode.Value == CheckCashingAdjustmentMode.DailyRate)
+            {
+                // Customer Balance Adjustment Mode
+                if (Math.Abs(delta) > 0.0001m)
+                {
+                    var counterpartyRole = invoice.InvoiceType == InvoiceType.Sell
+                        ? LedgerAccountRole.Receivable
+                        : LedgerAccountRole.Payable;
+
+                    var customerLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+                        invoice.CustomerId,
+                        invoice.PriceUnitId,
+                        counterpartyRole,
+                        cancellationToken);
+
+                    decimal? invoiceExchangeRate = invoiceIsGold ? cashingExchangeRate.Value : null;
+                    var amountToAdjust = Math.Abs(delta);
+
+                    if (payment.PaymentSide == PaymentSide.Receive)
+                    {
+                        if (delta > 0)
+                        {
+                            // Debit Customer, Credit Settlement
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Debit, customerLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Credit, settlementLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                        }
+                        else
+                        {
+                            // Debit Settlement, Credit Customer
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Debit, settlementLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Credit, customerLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                        }
+                    }
+                    else // Pay
+                    {
+                        if (delta > 0)
+                        {
+                            // Debit Settlement, Credit Customer
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Debit, settlementLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Credit, customerLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                        }
+                        else
+                        {
+                            // Debit Customer, Credit Settlement
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Debit, customerLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, amountToAdjust, invoiceExchangeRate, groupId, TransactionType.Credit, settlementLedger.Id, invoice.PriceUnitId, invoice.Id, payment.Id, postingDate));
+                        }
+                    }
+
+                    // Immediate Settlement logic if requested
+                    if (settleDifference && settlementFinancialAccountId.HasValue)
+                    {
+                        var settlementAccount = await financialAccountRepository
+                            .Get(new FinancialAccountsByIdSpecification(new FinancialAccountId(settlementFinancialAccountId.Value)))
+                            .FirstOrDefaultAsync(cancellationToken)
+                            ?? throw new NotFoundException($"Settlement financial account {settlementFinancialAccountId.Value} not found.");
+
+                        if (!settlementAccount.LedgerAccountId.HasValue)
+                            throw new NotFoundException($"Settlement financial account {settlementAccount.Id.Value} has no linked ledger account.");
+
+                        var settlementLedgerAccount = await ledgerAccountRepository
+                            .Get(new LedgerAccountsByIdSpecification(settlementAccount.LedgerAccountId.Value))
+                            .FirstOrDefaultAsync(cancellationToken)
+                            ?? throw new NotFoundException($"Ledger account {settlementAccount.LedgerAccountId.Value} not found.");
+
+                        var settlementPriceUnit = await priceUnitRepository
+                            .Get(new PriceUnitsByIdSpecification(settlementAccount.PriceUnitId))
+                            .FirstOrDefaultAsync(cancellationToken)
+                            ?? throw new NotFoundException($"Price unit {settlementAccount.PriceUnitId.Value} not found.");
+
+                        var settleDesc = $"تسویه فوری مابه‌التفاوت نرخ ارز/طلای چک شماره {checkPayment.Number} فاکتور شماره {invoice.InvoiceNumber}";
+
+                        decimal settlementAmount;
+                        decimal? settlementExchangeRate;
+                        PriceUnitId settlementPriceUnitId;
+
+                        if (settlementAccount.PriceUnitId == invoice.PriceUnitId)
+                        {
+                            settlementAmount = amountToAdjust;
+                            settlementExchangeRate = invoiceExchangeRate;
+                            settlementPriceUnitId = invoice.PriceUnitId;
+                        }
+                        else
+                        {
+                            if (!cashingExchangeRate.HasValue || cashingExchangeRate.Value <= 0)
+                                throw new InvalidOperationException("Cashing exchange rate is required for multi-currency cashing settlement.");
+
+                            bool settlementIsGold = settlementPriceUnit.IsGoldBased;
+
+                            if (invoiceIsGold && !settlementIsGold)
+                            {
+                                settlementAmount = amountToAdjust * cashingExchangeRate.Value;
+                                settlementExchangeRate = null;
+                            }
+                            else if (!invoiceIsGold && settlementIsGold)
+                            {
+                                settlementAmount = amountToAdjust / cashingExchangeRate.Value;
+                                settlementExchangeRate = cashingExchangeRate.Value;
+                            }
+                            else
+                            {
+                                settlementAmount = amountToAdjust * cashingExchangeRate.Value;
+                                settlementExchangeRate = null;
+                            }
+
+                            settlementPriceUnitId = settlementAccount.PriceUnitId;
+                        }
+
+                        // Apply rounding based on gold or currency type
+                        settlementAmount = settlementPriceUnit.IsGoldBased
+                            ? Math.Round(settlementAmount, 3, MidpointRounding.AwayFromZero)
+                            : Math.Round(settlementAmount, 0, MidpointRounding.AwayFromZero);
+
+                        bool customerWasDebited = (payment.PaymentSide == PaymentSide.Receive && delta > 0)
+                                               || (payment.PaymentSide == PaymentSide.Pay && delta < 0);
+
+                        if (customerWasDebited)
+                        {
+                            // Debit Store's Settlement Account, Credit Customer
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                settleDesc,
+                                settlementAmount,
+                                settlementExchangeRate,
+                                groupId,
+                                TransactionType.Debit,
+                                settlementLedgerAccount.Id,
+                                settlementPriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                postingDate));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                settleDesc,
+                                amountToAdjust,
+                                invoiceExchangeRate,
+                                groupId,
+                                TransactionType.Credit,
+                                customerLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                postingDate));
+                        }
+                        else
+                        {
+                            // Debit Customer, Credit Store's Settlement Account
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                settleDesc,
+                                amountToAdjust,
+                                invoiceExchangeRate,
+                                groupId,
+                                TransactionType.Debit,
+                                customerLedger.Id,
+                                invoice.PriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                postingDate));
+
+                            transactions.Add(Transaction.CreateForInvoicePayment(
+                                settleDesc,
+                                settlementAmount,
+                                settlementExchangeRate,
+                                groupId,
+                                TransactionType.Credit,
+                                settlementLedgerAccount.Id,
+                                settlementPriceUnitId,
+                                invoice.Id,
+                                payment.Id,
+                                postingDate));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Fixed Rate Mode (Store Absorbs Gain/Loss)
+                decimal checkToTomanRate = checkIsGold ? cashingExchangeRate.Value : 1m;
+                decimal invoiceToTomanRate = invoiceIsGold ? cashingExchangeRate.Value : 1m;
+
+                decimal vChk = payment.FinalAmount * checkToTomanRate;
+                decimal vInv = wOrig * invoiceToTomanRate;
+                decimal diff = vInv - vChk;
+
+                if (Math.Abs(diff) > 0.01m)
+                {
+                    var gainLossLedger = await ledgerAccountRepository
+                        .Get(new LedgerAccountsByTitleSpecification(SystemLedgerAccounts.ExchangeGainLoss))
+                        .FirstOrDefaultAsync(cancellationToken)
+                        ?? throw new NotFoundException("Exchange Gain/Loss ledger account not found.");
+
+                    var absDiff = Math.Abs(diff);
+
+                    if (payment.PaymentSide == PaymentSide.Receive)
+                    {
+                        if (diff > 0)
+                        {
+                            // Store Loss: Debit ExchangeGainLoss, Credit CurrencySettlement
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Debit, gainLossLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Credit, settlementLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                        }
+                        else
+                        {
+                            // Store Gain: Debit CurrencySettlement, Credit ExchangeGainLoss
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Debit, settlementLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Credit, gainLossLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                        }
+                    }
+                    else // Pay
+                    {
+                        if (diff > 0)
+                        {
+                            // Store Gain: Debit CurrencySettlement, Credit ExchangeGainLoss
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Debit, settlementLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Credit, gainLossLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                        }
+                        else
+                        {
+                            // Store Loss: Debit ExchangeGainLoss, Credit CurrencySettlement
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Debit, gainLossLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                            transactions.Add(Transaction.CreateForInvoicePayment(adjDesc, absDiff, null, groupId, TransactionType.Credit, settlementLedger.Id, basePriceUnit.Id, invoice.Id, payment.Id, postingDate));
+                        }
+                    }
+                }
+            }
         }
 
         if (transactions.Any())
