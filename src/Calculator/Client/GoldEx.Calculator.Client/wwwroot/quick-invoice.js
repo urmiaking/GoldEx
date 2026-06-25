@@ -1,4 +1,4 @@
-﻿window.quickInvoice = {
+window.quickInvoice = {
     printFromPayload: function (payloadJson) {
         const parsed = JSON.parse(payloadJson);
         const items = Array.isArray(parsed) ? parsed : [parsed];
@@ -8,6 +8,17 @@
         }
 
         const p = items[0];
+
+        let companyLogo = null;
+        try {
+            const stored = window.localStorage.getItem("QuickInvoiceCompanyInfo");
+            if (stored) {
+                const storedObj = JSON.parse(stored);
+                companyLogo = storedObj.CompanyLogo || storedObj.companyLogo || null;
+            }
+        } catch (e) {
+            // ignore
+        }
 
         const esc = (v) => {
             if (v === null || v === undefined) return "";
@@ -50,10 +61,13 @@
   <div class="qi-sheet">
     <section class="qi-card">
       <header class="qi-header">
-        <div class="qi-title">
-          <h1>فاکتور فروش</h1>
-          <p class="sub">${esc(p.companyName)} · ${esc(p.companyPhone)}</p>
-          <p class="sub">${esc(p.companyAddress)}</p>
+        <div class="qi-title" style="display: flex; flex-direction: row; align-items: center; gap: 12px;">
+          ${companyLogo ? `<img src="${companyLogo}" alt="لوگو" style="width: 50px; height: 50px; object-fit: contain; border-radius: 6px; flex-shrink: 0;" />` : ''}
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h1>فاکتور فروش</h1>
+            <p class="sub">${esc(p.companyName)} · ${esc(p.companyPhone)}</p>
+            <p class="sub">${esc(p.companyAddress)}</p>
+          </div>
         </div>
 
         <div class="qi-meta">
@@ -119,7 +133,28 @@
   </div>
 
   <script>
-    setTimeout(() => window.print(), 300);
+    window.addEventListener('DOMContentLoaded', () => {
+      const images = document.getElementsByTagName('img');
+      let loaded = 0;
+      if (images.length === 0) {
+        setTimeout(() => window.print(), 300);
+      } else {
+        const onImageLoad = () => {
+          loaded++;
+          if (loaded === images.length) {
+            setTimeout(() => window.print(), 300);
+          }
+        };
+        Array.from(images).forEach(img => {
+          if (img.complete) {
+            onImageLoad();
+          } else {
+            img.addEventListener('load', onImageLoad);
+            img.addEventListener('error', onImageLoad);
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>`;
