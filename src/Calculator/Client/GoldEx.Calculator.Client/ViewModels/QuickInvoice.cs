@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Components.Calculator.ViewModels;
+using GoldEx.Client.Components.Calculator.ViewModels;
 
 namespace GoldEx.Calculator.Client.ViewModels;
 
