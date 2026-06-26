@@ -312,6 +312,7 @@ public static class ApiRoutes
         public const string GetProductInventory = "product-inventory";
         public const string GetCoinInventory = "coin-inventory";
         public const string GetCurrencyInventory = "currency-inventory";
+        public const string GetUsedGoldHiddenProfit = "used-gold-hidden-profit";
     }
 
     public class SmsTemplates

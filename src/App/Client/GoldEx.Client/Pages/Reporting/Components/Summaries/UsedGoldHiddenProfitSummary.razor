@@ -1,0 +1,70 @@
+@using GoldEx.Client.Pages.Reporting.ViewModels
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Enums
+
+@if (Summary != null)
+{
+    <MudCard Elevation="24" Class="mt-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">خلاصه گزارش</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (Summary.PriceUnitSummaries.Any())
+            {
+                <MudGrid Spacing="6">
+                    @foreach (var priceUnit in Summary.PriceUnitSummaries)
+                    {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="12">
+                                <MudCardHeader Class="pa-3">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5" Color="Color.Primary">@priceUnit.PriceUnitTitle</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent Class="pa-3">
+                                    <MudStack Spacing="2">
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">مجموع وزن کارکرده:</MudText>
+                                            <MudText Typo="Typo.body1">
+                                                <MudIcon Icon="@Icons.Material.Filled.Scale" Size="Size.Small" Class="ml-1" />
+                                                @priceUnit.TotalWeight.ToWeightFormat(GoldUnitType.Gram)
+                                            </MudText>
+                                        </div>
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">مجموع پرداختی:</MudText>
+                                            <MudText Typo="Typo.body1">
+                                                <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" Class="ml-1" />
+                                                @priceUnit.TotalPaidAmount.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1">مجموع ارزش واقعی طلا:</MudText>
+                                            <MudText Typo="Typo.body1">
+                                                <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Class="ml-1" />
+                                                @priceUnit.TotalRealValue.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                        <MudDivider Class="my-2" />
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body1" Color="Color.Success" Style="font-weight: bold;">مجموع سود پنهان:</MudText>
+                                            <MudText Typo="Typo.body1" Color="Color.Success" Style="font-weight: bold;">
+                                                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="ml-1" />
+                                                @priceUnit.TotalHiddenProfit.ToCurrencyFormat(priceUnit.PriceUnitTitle)
+                                            </MudText>
+                                        </div>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public UsedGoldHiddenProfitFilterVm.UsedGoldHiddenProfitReportSummary? Summary { get; set; }
+}

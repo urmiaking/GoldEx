@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Domain.CoinInstanceAggregate;
@@ -137,5 +137,60 @@ internal class ReportingService(
     {
         var list = await inventoryStockRepository.GetCurrenciesReportAsync(request, cancellationToken);
         return mapper.Map<List<CurrencyInventoryRpResponse>>(list);
+    }
+
+    public async Task<List<UsedGoldHiddenProfitRpResponse>> GetUsedGoldHiddenProfitAsync(
+        UsedGoldHiddenProfitRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await invoiceRepository
+            .Get(new UsedGoldHiddenProfitSpecification(request.CustomerId, request.PriceUnitId, request.FromDate, request.ToDate))
+            .Include(x => x.Customer)
+            .Include(x => x.PriceUnit)
+            .Include(x => x.UsedProducts)
+                .ThenInclude(x => x.Product)
+            .ToListAsync(cancellationToken);
+
+        var response = new List<UsedGoldHiddenProfitRpResponse>();
+
+        foreach (var invoice in list)
+        {
+            var exchangeRate = invoice.PriceUnit!.IsGoldBased ? null : invoice.ExchangeRate;
+
+            foreach (var usedProduct in invoice.UsedProducts)
+            {
+                var fineness = usedProduct.Product != null ? usedProduct.Product.Fineness : 750m;
+
+                // Convert actual weight to equivalent 750 weight
+                var equivalentWeight = usedProduct.Weight * (fineness / 750m);
+
+                // Calculate real value based on actual fineness (before deduction rate)
+                var rate = exchangeRate ?? 1m;
+                var realValue = equivalentWeight * usedProduct.GramPrice * rate * usedProduct.Quantity;
+
+                // Hidden profit is the difference between real value and what we paid (ItemAmount)
+                var hiddenProfit = realValue - usedProduct.ItemAmount;
+
+                response.Add(new UsedGoldHiddenProfitRpResponse(
+                    invoice.Id.Value,
+                    invoice.InvoiceNumber,
+                    invoice.InvoiceDate,
+                    invoice.InvoiceType,
+                    invoice.Customer?.FullName ?? string.Empty,
+                    usedProduct.Description,
+                    usedProduct.Weight,
+                    fineness,
+                    usedProduct.FinenessDeductionRate,
+                    usedProduct.GramPrice,
+                    usedProduct.Quantity,
+                    invoice.ExchangeRate,
+                    usedProduct.ItemAmount,
+                    realValue,
+                    hiddenProfit,
+                    invoice.PriceUnit.Title));
+            }
+        }
+
+        return response;
     }
 }
