@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Reporting;
+using GoldEx.Shared.DTOs.Reporting;
 
 namespace GoldEx.Shared.Services.Abstractions;
 
@@ -93,4 +93,6 @@ public interface IReportingService
     Task<List<CoinInventoryRpResponse>> GetCoinInventoryAsync(CoinInventoryRpRequest request, CancellationToken cancellationToken = default);
 
     Task<List<CurrencyInventoryRpResponse>> GetCurrencyInventoryAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default);
+
+    Task<List<UsedGoldHiddenProfitRpResponse>> GetUsedGoldHiddenProfitAsync(UsedGoldHiddenProfitRpRequest request, CancellationToken cancellationToken = default);
 }

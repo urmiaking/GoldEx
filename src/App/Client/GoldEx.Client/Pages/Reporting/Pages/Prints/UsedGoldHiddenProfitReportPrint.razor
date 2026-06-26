@@ -1,0 +1,71 @@
+@attribute [Route(ClientRoutes.Reporting.Print.UsedGoldHiddenProfit)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@layout PrintLayout
+
+@inherits ReportPrintBase
+
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Enums
+
+<link href="/css/reports/report-base.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-components.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-utilities.css?v=@_version" rel="stylesheet" />
+<link href="/css/reports/report-print.css?v=@_version" rel="stylesheet" />
+
+<ReportPrintBase IsLoading="@(_items == null)"
+                 FromDate="@FromDate"
+                 ToDate="@ToDate"
+                 Data="@_items"
+                 ReportTitle="@($"گزارش سود پنهان طلای مستعمل {TitleFilter}")"
+                 Summary="@_summary">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>مشخصات فاکتور</th>
+                <th>کالای مستعمل</th>
+                <th>مشخصات طلا</th>
+                <th>ارزش واقعی (نرخ گرم)</th>
+                <th>مبلغ پرداختی</th>
+                <th>سود پنهان</th>
+            </tr>
+        </thead>
+        @if (_items != null)
+        {
+            <tbody>
+                @foreach (var item in _items)
+                {
+                    <tr>
+                        <td>
+                            <div><strong>@item.InvoiceType.GetDisplayName() #@item.InvoiceNumber</strong></div>
+                            <div style="font-size: 0.8rem; color: #666;">@item.InvoiceDate.ToShortDateString() | @item.CustomerName</div>
+                        </td>
+                        <td>
+                            <div>@item.Description</div>
+                            @if (item.Quantity > 1)
+                            {
+                                <div style="font-size: 0.8rem; color: #666;">تعداد: @item.Quantity</div>
+                            }
+                        </td>
+                        <td>
+                            <div><strong>@item.Weight.ToWeightFormat(GoldUnitType.Gram)</strong></div>
+                            <div style="font-size: 0.8rem; color: #666;">
+                                عیار: @item.Fineness.ToString("N0") (کسری: @item.FinenessDeductionRate.ToString("N0"))
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <div><strong>@item.RealValue.ToCurrencyFormat(item.PriceUnitTitle)</strong></div>
+                            <div style="font-size: 0.8rem; color: #666;">
+                                نرخ گرم: @item.GramPrice.ToCurrencyFormat(item.PriceUnitTitle)
+                            </div>
+                        </td>
+                        <td class="text-end">@item.PaidAmount.ToCurrencyFormat(item.PriceUnitTitle)</td>
+                        <td class="text-end text-success" style="font-weight: bold;">@item.HiddenProfit.ToCurrencyFormat(item.PriceUnitTitle)</td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+</ReportPrintBase>
+
+<script src="@Assets["js/report-print.js"]"></script>

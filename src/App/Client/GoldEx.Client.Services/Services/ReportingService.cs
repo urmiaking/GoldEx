@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Routings;
@@ -155,6 +155,19 @@ internal class ReportingService(HttpClient client, JsonSerializerOptions jsonOpt
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
 
         var result = await response.Content.ReadFromJsonAsync<List<CurrencyInventoryRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<UsedGoldHiddenProfitRpResponse>> GetUsedGoldHiddenProfitAsync(
+        UsedGoldHiddenProfitRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetUsedGoldHiddenProfit(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<UsedGoldHiddenProfitRpResponse>>(jsonOptions, cancellationToken);
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
