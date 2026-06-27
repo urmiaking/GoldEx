@@ -613,6 +613,10 @@ public class ApiUrls
         public static string GetCurrencyInventory(CurrencyInventoryRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCurrencyInventory)
                 .AppendQueryString(request);
+
+        public static string GetUsedGoldHiddenProfit(UsedGoldHiddenProfitRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetUsedGoldHiddenProfit)
+                .AppendQueryString(request);
     }
 
     public class SmsTemplates

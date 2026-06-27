@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Routings;
@@ -117,6 +117,15 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await service.GetCurrencyInventoryAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetUsedGoldHiddenProfit)]
+    public async Task<IActionResult> GetUsedGoldHiddenProfitAsync(
+        [FromQuery] UsedGoldHiddenProfitRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetUsedGoldHiddenProfitAsync(request, cancellationToken);
         return Ok(result);
     }
 }
