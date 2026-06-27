@@ -1,0 +1,173 @@
+@using GoldEx.Client.Pages.Reporting.Components.Summaries
+@using GoldEx.Shared.DTOs.Reporting
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Enums
+
+@inherits GoldExComponentBase
+
+@if (Items is null || IsLoading)
+{
+    if (IsLoading)
+    {
+        <div Class="d-flex flex-column justify-center align-center" style="height: 200px;">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="w-100" />
+            <MudText Typo="Typo.h6" Class="mt-4">در حال آماده سازی گزارش...</MudText>
+        </div>
+    }
+    else
+    {
+        <ReportViewPlaceHolder />
+    }
+}
+else
+{
+    <MudTable Items="@Items"
+              Virtualize="true"
+              Dense="true"
+              Hover="true"
+              Bordered="true"
+              Striped="true"
+              FixedHeader="true"
+              Breakpoint="Breakpoint.Sm"
+              SortLabel="مرتب ‌سازی"
+              ContainerClass="responsive-table-toolbar"
+              Elevation="24">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">گزارش سود پنهان طلای مستعمل</MudText>
+            <MudSpacer />
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudButton StartIcon="@Icons.Material.Filled.Print"
+                           Class="ml-2"
+                           Color="Color.Success"
+                           Variant="Variant.Filled"
+                           OnClick="@(() => OnPrintReport.InvokeAsync())">
+                    پرینت
+                </MudButton>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Print"
+                               Color="Color.Success"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => OnPrintReport.InvokeAsync())" />
+            </MudHidden>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<UsedGoldHiddenProfitRpResponse, object>(x => x.InvoiceDate)">
+                    مشخصات فاکتور
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>کالای مستعمل</MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<UsedGoldHiddenProfitRpResponse, object>(x => x.Weight)">
+                    مشخصات طلا
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>ارزش واقعی (نرخ گرم)</MudTh>
+            <MudTh>مبلغ پرداختی</MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<UsedGoldHiddenProfitRpResponse, object>(x => x.HiddenProfit)">
+                    سود پنهان
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>عملیات</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="مشخصات فاکتور">
+                <MudText Typo="Typo.body2" Style="font-weight: 500;">
+                    @context.InvoiceType.GetDisplayName() #@context.InvoiceNumber | @context.InvoiceDate.ToShortDateString()
+                </MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    مشتری: @context.CustomerName
+                </MudText>
+            </MudTd>
+            <MudTd DataLabel="کالای مستعمل">
+                <MudText Typo="Typo.body2">@context.Description</MudText>
+                @if (context.Quantity > 1)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">تعداد: @context.Quantity</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="مشخصات طلا">
+                <MudTooltip Placement="Placement.Top" Arrow="true" Color="Color.Dark">
+                    <ChildContent>
+                        <div class="cursor-pointer">
+                            <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.Weight.ToWeightFormat(GoldUnitType.Gram)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                عیار: @context.Fineness.ToString("N0") (کسری: @context.FinenessDeductionRate.ToString("N0"))
+                            </MudText>
+                        </div>
+                    </ChildContent>
+                    <TooltipContent>
+                        <div class="d-flex flex-column gap-1 pa-1 text-right" style="direction: rtl; text-align: right;">
+                            <MudText Typo="Typo.caption">وزن واقعی: @context.Weight.ToWeightFormat(GoldUnitType.Gram)</MudText>
+                            <MudText Typo="Typo.caption">عیار واقعی: @context.Fineness.ToString("N0")</MudText>
+                            <MudText Typo="Typo.caption">کسری عیار: @context.FinenessDeductionRate.ToString("N0")</MudText>
+                            <MudText Typo="Typo.caption">عیار محاسبه خرید: @((context.Fineness - context.FinenessDeductionRate).ToString("N0"))</MudText>
+                            <MudText Typo="Typo.caption">وزن معادل ۷۵۰: @((context.Weight * (context.Fineness / 750m)).ToWeightFormat(GoldUnitType.Gram))</MudText>
+                        </div>
+                    </TooltipContent>
+                </MudTooltip>
+            </MudTd>
+            <MudTd DataLabel="ارزش واقعی (نرخ گرم)">
+                <MudTooltip Placement="Placement.Top" Arrow="true" Color="Color.Dark">
+                    <ChildContent>
+                        <div class="cursor-pointer">
+                            <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.RealValue.ToCurrencyFormat(context.PriceUnitTitle)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                نرخ ۷۵۰: @context.GramPrice.ToCurrencyFormat(context.PriceUnitTitle)
+                            </MudText>
+                        </div>
+                    </ChildContent>
+                    <TooltipContent>
+                        <div class="d-flex flex-column gap-1 pa-1 text-right" style="direction: rtl; text-align: right;">
+                            <MudText Typo="Typo.caption">ارزش واقعی بدون کسر عیار محاسبه شده است.</MudText>
+                            @if (context.ExchangeRate.HasValue && context.ExchangeRate != 1m)
+                            {
+                                <MudText Typo="Typo.caption">نرخ تبدیل ارز: @context.ExchangeRate.Value.ToString("N2")</MudText>
+                            }
+                            <MudText Typo="Typo.caption">فرمول: وزن معادل ۷۵۰ × نرخ گرم ۷۵۰ × تعداد @(context.ExchangeRate.HasValue && context.ExchangeRate != 1m ? "× نرخ تبدیل" : "")</MudText>
+                        </div>
+                    </TooltipContent>
+                </MudTooltip>
+            </MudTd>
+            <MudTd DataLabel="مبلغ پرداختی">@context.PaidAmount.ToCurrencyFormat(context.PriceUnitTitle)</MudTd>
+            <MudTd DataLabel="سود پنهان">
+                <MudTooltip Placement="Placement.Top" Arrow="true" Color="Color.Dark">
+                    <ChildContent>
+                        <div class="cursor-pointer">
+                            <MudText Typo="Typo.body2" Color="Color.Success" Style="font-weight: bold;">
+                                @context.HiddenProfit.ToCurrencyFormat(context.PriceUnitTitle)
+                            </MudText>
+                        </div>
+                    </ChildContent>
+                    <TooltipContent>
+                        <div class="d-flex flex-column gap-1 pa-1 text-right" style="direction: rtl; text-align: right;">
+                            <MudText Typo="Typo.caption">سود پنهان حاصل از اختلاف کسری عیار است.</MudText>
+                            <MudText Typo="Typo.caption">فرمول: ارزش واقعی (@context.RealValue.ToCurrencyFormat(context.PriceUnitTitle)) - مبلغ پرداختی (@context.PaidAmount.ToCurrencyFormat(context.PriceUnitTitle))</MudText>
+                        </div>
+                    </TooltipContent>
+                </MudTooltip>
+            </MudTd>
+            <MudTd DataLabel="عملیات">
+                <div class="d-flex gap-2">
+                    <MudTooltip Text="مشاهده فاکتور" Arrow="true" Color="Color.Info">
+                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                       Size="Size.Small"
+                                       Color="Color.Info"
+                                       Variant="Variant.Filled"
+                                       OnClick="@(() => OnViewInvoice(context.InvoiceId))" />
+                    </MudTooltip>
+                </div>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="pa-4">رکوردی برای نمایش وجود ندارد.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <UsedGoldHiddenProfitSummary Summary="_summary" />
+}

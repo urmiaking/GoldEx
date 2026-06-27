@@ -1,0 +1,22 @@
+@attribute [Route(ClientRoutes.Reporting.UsedGoldHiddenProfit)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits UsedGoldHiddenProfitPageBase
+
+<PageTitle>گزارش سود پنهان طلای مستعمل</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="Breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <ReportFiltersBase Model="@Filters" OnSubmit="OnSubmit">
+        <UsedGoldHiddenProfitFilters Model="@Filters" /> 
+    </ReportFiltersBase>
+
+    <UsedGoldHiddenProfitReportView Items="@Data" IsLoading="@IsLoading" OnPrintReport="PrintReport" />
+</MudContainer>
+
+<script src="@Assets["js/report-print.js"]"></script>

@@ -145,6 +145,7 @@ public static class ClientRoutes
         public const string ProductInventory = $"{ReportingPrefix}/inventory-inventory";
         public const string CoinInventory = $"{ReportingPrefix}/coin-inventory";
         public const string CurrencyInventory = $"{ReportingPrefix}/currency-inventory";
+        public const string UsedGoldHiddenProfit = $"{ReportingPrefix}/used-gold-hidden-profit";
 
         public static class Print
         {
@@ -162,6 +163,7 @@ public static class ClientRoutes
             public const string ProductInventory = $"{PrintPrefix}/product-inventory";
             public const string CoinInventory = $"{PrintPrefix}/coin-inventory";
             public const string CurrencyInventory = $"{PrintPrefix}/currency-inventory";
+            public const string UsedGoldHiddenProfit = $"{PrintPrefix}/used-gold-hidden-profit";
         }
     }
 

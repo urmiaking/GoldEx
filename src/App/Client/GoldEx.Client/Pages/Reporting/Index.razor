@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Reporting.Index)]
+@attribute [Route(ClientRoutes.Reporting.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 @inherits GoldExComponentBase
 
@@ -61,6 +61,12 @@
                            Description="خلاصه خریدها با مبلغ و مانده"
                            StartIcon="@Icons.Material.Filled.ShoppingCart"
                            Href="@ClientRoutes.Reporting.PurchaseInvoices" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="سود پنهان طلای مستعمل"
+                           Description="گزارش سود حاصل از کسری عیار طلای کهنه"
+                           StartIcon="@Icons.Material.Filled.TrendingUp"
+                           Href="@ClientRoutes.Reporting.UsedGoldHiddenProfit" />
         </MudItem>
     </MudGrid>
 
