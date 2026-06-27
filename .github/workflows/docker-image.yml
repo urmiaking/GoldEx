@@ -18,7 +18,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
+        ssh-key: |
+          ${{ secrets.DEPLOY_KEY }}
+        fetch-depth: 0
 
     - name: Build and push Docker image for goldex
       run: |
