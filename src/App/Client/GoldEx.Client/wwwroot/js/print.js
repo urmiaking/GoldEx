@@ -215,7 +215,7 @@ function generateItemHtml(item, data, position) {
 
         case 'ProductName':
             if (!data.productName) return '';
-            return `<div class="item" style="${style} font-family: 'B Nazanin', Arial; font-weight: bold; width: 100%;">
+            return `<div class="item" style="${style} font-family: 'B Nazanin', Arial; font-weight: bold;">
                         ${escapeHtml(data.productName)}
                     </div>`;
 
