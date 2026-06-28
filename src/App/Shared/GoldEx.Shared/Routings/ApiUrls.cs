@@ -11,6 +11,7 @@ using GoldEx.Shared.DTOs.PaymentVouchers;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.DTOs.StoneTypes;
 using System.Globalization;
 
 namespace GoldEx.Shared.Routings;
@@ -140,6 +141,24 @@ public class ApiUrls
         public static string GetLastCode() =>
             BuildUrl(ApiRoutes.ProductCategories.Base, ApiRoutes.ProductCategories.GetLastCode);
     }
+
+    public class StoneTypes
+    {
+        public static string GetList(StoneTypeRequestFilter filter) => 
+            BuildUrl(ApiRoutes.StoneTypes.Base, ApiRoutes.StoneTypes.GetList).AppendQueryString(filter);
+
+        public static string Get(Guid id) => BuildUrl(ApiRoutes.StoneTypes.Base, ApiRoutes.StoneTypes.Get)
+            .FormatRoute(new { id });
+
+        public static string Create() => BuildUrl(ApiRoutes.StoneTypes.Base, ApiRoutes.StoneTypes.Create);
+
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.StoneTypes.Base, ApiRoutes.StoneTypes.Update).FormatRoute(new { id });
+
+        public static string ToggleStatus(Guid id) =>
+            BuildUrl(ApiRoutes.StoneTypes.Base, ApiRoutes.StoneTypes.ToggleStatus).FormatRoute(new { id });
+    }
+
 
     public class Customers
     {

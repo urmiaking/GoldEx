@@ -78,6 +78,17 @@ public static class ApiRoutes
         public const string GetLastCode = "last-code";
     }
 
+    public class StoneTypes
+    {
+        public const string Base = "/api/stone-types";
+        public const string GetList = "";
+        public const string Get = "{id}";
+        public const string Create = "";
+        public const string Update = "{id}";
+        public const string ToggleStatus = "{id}/toggle-status";
+    }
+
+
     public class Customers
     {
         public const string Base = "/api/customers";

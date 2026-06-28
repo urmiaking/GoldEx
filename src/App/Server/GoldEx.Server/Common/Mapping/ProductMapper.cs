@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.Enums;
 using Mapster;
@@ -22,7 +22,9 @@ internal class ProductMapper : IRegister
                 ? src.InventoryStocks.Sum(x => x.ActionType == WarehouseActionType.In ? x.ChangeAmount : -x.ChangeAmount)
                 : src.Weight);
 
-        config.NewConfig<GemStone, GetGemStoneResponse>();
+        config.NewConfig<GemStone, GetGemStoneResponse>()
+            .Map(dest => dest.StoneTypeId, src => src.StoneTypeId.HasValue ? src.StoneTypeId.Value.Value : (Guid?)null)
+            .Map(dest => dest.StoneTypeSymbol, src => src.StoneType != null ? src.StoneType.Symbol : null);
         config.NewConfig<MoltenGold, GetMoltenGoldResponse>();
     }
 }

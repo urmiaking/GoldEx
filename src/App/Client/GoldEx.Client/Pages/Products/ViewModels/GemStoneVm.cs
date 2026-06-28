@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Products;
+using GoldEx.Shared.DTOs.Products;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
@@ -10,11 +10,40 @@ public class GemStoneVm : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private decimal _cost;
+    private Guid? _stoneTypeId;
+    private string? _stoneTypeSymbol;
 
     [Display(Name = "کد")]
     public string? Code { get; set; } = default!;
 
     [Display(Name = "نوع سنگ")]
+    public Guid? StoneTypeId
+    {
+        get => _stoneTypeId;
+        set
+        {
+            if (_stoneTypeId != value)
+            {
+                _stoneTypeId = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string? StoneTypeSymbol
+    {
+        get => _stoneTypeSymbol;
+        set
+        {
+            if (_stoneTypeSymbol != value)
+            {
+                _stoneTypeSymbol = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [Display(Name = "عنوان سنگ")]
     [Required(ErrorMessage = "وارد كردن {0} الزامی است")]
     public string Type { get; set; } = default!;
 
@@ -54,7 +83,7 @@ public class GemStoneVm : INotifyPropertyChanged
 
     public GemStoneRequestDto ToRequest()
     {
-        return new GemStoneRequestDto(Code, Type, Color, Cut, Carat, Cost, Purity);
+        return new GemStoneRequestDto(Code, Type, Color, Cut, Carat, Cost, Purity, StoneTypeId);
     }
 
     public static GemStoneVm CreateFrom(GetGemStoneResponse dto)
@@ -67,7 +96,9 @@ public class GemStoneVm : INotifyPropertyChanged
             Cut = dto.Cut,
             Carat = dto.Carat,
             Purity = dto.Purity,
-            Cost = dto.Cost
+            Cost = dto.Cost,
+            StoneTypeId = dto.StoneTypeId,
+            StoneTypeSymbol = dto.StoneTypeSymbol
         };
     }
 }

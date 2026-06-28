@@ -1,10 +1,11 @@
-﻿using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Sdk.Server.Domain.Entities;
+using GoldEx.Server.Domain.StoneTypeAggregate;
 
 namespace GoldEx.Server.Domain.ProductAggregate;
 
 public class GemStone : EntityBase
 {
-    public static GemStone Create(string code, string type, string color, string? cut, decimal carat, string? purity, decimal cost, ProductId productId)
+    public static GemStone Create(string code, string type, string color, string? cut, decimal carat, string? purity, decimal cost, ProductId productId, StoneTypeId? stoneTypeId = null)
     {
         return new GemStone
         {
@@ -15,7 +16,8 @@ public class GemStone : EntityBase
             Carat = carat,
             Purity = purity,
             Cost = cost,
-            ProductId = productId
+            ProductId = productId,
+            StoneTypeId = stoneTypeId
         };
     }
 
@@ -30,6 +32,9 @@ public class GemStone : EntityBase
     public decimal Carat { get; private set; }
     public string? Purity { get; private set; }
     public decimal Cost { get; private set; }
+
+    public StoneTypeId? StoneTypeId { get; private set; }
+    public StoneType? StoneType { get; private set; }
 
     public ProductId ProductId { get; private set; }
     public Product? Product { get; private set; }
