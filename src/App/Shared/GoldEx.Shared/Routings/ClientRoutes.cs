@@ -97,6 +97,7 @@ public static class ClientRoutes
         public const string BackupRestore = $"{SettingsPrefix}/backup-restore";
         public const string LicenseRequests = $"{SettingsPrefix}/license-requests";
         public const string Stores = $"{SettingsPrefix}/stores";
+        public const string StoneTypes = $"{SettingsPrefix}/stone-types";
     }
 
     public static class Logs
