@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Server.Application.Services.Abstractions;
@@ -391,31 +391,11 @@ internal class InventoryStockService(
     {
         var candidateProducts = await repository.GetAvailableInventorySummaryAsync(filter, calculatorFilter, cancellationToken);
 
-        var results = new List<GetInventoryStockResponse>();
-
-        foreach (var item in candidateProducts.Data)
-        {
-            if (item.Product is null)
-                continue;
-
-            var rawPrice = CalculatorHelper.Product.CalculateRawPrice(item.CurrentAmount, calculatorFilter.GramPrice, item.Product.Fineness,
-                1, item.Product.ProductType);
-            var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, item.CurrentAmount, item.Product.Wage, item.Product.WageType, null);
-            var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, item.Product.ProductType, calculatorFilter.ProfitPercent);
-            var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, calculatorFilter.TaxPercent, item.Product.ProductType, null);
-
-            var finalPrice = rawPrice + wageAmount + profitAmount + taxAmount;
-
-            if ((!calculatorFilter.MinPrice.HasValue || finalPrice >= calculatorFilter.MinPrice.Value) &&
-                (!calculatorFilter.MaxPrice.HasValue || finalPrice <= calculatorFilter.MaxPrice.Value))
-            {
-                results.Add(mapper.Map<GetInventoryStockResponse>(item));
-            }
-        }
+        var data = mapper.Map<List<GetInventoryStockResponse>>(candidateProducts.Data);
 
         return new PagedList<GetInventoryStockResponse>
         {
-            Data = mapper.Map<List<GetInventoryStockResponse>>(results),
+            Data = data,
             Total = candidateProducts.Total,
             Skip = filter.Skip ?? 0,
             Take = filter.Take ?? 100
