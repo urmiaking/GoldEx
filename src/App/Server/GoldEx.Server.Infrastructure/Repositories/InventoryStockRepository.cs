@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Extensions;
@@ -19,6 +19,7 @@ using GoldEx.Server.Infrastructure.Specifications.Settings;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
+using GoldEx.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Infrastructure.Repositories;
@@ -658,6 +659,24 @@ internal class InventoryStockRepository(
             .Where(x => string.IsNullOrEmpty(calculatorFilter.Name) || x.Product!.Name.Contains(calculatorFilter.Name))
             .Where(x => !calculatorFilter.Fineness.HasValue || x.Product!.Fineness == calculatorFilter.Fineness.Value)
             .Where(x => !calculatorFilter.MaxWage.HasValue || (x.Product!.WageType == WageType.Percent && x.Product!.Wage <= calculatorFilter.MaxWage.Value))
+            .Where(x => !calculatorFilter.MinWeight.HasValue || x.CurrentQuantity >= calculatorFilter.MinWeight.Value)
+            .Where(x => !calculatorFilter.MaxWeight.HasValue || x.CurrentQuantity <= calculatorFilter.MaxWeight.Value)
+            .Where(x =>
+            {
+                if (x.Product == null) return false;
+                if (!calculatorFilter.MinPrice.HasValue && !calculatorFilter.MaxPrice.HasValue) return true;
+
+                var rawPrice = CalculatorHelper.Product.CalculateRawPrice(x.CurrentQuantity, calculatorFilter.GramPrice, x.Product.Fineness,
+                    1, x.Product.ProductType);
+                var wageAmount = CalculatorHelper.Product.CalculateWage(rawPrice, x.CurrentQuantity, x.Product.Wage, x.Product.WageType, null);
+                var profitAmount = CalculatorHelper.Product.CalculateProfit(rawPrice, wageAmount, x.Product.ProductType, calculatorFilter.ProfitPercent);
+                var taxAmount = CalculatorHelper.Product.CalculateTax(wageAmount, profitAmount, calculatorFilter.TaxPercent, x.Product.ProductType, null);
+
+                var finalPrice = rawPrice + wageAmount + profitAmount + taxAmount;
+
+                return (!calculatorFilter.MinPrice.HasValue || finalPrice >= calculatorFilter.MinPrice.Value) &&
+                       (!calculatorFilter.MaxPrice.HasValue || finalPrice <= calculatorFilter.MaxPrice.Value);
+            })
             .ToList();
 
         var total = filtered.Count;
