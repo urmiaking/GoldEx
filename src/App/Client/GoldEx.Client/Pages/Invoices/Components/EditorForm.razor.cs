@@ -650,7 +650,9 @@ public partial class EditorForm
         var data = new
         {
             barcode = item.Product.Barcode ?? "",
-            productName = item.Product.Name ?? "",
+            productName = item.Product.ProductType == ProductType.Jewelry && item.Product.Stones?.Any() == true
+                ? GoldEx.Client.Pages.Products.Helpers.StonesClientHelper.GetStonesSummary(item.Product.Stones)
+                : item.Product.Name ?? "",
             weight = $"W: {item.TotalWeight:G29}{(item.Product.GoldUnitType == GoldUnitType.Gram ? "G" : "M")}",
             wage = "F: " + item.Product.WageType switch
             {

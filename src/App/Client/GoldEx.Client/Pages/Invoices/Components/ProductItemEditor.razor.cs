@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Client.Pages.Invoices.Validators;
 using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.ViewModels;
@@ -10,6 +10,7 @@ using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.ProductCategories;
 using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Settings;
+using GoldEx.Shared.DTOs.StoneTypes;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
@@ -32,6 +33,7 @@ public partial class ProductItemEditor
     private IEnumerable<ProductCategoryVm> _productCategories = [];
     private List<GetProductResponse> _products = [];
     private GetSettingResponse? _settings;
+    private List<GetStoneTypeResponse> _stoneTypes = [];
 
     private bool _isProcessing;
     private List<GetCustomerResponse> _customers = [];
@@ -89,6 +91,7 @@ public partial class ProductItemEditor
     {
         await LoadCategoriesAsync();
         await LoadSettingsAsync();
+        await LoadStoneTypesAsync();
 
         await base.OnParametersSetAsync();
     }
@@ -435,6 +438,26 @@ public partial class ProductItemEditor
             {
                 Model.SyncProductWageFromPurchase();
             }
+        }
+    }
+
+    private async Task LoadStoneTypesAsync()
+    {
+        await SendRequestAsync<IStoneTypeService, List<GetStoneTypeResponse>>(
+            action: (s, ct) => s.GetListAsync(new StoneTypeRequestFilter(true, null), ct),
+            afterSend: response => _stoneTypes = response
+        );
+    }
+
+    private void OnStoneTypeChanged(int index, Guid? val)
+    {
+        var stone = Model.Product.Stones[index];
+        stone.StoneTypeId = val;
+        var selectedType = _stoneTypes.FirstOrDefault(x => x.Id == val);
+        if (selectedType != null)
+        {
+            stone.Type = selectedType.Title;
+            stone.StoneTypeSymbol = selectedType.Symbol;
         }
     }
 }
