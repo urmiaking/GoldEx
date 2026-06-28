@@ -1,0 +1,77 @@
+@attribute [Route(ClientRoutes.Settings.StoneTypes)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+
+@inherits GoldExComponentBase
+
+<PageTitle>مدیریت سنگ ها</PageTitle>
+
+<div class="d-flex align-center justify-space-between">
+    <MudText Typo="Typo.h6" GutterBottom="true">مدیریت سنگ ها</MudText>
+    
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        <MudButton Color="Color.Success" EndIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Size="Size.Small" OnClick="_ => OnCreate()">افزودن سنگ جدید</MudButton>
+    </MudHidden>
+
+    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        <MudIconButton Color="Color.Success" Icon="@Icons.Material.Filled.Add" Size="Size.Small" Variant="Variant.Filled" OnClick="_ => OnCreate()" />
+    </MudHidden>
+</div>
+<MudDivider Class="my-2" />
+
+<MudTable T="StoneTypeVm" Hover="true" FixedHeader="true" Dense="true" Items="_stoneTypes" Loading="_processing"
+          SelectOnRowClick="false" Breakpoint="Breakpoint.None" Elevation="24" Class="p-2 mt-4" ContainerClass="responsive-table">
+    <HeaderContent>
+        <MudTh>ردیف</MudTh>
+        <MudTh>عنوان (فارسی)</MudTh>
+        <MudTh>عنوان انگلیسی</MudTh>
+        <MudTh>نماد (سمبل)</MudTh>
+        <MudTh>نوع</MudTh>
+        <MudTh>وضعیت</MudTh>
+        <MudTh>عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ردیف">@context.Index</MudTd>
+        <MudTd DataLabel="عنوان (فارسی)">@context.Title</MudTd>
+        <MudTd DataLabel="عنوان انگلیسی">@context.EnTitle</MudTd>
+        <MudTd DataLabel="نماد (سمبل)">@context.Symbol</MudTd>
+        <MudTd DataLabel="نوع">@context.Kind.GetDisplayName()</MudTd>
+        <MudTd DataLabel="وضعیت">
+            @if (context.IsActive)
+            {
+                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text">فعال</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Text">غیرفعال</MudChip>
+            }
+        </MudTd>
+        <MudTd DataLabel="عملیات">
+            <div class="d-flex gap-2">
+                <MudTooltip Text="ویرایش">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="_ => OnEdit(context)"></MudIconButton>
+                </MudTooltip>
+                @if (context.IsActive)
+                {
+                    <MudTooltip Text="غیرفعال سازی">
+                        <MudIconButton OnClick="@(_ => OnToggleStatus(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Lock" Color="@Color.Error"></MudIconButton>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="فعال سازی">
+                        <MudIconButton OnClick="@(_ => OnToggleStatus(context))" ClickPropagation="true"
+                                       Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Success"></MudIconButton>
+                    </MudTooltip>
+                }
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>هیچ سنگی وجود ندارد</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>در حال بارگیری</MudText>
+    </LoadingContent>
+</MudTable>

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
@@ -8,8 +8,10 @@ using GoldEx.Server.Application.Validators.Products;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
-using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.ProductCategoryAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
+using GoldEx.Server.Domain.StoneTypeAggregate;
+using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.Customers;
 using GoldEx.Server.Infrastructure.Specifications.Products;
@@ -194,7 +196,8 @@ internal class ProductService(
                 s.Carat,
                 s.Purity,
                 s.Cost,
-                item.Id)));
+                item.Id,
+                s.StoneTypeId.HasValue ? new StoneTypeId(s.StoneTypeId.Value) : null)));
         }
         else
             item.ClearGemStones();
@@ -278,7 +281,8 @@ internal class ProductService(
                     s.Carat,
                     s.Purity,
                     s.Cost,
-                    item.Id)));
+                    item.Id,
+                    s.StoneTypeId.HasValue ? new StoneTypeId(s.StoneTypeId.Value) : null)));
             }
 
             product = item;

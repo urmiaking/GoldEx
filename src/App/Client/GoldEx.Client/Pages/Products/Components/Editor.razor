@@ -1,4 +1,4 @@
-﻿@using GoldEx.Client.Pages.Settings.ViewModels
+@using GoldEx.Client.Pages.Settings.ViewModels
 @using GoldEx.Shared.DTOs.PriceUnits
 
 @inherits GoldExComponentBase
@@ -237,10 +237,18 @@
                                 </MudText>
                             </MudItem>
                             <MudItem @key="@($"{index} type")" xs="6" md="4" Class="pt-0">
-                                <MudTextField @bind-Value="Model.Stones[index].Type"
-                                              For="() => Model.Stones[index].Type"
-                                              Label="نوع سنگ" Margin="Margin.Dense"
-                                              T="string" Variant="Variant.Outlined"></MudTextField>
+                                <MudSelect T="Guid?"
+                                           Label="نوع سنگ"
+                                           Margin="Margin.Dense"
+                                           Value="Model.Stones[index].StoneTypeId"
+                                           ValueChanged="@(val => OnStoneTypeChanged(index, val))"
+                                           For="() => Model.Stones[index].StoneTypeId"
+                                           Variant="Variant.Outlined">
+                                    @foreach (var type in _stoneTypes)
+                                    {
+                                        <MudSelectItem Value="@((Guid?)type.Id)">@type.Title</MudSelectItem>
+                                    }
+                                </MudSelect>
                             </MudItem>
                             <MudItem @key="@($"{index} color")" xs="6" md="4" Class="pt-0">
                                 <MudTextField @bind-Value="Model.Stones[index].Color"

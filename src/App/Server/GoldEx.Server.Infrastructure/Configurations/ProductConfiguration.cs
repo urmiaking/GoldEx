@@ -1,5 +1,6 @@
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
+using GoldEx.Server.Domain.StoneTypeAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -96,5 +97,12 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(x => x.Cost)
             .HasPrecision(36, 10)
             .IsRequired();
+
+        builder.HasOne(x => x.StoneType)
+            .WithMany()
+            .HasForeignKey(x => x.StoneTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.StoneType).AutoInclude();
     }
 }
