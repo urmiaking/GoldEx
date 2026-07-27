@@ -198,7 +198,7 @@ h1:focus {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
-    animation: shine-gold 6s linear infinite;
+/*    animation: shine-gold 6s linear infinite;*/
     direction: ltr;
     margin-top: 0.2rem;
 }
@@ -742,3 +742,80 @@ h1:focus {
     }
 
 /* Check image */
+
+/* ==========================================================================
+   WASM LOADING SPLASH SCREEN (Cloudflare-style)
+   ========================================================================== */
+
+#app-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    transition: opacity 0.3s ease;
+}
+
+#app-loading.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.splash-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.splash-logo {
+    max-height: 220px;
+    max-width: 420px;
+    object-fit: contain;
+}
+
+/* Override .brand-text inside splash with hardcoded colors.
+   The global .brand-text uses var(--mud-palette-primary) which isn't
+   available yet before MudBlazor CSS loads, making the text invisible. */
+#app-loading .brand-text {
+    font-size: clamp(2.5rem, 7vw, 3.75rem) !important;
+    font-weight: 700 !important;
+    background: linear-gradient(90deg, #b8860b 0%, #daa520 25%, #ffd700 50%, #daa520 75%, #b8860b 100%) !important;
+    -webkit-text-fill-color: transparent !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    display: inline-block;
+}
+
+#app-loading .brand-text.default-title {
+    font-family: "Cinzel Decorative", serif !important;
+    letter-spacing: 0.08em;
+}
+
+#app-loading .brand-text.store-title {
+    font-family: "IRANSans", sans-serif !important;
+    letter-spacing: 0.02em;
+}
+
+.splash-progress-track {
+    width: 240px;
+    height: 4px;
+    background: rgba(218, 165, 32, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.splash-progress-bar {
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, #b8860b 0%, #daa520 50%, #ffd700 100%);
+    border-radius: 4px;
+    animation: splash-progress 1.8s ease-in-out infinite;
+}
+
+@keyframes splash-progress {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+}

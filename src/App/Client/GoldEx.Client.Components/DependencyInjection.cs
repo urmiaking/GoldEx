@@ -110,7 +110,7 @@ public static class DependencyInjection
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddAuthorizationCore();
             services.AddCascadingAuthenticationState();
-            services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
+            services.AddScoped<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
 
             return services;
         }

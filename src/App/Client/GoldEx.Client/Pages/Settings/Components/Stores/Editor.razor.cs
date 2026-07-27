@@ -36,11 +36,12 @@ public partial class Editor
 
         try
         {
-            await using var stream = file.OpenReadStream(2 * 1024 * 1024);
+            await using var stream = file.OpenReadStream(10 * 1024 * 1024);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
             var bytes = ms.ToArray();
             _logoPreviewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -55,11 +56,12 @@ public partial class Editor
 
         try
         {
-            await using var stream = file.OpenReadStream(5 * 1024 * 1024);
+            await using var stream = file.OpenReadStream(10 * 1024 * 1024);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
             var bytes = ms.ToArray();
             _backgroundPreviewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -78,7 +80,7 @@ public partial class Editor
         {
             try
             {
-                await using var stream = Model.LogoFile.OpenReadStream(2 * 1024 * 1024);
+                await using var stream = Model.LogoFile.OpenReadStream(10 * 1024 * 1024);
                 using var ms = new MemoryStream();
                 await stream.CopyToAsync(ms);
                 logoContent = ms.ToArray();
@@ -97,7 +99,7 @@ public partial class Editor
         {
             try
             {
-                await using var stream = Model.BackgroundImageFile.OpenReadStream(5 * 1024 * 1024);
+                await using var stream = Model.BackgroundImageFile.OpenReadStream(10 * 1024 * 1024);
                 using var ms = new MemoryStream();
                 await stream.CopyToAsync(ms);
                 bgContent = ms.ToArray();

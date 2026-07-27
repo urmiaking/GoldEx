@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using GoldEx.Client.Components;
 using GoldEx.Sdk.Server.Domain.Entities.Identity;
 using GoldEx.Server.Components.Account.Pages;
 using GoldEx.Server.Components.Account.Pages.Manage;
@@ -20,6 +21,18 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var accountGroup = endpoints.MapGroup(ApiRoutes.Account.Base);
+
+        accountGroup.MapGet($"/{ApiRoutes.Account.AuthState}", (HttpContext context) =>
+        {
+            var principal = context.User;
+
+            if (principal.Identity?.IsAuthenticated == true)
+            {
+                return Results.Ok(new UserInfo(principal.Claims));
+            }
+
+            return Results.Ok(new UserInfo { UserClaims = [] });
+        });
 
         accountGroup.MapGet($"/{ApiRoutes.Account.Logout}", async (
             SignInManager<AppUser> signInManager,
