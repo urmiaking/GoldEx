@@ -3,7 +3,9 @@
         <MudNavLink Href="@ClientRoutes.Settings.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DisplaySettings">اطلاعات پایه</MudNavLink>
         <MudNavLink Href="@ClientRoutes.ProductCategories.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Category">دسته بندی اجناس</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.StoneTypes" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Diamond">مدیریت سنگ ها</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.PriceSettings" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.EuroSymbol">مدیریت نمادها</MudNavLink>
+        <AuthorizeView Roles="@BuiltinRoles.Administrators">
+            <MudNavLink Href="@ClientRoutes.Settings.PriceSettings" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.EuroSymbol">مدیریت نمادها</MudNavLink>
+        </AuthorizeView>
         <MudNavLink Href="@ClientRoutes.Settings.PriceUnits" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CurrencyExchange">مدیریت واحدهای ارزی</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.Coins" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.MonetizationOn">مدیریت سکه ها</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.FinancialAccounts" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Payments">مدیریت حساب های مالی</MudNavLink>
@@ -17,13 +19,11 @@
         <MudNavLink Href="@ClientRoutes.Settings.BarcodeBuilder" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.QrCode2">طراحی بارکد محصولات</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.SmsTemplates" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Sms">مدیریت قالب های پیامکی</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.SmsLogs" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ManageHistory">تاریخچه پیامک ها</MudNavLink>
-        <MudNavLink Href="@ClientRoutes.Settings.BackupRestore" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Restore">پشتیبان گیری و بازنشانی</MudNavLink>
         <AuthorizeView Roles="@BuiltinRoles.Administrators">
-            <Authorized>
-                <MudNavLink Href="@ClientRoutes.Settings.LicenseRequests" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ListAlt">
-                    درخواست های تمدید و ارتقاء نرم افزار
-                </MudNavLink>
-            </Authorized>
+            <MudNavLink Href="@ClientRoutes.Settings.BackupRestore" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Restore">پشتیبان گیری و بازنشانی</MudNavLink>
+            <MudNavLink Href="@ClientRoutes.Settings.LicenseRequests" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ListAlt">
+                درخواست های تمدید و ارتقاء نرم افزار
+            </MudNavLink>
         </AuthorizeView>
     </MudNavMenu>
 </MudCard>

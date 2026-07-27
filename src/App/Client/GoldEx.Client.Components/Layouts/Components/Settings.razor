@@ -30,8 +30,10 @@
             <MudListItem T="string?" Text="اطلاعات پایه" OnClick="() => NavigateTo(ClientRoutes.Settings.Index)" Icon="@Icons.Material.Filled.DisplaySettings"></MudListItem>
             <MudDivider />
             <MudListItem T="string?" Text="دسته بندی اجناس" OnClick="() => NavigateTo(ClientRoutes.ProductCategories.Index)" Icon="@Icons.Material.Filled.Category"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="مدیریت نمادها" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceSettings)" Icon="@Icons.Material.Filled.EuroSymbol"></MudListItem>
+            <AuthorizeView Roles="@BuiltinRoles.Administrators">
+                <MudDivider />
+                <MudListItem T="string?" Text="مدیریت نمادها" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceSettings)" Icon="@Icons.Material.Filled.EuroSymbol"></MudListItem>
+            </AuthorizeView>
             <MudDivider />
             <MudListItem T="string?" Text="مدیریت واحدهای ارزی" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceUnits)" Icon="@Icons.Material.Filled.CurrencyExchange"></MudListItem>
             <MudDivider />
@@ -53,13 +55,11 @@
             <MudListItem T="string?" Text="مدیریت قالب های پیامکی" OnClick="() => NavigateTo(ClientRoutes.Settings.SmsTemplates)" Icon="@Icons.Material.Filled.Sms"></MudListItem>
             <MudDivider />
             <MudListItem T="string?" Text="تاریخچه پیامک ها" OnClick="() => NavigateTo(ClientRoutes.Settings.SmsLogs)" Icon="@Icons.Material.Filled.ManageHistory"></MudListItem>
-            <MudDivider />
-            <MudListItem T="string?" Text="پشتیبان گیری و بازنشانی" OnClick="() => NavigateTo(ClientRoutes.Settings.BackupRestore)" Icon="@Icons.Material.Filled.Restore"></MudListItem>
             <AuthorizeView Roles="@BuiltinRoles.Administrators">
-                <Authorized>
-                    <MudDivider />
-                    <MudListItem T="string?" Text="درخواست های تمدید و ارتقاء نرم افزار" OnClick="() => NavigateTo(ClientRoutes.Settings.LicenseRequests)" Icon="@Icons.Material.Filled.ListAlt"></MudListItem>
-                </Authorized>
+                <MudDivider />
+                <MudListItem T="string?" Text="پشتیبان گیری و بازنشانی" OnClick="() => NavigateTo(ClientRoutes.Settings.BackupRestore)" Icon="@Icons.Material.Filled.Restore"></MudListItem>
+                <MudDivider />
+                <MudListItem T="string?" Text="درخواست های تمدید و ارتقاء نرم افزار" OnClick="() => NavigateTo(ClientRoutes.Settings.LicenseRequests)" Icon="@Icons.Material.Filled.ListAlt"></MudListItem>
             </AuthorizeView>
         </MudList>
     </MudContainer>
