@@ -1,4 +1,4 @@
-﻿@using GoldEx.Client.Components.Constants
+@using GoldEx.Client.Components.Constants
 @using GoldEx.Client.Components.Services
 @using Microsoft.JSInterop
 @inherits LayoutComponentBase
@@ -28,6 +28,7 @@
     [Inject] private IThemeService? ThemeService { get; set; }
     [Inject] private ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject] private ISnackbar ToastService { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()  
     {  
@@ -60,6 +61,9 @@
     {
         if (firstRender)
         {
+            // Dismiss the WASM loading splash screen (no-op if splash doesn't exist)
+            await JSRuntime.InvokeVoidAsync("GoldEx.removeSplash");
+
             await LoadTheme();
             StateHasChanged();
         }

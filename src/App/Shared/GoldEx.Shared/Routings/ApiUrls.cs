@@ -44,6 +44,9 @@ public class ApiUrls
 
         public static string PerformExternalLogin() =>
             BuildUrl(ApiRoutes.Account.Base, ApiRoutes.Account.PerformExternalLogin);
+
+        public static string AuthState() =>
+            BuildUrl(ApiRoutes.Account.Base, ApiRoutes.Account.AuthState);
     }
 
     public class Price

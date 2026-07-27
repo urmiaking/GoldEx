@@ -9,6 +9,7 @@ public static class ApiRoutes
         public const string Login = "Login";
         public const string Logout = "Logout";
         public const string PerformExternalLogin = "PerformExternalLogin";
+        public const string AuthState = "auth-state";
 
         public static class Manage
         {

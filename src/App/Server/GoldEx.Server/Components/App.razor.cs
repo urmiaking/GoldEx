@@ -1,8 +1,11 @@
-﻿using GoldEx.Client.Components.Services;
+using GoldEx.Client.Components.Services;
+using GoldEx.Server.Domain.StoreAggregate;
+using GoldEx.Server.Infrastructure;
 using GoldEx.Shared.DTOs.Licenses;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoldEx.Server.Components;
 
@@ -13,7 +16,13 @@ public partial class App
     [Inject] private ILicenseService LicenceService { get; set; } = default!;
     [Inject] private LicenseState LicenseState { get; set; } = default!;
     [Inject] private IWebHostEnvironment Env { get; set; } = default!;
+    [Inject] private IStoreContext StoreContext { get; set; } = default!;
+    [Inject] private GoldExDbContext DbContext { get; set; } = default!;
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    private string SplashTitle { get; set; } = "GoldEx";
+    private string? SplashLogoUrl { get; set; }
+    private bool IsStoreTitle { get; set; }
 
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
@@ -26,13 +35,51 @@ public partial class App
         if (HttpContext.Request.Path.StartsWithSegments("/ssr"))
             return RenderMode.InteractiveServer;
 
-        return new InteractiveAutoRenderMode(true);
+        return new InteractiveWebAssemblyRenderMode(prerender: false);
     }
+
+    /// <summary>
+    /// Shows the loading splash screen only when prerendering is disabled.
+    /// This ensures reversibility: switching back to InteractiveAutoRenderMode(true)
+    /// automatically hides the splash without any other code change.
+    /// </summary>
+    private bool ShowSplash => RenderModeForPage switch
+    {
+        InteractiveWebAssemblyRenderMode { Prerender: false } => true,
+        InteractiveAutoRenderMode { Prerender: false } => true,
+        _ => false
+    };
 
     protected override async Task OnInitializedAsync()
     {
         await GetLicenseAsync();
+        await LoadSplashTitleAsync();
         await base.OnInitializedAsync();
+    }
+
+    private async Task LoadSplashTitleAsync()
+    {
+        if (IsLoggedIn && StoreContext.StoreId.HasValue)
+        {
+            var storeId = new StoreId(StoreContext.StoreId.Value);
+            var store = await DbContext.Set<Store>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == storeId);
+
+            if (store is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(store.Name))
+                {
+                    SplashTitle = store.Name;
+                    IsStoreTitle = true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(store.LogoUrl))
+                {
+                    SplashLogoUrl = store.LogoUrl;
+                }
+            }
+        }
     }
 
     private async Task GetLicenseAsync()
