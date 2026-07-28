@@ -33,9 +33,9 @@
             <AuthorizeView Roles="@BuiltinRoles.Administrators">
                 <MudDivider />
                 <MudListItem T="string?" Text="مدیریت نمادها" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceSettings)" Icon="@Icons.Material.Filled.EuroSymbol"></MudListItem>
-            </AuthorizeView>
-            <MudDivider />
+                <MudDivider />
             <MudListItem T="string?" Text="مدیریت واحدهای ارزی" OnClick="() => NavigateTo(ClientRoutes.Settings.PriceUnits)" Icon="@Icons.Material.Filled.CurrencyExchange"></MudListItem>
+            </AuthorizeView>
             <MudDivider />
             <MudListItem T="string?" Text="مدیریت سکه ها" OnClick="() => NavigateTo(ClientRoutes.Settings.Coins)" Icon="@Icons.Material.Filled.MonetizationOn"></MudListItem>
             <MudDivider />
