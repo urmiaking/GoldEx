@@ -61,8 +61,15 @@
     {
         if (firstRender)
         {
-            // Dismiss the WASM loading splash screen (no-op if splash doesn't exist)
-            await JSRuntime.InvokeVoidAsync("GoldEx.removeSplash");
+            try
+            {
+                // Dismiss the WASM loading splash screen (no-op if splash doesn't exist)
+                await JSRuntime.InvokeVoidAsync("GoldEx.removeSplash");
+            }
+            catch
+            {
+                // ignore
+            }
 
             await LoadTheme();
             StateHasChanged();
