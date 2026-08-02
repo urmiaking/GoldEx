@@ -1,6 +1,7 @@
 using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.Common;
 using GoldEx.Server.Domain.CheckPaymentAggregate;
+using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -32,7 +33,8 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>, IStoreFiltered
         InvoiceId? targetInvoiceId,
         string? referenceNumber = null,
         string? note = null,
-        StoreId storeId = default)
+        StoreId storeId = default,
+        CustomerTransferVoucherId? customerTransferVoucherId = null)
     {
         var finalAmount = goldFineness.HasValue ? amount * goldFineness.Value / 750m : amount;
 
@@ -52,6 +54,7 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>, IStoreFiltered
             TargetInvoiceId = targetInvoiceId,
             LedgerAccountId = ledgerAccountId,
             PaymentVoucherId = paymentVoucherId,
+            CustomerTransferVoucherId = customerTransferVoucherId,
             SourcePaymentId = sourcePaymentId,
             ReferenceNumber = referenceNumber,
             Note = note,
@@ -82,6 +85,9 @@ public class InvoicePayment : EntityBase<InvoicePaymentId>, IStoreFiltered
 
     public PaymentVoucherId? PaymentVoucherId { get; private set; }
     public PaymentVoucher? PaymentVoucher { get; private set; }
+
+    public CustomerTransferVoucherId? CustomerTransferVoucherId { get; private set; }
+    public CustomerTransferVoucher? CustomerTransferVoucher { get; private set; }
 
     public InvoiceId InvoiceId { get; private set; }
     public Invoice? Invoice { get; private set; }

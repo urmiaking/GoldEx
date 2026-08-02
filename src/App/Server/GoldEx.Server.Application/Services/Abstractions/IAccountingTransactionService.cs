@@ -12,16 +12,17 @@ using GoldEx.Shared.DTOs.MeltingBatches;
 
 using GoldEx.Shared.Enums;
 
+using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
+
 namespace GoldEx.Server.Application.Services.Abstractions;
 
 public interface IAccountingTransactionService
 {
     Task SetTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
-#line 19
     Task CreateTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default);
-#line 21
     Task ClearTransactionsForPaymentVoucherAsync(PaymentVoucher voucher, CancellationToken cancellationToken = default);
-#line 23
+    Task CreateTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default);
+    Task ClearTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default);
     Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default);
     Task SetForMeltingBatchRequestAsync(MeltingBatchId meltingBatchId,
         List<ProductId> productIds,

@@ -1,6 +1,7 @@
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
 using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Shared.DTOs.CustomerTransfers;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.CheckPayments;
 using GoldEx.Shared.DTOs.FinancialAccounts;
@@ -316,6 +317,29 @@ public class ApiUrls
                 .FormatRoute(new { voucherNumber });
         public static string GetPendingList(Guid customerId) =>
             BuildUrl(ApiRoutes.PaymentVouchers.Base, ApiRoutes.PaymentVouchers.GetPendingList).FormatRoute(new { customerId });
+    }
+
+    public class CustomerTransfers
+    {
+        public static string GetList(RequestFilter filter, CustomerTransferVoucherFilter voucherFilter) =>
+            BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.GetList)
+                .AppendQueryString(filter)
+                .AppendQueryString(voucherFilter);
+        public static string Get(Guid id) =>
+            BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.Get).FormatRoute(new { id });
+        public static string Get(long voucherNumber) =>
+            BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.GetByNumber)
+                .AppendQueryString(new { voucherNumber });
+        public static string Create() => BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.Create);
+        public static string Update(Guid id) =>
+            BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.Update).FormatRoute(new { id });
+        public static string Delete(Guid id) =>
+            BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.Delete).FormatRoute(new { id });
+        public static string GetLastNumber() =>
+            BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.GetLastNumber);
+        public static string GetByNumber(long voucherNumber) =>
+            BuildUrl(ApiRoutes.CustomerTransfers.Base, ApiRoutes.CustomerTransfers.GetByNumber)
+                .FormatRoute(new { voucherNumber });
     }
 
     public class LedgerAccounts

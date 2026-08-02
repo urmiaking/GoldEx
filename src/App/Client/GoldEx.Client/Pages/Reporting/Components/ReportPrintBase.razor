@@ -1,4 +1,4 @@
-﻿<!-- ReportPrintBase.razor -->  
+<!-- ReportPrintBase.razor -->  
 @using GoldEx.Client.Pages.Reporting.ViewModels
 @inherits GoldExComponentBase  
   
@@ -61,7 +61,15 @@
         if (!IsLoading && Data != null && !_printInvoked)
         {
             _printInvoked = true;
-            await Task.Delay(1000);
+            try
+            {
+                await JsRuntime.InvokeVoidAsync("GoldEx.removeSplash");
+            }
+            catch
+            {
+                // ignore
+            }
+            await Task.Delay(500);
             await JsRuntime.InvokeVoidAsync("printAndClose");
         }
     }

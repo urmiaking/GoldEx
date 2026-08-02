@@ -1,0 +1,20 @@
+@attribute [Route(ClientRoutes.Finances.CustomerTransfers)]
+@attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
+@using GoldEx.Client.Pages.Finances.CustomerTransfers.Components
+
+@inherits GoldExComponentBase
+
+<PageTitle>حواله‌ها بین مشتریان - GoldEx</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+        <SeparatorTemplate>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+        </SeparatorTemplate>
+    </MudBreadcrumbs>
+
+    <MudText Typo="Typo.h5" GutterBottom="true" Class="text-center d-md-block d-none">حواله‌های بین مشتریان</MudText>
+    <MudDivider Class="mb-2 d-md-block d-none" />
+
+    <CustomerTransferList ContainerClass="responsive-table-toolbar" SearchQuery="@SearchQuery" />
+</MudContainer>

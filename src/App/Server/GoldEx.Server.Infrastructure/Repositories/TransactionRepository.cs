@@ -1,6 +1,7 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CustomerAggregate;
+using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using GoldEx.Server.Domain.LedgerAccountAggregate;
@@ -35,6 +36,18 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
     {
         var transactions = await Query
             .Where(t => t.PaymentVoucherId == paymentVoucherId)
+            .ToListAsync(cancellationToken);
+
+        if (transactions.Count == 0)
+            return;
+
+        await DeleteRangeAsync(transactions, cancellationToken);
+    }
+
+    public async Task RemoveByCustomerTransferVoucherIdAsync(CustomerTransferVoucherId customerTransferVoucherId, CancellationToken cancellationToken = default)
+    {
+        var transactions = await Query
+            .Where(t => t.CustomerTransferVoucherId == customerTransferVoucherId)
             .ToListAsync(cancellationToken);
 
         if (transactions.Count == 0)

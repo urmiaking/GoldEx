@@ -819,3 +819,16 @@ h1:focus {
     0%   { transform: translateX(-100%); }
     100% { transform: translateX(350%); }
 }
+
+/* Hide splash screen and loading indicators during printing */
+@media print {
+    #app-loading,
+    #loading-indicator,
+    .loading-container,
+    .splash-screen,
+    .loading-message {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+}

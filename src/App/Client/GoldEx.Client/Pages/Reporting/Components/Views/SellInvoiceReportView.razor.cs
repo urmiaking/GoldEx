@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Reporting.ViewModels;
+using GoldEx.Client.Pages.Reporting.ViewModels;
 using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Helpers;
@@ -44,9 +44,19 @@ public partial class SellInvoiceReportView
             .OrderBy(x => x.PriceUnitTitle)
             .ToList();
 
+        var goldWeightSummary = new SellInvoiceFilterVm.GoldWeightSummary
+        {
+            TotalWeight = Items.Sum(x => x.TotalWeightEquivalent),
+            TotalProfitWeight = Items.Sum(x => x.ProfitWeightEquivalent),
+            TotalWageWeight = Items.Sum(x => x.WageWeightEquivalent),
+            TotalTaxWeight = Items.Sum(x => x.TaxWeightEquivalent),
+            TotalRemainingWeight = Items.Sum(x => x.RemainingWeightEquivalent)
+        };
+
         _summary = new SellInvoiceFilterVm.SellInvoiceReportSummary
         {
-            PriceUnitSummaries = priceUnitSummaries
+            PriceUnitSummaries = priceUnitSummaries,
+            GoldWeightEquivalentSummary = goldWeightSummary
         };
     }
 

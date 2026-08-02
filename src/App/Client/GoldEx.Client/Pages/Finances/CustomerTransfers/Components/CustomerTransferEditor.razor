@@ -1,0 +1,237 @@
+@using GoldEx.Shared.DTOs.PriceUnits
+@using GoldEx.Shared.DTOs.Invoices
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Routings
+@using GoldEx.Shared.Enums
+@inherits GoldExComponentBase
+
+<MudForm Model="Model" @ref="@_form" Validation="@(Validator.ValidateValue)" ValidationDelay="0">
+    <MudDialog>
+        <DialogContent>
+            <MudGrid Spacing="3">
+                <!-- Accounting Flow Preview Card -->
+                <MudItem xs="12">
+                    <MudPaper Class="pa-3 rounded-lg" Elevation="0" Style="background: var(--mud-palette-background-grey); border: 1px solid var(--mud-palette-lines-default);">
+                        <div class="d-flex align-center justify-space-between mb-2">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="d-flex align-center gap-1">
+                                <MudIcon Icon="@Icons.Material.Outlined.Preview" Size="Size.Small" />
+                                پیش‌نمایش جریان سند حسابداری
+                            </MudText>
+                        </div>
+                        <MudGrid AlignItems="Center" Spacing="2">
+                            <MudItem xs="12" sm="5">
+                                <MudPaper Class="pa-2 text-center rounded-lg" Elevation="1" Style="border-right: 4px solid var(--mud-palette-error);">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">فرستنده (حواله‌دهنده / بدهکار)</MudText>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">
+                                        @(Model.SourceCustomer?.FullName ?? "انتخاب نشده")
+                                    </MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text" Class="mt-1">
+                                        کاهش طلب ما از مشتری
+                                    </MudChip>
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="2" Class="text-center">
+                                <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Spacing="0">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Color="Color.Primary" Size="Size.Medium" />
+                                    <MudText Typo="Typo.caption" Color="Color.Primary" Style="font-weight: bold;">
+                                        @(Model.Amount > 0 ? Model.Amount.ToCurrencyFormat(Model.PriceUnit?.Title) : "مبلغ / وزن")
+                                    </MudText>
+                                </MudStack>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="5">
+                                <MudPaper Class="pa-2 text-center rounded-lg" Elevation="1" Style="border-right: 4px solid var(--mud-palette-success);">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">گیرنده (دریافت‌کننده / بستانکار)</MudText>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">
+                                        @(Model.DestinationCustomer?.FullName ?? "انتخاب نشده")
+                                    </MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text" Class="mt-1">
+                                        کاهش بدهی ما به مشتری
+                                    </MudChip>
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+
+                <!-- Customers Selection -->
+                <MudItem xs="12" md="6">
+                    <div class="d-flex align-center gap-2">
+                        <MudAutocomplete T="CustomerVm"
+                                         Value="Model.SourceCustomer"
+                                         ValueChanged="OnSourceCustomerChanged"
+                                         Text="@Model.SourceCustomer?.FullName"
+                                         For="@(() => Model.SourceCustomer!)"
+                                         Placeholder="جستجوی فرستنده..."
+                                         Label="مشتری فرستنده (حواله‌دهنده) *"
+                                         ToStringFunc="@(c => c != null ? $"{c.FullName} - {c.CustomerType.GetDisplayName()}" : null)"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                         Variant="Variant.Outlined"
+                                         SearchFunc="@SearchCustomers"
+                                         ResetValueOnEmptyText="true"
+                                         ShowProgressIndicator="false" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick='() => OnAddCustomer("فرستنده")' Size="Size.Medium" />
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <div class="d-flex align-center gap-2">
+                        <MudAutocomplete T="CustomerVm"
+                                         Value="Model.DestinationCustomer"
+                                         ValueChanged="OnDestCustomerChanged"
+                                         Text="@Model.DestinationCustomer?.FullName"
+                                         For="@(() => Model.DestinationCustomer!)"
+                                         Placeholder="جستجوی گیرنده..."
+                                         Label="مشتری گیرنده (دریافت‌کننده) *"
+                                         ToStringFunc="@(c => c != null ? $"{c.FullName} - {c.CustomerType.GetDisplayName()}" : null)"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.PersonAddAlt1"
+                                         Variant="Variant.Outlined"
+                                         SearchFunc="@SearchCustomers"
+                                         ResetValueOnEmptyText="true"
+                                         ShowProgressIndicator="false" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" OnClick='() => OnAddCustomer("گیرنده")' Size="Size.Medium" />
+                    </div>
+                </MudItem>
+
+                <!-- Asset Unit, Amount & Transfer Date -->
+                <MudItem xs="12" md="4">
+                    <MudSelect T="GetPriceUnitTitleResponse?"
+                               Value="Model.PriceUnit"
+                               ValueChanged="OnPriceUnitChanged"
+                               Label="نوع دارایی / واحد قیمت *"
+                               For="() => Model.PriceUnit"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var item in PriceUnits)
+                        {
+                            <MudSelectItem Value="item">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, item.Id))" Alt="@item.Title" />
+                                    </MudAvatar>
+                                    <MudText>@item.Title</MudText>
+                                </MudStack>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="@Model.Amount"
+                                     dir="ltr"
+                                     Variant="Variant.Outlined"
+                                     Label="مبلغ یا وزن حواله *"
+                                     For="() => Model.Amount"
+                                     Format="@(Model.PriceUnit?.IsGoldBased == true ? "#,##0.000" : "#,##0.##")"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="@Model.PriceUnit?.Title"
+                                     Margin="Margin.Dense" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudDatePicker @bind-Date="@Model.TransferDate"
+                                   Label="تاریخ حواله *"
+                                   For="() => Model.TransferDate"
+                                   Margin="Margin.Dense"
+                                   Variant="Variant.Outlined" />
+                </MudItem>
+
+                <!-- Optional Exchange Rate -->
+                @if (Model.PriceUnit != null && PriceUnits.FirstOrDefault(x => x.IsDefault) != null && Model.PriceUnit.Id != PriceUnits.First(x => x.IsDefault).Id)
+                {
+                    <MudItem xs="12">
+                        <MudNumericField T="decimal?"
+                                         @bind-Value="@Model.ExchangeRate"
+                                         dir="ltr"
+                                         Variant="Variant.Outlined"
+                                         Label="نرخ تبدیل به پایه"
+                                         For="() => Model.ExchangeRate"
+                                         Format="#,##0.##"
+                                         HideSpinButtons="true"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="@PriceUnits.FirstOrDefault(x => x.IsDefault)?.Title"
+                                         Margin="Margin.Dense" />
+                    </MudItem>
+                }
+
+                <!-- Optional Invoice Pickers -->
+                <MudItem xs="12" md="6">
+                    <MudSelect T="GetTinyInvoiceResponse?"
+                               @bind-Value="Model.SourceInvoice"
+                               Label="فاکتور مبدا فرستنده (اختیاری جهت تسویه فاکتور)"
+                               Disabled="@(Model.SourceCustomer == null || _loadingInvoices)"
+                               Clearable="true"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var inv in _sourceInvoices)
+                        {
+                            <MudSelectItem Value="inv">
+                                فاکتور @inv.InvoiceType.GetDisplayName() شماره @inv.InvoiceNumber (مانده: @inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title))
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSelect T="GetTinyInvoiceResponse?"
+                               @bind-Value="Model.DestinationInvoice"
+                               Label="فاکتور مقصد گیرنده (اختیاری جهت تسویه فاکتور)"
+                               Disabled="@(Model.DestinationCustomer == null || _loadingInvoices)"
+                               Clearable="true"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined">
+                        @foreach (var inv in _destInvoices)
+                        {
+                            <MudSelectItem Value="inv">
+                                فاکتور @inv.InvoiceType.GetDisplayName() شماره @inv.InvoiceNumber (مانده: @inv.Remaining.ToCurrencyFormat(inv.PriceUnit.Title))
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <!-- Description Field -->
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="@Model.Description"
+                                  Label="شرح و توضیحات حواله"
+                                  For="() => Model.Description"
+                                  Margin="Margin.Dense"
+                                  Lines="2"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Cancel"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">
+                انصراف
+            </MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@_processing"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="SubmitAsync"
+                       Variant="Variant.Filled">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">در حال ذخیره</MudText>
+                }
+                else
+                {
+                    <MudText>ذخیره</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>

@@ -1,0 +1,201 @@
+@using GoldEx.Shared.DTOs.CustomerTransfers
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Routings
+@using GoldEx.Shared.Enums
+@inherits GoldExComponentBase
+
+@if (ShowTitle)
+{
+    <div class="d-flex justify-content-center">
+        <MudText Typo="Typo.h5" GutterBottom="true" Class="mt-6">حواله‌های بین مشتریان</MudText>
+    </div>
+    <MudDivider />
+}
+
+<MudTable T="GetCustomerTransferVoucherListResponse" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
+          Dense="true" ServerData="LoadCustomerTransfersAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+    <ToolBarContent>
+        <MudTextField T="string" Clearable="true" Immediate="true" Value="@SearchQuery" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
+                      Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+        <MudSpacer />
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDateRangePicker DateRange="@_filterDateRange"
+                                DateRangeChanged="OnDateRangeChanged"
+                                Margin="Margin.Dense"
+                                Variant="Variant.Outlined"
+                                Class="ml-3"
+                                MaxMonthColumns="1"
+                                DisplayMonths="1"
+                                Rounded="true"
+                                ShowToolbar="false"
+                                Style="max-width: 320px;"
+                                PlaceholderStart="از"
+                                PlaceholderEnd="تا"
+                                Label="تاریخ حواله"
+                                Clearable="true" />
+
+            @if (_priceUnits.Any())
+            {
+                <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="ml-3">
+                    <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.MonetizationOn">
+                        @(_selectedPriceUnit?.Title ?? "همه ارزها/طلا")
+                    </MudButton>
+                    <MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                        <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.ViewHeadline" OnClick="() => SetPriceUnitFilter(null)">
+                            همه ارزها/طلا
+                        </MudMenuItem>
+                        @foreach (var unit in _priceUnits)
+                        {
+                            <MudMenuItem IconColor="Color.Success" OnClick="() => SetPriceUnitFilter(unit)">
+                                @unit.Title
+                            </MudMenuItem>
+                        }
+                    </MudMenu>
+                </MudButtonGroup>
+            }
+
+            <MudButton Class="ml-4" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OnCreate())" Size="Size.Small" Variant="Variant.Filled">
+                ثبت حواله جدید
+            </MudButton>
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="@Color.Primary" Icon="@Icons.Material.Filled.Add"
+                           OnClick="@(_ => OnCreate())" Size="@Size.Small"
+                           Class="mr-3" Variant="@Variant.Filled" />
+        </MudHidden>
+    </ToolBarContent>
+
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="VoucherNumber" T="GetCustomerTransferVoucherListResponse">شماره حواله</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="TransferDate" T="GetCustomerTransferVoucherListResponse">تاریخ</MudTableSortLabel></MudTh>
+        <MudTh>فرستنده (حواله‌دهنده)</MudTh>
+        <MudTh>گیرنده (دریافت‌کننده)</MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Amount" T="GetCustomerTransferVoucherListResponse">مبلغ / وزن</MudTableSortLabel></MudTh>
+        <MudTh>فاکتورهای مربوطه</MudTh>
+        <MudTh>توضیحات</MudTh>
+        <MudTh Style="text-align: center;">عملیات</MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="شماره حواله">
+            <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                #@context.VoucherNumber
+            </MudChip>
+        </MudTd>
+
+        <MudTd DataLabel="تاریخ">
+            <MudTooltip Text="@($"تاریخ ثبت: {context.CreatedAt:yyyy/MM/dd}")" Placement="Placement.Top" Arrow="true">
+                @context.TransferDate.ToShortDateString()
+            </MudTooltip>
+        </MudTd>
+
+        <MudTd DataLabel="فرستنده">
+            <div class="d-flex align-center gap-1">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Error" Size="Size.Small" />
+                <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.SourceCustomerName</MudText>
+            </div>
+        </MudTd>
+
+        <MudTd DataLabel="گیرنده">
+            <div class="d-flex align-center gap-1">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Success" Size="Size.Small" />
+                <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.DestinationCustomerName</MudText>
+            </div>
+        </MudTd>
+
+        <MudTd DataLabel="مبلغ / وزن">
+            <MudChip T="string"
+                     Color="@(context.PriceUnitIsGoldBased ? Color.Warning : Color.Info)"
+                     Variant="Variant.Filled"
+                     Size="Size.Small">
+                <MudAvatar Size="Size.Small" Class="mr-1">
+                    <MudImage Src="@(ApiUrls.Icons.Get(IconType.PriceUnit, context.PriceUnitId))" />
+                </MudAvatar>
+                @context.Amount.ToCurrencyFormat(context.PriceUnitTitle)
+            </MudChip>
+        </MudTd>
+
+        <MudTd DataLabel="فاکتورهای مربوطه">
+            <div class="d-flex gap-1 flex-wrap">
+                @if (context.SourceInvoiceNumber.HasValue)
+                {
+                    <MudTooltip Text="فاکتور مبدا فرستنده">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
+                            مبدا: #@context.SourceInvoiceNumber
+                        </MudChip>
+                    </MudTooltip>
+                }
+                @if (context.DestinationInvoiceNumber.HasValue)
+                {
+                    <MudTooltip Text="فاکتور مقصد گیرنده">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
+                            مقصد: #@context.DestinationInvoiceNumber
+                        </MudChip>
+                    </MudTooltip>
+                }
+                @if (!context.SourceInvoiceNumber.HasValue && !context.DestinationInvoiceNumber.HasValue)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">مستقیم (دفتری)</MudText>
+                }
+            </div>
+        </MudTd>
+
+        <MudTd DataLabel="توضیحات">
+            <MudText Typo="Typo.body2" Class="text-truncate" Style="max-width: 180px;">
+                @(string.IsNullOrWhiteSpace(context.Description) ? "-" : context.Description)
+            </MudText>
+        </MudTd>
+
+        <MudTd DataLabel="عملیات" Style="text-align: center;">
+            <div class="d-flex gap-2 justify-center">
+                <MudTooltip Text="ویرایش سند">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary" OnClick="() => OnEdit(context)" />
+                </MudTooltip>
+                <MudTooltip Text="حذف سند">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Error" OnClick="() => OnDelete(context)" />
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+
+    <NoRecordsContent>
+        <MudText>هیچ سند حواله‌ای یافت نشد</MudText>
+    </NoRecordsContent>
+
+    <LoadingContent>
+        <MudText>در حال بارگیری</MudText>
+    </LoadingContent>
+
+    <PagerContent>
+        @{
+            var totalItems = _table.GetFilteredItemsCount();
+            var startItem = totalItems == 0 ? 0 : _table.CurrentPage * _table.RowsPerPage + 1;
+            var endItem = Math.Min((_table.CurrentPage + 1) * _table.RowsPerPage, totalItems);
+            var pageCount = (totalItems + _table.RowsPerPage - 1) / _table.RowsPerPage;
+            var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
+        }
+
+        <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 pa-4" style="gap: 1rem;">
+            <div class="mud-table-pagination-caption">
+                @infoText
+            </div>
+            <MudPagination SelectedChanged="PageChanged"
+                           Selected="@(_table.CurrentPage + 1)"
+                           Color="Color.Primary"
+                           Count="@pageCount"
+                           Class="justify-center"
+                           BoundaryCount="1"
+                           MiddleCount="3" />
+
+            <div class="d-none d-sm-block mud-table-pagination-caption" style="visibility: hidden; pointer-events: none;">
+                @infoText
+            </div>
+        </div>
+    </PagerContent>
+</MudTable>
