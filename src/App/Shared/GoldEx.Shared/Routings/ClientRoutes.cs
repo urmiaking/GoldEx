@@ -174,6 +174,7 @@ public static class ClientRoutes
         public const string Index = $"{FinancesPrefix}";
         public const string Checks = $"{FinancesPrefix}/checks";
         public const string PaymentVouchers = $"{FinancesPrefix}/payment-vouchers";
+        public const string CustomerTransfers = $"{FinancesPrefix}/customer-transfers";
     }
 
     public static class InventoryStocks

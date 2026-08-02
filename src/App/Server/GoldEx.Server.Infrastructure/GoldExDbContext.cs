@@ -7,6 +7,8 @@ using GoldEx.Server.Infrastructure.Configurations;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
+using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
+
 namespace GoldEx.Server.Infrastructure;
 
 public class GoldExDbContext(
@@ -15,6 +17,7 @@ public class GoldExDbContext(
     : GoldExDbContextBase<AppUser, AppRole, Guid, AppUserClaim, AppUserRole, AppUserLogin, AppRoleClaim, AppUserToken, AppUserPasskey>(
         options)
 {
+    public DbSet<CustomerTransferVoucher> CustomerTransferVouchers => Set<CustomerTransferVoucher>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(typeof(CustomerConfiguration).Assembly);

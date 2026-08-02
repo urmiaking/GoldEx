@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Repositories;
+using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
@@ -10,6 +10,8 @@ using GoldEx.Server.Infrastructure.Models;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 
+using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
+
 namespace GoldEx.Server.Infrastructure.Repositories.Abstractions;
 
 public interface ITransactionRepository : IRepository<Transaction>,
@@ -19,6 +21,7 @@ public interface ITransactionRepository : IRepository<Transaction>,
 {
     Task RemoveByInvoiceIdAsync(InvoiceId invoiceId, CancellationToken cancellationToken = default);
     Task RemoveByPaymentVoucherIdAsync(PaymentVoucherId paymentVoucherId, CancellationToken cancellationToken = default);
+    Task RemoveByCustomerTransferVoucherIdAsync(CustomerTransferVoucherId customerTransferVoucherId, CancellationToken cancellationToken = default);
     Task RemoveByInvoicePaymentIdsAsync(List<InvoicePaymentId>? invoicePaymentIds, CancellationToken cancellationToken = default);
 
     Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId,

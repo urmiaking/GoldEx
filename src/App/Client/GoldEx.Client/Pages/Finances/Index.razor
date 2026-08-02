@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Finances.Index)]
+@attribute [Route(ClientRoutes.Finances.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
 @inherits GoldExComponentBase
 
@@ -19,6 +19,12 @@
                            Description="ایجاد، ویرایش و حذف اسناد پرداخت"
                            StartIcon="@Icons.Material.Filled.LibraryBooks"
                            Href="@ClientRoutes.Finances.PaymentVouchers" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudActionCard Title="حواله بین مشتریان"
+                           Description="تسویه حساب دفتری و انتقال وجه/طلا بین دو مشتری"
+                           StartIcon="@Icons.Material.Filled.SwapHoriz"
+                           Href="@ClientRoutes.Finances.CustomerTransfers" />
         </MudItem>
     </MudGrid>
 
