@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.InvoicePaymentAggregate;
+using GoldEx.Server.Domain.InvoicePaymentAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -43,6 +43,11 @@ internal class InvoicePaymentConfiguration : IEntityTypeConfiguration<InvoicePay
             .WithOne()
             .HasForeignKey<InvoicePayment>(x => x.PaymentVoucherId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.CustomerTransferVoucher)
+            .WithMany()
+            .HasForeignKey(x => x.CustomerTransferVoucherId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(x => x.SourceFinancialAccount)
             .WithMany()

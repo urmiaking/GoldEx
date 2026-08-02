@@ -205,3 +205,22 @@ GoldEx Calculator (`GoldEx.Calculator.Client`) is an offline-first client-side t
   - When an invoice is printed, a new browser window is spawned, and the invoice HTML is written on the fly.
   - The styling is defined in `wwwroot/assets/css/quick-invoice.css`, configured specifically for **A5 landscape** printing (`@page { size: A5 landscape; margin: 8mm; }`).
   - If the store has uploaded a logo, it is embedded as a Base64 data URL directly in the print template's header (`.qi-header .qi-title`).
+
+---
+
+## Standalone Customer Transfer Voucher Architecture (حواله بین مشتریان)
+
+GoldEx supports standalone customer-to-customer remittances (`CustomerTransferVoucher` aggregate) for both currency and gold weight (18K/Mesghal) transfers:
+
+1. **Aggregate Root**: `CustomerTransferVoucher` (in `GoldEx.Server.Domain/CustomerTransferVoucherAggregate`) implements `IStoreFiltered`.
+2. **Double-Entry Accounting**:
+   - `AccountingTransactionService.CreateTransactionsForCustomerTransferVoucherAsync` generates balanced journal entries within a single `GroupId` (UUID v7).
+   - Credits the source customer's sub-ledger (reduces store receivable from source customer).
+   - Debits the destination customer's sub-ledger (reduces store payable to destination customer).
+3. **Optional Invoice Settlement Linking**:
+   - `CustomerTransferVoucherService` links optional `SourceInvoiceId` and `DestinationInvoiceId`.
+   - Automatically creates linked `InvoicePayment` records to settle the open balances (`Remaining`) of selected source/destination invoices.
+4. **UI & UX Standard**:
+   - Customer transfer pages (`List.razor`) and components (`CustomerTransferList.razor`, `CustomerTransferEditor.razor`) inherit `GoldExComponentBase` and follow standard GoldEx layout patterns (`MudBreadcrumbs`, `MudTable` with custom `MudPagination`, `SendRequestAsync` thread-safe requests, `ValidateAsync`, and `_processing` submit state).
+
+

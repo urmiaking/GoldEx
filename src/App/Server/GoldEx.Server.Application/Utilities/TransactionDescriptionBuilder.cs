@@ -403,4 +403,24 @@ public static class TransactionDescriptionBuilder
     }
 
     #endregion
+
+    #region Customer Transfer Voucher Descriptions
+
+    public static string ForCustomerTransferSource(long voucherNumber, string destinationCustomerName, string? description)
+    {
+        var desc = $"انتقال وجه/حواله طبق سند حواله شماره {voucherNumber} به حساب {destinationCustomerName}";
+        if (!string.IsNullOrWhiteSpace(description))
+            desc += $" ({description})";
+        return desc;
+    }
+
+    public static string ForCustomerTransferDestination(long voucherNumber, string sourceCustomerName, string? description)
+    {
+        var desc = $"دریافت حواله طبق سند حواله شماره {voucherNumber} از حساب {sourceCustomerName}";
+        if (!string.IsNullOrWhiteSpace(description))
+            desc += $" ({description})";
+        return desc;
+    }
+
+    #endregion
 }

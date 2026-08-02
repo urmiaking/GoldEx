@@ -4,6 +4,7 @@ using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CheckPaymentAggregate;
 using GoldEx.Server.Domain.CoinAggregate;
+using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
@@ -1644,6 +1645,69 @@ internal class AccountingTransactionService(
         CancellationToken cancellationToken = default)
     {
         return repository.RemoveByPaymentVoucherIdAsync(voucher.Id, cancellationToken);
+    }
+
+    public async Task CreateTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default)
+    {
+        await repository.RemoveByCustomerTransferVoucherIdAsync(voucher.Id, cancellationToken);
+
+        if (voucher.Amount <= 0) return;
+
+        var groupId = Guid.CreateVersion7();
+
+        var sourceCustomer = await customerRepository
+            .Get(new CustomersByIdSpecification(voucher.SourceCustomerId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Source customer {voucher.SourceCustomerId.Value} not found.");
+
+        var destinationCustomer = await customerRepository
+            .Get(new CustomersByIdSpecification(voucher.DestinationCustomerId))
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundException($"Destination customer {voucher.DestinationCustomerId.Value} not found.");
+
+        var sourceLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+            voucher.SourceCustomerId, voucher.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
+
+        var destLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
+            voucher.DestinationCustomerId, voucher.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
+
+        var postingDate = voucher.TransferDate.ToDateTime(TimeOnly.FromTimeSpan(voucher.CreatedAt.TimeOfDay));
+
+        var sourceDesc = TransactionDescriptionBuilder.ForCustomerTransferSource(
+            voucher.VoucherNumber, destinationCustomer.FullName, voucher.Description);
+
+        var destDesc = TransactionDescriptionBuilder.ForCustomerTransferDestination(
+            voucher.VoucherNumber, sourceCustomer.FullName, voucher.Description);
+
+        var transactions = new List<Transaction>
+        {
+            Transaction.CreateForCustomerTransferVoucher(
+                sourceDesc,
+                voucher.Amount,
+                voucher.ExchangeRate,
+                groupId,
+                TransactionType.Credit,
+                sourceLedger.Id,
+                voucher.PriceUnitId,
+                voucher.Id,
+                postingDate),
+
+            Transaction.CreateForCustomerTransferVoucher(
+                destDesc,
+                voucher.Amount,
+                voucher.ExchangeRate,
+                groupId,
+                TransactionType.Debit,
+                destLedger.Id,
+                voucher.PriceUnitId,
+                voucher.Id,
+                postingDate)
+        };
+
+        await repository.CreateRangeAsync(transactions, cancellationToken);
+    }
+
+    public Task ClearTransactionsForCustomerTransferVoucherAsync(CustomerTransferVoucher voucher, CancellationToken cancellationToken = default)
+    {
+        return repository.RemoveByCustomerTransferVoucherIdAsync(voucher.Id, cancellationToken);
     }
 
     public async Task ClearTransactionsForInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)

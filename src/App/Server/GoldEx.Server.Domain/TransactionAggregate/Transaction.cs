@@ -1,5 +1,6 @@
 using GoldEx.Sdk.Server.Domain.Entities;
 using GoldEx.Server.Domain.Common;
+using GoldEx.Server.Domain.CustomerTransferVoucherAggregate;
 using GoldEx.Server.Domain.InventoryEntryAggregate;
 using GoldEx.Server.Domain.InventoryExitAggregate;
 using GoldEx.Server.Domain.InventoryStockAggregate;
@@ -95,6 +96,47 @@ public class Transaction : EntityBase<TransactionId>, IStoreFiltered
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
             PaymentVoucherId = paymentVoucherId,
+            BaseCurrencyAmount = amount * (exchangeRate ?? 1),
+            PostingDate = postingDate,
+            StoreId = storeId
+        };
+    }
+
+    public static Transaction CreateForCustomerTransferVoucher(
+        string description,
+        decimal amount,
+        decimal? exchangeRate,
+        Guid groupId,
+        TransactionType transactionType,
+        LedgerAccountId ledgerAccountId,
+        PriceUnitId priceUnitId,
+        CustomerTransferVoucherId customerTransferVoucherId,
+        DateTime postingDate,
+        StoreId storeId = default)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
+
+        if (exchangeRate is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(exchangeRate), "Exchange rate must be greater than zero if provided.");
+
+        if (groupId == Guid.Empty)
+            throw new ArgumentException("Group ID cannot be empty.", nameof(groupId));
+
+        return new Transaction
+        {
+            Id = new TransactionId(Guid.CreateVersion7()),
+            Description = description,
+            Amount = amount,
+            GroupId = groupId,
+            TransactionType = transactionType,
+            LedgerAccountId = ledgerAccountId,
+            ExchangeRate = exchangeRate,
+            PriceUnitId = priceUnitId,
+            CustomerTransferVoucherId = customerTransferVoucherId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
             PostingDate = postingDate,
             StoreId = storeId
@@ -201,6 +243,9 @@ public class Transaction : EntityBase<TransactionId>, IStoreFiltered
 
     public PaymentVoucherId? PaymentVoucherId { get; private set; }
     public PaymentVoucher? PaymentVoucher { get; private set; }
+
+    public CustomerTransferVoucherId? CustomerTransferVoucherId { get; private set; }
+    public CustomerTransferVoucher? CustomerTransferVoucher { get; private set; }
 
     public InvoicePaymentId? InvoicePaymentId { get; private set; }
     public InvoicePayment? InvoicePayment { get; private set; }

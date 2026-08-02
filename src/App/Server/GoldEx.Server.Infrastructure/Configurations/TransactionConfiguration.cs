@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Domain.TransactionAggregate;
+using GoldEx.Server.Domain.TransactionAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -47,6 +47,11 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasOne(x => x.PaymentVoucher)
             .WithMany(x => x.Transactions)
             .HasForeignKey(x => x.PaymentVoucherId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.CustomerTransferVoucher)
+            .WithMany(x => x.Transactions)
+            .HasForeignKey(x => x.CustomerTransferVoucherId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.InvoicePayment)
