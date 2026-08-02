@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.DTOs.Reporting;
+namespace GoldEx.Shared.DTOs.Reporting;
 
 public record SellInvoiceRpResponse(
     Guid Id,
@@ -11,4 +11,9 @@ public record SellInvoiceRpResponse(
     decimal RemainingPrice,
     decimal TotalProfit,
     decimal TotalWage,
-    decimal TotalTax);
+    decimal TotalTax,
+    decimal TotalWeightEquivalent = 0,
+    decimal RemainingWeightEquivalent = 0,
+    decimal ProfitWeightEquivalent = 0,
+    decimal WageWeightEquivalent = 0,
+    decimal TaxWeightEquivalent = 0);

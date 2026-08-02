@@ -1,5 +1,14 @@
-﻿/* Print-specific styles */
 @media print {
+    #app-loading,
+    #loading-indicator,
+    .loading-container,
+    .splash-screen,
+    .loading-message {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+
     /* Reset browser defaults and minimize margins */
     @page {
         size: A4;

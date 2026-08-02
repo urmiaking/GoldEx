@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Specifications;
+using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Shared.Enums;
@@ -17,6 +17,8 @@ public class InvoicesReportSpecification : SpecificationBase<Invoice>
         DateTime? toDate = null)
     {
         AddInclude(x => x.Customer!);
+        AddInclude(x => x.PriceUnit!);
+        AddInclude(x => x.ProductItems);
         AddInclude(x => x.InvoicePayments!);
 
         AddCriteria(x => x.InvoiceType == invoiceType);

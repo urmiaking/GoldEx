@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Extensions;
+using GoldEx.Sdk.Common.Extensions;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
@@ -29,6 +29,7 @@ public class SellInvoiceFilterVm : ReportFilterVmBase
     public class SellInvoiceReportSummary
     {
         public List<PriceUnitSummary> PriceUnitSummaries { get; set; } = [];
+        public GoldWeightSummary? GoldWeightEquivalentSummary { get; set; }
     }
 
     public class PriceUnitSummary
@@ -39,5 +40,14 @@ public class SellInvoiceFilterVm : ReportFilterVmBase
         public decimal TotalWage { get; set; }
         public decimal TotalTax { get; set; }
         public decimal TotalRemaining { get; set; }
+    }
+
+    public class GoldWeightSummary
+    {
+        public decimal TotalWeight { get; set; }
+        public decimal TotalProfitWeight { get; set; }
+        public decimal TotalWageWeight { get; set; }
+        public decimal TotalTaxWeight { get; set; }
+        public decimal TotalRemainingWeight { get; set; }
     }
 }
