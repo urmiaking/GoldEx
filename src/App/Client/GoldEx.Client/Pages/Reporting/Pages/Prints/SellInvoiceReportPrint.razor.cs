@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Reporting.ViewModels;
+using GoldEx.Client.Pages.Reporting.ViewModels;
 using GoldEx.Shared.DTOs.Customers;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Reporting;
@@ -170,6 +170,49 @@ public partial class SellInvoiceReportPrint
                 }
             ]
         }).ToList();
+
+        sections.Add(new SummarySection
+        {
+            Title = "معادل وزنی (گرم ۱۸)",
+            Items =
+            [
+                new SummaryItem
+                {
+                    Label = "مجموع ارزش کل",
+                    Value = _items.Sum(x => x.TotalWeightEquivalent).ToCurrencyFormat("گرم"),
+                    Type = "net"
+                },
+                new SummaryItem
+                {
+                    Label = "مجموع سود",
+                    Value = _items.Sum(x => x.ProfitWeightEquivalent).ToCurrencyFormat("گرم"),
+                    Type = "credit"
+                },
+                new SummaryItem
+                {
+                    Label = "مجموع اجرت",
+                    Value = _items.Sum(x => x.WageWeightEquivalent).ToCurrencyFormat("گرم"),
+                    Type = "net"
+                },
+                new SummaryItem
+                {
+                    Label = "مجموع مالیات",
+                    Value = _items.Sum(x => x.TaxWeightEquivalent).ToCurrencyFormat("گرم"),
+                    Type = "debit"
+                },
+                new SummaryItem
+                {
+                    Label = "مجموع مانده",
+                    Value = Math.Abs(_items.Sum(x => x.RemainingWeightEquivalent)).ToCurrencyFormat("گرم"),
+                    Type = _items.Sum(x => x.RemainingWeightEquivalent) switch
+                    {
+                        0 => "net",
+                        > 0 => "debit",
+                        < 0 => "credit"
+                    }
+                }
+            ]
+        });
 
         _summary = new ReportSummaryVm
         {

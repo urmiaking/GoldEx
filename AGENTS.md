@@ -223,4 +223,25 @@ GoldEx supports standalone customer-to-customer remittances (`CustomerTransferVo
 4. **UI & UX Standard**:
    - Customer transfer pages (`List.razor`) and components (`CustomerTransferList.razor`, `CustomerTransferEditor.razor`) inherit `GoldExComponentBase` and follow standard GoldEx layout patterns (`MudBreadcrumbs`, `MudTable` with custom `MudPagination`, `SendRequestAsync` thread-safe requests, `ValidateAsync`, and `_processing` submit state).
 
+---
+
+## Sales Invoice Gold Weight Equivalent Reporting (معادل وزنی فاکتورهای فروش)
+
+GoldEx calculates 18K gold weight equivalents (گرم طلای ۱۸ عیار / ۷۵۰) for monetary sales invoice reports (`SellInvoiceRpResponse`):
+
+1. **Item Gold Conversion**:
+   - For currency invoices (e.g. Toman, USD), each product item's financial components (`ItemProfitAmount`, `ItemWageAmount`, `ItemTaxAmount`, `ItemFinalAmount`) are converted to 18K gold weight using item base gold rate (`GramPrice`):
+     - `ProfitWeight = ItemProfitAmount / GramPrice`
+     - `WageWeight = ItemWageAmount / GramPrice`
+     - `TaxWeight = ItemTaxAmount / GramPrice`
+     - `ItemFinalWeight = ItemFinalAmount / GramPrice`
+2. **Effective Rate & Invoice Adjustments**:
+   - Invoice effective gold rate $\text{EffectiveGoldRate} = \frac{\sum \text{ItemFinalAmount}}{\sum \text{ItemFinalWeight}}$.
+   - Discounts and extra costs are converted using $\text{EffectiveGoldRate}$.
+   - Remaining balance weight equivalent $\text{RemainingWeight} = \frac{\text{TotalUnpaidAmount}}{\text{EffectiveGoldRate}}$.
+3. **Gold-Based Invoices**:
+   - For invoices where `PriceUnit.IsGoldBased` is true, amounts are already in grams and used directly.
+4. **UI & Print Summary Integration**:
+   - `SellInvoiceSummary.razor` and `SellInvoiceReportPrint.razor.cs` display a dedicated card/section titled **«معادل وزنی (گرم ۱۸)»** alongside currency summaries.
+
 

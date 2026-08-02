@@ -1,4 +1,4 @@
-﻿window.openReportPopup = function (url) {
+window.openReportPopup = function (url) {
     const width = 1000;
     const height = 800;
 
@@ -13,8 +13,16 @@
 };
 
 window.printAndClose = function () {
+    const splashElements = document.querySelectorAll('#app-loading, #loading-indicator, .loading-container, .splash-screen, .loading-message');
+    splashElements.forEach(function (el) {
+        try { el.remove(); } catch (e) {}
+    });
+
+    window.focus();
     window.print();
-    window.onafterprint = () => window.close();
+    window.onafterprint = function () {
+        try { window.close(); } catch (e) {}
+    };
 };
 
 //window.printAndClose = function () {

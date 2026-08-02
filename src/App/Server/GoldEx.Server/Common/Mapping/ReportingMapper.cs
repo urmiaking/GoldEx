@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.InventoryStockAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
@@ -23,7 +23,12 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.TotalPrice, src => src.TotalAmountWithDiscountsAndExtraCosts)
             .Map(dest => dest.TotalProfit, src => src.TotalProfitAmount)
             .Map(dest => dest.TotalTax, src => src.TotalTaxAmount)
-            .Map(dest => dest.TotalWage, src => src.TotalWageAmount);
+            .Map(dest => dest.TotalWage, src => src.TotalWageAmount)
+            .Map(dest => dest.TotalWeightEquivalent, src => GoldWeightCalculator.CalculateTotalWeight(src))
+            .Map(dest => dest.RemainingWeightEquivalent, src => GoldWeightCalculator.CalculateRemainingWeight(src))
+            .Map(dest => dest.ProfitWeightEquivalent, src => GoldWeightCalculator.CalculateProfitWeight(src))
+            .Map(dest => dest.WageWeightEquivalent, src => GoldWeightCalculator.CalculateWageWeight(src))
+            .Map(dest => dest.TaxWeightEquivalent, src => GoldWeightCalculator.CalculateTaxWeight(src));
 
         config.NewConfig<Invoice, PurchaseInvoiceRpResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
@@ -63,5 +68,109 @@ internal class ReportingMapper : IRegister
         config.NewConfig<InventorySummaryData, CoinInventoryRpResponse>();
 
         config.NewConfig<InventorySummaryData, CurrencyInventoryRpResponse>();
+    }
+}
+
+internal static class GoldWeightCalculator
+{
+    public static decimal CalculateTotalWeight(Invoice src)
+    {
+        if (src.PriceUnit != null && src.PriceUnit.IsGoldBased)
+            return src.TotalAmountWithDiscountsAndExtraCosts;
+
+        var (totalItemWeight, totalItemFinalAmount) = GetProductItemTotals(src);
+        if (totalItemWeight == 0) return 0;
+
+        decimal effectiveRate = totalItemFinalAmount / totalItemWeight;
+        if (effectiveRate == 0) return 0;
+
+        var discountWeight = src.TotalDiscountAmount / effectiveRate;
+        var extraCostWeight = src.TotalExtraCostAmount / effectiveRate;
+        return totalItemWeight - discountWeight + extraCostWeight;
+    }
+
+    public static decimal CalculateRemainingWeight(Invoice src)
+    {
+        if (src.PriceUnit != null && src.PriceUnit.IsGoldBased)
+            return src.TotalUnpaidAmount;
+
+        var (totalItemWeight, totalItemFinalAmount) = GetProductItemTotals(src);
+        if (totalItemWeight == 0) return 0;
+
+        decimal effectiveRate = totalItemFinalAmount / totalItemWeight;
+        if (effectiveRate == 0) return 0;
+
+        return src.TotalUnpaidAmount / effectiveRate;
+    }
+
+    public static decimal CalculateProfitWeight(Invoice src)
+    {
+        if (src.PriceUnit != null && src.PriceUnit.IsGoldBased)
+            return src.TotalProfitAmount;
+
+        if (src.ProductItems == null) return 0;
+
+        decimal profitWeight = 0;
+        foreach (var item in src.ProductItems)
+        {
+            if (item.GramPrice > 0)
+            {
+                profitWeight += item.ItemProfitAmount / item.GramPrice;
+            }
+        }
+        return profitWeight;
+    }
+
+    public static decimal CalculateWageWeight(Invoice src)
+    {
+        if (src.PriceUnit != null && src.PriceUnit.IsGoldBased)
+            return src.TotalWageAmount;
+
+        if (src.ProductItems == null) return 0;
+
+        decimal wageWeight = 0;
+        foreach (var item in src.ProductItems)
+        {
+            if (item.GramPrice > 0)
+            {
+                wageWeight += item.ItemWageAmount / item.GramPrice;
+            }
+        }
+        return wageWeight;
+    }
+
+    public static decimal CalculateTaxWeight(Invoice src)
+    {
+        if (src.PriceUnit != null && src.PriceUnit.IsGoldBased)
+            return src.TotalTaxAmount;
+
+        if (src.ProductItems == null) return 0;
+
+        decimal taxWeight = 0;
+        foreach (var item in src.ProductItems)
+        {
+            if (item.GramPrice > 0)
+            {
+                taxWeight += item.ItemTaxAmount / item.GramPrice;
+            }
+        }
+        return taxWeight;
+    }
+
+    private static (decimal TotalWeight, decimal TotalFinalAmount) GetProductItemTotals(Invoice src)
+    {
+        if (src.ProductItems == null) return (0, 0);
+
+        decimal totalWeight = 0;
+        decimal totalFinalAmount = 0;
+        foreach (var item in src.ProductItems)
+        {
+            if (item.GramPrice > 0)
+            {
+                totalWeight += item.ItemFinalAmount / item.GramPrice;
+                totalFinalAmount += item.ItemFinalAmount;
+            }
+        }
+        return (totalWeight, totalFinalAmount);
     }
 }
