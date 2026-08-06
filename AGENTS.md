@@ -244,4 +244,19 @@ GoldEx calculates 18K gold weight equivalents (گرم طلای ۱۸ عیار / �
 4. **UI & Print Summary Integration**:
    - `SellInvoiceSummary.razor` and `SellInvoiceReportPrint.razor.cs` display a dedicated card/section titled **«معادل وزنی (گرم ۱۸)»** alongside currency summaries.
 
+---
+
+## Customer Running Balance in Invoice List (مانده کل حساب مشتری در لیست فاکتورها)
+
+GoldEx displays each customer's running balance immediately after an invoice directly within the `InvoicesList` table rows:
+
+1. **Async Performance Pattern**:
+   - Similar to `CustomersList.razor`, `InvoicesList.razor` uses the `<CustomerRemaining>` component in each table row to load customer running balances asynchronously without slowing down the initial server-side query for the invoice table.
+2. **Point-In-Time Balance Query**:
+   - `ITransactionService.GetCustomerRemainingListAsync` accepts an optional `DateTime? untilDate`.
+   - In `InvoicesList`, `UntilDate` is computed as `invoiceDate.ToDateTime(TimeOnly.FromTimeSpan(createdAt.TimeOfDay)).AddSeconds(1)`.
+   - `TransactionRepository.GetCustomerRemainingListAsync` filters ledger transactions where `PostingDate < UntilDate`, accumulating all preceding transactions and those posted by the invoice itself, while excluding subsequent transactions.
+3. **Multi-Unit Price Support**:
+   - Displays running balances across all price units (currency, 18K gold, etc.) with automatic sliding carousel animation and manual slide toggle support.
+
 

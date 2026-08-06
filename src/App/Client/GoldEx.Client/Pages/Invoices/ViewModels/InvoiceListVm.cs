@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Client.Pages.Invoices.ViewModels;
@@ -6,6 +6,7 @@ namespace GoldEx.Client.Pages.Invoices.ViewModels;
 public class InvoiceListVm
 {
     public Guid Id { get; set; }
+    public Guid CustomerId { get; set; }
     public string CustomerFullName { get; set; } = default!;
     public string? CustomerPhoneNumber { get; set; }
     public long InvoiceNumber { get; set; }
@@ -30,6 +31,7 @@ public class InvoiceListVm
         return new InvoiceListVm
         {
             Id = listResponse.Id,
+            CustomerId = listResponse.CustomerId,
             CustomerFullName = listResponse.CustomerFullName,
             CustomerPhoneNumber = listResponse.CustomerPhoneNumber,
             InvoiceNumber = listResponse.InvoiceNumber,

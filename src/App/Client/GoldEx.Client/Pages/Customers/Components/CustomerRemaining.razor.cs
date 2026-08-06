@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Customers.ViewModels;
+using GoldEx.Client.Pages.Customers.ViewModels;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Helpers;
@@ -18,6 +18,7 @@ public partial class CustomerRemaining
     [Parameter] public string? ItemClass { get; set; }
     [Parameter] public decimal? AddedValue { get; set; }
     [Parameter] public bool EnableManualSlide { get; set; }
+    [Parameter] public DateTime? UntilDate { get; set; }
 
     private List<CustomerRemainingVm>? _remainingList;
     private bool _isLoading = true;
@@ -26,6 +27,7 @@ public partial class CustomerRemaining
 
     private Guid _previousCustomerId;
     private Guid? _previousPriceUnitId;
+    private DateTime? _previousUntilDate;
 
     private bool ShouldApplyAddedValue(CustomerRemainingVm remaining) =>
         AddedValue.HasValue &&
@@ -34,10 +36,11 @@ public partial class CustomerRemaining
 
     protected override async Task OnParametersSetAsync()
     {
-        if (CustomerId != _previousCustomerId || PriceUnit?.Id != _previousPriceUnitId)
+        if (CustomerId != _previousCustomerId || PriceUnit?.Id != _previousPriceUnitId || UntilDate != _previousUntilDate)
         {
             _previousCustomerId = CustomerId;
             _previousPriceUnitId = PriceUnit?.Id;
+            _previousUntilDate = UntilDate;
 
             await LoadBalancesAsync();
         }
@@ -92,7 +95,7 @@ public partial class CustomerRemaining
         StateHasChanged();
 
         await SendRequestAsync<ITransactionService, List<GetCustomerRemainingResponse>>(
-            action: (s, ct) => s.GetCustomerRemainingListAsync(CustomerId, PriceUnit?.Id, ct),
+            action: (s, ct) => s.GetCustomerRemainingListAsync(CustomerId, PriceUnit?.Id, UntilDate, ct),
             afterSend: response =>
             {
                 var list = response.Select(CustomerRemainingVm.CreateFrom).ToList();

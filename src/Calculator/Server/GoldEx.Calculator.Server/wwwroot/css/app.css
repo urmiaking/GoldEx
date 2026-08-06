@@ -1,4 +1,4 @@
-﻿@import '../fonts/IRANSANS/IRANSANS-font-face.css';
+@import '../fonts/IRANSANS/IRANSANS-font-face.css';
 @import '../fonts/Google/google-fonts.css';
 
 a, .btn-link {
@@ -138,12 +138,40 @@ h1:focus {
 }
 
 .responsive-table-toolbar {
-    height: calc(100vh - 460px);
+    height: calc(100vh - 416px);
 }
 
 @media (min-width: 960px) {
     .responsive-table-toolbar {
         height: calc(100vh - 340px);
+    }
+}
+
+.responsive-table-card {
+    height: calc(100vh - 372px);
+}
+
+@media (min-width: 960px) {
+    .responsive-table-card {
+        height: calc(100vh - 340px);
+    }
+}
+
+@media (max-width: 959.98px) {
+    .desktop-table-cell {
+        display: none !important;
+    }
+    .mobile-card-cell {
+        display: table-cell !important;
+    }
+}
+
+@media (min-width: 960px) {
+    .desktop-table-cell {
+        display: table-cell !important;
+    }
+    .mobile-card-cell {
+        display: none !important;
     }
 }
 

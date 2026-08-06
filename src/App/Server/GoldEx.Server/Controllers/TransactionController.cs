@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Shared.DTOs.Transactions;
@@ -23,9 +23,9 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetRemainingList)]
-    public async Task<IActionResult> GetCustomerRemainingListAsync(Guid customerId, [FromQuery] Guid? priceUnitId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetCustomerRemainingListAsync(Guid customerId, [FromQuery] Guid? priceUnitId, [FromQuery] DateTime? untilDate = null, CancellationToken cancellationToken = default)
     {
-        var items = await service.GetCustomerRemainingListAsync(customerId, priceUnitId, cancellationToken);
+        var items = await service.GetCustomerRemainingListAsync(customerId, priceUnitId, untilDate, cancellationToken);
         return Ok(items);
     }
 
