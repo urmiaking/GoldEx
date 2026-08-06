@@ -9,14 +9,15 @@
         @* UNREGISTERED *@
         @if (LicenseState.Current?.Plan == LicensePlan.Unregistered)
         {
-            <div class="license-badge license-danger pulse-danger">
+            @* Ignoring for now *@
+            @* <div class="license-badge license-danger pulse-danger">
                 <MudButton Variant="Variant.Text"
                            Size="Size.Small"
                            EndIcon="@Icons.Material.Filled.Key"
                            Href="@ClientRoutes.RegisterProduct.Index">
                     فعال‌ سازی نرم افزار
                 </MudButton>
-            </div>
+            </div> *@
         }
 
         @* TRIAL *@

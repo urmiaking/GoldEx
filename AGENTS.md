@@ -10,7 +10,11 @@ Read these documents before generating code:
 
 Every time that you learn something new about the project update the AGENTS.md file with the new information.
 This file should be the single source of truth for all AI agents working on the project. Always refer to this file before generating code or making architectural decisions.
-If any new feature is added, we should add it to releases.json file after implementation
+If any new feature is added, we should add it to releases.json file after implementation.
+
+### AI Build Execution Policy
+- **Do NOT automatically run `dotnet build`** or launch background solution builds after minor UI layout, Razor markup, CSS, styling, or markdown documentation edits.
+- Only run `dotnet build` when introducing structural C# backend changes, adding new API endpoints/aggregates, making architectural refactorings, or when specifically requested by the user.
 
 ## Project Overview
 GoldEx is a modern jewelry store management, accounting, and gold trading platform for gold/jewelry stores built with .NET 10, Blazor Web App, MudBlazor, and Domain-Driven Design (DDD).
@@ -243,5 +247,20 @@ GoldEx calculates 18K gold weight equivalents (گرم طلای ۱۸ عیار / �
    - For invoices where `PriceUnit.IsGoldBased` is true, amounts are already in grams and used directly.
 4. **UI & Print Summary Integration**:
    - `SellInvoiceSummary.razor` and `SellInvoiceReportPrint.razor.cs` display a dedicated card/section titled **«معادل وزنی (گرم ۱۸)»** alongside currency summaries.
+
+---
+
+## Customer Running Balance in Invoice List (مانده کل حساب مشتری در لیست فاکتورها)
+
+GoldEx displays each customer's running balance immediately after an invoice directly within the `InvoicesList` table rows:
+
+1. **Async Performance Pattern**:
+   - Similar to `CustomersList.razor`, `InvoicesList.razor` uses the `<CustomerRemaining>` component in each table row to load customer running balances asynchronously without slowing down the initial server-side query for the invoice table.
+2. **Point-In-Time Balance Query**:
+   - `ITransactionService.GetCustomerRemainingListAsync` accepts an optional `DateTime? untilDate`.
+   - In `InvoicesList`, `UntilDate` is computed as `invoiceDate.ToDateTime(TimeOnly.FromTimeSpan(createdAt.TimeOfDay)).AddSeconds(1)`.
+   - `TransactionRepository.GetCustomerRemainingListAsync` filters ledger transactions where `PostingDate < UntilDate`, accumulating all preceding transactions and those posted by the invoice itself, while excluding subsequent transactions.
+3. **Multi-Unit Price Support**:
+   - Displays running balances across all price units (currency, 18K gold, etc.) with automatic sliding carousel animation and manual slide toggle support.
 
 

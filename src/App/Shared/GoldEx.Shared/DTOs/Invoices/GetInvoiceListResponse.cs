@@ -1,9 +1,10 @@
-﻿using GoldEx.Shared.Enums;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Invoices;
 
 public record GetInvoiceListResponse(
     Guid Id,
+    Guid CustomerId,
     long InvoiceNumber,
     DateOnly InvoiceDate,
     DateTime CreatedAt,

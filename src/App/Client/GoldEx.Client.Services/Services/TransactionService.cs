@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Transactions;
 using GoldEx.Shared.Routings;
@@ -16,9 +16,9 @@ namespace GoldEx.Client.Services.Services;
 internal class TransactionService(HttpClient client, JsonSerializerOptions jsonOptions) : ITransactionService
 {
     public async Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId,
-        Guid? priceUnitId, CancellationToken cancellationToken = default)
+        Guid? priceUnitId, DateTime? untilDate = null, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Transactions.GetRemainingList(customerId, priceUnitId), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Transactions.GetRemainingList(customerId, priceUnitId, untilDate), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

@@ -10,7 +10,7 @@
 
 <MudTable T="InvoiceListVm" Class="@Class" RowsPerPage="14" Hover="true" @ref="_table" FixedHeader="true" ContainerClass="@ContainerClass"
           OnRowClick="(arg) => ShowDetails(arg)" RowClass="cursor-pointer"
-          Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.Sm" Elevation="@Elevation">
+          Dense="true" ServerData="LoadInvoicesAsync" SelectOnRowClick="false" Breakpoint="Breakpoint.None" Elevation="@Elevation">
     <ToolBarContent>
         <MudTextField T="string" Clearable="true" Immediate="true" Value="@_searchString" ValueChanged="@(s => OnSearch(s))" DebounceInterval="500"
                       Placeholder="جستجو ..." Adornment="Adornment.Start" Variant="Variant.Outlined" Margin="Margin.Dense"
@@ -104,35 +104,54 @@
             </MudMenu>
         </MudHidden>
     </ToolBarContent>
+
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="InvoiceType" T="InvoiceListVm">نوع فاکتور</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="TradeScale" T="InvoiceListVm">نوع معامله</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره فاکتور</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Customer.PhoneNumber" T="InvoiceListVm">شماره تماس</MudTableSortLabel></MudTh>
-        <MudTh>ارزش کل</MudTh>
-        <MudTh><MudTableSortLabel SortLabel="InvoiceDate" T="InvoiceListVm">تاریخ فاکتور</MudTableSortLabel></MudTh>
-        <MudTh>
-            <div class="d-flex">
-                <MudText Typo="Typo.body2" Color="Color.Error">بدهکاری</MudText>&nbsp;/&nbsp;<MudText Color="Color.Success" Typo="Typo.body2">بستانکاری</MudText>
-            </div>
-        </MudTh>
-        <MudTh>عملیات</MudTh>
+        <MudTh Class="desktop-table-cell"><MudTableSortLabel SortLabel="InvoiceType" T="InvoiceListVm">فاکتور و معامله</MudTableSortLabel></MudTh>
+        <MudTh Class="desktop-table-cell"><MudTableSortLabel SortLabel="InvoiceNumber" T="InvoiceListVm">شماره / تاریخ</MudTableSortLabel></MudTh>
+        <MudTh Class="desktop-table-cell"><MudTableSortLabel SortLabel="Customer.FullName" T="InvoiceListVm">طرف حساب</MudTableSortLabel></MudTh>
+        <MudTh Class="desktop-table-cell">ارزش کل</MudTh>
+        <MudTh Class="desktop-table-cell">مانده فاکتور</MudTh>
+        <MudTh Class="desktop-table-cell">مانده کل مشتری</MudTh>
+        <MudTh Class="desktop-table-cell">عملیات</MudTh>
     </HeaderContent>
+
     <RowTemplate>
-        <MudTd DataLabel="نوع فاکتور">@context.InvoiceType.GetDisplayName()</MudTd>
-        <MudTd DataLabel="نوع معامله">@context.TradeScale.GetDisplayName()</MudTd>
-        <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
-        <MudTd DataLabel="طرف حساب">@context.CustomerFullName</MudTd>
-        <MudTd DataLabel="شماره تماس">@context.CustomerPhoneNumber</MudTd>
-        <MudTd DataLabel="ارزش کل">@context.TotalAmount.ToCurrencyFormat(context.PriceUnit)</MudTd>
-        <MudTd DataLabel="تاریخ فاکتور">
-            <MudTooltip Text="@GetInvoiceDateTooltipText(context)" Arrow="true" Placement="Placement.Top">
-                @GetInvoiceDate(context)
-            </MudTooltip>
+        @* --- Desktop Compact 2-Line Table Cells (>= 960px) --- *@
+        <MudTd Class="desktop-table-cell align-middle" DataLabel="فاکتور و معامله">
+            <div class="d-flex align-start">
+                <MudChip T="string" Size="Size.Small" Color="@(context.InvoiceType == InvoiceType.Sell ? Color.Error : Color.Success)" Variant="Variant.Filled">
+                    @context.InvoiceType.GetDisplayName()
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@(context.TradeScale == TradeScale.Wholesale ? Color.Primary : Color.Info)" Variant="Variant.Outlined">
+                    @context.TradeScale.GetDisplayName()
+                </MudChip>
+            </div>
         </MudTd>
-        
-        <MudTd DataLabel="مانده">
+
+        <MudTd Class="desktop-table-cell align-middle" DataLabel="شماره / تاریخ">
+            <div class="d-flex flex-column align-start">
+                <MudText Typo="Typo.body2">#@context.InvoiceNumber</MudText>
+                <MudTooltip Text="@GetInvoiceDateTooltipText(context)" Arrow="true" Placement="Placement.Top">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@GetInvoiceDate(context)</MudText>
+                </MudTooltip>
+            </div>
+        </MudTd>
+
+        <MudTd Class="desktop-table-cell align-middle" DataLabel="طرف حساب">
+            <div class="d-flex flex-column align-start">
+                <MudText Typo="Typo.body2">@context.CustomerFullName</MudText>
+                @if (!string.IsNullOrEmpty(context.CustomerPhoneNumber))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CustomerPhoneNumber</MudText>
+                }
+            </div>
+        </MudTd>
+
+        <MudTd Class="desktop-table-cell align-middle" DataLabel="ارزش کل">
+            <MudText Typo="Typo.body2">@context.TotalAmount.ToCurrencyFormat(context.PriceUnit)</MudText>
+        </MudTd>
+
+        <MudTd Class="desktop-table-cell align-middle" DataLabel="مانده فاکتور">
             @switch (context.PaymentStatus)
             {
                 case InvoicePaymentStatus.Paid:
@@ -141,24 +160,35 @@
                     </MudChip>
                     break;
                 case InvoicePaymentStatus.HasDebt:
-                    <MudText Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
+                    <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
                         @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
                     </MudText>
                     break;
                 case InvoicePaymentStatus.Overdue:
-                    <span class="d-flex gap-1">
-                        <MudText Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
+                    <div class="d-flex gap-1 align-center">
+                        <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
                             @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
                         </MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
-                    </span>
+                    </div>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         </MudTd>
-        <MudTd DataLabel="عملیات">
-            <div class="d-flex gap-2">
+
+        <MudTd Class="desktop-table-cell align-middle" DataLabel="مانده کل مشتری">
+            @if (context.CustomerId != Guid.Empty)
+            {
+                <CustomerRemaining CustomerId="@context.CustomerId"
+                                   UntilDate="@GetInvoicePostingDate(context)"
+                                   EnableManualSlide="true"
+                                   ItemClass="justify-content-end justify-content-lg-start" />
+            }
+        </MudTd>
+
+        <MudTd Class="desktop-table-cell align-middle" DataLabel="عملیات">
+            <div class="d-flex gap-2 align-center" @onclick:stopPropagation="true">
                 <MudTooltip Text="چاپ فاکتور">
                     <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
                                    Color="@Color.Success" OnClick="_ => OnViewInvoice(context)"></MudIconButton>
@@ -173,10 +203,115 @@
                 </MudTooltip>
             </div>
         </MudTd>
+
+        @* --- Mobile Clean Card Cell (< 960px) --- *@
+        <MudTd Class="mobile-card-cell p-1 border-0" colspan="7">
+            <MudCard Elevation="2" Class="rounded-lg my-1 border border-solid mud-border-lines-default overflow-hidden">
+                <div class="pa-3 background-muted border-b mud-border-lines-default d-flex justify-space-between align-center">
+                    <div class="d-flex align-center gap-1 flex-wrap">
+                        <MudText Typo="Typo.subtitle2" Class="ml-1">فاکتور #@context.InvoiceNumber</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="@(context.InvoiceType == InvoiceType.Sell ? Color.Error : Color.Success)" Variant="Variant.Filled">
+                            @context.InvoiceType.GetDisplayName()
+                        </MudChip>
+                        <MudChip T="string" Size="Size.Small" Color="@(context.TradeScale == TradeScale.Wholesale ? Color.Primary : Color.Info)" Variant="Variant.Outlined">
+                            @context.TradeScale.GetDisplayName()
+                        </MudChip>
+                    </div>
+                    <MudText Typo="Typo.caption">
+                        @GetInvoiceDate(context)
+                    </MudText>
+                </div>
+
+                <MudCardContent Class="py-3 px-3">
+                    <div class="d-flex justify-space-between align-center mb-2">
+                        <div>
+                            <MudText Typo="Typo.body2">@context.CustomerFullName</MudText>
+                            @if (!string.IsNullOrEmpty(context.CustomerPhoneNumber))
+                            {
+                                <MudText Typo="Typo.caption">
+                                    @context.CustomerPhoneNumber
+                                </MudText>
+                            }
+                        </div>
+                        <div class="text-end">
+                            <MudText Typo="Typo.caption">ارزش کل</MudText>
+                            <MudText Typo="Typo.body2">
+                                @context.TotalAmount.ToCurrencyFormat(context.PriceUnit)
+                            </MudText>
+                        </div>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <div class="d-flex justify-space-between align-center gap-2 py-1">
+                        <div class="d-flex flex-column align-start">
+                            <MudText Typo="Typo.caption" Class="mb-1">مانده فاکتور</MudText>
+                            @switch (context.PaymentStatus)
+                            {
+                                case InvoicePaymentStatus.Paid:
+                                    <MudChip Size="Size.Small" T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Check">
+                                        @context.PaymentStatus.GetDisplayName()
+                                    </MudChip>
+                                    break;
+                                case InvoicePaymentStatus.HasDebt:
+                                    <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
+                                        @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
+                                    </MudText>
+                                    break;
+                                case InvoicePaymentStatus.Overdue:
+                                    <div class="d-flex align-center gap-1">
+                                        <MudText Typo="Typo.body2" Color="@(GetUnpaidAmountColor(context.TotalUnpaidAmount, context.InvoiceType))">
+                                            @FormatCompleteUnpaidAmount(context.TotalUnpaidAmount, context.PriceUnit, context.TotalUnpaidAmountSecondary, context.SecondaryPriceUnit)
+                                        </MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                                    </div>
+                                    break;
+                            }
+                        </div>
+
+                        <div class="d-flex flex-column align-end">
+                            <MudText Typo="Typo.caption" Class="mb-1">مانده کل مشتری</MudText>
+                            @if (context.CustomerId != Guid.Empty)
+                            {
+                                <CustomerRemaining CustomerId="@context.CustomerId"
+                                                   UntilDate="@GetInvoicePostingDate(context)"
+                                                   EnableManualSlide="true"
+                                                   ItemClass="justify-content-end" />
+                            }
+                        </div>
+                    </div>
+                </MudCardContent>
+
+                <div class="px-3 py-2 bg-light d-flex justify-space-between align-center border-t mud-border-lines-default">
+                    <div class="d-flex gap-1" @onclick:stopPropagation="true">
+                        <MudTooltip Text="چاپ فاکتور">
+                            <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
+                                           Color="@Color.Success" OnClick="_ => OnViewInvoice(context)"></MudIconButton>
+                        </MudTooltip>
+                        <MudTooltip Text="ویرایش فاکتور">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Variant="Variant.Filled"
+                                           Color="Color.Primary" OnClick="_ => OnEditInvoice(context)"></MudIconButton>
+                        </MudTooltip>
+                        <MudTooltip Text="حذف فاکتور">
+                            <MudIconButton OnClick="@(_ => OnRemoveInvoice(context))" Size="@Size.Small" Variant="@Variant.Filled"
+                                           Icon="@Icons.Material.Filled.Delete" Color="@Color.Error"></MudIconButton>
+                        </MudTooltip>
+                    </div>
+
+                    <div class="d-flex align-center gap-1">
+                        <MudText Typo="Typo.caption">
+                            @(context.ShowDetails ? "بستن جزئیات" : "ریز تراکنش‌ها")
+                        </MudText>
+                        <MudIcon Icon="@(context.ShowDetails ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Size="Size.Small" />
+                    </div>
+                </div>
+            </MudCard>
+        </MudTd>
     </RowTemplate>
+
     <ChildRowContent>
         <MudTr Class="mud-table-row-child">
-            <td colspan="9">
+            <td colspan="7">
                 <MudCollapse Expanded="@context.ShowDetails">
                     @if (context.ShowDetails)
                     {
@@ -191,12 +326,15 @@
             </td>
         </MudTr>
     </ChildRowContent>
+
     <NoRecordsContent>
         <MudText>هیچ فاکتوری یافت نشد</MudText>
     </NoRecordsContent>
+
     <LoadingContent>
         <MudText>در حال بارگیری</MudText>
     </LoadingContent>
+
     <PagerContent>
         @{
             var totalItems = _table.GetFilteredItemsCount();

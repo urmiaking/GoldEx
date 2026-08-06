@@ -244,6 +244,13 @@ public partial class InvoicesList
         StateHasChanged();
     }
 
+    private static DateTime GetInvoicePostingDate(InvoiceListVm context)
+    {
+        return context.InvoiceDate
+            .ToDateTime(TimeOnly.FromTimeSpan(context.CreatedAt.TimeOfDay))
+            .AddSeconds(1);
+    }
+
     private string GetInvoiceDateTooltipText(InvoiceListVm context)
     {
         return $"تاریخ ایجاد: {context.CreatedAt.ToString(CultureInfo.CurrentUICulture)}";

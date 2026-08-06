@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.CustomerAggregate;
@@ -23,12 +23,13 @@ internal class TransactionService(IMapper mapper,
     IFinancialAccountRepository financialAccountRepository) : ITransactionService
 {
     public async Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId,
-        Guid? priceUnitId, CancellationToken cancellationToken = default)
+        Guid? priceUnitId, DateTime? untilDate = null, CancellationToken cancellationToken = default)
     {
         var balances = await repository.GetCustomerRemainingListAsync(new CustomerId(customerId),
             priceUnitId: priceUnitId.HasValue
                 ? new PriceUnitId(priceUnitId.Value)
                 : null,
+            untilDate: untilDate,
             cancellationToken: cancellationToken);
 
         return balances

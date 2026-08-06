@@ -1,4 +1,4 @@
-﻿using GoldEx.Server.Application.Utilities;
+using GoldEx.Server.Application.Utilities;
 using GoldEx.Server.Domain.CheckPaymentAggregate;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.InvoicePaymentAggregate;
@@ -14,6 +14,7 @@ internal class InvoiceMapper : IRegister
     {
         config.NewConfig<Invoice, GetInvoiceListResponse>()
             .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.CustomerId, src => src.CustomerId.Value)
             .Map(dest => dest.CustomerFullName, src => src.Customer != null ? src.Customer.FullName : string.Empty)
             .Map(dest => dest.CustomerPhoneNumber, src => src.Customer != null ? src.Customer.PhoneNumber : null)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit!.Title)
