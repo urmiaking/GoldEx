@@ -49,3 +49,10 @@ Use:
 - ASP.NET Core Identity
 - 2FA
 - Passkeys
+
+---
+
+## AI Workflow & Build Policy
+
+- **Selective Build Execution**: AI agents must NOT trigger `dotnet build` for minor CSS adjustments, HTML/Razor presentation tweaks, or markdown file updates.
+- **Build Trigger Criteria**: Only run solution builds for C# type/schema changes, new core feature implementations, or when explicitly requested by the developer.

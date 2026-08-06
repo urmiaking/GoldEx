@@ -10,7 +10,11 @@ Read these documents before generating code:
 
 Every time that you learn something new about the project update the AGENTS.md file with the new information.
 This file should be the single source of truth for all AI agents working on the project. Always refer to this file before generating code or making architectural decisions.
-If any new feature is added, we should add it to releases.json file after implementation
+If any new feature is added, we should add it to releases.json file after implementation.
+
+### AI Build Execution Policy
+- **Do NOT automatically run `dotnet build`** or launch background solution builds after minor UI layout, Razor markup, CSS, styling, or markdown documentation edits.
+- Only run `dotnet build` when introducing structural C# backend changes, adding new API endpoints/aggregates, making architectural refactorings, or when specifically requested by the user.
 
 ## Project Overview
 GoldEx is a modern jewelry store management, accounting, and gold trading platform for gold/jewelry stores built with .NET 10, Blazor Web App, MudBlazor, and Domain-Driven Design (DDD).

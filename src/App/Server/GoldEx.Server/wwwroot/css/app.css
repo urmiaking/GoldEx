@@ -2,7 +2,8 @@
 @import '../fonts/IRANSANS/IRANSANS-font-face.css';
 @import '../fonts/Google/google-fonts.css';
 
-a, .btn-link {
+a,
+.btn-link {
     color: #006bb7;
 }
 
@@ -12,7 +13,11 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
@@ -42,20 +47,22 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+.form-floating>.form-control-plaintext::placeholder,
+.form-floating>.form-control::placeholder {
     color: var(--bs-secondary-color);
     text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating>.form-control-plaintext:focus::placeholder,
+.form-floating>.form-control:focus::placeholder {
     text-align: start;
 }
 
@@ -64,15 +71,19 @@ h1:focus {
 }
 
 .box-bg {
-    position: fixed; /* Stay in place even when scrolling */
+    position: fixed;
+    /* Stay in place even when scrolling */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-image: url('/assets/img/bg.svg');
-    background-size: cover; /* Cover the entire viewport */
-    background-position: center; /* Center the image */
-    background-repeat: no-repeat; /* Prevent image tiling */
+    background-size: cover;
+    /* Cover the entire viewport */
+    background-position: center;
+    /* Center the image */
+    background-repeat: no-repeat;
+    /* Prevent image tiling */
 }
 
 .mud-popover {
@@ -128,20 +139,20 @@ h1:focus {
     padding: 3rem 2.5rem;
     border-radius: 28px;
     text-align: center;
-    
+
     /* Glassmorphism light mode */
     background: rgba(255, 255, 255, 0.45);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.6);
-    
+
     /* Strong premium shadows for high visibility */
-    box-shadow: 
+    box-shadow:
         0 20px 40px rgba(0, 0, 0, 0.12),
         0 6px 18px rgba(0, 0, 0, 0.05),
         0 15px 35px rgba(218, 165, 32, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        
+
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -159,10 +170,13 @@ h1:focus {
 }
 
 @keyframes logo-breath {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         filter: drop-shadow(0 8px 16px rgba(218, 165, 32, 0.12));
     }
+
     50% {
         transform: scale(1.04);
         filter: drop-shadow(0 12px 24px rgba(218, 165, 32, 0.25));
@@ -173,7 +187,7 @@ h1:focus {
 .loading-title {
     font-size: 1.15rem;
     font-weight: 500;
-    margin: 0;  
+    margin: 0;
     line-height: 1.6;
     letter-spacing: -0.01em;
     display: flex;
@@ -198,7 +212,7 @@ h1:focus {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
-/*    animation: shine-gold 6s linear infinite;*/
+    /*    animation: shine-gold 6s linear infinite;*/
     direction: ltr;
     margin-top: 0.2rem;
 }
@@ -302,10 +316,12 @@ h1:focus {
         left: -35%;
         right: 100%;
     }
+
     60% {
         left: 100%;
         right: -90%;
     }
+
     100% {
         left: 100%;
         right: -90%;
@@ -317,10 +333,12 @@ h1:focus {
         left: -200%;
         right: 100%;
     }
+
     60% {
         left: 107%;
         right: -8%;
     }
+
     100% {
         left: 107%;
         right: -8%;
@@ -368,6 +386,7 @@ h1:focus {
     .desktop-table-cell {
         display: none !important;
     }
+
     .mobile-card-cell {
         display: table-cell !important;
     }
@@ -377,6 +396,7 @@ h1:focus {
     .desktop-table-cell {
         display: table-cell !important;
     }
+
     .mobile-card-cell {
         display: none !important;
     }
@@ -446,7 +466,7 @@ h1:focus {
 }
 
 .label-preview-box {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-radius: 4px;
 }
 
@@ -456,10 +476,10 @@ h1:focus {
     border-radius: 8px;
 }
 
-    .toolbox-zone.mud-drop-zone-drag-over {
-        background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
-        border-color: #00acc1;
-    }
+.toolbox-zone.mud-drop-zone-drag-over {
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+    border-color: #00acc1;
+}
 
 .toolbox-item {
     cursor: grab;
@@ -467,14 +487,14 @@ h1:focus {
     background: white;
 }
 
-    .toolbox-item:hover {
-        transform: translateX(-4px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+.toolbox-item:hover {
+    transform: translateX(-4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
-    .toolbox-item:active {
-        cursor: grabbing;
-    }
+.toolbox-item:active {
+    cursor: grabbing;
+}
 
 .drop-zone-compact {
     min-height: 40px;
@@ -484,11 +504,11 @@ h1:focus {
     background: rgba(33, 150, 243, 0.03);
 }
 
-    .drop-zone-compact.mud-drop-zone-drag-over {
-        background: rgba(33, 150, 243, 0.15);
-        border-color: #2196f3;
-        border-width: 2px;
-    }
+.drop-zone-compact.mud-drop-zone-drag-over {
+    background: rgba(33, 150, 243, 0.15);
+    border-color: #2196f3;
+    border-width: 2px;
+}
 
 .position-label-compact {
     font-size: 9px;
@@ -502,9 +522,9 @@ h1:focus {
     cursor: grab;
 }
 
-    .preview-item:active {
-        cursor: grabbing;
-    }
+.preview-item:active {
+    cursor: grabbing;
+}
 
 .can-drop {
     cursor: copy !important;
@@ -523,7 +543,8 @@ h1:focus {
 
     .position-wrapper {
         max-width: 45% !important;
-        min-width: 100px !important; /* ✅ جدید */
+        min-width: 100px !important;
+        /* ✅ جدید */
     }
 
     .drop-zone {
@@ -531,10 +552,13 @@ h1:focus {
         padding: 6px;
     }
 }
+
 /* End Barcode template builder */
 
 /* Custom responsive width utility */
-@media (min-width: 768px) { /* md breakpoint */
+@media (min-width: 768px) {
+
+    /* md breakpoint */
     .w-md-50 {
         width: 50% !important;
     }
@@ -545,66 +569,75 @@ h1:focus {
 .scanner-wrapper {
     position: relative;
     width: 100%;
-    height: 300px; /* Fixed height for the scanner area */
+    height: 300px;
+    /* Fixed height for the scanner area */
     overflow: hidden;
     background-color: black;
     border-radius: 4px;
     z-index: 1;
 }
 
-    /* 2. FLATTEN THE LIBRARY'S MODAL STRUCTURE
+/* 2. FLATTEN THE LIBRARY'S MODAL STRUCTURE
            We force the library's "modal" divs to behave like normal full-size divs
         */
-    .scanner-wrapper .modal,
-    .scanner-wrapper .modal-dialog,
-    .scanner-wrapper .modal-content,
-    .scanner-wrapper .modal-body {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        background: transparent !important;
-        display: block !important; /* Override bootstrap display logic */
-        inset: 0 !important;
-    }
+.scanner-wrapper .modal,
+.scanner-wrapper .modal-dialog,
+.scanner-wrapper .modal-content,
+.scanner-wrapper .modal-body {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    display: block !important;
+    /* Override bootstrap display logic */
+    inset: 0 !important;
+}
 
-    /* 3. HIDE LIBRARY BUTTONS & DROPDOWNS */
-    .scanner-wrapper button.btn,
-    .scanner-wrapper .form-select,
-    .scanner-wrapper label {
-        display: none !important;
-    }
+/* 3. HIDE LIBRARY BUTTONS & DROPDOWNS */
+.scanner-wrapper button.btn,
+.scanner-wrapper .form-select,
+.scanner-wrapper label {
+    display: none !important;
+}
 
-    /* 4. FIX THE VIDEO ELEMENT */
-    .scanner-wrapper video {
-        /* Override the library's inline 'max-height: 50%' */
-        max-height: unset !important;
-        min-height: 100% !important;
-        width: 100% !important;
-        height: 100% !important;
-        /* Center and Zoom */
-        object-fit: cover !important;
-        transform: scale(1.7) !important;
-        transform-origin: center center !important;
-    }
+/* 4. FIX THE VIDEO ELEMENT */
+.scanner-wrapper video {
+    /* Override the library's inline 'max-height: 50%' */
+    max-height: unset !important;
+    min-height: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    /* Center and Zoom */
+    object-fit: cover !important;
+    transform: scale(1.7) !important;
+    transform-origin: center center !important;
+}
+
 /* Barcode Scanner */
 
 /* Purchase invoice - soft green colors */
 .invoice-table-purchase {
-    --mud-palette-table-lines: rgba(76, 175, 80, 0.3); /* Light green borders */
-    --mud-palette-table-striped: rgba(76, 175, 80, 0.05); /* Very light green stripes */
-    --mud-palette-table-hover: rgba(76, 175, 80, 0.1); /* Light green hover */
+    --mud-palette-table-lines: rgba(76, 175, 80, 0.3);
+    /* Light green borders */
+    --mud-palette-table-striped: rgba(76, 175, 80, 0.05);
+    /* Very light green stripes */
+    --mud-palette-table-hover: rgba(76, 175, 80, 0.1);
+    /* Light green hover */
 }
 
 /* Sell invoice - soft red colors */
 .invoice-table-sell {
-    --mud-palette-table-lines: rgba(244, 67, 54, 0.3); /* Light red borders */
-    --mud-palette-table-striped: rgba(244, 67, 54, 0.05); /* Very light red stripes */
-    --mud-palette-table-hover: rgba(244, 67, 54, 0.1); /* Light red hover */
+    --mud-palette-table-lines: rgba(244, 67, 54, 0.3);
+    /* Light red borders */
+    --mud-palette-table-striped: rgba(244, 67, 54, 0.05);
+    /* Very light red stripes */
+    --mud-palette-table-hover: rgba(244, 67, 54, 0.1);
+    /* Light red hover */
 }
 
 /* Dark mode adjustments - colors automatically work with dark theme */
@@ -623,34 +656,35 @@ h1:focus {
 }
 
 /* Mobile Navbar */
-.mud-toolbar > .mud-navmenu {
+.mud-toolbar>.mud-navmenu {
     display: flex;
     flex: 1 1 auto !important;
     justify-content: space-between;
     height: max-content;
 }
 
-    .mud-toolbar > .mud-navmenu > .mud-nav-item {
-        height: 80px;
-        align-items: center;
-    }
+.mud-toolbar>.mud-navmenu>.mud-nav-item {
+    height: 80px;
+    align-items: center;
+}
 
-        .mud-toolbar > .mud-navmenu > .mud-nav-item > .mud-nav-link {
-            padding: 0px !important;
-            align-items: center;
-            flex-direction: column;
-            gap: 6px;
-        }
+.mud-toolbar>.mud-navmenu>.mud-nav-item>.mud-nav-link {
+    padding: 0px !important;
+    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+}
 
-            .mud-toolbar > .mud-navmenu > .mud-nav-item > .mud-nav-link > .mud-nav-link-text {
-                font-size: 14px;
-                text-align: center !important;
-                margin: 0px !important;
-            }
+.mud-toolbar>.mud-navmenu>.mud-nav-item>.mud-nav-link>.mud-nav-link-text {
+    font-size: 14px;
+    text-align: center !important;
+    margin: 0px !important;
+}
 
 .mobile-navbar {
     height: max-content !important;
 }
+
 /* Mobile Navbar */
 
 /* Notification drawer */
@@ -662,6 +696,8 @@ h1:focus {
 @media (min-width: 960px) {
     .notification-drawer {
         height: 100% !important;
+        width: 400px !important;
+        max-width: 400px !important;
     }
 }
 
@@ -739,9 +775,9 @@ h1:focus {
     background-color: rgba(255, 255, 255, 0.9);
 }
 
-    .image-overlay .mud-icon-button:hover {
-        background-color: rgba(255, 255, 255, 1);
-    }
+.image-overlay .mud-icon-button:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
 
 .check-image {
     max-width: 250px;
@@ -761,13 +797,13 @@ h1:focus {
     margin: 0;
 }
 
-    .image-fieldset fieldset legend {
-        font-size: 0.75rem;
-        color: var(--mud-palette-text-secondary);
-        padding: 0 6px;
-        margin-right: 8px;
-        font-family: inherit;
-    }
+.image-fieldset fieldset legend {
+    font-size: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+    padding: 0 6px;
+    margin-right: 8px;
+    font-family: inherit;
+}
 
 /* Check image */
 
@@ -844,12 +880,18 @@ h1:focus {
 }
 
 @keyframes splash-progress {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(350%); }
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(350%);
+    }
 }
 
 /* Hide splash screen and loading indicators during printing */
 @media print {
+
     #app-loading,
     #loading-indicator,
     .loading-container,
