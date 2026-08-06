@@ -354,6 +354,34 @@ h1:focus {
     }
 }
 
+.responsive-table-card {
+    height: calc(100vh - 372px);
+}
+
+@media (min-width: 960px) {
+    .responsive-table-card {
+        height: calc(100vh - 340px);
+    }
+}
+
+@media (max-width: 959.98px) {
+    .desktop-table-cell {
+        display: none !important;
+    }
+    .mobile-card-cell {
+        display: table-cell !important;
+    }
+}
+
+@media (min-width: 960px) {
+    .desktop-table-cell {
+        display: table-cell !important;
+    }
+    .mobile-card-cell {
+        display: none !important;
+    }
+}
+
 .responsive-table-login {
     height: calc(100vh - 390px);
 }

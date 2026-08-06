@@ -1,6 +1,6 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
-<div class="customer-remaining-container">
+<div class="customer-remaining-container" @onclick:stopPropagation="true">
     @if (_isLoading)
     {
         <MudSkeleton Animation="Animation.Wave"

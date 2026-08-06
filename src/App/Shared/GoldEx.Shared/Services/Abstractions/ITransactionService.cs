@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Transactions;
@@ -8,7 +8,7 @@ namespace GoldEx.Shared.Services.Abstractions;
 
 public interface ITransactionService
 {
-    Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId, Guid? priceUnitId, CancellationToken cancellationToken = default);
+    Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId, Guid? priceUnitId, DateTime? untilDate = null, CancellationToken cancellationToken = default);
     Task<PagedList<GetTransactionResponse>> GetListAsync(TransactionFilter transactionFilter, RequestFilter requestFilter, CancellationToken cancellationToken = default);
     Task<GetFinancialAccountBalanceResponse> GetFinancialAccountBalanceAsync(Guid financialAccountId, CancellationToken cancellationToken = default);
     Task<List<GetAccountBalanceResponse>> GetAccountBalanceAsync(CancellationToken cancellationToken = default);
