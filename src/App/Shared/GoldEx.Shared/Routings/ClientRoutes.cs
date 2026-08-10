@@ -81,6 +81,13 @@ public static class ClientRoutes
         public const string Index = $"{CalculatorPrefix}";
     }
 
+    public static class PriceBoard
+    {
+        private const string PriceBoardPrefix = "/price-board";
+        public const string Index = $"{PriceBoardPrefix}";
+    }
+
+
     public static class Settings
     {
         private const string SettingsPrefix = "/base-info";

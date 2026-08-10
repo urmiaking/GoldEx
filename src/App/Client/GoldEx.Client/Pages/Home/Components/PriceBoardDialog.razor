@@ -1,0 +1,25 @@
+@using GoldEx.Client.Pages.Home.Components
+@inherits GoldExComponentBase
+
+<MudDialog MaxWidth="MaxWidth.Large" FullWidth="true">
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">تابلو قیمت‌های بازار</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="pa-2" style="max-height: 75vh; overflow-y: auto;">
+            <PriceBoard ShowTitle="false" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Cancel">بستن</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Cancel() => MudDialog.Cancel();
+}

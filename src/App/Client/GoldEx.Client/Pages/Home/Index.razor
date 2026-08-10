@@ -1,19 +1,19 @@
 @attribute [Route(ClientRoutes.Home.Index)]
 
-@using GoldEx.Client.Pages.Finances.Checks.Components
 @inherits GoldExComponentBase
 
 <PageTitle>صفحه اصلی</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudBreadcrumbs Class="px-0" Items="_breadcrumbs" MaxItems="2">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-2">
+    <MudBreadcrumbs Class="px-0 py-2 mb-2" Items="_breadcrumbs" MaxItems="2">
         <SeparatorTemplate>
             <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
         </SeparatorTemplate>
     </MudBreadcrumbs>
+
     <AuthorizeView>
         <NotAuthorized>
-            <div class="row">
+            <div class="row align-items-center mb-4">
                 <div class="col-12 col-md-8">
                     <MudHidden Breakpoint="Breakpoint.SmAndDown">
                         <MudText Typo="Typo.h4" Style="font-weight: 500" Class="mb-4">نرم افزار حسابداری طلا و جواهر گلدکس</MudText>
@@ -31,36 +31,137 @@
         </NotAuthorized>
     </AuthorizeView>
 
-    <PriceBoard Class="d-block d-sm-none" Elevation="24" ShowTitle="true" ContainerClass="@PriceBoardClass" />
+    @* Mobile View: PriceBoard *@
+    <PriceBoard Class="d-block d-sm-none" Elevation="2" ShowTitle="true" ContainerClass="@PriceBoardClass" />
 
-    <MudTabs Elevation="24" Rounded Centered
-             Color="Color.Transparent"
-             EnableDragAndDrop
-             Class="d-sm-block d-none"
-             Position="Position.Top"
-             ActivePanelIndex="@_activePanelIndex"
-             ActivePanelIndexChanged="OnTabChanged">
-        <MudTabPanel Text="نرخ لحظه ای" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Primary" Class="w-100">
-            <PriceBoard Class="mt-5" Elevation="24" ContainerClass="@PriceBoardClass" />
-        </MudTabPanel>
-        <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate" IconColor="Color.Info" Class="w-100">
-            <Calculator Class="mt-5" ContainerClass="mt-5" Elevation="24" />
-        </MudTabPanel>
+    @* Desktop Executive Workspace Hub *@
+    <div class="d-none d-sm-block">
+        @* Quick Action Bar Launcher *@
         <AuthorizeView>
             <Authorized>
-                <MudTabPanel Text="فاکتور ها" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Success" Class="w-100">
-                    <InvoicesList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
-                </MudTabPanel>
-                <MudTabPanel Text="اجناس من" Icon="@Icons.Material.Filled.Warehouse" IconColor="Color.Error" Class="w-100">
-                    <InventoryStockList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
-                </MudTabPanel>
-                <MudTabPanel Text="مشتریان" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Tertiary" Class="w-100">
-                    <CustomersList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
-                </MudTabPanel>
-                <MudTabPanel Text="چک ها" Icon="@Icons.Material.Filled.Payment" Class="w-100">
-                    <CheckPaymentsList Class="mt-5" Elevation="24" ContainerClass="responsive-table-toolbar" />
-                </MudTabPanel>
+                <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-5 goldex-glass-card pa-4">
+                    <div class="d-flex align-center gap-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Large" />
+                        <div>
+                            <MudText Typo="Typo.h6">پیش‌خوان مدیریت گلدکس</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">خلاصه وضعیت مالی، موجودی انبار و نرخ لحظه‌ای بازار</MudText>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap align-center gap-2">
+                        <a href="@ClientRoutes.Invoices.Create" class="quick-action-pill">
+                            <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" Size="Size.Small" />
+                            <span>ثبت فاکتور جدید</span>
+                        </a>
+                        <a href="@ClientRoutes.PriceBoard.Index" class="quick-action-pill">
+                            <MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Info" Size="Size.Small" />
+                            <span>تابلو قیمت‌ها</span>
+                        </a>
+                        <a href="@ClientRoutes.Finances.CustomerTransfers" class="quick-action-pill">
+                            <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Color="Color.Primary" Size="Size.Small" />
+                            <span>حواله مشتریان</span>
+                        </a>
+                        <a href="@ClientRoutes.InventoryStocks.List" class="quick-action-pill">
+                            <MudIcon Icon="@Icons.Material.Filled.Warehouse" Color="Color.Warning" Size="Size.Small" />
+                            <span>موجودی انبار</span>
+                        </a>
+                    </div>
+                </div>
             </Authorized>
         </AuthorizeView>
-    </MudTabs>
+
+        @* Custom Segmented Tab Controller *@
+        <div class="d-flex justify-center mb-5">
+            <div class="goldex-segmented-container">
+                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 0 ? "active" : "")" @onclick="() => OnTabChanged(0)">
+                    <MudIcon Icon="@Icons.Material.Filled.Dashboard" />
+                    <span>پیش‌خوان و آمار</span>
+                </button>
+                <button type="button" class="segmented-tab-btn @(_activePanelIndex == 1 ? "active" : "")" @onclick="() => OnTabChanged(1)">
+                    <MudIcon Icon="@Icons.Material.Outlined.Calculate" />
+                    <span>محاسبه‌گر</span>
+                </button>
+                <AuthorizeView>
+                    <Authorized>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 2 ? "active" : "")" @onclick="() => OnTabChanged(2)">
+                            <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" />
+                            <span>فاکتورها</span>
+                        </button>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 3 ? "active" : "")" @onclick="() => OnTabChanged(3)">
+                            <MudIcon Icon="@Icons.Material.Filled.Warehouse" />
+                            <span>اجناس من</span>
+                        </button>
+                        <button type="button" class="segmented-tab-btn @(_activePanelIndex == 4 ? "active" : "")" @onclick="() => OnTabChanged(4)">
+                            <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" />
+                            <span>مشتریان</span>
+                        </button>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+
+        @* Lazy Loaded Active View Container *@
+        <div class="lazy-tab-content animate-fade-in-up" @key="_activePanelIndex">
+            @if (_activePanelIndex == 0)
+            {
+                <div class="d-flex flex-column gap-4">
+                    @* Creative Live Market Price Ticker Deck *@
+                    <MarketPriceDeck />
+
+                    @* Executive Business Analytics Grid *@
+                    <AuthorizeView>
+                        <Authorized>
+                            <div class="d-flex align-center justify-space-between mb-2">
+                                <MudText Typo="Typo.h5">خلاصه آمار و گزارشات مالی</MudText>
+                                <MudButton Href="@ClientRoutes.Dashboard.Index" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowBack">
+                                    مشاهده داشبورد کامل
+                                </MudButton>
+                            </div>
+                            <div class="row g-4 mb-2 align-items-stretch">
+                                @* Left Column (6 cols): Stacked AccountBalance & TopCustomers *@
+                                <div class="col-12 col-md-6 d-flex flex-column gap-4">
+                                    <AccountBalance />
+                                    <TopCustomers />
+                                </div>
+
+                                @* Right Column (6 cols): InventoryWeightChart taking full height *@
+                                <div class="col-12 col-md-6 d-flex flex-column">
+                                    <InventoryWeightChart />
+                                </div>
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+            }
+            else if (_activePanelIndex == 1)
+            {
+                <Calculator Class="mt-2" ContainerClass="mt-2" Elevation="2" />
+            }
+            else if (_activePanelIndex == 2)
+            {
+                <AuthorizeView>
+                    <Authorized>
+                        <RecentInvoicesOverview />
+                    </Authorized>
+                </AuthorizeView>
+            }
+            else if (_activePanelIndex == 3)
+            {
+                <AuthorizeView>
+                    <Authorized>
+                        <RecentInventoryOverview />
+                    </Authorized>
+                </AuthorizeView>
+            }
+            else if (_activePanelIndex == 4)
+            {
+                <AuthorizeView>
+                    <Authorized>
+                        <CustomersInsightOverview />
+                    </Authorized>
+                </AuthorizeView>
+            }
+        </div>
+    </div>
 </MudContainer>
+

@@ -94,7 +94,7 @@ public partial class Index
 
         try
         {
-            await ShowReleaseDialogAsync(current);
+            await ShowReleaseDialogAsync(current, lastSeen);
             await ReleaseStore.SetLastSeenVersionAsync(current.Version);
         }
         catch
@@ -106,18 +106,32 @@ public partial class Index
     }
 
 
-    private async Task ShowReleaseDialogAsync(AppReleaseResponse current)
+    private async Task ShowReleaseDialogAsync(AppReleaseResponse current, string? lastSeen = null)
     {
-        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Medium };
+        DialogOptions dialogOptions = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            FullScreen = false,
+            MaxWidth = MaxWidth.Medium,
+            BackgroundClass = "glassy-dialog-backdrop"
+        };
 
         var parameters = new DialogParameters<ReleaseHistory>
         {
             { x => x.AllReleases, _releases },
-            { x => x.Current, current }
+            { x => x.Current, current },
+            { x => x.LastSeenVersion, lastSeen }
         };
 
         var dialog = await DialogService.ShowAsync<ReleaseHistory>("تغییرات نسخه جدید", parameters, dialogOptions);
 
         await dialog.Result;
+    }
+
+    private async Task OpenPriceBoardDialogAsync()
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
+        await DialogService.ShowAsync<Components.PriceBoardDialog>("تابلو قیمت‌های بازار", dialogOptions);
     }
 }
