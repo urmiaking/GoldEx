@@ -298,3 +298,11 @@ function escapeHtml(text) {
 
     return String(text).replace(/[&<>"']/g, m => map[m]);
 }
+
+window.GoldEx = window.GoldEx || {};
+window.GoldEx.scrollElement = function(element, distance) {
+    if (element) {
+        element.scrollBy({ left: distance, behavior: 'smooth' });
+    }
+};
+

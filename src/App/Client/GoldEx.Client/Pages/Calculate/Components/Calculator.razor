@@ -1,28 +1,5 @@
 @inherits GoldExComponentBase
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@ContainerClass" Gutters="false">
-    <AuthorizeView>
-        <Authorized>
-            <MudTabs Elevation="24" Centered Rounded MinimumTabWidth="50px" ActivePanelIndexChanged="SetHelpContext">
-                <MudTabPanel Text="محاسبه گر" Icon="@Icons.Material.Outlined.Calculate" IconColor="Color.Info">
-                    <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
-                </MudTabPanel>
-                <MudTabPanel Text="برابری ارز" Icon="@Icons.Material.Outlined.Money" IconColor="Color.Tertiary">
-                    <GoldParity Class="@Class" Elevation="@Elevation"></GoldParity>
-                </MudTabPanel>
-                <MudTabPanel Text="تبدیل ارز" Icon="@Icons.Material.Outlined.CurrencyExchange" IconColor="Color.Error">
-                    <CurrencyExchange Class="@Class" Elevation="@Elevation"></CurrencyExchange>
-                </MudTabPanel>
-                <MudTabPanel Text="ارز به طلا" Icon="@Icons.Material.Outlined.SwapHoriz" IconColor="Color.Primary">
-                    <ReverseCalculator Class="@Class" Elevation="@Elevation"></ReverseCalculator>
-                </MudTabPanel>
-                <MudTabPanel Text="جستجو گر" Icon="@Icons.Material.Outlined.ShoppingBag" IconColor="Color.Success">
-                    <AdvancedCalculator Class="@Class" Elevation="@Elevation"></AdvancedCalculator>
-                </MudTabPanel>
-            </MudTabs>
-        </Authorized>
-        <NotAuthorized>
-            <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
-        </NotAuthorized>
-    </AuthorizeView>
+    <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
 </MudContainer>

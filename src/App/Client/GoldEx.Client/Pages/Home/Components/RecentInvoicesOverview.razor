@@ -1,0 +1,189 @@
+@using GoldEx.Shared.DTOs.Invoices
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Routings
+@inherits GoldExComponentBase
+
+<div class="recent-invoices-overview">
+    @* Top Executive Header & Quick Actions *@
+    <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
+        <div class="d-flex align-center gap-3">
+            <MudAvatar Color="Color.Default" Variant="Variant.Outlined" Size="Size.Medium" Class="neutral-avatar">
+                <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" />
+            </MudAvatar>
+            <div>
+                <MudText Typo="Typo.h6">خلاصه کلی وضعیت فاکتورها</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">مرور جامع آمار کلی فروش، خرید و وضعیت تسویه فاکتورها</MudText>
+            </div>
+        </div>
+
+        <div class="d-flex align-center gap-2">
+            <MudButton Href="@ClientRoutes.Invoices.Create" Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.AddCircleOutline">
+                ثبت فاکتور جدید
+            </MudButton>
+            <MudButton Href="@ClientRoutes.Invoices.List" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowBack">
+                مشاهده کامل فاکتورها
+            </MudButton>
+        </div>
+    </div>
+
+    @* Loading State *@
+    @if (IsBusy && !_invoices.Any())
+    {
+        <div class="row g-3 mb-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="goldex-glass-card pa-3">
+                        <MudSkeleton Width="60%" Height="20px" />
+                        <MudSkeleton Width="80%" Height="28px" Class="mt-2" />
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @* Top 4 KPI Summary Cards *@
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">کل فاکتورها</span>
+                        <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Small" Class="kpi-icon" />
+                    </div>
+                    <div class="kpi-value">@TotalInvoicesCount <span class="kpi-unit">عدد</span></div>
+                    <div class="kpi-subtext">شامل تمامی فاکتورها</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">فروش امروز</span>
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="kpi-icon text-error" />
+                    </div>
+                    <div class="kpi-value">@TodaySellVolume.ToCurrencyFormat("تومان")</div>
+                    <div class="kpi-subtext">امروز: @TodaySellCount فاکتور فروش</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">خرید امروز</span>
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="kpi-icon text-success" />
+                    </div>
+                    <div class="kpi-value">@TodayPurchaseVolume.ToCurrencyFormat("تومان")</div>
+                    <div class="kpi-subtext">امروز: @TodayPurchaseCount فاکتور خرید</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">مانده مطالبات</span>
+                        <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Small" Class="kpi-icon text-warning" />
+                    </div>
+                    <div class="kpi-value">@Math.Abs(TotalRemainingDebt).ToCurrencyFormat("تومان")</div>
+                    <div class="kpi-subtext">بدهکار: @DebtCount | معوقه: @OverdueCount</div>
+                </div>
+            </div>
+        </div>
+
+        @* Detailed Breakdown Cards Grid (2 Columns) *@
+        <div class="row g-3">
+            @* Left Column: Payment Status Breakdown *@
+            <div class="col-12 col-md-6">
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Small" Class="text-secondary" />
+                            <span class="card-section-title">وضعیت تسویه فاکتورها</span>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">فاکتورهای تسویه‌شده</span>
+                                <span class="stat-num">@PaidCount از @TotalInvoicesCount فاکتور</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill success" style="width: @(TotalInvoicesCount > 0 ? (PaidCount * 100 / TotalInvoicesCount) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">فاکتورهای دارای مانده (بدهکار)</span>
+                                <span class="stat-num">@DebtCount فاکتور</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill warning" style="width: @(TotalInvoicesCount > 0 ? (DebtCount * 100 / TotalInvoicesCount) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-stat-row">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">فاکتورهای سررسید گذشته (معوقه)</span>
+                                <span class="stat-num">@OverdueCount فاکتور</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill error" style="width: @(TotalInvoicesCount > 0 ? (OverdueCount * 100 / TotalInvoicesCount) : 0)%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top-subtle d-flex align-center justify-space-between">
+                        <span class="text-secondary font-xs">جهت مشاهده ریز فاکتورها به صفحه اختصاصی بروید</span>
+                        <MudButton Href="@ClientRoutes.Invoices.List" Variant="Variant.Text" Color="Color.Default" EndIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">
+                            لیست فاکتورها
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+
+            @* Right Column: Trade Mix & Average Analytics *@
+            <div class="col-12 col-md-6">
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Small" Class="text-secondary" />
+                            <span class="card-section-title">ترکیب معاملاتی و شاخص‌ها</span>
+                        </div>
+
+                        <div class="metric-info-row mb-3 pa-3 rounded-lg border-subtle">
+                            <div class="text-secondary font-xs mb-1">میانگین مبلغ هر فاکتور</div>
+                            <div class="font-normal font-md">@AverageInvoiceValue.ToCurrencyFormat("تومان")</div>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">نسبت فاکتورهای فروش</span>
+                                <span class="stat-num">@(TotalInvoicesCount > 0 ? (SellCount * 100 / TotalInvoicesCount) : 0)%</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill primary" style="width: @(TotalInvoicesCount > 0 ? (SellCount * 100 / TotalInvoicesCount) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-stat-row">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">نسبت فاکتورهای خرید</span>
+                                <span class="stat-num">@(TotalInvoicesCount > 0 ? (PurchaseCount * 100 / TotalInvoicesCount) : 0)%</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill success" style="width: @(TotalInvoicesCount > 0 ? (PurchaseCount * 100 / TotalInvoicesCount) : 0)%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top-subtle d-flex align-center justify-space-between">
+                        <span class="text-secondary font-xs">صدور سریع فاکتور جدید فروش یا خرید</span>
+                        <MudButton Href="@ClientRoutes.Invoices.Create" Variant="Variant.Text" Color="Color.Default" EndIcon="@Icons.Material.Filled.Add" Size="Size.Small">
+                            ثبت فاکتور جدید
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

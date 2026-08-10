@@ -1,0 +1,244 @@
+@using GoldEx.Client.Pages.Customers.Components
+@using GoldEx.Shared.DTOs.Customers
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Helpers
+@using GoldEx.Shared.Routings
+@inherits GoldExComponentBase
+
+<div class="customers-insight-overview">
+    @* Top Executive Header & Quick Actions *@
+    <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
+        <div class="d-flex align-center gap-3">
+            <MudAvatar Color="Color.Default" Variant="Variant.Outlined" Size="Size.Medium" Class="neutral-avatar">
+                <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" />
+            </MudAvatar>
+            <div>
+                <MudText Typo="Typo.h6">تحلیل و خلاصه وضعیت مشتریان</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">مرور جامع آمار کل مشتریان، تفکیک نوع حساب و مانده بدهی و طلب</MudText>
+            </div>
+        </div>
+
+        <div class="d-flex align-center gap-2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenCreateCustomerDialogAsync">
+                تعریف مشتری جدید
+            </MudButton>
+            <MudButton Href="@ClientRoutes.Customers.Index" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowBack">
+                مشاهده کامل لیست مشتریان
+            </MudButton>
+        </div>
+    </div>
+
+    @* Loading State *@
+    @if (IsBusy && !_customers.Any())
+    {
+        <div class="row g-3 mb-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="goldex-glass-card pa-3">
+                        <MudSkeleton Width="60%" Height="20px" />
+                        <MudSkeleton Width="80%" Height="28px" Class="mt-2" />
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @* Top 4 KPI Summary Cards *@
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">کل مشتریان ثبت‌شده</span>
+                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" Class="kpi-icon" />
+                    </div>
+                    <div class="kpi-value">@TotalCustomersCount <span class="kpi-unit">نفر</span></div>
+                    <div class="kpi-subtext">شامل تمامی اشخاص و مشتریان</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">مشتریان خرده‌فروشی</span>
+                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="kpi-icon text-info" />
+                    </div>
+                    <div class="kpi-value">@RetailCustomersCount <span class="kpi-unit">نفر</span></div>
+                    <div class="kpi-subtext">مشتریان عادی و متفرقه</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">همکاران و بنکداران</span>
+                        <MudIcon Icon="@Icons.Material.Filled.Storefront" Size="Size.Small" Class="kpi-icon text-warning" />
+                    </div>
+                    <div class="kpi-value">@WholesaleCustomersCount <span class="kpi-unit">نفر</span></div>
+                    <div class="kpi-subtext">بنکداران، ری‌گیری و کارگاه‌ها</div>
+                </div>
+            </div>
+
+            @* Card 4: Auto-Swiping Overall Net Customer Balance by Price Unit *@
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="NextBalanceSlide" title="کلیک کنید تا به ارز بعدی برود">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">مانده کل مشتریان</span>
+                        <div class="d-flex align-center gap-1">
+                            @if (_overallBalances.Count > 1)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small" Class="kpi-icon text-secondary spin-animation" />
+                            }
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Small" Class="kpi-icon text-success" />
+                        </div>
+                    </div>
+
+                    @if (CurrentOverallBalance != null)
+                    {
+                        var isStoreClaim = CurrentOverallBalance.NetBalance > 0; // طلب کل ما (مشتری بدهکار) -> قرمز
+                        var isCustomerClaim = CurrentOverallBalance.NetBalance < 0; // بدهی کل ما (مشتری بستانکار) -> سبز
+                        var absAmount = Math.Abs(CurrentOverallBalance.NetBalance);
+                        var formattedAmount = absAmount.ToCurrencyFormat(CurrentOverallBalance.PriceUnitTitle);
+
+                        <div @key="_currentBalanceIndex" class="balance-slide-anim">
+                            <div class="kpi-value @(isStoreClaim ? "text-danger" : isCustomerClaim ? "text-success" : "")">
+                                @formattedAmount
+                            </div>
+                            <div class="kpi-subtext d-flex justify-space-between align-center">
+                                <span class="@(isStoreClaim ? "text-danger" : isCustomerClaim ? "text-success" : "") font-weight-500">
+                                    @(isStoreClaim ? "طلب کل ما" : isCustomerClaim ? "بدهی کل ما" : "بی‌حساب")
+                                </span>
+                                <span class="font-xs text-secondary">(@CurrentOverallBalance.PriceUnitTitle)</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="kpi-value">۰ <span class="kpi-unit">تومان</span></div>
+                        <div class="kpi-subtext">حساب‌ها تسویه شده است</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* Detailed Breakdown Cards Grid (2 Columns) *@
+        <div class="row g-3">
+            @* Left Column: Recent Customers & Balance Overview *@
+            <div class="col-12 col-md-6">
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center justify-space-between mb-3">
+                            <div class="d-flex align-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.RecentActors" Size="Size.Small" Class="text-secondary" />
+                                <span class="card-section-title">آخرین مشتریان و مانده حساب</span>
+                            </div>
+                            <span class="text-secondary font-xs">نمایش @Math.Min(5, _customers.Count) مورد اخیر</span>
+                        </div>
+
+                        <div class="customer-insight-list">
+                            @foreach (var customer in _customers.Take(5))
+                            {
+                                var isWholesale = customer.CustomerType == CustomerType.Wholesaler || customer.CustomerType == CustomerType.MeltedGoldDealer || customer.CustomerType == CustomerType.Workshop;
+
+                                <div class="customer-insight-item d-flex align-center justify-space-between pa-2 mb-2 rounded-lg border-subtle">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudAvatar Size="Size.Small" Variant="Variant.Outlined" Class="customer-avatar">
+                                            @customer.FullName.Substring(0, 1)
+                                        </MudAvatar>
+                                        <div>
+                                            <div class="d-flex align-center gap-2">
+                                                <span class="customer-name font-weight-normal">@customer.FullName</span>
+                                                <span class="customer-type-tag @(isWholesale ? "wholesale" : "retail")">
+                                                    @(isWholesale ? "همکار/بنکدار" : "خرده")
+                                                </span>
+                                            </div>
+                                            <div class="text-secondary font-xs">@customer.PhoneNumber</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-left">
+                                        <CustomerRemaining CustomerId="@customer.Id" EnableManualSlide="true" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-top-subtle d-flex align-center justify-space-between">
+                        <span class="text-secondary font-xs">مشاهده کامل دفتر حساب مشتریان</span>
+                        <MudButton Href="@ClientRoutes.Customers.Index" Variant="Variant.Text" Color="Color.Default" EndIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">
+                            لیست مشتریان
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+
+            @* Right Column: Customer Mix & Report Shortcuts *@
+            <div class="col-12 col-md-6">
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Small" Class="text-secondary" />
+                            <span class="card-section-title">تفکیک مشتریان و دسترسی‌های سریع</span>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">مشتریان خرده‌فروشی</span>
+                                <span class="stat-num">@RetailCustomersCount نفر (@(TotalCustomersCount > 0 ? (RetailCustomersCount * 100 / TotalCustomersCount) : 0)%)</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill info" style="width: @(TotalCustomersCount > 0 ? (RetailCustomersCount * 100 / TotalCustomersCount) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-4">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">همکاران، بنکداران و کارگاه‌ها</span>
+                                <span class="stat-num">@WholesaleCustomersCount نفر (@(TotalCustomersCount > 0 ? (WholesaleCustomersCount * 100 / TotalCustomersCount) : 0)%)</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill warning" style="width: @(TotalCustomersCount > 0 ? (WholesaleCustomersCount * 100 / TotalCustomersCount) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        @* Quick Report Shortcuts *@
+                        <div class="quick-report-shortcuts d-flex flex-column gap-2">
+                            <a href="@ClientRoutes.Reporting.CustomerBalances" class="report-shortcut-link d-flex align-center justify-space-between pa-2 rounded-lg border-subtle">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" Class="text-secondary" />
+                                    <span class="font-xs">گزارش مانده حساب مشتریان</span>
+                                </div>
+                                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small" Class="text-secondary" />
+                            </a>
+
+                            <a href="@ClientRoutes.Reporting.CustomerTransactions" class="report-shortcut-link d-flex align-center justify-space-between pa-2 rounded-lg border-subtle">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Small" Class="text-secondary" />
+                                    <span class="font-xs">گزارش گردش حساب مشتریان</span>
+                                </div>
+                                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small" Class="text-secondary" />
+                            </a>
+
+                            <a href="@ClientRoutes.Finances.CustomerTransfers" class="report-shortcut-link d-flex align-center justify-space-between pa-2 rounded-lg border-subtle">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Small" Class="text-secondary" />
+                                    <span class="font-xs">حواله مستقیم بین مشتریان</span>
+                                </div>
+                                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small" Class="text-secondary" />
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-top-subtle d-flex align-center justify-space-between">
+                        <span class="text-secondary font-xs">ثبت و تعریف سریع مشتری جدید</span>
+                        <MudButton Variant="Variant.Text" Color="Color.Default" EndIcon="@Icons.Material.Filled.PersonAdd" Size="Size.Small" OnClick="OpenCreateCustomerDialogAsync">
+                            تعریف مشتری
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,186 @@
+@inherits GoldExComponentBase
+
+<div class="recent-inventory-overview">
+    @* Top Executive Header & Quick Actions *@
+    <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
+        <div class="d-flex align-center gap-3">
+            <MudAvatar Color="Color.Default" Variant="Variant.Outlined" Size="Size.Medium" Class="neutral-avatar">
+                <MudIcon Icon="@Icons.Material.Filled.Warehouse" />
+            </MudAvatar>
+            <div>
+                <MudText Typo="Typo.h6">خلاصه کلی وضعیت انبار و موجودی</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">مرور جامع وزن طلا، تفکیک اجناس و وضعیت موجودی کل انبار</MudText>
+            </div>
+        </div>
+
+        <div class="d-flex align-center gap-2">
+            <MudButton Href="@ClientRoutes.InventoryStocks.InventoryEntry.Index" Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.AddCircleOutline">
+                ورود به انبار / جنس جدید
+            </MudButton>
+            <MudButton Href="@ClientRoutes.InventoryStocks.List" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowBack">
+                مشاهده کامل انبار
+            </MudButton>
+        </div>
+    </div>
+
+    @* Loading State *@
+    @if (IsBusy && !_items.Any())
+    {
+        <div class="row g-3 mb-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="goldex-glass-card pa-3">
+                        <MudSkeleton Width="60%" Height="20px" />
+                        <MudSkeleton Width="80%" Height="28px" Class="mt-2" />
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @* Top 4 KPI Summary Cards *@
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">وزن کل موجودی طلا</span>
+                        <MudIcon Icon="@Icons.Material.Filled.Scale" Size="Size.Small" Class="kpi-icon" />
+                    </div>
+                    <div class="kpi-value">@($"{TotalGoldWeight.ToCurrencyFormat()}") <span class="kpi-unit">گرم</span></div>
+                    <div class="kpi-subtext">تعداد کل اقلام: @TotalItemsCount جنس</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">طلای ساخته‌شده</span>
+                        <MudIcon Icon="@Icons.Material.Filled.Square" Size="Size.Small" Class="kpi-icon text-info" />
+                    </div>
+                    <div class="kpi-value">@($"{ManufacturedGoldWeight.ToCurrencyFormat()}") <span class="kpi-unit">گرم</span></div>
+                    <div class="kpi-subtext">تعداد: @ManufacturedGoldCount جنس</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">طلای آبشده</span>
+                        <MudIcon Icon="@Icons.Material.Filled.Whatshot" Size="Size.Small" Class="kpi-icon text-warning" />
+                    </div>
+                    <div class="kpi-value">@($"{MoltenGoldWeight.ToCurrencyFormat()}") <span class="kpi-unit">گرم</span></div>
+                    <div class="kpi-subtext">تعداد: @MoltenGoldCount قطعه آبشده</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3">
+                    <div class="d-flex align-center justify-space-between mb-1">
+                        <span class="kpi-title">مستعمل، سکه و ارز</span>
+                        <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="kpi-icon text-secondary" />
+                    </div>
+                    <div class="kpi-value">@($"{UsedGoldWeight.ToCurrencyFormat()}") <span class="kpi-unit">گرم</span></div>
+                    <div class="kpi-subtext">سکه: @CoinsCount | ارز: @CurrenciesCount</div>
+                </div>
+            </div>
+        </div>
+
+        @* Detailed Breakdown Cards Grid (2 Columns) *@
+        <div class="row g-3">
+            @* Left Column: Stock Category Distribution *@
+            <div class="col-12 col-md-6">
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.DonutSmall" Size="Size.Small" Class="text-secondary" />
+                            <span class="card-section-title">ترکیب موجودی انبار به تفکیک جنس</span>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">طلای ساخته‌شده (طلا و جواهرا)</span>
+                                <span class="stat-num">@($"{ManufacturedGoldWeight.ToWeightFormat(GoldUnitType.Gram)} ({ManufacturedGoldCount} جنس)")</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill info" style="width: @(TotalGoldWeight > 0 ? (ManufacturedGoldWeight * 100 / TotalGoldWeight) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">طلای آبشده</span>
+                                <span class="stat-num">@($"{MoltenGoldWeight.ToWeightFormat(GoldUnitType.Gram)} ({MoltenGoldCount} قطعه)")</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill warning" style="width: @(TotalGoldWeight > 0 ? (MoltenGoldWeight * 100 / TotalGoldWeight) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-stat-row">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">طلای مستعمل</span>
+                                <span class="stat-num">@($"{UsedGoldWeight.ToWeightFormat(GoldUnitType.Gram)} ({UsedGoldCount} مورد)")</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill error" style="width: @(TotalGoldWeight > 0 ? (UsedGoldWeight * 100 / TotalGoldWeight) : 0)%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top-subtle d-flex align-center justify-space-between">
+                        <span class="text-secondary font-xs">جهت مشاهده کامل لیست موجودی به انبار بروید</span>
+                        <MudButton Href="@ClientRoutes.InventoryStocks.List" Variant="Variant.Text" Color="Color.Default" EndIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">
+                            مدیریت انبار
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+
+            @* Right Column: Inventory Indicators & Weight Analysis *@
+            <div class="col-12 col-md-6">
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Small" Class="text-secondary" />
+                            <span class="card-section-title">شاخص‌های کلیدی و تحلیل وزن طلا</span>
+                        </div>
+
+                        <div class="metric-info-row mb-3 pa-3 rounded-lg border-subtle">
+                            <div class="text-secondary font-xs mb-1">میانگین وزن هر کالا در انبار</div>
+                            <div class="font-normal font-md">@($"{AverageGoldWeightPerItem:N2} گرم")</div>
+                        </div>
+
+                        <div class="breakdown-stat-row mb-3">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">تعداد مسکوکات سکه</span>
+                                <span class="stat-num">@CoinsCount عدد</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill secondary" style="width: @(TotalItemsCount > 0 ? (CoinsCount * 100 / TotalItemsCount) : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-stat-row">
+                            <div class="d-flex justify-space-between mb-1">
+                                <span class="stat-name">تعداد اقلام ارزی</span>
+                                <span class="stat-num">@CurrenciesCount مورد</span>
+                            </div>
+                            <div class="stat-progress-bar">
+                                <div class="progress-fill primary" style="width: @(TotalItemsCount > 0 ? (CurrenciesCount * 100 / TotalItemsCount) : 0)%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top-subtle d-flex align-center justify-space-between">
+                        <span class="text-secondary font-xs">ثبت سریع ورود جدید به انبار</span>
+                        <MudButton Href="@ClientRoutes.InventoryStocks.InventoryEntry.Index" Variant="Variant.Text" Color="Color.Default" EndIcon="@Icons.Material.Filled.Add" Size="Size.Small">
+                            ورود به انبار
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
