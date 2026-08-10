@@ -1,44 +1,78 @@
 name: docker-image
+
 on:
-  workflow_dispatch:    # Allow running the workflow manually from the GitHub UI
+  workflow_dispatch:
+
   push:
     branches:
-      - 'master'        # Run the workflow when pushing to the main branch
+      - master
+
   release:
     types:
-      - published       # Run the workflow when a new GitHub release is published
+      - published
+
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  Version: 1.0.${{ github.run_number }}
+  VERSION: 1.0.${{ github.run_number }}
+  REGISTRY: reg.goldexsoft.ir
 
 jobs:
-  create-image:
-    runs-on: self-hosted
+
+  # ============================================================
+  # GitHub-hosted runner: build and push images
+  # ============================================================
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     steps:
-    - uses: actions/checkout@v4
-      with:
-        ssh-key: |
-          ${{ secrets.DEPLOY_KEY }}
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Build and push Docker image for goldex
-      run: |
-        docker build --push \
-            -t localhost:5000/goldex:latest \
-            -t localhost:5000/goldex:${Version} \
-            -f src/App/Server/GoldEx.Server/Dockerfile \
-            .
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Build and push Docker image for goldex-karat
-      run: |
-        docker build --push \
-            -t localhost:5000/goldex-karat:latest \
-            -t localhost:5000/goldex-karat:$Version \
-            -f src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile \
-            .
+      - name: Build and push GoldEx
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/App/Server/GoldEx.Server/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/goldex:latest
+            ${{ env.REGISTRY }}/goldex:${{ env.VERSION }}
 
-    - name: Run initialization script
-      run: |
-        chmod +x /home/user/docker/goldex/refresh-apps.sh
-        /home/user/docker/goldex/refresh-apps.sh
+      - name: Build and push GoldEx Karat
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/goldex-karat:latest
+            ${{ env.REGISTRY }}/goldex-karat:${{ env.VERSION }}
+
+
+  # ============================================================
+  # Your server: pull images and recreate containers
+  # ============================================================
+  deploy:
+    runs-on: self-hosted
+
+    needs:
+      - build-and-push
+
+    steps:
+      - name: Run deployment script
+        run: |
+          chmod +x /home/user/docker/goldex/refresh-apps.sh
+          /home/user/docker/goldex/refresh-apps.sh
