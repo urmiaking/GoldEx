@@ -1,57 +1,300 @@
-﻿@using GoldEx.Shared.DTOs.AppReleases
+@using GoldEx.Shared.DTOs.AppReleases
 @using MudBlazor
+@namespace GoldEx.Client.Components.Components
 
-<MudDialog>
-    <DialogContent> 
-        <MudExpansionPanels Elevation="0" Gutters="false">
-            @foreach (var release in AllReleases)
+<MudDialog Class="release-notes-dialog rounded-xl overflow-hidden shadow-24" Style="max-width: 720px; width: 100%;">
+    <DialogContent>
+        <!-- Header Banner with Gradient & Animations -->
+        <div class="release-header-banner pa-6 d-flex align-center justify-space-between position-relative">
+            <div class="d-flex align-center gap-4 z-1">
+                <div class="rocket-icon-container d-flex align-center justify-center rounded-circle glassy-icon-box pa-3">
+                    <MudIcon Icon="@Icons.Material.Filled.RocketLaunch" Style="font-size: 2.2rem; color: #ffffff;" />
+                </div>
+                <div>
+                    <div class="d-flex align-center gap-2 mb-1">
+                        <MudText Typo="Typo.h5" Class="font-bold text-white">بروزرسانی های برنامه</MudText>
+                        @if (ReleasesList.Any())
+                        {
+                            <span class="version-chip font-bold px-3 py-1 rounded-pill">
+                                v@(ReleasesList.First().Version)
+                            </span>
+                        }
+                    </div>
+                    <MudText Typo="Typo.caption" Class="text-white-70 d-flex align-center gap-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Small" />
+                        بروزرسانی‌های منتشر شده
+                    </MudText>
+                </div>
+            </div>
+        </div>
+
+        <!-- Release Timeline Container Body -->
+        <div class="px-6 pt-6 pb-16 release-body-content" style="max-height: 58vh; overflow-y: auto;">
+            @if (ReleasesList.Any())
             {
-                <MudExpansionPanel Expanded="@(release == Current)">
-                    <TitleContent>
-                        <div class="d-flex justify-content-between align-center">
-                            <MudText Typo="Typo.body1">نسخه @release.Version</MudText>
-                            <MudText Typo="Typo.body1" Class="ml-2" Color="Color.Primary">
-                                @release.ReleasedAt.ToString("yyyy/MM/dd")
-                            </MudText>
-                        </div>
-                    </TitleContent>
+                <div class="milestone-timeline-container position-relative pr-6">
+                    <!-- Vertical Milestone Track Line -->
+                    <div class="milestone-track-line"></div>
 
-                    <ChildContent>
-                        <ul class="d-flex flex-column gap-1">
-                            @foreach (var change in release.Changes)
-                            {
-                                <li>
-                                    <MudText>@change</MudText>
-                                </li>
-                            }
-                        </ul>
+                    @for (int index = 0; index < ReleasesList.Count; index++)
+                    {
+                        var release = ReleasesList[index];
+                        var isLatest = index == 0;
+                        var isUnseen = IsUnseen(release.Version);
 
-                        @* <MudList Dense="true" Class="pl-1" T="string">
-                            @foreach (var change in release.Changes)
-                            {
-                                <MudListItem Class="py-1">
-                                    <div class="d-flex gap-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.ChevronLeft"
-                                                 Color="Color.Primary"
-                                                 Size="Size.Small"/>
-                                        <MudText Class="ml-1">@change</MudText>
+                        <div class="milestone-node-wrapper position-relative mb-6 animate-slide-up" style="animation-delay: @(index * 100)ms;">
+                            <!-- Node Icon Indicator -->
+                            <div class="milestone-dot-indicator @(isLatest ? "latest-dot" : "past-dot") d-flex align-center justify-center rounded-circle">
+                                <MudIcon Icon="@(isLatest ? Icons.Material.Filled.Stars : Icons.Material.Filled.Check)" 
+                                         Size="Size.Small" 
+                                         Style="@(isLatest ? "color: #ffffff;" : "color: var(--mud-palette-text-secondary);")" />
+                            </div>
+
+                            <!-- Milestone Card Content -->
+                            <div class="milestone-card pa-4 rounded-xl @(isLatest ? "latest-milestone-card" : "past-milestone-card")">
+                                <!-- Card Header -->
+                                <div class="d-flex align-center justify-space-between mb-3 pb-2 border-bottom-subtle">
+                                    <div class="d-flex align-center gap-2">
+                                        <span class="milestone-version-badge font-bold px-3 py-1 rounded-pill @(isLatest ? "badge-primary" : "badge-secondary")">
+                                            نسخه v@(release.Version)
+                                        </span>
+                                        @if (isLatest)
+                                        {
+                                            <span class="latest-label-chip font-bold px-2 py-1 rounded-pill d-none d-md-block">
+                                                آخرین نسخه منتشر شده
+                                            </span>
+                                        }
+                                        else if (isUnseen)
+                                        {
+                                            <span class="unseen-label-chip font-bold px-2 py-1 rounded-pill d-none d-md-block">
+                                                نسخه جدید
+                                            </span>
+                                        }
                                     </div>
-                                </MudListItem>
-                            }
-                        </MudList> *@
-                    </ChildContent>
-                </MudExpansionPanel>
-            }
-        </MudExpansionPanels>
+                                    <span class="mud-text-secondary text-caption d-flex align-center gap-1 font-medium">
+                                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Style="font-size: 0.85rem;" />
+                                        @release.ReleasedAt.ToString("yyyy/MM/dd")
+                                    </span>
+                                </div>
 
+                                <!-- Changes Items List -->
+                                <div class="milestone-changes-list d-flex flex-column gap-2">
+                                    @foreach (var change in release.Changes)
+                                    {
+                                        <div class="change-item-row d-flex align-start gap-3 pa-2 rounded-lg glassy-item">
+                                            <div class="check-bullet rounded-circle pa-1 mt-1 d-flex align-center justify-center">
+                                                <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Color="@(isLatest ? Color.Primary : Color.Success)" />
+                                            </div>
+                                            <MudText Typo="Typo.body2" Class="text-justify font-medium lh-relaxed flex-grow-1">
+                                                @change
+                                            </MudText>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <MudText Class="mud-text-secondary py-6 text-center">
+                    هیچ نسخه یا گزارشی در سیستم یافت نشد.
+                </MudText>
+            }
+        </div>
     </DialogContent>
+    <DialogActions>
+        <div class="px-6 pb-6 pt-0 d-flex justify-end w-100">
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.DoneAll" 
+                       OnClick="Close" 
+                       Class="rounded-lg px-6 py-2 shadow-primary font-bold">
+                متوجه شدم
+            </MudButton>
+        </div>
+    </DialogActions>
 </MudDialog>
 
+<style>
+    .release-notes-dialog {
+        background: var(--mud-palette-surface);
+        backdrop-filter: blur(12px);
+    }
+
+    .release-notes-dialog .mud-dialog-content {
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .release-body-content {
+        padding-bottom: 4rem !important;
+    }
+
+    .milestone-node-wrapper:last-child {
+        margin-bottom: 3.5rem !important;
+    }
+
+    .release-header-banner {
+        background: linear-gradient(135deg, #3f51b5 0%, #7c4dff 50%, #651fff 100%);
+        box-shadow: 0 4px 20px rgba(101, 31, 255, 0.25);
+    }
+
+    .glassy-icon-box {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .version-chip {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        font-size: 0.85rem;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(4px);
+    }
+
+    /* Milestone Vertical Timeline Layout (RTL) */
+    .milestone-timeline-container {
+        position: relative;
+    }
+
+    .milestone-track-line {
+        position: absolute;
+        top: 20px;
+        bottom: 20px;
+        right: 15px;
+        width: 3px;
+        background: linear-gradient(to bottom, var(--mud-palette-primary) 0%, var(--mud-palette-lines-default) 100%);
+        z-index: 1;
+        border-radius: 2px;
+    }
+
+    .milestone-node-wrapper {
+        padding-right: 36px;
+    }
+
+    .milestone-dot-indicator {
+        position: absolute;
+        right: 0;
+        top: 14px;
+        width: 32px;
+        height: 32px;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .latest-dot {
+        background: linear-gradient(135deg, #7c4dff 0%, #3f51b5 100%);
+        box-shadow: 0 0 12px rgba(124, 77, 255, 0.6);
+        border: 2px solid #ffffff;
+    }
+
+    .past-dot {
+        background: var(--mud-palette-background-grey);
+        border: 2px solid var(--mud-palette-lines-default);
+    }
+
+    /* Cards Styling */
+    .latest-milestone-card {
+        background: var(--mud-palette-surface);
+        border: 2px solid rgba(124, 77, 255, 0.4);
+        box-shadow: 0 8px 24px rgba(124, 77, 255, 0.12);
+    }
+
+    .past-milestone-card {
+        background: var(--mud-palette-background-grey);
+        border: 1px solid var(--mud-palette-lines-default);
+    }
+
+    .border-bottom-subtle {
+        border-bottom: 1px solid var(--mud-palette-lines-default);
+    }
+
+    .badge-primary {
+        background: var(--mud-palette-primary);
+        color: #ffffff;
+    }
+
+    .badge-secondary {
+        background: var(--mud-palette-action-default-hover);
+        color: var(--mud-palette-text-primary);
+    }
+
+    .latest-label-chip {
+        background: rgba(124, 77, 255, 0.15);
+        color: #7c4dff;
+        font-size: 0.75rem;
+        border: 1px solid rgba(124, 77, 255, 0.3);
+    }
+
+    .unseen-label-chip {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4caf50;
+        font-size: 0.75rem;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .glassy-item {
+        background: var(--mud-palette-surface);
+        border: 1px solid rgba(120, 120, 120, 0.08);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .glassy-item:hover {
+        transform: translateX(-4px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .check-bullet {
+        background: rgba(76, 175, 80, 0.1);
+    }
+
+    .text-white-70 {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    @@keyframes slideUpFade {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-slide-up {
+        animation: slideUpFade 0.4s ease-out forwards;
+    }
+</style>
+
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    [Parameter] public AppReleaseResponse Current { get; set; } = default!;
-    [Parameter] public IReadOnlyList<AppReleaseResponse> AllReleases { get; set; } = [];
+    [Parameter] public AppReleaseResponse? Current { get; set; }
+    [Parameter] public IReadOnlyList<AppReleaseResponse>? AllReleases { get; set; }
+    [Parameter] public string? LastSeenVersion { get; set; }
 
-    private void Close() => MudDialog.Close();
+    private IReadOnlyList<AppReleaseResponse> ReleasesList =>
+        (AllReleases != null && AllReleases.Count > 0)
+            ? AllReleases.OrderByDescending(r => Version.TryParse(r.Version, out var v) ? v : new Version(0, 0)).ToList()
+            : (Current != null ? [Current] : []);
+
+    private bool IsUnseen(string version)
+    {
+        if (string.IsNullOrWhiteSpace(LastSeenVersion))
+            return true;
+
+        if (Version.TryParse(version, out var ver) && Version.TryParse(LastSeenVersion, out var lastVer))
+        {
+            return ver > lastVer;
+        }
+
+        return !string.Equals(version.Trim(), LastSeenVersion.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
 }

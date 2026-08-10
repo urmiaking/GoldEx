@@ -1,0 +1,85 @@
+@using GoldEx.Shared.DTOs.Prices
+@using GoldEx.Shared.Enums
+@inherits GoldExComponentBase
+
+<div class="market-price-deck-container mb-4">
+    @* Deck Header *@
+    <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-3 px-1">
+        <div class="d-flex align-center gap-2">
+            <div class="live-status-dot"></div>
+            <MudText Typo="Typo.subtitle1" Style="font-weight: 700;">نرخ‌های لحظه‌ای بازار</MudText>
+            <span class="live-badge">زنده</span>
+        </div>
+
+        @* Category Filter Pills *@
+        <div class="market-filter-container">
+            <button type="button" class="market-filter-pill @(_selectedCategory == null ? "active" : "")" @onclick="() => SelectCategory(null)">
+                همه (@_items.Count)
+            </button>
+            @foreach (var group in GroupedItems)
+            {
+                <button type="button" class="market-filter-pill @(_selectedCategory == group.Key ? "active" : "")" @onclick="() => SelectCategory(group.Key)">
+                    @group.Key (@group.Count())
+                </button>
+            }
+        </div>
+    </div>
+
+    @* Loading / Empty / Content *@
+    @if (IsBusy && !_items.Any())
+    {
+        <div class="d-flex align-center gap-3 overflow-hidden py-2">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="market-ticker-card">
+                    <MudSkeleton Width="120px" Height="24px" />
+                    <MudSkeleton Width="80px" Height="20px" Class="mt-2" />
+                </div>
+            }
+        </div>
+    }
+    else if (!FilteredItems.Any())
+    {
+        <div class="text-center pa-4 text-secondary">
+            اطلاعاتی برای نمایش وجود ندارد
+        </div>
+    }
+    else
+    {
+    @* Horizontal Smooth Auto-Scrolling Ticker Track *@
+    <div class="market-deck-scroll-wrapper">
+        <div class="market-deck-track">
+            @foreach (var item in LoopItems)
+            {
+                var changePercent = ExtractPercentChange(item.Change);
+                var isUp = changePercent >= 0;
+
+                <div class="market-ticker-card @(isUp ? "trend-up" : "trend-down")">
+                    <div class="d-flex align-center justify-space-between gap-2 mb-2">
+                        <div class="d-flex align-center gap-2">
+                            <div class="market-card-icon">
+                                <img src="@(ApiUrls.Icons.Get(IconType.Price, item.Id))" alt="@item.Title" onerror="this.style.display='none'" />
+                            </div>
+                            <span class="market-card-title">@item.Title</span>
+                        </div>
+
+                        @* Trend Badge *@
+                        <div class="trend-badge @(isUp ? "up" : "down")">
+                            <MudIcon Icon="@(isUp ? Icons.Material.Filled.ArrowDropUp : Icons.Material.Filled.ArrowDropDown)" Size="Size.Small" />
+                            <span>@($"{Math.Abs(changePercent):F1}%")</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-baseline justify-space-between mt-2 pt-2 border-top-subtle">
+                        <span class="market-card-time">@item.LastUpdate?.ToString("HH:mm")</span>
+                        <div class="d-flex align-baseline gap-1">
+                            <span class="market-card-price">@item.Value</span>
+                            <span class="market-card-unit">@item.Unit</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    }
+</div>

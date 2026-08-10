@@ -89,13 +89,11 @@ public partial class SimpleCalculator
 
             RestorePersistedState();
 
-            await EnsurePriceUnitsLoadedAsync();
-            await EnsureGramPriceLoadedAsync();
+            var unitsTask = EnsurePriceUnitsLoadedAsync();
+            var settingsTask = IsAuthenticated ? LoadSettingsAsync() : Task.CompletedTask;
 
-            if (IsAuthenticated)
-            {
-                await LoadSettingsAsync();
-            }
+            await Task.WhenAll(unitsTask, settingsTask);
+            await EnsureGramPriceLoadedAsync();
         }
         finally
         {

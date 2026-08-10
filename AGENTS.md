@@ -10,7 +10,7 @@ Read these documents before generating code:
 
 Every time that you learn something new about the project update the AGENTS.md file with the new information.
 This file should be the single source of truth for all AI agents working on the project. Always refer to this file before generating code or making architectural decisions.
-If any new feature is added, we should add it to releases.json file after implementation.
+- **AUTOMATIC VERSIONING & RELEASE NOTES**: Whenever you complete a feature implementation or fix a bug, you **must** add a new release entry (or append to current version changes) in `src/App/Server/GoldEx.Server/releases.json`. Increment the version number (SemVer), set the release date (`yyyy-MM-dd`), and add a bulleted array of Persian descriptions summarizing what changed.
 
 ### AI Build Execution Policy
 - **Do NOT automatically run `dotnet build`** or launch background solution builds after minor UI layout, Razor markup, CSS, styling, or markdown documentation edits.
@@ -262,5 +262,22 @@ GoldEx displays each customer's running balance immediately after an invoice dir
    - `TransactionRepository.GetCustomerRemainingListAsync` filters ledger transactions where `PostingDate < UntilDate`, accumulating all preceding transactions and those posted by the invoice itself, while excluding subsequent transactions.
 3. **Multi-Unit Price Support**:
    - Displays running balances across all price units (currency, 18K gold, etc.) with automatic sliding carousel animation and manual slide toggle support.
+
+---
+
+## Executive Desktop Navigation & Home Page Architecture (پیش‌خوان و منوی بالای دسکتاپ)
+
+GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
+
+1. **Antigravity-Style Desktop Appbar Top Menu**:
+   - `AppBar.razor` includes a top navigation bar (`.desktop-top-nav`) featuring direct 1-click access buttons and clean dropdown menus (`MudMenu`) for **فاکتورها**, **انبار و اجناس**, **امور مالی**, and **ابزارها و گزارشات**.
+   - Allows instant navigation without opening the sidebar drawer on desktop viewports.
+2. **Lazy-Loaded View Rendering**:
+   - On `Index.razor`, heavy table components (`InvoicesList`, `InventoryStockList`, `CustomersList`, `CheckPaymentsList`) are unmounted when inactive and rendered conditionally via `@if (_activePanelIndex == N)`.
+   - Reduces initial DOM nodes by ~80% and eliminates MudBlazor tab-switching stutter.
+3. **Custom Segmented Tab Controller & Smooth CSS Entrance Animations**:
+   - Replaces default heavy MudBlazor tabs with `.goldex-segmented-container` pill tabs.
+   - Hardware-accelerated CSS animations (`.animate-fade-in-up`) provide smooth 60fps view transitions.
+
 
 

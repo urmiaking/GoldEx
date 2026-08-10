@@ -198,7 +198,7 @@ internal class InventoryStockRepository(
             };
         }
 
-        switch (inventoryFilter.ItemType)
+        switch (inventoryFilter.ItemType ?? ItemType.Product)
         {
             case ItemType.Product:
             case ItemType.MoltenGold:
@@ -209,7 +209,7 @@ internal class InventoryStockRepository(
                         ItemType.Product => new[] { ProductType.Jewelry, ProductType.Gold },
                         ItemType.MoltenGold => new[] { ProductType.MoltenGold },
                         ItemType.UsedProduct => new[] { ProductType.UsedGold },
-                        _ => Array.Empty<ProductType>()
+                        _ => new[] { ProductType.Jewelry, ProductType.Gold, ProductType.MoltenGold, ProductType.UsedGold }
                     };
 
                     query = query.Where(x => targetProductTypes.Contains(x.Product!.ProductType));
