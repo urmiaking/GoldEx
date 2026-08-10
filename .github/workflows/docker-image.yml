@@ -5,7 +5,7 @@ on:
 
   push:
     branches:
-      - master
+      - 'master'
 
   release:
     types:
@@ -14,65 +14,36 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  VERSION: 1.0.${{ github.run_number }}
-  REGISTRY: reg.goldexsoft.ir
+  Version: 1.0.${{ github.run_number }}
 
 jobs:
-
-  # ============================================================
-  # GitHub-hosted runner: build and push images
-  # ============================================================
-  build-and-push:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Login to Docker Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Build and push GoldEx
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: src/App/Server/GoldEx.Server/Dockerfile
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/goldex:latest
-            ${{ env.REGISTRY }}/goldex:${{ env.VERSION }}
-
-      - name: Build and push GoldEx Karat
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/goldex-karat:latest
-            ${{ env.REGISTRY }}/goldex-karat:${{ env.VERSION }}
-
-
-  # ============================================================
-  # Your server: pull images and recreate containers
-  # ============================================================
-  deploy:
+  create-image:
     runs-on: self-hosted
 
-    needs:
-      - build-and-push
-
     steps:
-      - name: Run deployment script
+      - uses: actions/checkout@v4
+        with:
+          ssh-key: |
+            ${{ secrets.DEPLOY_KEY }}
+          fetch-depth: 0
+
+      - name: Build and push Docker image for goldex
+        run: |
+          docker build --push \
+            -t reg.goldexsoft.ir/goldex:latest \
+            -t reg.goldexsoft.ir/goldex:${Version} \
+            -f src/App/Server/GoldEx.Server/Dockerfile \
+            .
+
+      - name: Build and push Docker image for goldex-karat
+        run: |
+          docker build --push \
+            -t reg.goldexsoft.ir/goldex-karat:latest \
+            -t reg.goldexsoft.ir/goldex-karat:${Version} \
+            -f src/Calculator/Server/GoldEx.Calculator.Server/Dockerfile \
+            .
+
+      - name: Deploy
         run: |
           chmod +x /home/user/docker/goldex/refresh-apps.sh
-          /home/user/docker/goldex/refresh-apps.sh
+          /home/user/docker/goldex/refresh-apps.sh "${Version}"
