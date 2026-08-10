@@ -51,7 +51,8 @@ public partial class GoldParity
     protected override async Task OnInitializedAsync()
     {
         PriceStateService.OnPricesUpdated += OnPricesUpdated;
-        await Task.WhenAll(LoadSettingsAsync(), LoadPricesAsync());
+        await LoadSettingsAsync();
+        await LoadPricesAsync();
         await base.OnInitializedAsync();
     }
 
