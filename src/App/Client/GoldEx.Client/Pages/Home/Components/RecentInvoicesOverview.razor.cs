@@ -12,8 +12,8 @@ public partial class RecentInvoicesOverview
     [Inject] private IInvoiceService InvoiceService { get; set; } = default!;
 
     private List<GetInvoiceListResponse> _invoices = [];
-
     private int _totalInvoicesCount;
+
     private int TotalInvoicesCount => _totalInvoicesCount > 0 ? _totalInvoicesCount : _invoices.Count;
     private int SellCount => _invoices.Count(x => x.InvoiceType == InvoiceType.Sell);
     private int PurchaseCount => _invoices.Count(x => x.InvoiceType == InvoiceType.Purchase);
@@ -42,7 +42,7 @@ public partial class RecentInvoicesOverview
 
     private async Task LoadSummaryInvoicesAsync()
     {
-        var filter = new RequestFilter(0, int.MaxValue, null, null, Sdk.Common.Definitions.SortDirection.Descending);
+        var filter = new RequestFilter(0, 200, null, null, Sdk.Common.Definitions.SortDirection.Descending);
         var invoiceFilter = new InvoiceFilter(null, null, null, null, null);
 
         await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
