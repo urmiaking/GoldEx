@@ -22,7 +22,8 @@ public partial class CustomersInsightOverview : IAsyncDisposable
     private int _currentBalanceIndex = 0;
     private Timer? _slideTimer;
 
-    private int TotalCustomersCount => _customers.Count;
+    private int _totalCustomersCount;
+    private int TotalCustomersCount => _totalCustomersCount > 0 ? _totalCustomersCount : _customers.Count;
 
     private int RetailCustomersCount => _customers
         .Count(x => x.CustomerType == CustomerType.RetailCustomer || x.CustomerType == CustomerType.Retailer);
@@ -42,12 +43,16 @@ public partial class CustomersInsightOverview : IAsyncDisposable
 
     private async Task LoadCustomersAsync()
     {
-        var filter = new RequestFilter(0, 100, null, null, Sdk.Common.Definitions.SortDirection.Descending);
+        var filter = new RequestFilter(0, int.MaxValue, null, null, Sdk.Common.Definitions.SortDirection.Descending);
         var customerFilter = new CustomerFilter(null, null, null, null);
 
         await SendRequestAsync<ICustomerService, PagedList<GetCustomerResponse>>(
             action: (service, token) => service.GetListAsync(filter, customerFilter, token),
-            afterSend: response => _customers = response.Data,
+            afterSend: response =>
+            {
+                _customers = response.Data;
+                _totalCustomersCount = response.Total;
+            },
             createScope: true
         );
     }

@@ -13,7 +13,8 @@ public partial class RecentInventoryOverview
 
     private List<GetInventoryStockResponse> _items = [];
 
-    private int TotalItemsCount => _items.Count;
+    private int _totalItemsCount;
+    private int TotalItemsCount => _totalItemsCount > 0 ? _totalItemsCount : _items.Count;
     private decimal TotalGoldWeight => _items.Where(x => x.Product != null).Sum(x => x.CurrentAmount);
 
     private decimal ManufacturedGoldWeight => _items
@@ -50,12 +51,16 @@ public partial class RecentInventoryOverview
 
     private async Task LoadSummaryInventoryAsync()
     {
-        var filter = new RequestFilter(0, 100, null, null, Sdk.Common.Definitions.SortDirection.Descending);
+        var filter = new RequestFilter(0, int.MaxValue, null, null, Sdk.Common.Definitions.SortDirection.Descending);
         var inventoryFilter = new InventoryFilter(WarehouseActionType.In, null, null, null, null, null, null);
 
         await SendRequestAsync<IInventoryStockService, PagedList<GetInventoryStockResponse>>(
             action: (service, token) => service.GetListAsync(filter, inventoryFilter, token),
-            afterSend: response => _items = response.Data,
+            afterSend: response =>
+            {
+                _items = response.Data;
+                _totalItemsCount = response.Total;
+            },
             createScope: true
         );
     }
