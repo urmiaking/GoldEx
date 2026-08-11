@@ -1,3 +1,4 @@
+@using GoldEx.Shared.Helpers
 @inherits GoldExComponentBase
 
 <div class="recent-inventory-overview">
@@ -24,7 +25,7 @@
     </div>
 
     @* Loading State *@
-    @if (IsBusy && !_items.Any())
+    @if (IsBusy && !_isLoaded)
     {
         <div class="row g-3 mb-4">
             @for (int i = 0; i < 4; i++)
@@ -82,7 +83,16 @@
                         <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="kpi-icon text-secondary" />
                     </div>
                     <div class="kpi-value">@($"{UsedGoldWeight.ToCurrencyFormat()}") <span class="kpi-unit">گرم</span></div>
-                    <div class="kpi-subtext">سکه: @CoinsCount | ارز: @CurrenciesCount</div>
+                    <div class="kpi-subtext">
+                        @if (_currencySummaries.Any())
+                        {
+                            <span>سکه: @CoinsCount عدد | ارز: @string.Join("، ", _currencySummaries.Take(2).Select(c => $"{c.Amount.ToCurrencyFormat()} {c.Title}"))</span>
+                        }
+                        else
+                        {
+                            <span>سکه: @CoinsCount عدد | ارز: ۰</span>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -95,12 +105,12 @@
                     <div>
                         <div class="d-flex align-center gap-2 mb-3">
                             <MudIcon Icon="@Icons.Material.Filled.DonutSmall" Size="Size.Small" Class="text-secondary" />
-                            <span class="card-section-title">ترکیب موجودی انبار به تفکیک جنس</span>
+                            <span class="card-section-title">ترکیب موجودی طلا به تفکیک جنس</span>
                         </div>
 
                         <div class="breakdown-stat-row mb-3">
                             <div class="d-flex justify-space-between mb-1">
-                                <span class="stat-name">طلای ساخته‌شده (طلا و جواهرا)</span>
+                                <span class="stat-name">طلای ساخته‌شده (طلا و جواهر)</span>
                                 <span class="stat-num">@($"{ManufacturedGoldWeight.ToWeightFormat(GoldUnitType.Gram)} ({ManufacturedGoldCount} جنس)")</span>
                             </div>
                             <div class="stat-progress-bar">
@@ -138,37 +148,49 @@
                 </div>
             </div>
 
-            @* Right Column: Inventory Indicators & Weight Analysis *@
+            @* Right Column: Currency Balances Breakdown & Key Indicators *@
             <div class="col-12 col-md-6">
                 <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
                     <div>
                         <div class="d-flex align-center gap-2 mb-3">
-                            <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Small" Class="text-secondary" />
-                            <span class="card-section-title">شاخص‌های کلیدی و تحلیل وزن طلا</span>
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Class="text-secondary" />
+                            <span class="card-section-title">موجودی انبار به تفکیک ارز</span>
                         </div>
 
-                        <div class="metric-info-row mb-3 pa-3 rounded-lg border-subtle">
-                            <div class="text-secondary font-xs mb-1">میانگین وزن هر کالا در انبار</div>
-                            <div class="font-normal font-md">@($"{AverageGoldWeightPerItem:N2} گرم")</div>
+                        @if (_currencySummaries.Any())
+                        {
+                            <div class="currency-balances-grid d-flex flex-wrap gap-2 mb-3">
+                                @foreach (var currency in _currencySummaries)
+                                {
+                                    <div class="currency-balance-card pa-2 px-3 rounded-lg border-subtle d-flex align-center justify-space-between flex-grow-1">
+                                        <div class="d-flex align-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" Class="text-success" />
+                                            <span class="font-xs font-weight-500">@currency.Title</span>
+                                        </div>
+                                        <span class="font-xs font-weight-500 dir-ltr text-primary">@currency.Amount.ToCurrencyFormat()</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="pa-3 rounded-lg border-subtle text-secondary font-xs mb-3 text-center">
+                                هیچ موجودی ارزی (دلار، یورو و...) در انبار ثبت نشده است.
+                            </div>
+                        }
+
+                        <div class="metric-info-row mb-3 pa-3 rounded-lg border-subtle d-flex justify-space-between align-center">
+                            <span class="text-secondary font-xs">میانگین وزن هر کالا در انبار:</span>
+                            <span class="font-weight-500 font-xs">@($"{AverageGoldWeightPerItem:N2} گرم")</span>
                         </div>
 
-                        <div class="breakdown-stat-row mb-3">
+                        <div class="breakdown-stat-row">
                             <div class="d-flex justify-space-between mb-1">
                                 <span class="stat-name">تعداد مسکوکات سکه</span>
                                 <span class="stat-num">@CoinsCount عدد</span>
                             </div>
                             <div class="stat-progress-bar">
                                 <div class="progress-fill secondary" style="width: @(TotalItemsCount > 0 ? (CoinsCount * 100 / TotalItemsCount) : 0)%"></div>
-                            </div>
-                        </div>
-
-                        <div class="breakdown-stat-row">
-                            <div class="d-flex justify-space-between mb-1">
-                                <span class="stat-name">تعداد اقلام ارزی</span>
-                                <span class="stat-num">@CurrenciesCount مورد</span>
-                            </div>
-                            <div class="stat-progress-bar">
-                                <div class="progress-fill primary" style="width: @(TotalItemsCount > 0 ? (CurrenciesCount * 100 / TotalItemsCount) : 0)%"></div>
                             </div>
                         </div>
                     </div>
