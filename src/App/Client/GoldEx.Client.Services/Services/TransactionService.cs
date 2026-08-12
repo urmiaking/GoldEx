@@ -16,9 +16,9 @@ namespace GoldEx.Client.Services.Services;
 internal class TransactionService(HttpClient client, JsonSerializerOptions jsonOptions) : ITransactionService
 {
     public async Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId,
-        Guid? priceUnitId, DateTime? untilDate = null, CancellationToken cancellationToken = default)
+        Guid? priceUnitId, DateTime? untilDate = null, Guid? invoiceId = null, CancellationToken cancellationToken = default)
     {
-        using var response = await client.GetAsync(ApiUrls.Transactions.GetRemainingList(customerId, priceUnitId, untilDate), cancellationToken);
+        using var response = await client.GetAsync(ApiUrls.Transactions.GetRemainingList(customerId, priceUnitId, untilDate, invoiceId), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);

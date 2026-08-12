@@ -3,6 +3,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Domain.CustomerAggregate;
 using GoldEx.Server.Domain.FinancialAccountAggregate;
+using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Server.Infrastructure.Specifications.FinancialAccounts;
@@ -23,13 +24,14 @@ internal class TransactionService(IMapper mapper,
     IFinancialAccountRepository financialAccountRepository) : ITransactionService
 {
     public async Task<List<GetCustomerRemainingResponse>> GetCustomerRemainingListAsync(Guid customerId,
-        Guid? priceUnitId, DateTime? untilDate = null, CancellationToken cancellationToken = default)
+        Guid? priceUnitId, DateTime? untilDate = null, Guid? invoiceId = null, CancellationToken cancellationToken = default)
     {
         var balances = await repository.GetCustomerRemainingListAsync(new CustomerId(customerId),
             priceUnitId: priceUnitId.HasValue
                 ? new PriceUnitId(priceUnitId.Value)
                 : null,
             untilDate: untilDate,
+            invoiceId: invoiceId.HasValue ? new InvoiceId(invoiceId.Value) : null,
             cancellationToken: cancellationToken);
 
         return balances

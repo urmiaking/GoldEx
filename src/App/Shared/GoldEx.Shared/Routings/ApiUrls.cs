@@ -430,10 +430,10 @@ public class ApiUrls
 
     public class Transactions
     {
-        public static string GetRemainingList(Guid customerId, Guid? priceUnitId, DateTime? untilDate = null) =>
+        public static string GetRemainingList(Guid customerId, Guid? priceUnitId, DateTime? untilDate = null, Guid? invoiceId = null) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetRemainingList)
                 .FormatRoute(new { customerId })
-                .AppendQueryString(new { priceUnitId, untilDate });
+                .AppendQueryString(new { priceUnitId, untilDate, invoiceId });
 
         public static string GetList(TransactionFilter transactionFilter, RequestFilter requestFilter) =>
             BuildUrl(ApiRoutes.Transactions.Base, ApiRoutes.Transactions.GetList)

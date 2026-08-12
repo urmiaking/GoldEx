@@ -182,6 +182,7 @@
             {
                 <CustomerRemaining CustomerId="@context.CustomerId"
                                    UntilDate="@GetInvoicePostingDate(context)"
+                                   InvoiceId="@context.Id"
                                    EnableManualSlide="true"
                                    ItemClass="justify-content-end justify-content-lg-start" />
             }
@@ -275,6 +276,7 @@
                             {
                                 <CustomerRemaining CustomerId="@context.CustomerId"
                                                    UntilDate="@GetInvoicePostingDate(context)"
+                                                   InvoiceId="@context.Id"
                                                    EnableManualSlide="true"
                                                    ItemClass="justify-content-end" />
                             }
