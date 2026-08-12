@@ -23,9 +23,9 @@ public class TransactionController(ITransactionService service) : ApiControllerB
     }
 
     [HttpGet(ApiRoutes.Transactions.GetRemainingList)]
-    public async Task<IActionResult> GetCustomerRemainingListAsync(Guid customerId, [FromQuery] Guid? priceUnitId, [FromQuery] DateTime? untilDate = null, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetCustomerRemainingListAsync(Guid customerId, [FromQuery] Guid? priceUnitId, [FromQuery] DateTime? untilDate = null, [FromQuery] Guid? invoiceId = null, CancellationToken cancellationToken = default)
     {
-        var items = await service.GetCustomerRemainingListAsync(customerId, priceUnitId, untilDate, cancellationToken);
+        var items = await service.GetCustomerRemainingListAsync(customerId, priceUnitId, untilDate, invoiceId, cancellationToken);
         return Ok(items);
     }
 
