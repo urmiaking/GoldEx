@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Server.Application.Services.Abstractions;
 using GoldEx.Server.Domain.PriceUnitAggregate;
@@ -74,7 +74,7 @@ internal class InvoicePrintService(
         var previousRemaining = await transactionRepository.GetCustomerRemainingListAsync(item.CustomerId,
             null,
             item.InvoiceDate.ToDateTime(TimeOnly.FromTimeSpan(item.CreatedAt.TimeOfDay)),
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         decimal? exchangeRate = null;
 

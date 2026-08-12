@@ -73,6 +73,7 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
     }
 
     public async Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId, PriceUnitId? priceUnitId, DateTime? untilDate = null,
+        InvoiceId? invoiceId = null,
         CancellationToken cancellationToken = default)
     {
         var baseQuery = Query
@@ -86,7 +87,14 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
 
         if (untilDate.HasValue)
         {
-            baseQuery = baseQuery.Where(t => t.PostingDate < untilDate.Value);
+            if (invoiceId.HasValue)
+            {
+                baseQuery = baseQuery.Where(t => t.PostingDate < untilDate.Value || t.InvoiceId == invoiceId.Value);
+            }
+            else
+            {
+                baseQuery = baseQuery.Where(t => t.PostingDate < untilDate.Value);
+            }
         }
 
         var balances = await baseQuery

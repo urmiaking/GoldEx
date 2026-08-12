@@ -27,6 +27,7 @@ public interface ITransactionRepository : IRepository<Transaction>,
     Task<Dictionary<PriceUnit, decimal>> GetCustomerRemainingListAsync(CustomerId customerId,
         PriceUnitId? priceUnitId,
         DateTime? untilDate = null,
+        InvoiceId? invoiceId = null,
         CancellationToken cancellationToken = default);
 
     Task<(decimal qty, decimal baseAmount, decimal avgRate)> GetLedgerPositionSummaryAsync(
