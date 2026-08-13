@@ -112,6 +112,7 @@ public class Transaction : EntityBase<TransactionId>, IStoreFiltered
         PriceUnitId priceUnitId,
         CustomerTransferVoucherId customerTransferVoucherId,
         DateTime postingDate,
+        InvoiceId? invoiceId = null,
         StoreId storeId = default)
     {
         if (string.IsNullOrWhiteSpace(description))
@@ -137,6 +138,7 @@ public class Transaction : EntityBase<TransactionId>, IStoreFiltered
             ExchangeRate = exchangeRate,
             PriceUnitId = priceUnitId,
             CustomerTransferVoucherId = customerTransferVoucherId,
+            InvoiceId = invoiceId,
             BaseCurrencyAmount = amount * (exchangeRate ?? 1),
             PostingDate = postingDate,
             StoreId = storeId

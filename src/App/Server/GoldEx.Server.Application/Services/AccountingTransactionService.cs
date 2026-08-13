@@ -1123,7 +1123,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id,
+                                payment.TargetInvoiceId ?? invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
                         }
@@ -1138,7 +1138,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Debit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id,
+                                payment.TargetInvoiceId ?? invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
 
@@ -1157,9 +1157,9 @@ internal class AccountingTransactionService(
                     }
                     else // InvoiceType.Purchase
                     {
-                        // خرید: هر دو Payable
+                        // خرید: endorser همواره روی Receivable مشتری حواله‌دهنده/گیرنده
                         var endorserLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
-                            endorserId, invoice.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
+                            endorserId, invoice.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
                         var customerPayableAccount = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
                             invoice.CustomerId, invoice.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
@@ -1210,7 +1210,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id,
+                                payment.TargetInvoiceId ?? invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
 
@@ -1248,7 +1248,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                invoice.Id,
+                                payment.TargetInvoiceId ?? invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
                         }
@@ -1667,7 +1667,7 @@ internal class AccountingTransactionService(
             voucher.SourceCustomerId, voucher.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
         var destLedger = await ledgerAccountService.GetOrCreateCustomerSubLedgerAsync(
-            voucher.DestinationCustomerId, voucher.PriceUnitId, LedgerAccountRole.Payable, cancellationToken);
+            voucher.DestinationCustomerId, voucher.PriceUnitId, LedgerAccountRole.Receivable, cancellationToken);
 
         var postingDate = voucher.TransferDate.ToDateTime(TimeOnly.FromTimeSpan(voucher.CreatedAt.TimeOfDay));
 
@@ -1684,22 +1684,24 @@ internal class AccountingTransactionService(
                 voucher.Amount,
                 voucher.ExchangeRate,
                 groupId,
-                TransactionType.Credit,
+                TransactionType.Debit,
                 sourceLedger.Id,
                 voucher.PriceUnitId,
                 voucher.Id,
-                postingDate),
+                postingDate,
+                voucher.SourceInvoiceId),
 
             Transaction.CreateForCustomerTransferVoucher(
                 destDesc,
                 voucher.Amount,
                 voucher.ExchangeRate,
                 groupId,
-                TransactionType.Debit,
+                TransactionType.Credit,
                 destLedger.Id,
                 voucher.PriceUnitId,
                 voucher.Id,
-                postingDate)
+                postingDate,
+                voucher.DestinationInvoiceId)
         };
 
         await repository.CreateRangeAsync(transactions, cancellationToken);
