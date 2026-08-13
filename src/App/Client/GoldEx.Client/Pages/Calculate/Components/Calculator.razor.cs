@@ -8,7 +8,10 @@ public partial class Calculator
     [Parameter] public string Class { get; set; } = default!;
     [Parameter] public string? ContainerClass { get; set; }
     [Parameter] public int Elevation { get; set; } = 24;
+    [Parameter] public bool HideTabs { get; set; }
     [Inject] private HelpContext HelpContext { get; set; } = default!;
+
+    private int _activeTabIndex;
 
     protected override void OnInitialized()
     {
@@ -18,6 +21,7 @@ public partial class Calculator
 
     private void SetHelpContext(int index)
     {
+        _activeTabIndex = index;
         switch (index)
         {
             case 0:

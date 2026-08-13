@@ -1720,3 +1720,12 @@ h1:focus {
     backdrop-filter: blur(6px);
     background-color: rgba(0, 0, 0, 0.4) !important;
 }
+
+/* Auto-width tabs according to text length */
+.auto-width-tab-header .mud-tab {
+    min-width: auto !important;
+    flex-grow: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+}
+
