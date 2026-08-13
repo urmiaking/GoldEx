@@ -89,7 +89,10 @@ internal class TransactionRepository(GoldExDbContext dbContext) : RepositoryBase
         {
             if (invoiceId.HasValue)
             {
-                baseQuery = baseQuery.Where(t => t.PostingDate < untilDate.Value || t.InvoiceId == invoiceId.Value);
+                baseQuery = baseQuery.Where(t => t.PostingDate < untilDate.Value
+                                             || t.InvoiceId == invoiceId.Value
+                                             || (t.InvoicePayment != null && (t.InvoicePayment.InvoiceId == invoiceId.Value || t.InvoicePayment.TargetInvoiceId == invoiceId.Value))
+                                             || (t.CustomerTransferVoucher != null && (t.CustomerTransferVoucher.SourceInvoiceId == invoiceId.Value || t.CustomerTransferVoucher.DestinationInvoiceId == invoiceId.Value)));
             }
             else
             {
