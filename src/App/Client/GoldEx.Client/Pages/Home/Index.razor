@@ -111,24 +111,7 @@
                     @* Executive Business Analytics Grid *@
                     <AuthorizeView>
                         <Authorized>
-                            <div class="d-flex align-center justify-space-between mb-2">
-                                <MudText Typo="Typo.h5">خلاصه آمار و گزارشات مالی</MudText>
-                                <MudButton Href="@ClientRoutes.Dashboard.Index" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowBack">
-                                    مشاهده داشبورد کامل
-                                </MudButton>
-                            </div>
-                            <div class="row g-4 mb-2 align-items-stretch">
-                                @* Left Column (6 cols): Stacked AccountBalance & TopCustomers *@
-                                <div class="col-12 col-md-6 d-flex flex-column gap-4">
-                                    <AccountBalance />
-                                    <TopCustomers />
-                                </div>
-
-                                @* Right Column (6 cols): InventoryWeightChart taking full height *@
-                                <div class="col-12 col-md-6 d-flex flex-column">
-                                    <InventoryWeightChart />
-                                </div>
-                            </div>
+                            <ExecutiveDashboard />
                         </Authorized>
                     </AuthorizeView>
                 </div>
