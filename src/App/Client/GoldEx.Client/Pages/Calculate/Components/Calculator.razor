@@ -1,5 +1,36 @@
 @inherits GoldExComponentBase
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="@ContainerClass" Gutters="false">
-    <SimpleCalculator Class="@Class" Elevation="@Elevation"></SimpleCalculator>
+    @if (HideTabs)
+    {
+        <SimpleCalculator Class="@Class" Elevation="@Elevation" />
+    }
+    else
+    {
+        <MudTabs ActivePanelIndex="_activeTabIndex"
+                 ActivePanelIndexChanged="SetHelpContext"
+                 Elevation="@Elevation"
+                 Rounded="true"
+                 ApplyEffectsToContainer="true"
+                 MinimumTabWidth="0px"
+                 TabHeaderClass="auto-width-tab-header"
+                 PanelClass="pa-4"
+                 Class="@Class">
+            <MudTabPanel Text="محاسبه‌گر" Icon="@Icons.Material.Outlined.Calculate">
+                <SimpleCalculator Elevation="0" />
+            </MudTabPanel>
+            <MudTabPanel Text="محاسبه معکوس" Icon="@Icons.Material.Outlined.SettingsBackupRestore">
+                <ReverseCalculator Elevation="0" />
+            </MudTabPanel>
+            <MudTabPanel Text="تبدیل ارز" Icon="@Icons.Material.Outlined.CurrencyExchange">
+                <CurrencyExchange Elevation="0" />
+            </MudTabPanel>
+            <MudTabPanel Text="برابری طلا" Icon="@Icons.Material.Outlined.Balance">
+                <GoldParity Elevation="0" />
+            </MudTabPanel>
+            <MudTabPanel Text="جستجوگر پیشرفته" Icon="@Icons.Material.Outlined.ShoppingBag">
+                <AdvancedCalculator Elevation="0" />
+            </MudTabPanel>
+        </MudTabs>
+    }
 </MudContainer>
