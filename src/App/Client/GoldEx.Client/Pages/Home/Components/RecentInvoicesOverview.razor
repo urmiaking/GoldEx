@@ -1,7 +1,9 @@
 @using GoldEx.Shared.DTOs.Invoices
 @using GoldEx.Shared.Enums
 @using GoldEx.Shared.Routings
+@using GoldEx.Shared.Helpers
 @inherits GoldExComponentBase
+@implements IAsyncDisposable
 
 <div class="recent-invoices-overview">
     @* Top Executive Header & Quick Actions *@
@@ -45,6 +47,7 @@
     {
         @* Top 4 KPI Summary Cards *@
         <div class="row g-3 mb-4">
+            @* KPI 1: Total Invoices Count *@
             <div class="col-12 col-sm-6 col-md-3">
                 <div class="summary-kpi-card goldex-glass-card pa-3">
                     <div class="d-flex align-center justify-space-between mb-1">
@@ -52,40 +55,82 @@
                         <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Small" Class="kpi-icon" />
                     </div>
                     <div class="kpi-value">@TotalInvoicesCount <span class="kpi-unit">عدد</span></div>
-                    <div class="kpi-subtext">شامل تمامی فاکتورها</div>
+                    <div class="kpi-subtext">شامل تمامی فاکتورهای فروش و خرید</div>
                 </div>
             </div>
 
+            @* KPI 2: Sales Today (Multi-PriceUnit Carousel) *@
             <div class="col-12 col-sm-6 col-md-3">
-                <div class="summary-kpi-card goldex-glass-card pa-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="ToggleTodaySellIndex" title="جهت تغییر واحد کلیک کنید">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">فروش امروز</span>
-                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="kpi-icon text-error" />
+                        <div class="d-flex align-center gap-1">
+                            @if (_todaySellSummaries.Count > 1)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text" Class="pa-0 ma-0">@(_todaySellIndex + 1)/@_todaySellSummaries.Count</MudChip>
+                            }
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Class="kpi-icon text-error" />
+                        </div>
                     </div>
-                    <div class="kpi-value">@TodaySellVolume.ToCurrencyFormat("تومان")</div>
-                    <div class="kpi-subtext">امروز: @TodaySellCount فاکتور فروش</div>
+                    @if (_todaySellSummaries.Any())
+                    {
+                        var curSell = _todaySellSummaries[_todaySellIndex % _todaySellSummaries.Count];
+                        <div class="kpi-value animate-fade-in-up" @key="curSell.PriceUnit">
+                            @curSell.Amount.ToCurrencyFormat(null)
+                            <span class="kpi-unit">@curSell.PriceUnit</span>
+                        </div>
+                        <div class="kpi-subtext mt-2">@curSell.Subtitle</div>
+                    }
                 </div>
             </div>
 
+            @* KPI 3: Purchase Today (Multi-PriceUnit Carousel) *@
             <div class="col-12 col-sm-6 col-md-3">
-                <div class="summary-kpi-card goldex-glass-card pa-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="ToggleTodayPurchaseIndex" title="جهت تغییر واحد کلیک کنید">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">خرید امروز</span>
-                        <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="kpi-icon text-success" />
+                        <div class="d-flex align-center gap-1">
+                            @if (_todayPurchaseSummaries.Count > 1)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text" Class="pa-0 ma-0">@(_todayPurchaseIndex + 1)/@_todayPurchaseSummaries.Count</MudChip>
+                            }
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Class="kpi-icon text-success" />
+                        </div>
                     </div>
-                    <div class="kpi-value">@TodayPurchaseVolume.ToCurrencyFormat("تومان")</div>
-                    <div class="kpi-subtext">امروز: @TodayPurchaseCount فاکتور خرید</div>
+                    @if (_todayPurchaseSummaries.Any())
+                    {
+                        var curPur = _todayPurchaseSummaries[_todayPurchaseIndex % _todayPurchaseSummaries.Count];
+                        <div class="kpi-value animate-fade-in-up" @key="curPur.PriceUnit">
+                            @curPur.Amount.ToCurrencyFormat(null)
+                            <span class="kpi-unit">@curPur.PriceUnit</span>
+                        </div>
+                        <div class="kpi-subtext mt-2">@curPur.Subtitle</div>
+                    }
                 </div>
             </div>
 
+            @* KPI 4: Outstanding Receivables Balance (Multi-PriceUnit Carousel) *@
             <div class="col-12 col-sm-6 col-md-3">
-                <div class="summary-kpi-card goldex-glass-card pa-3">
+                <div class="summary-kpi-card goldex-glass-card pa-3 cursor-pointer" @onclick="ToggleRemainingIndex" title="جهت تغییر واحد کلیک کنید">
                     <div class="d-flex align-center justify-space-between mb-1">
                         <span class="kpi-title">مانده مطالبات</span>
-                        <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Small" Class="kpi-icon text-warning" />
+                        <div class="d-flex align-center gap-1">
+                            @if (_remainingSummaries.Count > 1)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text" Class="pa-0 ma-0">@(_remainingIndex + 1)/@_remainingSummaries.Count</MudChip>
+                            }
+                            <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Small" Class="kpi-icon text-warning" />
+                        </div>
                     </div>
-                    <div class="kpi-value">@Math.Abs(TotalRemainingDebt).ToCurrencyFormat("تومان")</div>
-                    <div class="kpi-subtext">بدهکار: @DebtCount | معوقه: @OverdueCount</div>
+                    @if (_remainingSummaries.Any())
+                    {
+                        var curRem = _remainingSummaries[_remainingIndex % _remainingSummaries.Count];
+                        <div class="kpi-value text-warning animate-fade-in-up" @key="curRem.PriceUnit">
+                            @curRem.Amount.ToCurrencyFormat(null)
+                            <span class="kpi-unit">@curRem.PriceUnit</span>
+                        </div>
+                        <div class="kpi-subtext mt-2">@curRem.Subtitle</div>
+                    }
                 </div>
             </div>
         </div>

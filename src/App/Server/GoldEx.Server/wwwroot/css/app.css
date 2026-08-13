@@ -7,6 +7,17 @@ a,
     color: #006bb7;
 }
 
+/* SVG Line Chart Smoothing */
+.smooth-line-chart svg path {
+    stroke-linejoin: round !important;
+    stroke-linecap: round !important;
+    stroke-width: 3.5px !important;
+}
+
+.mud-donut-text {
+    font-family: inherit !important;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
