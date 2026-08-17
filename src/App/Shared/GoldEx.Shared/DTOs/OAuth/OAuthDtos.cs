@@ -49,6 +49,9 @@ public class ClientRegistrationResponse
 
     [JsonPropertyName("client_id_issued_at")]
     public long ClientIdIssuedAt { get; set; }
+
+    [JsonPropertyName("client_secret_expires_at")]
+    public long ClientSecretExpiresAt { get; set; }
 }
 
 public class OAuthTokenRequest
