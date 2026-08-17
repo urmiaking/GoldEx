@@ -298,17 +298,17 @@
                 </MudPaper>
             </MudItem>
 
-            <!-- Inventory & Calculations -->
+            <!-- Inventory & Analytics -->
             <MudItem xs="12" md="6">
                 <MudPaper Class="pa-3 border rounded-lg h-100" Elevation="0" Style="background: rgba(var(--mud-palette-surface-rgb), 0.5);">
                     <div class="d-flex align-center gap-2 mb-2">
-                        <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" Size="Size.Small" />
-                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">محاسبات طلا، انبارداری و ری‌گیری</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Insights" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">تحلیل عملکرد فروش و انبارداری</MudText>
                     </div>
                     <div class="d-flex flex-column gap-2">
-                        @RenderPromptItem("محاسبه قیمت نهایی دستبند طلا به وزن ۴.۳۵ گرم با اجرت ۱۲ درصد، سود ۷ درصد و مالیات ۹ درصد")
+                        @RenderPromptItem("عملکرد فروش ما نسبت به ماه قبل چقدر فرق کرده؟ (درصد رشد، تعداد فاکتورها و میانگین مبالغ)")
+                        @RenderPromptItem("گزارش فروش، سود و وزن طلای فروخته‌شده در مرداد ۱۴۰۵ را در مقایسه با تیر ماه ارائه بده.")
                         @RenderPromptItem("موجودی طلای آب‌شده و سکه‌های موجود در انبار چقدره؟")
-                        @RenderPromptItem("گزارش سود پنهان ری‌گیری بچ‌های آب‌شده این ماه رو بده.")
                     </div>
                 </MudPaper>
             </MudItem>

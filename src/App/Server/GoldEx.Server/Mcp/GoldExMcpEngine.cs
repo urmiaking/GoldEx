@@ -68,6 +68,82 @@ public class GoldExMcpEngine(
         return $"{scheme}://{host}";
     }
 
+    private static DateTime? ParseDate(string? dateStr)
+    {
+        if (string.IsNullOrWhiteSpace(dateStr)) return null;
+
+        dateStr = dateStr.Trim().Replace('-', '/');
+
+        // Check if Persian date format (e.g. 1404/05/01 or 1405/4/1)
+        var parts = dateStr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var datePart = parts[0];
+
+        if (datePart.Contains('/'))
+        {
+            var segments = datePart.Split('/');
+            if (segments.Length == 3 &&
+                int.TryParse(segments[0], out var year) &&
+                int.TryParse(segments[1], out var month) &&
+                int.TryParse(segments[2], out var day))
+            {
+                if (year is >= 1300 and <= 1500)
+                {
+                    try
+                    {
+                        var pc = new PersianCalendar();
+                        month = Math.Clamp(month, 1, 12);
+                        var maxDays = pc.GetDaysInMonth(year, month);
+                        day = Math.Clamp(day, 1, maxDays);
+                        return pc.ToDateTime(year, month, day, 0, 0, 0, 0);
+                    }
+                    catch
+                    {
+                        // Ignore and fallback
+                    }
+                }
+            }
+        }
+
+        if (DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var gDate))
+            return gDate;
+
+        if (DateTime.TryParse(dateStr, out var dLocal))
+            return dLocal;
+
+        return null;
+    }
+
+    private static (DateTime start, DateTime end, string title) GetShamsiMonthRange(int monthOffset = 0)
+    {
+        var pc = new PersianCalendar();
+        var now = DateTime.UtcNow;
+        var currentYear = pc.GetYear(now);
+        var currentMonth = pc.GetMonth(now);
+
+        var targetMonth = currentMonth + monthOffset;
+        var targetYear = currentYear;
+
+        while (targetMonth < 1)
+        {
+            targetMonth += 12;
+            targetYear -= 1;
+        }
+        while (targetMonth > 12)
+        {
+            targetMonth -= 12;
+            targetYear += 1;
+        }
+
+        var start = pc.ToDateTime(targetYear, targetMonth, 1, 0, 0, 0, 0);
+        var daysInMonth = pc.GetDaysInMonth(targetYear, targetMonth);
+        var end = pc.ToDateTime(targetYear, targetMonth, daysInMonth, 23, 59, 59, 999);
+
+        var monthNames = new[] { "", "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند" };
+        var title = $"{monthNames[targetMonth]} {targetYear}";
+
+        return (start, end, title);
+    }
+
     public List<McpToolDefinition> GetTools()
     {
         return
@@ -201,23 +277,41 @@ public class GoldExMcpEngine(
                     {
                         ["customerId"] = new() { Type = "string", Description = "شناسه مشتری" },
                         ["customerName"] = new() { Type = "string", Description = "نام مشتری در صورت نداشتن شناسه" },
-                        ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع (شمسی مثلاً 1403/01/01 یا میلادی 2024-03-21)" },
-                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان" }
+                        ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع (شمسی مثلاً 1404/01/01 یا میلادی)" },
+                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان (شمسی مثلاً 1404/05/30 یا میلادی)" }
                     }
                 }
             },
             new McpToolDefinition
             {
                 Name = "search_invoices",
-                Description = "جستجو در فاکتورهای ثبت‌شده فروش، خرید و مرجوعی فروشگاه",
+                Description = "جستجو و فیلتر پیشرفته در فاکتورهای ثبت‌شده فروش، خرید و مرجوعی بر اساس بازه تاریخ شمسی/میلادی، نام مشتری، بارکد یا شماره فاکتور به همراه خلاصه آماری مجموع فروش و مبالغ",
                 InputSchema = new McpInputSchema
                 {
                     Properties = new Dictionary<string, McpPropertySchema>
                     {
                         ["invoiceType"] = new() { Type = "string", Description = "نوع فاکتور (Sell برای فروش، Purchase برای خرید، Return برای مرجوعی)", Enum = ["Sell", "Purchase", "Return"] },
-                        ["query"] = new() { Type = "string", Description = "شماره فاکتور یا نام مشتری" },
-                        ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع" },
-                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان" }
+                        ["query"] = new() { Type = "string", Description = "شماره فاکتور، نام مشتری یا بارکد کالا" },
+                        ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع بازه (شمسی مثلاً 1404/04/01 یا میلادی)" },
+                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان بازه (شمسی مثلاً 1404/05/31 یا میلادی)" },
+                        ["pageSize"] = new() { Type = "number", Description = "تعداد ردیف‌های خروجی (پیش‌فرض 50، حداکثر 500)" },
+                        ["page"] = new() { Type = "number", Description = "شماره صفحه (پیش‌فرض 1)" }
+                    }
+                }
+            },
+            new McpToolDefinition
+            {
+                Name = "get_sales_performance_report",
+                Description = "گزارش جامع عملکرد و تحلیل آماری فروش فروشگاه شامل مجموع فروش، تعداد فاکتورها، میانگین مبلغ هر فاکتور، سود، اجرت، معادل وزنی طلای ۱۸ عیار فروخته‌شده و مقایسه درصدی رشد/افت با ماه قبل یا بازه گذشته",
+                InputSchema = new McpInputSchema
+                {
+                    Properties = new Dictionary<string, McpPropertySchema>
+                    {
+                        ["period"] = new() { Type = "string", Description = "نوع دوره تحلیلی (MonthOverMonth: مقایسه ماه جاری با ماه قبل، CurrentMonth: ماه جاری، PreviousMonth: ماه قبل، Custom: بازه دلخواه)", Enum = ["MonthOverMonth", "CurrentMonth", "PreviousMonth", "Custom"] },
+                        ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع دوره اصلی (شمسی مثلاً 1404/05/01 یا میلادی)" },
+                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان دوره اصلی (شمسی مثلاً 1404/05/31 یا میلادی)" },
+                        ["previousFromDate"] = new() { Type = "string", Description = "تاریخ شروع دوره مقایسه (در صورت انتخاب بازه دلخواه)" },
+                        ["previousToDate"] = new() { Type = "string", Description = "تاریخ پایان دوره مقایسه (در صورت انتخاب بازه دلخواه)" }
                     }
                 }
             },
@@ -290,8 +384,8 @@ public class GoldExMcpEngine(
                 {
                     Properties = new Dictionary<string, McpPropertySchema>
                     {
-                        ["fromDate"] = new() { Type = "string", Description = "از تاریخ" },
-                        ["toDate"] = new() { Type = "string", Description = "تا تاریخ" }
+                        ["fromDate"] = new() { Type = "string", Description = "از تاریخ (شمسی یا میلادی)" },
+                        ["toDate"] = new() { Type = "string", Description = "تا تاریخ (شمسی یا میلادی)" }
                     }
                 }
             },
@@ -303,8 +397,8 @@ public class GoldExMcpEngine(
                 {
                     Properties = new Dictionary<string, McpPropertySchema>
                     {
-                        ["fromDate"] = new() { Type = "string", Description = "از تاریخ" },
-                        ["toDate"] = new() { Type = "string", Description = "تا تاریخ" }
+                        ["fromDate"] = new() { Type = "string", Description = "از تاریخ (شمسی یا میلادی)" },
+                        ["toDate"] = new() { Type = "string", Description = "تا تاریخ (شمسی یا میلادی)" }
                     }
                 }
             }
@@ -336,6 +430,15 @@ public class GoldExMcpEngine(
     {
         return
         [
+            new McpPromptDefinition
+            {
+                Name = "sales-performance-analysis",
+                Description = "تحلیل عملکرد و رشد فروش ماه جاری در مقایسه با ماه گذشته با شاخص‌های کلیدی (KPIs)",
+                Arguments =
+                [
+                    new McpPromptArgument { Name = "period", Description = "دوره زمانی (مثلاً ماه جاری نسبت به ماه قبل)", Required = false }
+                ]
+            },
             new McpPromptDefinition
             {
                 Name = "create-gold-sale-invoice",
@@ -383,6 +486,7 @@ public class GoldExMcpEngine(
                 "create_customer" => await ExecuteCreateCustomerAsync(arguments, cancellationToken),
                 "get_customer_statement" => await ExecuteGetCustomerStatementAsync(arguments, cancellationToken),
                 "search_invoices" => await ExecuteSearchInvoicesAsync(arguments, cancellationToken),
+                "get_sales_performance_report" => await ExecuteGetSalesPerformanceReportAsync(arguments, cancellationToken),
                 "get_invoice_details" => await ExecuteGetInvoiceDetailsAsync(arguments, cancellationToken),
                 "create_invoice" => await ExecuteCreateInvoiceAsync(arguments, cancellationToken),
                 "add_invoice_payment" => await ExecuteAddInvoicePaymentAsync(arguments, cancellationToken),
@@ -721,7 +825,13 @@ public class GoldExMcpEngine(
         if (!customerId.HasValue)
             return McpContentResult.Text("مشتری مورد نظر یافت نشد.", isError: true);
 
-        var request = new CustomerTransactionRpRequest(customerId.Value, null, null, null, null);
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+
+        var start = ParseDate(fromDateStr);
+        var end = ParseDate(toDateStr);
+
+        var request = new CustomerTransactionRpRequest(customerId.Value, null, null, start, end);
         var transactions = await reportingService.GetCustomerTransactionsAsync(request, ct);
 
         if (transactions.Count == 0)
@@ -732,7 +842,7 @@ public class GoldExMcpEngine(
         sb.AppendLine("| تاریخ | شرح تراکنش | بدهکار | بستانکار | مانده | واحد |");
         sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- |");
 
-        foreach (var t in transactions.Take(25))
+        foreach (var t in transactions.Take(50))
         {
             var dateStr = t.PostingDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
             var debitStr = t.TransactionType == TransactionType.Debit ? t.Amount.ToString("N2") : "-";
@@ -745,20 +855,43 @@ public class GoldExMcpEngine(
 
     private async Task<McpContentResult> ExecuteSearchInvoicesAsync(JsonElement args, CancellationToken ct)
     {
-        var filter = new RequestFilter(Skip: 0, Take: 15);
-        InvoiceType? targetInvoiceType = null;
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var query = args.TryGetProperty("query", out var qProp) ? qProp.GetString() : null;
+        var pageSize = args.TryGetProperty("pageSize", out var psProp) ? Math.Clamp(psProp.GetInt32(), 1, 500) : 50;
+        var page = args.TryGetProperty("page", out var pgProp) ? Math.Max(1, pgProp.GetInt32()) : 1;
 
+        var startDate = ParseDate(fromDateStr);
+        var endDate = ParseDate(toDateStr);
+
+        InvoiceType? targetInvoiceType = null;
         if (args.TryGetProperty("invoiceType", out var itProp) && Enum.TryParse<InvoiceType>(itProp.GetString(), true, out var it))
             targetInvoiceType = it;
 
-        var invoiceFilter = new InvoiceFilter(null, targetInvoiceType, null, null, null);
+        var skip = (page - 1) * pageSize;
+        var filter = new RequestFilter(Skip: skip, Take: pageSize, Search: query);
+        var invoiceFilter = new InvoiceFilter(null, targetInvoiceType, null, startDate, endDate);
         var list = await invoiceService.GetListAsync(filter, invoiceFilter, null, ct);
 
         if (list.Data.Count == 0)
-            return McpContentResult.Text("هیچ فاکتوری با فیلترهای مشخص‌شده یافت نشد.");
+            return McpContentResult.Text("هیچ فاکتوری با فیلترهای مشخص‌شده در این بازه یافت نشد.");
+
+        var totalSum = list.Data.Sum(x => x.TotalAmount);
+        var totalUnpaid = list.Data.Sum(x => x.TotalUnpaidAmount);
+        var totalPaid = totalSum - totalUnpaid;
+        var avgAmount = list.Data.Count > 0 ? totalSum / list.Data.Count : 0;
+        var unitTitle = list.Data.FirstOrDefault()?.PriceUnit ?? "تومان";
 
         var sb = new StringBuilder();
-        sb.AppendLine($"### 🧾 لیست فاکتورها ({list.Total} مورد):");
+        sb.AppendLine($"# 🧾 نتایج جستجوی فاکتورها (کل: {list.Total} مورد - نمایش {list.Data.Count} ردیف در صفحه {page})");
+        
+        // Summary Card
+        sb.AppendLine("### 📊 خلاصه آماری فاکتورهای این بازه:");
+        sb.AppendLine($"- **مجموع کل مبالغ:** **{totalSum:N0} {unitTitle}**");
+        sb.AppendLine($"- **مجموع مبالغ تسویه‌شده:** **{totalPaid:N0} {unitTitle}**");
+        sb.AppendLine($"- **مجموع مانده تسویه‌نشده:** **{totalUnpaid:N0} {unitTitle}**");
+        sb.AppendLine($"- **میانگین مبلغ هر فاکتور:** **{avgAmount:N0} {unitTitle}**\n");
+
         sb.AppendLine("| شماره فاکتور | نوع | مشتری | تاریخ | مبلغ کل | واحد | وضعیت پرداخت | دانلود |");
         sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
 
@@ -769,6 +902,126 @@ public class GoldExMcpEngine(
             var pdfLink = $"[📥 PDF]({baseUrl}/api/invoices/{inv.Id}/download-pdf)";
             sb.AppendLine($"| {inv.InvoiceNumber} | {inv.InvoiceType} | {inv.CustomerFullName} | {dateStr} | {inv.TotalAmount:N0} | {inv.PriceUnit} | {inv.PaymentStatus} | {pdfLink} |");
         }
+
+        return McpContentResult.Text(sb.ToString());
+    }
+
+    private async Task<McpContentResult> ExecuteGetSalesPerformanceReportAsync(JsonElement args, CancellationToken ct)
+    {
+        var period = args.TryGetProperty("period", out var pProp) ? pProp.GetString() : "MonthOverMonth";
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var prevFromDateStr = args.TryGetProperty("previousFromDate", out var pfdP) ? pfdP.GetString() : null;
+        var prevToDateStr = args.TryGetProperty("previousToDate", out var ptdP) ? ptdP.GetString() : null;
+
+        DateTime start1, end1;
+        DateTime? start2 = null, end2 = null;
+        string title1, title2 = "";
+
+        if (period?.Equals("CurrentMonth", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            (start1, end1, title1) = GetShamsiMonthRange(0);
+        }
+        else if (period?.Equals("PreviousMonth", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            (start1, end1, title1) = GetShamsiMonthRange(-1);
+        }
+        else if (period?.Equals("Custom", StringComparison.OrdinalIgnoreCase) == true && !string.IsNullOrWhiteSpace(fromDateStr) && !string.IsNullOrWhiteSpace(toDateStr))
+        {
+            start1 = ParseDate(fromDateStr) ?? DateTime.UtcNow.AddMonths(-1);
+            end1 = ParseDate(toDateStr) ?? DateTime.UtcNow;
+            title1 = $"{fromDateStr} تا {toDateStr}";
+
+            if (!string.IsNullOrWhiteSpace(prevFromDateStr) && !string.IsNullOrWhiteSpace(prevToDateStr))
+            {
+                start2 = ParseDate(prevFromDateStr);
+                end2 = ParseDate(prevToDateStr);
+                title2 = $"{prevFromDateStr} تا {prevToDateStr}";
+            }
+        }
+        else
+        {
+            // Default: Month Over Month comparison (Current Month vs Previous Month)
+            (start1, end1, title1) = GetShamsiMonthRange(0);
+            var (s2, e2, t2) = GetShamsiMonthRange(-1);
+            start2 = s2;
+            end2 = e2;
+            title2 = t2;
+        }
+
+        // Fetch Invoices for Period 1
+        var invoices1 = await reportingService.GetSellInvoicesAsync(new SellInvoiceRpRequest(null, null, null, start1, end1), ct);
+
+        // Fetch Invoices for Period 2 (if comparison)
+        var invoices2 = (start2.HasValue && end2.HasValue)
+            ? await reportingService.GetSellInvoicesAsync(new SellInvoiceRpRequest(null, null, null, start2.Value, end2.Value), ct)
+            : [];
+
+        // Compute Period 1 KPIs
+        var count1 = invoices1.Count;
+        var sales1 = invoices1.Sum(x => x.TotalPrice);
+        var avgTicket1 = count1 > 0 ? sales1 / count1 : 0m;
+        var profit1 = invoices1.Sum(x => x.TotalProfit);
+        var wage1 = invoices1.Sum(x => x.TotalWage);
+        var tax1 = invoices1.Sum(x => x.TotalTax);
+        var weight1 = invoices1.Sum(x => x.TotalWeightEquivalent);
+        var remaining1 = invoices1.Sum(x => x.RemainingPrice);
+        var settledCount1 = invoices1.Count(x => x.RemainingPrice <= 0);
+        var unitTitle = invoices1.FirstOrDefault()?.PriceUnit ?? "تومان";
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"# 📊 گزارش تحلیل عملکرد فروش: **{title1}**" + (!string.IsNullOrEmpty(title2) ? $" در مقایسه با **{title2}**" : ""));
+
+        if (start2.HasValue && end2.HasValue)
+        {
+            // Compute Period 2 KPIs
+            var count2 = invoices2.Count;
+            var sales2 = invoices2.Sum(x => x.TotalPrice);
+            var avgTicket2 = count2 > 0 ? sales2 / count2 : 0m;
+            var profit2 = invoices2.Sum(x => x.TotalProfit);
+            var wage2 = invoices2.Sum(x => x.TotalWage);
+            var weight2 = invoices2.Sum(x => x.TotalWeightEquivalent);
+
+            // Compute Deltas
+            var deltaSales = sales2 > 0 ? ((sales1 - sales2) / sales2) * 100m : 0m;
+            var deltaCount = count2 > 0 ? (((decimal)count1 - count2) / count2) * 100m : 0m;
+            var deltaAvg = avgTicket2 > 0 ? ((avgTicket1 - avgTicket2) / avgTicket2) * 100m : 0m;
+            var deltaWeight = weight2 > 0 ? ((weight1 - weight2) / weight2) * 100m : 0m;
+            var deltaProfit = profit2 > 0 ? ((profit1 - profit2) / profit2) * 100m : 0m;
+
+            string FormatDelta(decimal delta) => delta switch
+            {
+                > 0 => $"🟢 **+{delta:F1}% رشد**",
+                < 0 => $"🔴 **{delta:F1}% افت**",
+                _ => "⚪ **بدون تغییر**"
+            };
+
+            sb.AppendLine("\n### 📈 جدول مقایسه شاخص‌های کلیدی عملکرد (KPIs):");
+            sb.AppendLine($"| شاخص عملکرد | {title1} (دوره جاری) | {title2} (دوره قبل) | درصد تغییر ($\\\\Delta$) | وضعیت |");
+            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- |");
+            sb.AppendLine($"| **مجموع فروش ناخالص** | **{sales1:N0}** {unitTitle} | {sales2:N0} {unitTitle} | {FormatDelta(deltaSales)} | {(deltaSales >= 0 ? "بهبود فروش" : "کاهش فروش")} |");
+            sb.AppendLine($"| **تعداد فاکتورهای فروش** | **{count1}** عدد | {count2} عدد | {FormatDelta(deltaCount)} | {(deltaCount >= 0 ? "افزایش مشتریان" : "کاهش تعداد")} |");
+            sb.AppendLine($"| **میانگین مبلغ هر فاکتور** | **{avgTicket1:N0}** {unitTitle} | {avgTicket2:N0} {unitTitle} | {FormatDelta(deltaAvg)} | {(deltaAvg >= 0 ? "سبد خرید بزرگتر" : "سبد خرید کوچکتر")} |");
+            sb.AppendLine($"| **وزن طلای فروخته‌شده (معادل ۱۸)** | **{weight1:N3}** گرم | {weight2:N3} گرم | {FormatDelta(deltaWeight)} | {(deltaWeight >= 0 ? "افزایش حجم وزنی" : "کاهش حجم وزنی")} |");
+            sb.AppendLine($"| **مجموع سود فروشنده** | **{profit1:N0}** {unitTitle} | {profit2:N0} {unitTitle} | {FormatDelta(deltaProfit)} | {(deltaProfit >= 0 ? "افزایش سودآوری" : "کاهش سودآوری")} |");
+            sb.AppendLine($"| **مجموع اجرت ساخت** | **{wage1:N0}** {unitTitle} | {wage2:N0} {unitTitle} | - | - |");
+        }
+        else
+        {
+            sb.AppendLine("\n### 📋 خلاصه شاخص‌های عملکرد دوره:");
+            sb.AppendLine($"- **مجموع کل فروش:** **{sales1:N0} {unitTitle}**");
+            sb.AppendLine($"- **تعداد کل فاکتورها:** **{count1}** عدد");
+            sb.AppendLine($"- **میانگین هر فاکتور:** **{avgTicket1:N0} {unitTitle}**");
+            sb.AppendLine($"- **مجموع وزن طلای فروخته‌شده (معادل ۱۸ عیار):** **{weight1:N3}** گرم");
+            sb.AppendLine($"- **مجموع سود حاصله:** **{profit1:N0} {unitTitle}**");
+            sb.AppendLine($"- **مجموع اجرت ساخت:** **{wage1:N0} {unitTitle}**");
+            sb.AppendLine($"- **مجموع مالیات ارزش افزوده:** **{tax1:N0} {unitTitle}**");
+        }
+
+        // Settlement breakdown
+        sb.AppendLine("\n### 💳 وضعیت تسویه و مطالبات فاکتورهای دوره جاری:");
+        sb.AppendLine($"- **تعداد فاکتورهای تسویه‌شده کامل:** **{settledCount1}** از {count1} فاکتور ({(count1 > 0 ? (settledCount1 * 100.0 / count1) : 0):F1}%)");
+        sb.AppendLine($"- **مانده مطالبات تسویه‌نشده:** **{remaining1:N0} {unitTitle}**");
 
         return McpContentResult.Text(sb.ToString());
     }
@@ -1502,18 +1755,23 @@ public class GoldExMcpEngine(
 
     private async Task<McpContentResult> ExecuteGetTrialBalanceReportAsync(JsonElement args, CancellationToken ct)
     {
-        var request = new LedgerAccountTrialBalanceRpRequest(null, null, null);
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var start = ParseDate(fromDateStr);
+        var end = ParseDate(toDateStr);
+
+        var request = new LedgerAccountTrialBalanceRpRequest(null, start, end);
         var report = await reportingService.GetLedgerAccountTrialBalanceAsync(request, ct);
 
         if (report.Count == 0)
-            return McpContentResult.Text("داده‌ای برای تراز آزمایشی یافت نشد.");
+            return McpContentResult.Text("داده‌ای برای تراز آزمایشی در این بازه یافت نشد.");
 
         var sb = new StringBuilder();
         sb.AppendLine($"### ⚖️ تراز آزمایشی حسابداری ({report.Count} سرفصل):");
         sb.AppendLine("| عنوان حساب | نوع حساب | بدهکار | بستانکار | واحد مبنا |");
         sb.AppendLine("| :--- | :--- | :--- | :--- | :--- |");
 
-        foreach (var r in report.Take(30))
+        foreach (var r in report.Take(50))
         {
             sb.AppendLine($"| {r.LedgerAccountTitle} | {r.LedgerAccountType} | {r.DebitAmountBase:N0} | {r.CreditAmountBase:N0} | {r.BasePriceUnitTitle} |");
         }
@@ -1523,7 +1781,12 @@ public class GoldExMcpEngine(
 
     private async Task<McpContentResult> ExecuteGetUsedGoldHiddenProfitAsync(JsonElement args, CancellationToken ct)
     {
-        var request = new UsedGoldHiddenProfitRpRequest(null, null, null, null);
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var start = ParseDate(fromDateStr);
+        var end = ParseDate(toDateStr);
+
+        var request = new UsedGoldHiddenProfitRpRequest(null, null, start, end);
         var report = await reportingService.GetUsedGoldHiddenProfitAsync(request, ct);
 
         if (report.Count == 0)
