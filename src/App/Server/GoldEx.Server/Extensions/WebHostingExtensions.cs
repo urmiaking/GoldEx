@@ -67,8 +67,15 @@ public static class WebHostingExtensions
 
             app.Use((context, next) =>
             {
-                context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
-                context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                var path = context.Request.Path.Value ?? string.Empty;
+                if (!path.StartsWith("/oauth", StringComparison.OrdinalIgnoreCase) &&
+                    !path.StartsWith("/mcp", StringComparison.OrdinalIgnoreCase) &&
+                    !path.StartsWith("/.well-known", StringComparison.OrdinalIgnoreCase) &&
+                    !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+                    context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
+                }
                 return next.Invoke();
             });
 
@@ -93,9 +100,10 @@ public static class WebHostingExtensions
             });
 
             app.UseRouting();
+            app.UseCors("McpCorsPolicy");
 
-            app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
             app.UseAuthentication();
+            app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
             app.UseAuthorization();
             app.UseMiddleware<StoreResolutionMiddleware>();
             app.UseMiddleware<LicenseResolutionMiddleware>();

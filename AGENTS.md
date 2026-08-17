@@ -283,15 +283,17 @@ GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
 
 ## Model Context Protocol (MCP) & AI Integration Architecture (اتصال هوش مصنوعی و کلیدهای دسترسی)
 
-GoldEx exposes a Model Context Protocol (MCP) JSON-RPC 2.0 and Server-Sent Events (SSE) server for integrating AI assistants (Gemini, ChatGPT, Claude Desktop, Antigravity, Cursor, Windsurf):
-
-1. **Multi-Tenancy & Authentication**:
-   - Authentication via Personal Access Tokens (`Bearer gex_pat_...` or `X-API-Key`).
-   - `ApiKeyAuthenticationMiddleware` authenticates the token hash (SHA-256) and establishes the `ClaimsPrincipal`.
-   - `StoreResolutionMiddleware` automatically resolves the user's active store (`StoreUser`), ensuring all MCP operations are tenant-scoped via EF Core global query filters (`IStoreFiltered`).
-   - Any authorized user (`BuiltInRoles.Administrators`, `BuiltInRoles.Owners`, and store users) can generate and manage PAT keys for their own accounts.
+1. **Multi-Tenancy, OAuth 2.0 & PAT Authentication**:
+   - **Dual Authentication**:
+     - **OAuth 2.0 (RFC 6749, RFC 7636 PKCE S256)**: Full authorization code flow for web-based AI clients (Google Gemini, ChatGPT Custom GPTs, Claude Web) with interactive Persian consent UI at `/oauth/authorize`, automatic client registration (RFC 7591) at `/oauth/register`, and standard token exchange at `/oauth/token`.
+     - **Personal Access Tokens (PAT)**: Direct `Bearer gex_pat_...` or `X-API-Key` for IDEs (Cursor, Antigravity, Windsurf) and local scripts.
+   - **Discovery Metadata**:
+     - `GET /.well-known/oauth-protected-resource` (RFC 9728): Advertises authorization servers and supported scopes.
+     - `GET /.well-known/oauth-authorization-server` & `GET /.well-known/openid-configuration` (RFC 8414): Full server metadata for automated client handshake.
+   - `ApiKeyAuthenticationMiddleware` authenticates both OAuth Bearer tokens and PAT keys (SHA-256 hash), establishing the `ClaimsPrincipal`.
+   - `StoreResolutionMiddleware` automatically resolves the active store (`StoreUser`), ensuring all MCP operations are tenant-scoped via EF Core global query filters (`IStoreFiltered`).
 2. **Endpoints**:
-   - `POST /mcp`: JSON-RPC 2.0 HTTP endpoint for standard MCP tool discovery and execution.
+   - `POST /mcp`: JSON-RPC 2.0 HTTP endpoint for standard MCP tool discovery and execution. Returns `401 Unauthorized` with `WWW-Authenticate` header pointing to `/.well-known/oauth-protected-resource` when unauthenticated.
    - `GET /mcp` (or `/api/mcp/sse`): SSE transport for persistent real-time tool sessions.
 3. **Persian-First Tool Suite**:
    - `get_live_gold_prices`: Real-time market prices for gold, coins, and foreign currencies with units and update timestamps.
@@ -307,5 +309,5 @@ GoldEx exposes a Model Context Protocol (MCP) JSON-RPC 2.0 and Server-Sent Event
    - `get_used_gold_hidden_profit`: Melting batch hidden profit and assay valuation reports.
 4. **UI & Guided Setup**:
    - `PersonalAccessTokens.razor` under Settings (`ClientRoutes.Settings.PersonalAccessTokens = "/base-info/api-tokens"`).
-   - Interactive tabs with copy-paste configs for ChatGPT/Gemini, Cursor/Antigravity `mcp_config.json`, Claude Desktop `claude_desktop_config.json`, and Persian prompt cheat sheet.
+   - Responsive UI (`@layout SettingsLayout`) with expansion panels for Google Gemini/ChatGPT (1-click OAuth), Cursor/Antigravity `mcp_config.json`, Claude Desktop `claude_desktop_config.json`, and Persian prompt cheat sheet with 1-click clipboard copy.
    - One-time reveal modal (`RevealTokenDialog.razor`) displaying the raw secret token with 1-click clipboard copy and security alerts.

@@ -60,6 +60,17 @@ internal static class ServiceCollectionExtensions
 
         internal IServiceCollection AddServices()
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("McpCorsPolicy", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .WithExposedHeaders("WWW-Authenticate", "Link", "Location");
+                });
+            });
+
             services.AddDistributedMemoryCache();
             services.AddSession(options =>
             {

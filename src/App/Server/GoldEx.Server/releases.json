@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.0.45",
+    "releasedAt": "2026-08-17",
+    "changes": [
+      "پیاده‌سازی کامل سرور احراز هویت استاندارد OAuth 2.0 بر اساس مشخصات رسمی Model Context Protocol (MCP)",
+      "افزودن اندپوینت‌های کشف سرویس RFC 9728 (Protected Resource) و RFC 8414 (Authorization Server Discovery)",
+      "پشتیبانی از ثبت‌نام پویای کلاینت‌ها (Dynamic Client Registration - RFC 7591) جهت هندشیک خودکار با Google Gemini و ChatGPT",
+      "پیاده‌سازی جریان تایید دسترسی کاربر (OAuth 2.0 Authorization Code Flow + PKCE S256) با صفحه رضایت فارسی و امنیت بالا",
+      "پشتیبانی دوگانه در میدلور احراز هویت از توکن‌های OAuth Bearer و کلیدهای شخصی (PAT)"
+    ]
+  },
+  {
     "version": "1.0.44",
     "releasedAt": "2026-08-17",
     "changes": [
