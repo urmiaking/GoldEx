@@ -279,5 +279,33 @@ GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
    - Replaces default heavy MudBlazor tabs with `.goldex-segmented-container` pill tabs.
    - Hardware-accelerated CSS animations (`.animate-fade-in-up`) provide smooth 60fps view transitions.
 
+---
 
+## Model Context Protocol (MCP) & AI Integration Architecture (اتصال هوش مصنوعی و کلیدهای دسترسی)
 
+GoldEx exposes a Model Context Protocol (MCP) JSON-RPC 2.0 and Server-Sent Events (SSE) server for integrating AI assistants (Gemini, ChatGPT, Claude Desktop, Antigravity, Cursor, Windsurf):
+
+1. **Multi-Tenancy & Authentication**:
+   - Authentication via Personal Access Tokens (`Bearer gex_pat_...` or `X-API-Key`).
+   - `ApiKeyAuthenticationMiddleware` authenticates the token hash (SHA-256) and establishes the `ClaimsPrincipal`.
+   - `StoreResolutionMiddleware` automatically resolves the user's active store (`StoreUser`), ensuring all MCP operations are tenant-scoped via EF Core global query filters (`IStoreFiltered`).
+   - Any authorized user (`BuiltInRoles.Administrators`, `BuiltInRoles.Owners`, and store users) can generate and manage PAT keys for their own accounts.
+2. **Endpoints**:
+   - `POST /mcp`: JSON-RPC 2.0 HTTP endpoint for standard MCP tool discovery and execution.
+   - `GET /mcp` (or `/api/mcp/sse`): SSE transport for persistent real-time tool sessions.
+3. **Persian-First Tool Suite**:
+   - `get_live_gold_prices`: Real-time market prices for gold, coins, and foreign currencies with units and update timestamps.
+   - `calculate_gold_product_price`: Full invoice-ready gold pricing formula with dynamic price units, wages, seller profit, and tax.
+   - `calculate_scrap_gold_valuation`: Scrap gold valuation with 750 deduction formulas.
+   - `calculate_molten_gold`: Molten gold weight and price estimations.
+   - `search_inventory_stock`: In-stock query across products, coins, and currencies.
+   - `get_customer_balance`: Multi-currency running ledger balances for customers.
+   - `search_customers`: Customer discovery by name or query.
+   - `get_customer_statement`: Customer ledger transactions with running balance and price units.
+   - `search_invoices` & `get_invoice_details`: Comprehensive invoice discovery and product breakdown with dynamic invoice price units (no hardcoded currency).
+   - `get_trial_balance_report`: Accounting trial balance report.
+   - `get_used_gold_hidden_profit`: Melting batch hidden profit and assay valuation reports.
+4. **UI & Guided Setup**:
+   - `PersonalAccessTokens.razor` under Settings (`ClientRoutes.Settings.PersonalAccessTokens = "/base-info/api-tokens"`).
+   - Interactive tabs with copy-paste configs for ChatGPT/Gemini, Cursor/Antigravity `mcp_config.json`, Claude Desktop `claude_desktop_config.json`, and Persian prompt cheat sheet.
+   - One-time reveal modal (`RevealTokenDialog.razor`) displaying the raw secret token with 1-click clipboard copy and security alerts.

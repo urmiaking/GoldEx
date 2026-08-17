@@ -1,6 +1,7 @@
 <MudCard Elevation="24">
     <MudNavMenu>
         <MudNavLink Href="@ClientRoutes.Settings.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.DisplaySettings">اطلاعات پایه</MudNavLink>
+        <MudNavLink Href="@ClientRoutes.Settings.PersonalAccessTokens" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SmartToy">اتصال به هوش مصنوعی (MCP)</MudNavLink>
         <MudNavLink Href="@ClientRoutes.ProductCategories.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Category">دسته بندی اجناس</MudNavLink>
         <MudNavLink Href="@ClientRoutes.Settings.StoneTypes" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Diamond">مدیریت سنگ ها</MudNavLink>
         <AuthorizeView Roles="@BuiltinRoles.Administrators">

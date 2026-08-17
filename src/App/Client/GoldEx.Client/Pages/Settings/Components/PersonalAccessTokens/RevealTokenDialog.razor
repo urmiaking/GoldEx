@@ -1,0 +1,34 @@
+@using GoldEx.Shared.DTOs.PersonalAccessTokens
+@inherits GoldExComponentBase
+
+<MudDialog>
+    <DialogContent>
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4" Elevation="4">
+            <strong>توجه بسیار مهم:</strong> این کلید دسترسی فقط <strong>یک‌بار</strong> نمایش داده می‌شود! لطفاً آن را کپی کرده و در مکانی امن ذخیره فرمایید. در صورت مفقودی، باید کلید جدیدی صادر کنید.
+        </MudAlert>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2">کلید دسترسی شخصی شما (Personal Access Token):</MudText>
+
+        <div class="d-flex align-center gap-2 mb-4 p-2" style="background: rgba(var(--mud-palette-surface-rgb), 0.8); border: 1px solid var(--mud-palette-primary); border-radius: 8px;">
+            <MudTextField Value="@Token"
+                          ReadOnly="true"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Class="font-monospace"
+                          dir="ltr"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.ContentCopy"
+                          OnAdornmentClick="CopyTokenToClipboard" />
+        </div>
+
+        <MudText Typo="Typo.body2" Class="text-muted">
+            نام کلید: <strong>@Name</strong> | پیشوند: <code>@TokenPrefix</code>
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary"
+                   OnClick="Close"
+                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                   Variant="Variant.Filled">متوجه شدم و کلید را کپی کردم</MudButton>
+    </DialogActions>
+</MudDialog>
