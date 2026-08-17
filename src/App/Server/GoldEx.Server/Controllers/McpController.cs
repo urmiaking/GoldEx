@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 namespace GoldEx.Server.Controllers;
 
 [ApiController]
+[IgnoreAntiforgeryToken]
+[AllowAnonymous]
 public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -20,16 +22,27 @@ public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
         WriteIndented = false
     };
 
+    [HttpOptions(ApiRoutes.Mcp.Base)]
+    [HttpOptions(ApiRoutes.Mcp.Message)]
+    public IActionResult Options()
+    {
+        return Ok();
+    }
+
     [HttpPost(ApiRoutes.Mcp.Base)]
     [HttpPost(ApiRoutes.Mcp.Message)]
     public async Task<IActionResult> HandleMessageAsync([FromBody] JsonRpcRequest request, CancellationToken cancellationToken)
     {
         if (User.Identity?.IsAuthenticated != true)
         {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            Response.Headers.Append("WWW-Authenticate", $"Bearer error=\"invalid_token\", error_description=\"Unauthorized\", resource_metadata=\"{baseUrl}/.well-known/oauth-protected-resource\", scope=\"mcp\"");
+            Response.Headers.Append("Link", $"<{baseUrl}/.well-known/oauth-protected-resource>; rel=\"oauth-protected-resource\", <{baseUrl}/.well-known/oauth-authorization-server>; rel=\"oauth-authorization-server\"");
+
             return Unauthorized(JsonRpcResponse.CreateError(
-                request.Id,
+                request?.Id ?? "1",
                 -32001,
-                "عدم احراز هویت. لطفاً کلید دسترسی معتبر (Bearer Token) ارسال فرمایید."));
+                "عدم احراز هویت. لطفاً از طریق OAuth 2.0 یا کلید دسترسی شخصی (Bearer Token) احراز هویت نمایید."));
         }
 
         try
@@ -124,8 +137,11 @@ public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
     {
         if (User.Identity?.IsAuthenticated != true)
         {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            Response.Headers.Append("WWW-Authenticate", $"Bearer error=\"invalid_token\", error_description=\"Unauthorized\", resource_metadata=\"{baseUrl}/.well-known/oauth-protected-resource\", scope=\"mcp\"");
+            Response.Headers.Append("Link", $"<{baseUrl}/.well-known/oauth-protected-resource>; rel=\"oauth-protected-resource\", <{baseUrl}/.well-known/oauth-authorization-server>; rel=\"oauth-authorization-server\"");
             Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await Response.WriteAsync("Unauthorized. Please provide a valid Bearer token.", cancellationToken);
+            await Response.WriteAsync("Unauthorized. Please authenticate using OAuth 2.0 or Personal Access Token.", cancellationToken);
             return;
         }
 

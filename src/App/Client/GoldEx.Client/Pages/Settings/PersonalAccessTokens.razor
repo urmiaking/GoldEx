@@ -224,13 +224,16 @@
             </MudExpansionPanel>
 
             <!-- ChatGPT & Gemini -->
-            <MudExpansionPanel Text="چت‌بات‌های وب (Google Gemini و ChatGPT Custom GPT)" Icon="@Icons.Material.Filled.Language">
+            <MudExpansionPanel Text="چت‌بات‌های وب و دستیارهای ابری (Google Gemini و ChatGPT)" Icon="@Icons.Material.Filled.Language">
                 <MudText Typo="Typo.body2" Class="mb-3">
-                    ۱. در بخش تنظیمات یا Custom Action چت‌بات، آدرس زیر را به عنوان سرور وارد فرمایید:<br />
-                    <code class="px-2 py-1 rounded text-primary fw-bold" dir="ltr">@GetMcpEndpointUrl()</code><br /><br />
-                    ۲. نوع احراز هویت را روی <strong>Bearer Token</strong> یا <strong>Custom Header</strong> تنظیم فرمایید:<br />
-                    <code class="px-2 py-1 rounded text-primary" dir="ltr">Authorization: Bearer YOUR_PAT_KEY</code><br /><br />
-                    ۳. اکنون می‌توانید به زبان فارسی با هوش مصنوعی گفتگو کرده و گزارشات فروشگاه را دریافت کنید.
+                    <strong>اتصال خودکار و استاندارد از طریق OAuth 2.0:</strong><br />
+                    ۱. در بخش تنظیمات افزونه‌ها یا اتصال MCP در <strong>Google Gemini</strong> یا <strong>ChatGPT</strong>، آدرس زیر را به عنوان <strong>Server URL</strong> وارد کنید:<br />
+                    <div class="d-flex align-center gap-2 my-2">
+                        <code class="px-2 py-1 rounded text-primary fw-bold" dir="ltr">@GetMcpEndpointUrl()</code>
+                        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" Color="Color.Primary" OnClick="@(() => CopyToClipboard(GetMcpEndpointUrl()))" />
+                    </div>
+                    ۲. دستیار هوش مصنوعی به طور خودکار پروتکل <strong>OAuth 2.0</strong> را شناسایی کرده و شما را به صفحه تایید دسترسی گلدکس هدایت می‌کند.<br />
+                    ۳. با کلیک بر روی <strong>«تایید و اتصال به هوش مصنوعی»</strong>، دستیار هوش مصنوعی بدون نیاز به وارد کردن دستی توکن به فروشگاه شما متصل شده و آماده پاسخگویی به زبان فارسی خواهد بود.
                 </MudText>
             </MudExpansionPanel>
         </MudExpansionPanels>
