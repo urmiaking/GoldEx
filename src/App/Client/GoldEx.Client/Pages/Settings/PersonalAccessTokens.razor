@@ -1,0 +1,329 @@
+@using GoldEx.Client.Pages.Settings.Shared
+@using GoldEx.Shared.DTOs.PersonalAccessTokens
+@using GoldEx.Shared.Routings
+@inherits GoldExComponentBase
+@layout SettingsLayout
+
+@attribute [Route(ClientRoutes.Settings.PersonalAccessTokens)]
+@attribute [Authorize]
+
+<PageTitle>اتصال به هوش مصنوعی و کلیدهای API (MCP)</PageTitle>
+
+<!-- Page Header & Action Bar -->
+<div class="d-flex align-center justify-space-between mb-2">
+    <div class="d-flex align-center gap-2">
+        <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" Size="Size.Medium" />
+        <MudText Typo="Typo.h6" Class="fw-bold">اتصال به هوش مصنوعی (MCP) و کلیدهای API</MudText>
+    </div>
+    <div>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Color="Color.Success"
+                       EndIcon="@Icons.Material.Filled.Add"
+                       Variant="Variant.Filled"
+                       Size="Size.Small"
+                       OnClick="_ => OnCreateToken()">
+                ایجاد کلید جدید
+            </MudButton>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Color="Color.Success"
+                           Variant="Variant.Filled"
+                           Icon="@Icons.Material.Filled.Add"
+                           Size="Size.Small"
+                           OnClick="_ => OnCreateToken()" />
+        </MudHidden>
+    </div>
+</div>
+
+<MudDivider Class="my-3" />
+
+<!-- Intro Banner -->
+<MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4 rounded-lg" Elevation="0">
+    <MudText Typo="Typo.body2">
+        از طریق پروتکل استاندارد <strong>MCP (Model Context Protocol)</strong> می‌توانید دستیارهای هوش مصنوعی مانند ChatGPT، Google Gemini، Claude Desktop و Cursor را به گلدکس متصل نموده و به صورت مکالمه‌ای و به زبان فارسی از موجودی انبار، مانده حساب مشتریان، نرخ‌های لحظه‌ای و محاسبات طلا مطلع شوید.
+    </MudText>
+</MudAlert>
+
+<!-- Active Tokens Table -->
+<MudTable T="PersonalAccessTokenDto"
+          Hover="true"
+          Dense="true"
+          Items="_tokens"
+          Loading="_processing"
+          SelectOnRowClick="false"
+          Breakpoint="Breakpoint.Xs"
+          Elevation="24"
+          Class="mb-5"
+          ContainerStyle="max-height: 280px; overflow-y: auto;">
+    <ToolBarContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Key" Size="Size.Small" Color="Color.Primary" />
+            <MudText Typo="Typo.subtitle2" Class="fw-bold">کلیدهای دسترسی فعال (Personal Access Tokens)</MudText>
+        </div>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                       Color="Color.Default"
+                       Size="Size.Small"
+                       OnClick="LoadTokensAsync"
+                       Disabled="_processing" />
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>نام یا کاربرد کلید</MudTh>
+        <MudTh>پیشوند کلید</MudTh>
+        <MudTh>تاریخ ایجاد</MudTh>
+        <MudTh>تاریخ انقضا</MudTh>
+        <MudTh>آخرین استفاده</MudTh>
+        <MudTh>وضعیت</MudTh>
+        <MudTh Style="text-align: left;">عملیات</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="نام کلید">
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.VpnKey" Size="Size.Small" Color="Color.Primary" />
+                <MudText Typo="Typo.body2" Class="fw-bold">@context.Name</MudText>
+            </div>
+        </MudTd>
+        <MudTd DataLabel="پیشوند کلید">
+            <code class="px-2 py-0.5 rounded" style="background: rgba(var(--mud-palette-surface-rgb), 0.7); border: 1px solid rgba(var(--mud-palette-text-primary-rgb), 0.12); font-family: monospace; font-size: 0.8rem;">
+                @context.TokenPrefix
+            </code>
+        </MudTd>
+        <MudTd DataLabel="تاریخ ایجاد">
+            @context.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+        </MudTd>
+        <MudTd DataLabel="تاریخ انقضا">
+            @(context.ExpiresAt.HasValue ? context.ExpiresAt.Value.ToLocalTime().ToString("yyyy/MM/dd") : "نامحدود")
+        </MudTd>
+        <MudTd DataLabel="آخرین استفاده">
+            @(context.LastUsedAt.HasValue ? context.LastUsedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm") : "هنوز استفاده نشده")
+        </MudTd>
+        <MudTd DataLabel="وضعیت">
+            @if (context.IsRevoked)
+            {
+                <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Filled">باطل‌شده</MudChip>
+            }
+            else if (context.IsExpired)
+            {
+                <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Filled">منقضی‌شده</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">فعال</MudChip>
+            }
+        </MudTd>
+        <MudTd DataLabel="عملیات" Style="text-align: left;">
+            <div class="d-flex align-center justify-end gap-1">
+                @if (context.IsActive)
+                {
+                    <MudTooltip Text="ابطال کلید" Arrow="true" Color="Color.Warning">
+                        <MudIconButton Icon="@Icons.Material.Filled.Block"
+                                       Color="Color.Warning"
+                                       Variant="Variant.Filled"
+                                       Size="Size.Small"
+                                       OnClick="@(() => OnRevokeToken(context))" />
+                    </MudTooltip>
+                }
+                <MudTooltip Text="حذف" Arrow="true" Color="Color.Error">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   OnClick="@(() => OnDeleteToken(context))" />
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <div class="d-flex flex-column align-center justify-center py-3 text-muted">
+            <MudIcon Icon="@Icons.Material.Filled.VpnKeyOff" Size="Size.Small" Class="mb-1 opacity-50" />
+            <MudText Typo="Typo.body2" Class="text-muted">هیچ کلید دسترسی فعالی ثبت نشده است.</MudText>
+            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="OnCreateToken" Class="mt-1">
+                صدور اولین کلید دسترسی
+            </MudButton>
+        </div>
+    </NoRecordsContent>
+</MudTable>
+
+<!-- MCP Server Endpoint Quick Bar -->
+<MudCard Elevation="24" Class="pa-4 mb-6 rounded-lg">
+    <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between gap-3">
+        <div class="d-flex align-center gap-3">
+            <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">
+                <MudIcon Icon="@Icons.Material.Filled.Dns" Size="Size.Small" />
+            </MudAvatar>
+            <div>
+                <MudText Typo="Typo.subtitle2" Class="fw-bold">آدرس نقطه اتصال سرور MCP (Endpoint URL):</MudText>
+                <div class="d-flex align-center gap-2 mt-1">
+                    <code class="px-2 py-1 rounded fw-bold text-primary" style="background: rgba(var(--mud-palette-primary-rgb), 0.08); border: 1px solid rgba(var(--mud-palette-primary-rgb), 0.25); font-size: 0.9rem;" dir="ltr">
+                        @GetMcpEndpointUrl()
+                    </code>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">JSON-RPC 2.0</MudChip>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">SSE Active</MudChip>
+                </div>
+            </div>
+        </div>
+
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.ContentCopy"
+                   OnClick="@(() => CopyToClipboard(GetMcpEndpointUrl()))"
+                   Class="align-self-stretch align-self-md-auto">
+            کپی آدرس MCP
+        </MudButton>
+    </div>
+</MudCard>
+
+<!-- Setup Instructions Expansion Panels -->
+<MudCard Elevation="24" Class="mb-6 rounded-lg overflow-hidden">
+    <MudCardHeader Class="pb-2">
+        <CardHeaderContent>
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.SettingsInputComposite" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1" Class="fw-bold">راهنمای اتصال به نرم‌افزارها و دستیارهای هوش مصنوعی</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent Class="pt-0">
+        <MudExpansionPanels Elevation="0" MultiExpansion="false">
+            <!-- IDEs: Antigravity / Cursor / Windsurf -->
+            <MudExpansionPanel Text="محیط‌های برنامه‌نویسی و ادیتورها (Antigravity / Cursor / Windsurf)" Icon="@Icons.Material.Filled.Terminal">
+                <MudText Typo="Typo.body2" Class="mb-3 text-muted">
+                    کانفیگ زیر را کپی کرده و در فایل تنظیمات MCP ادیتور خود (مانند <code>mcp_config.json</code> یا <code>.cursor/mcp.json</code>) قرار دهید. کلید تولیدشده خود را به جای <code>YOUR_PAT_KEY</code> جای‌گذاری نمایید:
+                </MudText>
+                <div class="position-relative">
+                    <pre dir="ltr" class="pa-3 rounded font-monospace overflow-x-auto mb-0" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem; line-height: 1.4;">@GetCursorConfigJson()</pre>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.ContentCopy"
+                               OnClick="@(() => CopyToClipboard(GetCursorConfigJson()))"
+                               Style="position: absolute; top: 8px; left: 8px;">
+                        کپی کانفیگ
+                    </MudButton>
+                </div>
+            </MudExpansionPanel>
+
+            <!-- Claude Desktop -->
+            <MudExpansionPanel Text="نرم‌افزار Claude Desktop" Icon="@Icons.Material.Filled.DesktopWindows">
+                <MudText Typo="Typo.body2" Class="mb-3 text-muted">
+                    در نرم‌افزار Claude Desktop، از منوی <strong>Settings $\rightarrow$ Developer $\rightarrow$ Edit Config</strong> فایل <code>claude_desktop_config.json</code> را باز کرده و کد زیر را درون آن اضافه کنید:
+                </MudText>
+                <div class="position-relative">
+                    <pre dir="ltr" class="pa-3 rounded font-monospace overflow-x-auto mb-0" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem; line-height: 1.4;">@GetClaudeConfigJson()</pre>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.ContentCopy"
+                               OnClick="@(() => CopyToClipboard(GetClaudeConfigJson()))"
+                               Style="position: absolute; top: 8px; left: 8px;">
+                        کپی کانفیگ Claude
+                    </MudButton>
+                </div>
+            </MudExpansionPanel>
+
+            <!-- ChatGPT & Gemini -->
+            <MudExpansionPanel Text="چت‌بات‌های وب (Google Gemini و ChatGPT Custom GPT)" Icon="@Icons.Material.Filled.Language">
+                <MudText Typo="Typo.body2" Class="mb-3">
+                    ۱. در بخش تنظیمات یا Custom Action چت‌بات، آدرس زیر را به عنوان سرور وارد فرمایید:<br />
+                    <code class="px-2 py-1 rounded text-primary fw-bold" dir="ltr">@GetMcpEndpointUrl()</code><br /><br />
+                    ۲. نوع احراز هویت را روی <strong>Bearer Token</strong> یا <strong>Custom Header</strong> تنظیم فرمایید:<br />
+                    <code class="px-2 py-1 rounded text-primary" dir="ltr">Authorization: Bearer YOUR_PAT_KEY</code><br /><br />
+                    ۳. اکنون می‌توانید به زبان فارسی با هوش مصنوعی گفتگو کرده و گزارشات فروشگاه را دریافت کنید.
+                </MudText>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudCardContent>
+</MudCard>
+
+<!-- Interactive Persian Prompt Examples -->
+<MudCard Elevation="24" Class="rounded-lg">
+    <MudCardHeader Class="pb-2">
+        <CardHeaderContent>
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1" Class="fw-bold">نمونه دستورات و پرامپت‌های آماده (جهت کپی و ارسال به هوش مصنوعی)</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent>
+        <MudGrid Spacing="3">
+            <!-- Prices & Rates -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-3 border rounded-lg h-100" Elevation="0" Style="background: rgba(var(--mud-palette-surface-rgb), 0.5);">
+                    <div class="d-flex align-center gap-2 mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">استعلام نرخ‌های لحظه‌ای و طلا</MudText>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        @RenderPromptItem("نرخ لحظه‌ای هر گرم طلای ۱۸ عیار، مثقال و انس جهانی چنده؟")
+                        @RenderPromptItem("قیمت سکه امامی و بهار آزادی امروز چقدر ثبت شده؟")
+                        @RenderPromptItem("نرخ برابری دلار، یورو و پوند به تومان امروز چقدره؟")
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Customer Accounts -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-3 border rounded-lg h-100" Elevation="0" Style="background: rgba(var(--mud-palette-surface-rgb), 0.5);">
+                    <div class="d-flex align-center gap-2 mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">حساب مشتریان و بدهی‌ها</MudText>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        @RenderPromptItem("مانده حساب و بدهی آقای مسعود خدادادی به تفکیک واحدها چقدر است؟")
+                        @RenderPromptItem("ریز تراکنش‌های ماه جاری مشتری مسعود خدادادی رو نشون بده.")
+                        @RenderPromptItem("لیست مشتریانی که بیشترین بدهی را دارند برام بیار.")
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Calculations & Invoices -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-3 border rounded-lg h-100" Elevation="0" Style="background: rgba(var(--mud-palette-surface-rgb), 0.5);">
+                    <div class="d-flex align-center gap-2 mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">محاسبات قیمت طلا و فاکتور</MudText>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        @RenderPromptItem("محاسبه قیمت نهایی دستبند طلا به وزن ۴.۳۵ گرم با اجرت ۱۲ درصد و سود ۷ درصد و مالیات ۹ درصد")
+                        @RenderPromptItem("ارزش خرید طلای کهنه به وزن ۱۰.۵ گرم با کسری عیار ۱۵ با نرخ روز")
+                        @RenderPromptItem("جزئیات فاکتور شماره ۱۰۶ شامل اقلام و مانده تسویه‌نشده رو بیار.")
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Inventory & Melting -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-3 border rounded-lg h-100" Elevation="0" Style="background: rgba(var(--mud-palette-surface-rgb), 0.5);">
+                    <div class="d-flex align-center gap-2 mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">انبارداری و طلای آب‌شده</MudText>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        @RenderPromptItem("موجودی طلای آب‌شده و سکه‌های موجود در انبار چقدره؟")
+                        @RenderPromptItem("با ۲۰۰ میلیون تومان چند گرم طلای آب‌شده با عیار ۷۸۰ میشه خرید؟")
+                        @RenderPromptItem("گزارش سود پنهان ری‌گیری بچ‌های آب‌شده این ماه رو بده.")
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private RenderFragment RenderPromptItem(string promptText) => __builder =>
+    {
+        <div class="d-flex align-center justify-space-between p-2 rounded" style="background: rgba(var(--mud-palette-background-rgb), 0.6); border: 1px dashed rgba(var(--mud-palette-primary-rgb), 0.25);">
+            <MudText Typo="Typo.body2" Class="me-2" Style="font-size: 0.84rem;">«@promptText»</MudText>
+            <MudTooltip Text="کپی پرامپت" Arrow="true">
+                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+                               OnClick="@(() => CopyToClipboard(promptText))" />
+            </MudTooltip>
+        </div>
+    };
+}

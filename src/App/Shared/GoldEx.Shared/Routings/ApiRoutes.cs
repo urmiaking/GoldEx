@@ -433,4 +433,20 @@ public static class ApiRoutes
         public const string GetStoreUsers = "admin/{storeId:guid}/users";
         public const string AssignStoreUsers = "admin/{storeId:guid}/users";
     }
+
+    public class PersonalAccessTokens
+    {
+        public const string Base = "/api/personal-access-tokens";
+        public const string GetList = "";
+        public const string Create = "";
+        public const string Revoke = "{id}/revoke";
+        public const string Delete = "{id}";
+    }
+
+    public class Mcp
+    {
+        public const string Base = "/mcp";
+        public const string Sse = "/api/mcp/sse";
+        public const string Message = "/api/mcp/message";
+    }
 }

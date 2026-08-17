@@ -842,4 +842,19 @@ public class ApiUrls
         public static string AssignStoreUsers(Guid storeId) =>
             BuildUrl(ApiRoutes.Stores.Base, ApiRoutes.Stores.AssignStoreUsers).FormatRoute(new { storeId });
     }
+
+    public class PersonalAccessTokens
+    {
+        public static string GetList() => BuildUrl(ApiRoutes.PersonalAccessTokens.Base, ApiRoutes.PersonalAccessTokens.GetList);
+        public static string Create() => BuildUrl(ApiRoutes.PersonalAccessTokens.Base, ApiRoutes.PersonalAccessTokens.Create);
+        public static string Revoke(Guid id) => BuildUrl(ApiRoutes.PersonalAccessTokens.Base, ApiRoutes.PersonalAccessTokens.Revoke).FormatRoute(new { id });
+        public static string Delete(Guid id) => BuildUrl(ApiRoutes.PersonalAccessTokens.Base, ApiRoutes.PersonalAccessTokens.Delete).FormatRoute(new { id });
+    }
+
+    public class Mcp
+    {
+        public static string Base() => ApiRoutes.Mcp.Base;
+        public static string Sse() => ApiRoutes.Mcp.Sse;
+        public static string Message() => ApiRoutes.Mcp.Message;
+    }
 }

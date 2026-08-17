@@ -105,6 +105,7 @@ public static class ClientRoutes
         public const string LicenseRequests = $"{SettingsPrefix}/license-requests";
         public const string Stores = $"{SettingsPrefix}/stores";
         public const string StoneTypes = $"{SettingsPrefix}/stone-types";
+        public const string PersonalAccessTokens = $"{SettingsPrefix}/api-tokens";
     }
 
     public static class Logs
