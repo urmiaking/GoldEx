@@ -129,7 +129,8 @@ public class OAuthController(
                 var body = await reader.ReadToEndAsync(cancellationToken);
                 if (!string.IsNullOrWhiteSpace(body))
                 {
-                    request = JsonSerializer.Deserialize<ClientRegistrationRequest>(body);
+                    var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    request = JsonSerializer.Deserialize<ClientRegistrationRequest>(body, jsonOptions);
                 }
             }
 
@@ -284,7 +285,8 @@ public class OAuthController(
             var body = await reader.ReadToEndAsync(cancellationToken);
             if (!string.IsNullOrWhiteSpace(body))
             {
-                tokenRequest = JsonSerializer.Deserialize<OAuthTokenRequest>(body);
+                var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                tokenRequest = JsonSerializer.Deserialize<OAuthTokenRequest>(body, jsonOptions);
             }
         }
 
