@@ -27,6 +27,17 @@ public class OAuthController(
     IStoreContext storeContext,
     GoldExDbContext dbContext) : ControllerBase
 {
+    private string GetBaseUrl()
+    {
+        var host = Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+        if (string.IsNullOrEmpty(host))
+        {
+            host = Request.Host.Value;
+        }
+
+        return $"https://{host}";
+    }
+
     // -------------------------------------------------------------
     // 1. RFC 9728: OAuth 2.0 Protected Resource Metadata
     // -------------------------------------------------------------
@@ -37,9 +48,7 @@ public class OAuthController(
     [AllowAnonymous]
     public IActionResult GetProtectedResourceMetadata()
     {
-        var scheme = Request.Scheme;
-        var host = Request.Host.Value;
-        var baseUrl = $"{scheme}://{host}";
+        var baseUrl = GetBaseUrl();
 
         var metadata = new OAuthProtectedResourceMetadata
         {
@@ -53,7 +62,7 @@ public class OAuthController(
     }
 
     // -------------------------------------------------------------
-    // 2. RFC 8414: OAuth 2.0 Authorization Server Metadata
+    // 2. RFC 8414: OAuth 2.0 Authorization Server Metadata & OpenID Connect
     // -------------------------------------------------------------
     [HttpGet("/.well-known/oauth-authorization-server")]
     [HttpGet("/.well-known/oauth-authorization-server/oauth")]
@@ -61,9 +70,7 @@ public class OAuthController(
     [AllowAnonymous]
     public IActionResult GetAuthorizationServerMetadata()
     {
-        var scheme = Request.Scheme;
-        var host = Request.Host.Value;
-        var baseUrl = $"{scheme}://{host}";
+        var baseUrl = GetBaseUrl();
 
         var metadata = new OAuthAuthorizationServerMetadata
         {
@@ -71,14 +78,17 @@ public class OAuthController(
             AuthorizationEndpoint = $"{baseUrl}/oauth/authorize",
             TokenEndpoint = $"{baseUrl}/oauth/token",
             RegistrationEndpoint = $"{baseUrl}/oauth/register",
+            UserinfoEndpoint = $"{baseUrl}/oauth/userinfo",
+            JwksUri = $"{baseUrl}/oauth/jwks",
             RevocationEndpoint = $"{baseUrl}/oauth/revoke",
-            ResponseTypesSupported = ["code"],
+            ResponseTypesSupported = ["code", "token"],
             ResponseModesSupported = ["query", "fragment"],
             GrantTypesSupported = ["authorization_code", "refresh_token"],
             TokenEndpointAuthMethodsSupported = ["client_secret_post", "client_secret_basic", "none"],
             CodeChallengeMethodsSupported = ["S256", "plain"],
-            ScopesSupported = ["mcp", "read", "write", "openid", "profile"],
-            SubjectTypesSupported = ["public"]
+            ScopesSupported = ["mcp", "read", "write", "openid", "profile", "email"],
+            SubjectTypesSupported = ["public"],
+            IdTokenSigningAlgValuesSupported = ["RS256", "none"]
         };
 
         return Ok(metadata);
@@ -354,6 +364,40 @@ public class OAuthController(
         }
 
         return Ok(new { status = "revoked" });
+    }
+
+    // -------------------------------------------------------------
+    // 7. OpenID Connect: Userinfo & JWKS Endpoints
+    // -------------------------------------------------------------
+    [HttpGet("/oauth/userinfo")]
+    [HttpPost("/oauth/userinfo")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UserinfoAsync(CancellationToken cancellationToken)
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return Unauthorized(new { error = "invalid_token", error_description = "The access token is invalid or expired." });
+        }
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = User.Identity?.Name ?? "Admin";
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? $"{userName.ToLowerInvariant()}@goldexsoft.ir";
+
+        return Ok(new
+        {
+            sub = userIdClaim ?? Guid.Empty.ToString(),
+            name = userName,
+            preferred_username = userName,
+            email = email,
+            email_verified = true
+        });
+    }
+
+    [HttpGet("/oauth/jwks")]
+    [AllowAnonymous]
+    public IActionResult GetJwks()
+    {
+        return Ok(new { keys = Array.Empty<object>() });
     }
 
     // -------------------------------------------------------------
