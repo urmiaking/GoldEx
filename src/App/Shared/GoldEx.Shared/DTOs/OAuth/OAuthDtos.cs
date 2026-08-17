@@ -128,11 +128,17 @@ public class OAuthAuthorizationServerMetadata
     [JsonPropertyName("registration_endpoint")]
     public string RegistrationEndpoint { get; set; } = string.Empty;
 
+    [JsonPropertyName("userinfo_endpoint")]
+    public string UserinfoEndpoint { get; set; } = string.Empty;
+
+    [JsonPropertyName("jwks_uri")]
+    public string JwksUri { get; set; } = string.Empty;
+
     [JsonPropertyName("revocation_endpoint")]
     public string RevocationEndpoint { get; set; } = string.Empty;
 
     [JsonPropertyName("response_types_supported")]
-    public List<string> ResponseTypesSupported { get; set; } = ["code"];
+    public List<string> ResponseTypesSupported { get; set; } = ["code", "token"];
 
     [JsonPropertyName("grant_types_supported")]
     public List<string> GrantTypesSupported { get; set; } = ["authorization_code", "refresh_token"];
@@ -147,8 +153,11 @@ public class OAuthAuthorizationServerMetadata
     public List<string> CodeChallengeMethodsSupported { get; set; } = ["S256", "plain"];
 
     [JsonPropertyName("scopes_supported")]
-    public List<string> ScopesSupported { get; set; } = ["mcp", "read", "write", "openid", "profile"];
+    public List<string> ScopesSupported { get; set; } = ["mcp", "read", "write", "openid", "profile", "email"];
 
     [JsonPropertyName("subject_types_supported")]
     public List<string> SubjectTypesSupported { get; set; } = ["public"];
+
+    [JsonPropertyName("id_token_signing_alg_values_supported")]
+    public List<string> IdTokenSigningAlgValuesSupported { get; set; } = ["RS256", "none"];
 }

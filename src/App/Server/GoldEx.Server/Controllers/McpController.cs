@@ -22,6 +22,17 @@ public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
         WriteIndented = false
     };
 
+    private string GetBaseUrl()
+    {
+        var host = Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+        if (string.IsNullOrEmpty(host))
+        {
+            host = Request.Host.Value;
+        }
+
+        return $"https://{host}";
+    }
+
     [HttpOptions(ApiRoutes.Mcp.Base)]
     [HttpOptions(ApiRoutes.Mcp.Message)]
     public IActionResult Options()
@@ -35,7 +46,7 @@ public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
     {
         if (User.Identity?.IsAuthenticated != true)
         {
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            var baseUrl = GetBaseUrl();
             Response.Headers.Append("WWW-Authenticate", $"Bearer error=\"invalid_token\", error_description=\"Unauthorized\", resource_metadata=\"{baseUrl}/.well-known/oauth-protected-resource\", scope=\"mcp\"");
             Response.Headers.Append("Link", $"<{baseUrl}/.well-known/oauth-protected-resource>; rel=\"oauth-protected-resource\", <{baseUrl}/.well-known/oauth-authorization-server>; rel=\"oauth-authorization-server\"");
 
@@ -137,7 +148,7 @@ public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
     {
         if (User.Identity?.IsAuthenticated != true)
         {
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            var baseUrl = GetBaseUrl();
             Response.Headers.Append("WWW-Authenticate", $"Bearer error=\"invalid_token\", error_description=\"Unauthorized\", resource_metadata=\"{baseUrl}/.well-known/oauth-protected-resource\", scope=\"mcp\"");
             Response.Headers.Append("Link", $"<{baseUrl}/.well-known/oauth-protected-resource>; rel=\"oauth-protected-resource\", <{baseUrl}/.well-known/oauth-authorization-server>; rel=\"oauth-authorization-server\"");
             Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -149,7 +160,7 @@ public class McpController(GoldExMcpEngine mcpEngine) : ControllerBase
         Response.Headers.Append("Cache-Control", "no-cache");
         Response.Headers.Append("Connection", "keep-alive");
 
-        var endpointUrl = $"{Request.Scheme}://{Request.Host}{ApiRoutes.Mcp.Base}";
+        var endpointUrl = $"{GetBaseUrl()}{ApiRoutes.Mcp.Base}";
         await Response.WriteAsync($"event: endpoint\ndata: {endpointUrl}\n\n", cancellationToken);
         await Response.Body.FlushAsync(cancellationToken);
 
