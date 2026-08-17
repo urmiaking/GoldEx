@@ -1,0 +1,67 @@
+@using GoldEx.Shared.DTOs.PersonalAccessTokens
+@inherits GoldExComponentBase
+
+<EditForm Model="Model" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+
+    <MudDialog>
+        <DialogContent>
+            <MudText Typo="Typo.body2" Class="mb-4 text-muted">
+                با ایجاد کلید دسترسی شخصی (Personal Access Token)، می‌توانید دستیارهای هوش مصنوعی مانند ChatGPT، Gemini، Claude Desktop و Cursor را به گلدکس متصل کنید.
+            </MudText>
+
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Name"
+                                  For="@(() => Model.Name)"
+                                  Label="نام یا کاربرد کلید (مثلاً: چت‌بات جمینای / کرسر)"
+                                  Placeholder="مثال: دستیار فروشگاه"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Key" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSelect T="int?"
+                               Label="مدت اعتبار کلید"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined"
+                               @bind-Value="Model.ExpireDays">
+                        <MudSelectItem T="int?" Value="@((int?)30)">۳۰ روز</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)90)">۹۰ روز (۳ ماه)</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)180)">۶ ماه</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)365)">۱ سال</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)null)">نامحدود (بدون انقضا)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error"
+                       OnClick="Close"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Variant="Variant.Filled">انصراف</MudButton>
+
+            <MudButton Class="m-2"
+                       Color="Color.Primary"
+                       Disabled="@IsBusy"
+                       StartIcon="@Icons.Material.Filled.AddCircle"
+                       ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled">
+                @if (IsBusy)
+                {
+                    <MudProgressCircular Class="ms-n1"
+                                         Size="Size.Small"
+                                         Indeterminate="true" />
+                    <MudText Class="ms-2">در حال صدور کلید...</MudText>
+                }
+                else
+                {
+                    <MudText>صدور کلید دسترسی</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>

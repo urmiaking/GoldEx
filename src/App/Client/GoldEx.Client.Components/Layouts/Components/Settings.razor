@@ -29,6 +29,8 @@
             <MudDivider />
             <MudListItem T="string?" Text="اطلاعات پایه" OnClick="() => NavigateTo(ClientRoutes.Settings.Index)" Icon="@Icons.Material.Filled.DisplaySettings"></MudListItem>
             <MudDivider />
+            <MudListItem T="string?" Text="اتصال به هوش مصنوعی (MCP)" OnClick="() => NavigateTo(ClientRoutes.Settings.PersonalAccessTokens)" Icon="@Icons.Material.Filled.SmartToy"></MudListItem>
+            <MudDivider />
             <MudListItem T="string?" Text="دسته بندی اجناس" OnClick="() => NavigateTo(ClientRoutes.ProductCategories.Index)" Icon="@Icons.Material.Filled.Category"></MudListItem>
             <AuthorizeView Roles="@BuiltinRoles.Administrators">
                 <MudDivider />

@@ -94,6 +94,7 @@ public static class WebHostingExtensions
 
             app.UseRouting();
 
+            app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseMiddleware<StoreResolutionMiddleware>();
