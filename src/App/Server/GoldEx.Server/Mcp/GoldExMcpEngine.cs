@@ -1,13 +1,18 @@
-using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Definitions;
+using GoldEx.Sdk.Common.DependencyInjections;
+using GoldEx.Shared.DTOs.CoinInstances;
 using GoldEx.Shared.DTOs.Customers;
+using GoldEx.Shared.DTOs.FinancialAccounts;
 using GoldEx.Shared.DTOs.InventoryStocks;
 using GoldEx.Shared.DTOs.Invoices;
+using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.Products;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 using GoldEx.Shared.Helpers;
 using GoldEx.Shared.Services.Abstractions;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,6 +32,9 @@ public class GoldExMcpEngine(
     ITransactionService transactionService,
     IReportingService reportingService,
     IInvoiceService invoiceService,
+    IPriceUnitService priceUnitService,
+    IFinancialAccountService financialAccountService,
+    IHttpContextAccessor httpContextAccessor,
     IStoreContext storeContext)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -34,6 +42,31 @@ public class GoldExMcpEngine(
         PropertyNameCaseInsensitive = true,
         WriteIndented = true
     };
+
+    private string GetBaseUrl()
+    {
+        var context = httpContextAccessor.HttpContext;
+        if (context == null) return string.Empty;
+
+        var host = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+        if (string.IsNullOrEmpty(host))
+        {
+            host = context.Request.Host.Value;
+        }
+
+        var scheme = context.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
+        if (string.IsNullOrEmpty(scheme))
+        {
+            scheme = context.Request.Scheme;
+        }
+
+        if (string.IsNullOrEmpty(scheme))
+        {
+            scheme = "https";
+        }
+
+        return $"{scheme}://{host}";
+    }
 
     public List<McpToolDefinition> GetTools()
     {
@@ -143,6 +176,23 @@ public class GoldExMcpEngine(
             },
             new McpToolDefinition
             {
+                Name = "create_customer",
+                Description = "ثبت مشتری یا همکار جدید در سیستم با نام، شماره تلفن همراه و کد ملی",
+                InputSchema = new McpInputSchema
+                {
+                    Properties = new Dictionary<string, McpPropertySchema>
+                    {
+                        ["fullName"] = new() { Type = "string", Description = "نام و نام خانوادگی مشتری (الزامی)" },
+                        ["phoneNumber"] = new() { Type = "string", Description = "شماره تلفن همراه مشتری" },
+                        ["nationalId"] = new() { Type = "string", Description = "کد ملی مشتری (در صورت خالی بودن خودکار تولید می‌شود)" },
+                        ["address"] = new() { Type = "string", Description = "آدرس مشتری" },
+                        ["customerType"] = new() { Type = "string", Description = "نوع مشتری (RetailCustomer: مشتری، Wholesaler: بنکدار، Workshop: کارگاه، Retailer: ویترین‌دار)", Enum = ["RetailCustomer", "Wholesaler", "Workshop", "Retailer"] }
+                    },
+                    Required = ["fullName"]
+                }
+            },
+            new McpToolDefinition
+            {
                 Name = "get_customer_statement",
                 Description = "دریافت صورتحساب و ریز تراکنش‌های بدهکار/بستانکار دفتر کل یک مشتری در بازه زمانی مشخص",
                 InputSchema = new McpInputSchema
@@ -174,15 +224,62 @@ public class GoldExMcpEngine(
             new McpToolDefinition
             {
                 Name = "get_invoice_details",
-                Description = "دریافت جزئیات کامل یک فاکتور شامل اقلام، اجرت‌ها، مالیات، دریافتی‌ها و معادل وزنی طلای ۱۸ عیار",
+                Description = "دریافت جزئیات کامل یک فاکتور شامل اقلام طلا، طلای کهنه، سکه، ارز، دریافتی‌ها/پرداختی‌ها، اطلاعات مشتری، مانده حساب و لینک دانلود PDF فاکتور",
                 InputSchema = new McpInputSchema
                 {
                     Properties = new Dictionary<string, McpPropertySchema>
                     {
                         ["invoiceId"] = new() { Type = "string", Description = "شناسه یکتای فاکتور" },
                         ["invoiceNumber"] = new() { Type = "number", Description = "شماره فاکتور" },
-                        ["invoiceType"] = new() { Type = "string", Description = "نوع فاکتور", Enum = ["Sell", "Purchase", "Return"] }
+                        ["invoiceType"] = new() { Type = "string", Description = "نوع فاکتور (Sell: فروش، Purchase: خرید، Return: مرجوعی)", Enum = ["Sell", "Purchase", "Return"] }
                     }
+                }
+            },
+            new McpToolDefinition
+            {
+                Name = "create_invoice",
+                Description = "ثبت کامل فاکتور فروش، خرید یا مرجوعی طلا و جواهر به همراه اقلام طلا، طلای کهنه دریافتی، سکه، ارز، پرداختی‌های نقدی و کارتخوان با تولید لینک دانلود PDF",
+                InputSchema = new McpInputSchema
+                {
+                    Properties = new Dictionary<string, McpPropertySchema>
+                    {
+                        ["invoiceType"] = new() { Type = "string", Description = "نوع فاکتور (Sell: فروش، Purchase: خرید، Return: مرجوعی - پیش‌فرض Sell)", Enum = ["Sell", "Purchase", "Return"] },
+                        ["customerName"] = new() { Type = "string", Description = "نام مشتری (مثلاً مسعود خدادادی)" },
+                        ["customerPhone"] = new() { Type = "string", Description = "شماره همراه مشتری (جهت شناسایی یا ثبت خودکار)" },
+                        ["customerId"] = new() { Type = "string", Description = "شناسه یکتای مشتری در صورت وجود" },
+                        ["items"] = new() { Type = "array", Description = "لیست اقلام طلا و جواهر نو (شامل نام کالا، وزن به گرم، نرخ گرم، اجرت درصدی یا ثابت، سود و مالیات)" },
+                        ["usedGoldItems"] = new() { Type = "array", Description = "لیست اقلام طلای کهنه/متفرقه دریافتی از مشتری (شامل شرح، وزن به گرم، کسری عیار از 750 و نرخ گرم)" },
+                        ["coinItems"] = new() { Type = "array", Description = "لیست اقلام سکه در فاکتور (شامل عنوان سکه، تعداد و قیمت واحد)" },
+                        ["currencyItems"] = new() { Type = "array", Description = "لیست اقلام ارزی در فاکتور (شامل عنوان ارز، مقدار و نرخ واحد)" },
+                        ["payments"] = new() { Type = "array", Description = "لیست مبالغ دریافتی یا پرداختی (شامل نوع پرداخت Cash/Pos/Check/BankTransfer، مبلغ، حساب مالی و شماره پیگیری)" },
+                        ["discounts"] = new() { Type = "array", Description = "لیست تخفیف‌ها (شامل مبلغ و شرح)" },
+                        ["extraCosts"] = new() { Type = "array", Description = "لیست هزینه‌های اضافی (شامل مبلغ و شرح)" },
+                        ["note"] = new() { Type = "string", Description = "توضیحات کلی فاکتور" }
+                    },
+                    Required = ["customerName"]
+                }
+            },
+            new McpToolDefinition
+            {
+                Name = "add_invoice_payment",
+                Description = "ثبت دریافت یا پرداخت وجه (نقد، پوز/کارتخوان، حواله، چک) برای یک فاکتور موجود و به‌روزرسانی مانده حساب فاکتور",
+                InputSchema = new McpInputSchema
+                {
+                    Properties = new Dictionary<string, McpPropertySchema>
+                    {
+                        ["invoiceNumber"] = new() { Type = "number", Description = "شماره فاکتور مورد نظر (مثلاً 120)" },
+                        ["invoiceId"] = new() { Type = "string", Description = "شناسه یکتای فاکتور در صورت وجود" },
+                        ["invoiceType"] = new() { Type = "string", Description = "نوع فاکتور (پیش‌فرض Sell)", Enum = ["Sell", "Purchase", "Return"] },
+                        ["paymentType"] = new() { Type = "string", Description = "نوع پرداخت (Cash: نقد، Pos: کارتخوان، BankTransfer: حواله، Check: چک)", Enum = ["Cash", "Pos", "BankTransfer", "Check"] },
+                        ["amount"] = new() { Type = "number", Description = "مبلغ پرداختی" },
+                        ["financialAccountTitle"] = new() { Type = "string", Description = "عنوان حساب مالی/بانک (مثلاً بانک ملت یا صندوق)" },
+                        ["referenceNumber"] = new() { Type = "string", Description = "شماره پیگیری، ارجاع یا رسید کارتخوان" },
+                        ["note"] = new() { Type = "string", Description = "توضیحات پرداخت" },
+                        ["checkNumber"] = new() { Type = "string", Description = "شماره چک (در صورت پرداخت با چک)" },
+                        ["checkSayadiCode"] = new() { Type = "string", Description = "شناسه ۱۶ رقمی صیادی چک" },
+                        ["checkDueDate"] = new() { Type = "string", Description = "تاریخ سررسید چک" }
+                    },
+                    Required = ["amount"]
                 }
             },
             new McpToolDefinition
@@ -241,6 +338,16 @@ public class GoldExMcpEngine(
         [
             new McpPromptDefinition
             {
+                Name = "create-gold-sale-invoice",
+                Description = "راهنمای ثبت هوشمند فاکتور فروش طلا به همراه محاسبات اجرت، سود و طلای کهنه تعویضی",
+                Arguments =
+                [
+                    new McpPromptArgument { Name = "customerName", Description = "نام مشتری", Required = true },
+                    new McpPromptArgument { Name = "productDetails", Description = "شرح طلا، وزن و اجرت", Required = true }
+                ]
+            },
+            new McpPromptDefinition
+            {
                 Name = "audit-customer-ledger",
                 Description = "تحلیل و بررسی جامع وضعیت حساب، بدهی‌ها، طلب‌ها و فاکتورهای باز یک مشتری",
                 Arguments =
@@ -273,9 +380,12 @@ public class GoldExMcpEngine(
                 "search_inventory_stock" => await ExecuteSearchInventoryStockAsync(arguments, cancellationToken),
                 "get_customer_balance" => await ExecuteGetCustomerBalanceAsync(arguments, cancellationToken),
                 "search_customers" => await ExecuteSearchCustomersAsync(arguments, cancellationToken),
+                "create_customer" => await ExecuteCreateCustomerAsync(arguments, cancellationToken),
                 "get_customer_statement" => await ExecuteGetCustomerStatementAsync(arguments, cancellationToken),
                 "search_invoices" => await ExecuteSearchInvoicesAsync(arguments, cancellationToken),
                 "get_invoice_details" => await ExecuteGetInvoiceDetailsAsync(arguments, cancellationToken),
+                "create_invoice" => await ExecuteCreateInvoiceAsync(arguments, cancellationToken),
+                "add_invoice_payment" => await ExecuteAddInvoicePaymentAsync(arguments, cancellationToken),
                 "get_trial_balance_report" => await ExecuteGetTrialBalanceReportAsync(arguments, cancellationToken),
                 "get_used_gold_hidden_profit" => await ExecuteGetUsedGoldHiddenProfitAsync(arguments, cancellationToken),
                 _ => McpContentResult.Text($"ابزار ناشناخته: {name}", isError: true)
@@ -286,6 +396,10 @@ public class GoldExMcpEngine(
             return McpContentResult.Text($"خطا در اجرای ابزار {name}: {ex.Message}", isError: true);
         }
     }
+
+    // ----------------------------------------------------------------------------------------------------
+    // Tool Executions
+    // ----------------------------------------------------------------------------------------------------
 
     private async Task<McpContentResult> ExecuteGetLiveGoldPricesAsync(JsonElement args, CancellationToken ct)
     {
@@ -300,131 +414,169 @@ public class GoldExMcpEngine(
         sb.AppendLine("| عنوان نماد | نرخ | تغییر | تاریخ به‌روزرسانی |");
         sb.AppendLine("| :--- | :--- | :--- | :--- |");
 
-        foreach (var pr in prices)
+        foreach (var price in prices)
         {
-            var formattedPrice = string.IsNullOrWhiteSpace(pr.Value) ? "نامشخص" : $"{pr.Value} {pr.Unit}";
-            var changeStr = string.IsNullOrWhiteSpace(pr.Change) ? "-" : pr.Change;
-            var dateStr = pr.LastUpdate.HasValue ? pr.LastUpdate.Value.ToString("yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture) : "-";
-            sb.AppendLine($"| {pr.Title} | {formattedPrice} | {changeStr} | {dateStr} |");
+            var dateStr = price.LastUpdate.HasValue
+                ? price.LastUpdate.Value.ToString("yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture)
+                : "-";
+
+            var changeStr = !string.IsNullOrEmpty(price.Change) ? price.Change : "-";
+
+            sb.AppendLine($"| {price.Title} | **{price.Value}** {price.Unit} | {changeStr} | {dateStr} |");
         }
 
         return McpContentResult.Text(sb.ToString());
     }
 
-    private McpContentResult ExecuteCalculateGoldProductPrice(JsonElement args)
+    private static McpContentResult ExecuteCalculateGoldProductPrice(JsonElement args)
     {
-        var weight = args.GetProperty("weight").GetDecimal();
-        var fineness = args.GetProperty("fineness").GetDecimal();
-        var gramPrice = args.GetProperty("gramPrice").GetDecimal();
-        var profitPercent = args.GetProperty("profitPercent").GetDecimal();
-        var taxPercent = args.GetProperty("taxPercent").GetDecimal();
+        if (!args.TryGetProperty("weight", out var wProp) ||
+            !args.TryGetProperty("fineness", out var fProp) ||
+            !args.TryGetProperty("gramPrice", out var gpProp))
+        {
+            return McpContentResult.Text("پارامترهای وزن (weight)، عیار (fineness) و نرخ گرم (gramPrice) الزامی هستند.", isError: true);
+        }
 
-        var wageTypeStr = args.TryGetProperty("wageType", out var wt) ? wt.GetString() : "Percent";
-        var wageType = Enum.TryParse<WageType>(wageTypeStr, true, out var parsedWt) ? parsedWt : WageType.Percent;
-        var wageAmount = args.TryGetProperty("wageAmount", out var wa) ? wa.GetDecimal() : 0m;
-        var stoneAmount = args.TryGetProperty("stoneAmount", out var sa) ? sa.GetDecimal() : 0m;
+        var weight = wProp.GetDecimal();
+        var fineness = fProp.GetDecimal();
+        var gramPrice = gpProp.GetDecimal();
 
-        var rawPrice = CalculatorHelper.Product.CalculateRawPrice(weight, gramPrice, fineness, 1, ProductType.Gold);
-        var wage = CalculatorHelper.Product.CalculateWage(rawPrice, weight, wageAmount, wageType, 1);
-        var profit = CalculatorHelper.Product.CalculateProfit(rawPrice, wage, ProductType.Gold, profitPercent);
-        var tax = CalculatorHelper.Product.CalculateTax(wage, profit, taxPercent, ProductType.Gold, stoneAmount);
-        var finalPrice = CalculatorHelper.Product.CalculateFinalPrice(rawPrice, wage, profit, tax, stoneAmount, ProductType.Gold);
+        var wageType = args.TryGetProperty("wageType", out var wtProp) && wtProp.GetString()?.Equals("Fixed", StringComparison.OrdinalIgnoreCase) == true
+            ? WageType.Fixed
+            : WageType.Percent;
+
+        var wageAmount = args.TryGetProperty("wageAmount", out var waProp) ? waProp.GetDecimal() : 0m;
+        var profitPercent = args.TryGetProperty("profitPercent", out var ppProp) ? ppProp.GetDecimal() : 7m;
+        var taxPercent = args.TryGetProperty("taxPercent", out var tpProp) ? tpProp.GetDecimal() : 9m;
+        var stoneAmount = args.TryGetProperty("stoneAmount", out var saProp) ? saProp.GetDecimal() : 0m;
+
+        // 1. Raw gold value
+        var rawAmount = weight * (fineness / 750m) * gramPrice;
+
+        // 2. Wage
+        var calculatedWage = wageType == WageType.Percent
+            ? rawAmount * (wageAmount / 100m)
+            : wageAmount * weight;
+
+        // 3. Profit (calculated on raw + wage + stone)
+        var profitBase = rawAmount + calculatedWage + stoneAmount;
+        var calculatedProfit = profitBase * (profitPercent / 100m);
+
+        // 4. Tax (VAT on wage + profit per Iran gold regulations)
+        var taxBase = calculatedWage + calculatedProfit;
+        var calculatedTax = taxBase * (taxPercent / 100m);
+
+        // 5. Total
+        var finalTotal = rawAmount + calculatedWage + calculatedProfit + calculatedTax + stoneAmount;
 
         var sb = new StringBuilder();
-        sb.AppendLine("### 💍 ریز محاسبات قیمت طلا/جواهر:");
-        sb.AppendLine($"- **وزن:** {weight:N3} گرم (عیار: {fineness})");
-        sb.AppendLine($"- **نرخ پایه هر گرم:** {gramPrice:N0}");
-        sb.AppendLine($"- **قیمت طلای خام:** {rawPrice:N0}");
-        sb.AppendLine($"- **اجرت ساخت ({wageType}):** {wage:N0}");
-        sb.AppendLine($"- **سود فروشنده ({profitPercent}%):** {profit:N0}");
-        sb.AppendLine($"- **مالیات بر ارزش افزوده ({taxPercent}%):** {tax:N0}");
-        if (stoneAmount > 0)
-            sb.AppendLine($"- **ارزش سنگ/نگین:** {stoneAmount:N0}");
-        sb.AppendLine($"\n**💳 مبلغ نهایی قابل پرداخت:** {finalPrice:N0}");
+        sb.AppendLine("### 🧮 محاسبه قیمت طلا و جواهر:");
+        sb.AppendLine($"- **وزن:** {weight:N3} گرم (عیار {fineness})");
+        sb.AppendLine($"- **نرخ مبنای هر گرم:** {gramPrice:N0}");
+        sb.AppendLine($"- **قیمت طلای خام:** {rawAmount:N0}");
+        sb.AppendLine($"- **اجرت ساخت ({wageAmount}{(wageType == WageType.Percent ? "%" : " مبلغ ثابت")}):** {calculatedWage:N0}");
+        if (stoneAmount > 0) sb.AppendLine($"- **ارزش سنگ/نگین:** {stoneAmount:N0}");
+        sb.AppendLine($"- **سود فروشنده ({profitPercent}%):** {calculatedProfit:N0}");
+        sb.AppendLine($"- **مالیات بر ارزش افزوده ({taxPercent}% روی سود و اجرت):** {calculatedTax:N0}");
+        sb.AppendLine($"---\n### 💎 **مبلغ نهایی قابل پرداخت:** {finalTotal:N0}");
 
         return McpContentResult.Text(sb.ToString());
     }
 
-    private McpContentResult ExecuteCalculateScrapGoldValuation(JsonElement args)
+    private static McpContentResult ExecuteCalculateScrapGoldValuation(JsonElement args)
     {
-        var weight = args.GetProperty("weight").GetDecimal();
-        var fineness = args.GetProperty("fineness").GetDecimal();
-        var deduction = args.GetProperty("deductionFrom750").GetDecimal();
-        var gramPrice750 = args.GetProperty("gramPrice750").GetDecimal();
+        if (!args.TryGetProperty("weight", out var wProp) ||
+            !args.TryGetProperty("gramPrice750", out var gpProp))
+        {
+            return McpContentResult.Text("پارامترهای وزن (weight) و نرخ روز گرم ۷۵۰ (gramPrice750) الزامی هستند.", isError: true);
+        }
 
-        var totalPayable = CalculatorHelper.UsedProduct.Calculate(weight, fineness, deduction, gramPrice750);
-        var equivalentWeight750 = weight * (fineness / 750m);
-        var effectiveWeight = equivalentWeight750 * ((750m - deduction) / 750m);
+        var weight = wProp.GetDecimal();
+        var fineness = args.TryGetProperty("fineness", out var fProp) ? fProp.GetDecimal() : 750m;
+        var deduction = args.TryGetProperty("deductionFrom750", out var dProp) ? dProp.GetDecimal() : 0m;
+        var gramPrice = gpProp.GetDecimal();
+
+        var effectiveFineness = Math.Max(0, fineness - deduction);
+        var equivalent18KWeight = weight * (effectiveFineness / 750m);
+        var totalValue = equivalent18KWeight * gramPrice;
 
         var sb = new StringBuilder();
-        sb.AppendLine("### 🪙 ارزیابی و خرید طلای کهنه/متفرقه:");
-        sb.AppendLine($"- **وزن ناخالص:** {weight:N3} گرم");
-        sb.AppendLine($"- **عیار واقعی:** {fineness}");
-        sb.AppendLine($"- **کسری عیار توافقی از ۷۵۰:** {deduction}");
-        sb.AppendLine($"- **وزن معادل ۷۵۰:** {equivalentWeight750:N3} گرم");
-        sb.AppendLine($"- **وزن موثر پس از کسر عیار:** {effectiveWeight:N3} گرم");
-        sb.AppendLine($"- **نرخ طلای ۷۵۰:** {gramPrice750:N0}");
-        sb.AppendLine($"\n**💰 مبلغ کل قابل پرداخت به مشتری:** {totalPayable:N0}");
+        sb.AppendLine("### ♻️ محاسبه ارزش خرید طلای کهنه و متفرقه:");
+        sb.AppendLine($"- **وزن طلای کهنه:** {weight:N3} گرم");
+        sb.AppendLine($"- **عیار اسمی:** {fineness}");
+        sb.AppendLine($"- **کسری عیار از ۷۵۰:** {deduction} (عیار موثر: {effectiveFineness})");
+        sb.AppendLine($"- **معادل وزنی طلای ۱۸ عیار (۷۵۰):** {equivalent18KWeight:N3} گرم");
+        sb.AppendLine($"- **نرخ هر گرم ۱۸ عیار:** {gramPrice:N0}");
+        sb.AppendLine($"---\n### 💰 **ارزش کل طلای کهنه جهت پرداخت یا تهاتر:** {totalValue:N0}");
 
         return McpContentResult.Text(sb.ToString());
     }
 
-    private McpContentResult ExecuteCalculateMoltenGold(JsonElement args)
+    private static McpContentResult ExecuteCalculateMoltenGold(JsonElement args)
     {
-        var hasBudget = args.TryGetProperty("targetBudget", out var tb) && tb.GetDecimal() > 0;
-        var gramPrice = args.TryGetProperty("gramPrice", out var gp) ? gp.GetDecimal() : 0m;
-        var fineness = args.TryGetProperty("fineness", out var fn) ? fn.GetDecimal() : 750m;
-
-        if (hasBudget && gramPrice > 0)
+        if (!args.TryGetProperty("fineness", out var fProp) ||
+            !args.TryGetProperty("gramPrice", out var gpProp))
         {
-            var budget = tb.GetDecimal();
-            var weight = CalculatorHelper.MoltenGold.CalculateWeight(budget, fineness, gramPrice, 0);
-            return McpContentResult.Text($"با بودجه **{budget:N0}** و عیار **{fineness}** در نرخ **{gramPrice:N0}**، مقدار **{weight:N3} گرم** طلای آب‌شده قابل خریداری است.");
+            return McpContentResult.Text("پارامترهای عیار آزمایشگاه (fineness) و نرخ هر گرم طلای ۷۵۰ (gramPrice) الزامی هستند.", isError: true);
         }
 
-        var weightInput = args.TryGetProperty("weight", out var w) ? w.GetDecimal() : 0m;
-        if (weightInput > 0 && gramPrice > 0)
+        var fineness = fProp.GetDecimal();
+        var gramPrice = gpProp.GetDecimal();
+
+        if (args.TryGetProperty("targetBudget", out var tbProp) && tbProp.GetDecimal() > 0)
         {
-            var value = CalculatorHelper.MoltenGold.Calculate(weightInput, fineness, gramPrice, 1);
-            var eq750 = weightInput * (fineness / 750m);
-            return McpContentResult.Text($"طلای آب‌شده به وزن **{weightInput:N3} گرم** با عیار **{fineness}** (معادل **{eq750:N3} گرم** طلای ۱۸ عیار) به ارزش **{value:N0}** می‌باشد.");
+            var budget = tbProp.GetDecimal();
+            var pricePerGramOfThisFineness = gramPrice * (fineness / 750m);
+            var purchasableWeight = budget / pricePerGramOfThisFineness;
+
+            return McpContentResult.Text($"### 🪙 محاسبه خرید طلای آب‌شده با بودجه معین:\n" +
+                                         $"- **بودجه کل:** {budget:N0}\n" +
+                                         $"- **عیار ری‌گیری:** {fineness}\n" +
+                                         $"- **نرخ هر گرم این عیار:** {pricePerGramOfThisFineness:N0}\n" +
+                                         $"---\n" +
+                                         $"### ✨ **وزن قابل خرید:** **{purchasableWeight:N3} گرم**");
         }
 
-        return McpContentResult.Text("لطفاً وزن یا بودجه مورد نظر را به همراه نرخ روز وارد کنید.", isError: true);
+        if (args.TryGetProperty("weight", out var wProp))
+        {
+            var weight = wProp.GetDecimal();
+            var equivalentWeight750 = weight * (fineness / 750m);
+            var totalValue = equivalentWeight750 * gramPrice;
+
+            return McpContentResult.Text($"### 🪙 محاسبه ارزش قطعه طلای آب‌شده:\n" +
+                                         $"- **وزن قطعه:** {weight:N3} گرم\n" +
+                                         $"- **عیار ری‌گیری:** {fineness}\n" +
+                                         $"- **معادل وزنی طلای ۷۵۰ (۱۸ عیار):** {equivalentWeight750:N3} گرم\n" +
+                                         $"---\n" +
+                                         $"### 💰 **ارزش کل:** **{totalValue:N0}**");
+        }
+
+        return McpContentResult.Text("لطفاً یا وزن قطعه (weight) یا بودجه خرید (targetBudget) را ارسال فرمایید.", isError: true);
     }
 
     private async Task<McpContentResult> ExecuteSearchInventoryStockAsync(JsonElement args, CancellationToken ct)
     {
-        var query = args.TryGetProperty("query", out var q) ? q.GetString() : null;
-        var pageSize = args.TryGetProperty("pageSize", out var ps) ? ps.GetInt32() : 15;
+        var query = args.TryGetProperty("query", out var qProp) ? qProp.GetString() : null;
+        var pageSize = args.TryGetProperty("pageSize", out var psProp) ? psProp.GetInt32() : 15;
 
-        var requestFilter = new RequestFilter
-        {
-            Search = query,
-            Take = pageSize,
-            Skip = 0
-        };
-
+        var filter = new RequestFilter(Skip: 0, Take: pageSize, Search: query);
         var inventoryFilter = new InventoryFilter(null, null, null, null, null);
-        var pagedResult = await inventoryStockService.GetListAsync(requestFilter, inventoryFilter, ct);
+        var stocks = await inventoryStockService.GetListAsync(filter, inventoryFilter, ct);
 
-        if (pagedResult.Data.Count == 0)
-            return McpContentResult.Text("هیچ کالایی با مشخصات جستجو در انبار یافت نشد.");
+        if (stocks.Data.Count == 0)
+            return McpContentResult.Text($"هیچ کالایی با عبارت جستجوی «{query}» در انبار یافت نشد.");
 
         var sb = new StringBuilder();
-        sb.AppendLine($"### 📦 نتایج جستجوی انبار ({pagedResult.Total} مورد):");
-        sb.AppendLine("| بارکد/شناسه | عنوان کالا | نوع کالا | عیار | وزن موجود (گرم) |");
-        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- |");
+        sb.AppendLine($"### 📦 موجودی انبار ({stocks.Total} مورد یافت شد):");
+        sb.AppendLine("| عنوان کالا | بارکد | موجودی / وزن | واحد |");
+        sb.AppendLine("| :--- | :--- | :--- | :--- |");
 
-        foreach (var item in pagedResult.Data)
+        foreach (var s in stocks.Data)
         {
-            var title = item.Product?.Name ?? item.Coin?.Coin?.Title ?? item.Currency?.Title ?? "کالا";
-            var barcode = item.Product?.Barcode ?? item.Coin?.Barcode ?? "-";
-            var type = item.Product?.ProductType.ToString() ?? (item.Coin != null ? "سکه" : item.Currency != null ? "ارز" : "-");
-            var fineness = item.Product?.Fineness.ToString() ?? item.Coin?.Fineness.ToString() ?? "-";
-            var weight = item.Product != null ? item.Product.Weight.ToString("N3") : item.Coin != null ? item.Coin.Weight.ToString("N3") : item.CurrentAmount.ToString("N2");
-
-            sb.AppendLine($"| {barcode} | {title} | {type} | {fineness} | {weight} |");
+            var title = s.Product?.Name ?? s.Coin?.Coin?.Title ?? s.Currency?.Title ?? "کالای انبار";
+            var barcode = s.Product?.Barcode ?? s.Coin?.Barcode ?? "-";
+            var unit = s.Product != null ? "گرم" : (s.Coin != null ? "عدد" : (s.Currency?.Title ?? "واحد"));
+            sb.AppendLine($"| {title} | `{barcode}` | **{s.CurrentAmount:N3}** | {unit} |");
         }
 
         return McpContentResult.Text(sb.ToString());
@@ -433,44 +585,48 @@ public class GoldExMcpEngine(
     private async Task<McpContentResult> ExecuteGetCustomerBalanceAsync(JsonElement args, CancellationToken ct)
     {
         Guid? customerId = null;
+        string? customerName = null;
 
-        if (args.TryGetProperty("customerId", out var cidProp) && Guid.TryParse(cidProp.GetString(), out var parsedId))
+        if (args.TryGetProperty("customerId", out var idProp) && Guid.TryParse(idProp.GetString(), out var id))
         {
-            customerId = parsedId;
+            customerId = id;
         }
-        else if (args.TryGetProperty("customerName", out var cnameProp))
+        else if (args.TryGetProperty("customerName", out var nameProp))
         {
-            var name = cnameProp.GetString();
-            var matches = await customerService.GetByNameAsync(name, null, ct);
+            customerName = nameProp.GetString();
+            var matches = await customerService.GetByNameAsync(customerName, null, ct);
             var first = matches.FirstOrDefault();
             if (first != null)
+            {
                 customerId = first.Id;
+                customerName = first.FullName;
+            }
         }
 
         if (!customerId.HasValue)
-            return McpContentResult.Text("مشتری مورد نظر یافت نشد. لطفاً نام یا شناسه صحیح را وارد کنید.", isError: true);
+            return McpContentResult.Text("مشتری مورد نظر با نام یا شناسه ارسالی یافت نشد.", isError: true);
 
-        var customer = await customerService.GetAsync(customerId.Value, ct);
         var balances = await transactionService.GetCustomerRemainingListAsync(customerId.Value, null, null, null, ct);
 
-        var sb = new StringBuilder();
-        sb.AppendLine($"### 👤 مانده حساب مشتری: **{customer.FullName}** ({customer.CustomerType})");
-        sb.AppendLine($"- شماره تماس: {customer.PhoneNumber ?? "ثبت نشده"}");
-        sb.AppendLine($"- کد ملی: {customer.NationalId ?? "ثبت نشده"}");
-        sb.AppendLine("\n**وضعیت مانده حساب به تفکیک واحدها:**");
-
         if (balances.Count == 0)
+            return McpContentResult.Text($"مشتری «{customerName}» در حال حاضر هیچ مانده حساب یا تراکنشی در سیستم ندارد (تراز صفر).");
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"### 👤 وضعیت حساب مشتری: **{customerName}**");
+        sb.AppendLine("| واحد پولی / وزنی | مانده حساب | وضعیت |");
+        sb.AppendLine("| :--- | :--- | :--- |");
+
+        foreach (var b in balances)
         {
-            sb.AppendLine("- حساب کاملاً تسویه است (مانده صفر).");
-        }
-        else
-        {
-            foreach (var b in balances)
+            var status = b.Amount switch
             {
-                var status = b.Amount > 0 ? "🔴 بدهکار به فروشگاه" : b.Amount < 0 ? "🟢 بستانکار از فروشگاه" : "⚪ تسویه";
-                var unitName = b.PriceUnit?.Title ?? "واحد نامشخص";
-                sb.AppendLine($"- **{unitName}:** {Math.Abs(b.Amount):N3} ({status})");
-            }
+                > 0 => "🔴 بدهکار به فروشگاه",
+                < 0 => "🟢 بستانکار از فروشگاه",
+                _ => "⚪ تسویه"
+            };
+
+            var formattedAmount = Math.Abs(b.Amount).ToString("N2");
+            sb.AppendLine($"| {b.PriceUnit.Title} | **{formattedAmount}** | {status} |");
         }
 
         return McpContentResult.Text(sb.ToString());
@@ -478,23 +634,71 @@ public class GoldExMcpEngine(
 
     private async Task<McpContentResult> ExecuteSearchCustomersAsync(JsonElement args, CancellationToken ct)
     {
-        var query = args.GetProperty("query").GetString();
+        var query = args.TryGetProperty("query", out var qProp) ? qProp.GetString() : "";
+        if (string.IsNullOrWhiteSpace(query))
+            return McpContentResult.Text("عبارت جستجو (query) الزامی است.", isError: true);
+
         var matches = await customerService.GetByNameAsync(query, null, ct);
 
         if (matches.Count == 0)
-            return McpContentResult.Text($"هیچ مشتری با عبارت «{query}» یافت نشد.");
+            return McpContentResult.Text($"هیچ مشتری با عبارت «{query}» پیدا نشد.");
 
         var sb = new StringBuilder();
-        sb.AppendLine($"### 👥 لیست مشتریان منطبق ({matches.Count} مورد):");
-        sb.AppendLine("| نام و نام خانوادگی | نوع مشتری | شماره همراه | کد ملی |");
+        sb.AppendLine($"### 👥 نتایج جستجوی مشتریان ({matches.Count} مورد):");
+        sb.AppendLine("| نام و نام خانوادگی | شماره همراه | کد ملی | شناسه یکتا |");
         sb.AppendLine("| :--- | :--- | :--- | :--- |");
 
-        foreach (var c in matches)
+        foreach (var c in matches.Take(15))
         {
-            sb.AppendLine($"| {c.FullName} | {c.CustomerType} | {c.PhoneNumber ?? "-"} | {c.NationalId ?? "-"} |");
+            sb.AppendLine($"| **{c.FullName}** | {c.PhoneNumber ?? "-"} | {c.NationalId ?? "-"} | `{c.Id}` |");
         }
 
         return McpContentResult.Text(sb.ToString());
+    }
+
+    private async Task<McpContentResult> ExecuteCreateCustomerAsync(JsonElement args, CancellationToken ct)
+    {
+        if (!args.TryGetProperty("fullName", out var fnProp) || string.IsNullOrWhiteSpace(fnProp.GetString()))
+        {
+            return McpContentResult.Text("نام و نام خانوادگی مشتری (fullName) الزامی است.", isError: true);
+        }
+
+        var fullName = fnProp.GetString()!.Trim();
+        var phone = args.TryGetProperty("phoneNumber", out var pProp) ? pProp.GetString() : "";
+        var address = args.TryGetProperty("address", out var aProp) ? aProp.GetString() : null;
+        var nationalId = args.TryGetProperty("nationalId", out var nidProp) ? nidProp.GetString() : null;
+
+        var customerType = CustomerType.RetailCustomer;
+        if (args.TryGetProperty("customerType", out var ctProp) && Enum.TryParse<CustomerType>(ctProp.GetString(), true, out var parsedCt))
+        {
+            customerType = parsedCt;
+        }
+
+        if (string.IsNullOrWhiteSpace(nationalId))
+        {
+            var genNat = await customerService.GenerateNationalIdAsync(ct);
+            nationalId = genNat.NationalId;
+        }
+
+        var defaultPriceUnit = await priceUnitService.GetDefaultAsync(ct);
+
+        var requestDto = new CustomerRequestDto(
+            Id: null,
+            FullName: fullName,
+            NationalId: nationalId,
+            PhoneNumber: phone ?? "",
+            Address: address,
+            CreditLimit: null,
+            CreditLimitPriceUnitId: defaultPriceUnit?.Id,
+            CustomerType: customerType);
+
+        var newId = await customerService.CreateAsync(requestDto, ct);
+
+        return McpContentResult.Text($"✅ **مشتری جدید با موفقیت ثبت شد:**\n" +
+                                     $"- **نام:** {fullName}\n" +
+                                     $"- **شماره همراه:** {phone ?? "-"}\n" +
+                                     $"- **کد ملی / شناسه:** {nationalId}\n" +
+                                     $"- **شناسه سیستمی:** `{newId}`");
     }
 
     private async Task<McpContentResult> ExecuteGetCustomerStatementAsync(JsonElement args, CancellationToken ct)
@@ -541,7 +745,7 @@ public class GoldExMcpEngine(
 
     private async Task<McpContentResult> ExecuteSearchInvoicesAsync(JsonElement args, CancellationToken ct)
     {
-        var filter = new RequestFilter { Take = 15, Skip = 0 };
+        var filter = new RequestFilter(Skip: 0, Take: 15);
         InvoiceType? targetInvoiceType = null;
 
         if (args.TryGetProperty("invoiceType", out var itProp) && Enum.TryParse<InvoiceType>(itProp.GetString(), true, out var it))
@@ -555,13 +759,15 @@ public class GoldExMcpEngine(
 
         var sb = new StringBuilder();
         sb.AppendLine($"### 🧾 لیست فاکتورها ({list.Total} مورد):");
-        sb.AppendLine("| شماره فاکتور | نوع | مشتری | تاریخ | مبلغ کل | واحد | وضعیت پرداخت |");
-        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+        sb.AppendLine("| شماره فاکتور | نوع | مشتری | تاریخ | مبلغ کل | واحد | وضعیت پرداخت | دانلود |");
+        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
 
+        var baseUrl = GetBaseUrl();
         foreach (var inv in list.Data)
         {
-            var dateStr = inv.InvoiceDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
-            sb.AppendLine($"| {inv.InvoiceNumber} | {inv.InvoiceType} | {inv.CustomerFullName} | {dateStr} | {inv.TotalAmount:N0} | {inv.PriceUnit} | {inv.PaymentStatus} |");
+            var dateStr = inv.InvoiceDate.ToString("yyyy/MM/dd");
+            var pdfLink = $"[📥 PDF]({baseUrl}/api/invoices/{inv.Id}/download-pdf)";
+            sb.AppendLine($"| {inv.InvoiceNumber} | {inv.InvoiceType} | {inv.CustomerFullName} | {dateStr} | {inv.TotalAmount:N0} | {inv.PriceUnit} | {inv.PaymentStatus} | {pdfLink} |");
         }
 
         return McpContentResult.Text(sb.ToString());
@@ -584,33 +790,714 @@ public class GoldExMcpEngine(
         }
 
         if (invoice == null)
-            return McpContentResult.Text("فاکتور مورد نظر یافت نشد.", isError: true);
+            return McpContentResult.Text("فاکتور مورد نظر یافت نشد. لطفاً شماره فاکتور یا شناسه را بررسی فرمایید.", isError: true);
 
         var unitTitle = invoice.PriceUnit?.Title ?? "";
         var unpaidUnitTitle = invoice.UnpaidPriceUnit?.Title ?? unitTitle;
+        var baseUrl = GetBaseUrl();
+        var downloadUrl = $"{baseUrl}/api/invoices/{invoice.Id}/download-pdf";
 
         var sb = new StringBuilder();
-        sb.AppendLine($"### 📄 جزئیات فاکتور شماره {invoice.InvoiceNumber} ({invoice.InvoiceType})");
-        sb.AppendLine($"- **مشتری:** {invoice.Customer?.FullName ?? "عمومی"}");
-        sb.AppendLine($"- **تاریخ ثبت:** {invoice.InvoiceDate:yyyy/MM/dd}");
-        sb.AppendLine($"- **مبلغ کل اقلام:** {invoice.TotalAmount:N0} {unitTitle}");
-        sb.AppendLine($"- **تخفیف:** {invoice.TotalDiscountAmount:N0} {unitTitle}");
-        sb.AppendLine($"- **مبلغ نهایی با کسورات و اضافات:** {invoice.TotalAmountWithDiscountsAndExtraCosts:N0} {unitTitle}");
-        sb.AppendLine($"- **مانده تسویه‌نشده:** {invoice.TotalUnpaidAmount:N0} {unpaidUnitTitle}");
+        sb.AppendLine($"# 📄 جزئیات فاکتور شماره {invoice.InvoiceNumber} ({invoice.InvoiceType})");
+        sb.AppendLine($"📥 **[دانلود فایل PDF فاکتور]({downloadUrl})**\n");
 
+        // 1. Customer & General Info
+        sb.AppendLine("### 👤 مشخصات مشتری و فاکتور:");
+        sb.AppendLine($"- **مشتری:** {invoice.Customer?.FullName ?? "عمومی"}");
+        if (!string.IsNullOrEmpty(invoice.Customer?.PhoneNumber))
+            sb.AppendLine($"- **شماره همراه:** {invoice.Customer.PhoneNumber}");
+        if (!string.IsNullOrEmpty(invoice.Customer?.NationalId))
+            sb.AppendLine($"- **کد ملی:** {invoice.Customer.NationalId}");
+        sb.AppendLine($"- **تاریخ فاکتور:** {invoice.InvoiceDate:yyyy/MM/dd}");
+        if (invoice.DueDate.HasValue)
+            sb.AppendLine($"- **تاریخ سررسید:** {invoice.DueDate.Value:yyyy/MM/dd}");
+        sb.AppendLine($"- **نوع معامله:** {invoice.TradeScale}");
+
+        // 2. Financial Summary
+        sb.AppendLine("\n### 💰 خلاصه مالی فاکتور:");
+        sb.AppendLine($"- **جمع کل ناخالص اقلام:** {invoice.TotalAmount:N0} {unitTitle}");
+        if (invoice.TotalDiscountAmount > 0)
+            sb.AppendLine($"- **تخفیف:** {invoice.TotalDiscountAmount:N0} {unitTitle}");
+        if (invoice.TotalExtraCostAmount > 0)
+            sb.AppendLine($"- **هزینه‌های اضافی:** {invoice.TotalExtraCostAmount:N0} {unitTitle}");
+        sb.AppendLine($"- **مبلغ نهایی فاکتور:** **{invoice.TotalAmountWithDiscountsAndExtraCosts:N0} {unitTitle}**");
+        sb.AppendLine($"- **مجموع پرداختی و تسویه‌ها:** {invoice.TotalPaidAmount:N0} {unitTitle}");
+        sb.AppendLine($"- **مانده تسویه‌نشده:** **{invoice.TotalUnpaidAmount:N0} {unpaidUnitTitle}** " + (invoice.TotalUnpaidAmount <= 0 ? "🟢 (تسویه کامل)" : "🔴 (دارای مانده)"));
+
+        // 3. Product Items (Gold & Jewelry)
         if (invoice.InvoiceProductItems?.Count > 0)
         {
-            sb.AppendLine("\n**اقلام فاکتور:**");
-            sb.AppendLine($"| ردیف | شرح کالا | وزن (گرم) | عیار | اجرت ({unitTitle}) | سود ({unitTitle}) | مبلغ نهایی ({unitTitle}) |");
-            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+            sb.AppendLine("\n### 💍 اقلام طلا و جواهر:");
+            sb.AppendLine("| ردیف | شرح کالا | بارکد | وزن (گرم) | عیار | نرخ گرم | اجرت | سود | مالیات | مبلغ نهایی |");
+            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
             int idx = 1;
             foreach (var itm in invoice.InvoiceProductItems)
             {
-                sb.AppendLine($"| {idx++} | {itm.Product?.Name ?? "کالای طلا"} | {itm.TotalWeight:N3} | {itm.Product?.Fineness} | {itm.ItemWageAmount:N0} | {itm.ItemProfitAmount:N0} | {itm.ItemFinalAmount:N0} |");
+                var wageStr = itm.SaleWageType == WageType.Percent ? $"{itm.SaleWage}%" : $"{itm.ItemWageAmount:N0}";
+                var barcode = !string.IsNullOrEmpty(itm.Product?.Barcode) ? $"`{itm.Product.Barcode}`" : "-";
+                sb.AppendLine($"| {idx++} | {itm.Product?.Name ?? "کالای طلا"} | {barcode} | {itm.TotalWeight:N3} | {itm.Product?.Fineness} | {itm.GramPrice:N0} | {wageStr} | {itm.ItemProfitAmount:N0} | {itm.ItemTaxAmount:N0} | **{itm.ItemFinalAmount:N0} {unitTitle}** |");
+            }
+        }
+
+        // 4. Used Gold Items (Scrap Gold received)
+        if (invoice.InvoiceUsedProducts?.Count > 0)
+        {
+            sb.AppendLine("\n### ♻️ اقلام طلای کهنه و متفرقه دریافتی:");
+            sb.AppendLine("| ردیف | شرح کالا | وزن (گرم) | عیار | کسری از ۷۵۰ | نرخ گرم | وضعیت | ارزش کل |");
+            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+            int idx = 1;
+            foreach (var ug in invoice.InvoiceUsedProducts)
+            {
+                var status = ug.IsBroken ? "شکسته" : "سالم";
+                sb.AppendLine($"| {idx++} | {ug.Description} | {ug.Weight:N3} | {ug.Fineness} | {ug.FinenessDeductionRate} | {ug.GramPrice:N0} | {status} | **{ug.ItemAmount:N0} {unitTitle}** |");
+            }
+        }
+
+        // 5. Coin Items
+        if (invoice.InvoiceCoinItems?.Count > 0)
+        {
+            sb.AppendLine("\n### 🪙 اقلام سکه:");
+            sb.AppendLine("| ردیف | عنوان سکه | تعداد | قیمت واحد | سود | مبلغ کل |");
+            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- |");
+            int idx = 1;
+            foreach (var c in invoice.InvoiceCoinItems)
+            {
+                var total = c.Quantity * c.UnitPrice;
+                var coinTitle = c.Coin?.Coin?.Title ?? "سکه";
+                sb.AppendLine($"| {idx++} | {coinTitle} | {c.Quantity} | {c.UnitPrice:N0} | {c.ProfitPercent}% | **{total:N0} {unitTitle}** |");
+            }
+        }
+
+        // 6. Currency Items
+        if (invoice.InvoiceCurrencyItems?.Count > 0)
+        {
+            sb.AppendLine("\n### 💵 اقلام ارزی:");
+            sb.AppendLine("| ردیف | ارز | مقدار | نرخ تبدیل | مبلغ کل |");
+            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- |");
+            int idx = 1;
+            foreach (var cur in invoice.InvoiceCurrencyItems)
+            {
+                var total = cur.Amount * cur.UnitPrice;
+                sb.AppendLine($"| {idx++} | {cur.Currency?.Title ?? "ارز"} | {cur.Amount:N2} | {cur.UnitPrice:N0} | **{total:N0} {unitTitle}** |");
+            }
+        }
+
+        // 7. Payments Breakdown
+        if (invoice.InvoicePayments?.Count > 0)
+        {
+            sb.AppendLine("\n### 💳 ریز دریافتی‌ها و پرداختی‌های فاکتور:");
+            sb.AppendLine("| ردیف | نوع پرداخت | حساب مالی / بانک | مبلغ / مقدار | واحد | شماره پیگیری / ارجاع | توضیحات |");
+            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+            int idx = 1;
+            foreach (var p in invoice.InvoicePayments)
+            {
+                var pTypeStr = p.PaymentType.GetDisplayTitle();
+                var accTitle = p.FinancialAccount?.Title ?? "-";
+                var checkDetails = p.CheckPayment != null
+                    ? $"(چک صیادی: {p.CheckPayment.SayadiCode} - سررسید: {p.CheckPayment.DueDate:yyyy/MM/dd})"
+                    : "";
+                var noteStr = $"{p.Note ?? ""} {checkDetails}".Trim();
+
+                sb.AppendLine($"| {idx++} | {pTypeStr} | {accTitle} | **{p.Amount:N0}** | {p.PriceUnit?.Title} | {p.ReferenceNumber ?? "-"} | {noteStr} |");
             }
         }
 
         return McpContentResult.Text(sb.ToString());
+    }
+
+    private async Task<McpContentResult> ExecuteCreateInvoiceAsync(JsonElement args, CancellationToken ct)
+    {
+        // 1. Resolve Invoice Type
+        var invoiceTypeStr = args.TryGetProperty("invoiceType", out var itP) ? itP.GetString() : "Sell";
+        var invoiceType = Enum.TryParse<InvoiceType>(invoiceTypeStr, true, out var it) ? it : InvoiceType.Sell;
+
+        // 2. Resolve Customer
+        Guid? customerId = null;
+        string? customerFullName = null;
+
+        if (args.TryGetProperty("customerId", out var cidP) && Guid.TryParse(cidP.GetString(), out var parsedCid))
+        {
+            var cust = await customerService.GetAsync(parsedCid, ct);
+            if (cust != null)
+            {
+                customerId = cust.Id;
+                customerFullName = cust.FullName;
+            }
+        }
+
+        if (!customerId.HasValue && args.TryGetProperty("customerName", out var cnP) && !string.IsNullOrWhiteSpace(cnP.GetString()))
+        {
+            var searchName = cnP.GetString()!.Trim();
+            var matches = await customerService.GetByNameAsync(searchName, null, ct);
+            if (matches.Count > 0)
+            {
+                var first = matches.First();
+                customerId = first.Id;
+                customerFullName = first.FullName;
+            }
+            else
+            {
+                // Auto-create customer if not found
+                var phone = args.TryGetProperty("customerPhone", out var cpP) ? cpP.GetString() : "";
+                var genNat = await customerService.GenerateNationalIdAsync(ct);
+                var defaultPriceUnit = await priceUnitService.GetDefaultAsync(ct);
+
+                var newCustRequest = new CustomerRequestDto(
+                    Id: null,
+                    FullName: searchName,
+                    NationalId: genNat.NationalId,
+                    PhoneNumber: phone ?? "",
+                    Address: null,
+                    CreditLimit: null,
+                    CreditLimitPriceUnitId: defaultPriceUnit?.Id,
+                    CustomerType: CustomerType.RetailCustomer);
+
+                customerId = await customerService.CreateAsync(newCustRequest, ct);
+                customerFullName = searchName;
+            }
+        }
+
+        if (!customerId.HasValue)
+        {
+            return McpContentResult.Text("❌ مشتری برای ثبت فاکتور مشخص نشده یا یافت نشد. لطفاً نام مشتری (customerName) یا شناسه (customerId) را ارسال فرمایید.", isError: true);
+        }
+
+        // 3. Resolve PriceUnit
+        var defaultUnit = await priceUnitService.GetDefaultAsync(ct);
+        var priceUnitId = defaultUnit?.Id ?? Guid.Empty;
+
+        // 4. Resolve Live Gold Rate (if needed for items with 0 rate)
+        decimal live18KRate = 0;
+        try
+        {
+            var prices = await priceService.GetListAsync(null, ct);
+            var gold18Price = prices.FirstOrDefault(x => x.Title.Contains("18") || x.Title.Contains("طلا"));
+            if (gold18Price != null && decimal.TryParse(gold18Price.Value?.Replace(",", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedVal))
+            {
+                live18KRate = parsedVal;
+            }
+        }
+        catch
+        {
+            // Fallback
+        }
+
+        // 5. Build Product Items
+        var productItemDtos = new List<InvoiceProductItemDto>();
+        if (args.TryGetProperty("items", out var itemsProp) && itemsProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var itemElem in itemsProp.EnumerateArray())
+            {
+                var itemName = itemElem.TryGetProperty("name", out var nP) ? nP.GetString() : "کالای طلا";
+                var weight = itemElem.TryGetProperty("weight", out var wP) ? wP.GetDecimal() : 0m;
+                if (weight <= 0) continue;
+
+                var gramPrice = itemElem.TryGetProperty("gramPrice", out var gpP) && gpP.GetDecimal() > 0
+                    ? gpP.GetDecimal()
+                    : live18KRate;
+
+                if (gramPrice <= 0)
+                {
+                    return McpContentResult.Text("❌ نرخ هر گرم طلا مشخص نشده و نرخ زنده بازار در دسترس نیست. لطفاً نرخ گرمی طلا را اعلام فرمایید.", isError: true);
+                }
+
+                var fineness = itemElem.TryGetProperty("fineness", out var fP) ? fP.GetDecimal() : 750m;
+                var wageType = itemElem.TryGetProperty("wageType", out var wtP) && wtP.GetString()?.Equals("Fixed", StringComparison.OrdinalIgnoreCase) == true
+                    ? WageType.Fixed
+                    : WageType.Percent;
+                var wage = itemElem.TryGetProperty("wage", out var wgP) ? wgP.GetDecimal() : 0m;
+                var profitPercent = itemElem.TryGetProperty("profitPercent", out var ppP) ? ppP.GetDecimal() : 7m;
+                var taxPercent = itemElem.TryGetProperty("taxPercent", out var tpP) ? tpP.GetDecimal() : 9m;
+                var quantity = itemElem.TryGetProperty("quantity", out var qP) ? qP.GetInt32() : 1;
+
+                var prodDto = new ProductRequestDto(
+                    Id: null,
+                    Name: itemName,
+                    Barcode: null,
+                    Weight: weight,
+                    Wage: wage,
+                    WageType: wageType,
+                    ProductType: ProductType.Gold,
+                    Fineness: fineness,
+                    GoldUnitType: GoldUnitType.Gram,
+                    ProductCategoryId: null,
+                    WagePriceUnitId: priceUnitId,
+                    StonePriceUnitId: null,
+                    GemStones: null,
+                    MoltenGold: null);
+
+                productItemDtos.Add(new InvoiceProductItemDto(
+                    Id: null,
+                    GramPrice: gramPrice,
+                    ProfitPercent: profitPercent,
+                    TaxPercent: taxPercent,
+                    CostPrice: null,
+                    CostPriceExchangeRate: null,
+                    WagePriceUnitExchangeRate: null,
+                    StonePriceUnitExchangeRate: null,
+                    CostPriceUnitId: null,
+                    IsInstantProduct: false,
+                    Quantity: quantity,
+                    TotalWeight: weight,
+                    PurchaseWage: null,
+                    PurchaseWageType: null,
+                    Product: prodDto));
+            }
+        }
+
+        // 6. Build Used Gold Items (Scrap gold)
+        var usedGoldDtos = new List<InvoiceUsedProductDto>();
+        if (args.TryGetProperty("usedGoldItems", out var usedProp) && usedProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var uElem in usedProp.EnumerateArray())
+            {
+                var desc = uElem.TryGetProperty("description", out var dP) ? dP.GetString() : "طلای کهنه";
+                var weight = uElem.TryGetProperty("weight", out var wP) ? wP.GetDecimal() : 0m;
+                if (weight <= 0) continue;
+
+                var fineness = uElem.TryGetProperty("fineness", out var fP) ? fP.GetDecimal() : 750m;
+                var deduction = uElem.TryGetProperty("deductionFrom750", out var dedP) ? dedP.GetDecimal() : 0m;
+                var gramPrice = uElem.TryGetProperty("gramPrice", out var gpP) && gpP.GetDecimal() > 0
+                    ? gpP.GetDecimal()
+                    : live18KRate;
+                var isBroken = uElem.TryGetProperty("isBroken", out var bP) && bP.GetBoolean();
+
+                usedGoldDtos.Add(new InvoiceUsedProductDto(
+                    Id: null,
+                    Description: desc ?? "طلای کهنه",
+                    Weight: weight,
+                    GramPrice: gramPrice,
+                    ExtraCostsAmount: null,
+                    Fineness: fineness,
+                    FinenessDeductionRate: deduction,
+                    Quantity: 1,
+                    IsBroken: isBroken,
+                    ProductType: ProductType.UsedGold,
+                    UnitType: GoldUnitType.Gram));
+            }
+        }
+
+        // 7. Resolve Financial Accounts & Build Payments
+        var accountTitles = await financialAccountService.GetTitlesAsync(null, null, ct);
+        var accounts = await financialAccountService.GetAllAsync(ct);
+        var defaultCashAccount = accounts.FirstOrDefault(x => x.FinancialAccountType == FinancialAccountType.Cash);
+        var defaultBankAcc = accounts.FirstOrDefault(x => x.FinancialAccountType == FinancialAccountType.LocalBankAccount);
+
+        var paymentDtos = new List<InvoicePaymentDto>();
+        if (args.TryGetProperty("payments", out var payProp) && payProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var pElem in payProp.EnumerateArray())
+            {
+                var amount = pElem.TryGetProperty("amount", out var aP) ? aP.GetDecimal() : 0m;
+                if (amount <= 0) continue;
+
+                var pTypeStr = pElem.TryGetProperty("paymentType", out var ptP) ? ptP.GetString() : "InternalCash";
+                var pType = PaymentType.InternalCash;
+                if (pTypeStr?.Equals("Check", StringComparison.OrdinalIgnoreCase) == true)
+                    pType = PaymentType.Check;
+                else if (pTypeStr?.Equals("UsedGold", StringComparison.OrdinalIgnoreCase) == true)
+                    pType = PaymentType.UsedGoldInventory;
+                else if (pTypeStr?.Equals("CustomerTransfer", StringComparison.OrdinalIgnoreCase) == true)
+                    pType = PaymentType.CustomerTransfer;
+
+                Guid? targetAccId = null;
+                if (pElem.TryGetProperty("financialAccountTitle", out var accTitleP) && !string.IsNullOrWhiteSpace(accTitleP.GetString()))
+                {
+                    var match = accountTitles.FirstOrDefault(x => x.Title.Contains(accTitleP.GetString()!, StringComparison.OrdinalIgnoreCase));
+                    if (match != null) targetAccId = match.Id;
+                }
+
+                targetAccId ??= defaultCashAccount?.Id ?? defaultBankAcc?.Id ?? accounts.FirstOrDefault()?.Id;
+
+                var refNum = pElem.TryGetProperty("referenceNumber", out var rfP) ? rfP.GetString() : null;
+                var note = pElem.TryGetProperty("note", out var ntP) ? ntP.GetString() : "دریافتی فاکتور";
+
+                // Check payments
+                var checkNum = pElem.TryGetProperty("checkNumber", out var chkNP) ? chkNP.GetString() : null;
+                var checkSayadi = pElem.TryGetProperty("checkSayadiCode", out var chkSP) ? chkSP.GetString() : null;
+                DateTime? checkDueDate = null;
+                if (pElem.TryGetProperty("checkDueDate", out var chkDP) && DateTime.TryParse(chkDP.GetString(), out var parsedCd))
+                {
+                    checkDueDate = parsedCd;
+                }
+
+                paymentDtos.Add(new InvoicePaymentDto(
+                    Id: null,
+                    Amount: amount,
+                    ExchangeRate: null,
+                    GoldFineness: null,
+                    PaymentType: pType,
+                    PaymentSide: PaymentSide.Receive,
+                    PaymentDate: DateTime.UtcNow,
+                    ReferenceNumber: refNum,
+                    Note: note,
+                    FinancialAccountId: targetAccId,
+                    VoucherId: null,
+                    TargetInvoiceId: null,
+                    CustomerId: customerId.Value,
+                    PriceUnitId: priceUnitId,
+                    CheckIssuerId: null,
+                    CheckIssuerFinancialAccountId: null,
+                    CheckNumber: checkNum,
+                    CheckSayadiCode: checkSayadi,
+                    CheckDueDate: checkDueDate,
+                    CheckImage: null,
+                    CheckImageContentType: null));
+            }
+        }
+
+        // 8. Discounts & Extra Costs
+        var discountDtos = new List<InvoiceDiscountDto>();
+        if (args.TryGetProperty("discounts", out var discProp) && discProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var dElem in discProp.EnumerateArray())
+            {
+                var amount = dElem.TryGetProperty("amount", out var aP) ? aP.GetDecimal() : 0m;
+                var desc = dElem.TryGetProperty("description", out var dP) ? dP.GetString() : "تخفیف";
+                if (amount > 0)
+                {
+                    discountDtos.Add(new InvoiceDiscountDto(amount, null, desc, priceUnitId));
+                }
+            }
+        }
+
+        var extraCostsDtos = new List<InvoiceExtraCostsDto>();
+        if (args.TryGetProperty("extraCosts", out var ecProp) && ecProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var ecElem in ecProp.EnumerateArray())
+            {
+                var amount = ecElem.TryGetProperty("amount", out var aP) ? aP.GetDecimal() : 0m;
+                var desc = ecElem.TryGetProperty("description", out var dP) ? dP.GetString() : "هزینه اضافی";
+                if (amount > 0)
+                {
+                    extraCostsDtos.Add(new InvoiceExtraCostsDto(amount, null, desc, priceUnitId));
+                }
+            }
+        }
+
+        if (productItemDtos.Count == 0 && usedGoldDtos.Count == 0)
+        {
+            return McpContentResult.Text("❌ حداقل یک ردیف کالا (طلا یا طلای کهنه) برای ثبت فاکتور الزامی است.", isError: true);
+        }
+
+        // 9. Generate Invoice Number & Create Invoice Request
+        var lastNumRes = await invoiceService.GetLastNumberAsync(invoiceType, ct);
+        var newInvoiceNumber = lastNumRes.InvoiceNumber + 1;
+
+        var invoiceRequest = new InvoiceRequestDto(
+            Id: null,
+            InvoiceNumber: newInvoiceNumber,
+            InvoiceDate: DateTime.UtcNow,
+            DueDate: null,
+            InvoiceType: invoiceType,
+            TradeScale: TradeScale.Retail,
+            PriceUnitId: priceUnitId,
+            UnpaidAmountExchangeRate: null,
+            UnpaidPriceUnitId: null,
+            ExchangeRate: null,
+            CustomerId: customerId.Value,
+            InvoiceProductItems: productItemDtos,
+            InvoiceCoinItems: [],
+            InvoiceCurrencyItems: [],
+            InvoiceDiscounts: discountDtos,
+            InvoicePayments: paymentDtos,
+            InvoiceExtraCosts: extraCostsDtos,
+            InvoiceUsedProducts: usedGoldDtos);
+
+        // 10. Execute Transactional Creation in Application Layer
+        await invoiceService.CreateAsync(invoiceRequest, ct);
+
+        // 11. Retrieve Created Invoice for rich report
+        var createdInvoice = await invoiceService.GetAsync(newInvoiceNumber, invoiceType, ct);
+        var baseUrl = GetBaseUrl();
+        var downloadUrl = $"{baseUrl}/api/invoices/{createdInvoice.Id}/download-pdf";
+
+        var unitTitle = createdInvoice.PriceUnit?.Title ?? "";
+        var sb = new StringBuilder();
+        sb.AppendLine($"# 🎉 فاکتور شماره {createdInvoice.InvoiceNumber} با موفقیت ثبت شد!");
+        sb.AppendLine($"📥 **[دانلود مستقیم فایل PDF فاکتور]({downloadUrl})**\n");
+        sb.AppendLine("### 📋 خلاصه فاکتور صادرشده:");
+        sb.AppendLine($"- **مشتری:** {customerFullName}");
+        sb.AppendLine($"- **نوع فاکتور:** {createdInvoice.InvoiceType}");
+        sb.AppendLine($"- **تاریخ ثبت:** {createdInvoice.InvoiceDate:yyyy/MM/dd}");
+        sb.AppendLine($"- **مبلغ نهایی فاکتور:** **{createdInvoice.TotalAmountWithDiscountsAndExtraCosts:N0} {unitTitle}**");
+        sb.AppendLine($"- **مجموع دریافتی‌ها:** {createdInvoice.TotalPaidAmount:N0} {unitTitle}");
+        sb.AppendLine($"- **مانده تسویه‌نشده:** **{createdInvoice.TotalUnpaidAmount:N0} {unitTitle}** " + (createdInvoice.TotalUnpaidAmount <= 0 ? "🟢 (تسویه کامل)" : "🔴 (دارای مانده)"));
+
+        if (createdInvoice.InvoiceProductItems?.Count > 0)
+        {
+            sb.AppendLine("\n**اقلام طلا:**");
+            foreach (var itm in createdInvoice.InvoiceProductItems)
+            {
+                sb.AppendLine($"- {itm.Product?.Name}: وزن {itm.TotalWeight:N3} گرم - عیار {itm.Product?.Fineness} - مبلغ: {itm.ItemFinalAmount:N0} {unitTitle}");
+            }
+        }
+
+        if (createdInvoice.InvoiceUsedProducts?.Count > 0)
+        {
+            sb.AppendLine("\n**اقلام طلای کهنه دریافتی:**");
+            foreach (var ug in createdInvoice.InvoiceUsedProducts)
+            {
+                sb.AppendLine($"- {ug.Description}: وزن {ug.Weight:N3} گرم - کسری {ug.FinenessDeductionRate} - ارزش: {ug.ItemAmount:N0} {unitTitle}");
+            }
+        }
+
+        if (createdInvoice.InvoicePayments?.Count > 0)
+        {
+            sb.AppendLine("\n**دریافتی‌های ثبت‌شده:**");
+            foreach (var p in createdInvoice.InvoicePayments)
+            {
+                sb.AppendLine($"- {p.PaymentType.GetDisplayTitle()}: {p.Amount:N0} {unitTitle} ({p.FinancialAccount?.Title ?? "صندوق"})");
+            }
+        }
+
+        return McpContentResult.Text(sb.ToString());
+    }
+
+    private async Task<McpContentResult> ExecuteAddInvoicePaymentAsync(JsonElement args, CancellationToken ct)
+    {
+        if (!args.TryGetProperty("amount", out var aProp) || aProp.GetDecimal() <= 0)
+        {
+            return McpContentResult.Text("مبلغ پرداختی (amount) الزامی و باید بیشتر از صفر باشد.", isError: true);
+        }
+
+        var amount = aProp.GetDecimal();
+        GetInvoiceResponse? existingInvoice = null;
+
+        if (args.TryGetProperty("invoiceId", out var idProp) && Guid.TryParse(idProp.GetString(), out var id))
+        {
+            existingInvoice = await invoiceService.GetAsync(id, ct);
+        }
+        else if (args.TryGetProperty("invoiceNumber", out var numProp))
+        {
+            var num = numProp.GetInt64();
+            var itStr = args.TryGetProperty("invoiceType", out var itP) ? itP.GetString() : "Sell";
+            var it = Enum.TryParse<InvoiceType>(itStr, true, out var parsedIt) ? parsedIt : InvoiceType.Sell;
+            existingInvoice = await invoiceService.GetAsync(num, it, ct);
+        }
+
+        if (existingInvoice == null)
+        {
+            return McpContentResult.Text("❌ فاکتور مورد نظر برای افزودن پرداخت یافت نشد. لطفاً شماره فاکتور یا شناسه را بررسی فرمایید.", isError: true);
+        }
+
+        var pTypeStr = args.TryGetProperty("paymentType", out var ptProp) ? ptProp.GetString() : "InternalCash";
+        var pType = PaymentType.InternalCash;
+        if (pTypeStr?.Equals("Check", StringComparison.OrdinalIgnoreCase) == true)
+            pType = PaymentType.Check;
+        else if (pTypeStr?.Equals("UsedGold", StringComparison.OrdinalIgnoreCase) == true)
+            pType = PaymentType.UsedGoldInventory;
+        else if (pTypeStr?.Equals("CustomerTransfer", StringComparison.OrdinalIgnoreCase) == true)
+            pType = PaymentType.CustomerTransfer;
+
+        var accountTitles = await financialAccountService.GetTitlesAsync(null, null, ct);
+        var accounts = await financialAccountService.GetAllAsync(ct);
+        var defaultCashAccount = accounts.FirstOrDefault(x => x.FinancialAccountType == FinancialAccountType.Cash);
+        var defaultBankAcc = accounts.FirstOrDefault(x => x.FinancialAccountType == FinancialAccountType.LocalBankAccount);
+
+        Guid? targetAccId = null;
+        if (args.TryGetProperty("financialAccountTitle", out var accTitleP) && !string.IsNullOrWhiteSpace(accTitleP.GetString()))
+        {
+            var match = accountTitles.FirstOrDefault(x => x.Title.Contains(accTitleP.GetString()!, StringComparison.OrdinalIgnoreCase));
+            if (match != null) targetAccId = match.Id;
+        }
+
+        targetAccId ??= defaultCashAccount?.Id ?? defaultBankAcc?.Id ?? accounts.FirstOrDefault()?.Id;
+
+        var refNum = args.TryGetProperty("referenceNumber", out var rfP) ? rfP.GetString() : null;
+        var note = args.TryGetProperty("note", out var ntP) ? ntP.GetString() : "پرداخت ثبت‌شده از طریق هوش مصنوعی";
+
+        var checkNum = args.TryGetProperty("checkNumber", out var chkNP) ? chkNP.GetString() : null;
+        var checkSayadi = args.TryGetProperty("checkSayadiCode", out var chkSP) ? chkSP.GetString() : null;
+        DateTime? checkDueDate = null;
+        if (args.TryGetProperty("checkDueDate", out var chkDP) && DateTime.TryParse(chkDP.GetString(), out var parsedCd))
+        {
+            checkDueDate = parsedCd;
+        }
+
+        // Map existing invoice to request DTO
+        var requestDto = MapToRequestDto(existingInvoice);
+
+        // Append new payment
+        var newPaymentDto = new InvoicePaymentDto(
+            Id: null,
+            Amount: amount,
+            ExchangeRate: null,
+            GoldFineness: null,
+            PaymentType: pType,
+            PaymentSide: PaymentSide.Receive,
+            PaymentDate: DateTime.UtcNow,
+            ReferenceNumber: refNum,
+            Note: note,
+            FinancialAccountId: targetAccId,
+            VoucherId: null,
+            TargetInvoiceId: null,
+            CustomerId: existingInvoice.Customer.Id,
+            PriceUnitId: existingInvoice.PriceUnit.Id,
+            CheckIssuerId: null,
+            CheckIssuerFinancialAccountId: null,
+            CheckNumber: checkNum,
+            CheckSayadiCode: checkSayadi,
+            CheckDueDate: checkDueDate,
+            CheckImage: null,
+            CheckImageContentType: null);
+
+        requestDto.InvoicePayments.Add(newPaymentDto);
+
+        // Update Invoice
+        await invoiceService.UpdateAsync(existingInvoice.Id, requestDto, ct);
+
+        // Fetch updated invoice
+        var updatedInvoice = await invoiceService.GetAsync(existingInvoice.Id, ct);
+        var baseUrl = GetBaseUrl();
+        var downloadUrl = $"{baseUrl}/api/invoices/{updatedInvoice.Id}/download-pdf";
+        var unitTitle = updatedInvoice.PriceUnit?.Title ?? "";
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"# ✅ پرداخت به مبلغ {amount:N0} {unitTitle} در فاکتور شماره {updatedInvoice.InvoiceNumber} با موفقیت ثبت شد!");
+        sb.AppendLine($"📥 **[دانلود نسخه به‌روزشده فایل PDF فاکتور]({downloadUrl})**\n");
+        sb.AppendLine($"- **مشتری:** {updatedInvoice.Customer?.FullName}");
+        sb.AppendLine($"- **نوع پرداخت:** {pType.GetDisplayTitle()}");
+        sb.AppendLine($"- **مبلغ کل فاکتور:** {updatedInvoice.TotalAmountWithDiscountsAndExtraCosts:N0} {unitTitle}");
+        sb.AppendLine($"- **مجموع پرداختی‌های قبلی و جدید:** {updatedInvoice.TotalPaidAmount:N0} {unitTitle}");
+        sb.AppendLine($"- **مانده تسویه‌نشده جدید:** **{updatedInvoice.TotalUnpaidAmount:N0} {unitTitle}** " + (updatedInvoice.TotalUnpaidAmount <= 0 ? "🟢 (تسویه کامل)" : "🔴 (دارای مانده)"));
+
+        return McpContentResult.Text(sb.ToString());
+    }
+
+    private static InvoiceRequestDto MapToRequestDto(GetInvoiceResponse invoice)
+    {
+        var productItems = invoice.InvoiceProductItems?.Select(p => new InvoiceProductItemDto(
+            Id: p.Id,
+            GramPrice: p.GramPrice,
+            ProfitPercent: p.ProfitPercent,
+            TaxPercent: p.TaxPercent,
+            CostPrice: p.CostPrice,
+            CostPriceExchangeRate: p.CostPriceExchangeRate,
+            WagePriceUnitExchangeRate: p.WageExchangeRate,
+            StonePriceUnitExchangeRate: p.StonePriceUnitExchangeRate,
+            CostPriceUnitId: p.CostPriceUnitId,
+            IsInstantProduct: p.IsInstantProduct,
+            Quantity: p.Quantity,
+            TotalWeight: p.TotalWeight,
+            PurchaseWage: p.PurchaseWage,
+            PurchaseWageType: p.PurchaseWageType,
+            Product: new ProductRequestDto(
+                Id: p.Product?.Id,
+                Name: p.Product?.Name,
+                Barcode: p.Product?.Barcode,
+                Weight: p.Product?.Weight ?? p.TotalWeight,
+                Wage: p.Product?.Wage ?? 0,
+                WageType: p.Product?.WageType,
+                ProductType: p.Product?.ProductType ?? ProductType.Gold,
+                Fineness: p.Product?.Fineness ?? 750,
+                GoldUnitType: p.Product?.GoldUnitType ?? GoldUnitType.Gram,
+                ProductCategoryId: p.Product?.ProductCategoryId,
+                WagePriceUnitId: p.Product?.WagePriceUnitId,
+                StonePriceUnitId: p.Product?.StonePriceUnit?.Id,
+                GemStones: null,
+                MoltenGold: null)
+        )).ToList() ?? [];
+
+        var usedProducts = invoice.InvoiceUsedProducts?.Select(u => new InvoiceUsedProductDto(
+            Id: u.Id,
+            Description: u.Description,
+            Weight: u.Weight,
+            GramPrice: u.GramPrice,
+            ExtraCostsAmount: u.ExtraCostsAmount,
+            Fineness: u.Fineness,
+            FinenessDeductionRate: u.FinenessDeductionRate,
+            Quantity: 1,
+            IsBroken: u.IsBroken,
+            ProductType: u.ProductType,
+            UnitType: u.UnitType
+        )).ToList() ?? [];
+
+        var coinItems = invoice.InvoiceCoinItems?.Select(c => new InvoiceCoinItemDto(
+            Id: c.Id,
+            UnitPrice: c.UnitPrice,
+            Quantity: c.Quantity,
+            ProfitPercent: c.ProfitPercent,
+            IsInstant: c.IsInstant,
+            CoinInstance: new CoinInstanceRequestDto(
+                Id: c.Coin?.Id,
+                CoinId: c.Coin?.Coin?.Id ?? Guid.Empty,
+                Barcode: c.Coin?.Barcode,
+                MintYear: c.Coin?.MintYear,
+                Weight: c.Coin?.Weight ?? 0,
+                Fineness: c.Coin?.Fineness ?? 900,
+                MintType: c.Coin?.MintType ?? CoinMintType.Banking,
+                PackageType: c.Coin?.PackageType ?? CoinPackageType.VacuumSealed,
+                CoinPackage: null)
+        )).ToList() ?? [];
+
+        var currencyItems = invoice.InvoiceCurrencyItems?.Select(cur => new InvoiceCurrencyItemDto(
+            Id: cur.Id,
+            UnitPrice: cur.UnitPrice,
+            Amount: cur.Amount,
+            ProfitPercent: cur.ProfitPercent,
+            TaxPercent: cur.TaxPercent,
+            CurrencyId: cur.Currency.Id,
+            FinancialAccountId: cur.FinancialAccount?.Id ?? Guid.Empty
+        )).ToList() ?? [];
+
+        var discounts = invoice.InvoiceDiscounts?.Select(d => new InvoiceDiscountDto(
+            Amount: d.Amount,
+            ExchangeRate: d.ExchangeRate,
+            Description: d.Description,
+            PriceUnitId: d.PriceUnit?.Id ?? invoice.PriceUnit.Id
+        )).ToList() ?? [];
+
+        var extraCosts = invoice.InvoiceExtraCosts?.Select(ec => new InvoiceExtraCostsDto(
+            Amount: ec.Amount,
+            ExchangeRate: ec.ExchangeRate,
+            Description: ec.Description,
+            PriceUnitId: ec.PriceUnit?.Id ?? invoice.PriceUnit.Id
+        )).ToList() ?? [];
+
+        var payments = invoice.InvoicePayments?.Select(pay => new InvoicePaymentDto(
+            Id: pay.Id,
+            Amount: pay.Amount,
+            ExchangeRate: pay.ExchangeRate,
+            GoldFineness: pay.GoldFineness,
+            PaymentType: pay.PaymentType,
+            PaymentSide: pay.PaymentSide,
+            PaymentDate: pay.PaymentDate,
+            ReferenceNumber: pay.ReferenceNumber,
+            Note: pay.Note,
+            FinancialAccountId: pay.FinancialAccount?.Id,
+            VoucherId: pay.VoucherId,
+            TargetInvoiceId: pay.TargetInvoice?.Id,
+            CustomerId: invoice.Customer.Id,
+            PriceUnitId: pay.PriceUnit.Id,
+            CheckIssuerId: pay.Endorser?.Id,
+            CheckIssuerFinancialAccountId: null,
+            CheckNumber: pay.CheckPayment?.Number,
+            CheckSayadiCode: pay.CheckPayment?.SayadiCode,
+            CheckDueDate: pay.CheckPayment?.DueDate,
+            CheckImage: null,
+            CheckImageContentType: null
+        )).ToList() ?? [];
+
+        return new InvoiceRequestDto(
+            Id: invoice.Id,
+            InvoiceNumber: invoice.InvoiceNumber,
+            InvoiceDate: invoice.InvoiceDate,
+            DueDate: invoice.DueDate,
+            InvoiceType: invoice.InvoiceType,
+            TradeScale: invoice.TradeScale,
+            PriceUnitId: invoice.PriceUnit.Id,
+            UnpaidAmountExchangeRate: invoice.UnpaidAmountExchangeRate,
+            UnpaidPriceUnitId: invoice.UnpaidPriceUnit?.Id,
+            ExchangeRate: invoice.ExchangeRate,
+            CustomerId: invoice.Customer.Id,
+            InvoiceProductItems: productItems,
+            InvoiceCoinItems: coinItems,
+            InvoiceCurrencyItems: currencyItems,
+            InvoiceDiscounts: discounts,
+            InvoicePayments: payments,
+            InvoiceExtraCosts: extraCosts,
+            InvoiceUsedProducts: usedProducts);
     }
 
     private async Task<McpContentResult> ExecuteGetTrialBalanceReportAsync(JsonElement args, CancellationToken ct)
@@ -645,7 +1532,7 @@ public class GoldExMcpEngine(
         var sb = new StringBuilder();
         sb.AppendLine("### 💰 گزارش سود پنهان ری‌گیری و آب کردن طلای کهنه:");
         sb.AppendLine("| شماره فاکتور | تاریخ | نام مشتری | وزن (گرم) | عیار اسمی | مبلغ پرداختی | ارزش واقعی | سود پنهان | واحد |");
-        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
 
         foreach (var r in report)
         {

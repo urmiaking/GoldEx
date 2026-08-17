@@ -13,7 +13,7 @@
 <div class="d-flex align-center justify-space-between mb-2">
     <div class="d-flex align-center gap-2">
         <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" Size="Size.Medium" />
-        <MudText Typo="Typo.h6" Class="fw-bold">اتصال به هوش مصنوعی (MCP) و کلیدهای API</MudText>
+        <MudText Typo="Typo.h6" Class="fw-bold">اتصال به هوش مصنوعی</MudText>
     </div>
     <div>
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
@@ -283,31 +283,31 @@
                 </MudPaper>
             </MudItem>
 
-            <!-- Calculations & Invoices -->
+            <!-- Invoice Creation & Payments -->
             <MudItem xs="12" md="6">
                 <MudPaper Class="pa-3 border rounded-lg h-100" Elevation="0" Style="background: rgba(var(--mud-palette-surface-rgb), 0.5);">
                     <div class="d-flex align-center gap-2 mb-2">
-                        <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" Size="Size.Small" />
-                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">محاسبات قیمت طلا و فاکتور</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">صدور فاکتور و ثبت پرداخت هوشمند</MudText>
                     </div>
                     <div class="d-flex flex-column gap-2">
-                        @RenderPromptItem("محاسبه قیمت نهایی دستبند طلا به وزن ۴.۳۵ گرم با اجرت ۱۲ درصد و سود ۷ درصد و مالیات ۹ درصد")
-                        @RenderPromptItem("ارزش خرید طلای کهنه به وزن ۱۰.۵ گرم با کسری عیار ۱۵ با نرخ روز")
-                        @RenderPromptItem("جزئیات فاکتور شماره ۱۰۶ شامل اقلام و مانده تسویه‌نشده رو بیار.")
+                        @RenderPromptItem("برای مشتری مسعود خدادادی یک انگشتر طلا به وزن ۴ گرم با اجرت ۲۰٪ و سود ۷٪ ثبت کن. ۵۰ میلیون تومان نقد پرداخت کرد و ۲ گرم النگوی کهنه با کسری ۱۵ فروخت. فاکتور رو ثبت کن و لینک دانلودش رو بده.")
+                        @RenderPromptItem("در فاکتور شماره ۱۲۰ یک پرداخت ۴۰ میلیون تومانی از طریق کارتخوان/بانک ثبت کن.")
+                        @RenderPromptItem("جزئیات کامل فاکتور شماره ۱۰۶ شامل اقلام، پرداختی‌ها، وضعیت تسویه و لینک دانلود PDF را نمایش بده.")
                     </div>
                 </MudPaper>
             </MudItem>
 
-            <!-- Inventory & Melting -->
+            <!-- Inventory & Calculations -->
             <MudItem xs="12" md="6">
                 <MudPaper Class="pa-3 border rounded-lg h-100" Elevation="0" Style="background: rgba(var(--mud-palette-surface-rgb), 0.5);">
                     <div class="d-flex align-center gap-2 mb-2">
-                        <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Primary" Size="Size.Small" />
-                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">انبارداری و طلای آب‌شده</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary">محاسبات طلا، انبارداری و ری‌گیری</MudText>
                     </div>
                     <div class="d-flex flex-column gap-2">
+                        @RenderPromptItem("محاسبه قیمت نهایی دستبند طلا به وزن ۴.۳۵ گرم با اجرت ۱۲ درصد، سود ۷ درصد و مالیات ۹ درصد")
                         @RenderPromptItem("موجودی طلای آب‌شده و سکه‌های موجود در انبار چقدره؟")
-                        @RenderPromptItem("با ۲۰۰ میلیون تومان چند گرم طلای آب‌شده با عیار ۷۸۰ میشه خرید؟")
                         @RenderPromptItem("گزارش سود پنهان ری‌گیری بچ‌های آب‌شده این ماه رو بده.")
                     </div>
                 </MudPaper>
