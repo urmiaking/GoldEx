@@ -51,6 +51,16 @@ public static class WebHostingExtensions
         {
             Assembly[] additionalAssemblies = [typeof(Routes).Assembly];
 
+            var forwardedHeadersOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                                   Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto |
+                                   Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost
+            };
+            forwardedHeadersOptions.KnownIPNetworks.Clear();
+            forwardedHeadersOptions.KnownProxies.Clear();
+            app.UseForwardedHeaders(forwardedHeadersOptions);
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseWebAssemblyDebugging();
@@ -60,7 +70,6 @@ public static class WebHostingExtensions
             }
             else
             {
-                app.UseForwardedHeaders();
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
                 app.UseHsts();
             }
