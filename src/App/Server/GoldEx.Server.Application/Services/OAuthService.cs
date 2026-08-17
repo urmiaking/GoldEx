@@ -57,7 +57,8 @@ internal sealed class OAuthService(
             GrantTypes = grantTypes,
             ResponseTypes = responseTypes,
             TokenEndpointAuthMethod = request.TokenEndpointAuthMethod ?? "client_secret_post",
-            ClientIdIssuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            ClientIdIssuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            ClientSecretExpiresAt = 0
         };
     }
 
