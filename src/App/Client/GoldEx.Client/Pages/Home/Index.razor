@@ -5,11 +5,26 @@
 <PageTitle>صفحه اصلی</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-2">
-    <MudBreadcrumbs Class="px-0 py-2 mb-2" Items="_breadcrumbs" MaxItems="2">
-        <SeparatorTemplate>
-            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
-        </SeparatorTemplate>
-    </MudBreadcrumbs>
+    <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
+        <MudBreadcrumbs Class="px-0 py-2 mb-0" Items="_breadcrumbs" MaxItems="2">
+            <SeparatorTemplate>
+                <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" />
+            </SeparatorTemplate>
+        </MudBreadcrumbs>
+
+        <AuthorizeView>
+            <Authorized>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.RocketLaunch"
+                           OnClick="OpenReleaseNotesManuallyAsync"
+                           Class="rounded-pill px-3 py-1 font-bold release-notes-btn">
+                    تغییرات برنامه
+                </MudButton>
+            </Authorized>
+        </AuthorizeView>
+    </div>
 
     <AuthorizeView>
         <NotAuthorized>
