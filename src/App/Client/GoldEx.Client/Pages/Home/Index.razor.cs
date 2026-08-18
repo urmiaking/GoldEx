@@ -129,6 +129,33 @@ public partial class Index
         await dialog.Result;
     }
 
+    private async Task OpenReleaseNotesManuallyAsync()
+    {
+        if (!_releases.Any())
+        {
+            await LoadReleasesAsync();
+        }
+
+        if (!_releases.Any())
+            return;
+
+        var current = _releases
+            .OrderByDescending(r => Version.TryParse(r.Version, out var v) ? v : new Version(0, 0))
+            .First();
+
+        string? lastSeen;
+        try
+        {
+            lastSeen = await ReleaseStore.GetLastSeenVersionAsync();
+        }
+        catch
+        {
+            lastSeen = null;
+        }
+
+        await ShowReleaseDialogAsync(current, lastSeen);
+    }
+
     private async Task OpenPriceBoardDialogAsync()
     {
         DialogOptions dialogOptions = new() { CloseButton = true, FullWidth = true, FullScreen = false, MaxWidth = MaxWidth.Large };
