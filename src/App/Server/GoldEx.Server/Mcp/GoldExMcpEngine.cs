@@ -317,6 +317,57 @@ public class GoldExMcpEngine(
             },
             new McpToolDefinition
             {
+                Name = "get_category_sales_summary",
+                Description = "گزارش تجمیعی و آماری فروش به تفکیک دسته‌بندی کالا (مانند انگشتر، النگو، دستبند، سرویس، زنجیر، پلاک و...) شامل وزن واقعی طلا (گرم)، تعداد فروخته‌شده، مبلغ کل فروش، سود، اجرت و سهم درصدی از کل فروش در بازه زمانی مشخص (پاسخ مستقیم به سوالاتی مانند: مرداد چند گرم انگشتر فروختیم؟ یا از هر دسته کالا چقدر فروش داشتیم؟)",
+                InputSchema = new McpInputSchema
+                {
+                    Properties = new Dictionary<string, McpPropertySchema>
+                    {
+                        ["period"] = new() { Type = "string", Description = "نوع دوره (CurrentMonth: ماه جاری، PreviousMonth: ماه قبل، Custom: بازه دلخواه، AllTime: کل سوابق)", Enum = ["CurrentMonth", "PreviousMonth", "Custom", "AllTime"] },
+                        ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع بازه (شمسی مثلاً 1404/05/01 یا میلادی)" },
+                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان بازه (شمسی مثلاً 1404/05/31 یا میلادی)" },
+                        ["categoryName"] = new() { Type = "string", Description = "نام یا بخشی از نام دسته‌بندی کالا جهت فیلتر و استعلام اختصاصی یک دسته (مثلاً 'انگشتر' یا 'النگو')" },
+                        ["categoryId"] = new() { Type = "string", Description = "شناسه یکتای دسته‌بندی کالا (در صورت وجود)" }
+                    }
+                }
+            },
+            new McpToolDefinition
+            {
+                Name = "drill_down_sold_items",
+                Description = "گزارش و ریز اقلام فروخته‌شده در فاکتورها به همراه نام کالا، بارکد، وزن واقعی (گرم)، نام خریدار، شماره فاکتور، تاریخ و لینک دانلود PDF فاکتور با امکان فیلتر بر اساس دسته‌بندی، نام کالا و بازه تاریخ (امکان پیگیری و Drill-down بعد از دیدن سرجمع فروش دسته‌ها)",
+                InputSchema = new McpInputSchema
+                {
+                    Properties = new Dictionary<string, McpPropertySchema>
+                    {
+                        ["categoryName"] = new() { Type = "string", Description = "نام دسته‌بندی کالا جهت فیلتر (مثلاً 'انگشتر' یا 'النگو')" },
+                        ["categoryId"] = new() { Type = "string", Description = "شناسه یکتای دسته‌بندی" },
+                        ["query"] = new() { Type = "string", Description = "متن جستجو در نام کالا، بارکد، شماره فاکتور یا نام مشتری (مثلاً 'کارتیه')" },
+                        ["fromDate"] = new() { Type = "string", Description = "از تاریخ (شمسی مثلاً 1404/05/01 یا میلادی)" },
+                        ["toDate"] = new() { Type = "string", Description = "تا تاریخ (شمسی مثلاً 1404/05/31 یا میلادی)" },
+                        ["pageSize"] = new() { Type = "number", Description = "تعداد ردیف‌ها (پیش‌فرض 30، حداکثر 200)" },
+                        ["page"] = new() { Type = "number", Description = "شماره صفحه (پیش‌فرض 1)" }
+                    }
+                }
+            },
+            new McpToolDefinition
+            {
+                Name = "compare_category_sales",
+                Description = "مقایسه تحلیلی و آماری فروش دسته‌بندی‌های کالا بین دو بازه زمانی (مثلاً ماه جاری در مقایسه با ماه قبل، یا دو فصل) به تفکیک وزن واقعی طلا (گرم)، تعداد و مبلغ فروش با محاسبه دقیق درصد رشد یا افت (Δ%) هر دسته",
+                InputSchema = new McpInputSchema
+                {
+                    Properties = new Dictionary<string, McpPropertySchema>
+                    {
+                        ["period"] = new() { Type = "string", Description = "نوع دوره (MonthOverMonth: مقایسه ماه جاری با ماه قبل بر اساس تقویم شمسی، Custom: بازه دلخواه)", Enum = ["MonthOverMonth", "Custom"] },
+                        ["fromDate"] = new() { Type = "string", Description = "تاریخ شروع دوره اصلی (شمسی مثلاً 1404/05/01)" },
+                        ["toDate"] = new() { Type = "string", Description = "تاریخ پایان دوره اصلی (شمسی مثلاً 1404/05/31)" },
+                        ["previousFromDate"] = new() { Type = "string", Description = "تاریخ شروع دوره مقایسه (شمسی مثلاً 1404/04/01)" },
+                        ["previousToDate"] = new() { Type = "string", Description = "تاریخ پایان دوره مقایسه (شمسی مثلاً 1404/04/31)" },
+                        ["categoryName"] = new() { Type = "string", Description = "فیلتر دسته‌بندی خاص در صورت تمایل (اختیاری)" }
+                    }
+                }
+            },
+            new McpToolDefinition
+            {
                 Name = "get_invoice_details",
                 Description = "دریافت جزئیات کامل یک فاکتور شامل اقلام طلا، طلای کهنه، سکه، ارز، دریافتی‌ها/پرداختی‌ها، اطلاعات مشتری، مانده حساب و لینک دانلود PDF فاکتور",
                 InputSchema = new McpInputSchema
@@ -432,6 +483,16 @@ public class GoldExMcpEngine(
         [
             new McpPromptDefinition
             {
+                Name = "category-sales-analysis",
+                Description = "تحلیل و بررسی میزان فروش دسته‌بندی‌های مختلف طلا (انگشتر، النگو، دستبند و...) بر اساس وزن، تعداد و مبلغ",
+                Arguments =
+                [
+                    new McpPromptArgument { Name = "period", Description = "دوره زمانی (مثلاً مرداد ماه)", Required = false },
+                    new McpPromptArgument { Name = "categoryName", Description = "نام دسته‌بندی خاص در صورت تمایل", Required = false }
+                ]
+            },
+            new McpPromptDefinition
+            {
                 Name = "sales-performance-analysis",
                 Description = "تحلیل عملکرد و رشد فروش ماه جاری در مقایسه با ماه گذشته با شاخص‌های کلیدی (KPIs)",
                 Arguments =
@@ -487,6 +548,9 @@ public class GoldExMcpEngine(
                 "get_customer_statement" => await ExecuteGetCustomerStatementAsync(arguments, cancellationToken),
                 "search_invoices" => await ExecuteSearchInvoicesAsync(arguments, cancellationToken),
                 "get_sales_performance_report" => await ExecuteGetSalesPerformanceReportAsync(arguments, cancellationToken),
+                "get_category_sales_summary" => await ExecuteGetCategorySalesSummaryAsync(arguments, cancellationToken),
+                "drill_down_sold_items" => await ExecuteDrillDownSoldItemsAsync(arguments, cancellationToken),
+                "compare_category_sales" => await ExecuteCompareCategorySalesAsync(arguments, cancellationToken),
                 "get_invoice_details" => await ExecuteGetInvoiceDetailsAsync(arguments, cancellationToken),
                 "create_invoice" => await ExecuteCreateInvoiceAsync(arguments, cancellationToken),
                 "add_invoice_payment" => await ExecuteAddInvoicePaymentAsync(arguments, cancellationToken),
@@ -1018,10 +1082,280 @@ public class GoldExMcpEngine(
             sb.AppendLine($"- **مجموع مالیات ارزش افزوده:** **{tax1:N0} {unitTitle}**");
         }
 
+        // Add Category Summary breakdown directly in the sales performance report
+        var categorySummary = await reportingService.GetCategorySalesSummaryAsync(new CategorySalesRpRequest(start1, end1, null, null, null), ct);
+        if (categorySummary.Count > 0)
+        {
+            sb.AppendLine("\n### 🏷️ تفکیک فروش برترین دسته‌بندی‌های کالا در دوره جاری:");
+            sb.AppendLine("| ردیف | دسته‌بندی کالا | وزن (گرم) | سهم وزنی | تعداد | مبلغ فروش (تومان) |");
+            sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- |");
+            int catIdx = 1;
+            foreach (var c in categorySummary.Take(6))
+            {
+                sb.AppendLine($"| {catIdx++} | **{c.CategoryTitle}** | **{c.TotalWeight:N3}** | {c.WeightPercentage:F1}% | {c.TotalQuantity} عدد | {c.TotalAmount:N0} |");
+            }
+        }
+
         // Settlement breakdown
         sb.AppendLine("\n### 💳 وضعیت تسویه و مطالبات فاکتورهای دوره جاری:");
         sb.AppendLine($"- **تعداد فاکتورهای تسویه‌شده کامل:** **{settledCount1}** از {count1} فاکتور ({(count1 > 0 ? (settledCount1 * 100.0 / count1) : 0):F1}%)");
         sb.AppendLine($"- **مانده مطالبات تسویه‌نشده:** **{remaining1:N0} {unitTitle}**");
+
+        return McpContentResult.Text(sb.ToString());
+    }
+
+    private async Task<McpContentResult> ExecuteGetCategorySalesSummaryAsync(JsonElement args, CancellationToken ct)
+    {
+        var period = args.TryGetProperty("period", out var pProp) ? pProp.GetString() : null;
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var categoryName = args.TryGetProperty("categoryName", out var cnP) ? cnP.GetString()?.Trim() : null;
+        Guid? categoryId = null;
+        if (args.TryGetProperty("categoryId", out var cidP) && Guid.TryParse(cidP.GetString(), out var parsedCid))
+        {
+            categoryId = parsedCid;
+        }
+
+        DateTime? start = null;
+        DateTime? end = null;
+        string periodTitle = "کل بازه زمانی";
+
+        if (period?.Equals("CurrentMonth", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            var (s, e, t) = GetShamsiMonthRange(0);
+            start = s;
+            end = e;
+            periodTitle = t;
+        }
+        else if (period?.Equals("PreviousMonth", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            var (s, e, t) = GetShamsiMonthRange(-1);
+            start = s;
+            end = e;
+            periodTitle = t;
+        }
+        else if (!string.IsNullOrWhiteSpace(fromDateStr) || !string.IsNullOrWhiteSpace(toDateStr))
+        {
+            start = ParseDate(fromDateStr);
+            end = ParseDate(toDateStr);
+            periodTitle = $"{fromDateStr ?? "ابتدا"} تا {toDateStr ?? "اکنون"}";
+        }
+        else if (string.IsNullOrWhiteSpace(period) || period?.Equals("AllTime", StringComparison.OrdinalIgnoreCase) == false)
+        {
+            // If neither dates nor period specified, default to Current Month for rapid insights
+            var (s, e, t) = GetShamsiMonthRange(0);
+            start = s;
+            end = e;
+            periodTitle = t;
+        }
+
+        var request = new CategorySalesRpRequest(start, end, categoryId, categoryName, null);
+        var categories = await reportingService.GetCategorySalesSummaryAsync(request, ct);
+
+        if (categories.Count == 0)
+        {
+            var filterDesc = !string.IsNullOrWhiteSpace(categoryName) ? $" برای دسته‌بندی «{categoryName}»" : "";
+            return McpContentResult.Text($"هیچ رکورد فروشی در دوره {periodTitle}{filterDesc} ثبت نشده است.");
+        }
+
+        var totalSumWeight = categories.Sum(x => x.TotalWeight);
+        var totalSumQty = categories.Sum(x => x.TotalQuantity);
+        var totalSumAmount = categories.Sum(x => x.TotalAmount);
+        var totalSumProfit = categories.Sum(x => x.TotalProfit);
+        var totalSumWage = categories.Sum(x => x.TotalWage);
+
+        var sb = new StringBuilder();
+
+        // If a specific category was searched and found
+        if (!string.IsNullOrWhiteSpace(categoryName) && categories.Count == 1)
+        {
+            var item = categories[0];
+            sb.AppendLine($"# 🏷️ گزارش فروش دسته‌بندی «{item.CategoryTitle}» ({periodTitle})");
+            sb.AppendLine($"📊 **خلاصه شاخص‌های فروش این دسته:**");
+            sb.AppendLine($"- **وزن کل فروخته‌شده (واقعی):** **{item.TotalWeight:N3} گرم** (وزن واقعی طلاهای فروخته‌شده)");
+            sb.AppendLine($"- **تعداد کل فروخته‌شده:** **{item.TotalQuantity} عدد** (در قالب {item.ItemCount} ردیف فاکتور)");
+            sb.AppendLine($"- **مجموع مبلغ فروش:** **{item.TotalAmount:N0} تومان**");
+            sb.AppendLine($"- **مجموع سود فروشنده:** **{item.TotalProfit:N0} تومان**");
+            sb.AppendLine($"- **مجموع اجرت ساخت:** **{item.TotalWage:N0} تومان**");
+            sb.AppendLine($"- **مجموع مالیات:** **{item.TotalTax:N0} تومان**");
+            if (item.WeightPercentage > 0)
+            {
+                sb.AppendLine($"- **سهم از کل فروش فروشگاه:** **{item.WeightPercentage:F1}% وزنی** | **{item.AmountPercentage:F1}% مبلغی**");
+            }
+            sb.AppendLine($"\n💡 *جهت مشاهده ریز فاکتورها و خریداران این دسته، می‌توانید از ابزار `drill_down_sold_items` با دسته‌بندی «{item.CategoryTitle}» استفاده فرمایید.*");
+            return McpContentResult.Text(sb.ToString());
+        }
+
+        // Full multi-category breakdown
+        sb.AppendLine($"# 🏷️ گزارش تجمیعی فروش به تفکیک دسته‌بندی کالا ({periodTitle})");
+        sb.AppendLine($"📊 **مجموع کل فروش تمام دسته‌ها:** **{totalSumWeight:N3} گرم** | **{totalSumQty} عدد** | **{totalSumAmount:N0} تومان**\n");
+
+        sb.AppendLine("| ردیف | دسته‌بندی کالا | وزن فروخته‌شده (گرم) | سهم وزنی | تعداد | مبلغ کل فروش (تومان) | سهم مبلغی | سود فروش | اجرت ساخت |");
+        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+
+        int index = 1;
+        foreach (var c in categories)
+        {
+            sb.AppendLine($"| {index++} | **{c.CategoryTitle}** | **{c.TotalWeight:N3}** | {c.WeightPercentage:F1}% | {c.TotalQuantity} | **{c.TotalAmount:N0}** | {c.AmountPercentage:F1}% | {c.TotalProfit:N0} | {c.TotalWage:N0} |");
+        }
+
+        sb.AppendLine($"| **-** | **مجموع کل** | **{totalSumWeight:N3} گرم** | **100%** | **{totalSumQty} عدد** | **{totalSumAmount:N0} تومان** | **100%** | **{totalSumProfit:N0}** | **{totalSumWage:N0}** |");
+
+        var topByWeight = categories.OrderByDescending(x => x.TotalWeight).FirstOrDefault();
+        var topByAmount = categories.OrderByDescending(x => x.TotalAmount).FirstOrDefault();
+
+        sb.AppendLine("\n### 💡 نکات کلیدی تحلیل فروش:");
+        if (topByWeight != null)
+            sb.AppendLine($"- 🥇 **بیشترین حجم وزنی فروش:** دسته‌بندی **«{topByWeight.CategoryTitle}»** با وزن **{topByWeight.TotalWeight:N3} گرم** ({topByWeight.WeightPercentage:F1}% کل فروش)");
+        if (topByAmount != null)
+            sb.AppendLine($"- 💰 **بیشترین ارزش ریالی فروش:** دسته‌بندی **«{topByAmount.CategoryTitle}»** با مبلغ **{topByAmount.TotalAmount:N0} تومان** ({topByAmount.AmountPercentage:F1}% کل فروش)");
+
+        sb.AppendLine($"\n💡 *برای مشاهده ریز و مشخصات تک‌تک اقلام فروخته‌شده در هر دسته، می‌توانید از ابزار `drill_down_sold_items` استفاده فرمایید.*");
+
+        return McpContentResult.Text(sb.ToString());
+    }
+
+    private async Task<McpContentResult> ExecuteDrillDownSoldItemsAsync(JsonElement args, CancellationToken ct)
+    {
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var categoryName = args.TryGetProperty("categoryName", out var cnP) ? cnP.GetString()?.Trim() : null;
+        var query = args.TryGetProperty("query", out var qP) ? qP.GetString()?.Trim() : null;
+        var pageSize = args.TryGetProperty("pageSize", out var psProp) ? Math.Clamp(psProp.GetInt32(), 1, 200) : 30;
+        var page = args.TryGetProperty("page", out var pgProp) ? Math.Max(1, pgProp.GetInt32()) : 1;
+
+        Guid? categoryId = null;
+        if (args.TryGetProperty("categoryId", out var cidP) && Guid.TryParse(cidP.GetString(), out var parsedCid))
+        {
+            categoryId = parsedCid;
+        }
+
+        var start = ParseDate(fromDateStr);
+        var end = ParseDate(toDateStr);
+        var skip = (page - 1) * pageSize;
+
+        var request = new SoldProductItemRpRequest(start, end, categoryId, categoryName, query, skip, pageSize);
+        var items = await reportingService.GetSoldProductItemsAsync(request, ct);
+
+        if (items.Count == 0)
+        {
+            var filterDesc = !string.IsNullOrWhiteSpace(categoryName) ? $" در دسته‌بندی «{categoryName}»" : "";
+            return McpContentResult.Text($"هیچ قلم کالایی با فیلترهای مشخص‌شده{filterDesc} یافت نشد.");
+        }
+
+        var pageWeight = items.Sum(x => x.TotalWeight);
+        var pageAmount = items.Sum(x => x.FinalAmount);
+        var unitTitle = items.FirstOrDefault()?.PriceUnit ?? "تومان";
+
+        var sb = new StringBuilder();
+        var catHeader = !string.IsNullOrWhiteSpace(categoryName) ? $" در دسته‌بندی «{categoryName}»" : "";
+        sb.AppendLine($"# 🔍 ریز اقلام فروخته‌شده{catHeader} (نمایش {items.Count} ردیف در صفحه {page})");
+        sb.AppendLine($"📊 **مجموع این صفحه:** **{pageWeight:N3} گرم** | **{pageAmount:N0} {unitTitle}**\n");
+
+        sb.AppendLine("| ردیف | شماره فاکتور | تاریخ | خریدار | عنوان کالا | بارکد | دسته‌بندی | وزن (گرم) | تعداد | نرخ گرم | سود و اجرت | مبلغ نهایی | دانلود PDF |");
+        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+
+        var baseUrl = GetBaseUrl();
+        int index = skip + 1;
+
+        foreach (var item in items)
+        {
+            var dateStr = item.InvoiceDate.ToString("yyyy/MM/dd");
+            var barcodeStr = !string.IsNullOrEmpty(item.Barcode) ? $"`{item.Barcode}`" : "-";
+            var customerStr = !string.IsNullOrEmpty(item.CustomerName) ? item.CustomerName : "عمومی";
+            var profitWageStr = (item.WageAmount + item.ProfitAmount).ToString("N0");
+            var pdfLink = $"[📥 PDF]({baseUrl}/api/invoices/{item.InvoiceId}/download-pdf)";
+
+            sb.AppendLine($"| {index++} | {item.InvoiceNumber} | {dateStr} | {customerStr} | **{item.ProductName}** | {barcodeStr} | {item.CategoryTitle} | **{item.TotalWeight:N3}** | {item.Quantity} | {item.GramPrice:N0} | {profitWageStr} | **{item.FinalAmount:N0}** | {pdfLink} |");
+        }
+
+        return McpContentResult.Text(sb.ToString());
+    }
+
+    private async Task<McpContentResult> ExecuteCompareCategorySalesAsync(JsonElement args, CancellationToken ct)
+    {
+        var period = args.TryGetProperty("period", out var pProp) ? pProp.GetString() : "MonthOverMonth";
+        var fromDateStr = args.TryGetProperty("fromDate", out var fdP) ? fdP.GetString() : null;
+        var toDateStr = args.TryGetProperty("toDate", out var tdP) ? tdP.GetString() : null;
+        var prevFromDateStr = args.TryGetProperty("previousFromDate", out var pfdP) ? pfdP.GetString() : null;
+        var prevToDateStr = args.TryGetProperty("previousToDate", out var ptdP) ? ptdP.GetString() : null;
+        var categoryName = args.TryGetProperty("categoryName", out var cnP) ? cnP.GetString()?.Trim() : null;
+
+        DateTime start1, end1, start2, end2;
+        string title1, title2;
+
+        if (period?.Equals("Custom", StringComparison.OrdinalIgnoreCase) == true &&
+            !string.IsNullOrWhiteSpace(fromDateStr) && !string.IsNullOrWhiteSpace(toDateStr) &&
+            !string.IsNullOrWhiteSpace(prevFromDateStr) && !string.IsNullOrWhiteSpace(prevToDateStr))
+        {
+            start1 = ParseDate(fromDateStr) ?? DateTime.UtcNow.AddMonths(-1);
+            end1 = ParseDate(toDateStr) ?? DateTime.UtcNow;
+            start2 = ParseDate(prevFromDateStr) ?? DateTime.UtcNow.AddMonths(-2);
+            end2 = ParseDate(prevToDateStr) ?? DateTime.UtcNow.AddMonths(-1);
+            title1 = $"{fromDateStr} تا {toDateStr}";
+            title2 = $"{prevFromDateStr} تا {prevToDateStr}";
+        }
+        else
+        {
+            // Default: Month Over Month
+            var (s1, e1, t1) = GetShamsiMonthRange(0);
+            var (s2, e2, t2) = GetShamsiMonthRange(-1);
+            start1 = s1;
+            end1 = e1;
+            title1 = t1;
+            start2 = s2;
+            end2 = e2;
+            title2 = t2;
+        }
+
+        var request = new CategorySalesComparisonRpRequest(start1, end1, start2, end2, title1, title2, null, categoryName);
+        var comparisons = await reportingService.GetCategorySalesComparisonAsync(request, ct);
+
+        if (comparisons.Count == 0)
+        {
+            return McpContentResult.Text($"هیچ داده فروشی برای مقایسه بین دوره «{title1}» و «{title2}» یافت نشد.");
+        }
+
+        var totalW1 = comparisons.Sum(x => x.Weight1);
+        var totalW2 = comparisons.Sum(x => x.Weight2);
+        var totalWDelta = totalW2 > 0 ? ((totalW1 - totalW2) / totalW2) * 100m : (totalW1 > 0 ? 100m : 0m);
+
+        var totalA1 = comparisons.Sum(x => x.Amount1);
+        var totalA2 = comparisons.Sum(x => x.Amount2);
+        var totalADelta = totalA2 > 0 ? ((totalA1 - totalA2) / totalA2) * 100m : (totalA1 > 0 ? 100m : 0m);
+
+        string FormatDelta(decimal delta) => delta switch
+        {
+            > 0 => $"🟢 **+{delta:F1}%**",
+            < 0 => $"🔴 **{delta:F1}%**",
+            _ => "⚪ **0%**"
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"# 📊 مقایسه تحلیلی فروش دسته‌بندی‌ها: **{title1}** در مقایسه با **{title2}**");
+        sb.AppendLine($"📈 **مجموع کل فروش:** {totalW1:N3} گرم (vs {totalW2:N3} گرم - {FormatDelta(totalWDelta)}) | {totalA1:N0} تومان (vs {totalA2:N0} تومان - {FormatDelta(totalADelta)})\n");
+
+        sb.AppendLine("| دسته‌بندی کالا | وزن دوره ۱ (گرم) | وزن دوره ۲ (گرم) | تغییر وزن (Δ%) | تعداد ۱ | تعداد ۲ | مبلغ دوره ۱ (تومان) | مبلغ دوره ۲ (تومان) | تغییر مبلغ (Δ%) | وضعیت |");
+        sb.AppendLine("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |");
+
+        foreach (var c in comparisons)
+        {
+            var status = c.WeightDeltaPercent >= 0 ? "🟢 رشد وزنی" : "🔴 افت وزنی";
+            sb.AppendLine($"| **{c.CategoryTitle}** | **{c.Weight1:N3}** | {c.Weight2:N3} | {FormatDelta(c.WeightDeltaPercent)} | {c.Quantity1} | {c.Quantity2} | **{c.Amount1:N0}** | {c.Amount2:N0} | {FormatDelta(c.AmountDeltaPercent)} | {status} |");
+        }
+
+        var highestGrowth = comparisons.Where(x => x.Weight2 > 0).OrderByDescending(x => x.WeightDeltaPercent).FirstOrDefault();
+        var highestDecline = comparisons.Where(x => x.Weight2 > 0).OrderBy(x => x.WeightDeltaPercent).FirstOrDefault();
+
+        sb.AppendLine("\n### 🔍 نکات تحلیلی مقایسه دسته‌ها:");
+        if (highestGrowth != null && highestGrowth.WeightDeltaPercent > 0)
+        {
+            sb.AppendLine($"- 🚀 **بیشترین رشد وزنی:** دسته‌بندی **«{highestGrowth.CategoryTitle}»** با **+{highestGrowth.WeightDeltaPercent:F1}% رشد** نسبت به دوره قبل");
+        }
+        if (highestDecline != null && highestDecline.WeightDeltaPercent < 0)
+        {
+            sb.AppendLine($"- ⚠️ **بیشترین کاهش وزنی:** دسته‌بندی **«{highestDecline.CategoryTitle}»** با **{highestDecline.WeightDeltaPercent:F1}% افت** نسبت به دوره قبل");
+        }
 
         return McpContentResult.Text(sb.ToString());
     }
