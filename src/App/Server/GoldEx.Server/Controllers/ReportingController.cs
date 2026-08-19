@@ -128,4 +128,31 @@ public class ReportingController(IReportingService service) : ApiControllerBase
         var result = await service.GetUsedGoldHiddenProfitAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet(ApiRoutes.Reporting.GetCategorySalesSummary)]
+    public async Task<IActionResult> GetCategorySalesSummaryAsync(
+        [FromQuery] CategorySalesRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetCategorySalesSummaryAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetSoldProductItems)]
+    public async Task<IActionResult> GetSoldProductItemsAsync(
+        [FromQuery] SoldProductItemRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetSoldProductItemsAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet(ApiRoutes.Reporting.GetCategorySalesComparison)]
+    public async Task<IActionResult> GetCategorySalesComparisonAsync(
+        [FromQuery] CategorySalesComparisonRpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await service.GetCategorySalesComparisonAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }

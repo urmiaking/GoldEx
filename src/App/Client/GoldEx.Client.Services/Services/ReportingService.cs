@@ -171,4 +171,43 @@ internal class ReportingService(HttpClient client, JsonSerializerOptions jsonOpt
 
         return result ?? throw new UnexpectedHttpResponseException();
     }
+
+    public async Task<List<CategorySalesRpResponse>> GetCategorySalesSummaryAsync(
+        CategorySalesRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetCategorySalesSummary(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<CategorySalesRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<SoldProductItemRpResponse>> GetSoldProductItemsAsync(
+        SoldProductItemRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetSoldProductItems(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<SoldProductItemRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
+
+    public async Task<List<CategorySalesComparisonRpResponse>> GetCategorySalesComparisonAsync(
+        CategorySalesComparisonRpRequest request, CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Reporting.GetCategorySalesComparison(request), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<List<CategorySalesComparisonRpResponse>>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
+    }
 }
