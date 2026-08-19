@@ -663,6 +663,18 @@ public class ApiUrls
         public static string GetUsedGoldHiddenProfit(UsedGoldHiddenProfitRpRequest request) =>
             BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetUsedGoldHiddenProfit)
                 .AppendQueryString(request);
+
+        public static string GetCategorySalesSummary(CategorySalesRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCategorySalesSummary)
+                .AppendQueryString(request);
+
+        public static string GetSoldProductItems(SoldProductItemRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetSoldProductItems)
+                .AppendQueryString(request);
+
+        public static string GetCategorySalesComparison(CategorySalesComparisonRpRequest request) =>
+            BuildUrl(ApiRoutes.Reporting.Base, ApiRoutes.Reporting.GetCategorySalesComparison)
+                .AppendQueryString(request);
     }
 
     public class SmsTemplates

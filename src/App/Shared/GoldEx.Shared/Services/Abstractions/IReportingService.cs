@@ -95,4 +95,19 @@ public interface IReportingService
     Task<List<CurrencyInventoryRpResponse>> GetCurrencyInventoryAsync(CurrencyInventoryRpRequest request, CancellationToken cancellationToken = default);
 
     Task<List<UsedGoldHiddenProfitRpResponse>> GetUsedGoldHiddenProfitAsync(UsedGoldHiddenProfitRpRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get aggregated sales summary grouped by product category
+    /// </summary>
+    Task<List<CategorySalesRpResponse>> GetCategorySalesSummaryAsync(CategorySalesRpRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Drill down and search sold product items
+    /// </summary>
+    Task<List<SoldProductItemRpResponse>> GetSoldProductItemsAsync(SoldProductItemRpRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Compare product category sales performance between two periods
+    /// </summary>
+    Task<List<CategorySalesComparisonRpResponse>> GetCategorySalesComparisonAsync(CategorySalesComparisonRpRequest request, CancellationToken cancellationToken = default);
 }

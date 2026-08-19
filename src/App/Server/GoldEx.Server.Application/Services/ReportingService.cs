@@ -193,4 +193,22 @@ internal class ReportingService(
 
         return response;
     }
+
+    public async Task<List<CategorySalesRpResponse>> GetCategorySalesSummaryAsync(
+        CategorySalesRpRequest request, CancellationToken cancellationToken = default)
+    {
+        return await invoiceRepository.GetCategorySalesSummaryAsync(request, cancellationToken);
+    }
+
+    public async Task<List<SoldProductItemRpResponse>> GetSoldProductItemsAsync(
+        SoldProductItemRpRequest request, CancellationToken cancellationToken = default)
+    {
+        return await invoiceRepository.GetSoldProductItemsAsync(request, cancellationToken);
+    }
+
+    public async Task<List<CategorySalesComparisonRpResponse>> GetCategorySalesComparisonAsync(
+        CategorySalesComparisonRpRequest request, CancellationToken cancellationToken = default)
+    {
+        return await invoiceRepository.GetCategorySalesComparisonAsync(request, cancellationToken);
+    }
 }
