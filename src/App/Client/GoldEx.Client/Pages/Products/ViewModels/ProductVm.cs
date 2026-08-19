@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Settings.ViewModels;
+using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.DTOs.Products;
@@ -169,6 +169,17 @@ public class ProductVm : INotifyPropertyChanged
     public GoldUnitType GoldUnitType { get; set; }
     public MoltenGoldVm? MoltenGold { get; set; }
 
+    [Display(Name = "نمایش در ویترین آنلاین")]
+    public bool ShowInVitrine { get; set; }
+
+    [Display(Name = "پیشنهاد ویژه ویترین")]
+    public bool IsFeatured { get; set; }
+
+    [Display(Name = "توضیحات ویترین")]
+    public string? VitrineDescription { get; set; }
+
+    public List<ProductImageDto> Images { get; set; } = [];
+
     internal static ProductVm CreateDefaultInstance() => new()
     { Fineness = 750m, ProductType = ProductType.Gold, WageType = Shared.Enums.WageType.Percent };
 
@@ -218,6 +229,10 @@ public class ProductVm : INotifyPropertyChanged
             StonePriceUnit = item.StonePriceUnit,
             DateTime = item.DateTime,
             GoldUnitType = item.GoldUnitType,
+            ShowInVitrine = item.ShowInVitrine,
+            IsFeatured = item.IsFeatured,
+            VitrineDescription = item.VitrineDescription,
+            Images = item.Images?.ToList() ?? [],
             CategoryVm = item.ProductCategoryId.HasValue && !string.IsNullOrEmpty(item.ProductCategoryTitle) ? new ProductCategoryVm
             {
                 Id = item.ProductCategoryId.Value,
@@ -261,7 +276,11 @@ public class ProductVm : INotifyPropertyChanged
             item.WagePriceUnitId,
             item.StonePriceUnit?.Id,
             item.Stones?.Select(x => x.ToRequest()).ToList(),
-            item.MoltenGold?.ToRequest()
+            item.MoltenGold?.ToRequest(),
+            item.ShowInVitrine,
+            item.IsFeatured,
+            item.VitrineDescription,
+            item.Images
         );
     }
 

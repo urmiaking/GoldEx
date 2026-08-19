@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Specifications;
+using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.ProductAggregate;
 
 namespace GoldEx.Server.Infrastructure.Specifications.Products;
@@ -10,5 +10,9 @@ public class ProductsByIdSpecification : SpecificationBase<Product>
         AddCriteria(x => x.Id == id);
 
         AddInclude(x => x.WagePriceUnit!);
+        AddInclude(x => x.StonePriceUnit!);
+        AddInclude(x => x.ProductCategory!);
+        AddInclude(x => x.Images);
+        AddInclude(x => x.GemStones);
     }
 }

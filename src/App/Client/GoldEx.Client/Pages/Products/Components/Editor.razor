@@ -298,6 +298,74 @@
                         </div>
                     </MudItem>
                 }
+
+                @if (Model.ProductType is ProductType.Gold or ProductType.Jewelry)
+                {
+                    <MudItem xs="12">
+                        <MudDivider Class="my-2" />
+                        <div class="d-flex align-center gap-2 mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Storefront" Color="Color.Warning" />
+                            <MudText Typo="Typo.subtitle1" Color="Color.Warning"><b>ویترین آنلاین و معرفی کالا</b></MudText>
+                        </div>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSwitch @bind-Value="Model.ShowInVitrine"
+                                   Label="نمایش این قطعه در ویترین آنلاین"
+                                   Color="Color.Success"
+                                   T="bool" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSwitch @bind-Value="Model.IsFeatured"
+                                   Label="پیشنهاد ویژه (صفحه اول)"
+                                   Color="Color.Warning"
+                                   Disabled="@(!Model.ShowInVitrine)"
+                                   T="bool" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Model.VitrineDescription"
+                                      Label="توضیحات معرفی قطعه برای مشتریان در ویترین (اختیاری)"
+                                      Variant="Variant.Outlined"
+                                      Lines="2"
+                                      Margin="Margin.Dense"
+                                      Disabled="@(!Model.ShowInVitrine)"
+                                      Placeholder="توضیحات درباره زیبایی، مدل، تراش و درخشش قطعه..." />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.caption" Class="d-block mb-2">تصاویر ویترین:</MudText>
+                        <div class="d-flex flex-wrap gap-2 align-center">
+                            @foreach (var img in Model.Images)
+                            {
+                                <div style="position: relative; width: 70px; height: 70px; border-radius: 8px; overflow: hidden; border: 1px solid var(--mud-palette-lines-default); background: #000;">
+                                    <img src="@img.Url" style="width: 100%; height: 100%; object-fit: cover;" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                   Size="Size.Small"
+                                                   Style="position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.6);"
+                                                   Color="Color.Error"
+                                                   OnClick="() => RemoveImage(img)" />
+                                </div>
+                            }
+                            <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.webp" FilesChanged="UploadEditorImageAsync">
+                                <CustomContent Context="ctx">
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.AddPhotoAlternate"
+                                               OnClick="ctx.OpenFilePickerAsync"
+                                               Disabled="_isUploadingImage">
+                                        @if (_isUploadingImage)
+                                        {
+                                            <span>در حال آپلود...</span>
+                                        }
+                                        else
+                                        {
+                                            <span>افزودن عکس</span>
+                                        }
+                                    </MudButton>
+                                </CustomContent>
+                            </MudFileUpload>
+                        </div>
+                    </MudItem>
+                }
             </MudGrid>
             <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Start" Class="mt-4">
                 توجه: ویرایش جنس برای ویرایش اطلاعات کلی جنس از جمله عنوان و دسته بندی می باشد و از این قابلیت صرفا باید برای ویرایش اجناسی که در هنگام ثبت موجودی اولیه اضافه شده اند استفاده شود.

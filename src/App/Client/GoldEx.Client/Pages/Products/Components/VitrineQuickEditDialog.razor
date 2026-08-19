@@ -1,0 +1,104 @@
+@inherits GoldExComponentBase
+@using GoldEx.Shared.DTOs.Products
+@using GoldEx.Shared.DTOs.Vitrine
+@using GoldEx.Shared.Enums
+@using GoldEx.Shared.Services.Abstractions
+@using System.Net.Http.Headers
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Storefront" Color="Color.Warning" />
+            <MudText Typo="Typo.h6">مدیریت ویترین آنلاین - @Model.Name (@Model.Barcode)</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="3">
+            <MudItem xs="12" sm="6">
+                <MudSwitch @bind-Value="Model.ShowInVitrine"
+                           Label="نمایش در ویترین عمومی"
+                           Color="Color.Success"
+                           T="bool" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSwitch @bind-Value="Model.IsFeatured"
+                           Label="نمایش در پیشنهادات ویژه (صفحه اول)"
+                           Color="Color.Warning"
+                           Disabled="@(!Model.ShowInVitrine)"
+                           T="bool" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="Model.VitrineDescription"
+                              Label="توضیحات معرفی قطعه برای مشتریان (اختیاری)"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              Margin="Margin.Dense"
+                              Disabled="@(!Model.ShowInVitrine)"
+                              Placeholder="توضیحات جذاب درباره ظرافت ساخت، تراش، درخشش یا برند قطعه..." />
+            </MudItem>
+
+            <!-- Image Gallery Upload Section -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">تصاویر ویترین کالا</MudText>
+
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                    @foreach (var img in Model.Images)
+                    {
+                        <div style="position: relative; width: 100px; height: 100px; border-radius: 12px; overflow: hidden; border: 2px solid @(img.IsMain ? "var(--mud-palette-warning)" : "var(--mud-palette-lines-default)"); background: #000;">
+                            <img src="@img.Url" style="width: 100%; height: 100%; object-fit: cover;" />
+                            
+                            @if (img.IsMain)
+                            {
+                                <span style="position: absolute; bottom: 4px; right: 4px; background: rgba(212,175,55,0.9); color: #000; font-size: 0.65rem; font-weight: bold; padding: 2px 6px; border-radius: 4px;">
+                                    شاخص
+                                </span>
+                            }
+                            else
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.StarBorder"
+                                               Size="Size.Small"
+                                               Style="position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.6);"
+                                               Color="Color.Warning"
+                                               OnClick="() => SetMainImage(img)" />
+                            }
+
+                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                           Size="Size.Small"
+                                           Style="position: absolute; top: 2px; left: 2px; background: rgba(0,0,0,0.6);"
+                                           Color="Color.Error"
+                                           OnClick="() => RemoveImage(img)" />
+                        </div>
+                    }
+
+                    <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.webp" FilesChanged="UploadImageAsync">
+                        <CustomContent Context="ctx">
+                            <div @onclick="ctx.OpenFilePickerAsync"
+                                 style="width: 100px; height: 100px; border: 2px dashed var(--mud-palette-primary); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--mud-palette-primary); background: rgba(var(--mud-palette-primary-rgb), 0.05);">
+                                @if (_isUploading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.AddPhotoAlternate" Size="Size.Medium" />
+                                    <span style="font-size: 0.75rem; margin-top: 4px;">افزودن عکس</span>
+                                }
+                            </div>
+                        </CustomContent>
+                    </MudFileUpload>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">انصراف</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_isSaving">
+            @if (_isSaving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="ms-2" />
+            }
+            ذخیره تنظیمات ویترین
+        </MudButton>
+    </DialogActions>
+</MudDialog>

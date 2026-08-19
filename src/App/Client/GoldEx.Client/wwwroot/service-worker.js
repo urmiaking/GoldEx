@@ -1,60 +1,30 @@
-// service-worker-dev.js
-
-// Fixed cache name (won't change across builds)
-const cacheName = 'offline-cache-dev';
-const offlineAssetsInclude = [/\.dll$/, /\.wasm$/, /\.html$/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/];
-const offlineAssetsExclude = [/^service-worker\.js$/, /^GoldEx\.Client\.styles\.css$/i];
-
-// Immediately take control
+ï»¿// In development, always fetch from network and never cache static assets or HTML
 self.addEventListener('install', event => {
-    console.log('[Dev SW] Installing...');
     self.skipWaiting();
-    event.waitUntil(precache());
 });
 
 self.addEventListener('activate', event => {
-    console.log('[Dev SW] Activated.');
-    self.clients.claim();
-});
-
-self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') return;
-
-    event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                // Optionally cache GET responses (dev mode usually skips this)
-                return response;
-            })
-            .catch(async () => {
-                const cache = await caches.open(cacheName);
-                const cachedResponse = await cache.match(event.request);
-                if (cachedResponse) return cachedResponse;
-
-                return new Response('Offline (Dev SW)', {
-                    status: 503,
-                    statusText: 'Offline',
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-            })
+    event.waitUntil(
+        caches.keys().then(keys => {
+            return Promise.all(
+                keys.map(key => {
+                    console.log('[Dev SW] Clearing cache:', key);
+                    return caches.delete(key);
+                })
+            );
+        }).then(() => self.clients.claim())
     );
 });
 
-async function precache() {
-    const cache = await caches.open(cacheName);
-
-    // Cache only basic app shell files — no manifest-based updates
-    const baseFiles = [
-        '/'
-    ];
-
-    for (const url of baseFiles) {
-        try {
-            await cache.add(url);
-        } catch (err) {
-            console.warn(`[Dev SW] Skipped caching ${url}:`, err);
-        }
-    }
-
-    console.log('[Dev SW] Precache complete.');
-}
+self.addEventListener('fetch', event => {
+    // Pass through all requests directly to the network in development
+    event.respondWith(
+        fetch(event.request).catch(err => {
+            return new Response('Offline (Dev Mode)', {
+                status: 503,
+                statusText: 'Offline',
+                headers: { 'Content-Type': 'text/plain' }
+            });
+        })
+    );
+});

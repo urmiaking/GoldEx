@@ -857,4 +857,31 @@ public class ApiUrls
         public static string Sse() => ApiRoutes.Mcp.Sse;
         public static string Message() => ApiRoutes.Mcp.Message;
     }
+
+    public class Vitrine
+    {
+        public static string GetStoreInfo(string storeSlug) =>
+            BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.GetStoreInfo).FormatRoute(new { storeSlug });
+
+        public static string GetProducts(string storeSlug, Guid? categoryId = null, bool? onlyFeatured = null)
+        {
+            var url = BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.GetProducts).FormatRoute(new { storeSlug });
+            var query = new List<string>();
+            if (categoryId.HasValue) query.Add($"categoryId={categoryId.Value}");
+            if (onlyFeatured.HasValue) query.Add($"onlyFeatured={onlyFeatured.Value.ToString().ToLowerInvariant()}");
+            return query.Count > 0 ? $"{url}?{string.Join("&", query)}" : url;
+        }
+
+        public static string GetProductDetail(string storeSlug, string barcode) =>
+            BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.GetProductDetail).FormatRoute(new { storeSlug, barcode });
+
+        public static string GetCategories(string storeSlug) =>
+            BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.GetCategories).FormatRoute(new { storeSlug });
+
+        public static string UploadProductImage() =>
+            BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.UploadProductImage);
+
+        public static string UpdateProductVitrine(Guid productId) =>
+            BuildUrl(ApiRoutes.Vitrine.Base, ApiRoutes.Vitrine.UpdateProductVitrine).FormatRoute(new { productId });
+    }
 }

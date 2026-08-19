@@ -131,6 +131,13 @@ public class Product : EntityBase<ProductId>, IStoreFiltered
     private readonly List<GemStone> _stones = [];
     public IReadOnlyList<GemStone> GemStones => _stones;
 
+    private readonly List<ProductImage> _images = [];
+    public IReadOnlyList<ProductImage> Images => _images;
+
+    public bool ShowInVitrine { get; private set; }
+    public bool IsFeatured { get; private set; }
+    public string? VitrineDescription { get; private set; }
+
     public MoltenGold? MoltenGold { get; private set; }
 
     public IReadOnlyList<InventoryStock>? InventoryStocks { get; private set; }
@@ -161,6 +168,9 @@ public class Product : EntityBase<ProductId>, IStoreFiltered
 
     public Product SetProductType(ProductType productType)
     {
+        if (ShowInVitrine && productType is not (ProductType.Gold or ProductType.Jewelry))
+            ShowInVitrine = false;
+
         ProductType = productType;
         return this;
     }
@@ -202,6 +212,28 @@ public class Product : EntityBase<ProductId>, IStoreFiltered
         return this;
     }
     public void ClearGemStones() => _stones.Clear();
+
+    public Product SetVitrineOptions(bool showInVitrine, bool isFeatured = false, string? vitrineDescription = null)
+    {
+        if (showInVitrine && ProductType is not (ProductType.Gold or ProductType.Jewelry))
+            throw new InvalidOperationException("تنها اجناس از نوع طلا و جواهر می‌توانند در ویترین آنلاین قرار گیرند.");
+
+        ShowInVitrine = showInVitrine;
+        IsFeatured = isFeatured;
+        VitrineDescription = vitrineDescription?.Trim();
+        return this;
+    }
+
+    public Product SetImages(IEnumerable<ProductImage>? images)
+    {
+        ClearImages();
+
+        if (images is not null)
+            _images.AddRange(images);
+
+        return this;
+    }
+    public void ClearImages() => _images.Clear();
 
     public Product SetWagePriceUnitId(PriceUnitId? wagePriceUnitId)
     {

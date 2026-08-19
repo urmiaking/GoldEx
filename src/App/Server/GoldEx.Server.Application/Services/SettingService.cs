@@ -78,6 +78,7 @@ internal class SettingService(ISettingRepository repository,
         item.SetGoldSafetyMargin(request.GoldSafetyMarginPercent);
         item.SetUsedGoldFinenessDeduction(request.UsedGoldFinenessDeductionRate);
         item.SetGramPerMesghal(request.GramPerMesghal);
+        item.SetVitrineSocialInfo(request.InstagramUrl, request.TelegramUrl, request.BaleUrl, request.WhatsAppNumber, request.AboutText);
 
         await repository.UpdateAsync(item, cancellationToken);
 

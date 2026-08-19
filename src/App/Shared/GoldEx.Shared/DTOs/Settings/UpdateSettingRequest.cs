@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.DTOs.Settings;
+namespace GoldEx.Shared.DTOs.Settings;
 
 public record UpdateSettingRequest(
     string InstitutionName,
@@ -12,4 +12,9 @@ public record UpdateSettingRequest(
     decimal GoldSafetyMarginPercent,
     decimal UsedGoldFinenessDeductionRate,
     decimal GramPerMesghal,
-    byte[]? IconContent);
+    byte[]? IconContent,
+    string? InstagramUrl = null,
+    string? TelegramUrl = null,
+    string? BaleUrl = null,
+    string? WhatsAppNumber = null,
+    string? AboutText = null);
