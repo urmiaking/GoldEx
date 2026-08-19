@@ -449,4 +449,15 @@ public static class ApiRoutes
         public const string Sse = "/api/mcp/sse";
         public const string Message = "/api/mcp/message";
     }
+
+    public class Vitrine
+    {
+        public const string Base = "/api/vitrine";
+        public const string GetStoreInfo = "{storeSlug}/info";
+        public const string GetProducts = "{storeSlug}/products";
+        public const string GetProductDetail = "{storeSlug}/products/{barcode}";
+        public const string GetCategories = "{storeSlug}/categories";
+        public const string UploadProductImage = "upload-image";
+        public const string UpdateProductVitrine = "products/{productId}/vitrine";
+    }
 }

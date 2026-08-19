@@ -311,3 +311,29 @@ GoldEx uses a high-performance executive layout in desktop mode (`>= 960px`):
    - `PersonalAccessTokens.razor` under Settings (`ClientRoutes.Settings.PersonalAccessTokens = "/base-info/api-tokens"`).
    - Responsive UI (`@layout SettingsLayout`) with expansion panels for Google Gemini/ChatGPT (1-click OAuth), Cursor/Antigravity `mcp_config.json`, Claude Desktop `claude_desktop_config.json`, and Persian prompt cheat sheet with 1-click clipboard copy.
    - One-time reveal modal (`RevealTokenDialog.razor`) displaying the raw secret token with 1-click clipboard copy and security alerts.
+
+---
+
+## Online Showcase & Gallery Website Architecture (ویترین آنلاین طلا و معرفی گالری)
+
+GoldEx provides a public-facing, responsive online showcase and digital catalog for gold and jewelry stores:
+
+1. **Routing & Multi-Tenancy Resolution**:
+   - Each store's showcase is accessible via `/{storeSlug}` (e.g. `/fani-jewelry`, `/tabriz-gold`, `/default`).
+   - Vitrine subroutes:
+     - `/{storeSlug}`: Store homepage, featured items, category highlights, live gold price ticker.
+     - `/{storeSlug}/catalog`: Full product catalog with live search, category pills, and gold/jewelry filters.
+     - `/{storeSlug}/p/{barcode}`: Product detail with multi-image gallery, real-time live price breakdown (raw gold value + wage/profit), gemstone details, and 1-click WhatsApp/Bale customer inquiry.
+     - `/{storeSlug}/about`: Store introduction, address, contact phone, and social links.
+   - For anonymous visitor queries, EF Core global query filters (`IStoreFiltered`) are bypassed with `.IgnoreQueryFilters()` and filtered explicitly by the store's `Id` resolved from `storeSlug`.
+2. **Product Rules & Invariants**:
+   - **Allowed Product Types**: Only `ProductType.Gold` and `ProductType.Jewelry` can be published to the vitrine (`ShowInVitrine`). `UsedGold` and `MoltenGold` are strictly prohibited by domain invariants.
+   - **Image Management**: Supports multiple images per product (`ProductImage`), with 1 marked as `IsMain`. Uploaded files are saved to `uploads/products/` with unique UUID v7 filenames.
+3. **Store Profile & Social Settings**:
+   - Social links (`InstagramUrl`, `TelegramUrl`, `BaleUrl`, `WhatsAppNumber`) and `AboutText` are stored in `Setting` to avoid altering the `Store` schema.
+   - Editable in admin panel under `/settings` («اطلاعات ویترین آنلاین و راه‌های ارتباطی»).
+4. **UI/UX & Styling Standard**:
+   - Custom luxury obsidian-and-gold theme defined in `wwwroot/assets/vitrine/css/vitrine.css`.
+   - Lightweight gallery and share interaction helpers in `wwwroot/assets/vitrine/js/vitrine.js`.
+   - Fast, fluid 60fps animations, mobile-first responsive layout, and distinct Drawer shortcut for store admins.
+

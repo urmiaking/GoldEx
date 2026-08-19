@@ -148,7 +148,9 @@ public class StoreResolutionMiddleware(RequestDelegate next)
             path.StartsWith("/_framework", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("/_content", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("/css", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("/js", StringComparison.OrdinalIgnoreCase))
+            path.StartsWith("/js", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("/assets", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("/uploads", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -158,7 +160,7 @@ public class StoreResolutionMiddleware(RequestDelegate next)
         if (lastDot > 0)
         {
             var ext = path.Substring(lastDot).ToLowerInvariant();
-            string[] allowedExtensions = { ".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".svg", ".json", ".map", ".wasm" };
+            string[] allowedExtensions = { ".css", ".js", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".svg", ".json", ".map", ".wasm" };
             if (allowedExtensions.Contains(ext))
             {
                 return true;

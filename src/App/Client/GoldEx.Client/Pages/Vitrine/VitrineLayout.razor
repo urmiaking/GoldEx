@@ -1,0 +1,312 @@
+@inherits LayoutComponentBase
+@using GoldEx.Shared.DTOs.Vitrine
+@using GoldEx.Shared.Services.Abstractions
+@using Microsoft.JSInterop
+@inject IVitrineService VitrineService
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+
+<link href="/assets/fontawesome/css/all.min.css" rel="stylesheet" />
+<link href="/assets/vitrine/css/vitrine.css" rel="stylesheet" />
+
+<div class="vitrine-root">
+    <!-- Live Gold Ticker Top Bar -->
+    <div class="vitrine-top-ticker">
+        <div class="vitrine-container">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="vitrine-ticker-pulse"></span>
+                    <span style="font-weight: 700;">نرخ زنده هر گرم طلای ۱۸ عیار (۷۵۰):</span>
+                    @if (_storeInfo != null && _storeInfo.LiveGoldPrice18K > 0)
+                    {
+                        <strong style="color: var(--accent-color); font-size: 1.05rem; letter-spacing: 0.5px;">@_storeInfo.LiveGoldPrice18K.ToString("N0") تومان</strong>
+                    }
+                    else if (_storeInfo != null)
+                    {
+                        <strong style="color: var(--accent-color);">به‌روزرسانی خودکار بر اساس مظنه روز</strong>
+                    }
+                    else
+                    {
+                        <span style="opacity: 0.7;">در حال دریافت مظنه...</span>
+                    }
+                </div>
+                <div class="d-none d-md-flex align-items-center gap-4">
+                    @if (!string.IsNullOrEmpty(_storeInfo?.PhoneNumber))
+                    {
+                        <a href="@($"tel:{_storeInfo.PhoneNumber}")">
+                            <span><i class="fa-solid fa-phone" style="margin-left: 6px;"></i> مشاوره: <strong style="direction: ltr; display: inline-block;">@_storeInfo.PhoneNumber</strong></span>
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(_storeInfo?.Address))
+                    {
+                        <span style="opacity: 0.85;">
+                            <i class="fa-solid fa-location-dot" style="margin-left: 6px; color: var(--accent-color);"></i> @_storeInfo.Address
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Luxury Floating Header -->
+    <header class="vitrine-header">
+        <div class="vitrine-container">
+            <div class="vitrine-header-inner">
+                <!-- Store Brand / Logo -->
+                <a href="@($"/{StoreSlug}")" class="vitrine-logo">
+                    <div class="vitrine-logo-icon">
+                        @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
+                        {
+                            <img src="@_storeInfo.LogoUrl" alt="@_storeInfo.Name" />
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-gem"></i>
+                        }
+                    </div>
+                    <div>
+                        <div style="font-size: 1.45rem; font-weight: 900; line-height: 1.1;">
+                            @(_storeInfo?.Name ?? "گالری طلا و جواهر")
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--gray-600); font-weight: 400; margin-top: 3px;">
+                            ویترین رسمی و کالکشن‌های فاخر
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation Menu -->
+                <nav class="d-none d-lg-flex vitrine-nav-menu">
+                    <a href="@($"/{StoreSlug}")" class="vitrine-nav-link @(IsActivePage("") ? "active" : "")">
+                        صفحه اصلی
+                    </a>
+                    <a href="@($"/{StoreSlug}/catalog")" class="vitrine-nav-link @(IsActivePage("catalog") ? "active" : "")">
+                        کاتالوگ محصولات
+                    </a>
+                    <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="vitrine-nav-link">
+                        <i class="fa-solid fa-star" style="color: var(--accent-color); margin-left: 4px; font-size: 0.8rem;"></i> پیشنهادات ویژه
+                    </a>
+                    <a href="@($"/{StoreSlug}/about")" class="vitrine-nav-link @(IsActivePage("about") ? "active" : "")">
+                        درباره و تماس
+                    </a>
+                </nav>
+
+                <!-- Fast Contact Actions -->
+                <div class="d-flex align-items-center gap-3">
+                    @if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
+                    {
+                        var waPhone = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
+                        if (waPhone.StartsWith("09")) waPhone = "98" + waPhone.Substring(1);
+                        <a href="@($"https://wa.me/{waPhone}")" target="_blank" class="btn-gisu btn-gisu-whatsapp d-none d-sm-inline-flex">
+                            <i class="fa-brands fa-whatsapp" style="font-size: 1.1rem;"></i>
+                            <span>مشاوره واتساپ</span>
+                        </a>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(_storeInfo?.PhoneNumber))
+                    {
+                        <a href="@($"tel:{_storeInfo.PhoneNumber}")" class="btn-gisu btn-gisu-primary d-none d-sm-inline-flex">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>تماس با گالری</span>
+                        </a>
+                    }
+
+                    <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-outline d-lg-none" style="padding: 8px 14px; font-size: 0.85rem;">
+                        <span>کاتالوگ</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main style="flex-grow: 1;">
+        <CascadingValue Value="@_storeInfo">
+            <CascadingValue Value="@StoreSlug" Name="StoreSlug">
+                @Body
+            </CascadingValue>
+        </CascadingValue>
+    </main>
+
+    <!-- Luxury Royal Emerald Footer -->
+    <footer class="vitrine-footer">
+        <div class="vitrine-container">
+            <div class="vitrine-footer-grid">
+                <div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="vitrine-logo-icon" style="width: 44px; height: 44px; background: transparent; border-color: var(--accent-color); color: var(--accent-color);">
+                            @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
+                            {
+                                <img src="@_storeInfo.LogoUrl" alt="@_storeInfo.Name" />
+                            }
+                            else
+                            {
+                                <i class="fa-solid fa-gem"></i>
+                            }
+                        </div>
+                        <h3 style="font-size: 1.45rem; font-weight: 900; margin: 0; color: #ffffff;">@(_storeInfo?.Name ?? "گالری طلا و جواهر")</h3>
+                    </div>
+                    <p style="color: rgba(251, 249, 245, 0.75); line-height: 1.9; font-size: 0.94rem; max-width: 500px; margin-bottom: 20px;">
+                        @(_storeInfo?.AboutText ?? "ارائه‌دهنده جدیدترین و فاخرترین مصنوعات طلا، جواهرات نگین‌دار و کالکشن‌های اختصاصی با تضمین عیار ۷۵۰ و فاکتور رسمی معتبر.")
+                    </p>
+                    <div class="d-inline-flex align-items-center gap-2 p-2 px-3 rounded" style="background: rgba(213, 178, 103, 0.15); border: 1px solid rgba(213, 178, 103, 0.3); color: var(--accent-color); font-size: 0.82rem; font-weight: 700;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>تضمین اصالت عیار ۷۵۰ با صدور فاکتور رسمی سیستمی</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--accent-color); font-size: 1.1rem; font-weight: 800; margin-bottom: 18px;">دسترسی سریع</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="@($"/{StoreSlug}")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">صفحه اصلی ویترین</a></li>
+                        <li><a href="@($"/{StoreSlug}/catalog")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کاتالوگ کامل طلا و جواهر</a></li>
+                        <li><a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">کالکشن‌های پیشنهادی ویژه</a></li>
+                        <li><a href="@($"/{StoreSlug}/about")" style="color: rgba(251, 249, 245, 0.85); text-decoration: none; font-size: 0.92rem;">درباره و موقعیت فروشگاه</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--accent-color); font-size: 1.1rem; font-weight: 800; margin-bottom: 18px;">اطلاعات تماس</h4>
+                    <div style="display: flex; flex-direction: column; gap: 12px; color: rgba(251, 249, 245, 0.85); font-size: 0.92rem;">
+                        @if (!string.IsNullOrEmpty(_storeInfo?.PhoneNumber))
+                        {
+                            <div>تلفن تماس: <strong style="color: #ffffff; direction: ltr; display: inline-block;">@_storeInfo.PhoneNumber</strong></div>
+                        }
+                        @if (!string.IsNullOrEmpty(_storeInfo?.Address))
+                        {
+                            <div>نشانی: <span>@_storeInfo.Address</span></div>
+                        }
+                        <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+                            @if (!string.IsNullOrEmpty(_storeInfo?.InstagramUrl))
+                            {
+                                <a href="@_storeInfo.InstagramUrl" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 6px 14px; font-size: 0.82rem; color: #ffffff; border-color: rgba(255,255,255,0.3);">
+                                    <i class="fa-brands fa-instagram"></i> اینستاگرام
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(_storeInfo?.TelegramUrl))
+                            {
+                                <a href="@_storeInfo.TelegramUrl" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 6px 14px; font-size: 0.82rem; color: #ffffff; border-color: rgba(255,255,255,0.3);">
+                                    <i class="fa-brands fa-telegram"></i> تلگرام
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(_storeInfo?.BaleUrl))
+                            {
+                                <a href="@_storeInfo.BaleUrl" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 6px 14px; font-size: 0.82rem; color: #ffffff; border-color: rgba(255,255,255,0.3);">
+                                    <i class="fa-solid fa-comment"></i> بله
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(_storeInfo?.WhatsAppNumber))
+                            {
+                                var wa = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
+                                if (wa.StartsWith("09")) wa = "98" + wa.Substring(1);
+                                <a href="@($"https://wa.me/{wa}")" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 6px 14px; font-size: 0.82rem; color: #ffffff; border-color: rgba(255,255,255,0.3);">
+                                    <i class="fa-brands fa-whatsapp"></i> واتساپ
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vitrine-footer-copy">
+                تمامی حقوق محفوظ است © @DateTime.Now.Year - طراحی شده با استانداردهای پلتفرم GoldEx
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Floating Navigation Bar -->
+    <div class="vitrine-mobile-bar">
+        <a href="@($"/{StoreSlug}")" class="vitrine-mobile-item @(IsActivePage("") ? "active" : "")">
+            <i class="fa-solid fa-house vitrine-mobile-icon"></i>
+            <span>ویترین</span>
+        </a>
+        <a href="@($"/{StoreSlug}/catalog")" class="vitrine-mobile-item @(IsActivePage("catalog") ? "active" : "")">
+            <i class="fa-solid fa-gem vitrine-mobile-icon"></i>
+            <span>کاتالوگ</span>
+        </a>
+        @if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
+        {
+            var waPhone = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
+            if (waPhone.StartsWith("09")) waPhone = "98" + waPhone.Substring(1);
+            <a href="@($"https://wa.me/{waPhone}")" target="_blank" class="vitrine-mobile-item" style="color: #25d366;">
+                <i class="fa-brands fa-whatsapp vitrine-mobile-icon"></i>
+                <span>واتساپ</span>
+            </a>
+        }
+        @if (!string.IsNullOrWhiteSpace(_storeInfo?.PhoneNumber))
+        {
+            <a href="@($"tel:{_storeInfo.PhoneNumber}")" class="vitrine-mobile-item">
+                <i class="fa-solid fa-phone vitrine-mobile-icon"></i>
+                <span>تماس</span>
+            </a>
+        }
+        <a href="@($"/{StoreSlug}/about")" class="vitrine-mobile-item @(IsActivePage("about") ? "active" : "")">
+            <i class="fa-solid fa-circle-info vitrine-mobile-icon"></i>
+            <span>درباره ما</span>
+        </a>
+    </div>
+
+    <script src="/assets/vitrine/js/vitrine.js?v=202608182345"></script>
+</div>
+
+@code {
+    private VitrineStoreInfoDto? _storeInfo;
+    private string StoreSlug = "default";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        ResolveStoreSlug();
+        await LoadStoreInfoAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Dismiss the WASM loading splash screen
+                await JsRuntime.InvokeVoidAsync("GoldEx.removeSplash");
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void ResolveStoreSlug()
+    {
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
+        var segments = pathOnly.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length > 0 && !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase))
+        {
+            StoreSlug = segments[0];
+        }
+        else
+        {
+            StoreSlug = "default";
+        }
+    }
+
+    private async Task LoadStoreInfoAsync()
+    {
+        try
+        {
+            _storeInfo = await VitrineService.GetStoreInfoAsync(StoreSlug);
+        }
+        catch
+        {
+            // Ignored for graceful fallback
+        }
+    }
+
+    private bool IsActivePage(string subPath)
+    {
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var pathOnly = relative.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
+        var expected = string.IsNullOrEmpty(subPath) ? StoreSlug : $"{StoreSlug}/{subPath}";
+        return pathOnly.Equals(expected, StringComparison.OrdinalIgnoreCase);
+    }
+}

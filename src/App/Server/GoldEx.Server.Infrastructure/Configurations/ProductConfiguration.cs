@@ -54,13 +54,42 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Navigation(x => x.StonePriceUnit).AutoInclude();
         builder.Navigation(x => x.ProductCategory).AutoInclude();
 
+        builder.Property(x => x.ShowInVitrine)
+            .HasDefaultValue(false);
+
+        builder.Property(x => x.IsFeatured)
+            .HasDefaultValue(false);
+
+        builder.Property(x => x.VitrineDescription)
+            .HasMaxLength(1000);
+
         builder.HasIndex(x => new { x.StoreId, x.Barcode })
             .IsUnique();
+
+        builder.HasIndex(x => new { x.StoreId, x.ShowInVitrine, x.ProductType });
 
         builder.HasIndex(x => x.Name);
 
         builder.OwnsMany(x => x.GemStones, Configure);
+        builder.OwnsMany(x => x.Images, ConfigureProductImages);
         builder.OwnsOne(x => x.MoltenGold, Configure);
+
+        builder.Navigation(x => x.Images).AutoInclude();
+    }
+
+    private static void ConfigureProductImages(OwnedNavigationBuilder<Product, ProductImage> builder)
+    {
+        builder.ToTable("ProductImages");
+
+        builder.Property(x => x.Url)
+            .HasMaxLength(500)
+            .IsRequired();
+
+        builder.Property(x => x.IsMain)
+            .IsRequired();
+
+        builder.Property(x => x.DisplayOrder)
+            .IsRequired();
     }
 
     private void Configure(OwnedNavigationBuilder<Product, MoltenGold> builder)

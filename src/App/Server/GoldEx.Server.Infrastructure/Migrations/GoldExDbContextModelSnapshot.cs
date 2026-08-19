@@ -1530,6 +1530,11 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<int>("GoldUnitType")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsFeatured")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1541,11 +1546,20 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<int>("ProductType")
                         .HasColumnType("int");
 
+                    b.Property<bool>("ShowInVitrine")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<Guid?>("StonePriceUnitId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("StoreId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("VitrineDescription")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<decimal>("Wage")
                         .HasPrecision(36, 10)
@@ -1573,6 +1587,8 @@ namespace GoldEx.Server.Infrastructure.Migrations
 
                     b.HasIndex("StoreId", "Barcode")
                         .IsUnique();
+
+                    b.HasIndex("StoreId", "ShowInVitrine", "ProductType");
 
                     b.ToTable("Products", (string)null);
                 });
@@ -1614,8 +1630,16 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AboutText")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<string>("Address")
                         .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("BaleUrl")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -1633,6 +1657,10 @@ namespace GoldEx.Server.Infrastructure.Migrations
                     b.Property<decimal>("GramPerMesghal")
                         .HasPrecision(36, 10)
                         .HasColumnType("decimal(36,10)");
+
+                    b.Property<string>("InstagramUrl")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("InstitutionName")
                         .IsRequired()
@@ -1662,9 +1690,17 @@ namespace GoldEx.Server.Infrastructure.Migrations
                         .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
+                    b.Property<string>("TelegramUrl")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<decimal>("UsedGoldFinenessDeductionRate")
                         .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
+
+                    b.Property<string>("WhatsAppNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -3344,7 +3380,42 @@ namespace GoldEx.Server.Infrastructure.Migrations
                             b1.Navigation("Assayer");
                         });
 
+                    b.OwnsMany("GoldEx.Server.Domain.ProductAggregate.ProductImage", "Images", b1 =>
+                        {
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<int>("DisplayOrder")
+                                .HasColumnType("int");
+
+                            b1.Property<bool>("IsMain")
+                                .HasColumnType("bit");
+
+                            b1.Property<string>("Url")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)");
+
+                            b1.HasKey("ProductId", "Id");
+
+                            b1.ToTable("ProductImages", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductId");
+                        });
+
                     b.Navigation("GemStones");
+
+                    b.Navigation("Images");
 
                     b.Navigation("MoltenGold");
 

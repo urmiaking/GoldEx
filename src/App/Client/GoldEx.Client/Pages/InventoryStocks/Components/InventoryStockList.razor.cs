@@ -1,5 +1,7 @@
 using GoldEx.Client.Pages.InventoryStocks.ViewModels;
+using GoldEx.Client.Pages.Invoices.ViewModels;
 using GoldEx.Client.Pages.Products.Components;
+using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.Extensions;
@@ -14,7 +16,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
-using GoldEx.Client.Pages.Invoices.ViewModels;
 
 namespace GoldEx.Client.Pages.InventoryStocks.Components;
 
@@ -576,6 +577,33 @@ public partial class InventoryStockList
         }
 
         throw new InvalidOperationException("Item Type could not be determined.");
+    }
+
+    private async Task OnOpenVitrineDialog(InventoryStockVm context)
+    {
+        if (context.Product is null)
+        {
+            AddErrorToast("امکان مدیریت ویترین فقط برای مصنوعات طلا و جواهر وجود دارد.");
+            return;
+        }
+
+        var productModel = context.Product.Clone();
+        var parameters = new DialogParameters<VitrineQuickEditDialog>
+        {
+            { x => x.Model, productModel }
+        };
+
+        var dialog = await DialogService.ShowAsync<VitrineQuickEditDialog>("مدیریت ویترین آنلاین", parameters, _dialogOptions);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: ProductVm updatedModel })
+        {
+            context.Product.ShowInVitrine = updatedModel.ShowInVitrine;
+            context.Product.IsFeatured = updatedModel.IsFeatured;
+            context.Product.VitrineDescription = updatedModel.VitrineDescription;
+            context.Product.Images = updatedModel.Images;
+            await RefreshAsync();
+        }
     }
 
     private async Task OnEditProduct(InventoryStockVm context)

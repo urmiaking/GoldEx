@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.Enums;
+using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Products;
 
@@ -33,4 +33,8 @@ public record ProductRequestDto(
     Guid? WagePriceUnitId,
     Guid? StonePriceUnitId,
     List<GemStoneRequestDto>? GemStones,
-    MoltenGoldDto? MoltenGold);
+    MoltenGoldDto? MoltenGold,
+    bool ShowInVitrine = false,
+    bool IsFeatured = false,
+    string? VitrineDescription = null,
+    List<ProductImageDto>? Images = null);

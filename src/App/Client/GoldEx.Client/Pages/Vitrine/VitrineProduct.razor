@@ -1,0 +1,272 @@
+@page "/{StoreSlug}/p/{Barcode}"
+@layout VitrineLayout
+@attribute [AllowAnonymous]
+
+@using GoldEx.Shared.DTOs.Vitrine
+@using GoldEx.Shared.Services.Abstractions
+@using GoldEx.Shared.Enums
+@inject IVitrineService VitrineService
+@inject NavigationManager Navigation
+
+<PageTitle>@(_product?.Name ?? "جزئیات قطعه طلا") - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
+
+<div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
+    <!-- Breadcrumb -->
+    <div class="d-flex align-items-center gap-2 mb-4" style="font-size: 0.86rem; color: var(--gray-600);">
+        <a href="@($"/{StoreSlug}")" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
+        <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
+        <a href="@($"/{StoreSlug}/catalog")" style="color: var(--primary-color); text-decoration: none;">کاتالوگ طلا</a>
+        @if (_product != null && !string.IsNullOrEmpty(_product.CategoryTitle))
+        {
+            <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
+            <a href="@($"/{StoreSlug}/catalog?categoryId={_product.CategoryId}")" style="color: var(--primary-color); text-decoration: none;">@_product.CategoryTitle</a>
+        }
+        <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
+        <span style="color: var(--accent-color); font-weight: 700;">@(_product?.Name ?? "جزئیات کالا")</span>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="vitrine-ticker-pulse d-inline-block mb-3" style="width: 32px; height: 32px;"></div>
+            <div style="color: var(--primary-color); font-weight: 800; font-size: 1.1rem;">در حال دریافت اطلاعات و محاسبه قیمت قطعه...</div>
+        </div>
+    }
+    else if (_product == null)
+    {
+        <div class="text-center py-5" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); margin: 30px 0; padding: 60px 20px; box-shadow: var(--shadow-subtle);">
+            <i class="fa-solid fa-triangle-exclamation mb-3" style="font-size: 3.5rem; color: var(--accent-color); display: block;"></i>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin-bottom: 8px;">قطعه مورد نظر در ویترین یافت نشد</h2>
+            <p style="color: var(--gray-600); max-width: 480px; margin: 0 auto 28px; line-height: 1.8; font-size: 0.94rem;">
+                ممکن است این کالا فروخته شده یا از ویترین خارج شده باشد. می‌توانید سایر زیورآلات موجود در گالری را بررسی فرمایید.
+            </p>
+            <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-primary" style="display: inline-flex;">
+                <span>مشاهده سایر طلا و جواهرات کاتالوگ</span>
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="vitrine-product-layout animate-fade-in">
+            <!-- Gallery Column (Sticky Gallery) -->
+            <div class="vitrine-gallery-sticky-wrapper">
+                <div class="vitrine-gallery-main">
+                    @if (_product.ImageUrls.Count > 0)
+                    {
+                        <img id="vitrineMainImage" src="@_product.ImageUrls[0]" alt="@_product.Name" />
+                    }
+                    else
+                    {
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-400); gap: 12px; min-height: 350px;">
+                            <i class="fa-solid fa-gem" style="font-size: 4rem; color: var(--accent-color);"></i>
+                            <span style="font-size: 1rem; color: var(--primary-color); font-weight: 700;">تصویر رسمی گالری ثبت نشده است</span>
+                        </div>
+                    }
+                </div>
+
+                @if (_product.ImageUrls.Count > 1)
+                {
+                    <div class="vitrine-gallery-thumbs">
+                        @for (int i = 0; i < _product.ImageUrls.Count; i++)
+                        {
+                            var imgUrl = _product.ImageUrls[i];
+                            var index = i;
+                            <div class="vitrine-thumb @(index == 0 ? "active" : "")"
+                                 onclick="goldexVitrine.changeMainImage('@imgUrl', this)">
+                                <img src="@imgUrl" alt="@_product.Name" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Trust Notice Under Gallery -->
+                <div class="p-3 rounded" style="background: var(--white); border: 1px solid var(--gray-200); display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-subtle);">
+                    <i class="fa-solid fa-shield-halved" style="font-size: 1.8rem; color: var(--accent-color);"></i>
+                    <div style="font-size: 0.86rem; color: var(--gray-600); line-height: 1.6;">
+                        کلیه طلاهای این گالری دارای عیار استاندارد ۷۵۰ بوده و همراه با فاکتور رسمی معتبر گالری تقدیم می‌گردد.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specs, Price Breakdown & CTAs Column -->
+            <div class="vitrine-info-box">
+                <!-- Title & Tags -->
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                        @if (!string.IsNullOrEmpty(_product.CategoryTitle))
+                        {
+                            <span class="product-badge" style="position: static;">@_product.CategoryTitle</span>
+                        }
+                        <span class="product-badge" style="position: static;">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
+                        <span class="product-badge" style="position: static; background-color: #10b981; border-color: #10b981; color: #fff;">
+                            ✓ موجود در گالری
+                        </span>
+                        <span style="font-size: 0.82rem; color: var(--gray-600); margin-right: auto; direction: ltr;">
+                            کد: @_product.Barcode
+                        </span>
+                    </div>
+
+                    <h1 class="vitrine-product-title">@_product.Name</h1>
+                </div>
+
+                <!-- Description -->
+                @if (!string.IsNullOrWhiteSpace(_product.Description))
+                {
+                    <div style="color: var(--gray-800); line-height: 1.9; font-size: 0.96rem; background: var(--white); padding: 18px 22px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); box-shadow: var(--shadow-subtle);">
+                        @_product.Description
+                    </div>
+                }
+
+                <!-- Real-Time Price Calculation Breakdown Card -->
+                <div class="vitrine-price-calculator-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span style="font-size: 0.96rem; color: var(--primary-color); font-weight: 800;">
+                            <i class="fa-solid fa-coins" style="color: var(--accent-color); margin-left: 6px;"></i> محاسبه قیمت نهایی بر اساس نرخ روز طلا
+                        </span>
+                        <span class="vitrine-ticker-pulse"></span>
+                    </div>
+
+                    <div style="margin-bottom: 20px; background: var(--gray-100); padding: 18px 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--accent-color);">
+                        <div style="font-size: 0.82rem; color: var(--gray-600); margin-bottom: 4px;">قیمت نهایی با مظنه روز:</div>
+                        <div style="font-size: 2.2rem; font-weight: 900; color: var(--primary-color);">
+                            @_product.EstimatedPrice.ToString("N0") <small style="font-size: 1rem; color: var(--gray-600); font-weight: normal;">تومان</small>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Rows -->
+                    <div class="vitrine-spec-row">
+                        <span style="color: var(--gray-600);">وزن کل قطعه:</span>
+                        <strong style="color: var(--primary-color); font-size: 1.05rem;">@_product.Weight.ToString("G29") گرم</strong>
+                    </div>
+                    <div class="vitrine-spec-row">
+                        <span style="color: var(--gray-600);">عیار استاندارد:</span>
+                        <span style="font-weight: 700; color: var(--primary-color);">۷۵۰ (۱۸ عیار)</span>
+                    </div>
+                    <div class="vitrine-spec-row">
+                        <span style="color: var(--gray-600);">نرخ روز هر گرم طلای ۱۸ عیار:</span>
+                        <span style="font-weight: 700; color: var(--primary-color);">@_product.GramPrice750.ToString("N0") تومان</span>
+                    </div>
+                    @if (_product.Wage > 0)
+                    {
+                        <div class="vitrine-spec-row">
+                            <span style="color: var(--gray-600);">اجرت ساخت:</span>
+                            @if (_product.WageType == WageType.Percent)
+                            {
+                                <span style="color: var(--primary-color); font-weight: 700;">@_product.Wage.ToString("G29")٪ (درصدی)</span>
+                            }
+                            else
+                            {
+                                <span style="color: var(--primary-color); font-weight: 700;">@_product.Wage.ToString("N0") تومان</span>
+                            }
+                        </div>
+                    }
+                    @if (_product.GemStones.Count > 0)
+                    {
+                        <div class="vitrine-spec-row">
+                            <span style="color: var(--gray-600);">تعداد نگین‌ها و سنگ‌ها:</span>
+                            <span style="color: var(--primary-color); font-weight: 700;">@_product.GemStones.Count عدد (@_product.GemStones.Sum(s => s.Carat).ToString("G29") قیراط)</span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Gemstones Breakdown -->
+                @if (_product.GemStones.Count > 0)
+                {
+                    <div style="background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--border-radius-sm); padding: 20px 24px; box-shadow: var(--shadow-subtle);">
+                        <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--primary-color); margin-bottom: 14px;">
+                            <i class="fa-solid fa-gem" style="color: var(--accent-color); margin-left: 6px;"></i> مشخصات نگین‌ها و سنگ‌های قیمتی
+                        </h4>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            @foreach (var stone in _product.GemStones)
+                            {
+                                <div class="d-flex align-items-center justify-content-between py-2 border-bottom" style="border-color: var(--gray-200) !important; font-size: 0.92rem;">
+                                    <span>نوع سنگ: <strong style="color: var(--primary-color);">@stone.Type</strong></span>
+                                    <span>وزن / قیراط: <strong style="color: var(--primary-color);">@stone.Carat.ToString("G29") قیراط</strong></span>
+                                    <span>رنگ: <strong style="color: var(--primary-color);">@(stone.Color ?? "-")</strong></span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    @if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
+                    {
+                        var waUrl = GetWhatsAppInquiryUrl();
+                        <a href="@waUrl" target="_blank" class="btn-gisu btn-gisu-whatsapp" style="padding: 15px;">
+                            <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i>
+                            <span>استعلام موجودی و رزرو قطعه در واتساپ</span>
+                        </a>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_storeInfo?.BaleUrl))
+                    {
+                        <a href="@_storeInfo.BaleUrl" target="_blank" class="btn-gisu btn-gisu-bale" style="padding: 15px;">
+                            <i class="fa-solid fa-comment"></i>
+                            <span>استعلام و پیام در پیام‌رسان بله</span>
+                        </a>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_storeInfo?.PhoneNumber))
+                    {
+                        <a href="@($"tel:{_storeInfo.PhoneNumber}")" class="btn-gisu btn-gisu-outline" style="padding: 14px;">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>تماس تلفنی با گالری (@_storeInfo.PhoneNumber)</span>
+                        </a>
+                    }
+
+                    <button type="button" class="btn-gisu btn-gisu-outline" onclick="goldexVitrine.copyShareLink('@_product.Name')">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>کپی لینک و اشتراک‌گذاری این کار</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string StoreSlug { get; set; } = "default";
+    [Parameter] public string Barcode { get; set; } = default!;
+    [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    private VitrineProductDetailDto? _product;
+    private bool _isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProductAsync();
+    }
+
+    private async Task LoadProductAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _product = await VitrineService.GetProductDetailAsync(StoreSlug, Barcode);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading product: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private string GetWhatsAppInquiryUrl()
+    {
+        if (_product == null || string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
+            return "#";
+
+        var phone = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
+        if (phone.StartsWith("09"))
+            phone = "98" + phone.Substring(1);
+
+        var currentUrl = Navigation.Uri;
+        var text = $"سلام وقت بخیر، در مورد قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین گالری سوال داشتم:\n{currentUrl}";
+        return $"https://wa.me/{phone}?text={Uri.EscapeDataString(text)}";
+    }
+}
