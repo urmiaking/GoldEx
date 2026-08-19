@@ -1,5 +1,4 @@
 @using GoldEx.Shared.Routings
-@using Microsoft.JSInterop
 
 @inherits GoldExComponentBase
 
@@ -67,25 +66,6 @@
                         Icon="@Icons.Material.Filled.Help">
                 راهنما
             </MudNavLink>
-
-            @* فقط اگر مرورگر می‌گه «قابل نصب است» دکمه را نشان بده *@
-            @if (_canInstall)
-            {
-                <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    <MudNavLink Icon="@Icons.Material.Filled.InstallDesktop"
-                                OnClick="@InstallPwa"
-                                Match="NavLinkMatch.All">
-                        نصب اپلیکیشن
-                    </MudNavLink>
-                </MudHidden>
-                <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                    <MudNavLink Icon="@Icons.Material.Filled.InstallMobile"
-                                OnClick="@InstallPwa"
-                                Match="NavLinkMatch.All">
-                        نصب اپلیکیشن
-                    </MudNavLink>
-                </MudHidden>
-            }
         </Authorized>
     </AuthorizeView>
     <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.Prefix"
@@ -104,11 +84,9 @@
 
 @code {
     private string? _currentUrl;
-    private bool _canInstall;
     private GoldEx.Shared.DTOs.Stores.UserStoreDto? _currentStore;
 
     [Parameter] public EventCallback<bool> OnNavigate { get; set; }
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,28 +112,6 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                _canInstall = await JsRuntime.InvokeAsync<bool>("getPwaState");
-                if (_canInstall)
-                {
-                    StateHasChanged();
-                }
-            }
-            catch
-            {
-                // اگر JS خراب شد، دکمه پنهان می‌ماند
-                _canInstall = false;
-            }
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _currentUrl = Navigation.ToBaseRelativePath(e.Location);
@@ -167,22 +123,5 @@
     {
         Navigation.LocationChanged -= OnLocationChanged;
         return base.DisposeAsync();
-    }
-
-    private async Task InstallPwa()
-    {
-        try
-        {
-            var installed = await JsRuntime.InvokeAsync<bool>("installPwa");
-            if (installed)
-            {
-                _canInstall = false;
-                StateHasChanged();
-            }
-        }
-        catch
-        {
-            AddErrorToast("خطایی در نصب رخ داد");
-        }
     }
 }

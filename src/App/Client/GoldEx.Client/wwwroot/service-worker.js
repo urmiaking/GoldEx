@@ -1,4 +1,4 @@
-﻿// In development, always fetch from network and never cache static assets or HTML
+// In development, always fetch from network and never cache static assets or HTML
 self.addEventListener('install', event => {
     self.skipWaiting();
 });
@@ -28,3 +28,10 @@ self.addEventListener('fetch', event => {
         })
     );
 });
+
+self.addEventListener('message', event => {
+    if (event.data && event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
+});
+
