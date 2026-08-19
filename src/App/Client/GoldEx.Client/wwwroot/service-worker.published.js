@@ -122,15 +122,18 @@ self.addEventListener('fetch', event => {
         }
 
         /* ============================
-         * 1. Video / Range requests
-         *    BYPASS CACHE
+         * 1. Video / Vitrine / Range requests
+         *    BYPASS CACHE / NETWORK FIRST
          * ============================ */
         const isRangeRequest = event.request.headers.has('range');
         const isVideoRequest =
             event.request.destination === 'video' ||
             /\.mp4$|\.webm$|\.ogg$|\.mov$|\.m4v$/i.test(url.pathname);
+        const isVitrineRequest =
+            url.pathname.includes('/assets/vitrine/') ||
+            url.pathname.includes('/assets/fontawesome/');
 
-        if (isRangeRequest || isVideoRequest) {
+        if (isRangeRequest || isVideoRequest || isVitrineRequest) {
             return fetch(event.request);
         }
 
@@ -200,3 +203,13 @@ self.addEventListener('fetch', event => {
 
     })());
 });
+
+/* ============================
+ * MESSAGE (skipWaiting)
+ * ============================ */
+self.addEventListener('message', event => {
+    if (event.data && event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
+});
+

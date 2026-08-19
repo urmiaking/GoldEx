@@ -1,4 +1,4 @@
-﻿using GoldEx.Shared.DTOs.PriceUnits;
+using GoldEx.Shared.DTOs.PriceUnits;
 using GoldEx.Shared.Enums;
 
 namespace GoldEx.Shared.DTOs.Products;
@@ -20,4 +20,8 @@ public record GetProductResponse(
     GoldUnitType GoldUnitType,
     GetPriceUnitTitleResponse? StonePriceUnit,
     List<GetGemStoneResponse>? GemStones,
-    GetMoltenGoldResponse? MoltenGold);
+    GetMoltenGoldResponse? MoltenGold,
+    bool ShowInVitrine = false,
+    bool IsFeatured = false,
+    string? VitrineDescription = null,
+    List<ProductImageDto>? Images = null);

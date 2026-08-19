@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.DTOs.Settings;
+namespace GoldEx.Shared.DTOs.Settings;
 
 public record GetSettingResponse(
     Guid Id,
@@ -13,4 +13,9 @@ public record GetSettingResponse(
     decimal UsedGoldFinenessDeductionRate,
     decimal GramPerMesghal,
     TimeSpan PriceUpdateInterval,
-    bool HasIcon);
+    bool HasIcon,
+    string? InstagramUrl = null,
+    string? TelegramUrl = null,
+    string? BaleUrl = null,
+    string? WhatsAppNumber = null,
+    string? AboutText = null);

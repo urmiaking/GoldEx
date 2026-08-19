@@ -1729,3 +1729,17 @@ h1:focus {
     padding-right: 16px !important;
 }
 
+/* Home Page Release Notes Button */
+.release-notes-btn {
+    border-color: rgba(var(--mud-palette-primary-rgb), 0.35) !important;
+    background: rgba(var(--mud-palette-primary-rgb), 0.05);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.release-notes-btn:hover {
+    background: rgba(var(--mud-palette-primary-rgb), 0.12) !important;
+    border-color: var(--mud-palette-primary) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(var(--mud-palette-primary-rgb), 0.2);
+}
+

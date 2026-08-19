@@ -1,0 +1,388 @@
+@page "/{StoreSlug}"
+@layout VitrineLayout
+@attribute [AllowAnonymous]
+
+@using GoldEx.Shared.DTOs.Vitrine
+@using GoldEx.Shared.Services.Abstractions
+@using GoldEx.Shared.Enums
+@inject IVitrineService VitrineService
+@inject NavigationManager Navigation
+
+<PageTitle>ویترین آنلاین @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
+
+<div class="vitrine-container">
+    <!-- Asymmetric Editorial Hero Section -->
+    <section class="vitrine-hero animate-fade-in">
+        <div class="vitrine-hero-inner">
+            <div class="vitrine-hero-subtitle">کلکسیون فاخر سال ۱۴۰۵</div>
+            <h1 class="vitrine-hero-title">
+                داستانی نو برای <span>درخشش استایل شما</span>
+            </h1>
+            <p class="vitrine-hero-desc">
+                در ویترین رسمی @(_storeInfo?.Name ?? "گالری طلا و جواهر")، هر قطعه طلا تلفیقی از هنر اصیل طلاسازی و عیار استاندارد ۷۵۰ است. محاسبه زنده قیمت روز، اجرت ساخت منصفانه و ارائه فاکتور معتبر رسمی.
+            </p>
+
+            <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-accent" style="padding: 15px 34px;">
+                    <span>مشاهده کاتالوگ محصولات (@_products.Count قطعه)</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
+                {
+                    var waPhone = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
+                    if (waPhone.StartsWith("09")) waPhone = "98" + waPhone.Substring(1);
+                    <a href="@($"https://wa.me/{waPhone}")" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 15px 26px;">
+                        <i class="fa-brands fa-whatsapp" style="color: #25d366;"></i>
+                        <span>مشاوره و استعلام در واتساپ</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Feature Cards (4 Pillars) -->
+    <div class="vitrine-trust-grid animate-fade-in-up">
+        <div class="vitrine-trust-card">
+            <div class="vitrine-trust-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <div class="vitrine-trust-title">تضمین عیار ۷۵۰</div>
+                <div class="vitrine-trust-desc">اصالت کتبی کلیه طلاها و جواهرات</div>
+            </div>
+        </div>
+        <div class="vitrine-trust-card">
+            <div class="vitrine-trust-icon">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+                <div class="vitrine-trust-title">فاکتور رسمی معتبر</div>
+                <div class="vitrine-trust-desc">صدور فاکتور سیستمی به نام خریدار</div>
+            </div>
+        </div>
+        <div class="vitrine-trust-card">
+            <div class="vitrine-trust-icon">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <div>
+                <div class="vitrine-trust-title">قیمت‌گذاری شفاف</div>
+                <div class="vitrine-trust-desc">محاسبه آنلاین با نرخ زنده مظنه روز</div>
+            </div>
+        </div>
+        <div class="vitrine-trust-card">
+            <div class="vitrine-trust-icon">
+                <i class="fa-solid fa-comments"></i>
+            </div>
+            <div>
+                <div class="vitrine-trust-title">مشاوره و استعلام آنی</div>
+                <div class="vitrine-trust-desc">پاسخگویی سریع در واتساپ و بله</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Pills Bar -->
+    @if (_categories.Count > 0)
+    {
+        <section style="margin-bottom: 35px;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--primary-color);">
+                    دسته‌بندی‌های طلا و جواهر
+                </h3>
+                <a href="@($"/{StoreSlug}/catalog")" style="color: var(--accent-color); font-size: 0.88rem; text-decoration: none; font-weight: 700;">
+                    همه دسته‌ها ←
+                </a>
+            </div>
+
+            <div class="vitrine-categories-bar">
+                <a href="@($"/{StoreSlug}/catalog")" class="vitrine-category-pill active">
+                    <i class="fa-solid fa-gem"></i>
+                    <span>همه دسته‌بندی‌ها</span>
+                    <span class="vitrine-category-count">@_products.Count</span>
+                </a>
+                @foreach (var cat in _categories)
+                {
+                    <a href="@($"/{StoreSlug}/catalog?categoryId={cat.Id}")" class="vitrine-category-pill">
+                        <i class="@GetCategoryIcon(cat.Title)"></i>
+                        <span>@cat.Title</span>
+                        <span class="vitrine-category-count">@cat.ProductCount</span>
+                    </a>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- Featured Products Showcase (کالکشن‌های برگزیده) -->
+    @if (_featuredProducts.Count > 0)
+    {
+        <section style="margin-bottom: 50px;">
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 style="font-size: 1.6rem; font-weight: 900; margin: 0; color: var(--primary-color);">
+                        ⭐ پیشنهادات <span style="color: var(--accent-color);">ویژه و برگزیده</span> گالری
+                    </h2>
+                    <p style="color: var(--gray-600); font-size: 0.92rem; margin: 4px 0 0;">خاص‌ترین و پرطرفدارترین کارهای ویترین</p>
+                </div>
+                <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="btn-gisu btn-gisu-outline" style="padding: 9px 18px; font-size: 0.85rem;">
+                    مشاهده همه برگزیده‌ها
+                </a>
+            </div>
+
+            <div class="vitrine-grid" style="padding-top: 0;">
+                @foreach (var product in _featuredProducts)
+                {
+                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up">
+                        <div class="product-image">
+                            <span class="product-badge">⭐ ویژه</span>
+                            <span class="product-badge secondary">@(product.Weight.ToString("G29")) گرم</span>
+
+                            @if (!string.IsNullOrWhiteSpace(product.MainImageUrl))
+                            {
+                                <img src="@product.MainImageUrl" alt="@product.Name" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-400); gap: 8px;">
+                                    <i class="fa-solid fa-gem" style="font-size: 2.5rem; color: var(--accent-color);"></i>
+                                    <span style="font-size: 0.85rem;">بدون تصویر</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">@(product.CategoryTitle ?? "طلا و جواهر")</span>
+                            <h3 class="product-title">@product.Name</h3>
+                            <div class="product-specs">
+                                <span>عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
+                                <span style="direction: ltr; display: inline-block;">کد: @product.Barcode</span>
+                            </div>
+                            <div class="product-price-container">
+                                <div>
+                                    <div style="font-size: 0.72rem; color: var(--gray-600);">مبلغ با مظنه روز:</div>
+                                    <div class="product-price">
+                                        @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
+                                    </div>
+                                </div>
+                                <span class="btn-gisu btn-gisu-primary" style="padding: 6px 14px; font-size: 0.8rem;">
+                                    مشاهده ←
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- Recent Arrivals Grid with Quick Filter -->
+    <section style="margin-bottom: 60px;">
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <h2 style="font-size: 1.6rem; font-weight: 900; margin: 0; color: var(--primary-color);">
+                    جدیدترین کارهای <span style="color: var(--accent-color);">ویترین</span>
+                </h2>
+                <p style="color: var(--gray-600); font-size: 0.92rem; margin: 4px 0 0;">موجود در گالری با امکان استعلام فوری و خرید</p>
+            </div>
+
+            <!-- Quick Filter Tabs -->
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="vitrine-filter-pill @(_activeQuickFilter == "all" ? "active" : "")" @onclick='() => SetQuickFilter("all")'>
+                    همه (@_products.Count)
+                </button>
+                <button type="button" class="vitrine-filter-pill @(_activeQuickFilter == "light" ? "active" : "")" @onclick='() => SetQuickFilter("light")'>
+                    سبک (زیر ۳ گرم)
+                </button>
+                <button type="button" class="vitrine-filter-pill @(_activeQuickFilter == "jewelry" ? "active" : "")" @onclick='() => SetQuickFilter("jewelry")'>
+                    جواهرات نگین‌دار
+                </button>
+            </div>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="text-center py-5">
+                <div class="vitrine-ticker-pulse d-inline-block mb-3" style="width: 28px; height: 28px;"></div>
+                <div style="color: var(--gray-600); font-weight: 700;">در حال بارگذاری زیورآلات ویترین...</div>
+            </div>
+        }
+        else if (FilteredHomeProducts.Count == 0)
+        {
+            <div class="text-center py-5" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
+                <i class="fa-solid fa-gem mb-3" style="font-size: 3rem; color: var(--accent-color); display: block;"></i>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color); margin-bottom: 8px;">ویترین در حال چیدمان است</h3>
+                <p style="color: var(--gray-600); max-width: 420px; margin: 0 auto 20px;">
+                    به زودی جدیدترین کارهای طلا و جواهر در این ویترین قرار خواهند گرفت.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="vitrine-grid" style="padding-top: 0;">
+                @foreach (var product in FilteredHomeProducts)
+                {
+                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up">
+                        <div class="product-image">
+                            @if (product.ProductType == ProductType.Jewelry)
+                            {
+                                <span class="product-badge" style="background-color: #7e22ce; border-color: #7e22ce; color: #fff;">💎 جواهر</span>
+                            }
+                            else
+                            {
+                                <span class="product-badge">طلای ۱۸</span>
+                            }
+                            <span class="product-badge secondary">@(product.Weight.ToString("G29")) گرم</span>
+
+                            @if (!string.IsNullOrWhiteSpace(product.MainImageUrl))
+                            {
+                                <img src="@product.MainImageUrl" alt="@product.Name" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-400); gap: 8px;">
+                                    <i class="fa-solid fa-gem" style="font-size: 2.5rem; color: var(--accent-color);"></i>
+                                    <span style="font-size: 0.85rem;">بدون تصویر</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">@(product.CategoryTitle ?? "طلا و جواهر")</span>
+                            <h3 class="product-title">@product.Name</h3>
+                            <div class="product-specs">
+                                <span>عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
+                                <span style="direction: ltr; display: inline-block;">کد: @product.Barcode</span>
+                            </div>
+                            <div class="product-price-container">
+                                <div>
+                                    <div style="font-size: 0.72rem; color: var(--gray-600);">مبلغ با مظنه روز:</div>
+                                    <div class="product-price">
+                                        @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
+                                    </div>
+                                </div>
+                                <span class="btn-gisu btn-gisu-primary" style="padding: 6px 14px; font-size: 0.8rem;">
+                                    مشاهده ←
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+
+            <div class="text-center mt-2 mb-5">
+                <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-primary" style="display: inline-flex; padding: 14px 36px;">
+                    <span>مشاهده تمام طلاها در کاتالوگ گالری</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+            </div>
+        }
+    </section>
+
+    <!-- Consultation & Custom Order Banner -->
+    <section style="background: var(--accent-soft); border: 1px solid var(--accent-color); border-radius: var(--border-radius-sm); padding: 45px 30px; margin-bottom: 60px; text-align: center; box-shadow: var(--shadow-subtle);">
+        <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--primary-color); margin-bottom: 12px;">نیاز به مشاوره یا سفارش طرح خاص دارید؟</h3>
+        <p style="color: var(--gray-600); max-width: 600px; margin: 0 auto 28px; line-height: 1.9;">
+            کارشناسان گالری آماده پاسخگویی به سوالات شما در مورد وزن، اجرت ساخت، عیار و نحوه تحویل حضوری یا ارسال سفارش هستند.
+        </p>
+        <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+            @if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
+            {
+                var wa = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
+                if (wa.StartsWith("09")) wa = "98" + wa.Substring(1);
+                <a href="@($"https://wa.me/{wa}")" target="_blank" class="btn-gisu btn-gisu-whatsapp" style="padding: 12px 28px;">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span>گفت‌وگو در واتساپ</span>
+                </a>
+            }
+            @if (!string.IsNullOrWhiteSpace(_storeInfo?.BaleUrl))
+            {
+                <a href="@_storeInfo.BaleUrl" target="_blank" class="btn-gisu btn-gisu-bale" style="padding: 12px 28px;">
+                    <i class="fa-solid fa-comment"></i>
+                    <span>پیام در بله</span>
+                </a>
+            }
+            @if (!string.IsNullOrWhiteSpace(_storeInfo?.PhoneNumber))
+            {
+                <a href="@($"tel:{_storeInfo.PhoneNumber}")" class="btn-gisu btn-gisu-outline" style="padding: 12px 24px;">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>تماس با گالری (@_storeInfo.PhoneNumber)</span>
+                </a>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    [Parameter] public string StoreSlug { get; set; } = "default";
+    [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    private List<VitrineProductSummaryDto> _products = [];
+    private List<VitrineProductSummaryDto> _featuredProducts = [];
+    private List<VitrineCategoryDto> _categories = [];
+    private string _activeQuickFilter = "all";
+    private bool _isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var categoriesTask = VitrineService.GetCategoriesAsync(StoreSlug);
+            var productsTask = VitrineService.GetVitrineProductsAsync(StoreSlug);
+
+            await Task.WhenAll(categoriesTask, productsTask);
+
+            _categories = (await categoriesTask).ToList();
+            var allProducts = (await productsTask).ToList();
+
+            _products = allProducts;
+            _featuredProducts = allProducts.Where(x => x.IsFeatured).Take(4).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading vitrine: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void SetQuickFilter(string filter)
+    {
+        _activeQuickFilter = filter;
+    }
+
+    private List<VitrineProductSummaryDto> FilteredHomeProducts
+    {
+        get
+        {
+            var list = _products.AsEnumerable();
+            if (_activeQuickFilter == "light")
+            {
+                list = list.Where(x => x.Weight < 3.0m);
+            }
+            else if (_activeQuickFilter == "jewelry")
+            {
+                list = list.Where(x => x.ProductType == ProductType.Jewelry);
+            }
+
+            return list.Take(12).ToList();
+        }
+    }
+
+    private string GetCategoryIcon(string title)
+    {
+        if (string.IsNullOrEmpty(title)) return "fa-solid fa-gem";
+        if (title.Contains("انگشتر")) return "fa-solid fa-ring";
+        if (title.Contains("النگو") || title.Contains("تک‌پوش")) return "fa-regular fa-circle-dot";
+        if (title.Contains("دستبند")) return "fa-solid fa-link";
+        if (title.Contains("گردنبند") || title.Contains("پلاک") || title.Contains("مدال")) return "fa-solid fa-gem";
+        if (title.Contains("گوشواره")) return "fa-solid fa-wand-magic-sparkles";
+        if (title.Contains("سرویس") || title.Contains("نیم‌ست")) return "fa-solid fa-crown";
+        if (title.Contains("سکه")) return "fa-solid fa-coins";
+        if (title.Contains("جواهر")) return "fa-solid fa-diamond";
+        return "fa-solid fa-gem";
+    }
+}

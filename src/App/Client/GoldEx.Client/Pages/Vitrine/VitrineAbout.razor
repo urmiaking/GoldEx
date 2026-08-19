@@ -1,0 +1,124 @@
+@page "/{StoreSlug}/about"
+@layout VitrineLayout
+@attribute [AllowAnonymous]
+
+@using GoldEx.Shared.DTOs.Vitrine
+
+<PageTitle>درباره و تماس با @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
+
+<div class="vitrine-container" style="padding-top: 40px; padding-bottom: 70px;">
+    <div style="max-width: 860px; margin: 0 auto;" class="animate-fade-in">
+        <!-- Brand Hero Card -->
+        <div style="background: var(--accent-soft); border: 1px solid var(--accent-color); border-radius: var(--border-radius-sm); padding: 45px 30px; text-align: center; margin-bottom: 35px; box-shadow: var(--shadow-subtle);">
+            <div class="vitrine-logo-icon" style="width: 88px; height: 88px; margin: 0 auto 20px; box-shadow: 0 6px 20px rgba(213, 178, 103, 0.35); font-size: 2.5rem;">
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
+                {
+                    <img src="@_storeInfo.LogoUrl" alt="@_storeInfo.Name" />
+                }
+                else
+                {
+                    <i class="fa-solid fa-gem"></i>
+                }
+            </div>
+
+            <h1 style="font-size: 2.2rem; font-weight: 900; color: var(--primary-color); margin-bottom: 10px;">
+                @(_storeInfo?.Name ?? "گالری طلا و جواهر")
+            </h1>
+            <p style="color: var(--gray-600); font-size: 1.05rem; margin: 0 auto 20px; max-width: 500px;">
+                ویترین رسمی آنلاین و مرکز ارائه فاخرترین مصنوعات طلا و جواهرات عیار ۷۵۰
+            </p>
+            <div class="d-inline-flex gap-2 flex-wrap justify-content-center">
+                <span class="product-badge" style="position: static;">🛡️ عضو رسمی اتحادیه طلا و جواهر</span>
+                <span class="product-badge secondary" style="position: static;">📜 صدور فاکتور رسمی معتبر</span>
+            </div>
+        </div>
+
+        <!-- About Text Section -->
+        <div style="background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--border-radius-sm); padding: 35px; margin-bottom: 30px; box-shadow: var(--shadow-subtle);">
+            <h2 style="font-size: 1.35rem; font-weight: 900; color: var(--primary-color); margin-bottom: 18px;">
+                <i class="fa-solid fa-gem" style="color: var(--accent-color); margin-left: 6px;"></i> درباره و رسالت گالری
+            </h2>
+            <p style="color: var(--dark-color); line-height: 2.1; font-size: 1.02rem; margin-bottom: 0;">
+                @(_storeInfo?.AboutText ?? "گالری ما با سال‌ها تجربه درخشان در طراحی، ساخت و فروش مصنوعات طلا و جواهر، همواره تلاش نموده تا اصیل‌ترین و به‌روزترین کارهای طلاسازی را با سود و اجرتی منصفانه به مشتریان گرامی عرضه نماید. تمامی طلاها و سنگ‌های قیمتی با دقت کارشناسی شده و با ضمانت عیار ۷۵۰ و فاکتور معتبر تحویل داده می‌شوند.")
+            </p>
+        </div>
+
+        <!-- Contact & Location Details -->
+        <div style="background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--border-radius-sm); padding: 35px; margin-bottom: 30px; box-shadow: var(--shadow-subtle);">
+            <h2 style="font-size: 1.35rem; font-weight: 900; color: var(--primary-color); margin-bottom: 22px;">
+                <i class="fa-solid fa-location-dot" style="color: var(--accent-color); margin-left: 6px;"></i> اطلاعات نشانی و تماس حضوری
+            </h2>
+
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.Address))
+                {
+                    <div style="display: flex; gap: 16px; align-items: start;">
+                        <i class="fa-solid fa-store" style="font-size: 1.5rem; color: var(--accent-color); margin-top: 4px;"></i>
+                        <div>
+                            <div style="font-weight: 800; color: var(--primary-color); font-size: 1.05rem; margin-bottom: 4px;">نشانی فروشگاه:</div>
+                            <div style="color: var(--gray-600); font-size: 1rem; line-height: 1.8;">@_storeInfo.Address</div>
+                        </div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.PhoneNumber))
+                {
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                        <i class="fa-solid fa-phone-volume" style="font-size: 1.5rem; color: var(--accent-color);"></i>
+                        <div>
+                            <div style="font-weight: 800; color: var(--primary-color); font-size: 1.05rem; margin-bottom: 4px;">شماره تلفن مستقیم:</div>
+                            <a href="@($"tel:{_storeInfo.PhoneNumber}")" style="color: var(--accent-hover); text-decoration: none; font-size: 1.2rem; font-weight: 800; direction: ltr; display: inline-block;">
+                                @_storeInfo.PhoneNumber
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Social Media & Messengers -->
+        <div style="background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--border-radius-sm); padding: 35px; box-shadow: var(--shadow-subtle);">
+            <h2 style="font-size: 1.35rem; font-weight: 900; color: var(--primary-color); margin-bottom: 22px;">
+                <i class="fa-solid fa-share-nodes" style="color: var(--accent-color); margin-left: 6px;"></i> شبکه‌های اجتماعی و پیام‌رسان‌ها
+            </h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.InstagramUrl))
+                {
+                    <a href="@_storeInfo.InstagramUrl" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 16px; font-size: 1rem;">
+                        <i class="fa-brands fa-instagram" style="font-size: 1.2rem; color: #e1306c;"></i>
+                        <span>صفحه اینستاگرام</span>
+                    </a>
+                }
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.TelegramUrl))
+                {
+                    <a href="@_storeInfo.TelegramUrl" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 16px; font-size: 1rem;">
+                        <i class="fa-brands fa-telegram" style="font-size: 1.2rem; color: #0088cc;"></i>
+                        <span>کانال تلگرام</span>
+                    </a>
+                }
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.BaleUrl))
+                {
+                    <a href="@_storeInfo.BaleUrl" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 16px; font-size: 1rem;">
+                        <i class="fa-solid fa-comment" style="font-size: 1.2rem; color: #00b956;"></i>
+                        <span>کانال بله</span>
+                    </a>
+                }
+                @if (!string.IsNullOrWhiteSpace(_storeInfo?.WhatsAppNumber))
+                {
+                    var wa = _storeInfo.WhatsAppNumber.Replace(" ", "").Replace("-", "").TrimStart('+');
+                    if (wa.StartsWith("09")) wa = "98" + wa.Substring(1);
+                    <a href="@($"https://wa.me/{wa}")" target="_blank" class="btn-gisu btn-gisu-outline" style="padding: 16px; font-size: 1rem; color: #25d366;">
+                        <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i>
+                        <span>گفت‌وگو در واتساپ</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string StoreSlug { get; set; } = "default";
+    [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+}

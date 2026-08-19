@@ -202,6 +202,15 @@ internal class ProductService(
         else
             item.ClearGemStones();
 
+        if (item.ProductType is ProductType.Gold or ProductType.Jewelry)
+        {
+            item.SetVitrineOptions(request.ShowInVitrine, request.IsFeatured, request.VitrineDescription);
+            if (request.Images != null)
+            {
+                item.SetImages(request.Images.Select(img => ProductImage.Create(img.Url, img.IsMain, img.DisplayOrder)));
+            }
+        }
+
         await repository.UpdateAsync(item, cancellationToken);
 
         return item;
@@ -286,6 +295,15 @@ internal class ProductService(
             }
 
             product = item;
+        }
+
+        if (product.ProductType is ProductType.Gold or ProductType.Jewelry)
+        {
+            product.SetVitrineOptions(request.ShowInVitrine, request.IsFeatured, request.VitrineDescription);
+            if (request.Images != null)
+            {
+                product.SetImages(request.Images.Select(img => ProductImage.Create(img.Url, img.IsMain, img.DisplayOrder)));
+            }
         }
 
         if (string.IsNullOrEmpty(request.Barcode))

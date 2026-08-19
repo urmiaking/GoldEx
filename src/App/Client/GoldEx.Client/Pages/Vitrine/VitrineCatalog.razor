@@ -1,0 +1,393 @@
+@page "/{StoreSlug}/catalog"
+@layout VitrineLayout
+@attribute [AllowAnonymous]
+
+@using GoldEx.Shared.DTOs.Vitrine
+@using GoldEx.Shared.Services.Abstractions
+@using GoldEx.Shared.Enums
+@inject IVitrineService VitrineService
+@inject NavigationManager Navigation
+
+<PageTitle>کاتالوگ و ویترین طلا و جواهرات - @(_storeInfo?.Name ?? "گالری طلا")</PageTitle>
+
+<div class="vitrine-container" style="padding-top: 30px; padding-bottom: 70px;">
+    <!-- Breadcrumb & Header -->
+    <div style="margin-bottom: 30px;">
+        <div class="d-flex align-items-center gap-2 mb-2" style="font-size: 0.86rem; color: var(--gray-600);">
+            <a href="@($"/{StoreSlug}")" style="color: var(--primary-color); text-decoration: none;">صفحه اصلی</a>
+            <i class="fa-solid fa-angle-left" style="font-size: 0.75rem;"></i>
+            <span style="color: var(--accent-color); font-weight: 700;">کاتالوگ زیورآلات و طلا</span>
+        </div>
+        <h1 style="font-size: 2.2rem; font-weight: 900; margin: 0 0 6px; color: var(--primary-color);">
+            ویترین و کاتالوگ <span style="color: var(--accent-color);">طلا و جواهرات</span>
+        </h1>
+        <p style="color: var(--gray-600); font-size: 0.96rem; margin: 0;">
+            مشاهده، فیلتر و جستجوی تمام زیورآلات و طلاهای ساخته‌شده عیار ۷۵۰ موجود در گالری
+        </p>
+    </div>
+
+    <!-- Main Shop Layout: Sidebar Right, Products Left -->
+    <main class="shop-layout">
+        
+        <!-- ۱. سایدبار فیلترها (Right Filter Sidebar) -->
+        <aside class="shop-sidebar">
+            
+            <!-- ویجت جستجو -->
+            <div class="sidebar-widget">
+                <h3>جستجوی زیورآلات</h3>
+                <div class="search-box">
+                    <input type="text"
+                           @bind="_searchTerm"
+                           @bind:event="oninput"
+                           placeholder="نام مدل، دسته‌بندی، بارکد..."
+                           class="luxury-search-input" />
+                    <span class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></span>
+                </div>
+            </div>
+
+            <!-- ویجت دسته‌بندی‌های گالری -->
+            @if (_categories.Count > 0)
+            {
+                <div class="sidebar-widget">
+                    <h3>دسته‌بندی‌های گالری</h3>
+                    <div class="category-chips-list">
+                        <div class="category-chip-item @(_selectedCategoryId == null ? "active" : "")"
+                             @onclick="() => FilterByCategory(null)">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-gem" style="font-size: 0.85rem; color: var(--accent-color);"></i>
+                                <span>همه دسته‌ها</span>
+                            </div>
+                            <span class="chip-badge">@_products.Count</span>
+                        </div>
+                        @foreach (var cat in _categories)
+                        {
+                            <div class="category-chip-item @(_selectedCategoryId == cat.Id ? "active" : "")"
+                                 @onclick="() => FilterByCategory(cat.Id)">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-sparkles" style="font-size: 0.8rem; opacity: 0.7;"></i>
+                                    <span>@cat.Title</span>
+                                </div>
+                                <span class="chip-badge">@cat.ProductCount</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- ویجت نوع کالا -->
+            <div class="sidebar-widget">
+                <h3>نوع زیورآلات</h3>
+                <div class="filter-pills-vertical">
+                    <button type="button" class="filter-pill-btn @(_selectedProductType == null && !_onlyFeatured ? "active" : "")"
+                            @onclick="() => { FilterByType(null); _onlyFeatured = false; }">
+                        <span>همه انواع</span>
+                        <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                    </button>
+                    <button type="button" class="filter-pill-btn @(_selectedProductType == ProductType.Gold && !_onlyFeatured ? "active" : "")"
+                            @onclick="() => { FilterByType(ProductType.Gold); _onlyFeatured = false; }">
+                        <span>فقط طلا</span>
+                        <i class="fa-solid fa-ring" style="font-size: 0.85rem; color: var(--accent-color);"></i>
+                    </button>
+                    <button type="button" class="filter-pill-btn @(_selectedProductType == ProductType.Jewelry && !_onlyFeatured ? "active" : "")"
+                            @onclick="() => { FilterByType(ProductType.Jewelry); _onlyFeatured = false; }">
+                        <span>جواهرات نگین‌دار</span>
+                        <i class="fa-solid fa-gem" style="font-size: 0.85rem; color: #0ea5e9;"></i>
+                    </button>
+                    <button type="button" class="filter-pill-btn @(_onlyFeatured ? "active" : "")"
+                            @onclick="ToggleOnlyFeatured">
+                        <span>پیشنهادات ویژه</span>
+                        <i class="fa-solid fa-star" style="font-size: 0.85rem; color: #eab308;"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ویجت محدوده وزن -->
+            <div class="sidebar-widget">
+                <h3>محدوده وزن (گرم)</h3>
+                <div class="filter-pills-vertical">
+                    <button type="button" class="filter-pill-btn @(_weightFilter == "all" ? "active" : "")"
+                            @onclick='() => SetWeightFilter("all")'>
+                        <span>همه وزن‌ها</span>
+                    </button>
+                    <button type="button" class="filter-pill-btn @(_weightFilter == "under_2" ? "active" : "")"
+                            @onclick='() => SetWeightFilter("under_2")'>
+                        <span>زیر ۲ گرم (سبک و اقتصادی)</span>
+                    </button>
+                    <button type="button" class="filter-pill-btn @(_weightFilter == "2_to_5" ? "active" : "")"
+                            @onclick='() => SetWeightFilter("2_to_5")'>
+                        <span>۲ تا ۵ گرم</span>
+                    </button>
+                    <button type="button" class="filter-pill-btn @(_weightFilter == "5_to_10" ? "active" : "")"
+                            @onclick='() => SetWeightFilter("5_to_10")'>
+                        <span>۵ تا ۱۰ گرم</span>
+                    </button>
+                    <button type="button" class="filter-pill-btn @(_weightFilter == "over_10" ? "active" : "")"
+                            @onclick='() => SetWeightFilter("over_10")'>
+                        <span>بالای ۱۰ گرم (سنگین و مجلسی)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- دکمه پاک کردن فیلترها -->
+            @if (_selectedCategoryId != null || _selectedProductType != null || _onlyFeatured || _weightFilter != "all" || !string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                <button type="button" class="btn-gisu btn-gisu-outline" style="width: 100%; justify-content: center; font-size: 0.86rem;" @onclick="ResetFilters">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>حذف تمام فیلترها</span>
+                </button>
+            }
+
+        </aside>
+
+        <!-- ۲. بخش محصولات سمت چپ (Left Products Section) -->
+        <section class="shop-products">
+            
+            <!-- نوار ابزار بالای محصولات -->
+            <div class="shop-toolbar">
+                <div style="font-size: 0.92rem; color: var(--gray-600); font-weight: 700;">
+                    نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر
+                </div>
+
+                <div class="sort-tabs-container">
+                    <span style="font-size: 0.84rem; color: var(--gray-600); font-weight: 700; white-space: nowrap; flex-shrink: 0;">مرتب‌سازی:</span>
+                    <div class="sort-tabs">
+                        <button type="button" class="sort-tab @(_sortBy == "newest" ? "active" : "")" @onclick='() => _sortBy = "newest"'>
+                            جدیدترین
+                        </button>
+                        <button type="button" class="sort-tab @(_sortBy == "price_asc" ? "active" : "")" @onclick='() => _sortBy = "price_asc"'>
+                            ارزان‌ترین
+                        </button>
+                        <button type="button" class="sort-tab @(_sortBy == "price_desc" ? "active" : "")" @onclick='() => _sortBy = "price_desc"'>
+                            گران‌ترین
+                        </button>
+                        <button type="button" class="sort-tab @(_sortBy == "weight_asc" ? "active" : "")" @onclick='() => _sortBy = "weight_asc"'>
+                            سبک‌ترین
+                        </button>
+                        <button type="button" class="sort-tab @(_sortBy == "weight_desc" ? "active" : "")" @onclick='() => _sortBy = "weight_desc"'>
+                            سنگین‌ترین
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- وضعیت بارگذاری یا لیست خالی یا محصولات -->
+            @if (_isLoading)
+            {
+                <div class="text-center py-5" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 60px 20px;">
+                    <div class="vitrine-ticker-pulse d-inline-block mb-3" style="width: 32px; height: 32px;"></div>
+                    <div style="color: var(--primary-color); font-weight: 800; font-size: 1.1rem;">در حال بارگذاری و قیمت‌گذاری کاتالوگ...</div>
+                </div>
+            }
+            else if (FilteredProducts.Count == 0)
+            {
+                <div class="text-center py-5" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
+                    <i class="fa-solid fa-magnifying-glass mb-3" style="font-size: 3rem; color: var(--accent-color); display: block;"></i>
+                    <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color); margin-bottom: 8px;">موردی با مشخصات انتخابی یافت نشد</h3>
+                    <p style="color: var(--gray-600); max-width: 450px; margin: 0 auto 24px; font-size: 0.92rem; line-height: 1.8;">
+                        لطفاً فیلترهای اعمال‌شده، دسته‌بندی یا عبارت جستجو را تغییر دهید.
+                    </p>
+                    <button type="button" class="btn-gisu btn-gisu-outline" style="display: inline-flex;" @onclick="ResetFilters">
+                        <span>نمایش تمام محصولات</span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
+                    @foreach (var product in FilteredProducts)
+                    {
+                        <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card">
+                            <div class="product-image">
+                                @if (product.IsFeatured)
+                                {
+                                    <span class="product-badge">⭐ ویژه</span>
+                                }
+                                <span class="product-badge secondary">
+                                    عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")
+                                </span>
+
+                                @if (!string.IsNullOrWhiteSpace(product.MainImageUrl))
+                                {
+                                    <img src="@product.MainImageUrl" alt="@product.Name" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-400);">
+                                        <i class="fa-solid fa-gem" style="font-size: 3rem; color: var(--accent-color); margin-bottom: 8px;"></i>
+                                        <span style="font-size: 0.78rem; color: var(--gray-600);">گالری طلا</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="product-info">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="product-category">@(!string.IsNullOrEmpty(product.CategoryTitle) ? product.CategoryTitle : "زیورآلات طلا")</span>
+                                    <span style="font-size: 0.75rem; color: var(--gray-600); direction: ltr;">#@product.Barcode</span>
+                                </div>
+
+                                <h3 class="product-title" title="@product.Name">@product.Name</h3>
+
+                                <div class="product-specs">
+                                    <span><i class="fa-solid fa-scale-balanced" style="margin-left: 4px; color: var(--accent-color);"></i> وزن:</span>
+                                    <strong style="color: var(--primary-color);">@product.Weight.ToString("G29") گرم</strong>
+                                </div>
+
+                                <div class="product-price-container">
+                                    <div style="display: flex; flex-direction: column;">
+                                        <span style="font-size: 0.74rem; color: var(--gray-600);">مبلغ با مظنه روز:</span>
+                                        <span class="product-price">
+                                            @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
+                                        </span>
+                                    </div>
+                                    <div class="btn-gisu btn-gisu-outline" style="padding: 6px 12px; font-size: 0.78rem;">
+                                        <span>مشاهده</span>
+                                        <i class="fa-solid fa-angle-left" style="font-size: 0.7rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+
+        </section>
+
+    </main>
+</div>
+
+@code {
+    [Parameter] public string StoreSlug { get; set; } = "default";
+    [SupplyParameterFromQuery] public Guid? CategoryId { get; set; }
+    [SupplyParameterFromQuery] public bool? OnlyFeatured { get; set; }
+    [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    private List<VitrineProductSummaryDto> _products = [];
+    private List<VitrineCategoryDto> _categories = [];
+    private Guid? _selectedCategoryId;
+    private ProductType? _selectedProductType;
+    private bool _onlyFeatured;
+    private string _weightFilter = "all";
+    private string _searchTerm = "";
+    private string _sortBy = "newest";
+    private bool _isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _selectedCategoryId = CategoryId;
+        _onlyFeatured = OnlyFeatured ?? false;
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var categoriesTask = VitrineService.GetCategoriesAsync(StoreSlug);
+            var productsTask = VitrineService.GetVitrineProductsAsync(StoreSlug);
+
+            await Task.WhenAll(categoriesTask, productsTask);
+
+            _categories = (await categoriesTask).ToList();
+            _products = (await productsTask).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading catalog: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void FilterByCategory(Guid? categoryId)
+    {
+        _selectedCategoryId = categoryId;
+    }
+
+    private void FilterByType(ProductType? type)
+    {
+        _selectedProductType = type;
+    }
+
+    private void ToggleOnlyFeatured()
+    {
+        _onlyFeatured = !_onlyFeatured;
+    }
+
+    private void SetWeightFilter(string filter)
+    {
+        _weightFilter = filter;
+    }
+
+    private void ResetFilters()
+    {
+        _selectedCategoryId = null;
+        _selectedProductType = null;
+        _onlyFeatured = false;
+        _weightFilter = "all";
+        _searchTerm = "";
+        _sortBy = "newest";
+    }
+
+    private List<VitrineProductSummaryDto> FilteredProducts
+    {
+        get
+        {
+            var result = _products.AsEnumerable();
+
+            if (_selectedCategoryId.HasValue)
+            {
+                result = result.Where(x => x.CategoryId == _selectedCategoryId.Value);
+            }
+
+            if (_selectedProductType.HasValue)
+            {
+                result = result.Where(x => x.ProductType == _selectedProductType.Value);
+            }
+
+            if (_onlyFeatured)
+            {
+                result = result.Where(x => x.IsFeatured);
+            }
+
+            if (_weightFilter == "under_2")
+            {
+                result = result.Where(x => x.Weight < 2.0m);
+            }
+            else if (_weightFilter == "2_to_5")
+            {
+                result = result.Where(x => x.Weight >= 2.0m && x.Weight <= 5.0m);
+            }
+            else if (_weightFilter == "5_to_10")
+            {
+                result = result.Where(x => x.Weight > 5.0m && x.Weight <= 10.0m);
+            }
+            else if (_weightFilter == "over_10")
+            {
+                result = result.Where(x => x.Weight > 10.0m);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                var term = _searchTerm.Trim();
+                result = result.Where(x => x.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                           x.Barcode.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                           (x.CategoryTitle != null && x.CategoryTitle.Contains(term, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            // Sorting
+            result = _sortBy switch
+            {
+                "price_asc" => result.OrderBy(x => x.EstimatedPrice),
+                "price_desc" => result.OrderByDescending(x => x.EstimatedPrice),
+                "weight_asc" => result.OrderBy(x => x.Weight),
+                "weight_desc" => result.OrderByDescending(x => x.Weight),
+                _ => result // newest
+            };
+
+            return result.ToList();
+        }
+    }
+}

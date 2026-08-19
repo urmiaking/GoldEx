@@ -75,6 +75,12 @@ public class Setting : EntityBase<SettingsId>, IStoreFiltered
     public TimeSpan PriceUpdateInterval { get; private set; }
     public BarcodePrintSettings? BarcodePrintSettings { get; private set; }
 
+    public string? InstagramUrl { get; private set; }
+    public string? TelegramUrl { get; private set; }
+    public string? BaleUrl { get; private set; }
+    public string? WhatsAppNumber { get; private set; }
+    public string? AboutText { get; private set; }
+
     public void SetInstitutionName(string institutionName) => InstitutionName = institutionName;
     public void SetAddress(string address) => Address = address;
     public void SetPhoneNumber(string phoneNumber) => PhoneNumber = phoneNumber;
@@ -125,6 +131,15 @@ public class Setting : EntityBase<SettingsId>, IStoreFiltered
         GramPerMesghal = gramPerMesghal;
     }
 
+    public void SetVitrineSocialInfo(string? instagramUrl, string? telegramUrl, string? baleUrl, string? whatsAppNumber, string? aboutText)
+    {
+        InstagramUrl = instagramUrl?.Trim();
+        TelegramUrl = telegramUrl?.Trim();
+        BaleUrl = baleUrl?.Trim();
+        WhatsAppNumber = whatsAppNumber?.Trim();
+        AboutText = aboutText?.Trim();
+    }
+
     public void UpdateBarcodePrintSettings(BarcodePrintSettings barcodePrintSettings)
     {
         BarcodePrintSettings = barcodePrintSettings ?? throw new ArgumentNullException(nameof(barcodePrintSettings));
@@ -146,6 +161,7 @@ public class Setting : EntityBase<SettingsId>, IStoreFiltered
             PriceUpdateInterval,
             storeId
         );
+        clone.SetVitrineSocialInfo(InstagramUrl, TelegramUrl, BaleUrl, WhatsAppNumber, AboutText);
         if (BarcodePrintSettings != null)
         {
             clone.UpdateBarcodePrintSettings(BarcodePrintSettings.Clone());

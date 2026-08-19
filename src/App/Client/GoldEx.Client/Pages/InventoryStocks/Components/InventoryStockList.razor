@@ -259,6 +259,14 @@
             case ItemType.Product when context.Product is not null:
                 <MudTd DataLabel="عملیات">
                     <div class="d-flex gap-2">
+                        @if (context.Product?.ProductType is ProductType.Gold or ProductType.Jewelry)
+                        {
+                            <MudTooltip Text="@(context.Product.ShowInVitrine ? "در ویترین فعال است (ویرایش عکس/توضیح)" : "افزودن به ویترین آنلاین")" Color="Color.Warning" Arrow="true">
+                                <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Storefront"
+                                               OnClick="_ => OnOpenVitrineDialog(context)"
+                                               Color="@(context.Product.ShowInVitrine ? Color.Warning : Color.Dark)"></MudIconButton>
+                            </MudTooltip>
+                        }
                         <MudTooltip Text="چاپ بارکد" Color="Color.Success" Arrow="true">
                             <MudIconButton Size="@Size.Small" Variant="@Variant.Filled" Icon="@Icons.Material.Filled.Print"
                                            OnClick="_ => OnPrintProductBarcode(context)"

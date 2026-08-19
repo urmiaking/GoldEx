@@ -1,4 +1,4 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
 @attribute [Route(ClientRoutes.Settings.Index)]
 @attribute [Authorize(Roles = $"{BuiltinRoles.Administrators}, {BuiltinRoles.Owners}")]
@@ -181,6 +181,62 @@
                               InputType="InputType.Time"
                               Label="@(_model.GetDisplayName(() => _model.PriceUpdateInterval))"
                               For="() => _model.PriceUpdateInterval"></MudTextField>
+            </MudItem>
+        </MudGrid>
+
+        <MudText Class="mt-6" Typo="Typo.h6" GutterBottom="true">اطلاعات ویترین آنلاین و راه‌های ارتباطی</MudText>
+        <hr />
+        <MudGrid Spacing="3">
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField @bind-Value="_model.InstagramUrl"
+                              Label="@_model.GetDisplayName(() => _model.InstagramUrl)"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Placeholder="https://instagram.com/..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Custom.Brands.Instagram"
+                              For="() => _model.InstagramUrl" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField @bind-Value="_model.TelegramUrl"
+                              Label="@_model.GetDisplayName(() => _model.TelegramUrl)"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Placeholder="https://t.me/..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Custom.Brands.Telegram"
+                              For="() => _model.TelegramUrl" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField @bind-Value="_model.BaleUrl"
+                              Label="@_model.GetDisplayName(() => _model.BaleUrl)"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Placeholder="https://ble.ir/..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Chat"
+                              For="() => _model.BaleUrl" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField @bind-Value="_model.WhatsAppNumber"
+                              Label="@_model.GetDisplayName(() => _model.WhatsAppNumber)"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Placeholder="09123456789"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Custom.Brands.WhatsApp"
+                              For="() => _model.WhatsAppNumber" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_model.AboutText"
+                              Label="@_model.GetDisplayName(() => _model.AboutText)"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Lines="3"
+                              Placeholder="توضیحات کوتاه جهت نمایش در صفحه درباره ما و فوتر سایت ویترین..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Info"
+                              For="() => _model.AboutText" />
             </MudItem>
         </MudGrid>
 

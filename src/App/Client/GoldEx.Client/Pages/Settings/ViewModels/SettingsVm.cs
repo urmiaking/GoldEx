@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using GoldEx.Shared.DTOs.Settings;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -58,6 +58,21 @@ public class SettingsVm
 
     public bool HasIcon { get; set; }
 
+    [Display(Name = "لینک اینستاگرام")]
+    public string? InstagramUrl { get; set; }
+
+    [Display(Name = "کانال / آیدی تلگرام")]
+    public string? TelegramUrl { get; set; }
+
+    [Display(Name = "کانال / آیدی بله")]
+    public string? BaleUrl { get; set; }
+
+    [Display(Name = "شماره واتساپ استعلام")]
+    public string? WhatsAppNumber { get; set; }
+
+    [Display(Name = "درباره گالری (متن معرفی ویترین)")]
+    public string? AboutText { get; set; }
+
     public UpdateSettingRequest ToRequest()
     {
         return new UpdateSettingRequest(InstitutionName,
@@ -71,7 +86,12 @@ public class SettingsVm
             GoldSafetyMarginPercent,
             UsedGoldFinenessDeductionRate,
             GramPerMesghal,
-            IconContent);
+            IconContent,
+            InstagramUrl,
+            TelegramUrl,
+            BaleUrl,
+            WhatsAppNumber,
+            AboutText);
     }
 
     public static SettingsVm CreateFromRequest(GetSettingResponse response)
@@ -90,7 +110,12 @@ public class SettingsVm
             GoldSafetyMarginPercent = response.GoldSafetyMarginPercent,
             UsedGoldFinenessDeductionRate = response.UsedGoldFinenessDeductionRate,
             GramPerMesghal = response.GramPerMesghal,
-            HasIcon = response.HasIcon
+            HasIcon = response.HasIcon,
+            InstagramUrl = response.InstagramUrl,
+            TelegramUrl = response.TelegramUrl,
+            BaleUrl = response.BaleUrl,
+            WhatsAppNumber = response.WhatsAppNumber,
+            AboutText = response.AboutText
         };
     }
 }

@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Server.Infrastructure.Specifications;
+using GoldEx.Sdk.Server.Infrastructure.Specifications;
 using GoldEx.Server.Domain.PriceAggregate;
 using GoldEx.Shared.Enums;
 
@@ -8,6 +8,8 @@ public sealed class PricesByPriceCatalogSpecification : SpecificationBase<Price>
 {
     public PricesByPriceCatalogSpecification(PriceCatalog priceCatalog)
     {
-        AddCriteria(x => x.PriceCatalog == priceCatalog);
+        AddCriteria(x => x.PriceCatalog == priceCatalog && x.IsActive);
+        AddInclude(x => x.PriceHistory!);
+        AddInclude(x => x.PriceUnit!);
     }
 }

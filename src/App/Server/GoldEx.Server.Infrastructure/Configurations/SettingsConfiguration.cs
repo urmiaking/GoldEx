@@ -47,6 +47,21 @@ internal class SettingsConfiguration : IEntityTypeConfiguration<Setting>
         builder.Property(x => x.GramPerMesghal)
             .HasPrecision(36, 10);
 
+        builder.Property(x => x.InstagramUrl)
+            .HasMaxLength(200);
+
+        builder.Property(x => x.TelegramUrl)
+            .HasMaxLength(200);
+
+        builder.Property(x => x.BaleUrl)
+            .HasMaxLength(200);
+
+        builder.Property(x => x.WhatsAppNumber)
+            .HasMaxLength(50);
+
+        builder.Property(x => x.AboutText)
+            .HasMaxLength(2000);
+
         builder.OwnsOne(x => x.BarcodePrintSettings, Configure);
     }
 

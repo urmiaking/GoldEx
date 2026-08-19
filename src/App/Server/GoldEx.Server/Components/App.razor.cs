@@ -80,6 +80,33 @@ public partial class App
                 }
             }
         }
+        else
+        {
+            var path = HttpContext.Request.Path.Value ?? "";
+            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length > 0 && !segments[0].StartsWith("_") && !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase) && !segments[0].Equals("Account", StringComparison.OrdinalIgnoreCase))
+            {
+                var slug = segments[0].ToLowerInvariant();
+                var store = await DbContext.Set<Store>()
+                    .AsNoTracking()
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(s => s.Slug.ToLower() == slug);
+
+                if (store != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(store.Name))
+                    {
+                        SplashTitle = store.Name;
+                        IsStoreTitle = true;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(store.LogoUrl))
+                    {
+                        SplashLogoUrl = store.LogoUrl;
+                    }
+                }
+            }
+        }
     }
 
     private async Task GetLicenseAsync()

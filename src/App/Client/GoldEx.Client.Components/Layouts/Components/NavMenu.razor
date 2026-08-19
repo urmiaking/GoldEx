@@ -1,5 +1,4 @@
-﻿@using GoldEx.Shared.Routings
-@using Microsoft.JSInterop
+@using GoldEx.Shared.Routings
 
 @inherits GoldExComponentBase
 
@@ -12,6 +11,21 @@
             <MudNavLink Href="@ClientRoutes.Dashboard.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
                 داشبورد
             </MudNavLink>
+            @if (_currentStore != null)
+            {
+                <MudNavLink Href="@($"/{_currentStore.Slug}")"
+                            Target="_blank"
+                            Icon="@Icons.Material.Filled.Storefront"
+                            Class="vitrine-nav-link"
+                            Match="NavLinkMatch.Prefix">
+                    <div class="d-flex align-center justify-space-between w-100">
+                        <span>ویترین آنلاین گالری</span>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Style="font-size: 0.65rem; height: 18px; font-weight: 900;">
+                            LIVE
+                        </MudChip>
+                    </div>
+                </MudNavLink>
+            }
         </Authorized>
     </AuthorizeView>
     <MudNavLink Href="@ClientRoutes.Calculator.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Calculate">
@@ -52,25 +66,6 @@
                         Icon="@Icons.Material.Filled.Help">
                 راهنما
             </MudNavLink>
-
-            @* فقط اگر مرورگر می‌گه «قابل نصب است» دکمه را نشان بده *@
-            @if (_canInstall)
-            {
-                <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                    <MudNavLink Icon="@Icons.Material.Filled.InstallDesktop"
-                                OnClick="@InstallPwa"
-                                Match="NavLinkMatch.All">
-                        نصب اپلیکیشن
-                    </MudNavLink>
-                </MudHidden>
-                <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                    <MudNavLink Icon="@Icons.Material.Filled.InstallMobile"
-                                OnClick="@InstallPwa"
-                                Match="NavLinkMatch.All">
-                        نصب اپلیکیشن
-                    </MudNavLink>
-                </MudHidden>
-            }
         </Authorized>
     </AuthorizeView>
     <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.Prefix"
@@ -89,37 +84,32 @@
 
 @code {
     private string? _currentUrl;
-    private bool _canInstall;
+    private GoldEx.Shared.DTOs.Stores.UserStoreDto? _currentStore;
 
     [Parameter] public EventCallback<bool> OnNavigate { get; set; }
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
         Navigation.LocationChanged += OnLocationChanged;
+
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            await LoadCurrentStoreAsync();
+        }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task LoadCurrentStoreAsync()
     {
-        if (firstRender)
-        {
-            try
-            {
-                _canInstall = await JsRuntime.InvokeAsync<bool>("getPwaState");
-                if (_canInstall)
-                {
-                    StateHasChanged();
-                }
-            }
-            catch
-            {
-                // اگر JS خراب شد، دکمه پنهان می‌ماند
-                _canInstall = false;
-            }
-        }
+        var stores = await SendRequestAsync<GoldEx.Shared.Services.Abstractions.IStoreService, List<GoldEx.Shared.DTOs.Stores.UserStoreDto>>(
+            (service, token) => service.GetUserStoresAsync(token));
 
-        await base.OnAfterRenderAsync(firstRender);
+        if (stores != null)
+        {
+            _currentStore = stores.FirstOrDefault(s => s.IsCurrent);
+            StateHasChanged();
+        }
     }
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -133,22 +123,5 @@
     {
         Navigation.LocationChanged -= OnLocationChanged;
         return base.DisposeAsync();
-    }
-
-    private async Task InstallPwa()
-    {
-        try
-        {
-            var installed = await JsRuntime.InvokeAsync<bool>("installPwa");
-            if (installed)
-            {
-                _canInstall = false;
-                StateHasChanged();
-            }
-        }
-        catch
-        {
-            AddErrorToast("خطایی در نصب رخ داد");
-        }
     }
 }

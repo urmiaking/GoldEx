@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using GoldEx.Client.Pages.Products.Validators;
 using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Client.Pages.Settings.ViewModels;
@@ -242,4 +243,57 @@ public partial class Editor
             stone.StoneTypeSymbol = selectedType.Symbol;
         }
     }
+
+    [Inject] private HttpClient HttpClient { get; set; } = default!;
+    private bool _isUploadingImage;
+
+    private void RemoveImage(ProductImageDto target)
+    {
+        Model.Images = Model.Images.Where(img => img.Url != target.Url).ToList();
+        if (target.IsMain && Model.Images.Count > 0)
+        {
+            Model.Images[0] = Model.Images[0] with { IsMain = true };
+        }
+    }
+
+    private async Task UploadEditorImageAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+    {
+        if (file == null) return;
+
+        _isUploadingImage = true;
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var streamContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 20_000_000));
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            content.Add(streamContent, "file", file.Name);
+
+            var response = await HttpClient.PostAsync(GoldEx.Shared.Routings.ApiUrls.Vitrine.UploadProductImage(), content);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<UploadEditorImageResult>();
+                if (result != null && !string.IsNullOrEmpty(result.Url))
+                {
+                    var isFirst = Model.Images.Count == 0;
+                    Model.Images.Add(new ProductImageDto(result.Url, IsMain: isFirst, DisplayOrder: Model.Images.Count));
+                    AddSuccessToast("تصویر با موفقیت بارگذاری شد.");
+                }
+            }
+            else
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                AddErrorToast(string.IsNullOrEmpty(err) ? "خطا در بارگذاری تصویر." : err);
+            }
+        }
+        catch (Exception ex)
+        {
+            AddErrorToast($"خطا در آپلود: {ex.Message}");
+        }
+        finally
+        {
+            _isUploadingImage = false;
+        }
+    }
+
+    private record UploadEditorImageResult(string Url);
 }
