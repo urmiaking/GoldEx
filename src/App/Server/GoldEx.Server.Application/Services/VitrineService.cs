@@ -7,6 +7,7 @@ using GoldEx.Server.Domain.ProductCategoryAggregate;
 using GoldEx.Server.Domain.SettingAggregate;
 using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Server.Infrastructure.Specifications.InventoryStocks;
 using GoldEx.Server.Infrastructure.Specifications.Prices;
 using GoldEx.Server.Infrastructure.Specifications.ProductCategories;
 using GoldEx.Server.Infrastructure.Specifications.Products;
@@ -29,6 +30,7 @@ internal class VitrineService(
     ISettingRepository settingRepository,
     IProductCategoryRepository categoryRepository,
     IPriceRepository priceRepository,
+    IInventoryStockRepository inventoryStockRepository,
     ILogger<VitrineService> logger) : IVitrineService
 {
     public async Task<VitrineStoreInfoDto?> GetStoreInfoAsync(string storeSlug, CancellationToken cancellationToken = default)
@@ -147,10 +149,24 @@ internal class VitrineService(
         var products = await query.ToListAsync(cancellationToken);
         var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
 
+        var productIds = products.Select(p => p.Id).ToList();
+        var stockQuantities = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Where(s => s.StoreId == store.Id && s.ProductId != null && productIds.Contains(s.ProductId.Value))
+            .GroupBy(s => s.ProductId!.Value)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                TotalQuantity = g.Sum(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount)
+            })
+            .ToDictionaryAsync(x => x.ProductId, x => x.TotalQuantity, cancellationToken);
+
         return products.Select(p =>
         {
             var mainImage = p.Images?.OrderByDescending(x => x.IsMain).ThenBy(x => x.DisplayOrder).FirstOrDefault()?.Url;
             var priceBreakdown = CalculateVitrinePrice(p, gramPrice750);
+            var isAvailable = stockQuantities.TryGetValue(p.Id, out var qty) && qty > 0.0001m;
 
             return new VitrineProductSummaryDto(
                 Id: p.Id.Value,
@@ -163,7 +179,8 @@ internal class VitrineService(
                 CategoryTitle: p.ProductCategory?.Title,
                 MainImageUrl: mainImage,
                 EstimatedPrice: priceBreakdown.EstimatedPrice,
-                IsFeatured: p.IsFeatured);
+                IsFeatured: p.IsFeatured,
+                IsAvailable: isAvailable);
         }).ToList();
     }
 
@@ -196,6 +213,14 @@ internal class VitrineService(
 
         var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
         var priceBreakdown = CalculateVitrinePrice(product, gramPrice750);
+
+        var quantity = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Where(s => s.StoreId == store.Id && s.ProductId == product.Id)
+            .SumAsync(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount, cancellationToken);
+
+        var isAvailable = quantity > 0.0001m;
 
         var imageUrls = product.Images?
             .OrderByDescending(x => x.IsMain)
@@ -231,7 +256,8 @@ internal class VitrineService(
             ProfitAmount: priceBreakdown.ProfitAmount,
             TaxAmount: priceBreakdown.TaxAmount,
             GramPrice750: gramPrice750,
-            UpdatedAt: DateTime.Now);
+            UpdatedAt: DateTime.Now,
+            IsAvailable: isAvailable);
     }
 
     public async Task UpdateProductVitrineAsync(
@@ -279,7 +305,9 @@ internal class VitrineService(
             gold18KPrice = fallbackPrice;
         }
 
-        return gold18KPrice > 0 ? gold18KPrice : 35_000_000m;
+        var priceInRials = gold18KPrice > 0 ? gold18KPrice : 35_000_000m;
+        // Database prices from TGJU are stored in Rials (IRR). Convert to Tomans (1 Toman = 10 Rials).
+        return Math.Round(priceInRials / 10m, 0);
     }
 
     private static (decimal EstimatedPrice, decimal RawGoldPrice, decimal WageAmount, decimal ProfitAmount, decimal TaxAmount)

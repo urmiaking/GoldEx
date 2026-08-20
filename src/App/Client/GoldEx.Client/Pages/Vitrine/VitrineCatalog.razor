@@ -196,9 +196,16 @@
                 <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
                     @foreach (var product in FilteredProducts)
                     {
-                        <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card">
+                        <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
                             <div class="product-image">
-                                @if (product.IsFeatured)
+                                @if (!product.IsAvailable)
+                                {
+                                    <span class="product-badge sold-out">فروخته شد</span>
+                                    <div class="product-sold-overlay">
+                                        <span class="product-sold-ribbon">فروخته شد</span>
+                                    </div>
+                                }
+                                else if (product.IsFeatured)
                                 {
                                     <span class="product-badge">⭐ ویژه</span>
                                 }
@@ -239,8 +246,8 @@
                                             @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                         </span>
                                     </div>
-                                    <div class="btn-gisu btn-gisu-outline" style="padding: 6px 12px; font-size: 0.78rem;">
-                                        <span>مشاهده</span>
+                                    <div class="btn-gisu btn-gisu-outline" style="padding: 6px 12px; font-size: 0.78rem; @(!product.IsAvailable ? "border-color: #dc2626; color: #dc2626;" : "")">
+                                        <span>@(product.IsAvailable ? "مشاهده" : "فروخته شد")</span>
                                         <i class="fa-solid fa-angle-left" style="font-size: 0.7rem;"></i>
                                     </div>
                                 </div>

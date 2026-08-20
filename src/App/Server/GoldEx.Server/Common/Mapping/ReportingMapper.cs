@@ -35,7 +35,9 @@ internal class ReportingMapper : IRegister
             .Map(dest => dest.CustomerName, src => src.Customer!.FullName)
             .Map(dest => dest.PriceUnit, src => src.PriceUnit != null ? src.PriceUnit.Title : string.Empty)
             .Map(dest => dest.RemainingPrice, src => src.TotalUnpaidAmount)
-            .Map(dest => dest.TotalPrice, src => src.TotalAmountWithDiscountsAndExtraCosts);
+            .Map(dest => dest.TotalPrice, src => src.TotalAmountWithDiscountsAndExtraCosts)
+            .Map(dest => dest.TotalWeightEquivalent, src => GoldWeightCalculator.CalculateTotalWeight(src))
+            .Map(dest => dest.RemainingWeightEquivalent, src => GoldWeightCalculator.CalculateRemainingWeight(src));
 
         config.NewConfig<InvoicePayment, PaymentRpResponse>()
             .Map(dest => dest.CustomerName, src => src.Invoice!.Customer!.FullName)
@@ -82,7 +84,7 @@ internal static class GoldWeightCalculator
         if (totalItemWeight == 0) return 0;
 
         decimal effectiveRate = totalItemFinalAmount / totalItemWeight;
-        if (effectiveRate == 0) return 0;
+        if (effectiveRate == 0) return totalItemWeight;
 
         var discountWeight = src.TotalDiscountAmount / effectiveRate;
         var extraCostWeight = src.TotalExtraCostAmount / effectiveRate;
@@ -159,18 +161,40 @@ internal static class GoldWeightCalculator
 
     private static (decimal TotalWeight, decimal TotalFinalAmount) GetProductItemTotals(Invoice src)
     {
-        if (src.ProductItems == null) return (0, 0);
-
         decimal totalWeight = 0;
         decimal totalFinalAmount = 0;
-        foreach (var item in src.ProductItems)
+
+        if (src.ProductItems != null)
         {
-            if (item.GramPrice > 0)
+            foreach (var item in src.ProductItems)
             {
-                totalWeight += item.ItemFinalAmount / item.GramPrice;
-                totalFinalAmount += item.ItemFinalAmount;
+                if (item.GramPrice > 0)
+                {
+                    totalWeight += item.ItemFinalAmount / item.GramPrice;
+                    totalFinalAmount += item.ItemFinalAmount;
+                }
             }
         }
+
+        if (src.UsedProducts != null)
+        {
+            foreach (var item in src.UsedProducts)
+            {
+                if (item.GramPrice > 0)
+                {
+                    totalWeight += item.ItemFinalAmount / item.GramPrice;
+                    totalFinalAmount += item.ItemFinalAmount;
+                }
+                else if (item.Weight > 0)
+                {
+                    var fineness = item.Product?.Fineness ?? 750m;
+                    var standardWeight = fineness > 0 ? (item.Weight * fineness / 750m) : item.Weight;
+                    totalWeight += standardWeight;
+                    totalFinalAmount += item.ItemFinalAmount;
+                }
+            }
+        }
+
         return (totalWeight, totalFinalAmount);
     }
 }

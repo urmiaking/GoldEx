@@ -13,4 +13,5 @@ public record VitrineProductSummaryDto(
     string? CategoryTitle,
     string? MainImageUrl,
     decimal EstimatedPrice,
-    bool IsFeatured);
+    bool IsFeatured,
+    bool IsAvailable = true);

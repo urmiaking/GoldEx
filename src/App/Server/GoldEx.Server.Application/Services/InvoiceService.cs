@@ -1,4 +1,4 @@
-﻿using DevExpress.XtraReports.Services;
+using DevExpress.XtraReports.Services;
 using FluentValidation;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
@@ -219,6 +219,7 @@ internal class InvoiceService(
             .AsNoTracking()
             .Include(x => x.ProductItems)
                 .ThenInclude(x => x.Product)
+            .Include(x => x.UsedProducts)
             .Include(x => x.InvoicePayments)
             .ToListAsync(cancellationToken);
 
