@@ -82,17 +82,25 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             return [];
 
         // Fetch category info for distinct products
-        var productIds = rawItems.Select(x => x.ProductId).Distinct().ToList();
-        var productsDict = await dbContext.Set<Product>()
+        var productIds = rawItems.Select(x => new ProductId(x.ProductId)).Distinct().ToList();
+        var products = await dbContext.Set<Product>()
             .AsNoTracking()
-            .Where(p => productIds.Contains(p.Id.Value))
+            .Where(p => productIds.Contains(p.Id))
             .Select(p => new
             {
-                ProductId = p.Id.Value,
-                CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
+                p.Id,
+                p.ProductCategoryId,
                 CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : "سایر / بدون دسته‌بندی"
             })
-            .ToDictionaryAsync(p => p.ProductId, cancellationToken);
+            .ToListAsync(cancellationToken);
+
+        var productsDict = products.ToDictionary(
+            p => p.Id.Value,
+            p => new
+            {
+                CategoryId = p.ProductCategoryId?.Value,
+                p.CategoryTitle
+            });
 
         var joinedItems = rawItems.Select(item =>
         {
@@ -195,19 +203,29 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
         if (rawItems.Count == 0)
             return [];
 
-        var productIds = rawItems.Select(x => x.ProductId).Distinct().ToList();
-        var productsDict = await dbContext.Set<Product>()
+        var productIds = rawItems.Select(x => new ProductId(x.ProductId)).Distinct().ToList();
+        var products = await dbContext.Set<Product>()
             .AsNoTracking()
-            .Where(p => productIds.Contains(p.Id.Value))
+            .Where(p => productIds.Contains(p.Id))
             .Select(p => new
             {
-                ProductId = p.Id.Value,
+                p.Id,
                 ProductName = p.Name,
                 Barcode = p.Barcode,
-                CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
+                p.ProductCategoryId,
                 CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : "سایر / بدون دسته‌بندی"
             })
-            .ToDictionaryAsync(p => p.ProductId, cancellationToken);
+            .ToListAsync(cancellationToken);
+
+        var productsDict = products.ToDictionary(
+            p => p.Id.Value,
+            p => new
+            {
+                p.ProductName,
+                p.Barcode,
+                CategoryId = p.ProductCategoryId?.Value,
+                p.CategoryTitle
+            });
 
         var joined = rawItems.Select(item =>
         {
