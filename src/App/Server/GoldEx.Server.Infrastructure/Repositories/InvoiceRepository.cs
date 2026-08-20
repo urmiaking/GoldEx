@@ -2,6 +2,7 @@ using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
+using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
@@ -63,29 +64,64 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             baseQuery = baseQuery.Where(x => x.PriceUnitId == new PriceUnitId(request.PriceUnitId.Value));
         }
 
-        var itemsQuery = baseQuery.SelectMany(inv => inv.ProductItems.Select(item => new
+        // Fetch raw product item rows from invoices (strictly columns on InvoiceProductItems table)
+        var rawItems = await baseQuery
+            .SelectMany(inv => inv.ProductItems.Select(item => new
+            {
+                ProductId = item.ProductId.Value,
+                item.TotalWeight,
+                item.Quantity,
+                WageAmount = item.ItemWageAmount,
+                ProfitAmount = item.ItemProfitAmount,
+                TaxAmount = item.ItemTaxAmount,
+                FinalAmount = item.ItemFinalAmount
+            }))
+            .ToListAsync(cancellationToken);
+
+        if (rawItems.Count == 0)
+            return [];
+
+        // Fetch category info for distinct products
+        var productIds = rawItems.Select(x => x.ProductId).Distinct().ToList();
+        var productsDict = await dbContext.Set<Product>()
+            .AsNoTracking()
+            .Where(p => productIds.Contains(p.Id.Value))
+            .Select(p => new
+            {
+                ProductId = p.Id.Value,
+                CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
+                CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : "سایر / بدون دسته‌بندی"
+            })
+            .ToDictionaryAsync(p => p.ProductId, cancellationToken);
+
+        var joinedItems = rawItems.Select(item =>
         {
-            CategoryId = (Guid?)(item.Product != null && item.Product.ProductCategoryId != null ? item.Product.ProductCategoryId.Value.Value : null),
-            CategoryTitle = (item.Product != null && item.Product.ProductCategory != null) ? item.Product.ProductCategory.Title : "سایر / بدون دسته‌بندی",
-            item.TotalWeight,
-            item.Quantity,
-            WageAmount = item.ItemWageAmount,
-            ProfitAmount = item.ItemProfitAmount,
-            TaxAmount = item.ItemTaxAmount,
-            FinalAmount = item.ItemFinalAmount
-        }));
+            productsDict.TryGetValue(item.ProductId, out var prod);
+            return new
+            {
+                CategoryId = prod?.CategoryId,
+                CategoryTitle = prod?.CategoryTitle ?? "سایر / بدون دسته‌بندی",
+                item.TotalWeight,
+                item.Quantity,
+                item.WageAmount,
+                item.ProfitAmount,
+                item.TaxAmount,
+                item.FinalAmount
+            };
+        }).AsEnumerable();
 
         if (request.CategoryId.HasValue)
         {
-            itemsQuery = itemsQuery.Where(x => x.CategoryId == request.CategoryId.Value);
+            joinedItems = joinedItems.Where(x => x.CategoryId == request.CategoryId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(request.CategoryTitle))
         {
-            itemsQuery = itemsQuery.Where(x => x.CategoryTitle.Contains(request.CategoryTitle));
+            var title = request.CategoryTitle.Trim();
+            joinedItems = joinedItems.Where(x => x.CategoryTitle.Contains(title, StringComparison.OrdinalIgnoreCase));
         }
 
-        var rawAggregates = await itemsQuery
+        var rawAggregates = joinedItems
             .GroupBy(x => new { x.CategoryId, x.CategoryTitle })
             .Select(g => new
             {
@@ -100,7 +136,7 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
                 ItemCount = g.Count()
             })
             .OrderByDescending(x => x.TotalWeight)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         var totalSumWeight = rawAggregates.Sum(x => x.TotalWeight);
         var totalSumAmount = rawAggregates.Sum(x => x.TotalAmount);
@@ -139,7 +175,7 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             baseQuery = baseQuery.Where(x => x.InvoiceDate <= to);
         }
 
-        var itemsQuery = baseQuery.SelectMany(inv => inv.ProductItems.Select(item => new
+        var rawItems = await baseQuery.SelectMany(inv => inv.ProductItems.Select(item => new
         {
             InvoiceId = inv.Id.Value,
             InvoiceNumber = inv.InvoiceNumber,
@@ -147,10 +183,6 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             CustomerName = inv.Customer != null ? inv.Customer.FullName : null,
             PriceUnit = inv.PriceUnit != null ? inv.PriceUnit.Title : "تومان",
             ProductId = item.ProductId.Value,
-            ProductName = item.Product != null ? item.Product.Name : "کالای طلا",
-            Barcode = item.Product != null ? item.Product.Barcode : null,
-            CategoryId = (Guid?)(item.Product != null && item.Product.ProductCategoryId != null ? item.Product.ProductCategoryId.Value.Value : null),
-            CategoryTitle = (item.Product != null && item.Product.ProductCategory != null) ? item.Product.ProductCategory.Title : "سایر / بدون دسته‌بندی",
             item.TotalWeight,
             item.Quantity,
             item.GramPrice,
@@ -158,54 +190,76 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             ProfitAmount = item.ItemProfitAmount,
             TaxAmount = item.ItemTaxAmount,
             FinalAmount = item.ItemFinalAmount
-        }));
+        })).ToListAsync(cancellationToken);
+
+        if (rawItems.Count == 0)
+            return [];
+
+        var productIds = rawItems.Select(x => x.ProductId).Distinct().ToList();
+        var productsDict = await dbContext.Set<Product>()
+            .AsNoTracking()
+            .Where(p => productIds.Contains(p.Id.Value))
+            .Select(p => new
+            {
+                ProductId = p.Id.Value,
+                ProductName = p.Name,
+                Barcode = p.Barcode,
+                CategoryId = p.ProductCategoryId != null ? (Guid?)p.ProductCategoryId.Value.Value : null,
+                CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : "سایر / بدون دسته‌بندی"
+            })
+            .ToDictionaryAsync(p => p.ProductId, cancellationToken);
+
+        var joined = rawItems.Select(item =>
+        {
+            productsDict.TryGetValue(item.ProductId, out var prod);
+            return new SoldProductItemRpResponse(
+                item.InvoiceId,
+                item.InvoiceNumber,
+                item.InvoiceDate,
+                item.CustomerName,
+                item.ProductId,
+                prod?.ProductName ?? "کالای طلا",
+                prod?.Barcode,
+                prod?.CategoryId,
+                prod?.CategoryTitle ?? "سایر / بدون دسته‌بندی",
+                item.TotalWeight,
+                item.Quantity,
+                item.GramPrice,
+                item.WageAmount,
+                item.ProfitAmount,
+                item.TaxAmount,
+                item.FinalAmount,
+                item.PriceUnit
+            );
+        }).AsEnumerable();
 
         if (request.CategoryId.HasValue)
         {
-            itemsQuery = itemsQuery.Where(x => x.CategoryId == request.CategoryId.Value);
+            joined = joined.Where(x => x.CategoryId == request.CategoryId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(request.CategoryTitle))
         {
-            itemsQuery = itemsQuery.Where(x => x.CategoryTitle.Contains(request.CategoryTitle));
+            var cat = request.CategoryTitle.Trim();
+            joined = joined.Where(x => x.CategoryTitle.Contains(cat, StringComparison.OrdinalIgnoreCase));
         }
 
         if (!string.IsNullOrWhiteSpace(request.SearchQuery))
         {
             var q = request.SearchQuery.Trim();
-            itemsQuery = itemsQuery.Where(x =>
-                x.ProductName.Contains(q) ||
-                (x.Barcode != null && x.Barcode.Contains(q)) ||
-                (x.CustomerName != null && x.CustomerName.Contains(q)) ||
+            joined = joined.Where(x =>
+                x.ProductName.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                (x.Barcode != null && x.Barcode.Contains(q, StringComparison.OrdinalIgnoreCase)) ||
+                (x.CustomerName != null && x.CustomerName.Contains(q, StringComparison.OrdinalIgnoreCase)) ||
                 x.InvoiceNumber.ToString().Contains(q));
         }
 
-        var paged = await itemsQuery
+        return joined
             .OrderByDescending(x => x.InvoiceDate)
             .ThenByDescending(x => x.InvoiceNumber)
             .Skip(request.Skip)
             .Take(Math.Clamp(request.Take, 1, 500))
-            .ToListAsync(cancellationToken);
-
-        return paged.Select(x => new SoldProductItemRpResponse(
-            x.InvoiceId,
-            x.InvoiceNumber,
-            x.InvoiceDate,
-            x.CustomerName,
-            x.ProductId,
-            x.ProductName,
-            x.Barcode,
-            x.CategoryId,
-            x.CategoryTitle,
-            x.TotalWeight,
-            x.Quantity,
-            x.GramPrice,
-            x.WageAmount,
-            x.ProfitAmount,
-            x.TaxAmount,
-            x.FinalAmount,
-            x.PriceUnit
-        )).ToList();
+            .ToList();
     }
 
     public async Task<List<CategorySalesComparisonRpResponse>> GetCategorySalesComparisonAsync(
