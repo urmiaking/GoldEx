@@ -18,4 +18,5 @@ public record GetInvoiceListResponse(
     string PriceUnit,
     decimal? TotalUnpaidAmountSecondary,
     string? SecondaryPriceUnit,
-    InvoicePaymentStatus PaymentStatus);
+    InvoicePaymentStatus PaymentStatus,
+    decimal TotalWeightEquivalent = 0);

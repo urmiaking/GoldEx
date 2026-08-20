@@ -130,9 +130,19 @@
             <div class="vitrine-grid" style="padding-top: 0;">
                 @foreach (var product in _featuredProducts)
                 {
-                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up">
+                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
-                            <span class="product-badge">⭐ ویژه</span>
+                            @if (!product.IsAvailable)
+                            {
+                                <span class="product-badge sold-out">فروخته شد</span>
+                                <div class="product-sold-overlay">
+                                    <span class="product-sold-ribbon">فروخته شد</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="product-badge">⭐ ویژه</span>
+                            }
                             <span class="product-badge secondary">@(product.Weight.ToString("G29")) گرم</span>
 
                             @if (!string.IsNullOrWhiteSpace(product.MainImageUrl))
@@ -161,8 +171,8 @@
                                         @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                     </div>
                                 </div>
-                                <span class="btn-gisu btn-gisu-primary" style="padding: 6px 14px; font-size: 0.8rem;">
-                                    مشاهده ←
+                                <span class="btn-gisu @(product.IsAvailable ? "btn-gisu-primary" : "btn-gisu-outline")" style="padding: 6px 14px; font-size: 0.8rem; @(!product.IsAvailable ? "border-color: #dc2626; color: #dc2626;" : "")">
+                                    @(product.IsAvailable ? "مشاهده ←" : "فروخته شد")
                                 </span>
                             </div>
                         </div>
@@ -218,9 +228,16 @@
             <div class="vitrine-grid" style="padding-top: 0;">
                 @foreach (var product in FilteredHomeProducts)
                 {
-                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up">
+                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
-                            @if (product.ProductType == ProductType.Jewelry)
+                            @if (!product.IsAvailable)
+                            {
+                                <span class="product-badge sold-out">فروخته شد</span>
+                                <div class="product-sold-overlay">
+                                    <span class="product-sold-ribbon">فروخته شد</span>
+                                </div>
+                            }
+                            else if (product.ProductType == ProductType.Jewelry)
                             {
                                 <span class="product-badge" style="background-color: #7e22ce; border-color: #7e22ce; color: #fff;">💎 جواهر</span>
                             }
@@ -256,8 +273,8 @@
                                         @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                     </div>
                                 </div>
-                                <span class="btn-gisu btn-gisu-primary" style="padding: 6px 14px; font-size: 0.8rem;">
-                                    مشاهده ←
+                                <span class="btn-gisu @(product.IsAvailable ? "btn-gisu-primary" : "btn-gisu-outline")" style="padding: 6px 14px; font-size: 0.8rem; @(!product.IsAvailable ? "border-color: #dc2626; color: #dc2626;" : "")">
+                                    @(product.IsAvailable ? "مشاهده ←" : "فروخته شد")
                                 </span>
                             </div>
                         </div>

@@ -22,6 +22,7 @@ internal class InvoiceMapper : IRegister
             .Map(dest => dest.TotalUnpaidAmount, src => src.TotalUnpaidAmount)
             .Map(dest => dest.TotalUnpaidAmountSecondary, src => src.TotalUnpaidAmount * src.UnpaidAmountExchangeRate)
             .Map(dest => dest.SecondaryPriceUnit, src => src.UnpaidPriceUnit != null ? src.UnpaidPriceUnit.Title : null)
+            .Map(dest => dest.TotalWeightEquivalent, src => GoldWeightCalculator.CalculateTotalWeight(src))
             .Map(dest => dest.PaymentStatus,
                 src => Math.Abs(src.TotalUnpaidAmount - 0m) < 0.01m
                     ? InvoicePaymentStatus.Paid

@@ -6,8 +6,8 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JsRuntime
 
-<link href="/assets/fontawesome/css/all.min.css" rel="stylesheet" />
-<link href="/assets/vitrine/css/vitrine.css" rel="stylesheet" />
+<link href="/assets/fontawesome/css/all.min.css?v=6.5.1" rel="stylesheet" />
+<link href="@($"/assets/vitrine/css/vitrine.css?v={_cssVersion}")" rel="stylesheet" />
 
 <div class="vitrine-root">
     <!-- Live Gold Ticker Top Bar -->
@@ -244,10 +244,11 @@
         </a>
     </div>
 
-    <script src="/assets/vitrine/js/vitrine.js?v=202608182345"></script>
+    <script src="@($"/assets/vitrine/js/vitrine.js?v={_cssVersion}")"></script>
 </div>
 
 @code {
+    private static readonly string _cssVersion = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
     private VitrineStoreInfoDto? _storeInfo;
     private string StoreSlug = "default";
 

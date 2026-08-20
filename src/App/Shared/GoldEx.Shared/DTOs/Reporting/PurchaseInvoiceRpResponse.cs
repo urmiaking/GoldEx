@@ -1,4 +1,4 @@
-﻿namespace GoldEx.Shared.DTOs.Reporting;
+namespace GoldEx.Shared.DTOs.Reporting;
 
 public record PurchaseInvoiceRpResponse(
     Guid Id,
@@ -8,4 +8,6 @@ public record PurchaseInvoiceRpResponse(
     string CustomerName,
     string PriceUnit,
     decimal TotalPrice,
-    decimal RemainingPrice);
+    decimal RemainingPrice,
+    decimal TotalWeightEquivalent = 0,
+    decimal RemainingWeightEquivalent = 0);

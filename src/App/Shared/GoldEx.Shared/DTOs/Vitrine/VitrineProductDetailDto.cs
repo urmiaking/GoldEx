@@ -22,4 +22,5 @@ public record VitrineProductDetailDto(
     decimal ProfitAmount,
     decimal TaxAmount,
     decimal GramPrice750,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    bool IsAvailable = true);
