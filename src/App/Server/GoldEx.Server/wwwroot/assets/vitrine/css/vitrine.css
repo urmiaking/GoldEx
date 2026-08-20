@@ -618,6 +618,46 @@
   border-color: var(--gray-200) !important;
 }
 
+.vitrine-root .product-badge.sold-out {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.vitrine-root .product-sold-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 52, 46, 0.35);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+}
+
+.vitrine-root .product-sold-ribbon {
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 900;
+  padding: 7px 22px;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.vitrine-root .product-card.is-sold {
+  opacity: 0.88;
+}
+
+.vitrine-root .product-card.is-sold:hover {
+  opacity: 1;
+}
+
 .vitrine-root .product-info {
   padding: 16px;
   display: flex;

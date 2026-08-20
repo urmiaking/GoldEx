@@ -1,14 +1,21 @@
-﻿@inherits GoldExComponentBase
+@inherits GoldExComponentBase
 
-<MudDialog>
-    <DialogContent>
-        <div class="d-flex flex-column overflow-auto">
-            <InventoryStockList Elevation="0"
-                                Selectable="true"
-                                ShowItemStatus="true"
-                                SelectedItemsChanged="OnSelectedItemsChanged">
-            </InventoryStockList>
-        </div>
+<MudDialog Class="inventory-kardex-selector-dialog"
+           ContentClass="inventory-kardex-selector-content">
+     <DialogContent>
+        <style>
+            .inventory-kardex-selector-dialog .mud-dialog-content,
+            .inventory-kardex-selector-content {
+                max-height: 70vh !important;
+                overflow-y: auto !important;
+                overflow-x: auto !important;
+            }
+        </style>
+        <InventoryStockList Elevation="0"
+                            Selectable="true"
+                            ShowItemStatus="true"
+                            SelectedItemsChanged="OnSelectedItemsChanged">
+        </InventoryStockList>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error"
@@ -25,11 +32,3 @@
         </MudButton>
     </DialogActions>
 </MudDialog>
-
-<style>
-    .mud-dialog-content {
-        overflow: auto;
-        display: flex;
-        flex-direction: column;
-    }
-</style>

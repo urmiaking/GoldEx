@@ -44,9 +44,10 @@ public partial class ExecutiveDashboard : IAsyncDisposable
     // --- MudChart 1: 7-Day Gold Trade Trend Line Chart ---
     private string[] _trendXLabels = [];
     private List<ChartSeries<double>> _trendSeries = [];
-    private readonly ChartOptions _lineChartOptions = new()
+    private readonly LineChartOptions _lineChartOptions = new()
     {
-        ShowLegend = true
+        InterpolationOption = InterpolationOption.NaturalSpline,
+        LineStrokeWidth = 3
     };
 
     // --- MudChart 2: Inventory Capital Donut Chart ---
@@ -279,11 +280,18 @@ public partial class ExecutiveDashboard : IAsyncDisposable
 
     private void BuildTrendLineChart(List<GetInvoiceListResponse> invoices)
     {
+        var pc = new System.Globalization.PersianCalendar();
         var daysList = Enumerable.Range(0, 7)
             .Select(i => DateOnly.FromDateTime(DateTime.Today.AddDays(-6 + i)))
             .ToList();
 
-        _trendXLabels = daysList.Select(d => $"{d.Day} {GetPersianMonthName(d.Month)}").ToArray();
+        _trendXLabels = daysList.Select(d =>
+        {
+            var dt = d.ToDateTime(TimeOnly.MinValue);
+            var pDay = pc.GetDayOfMonth(dt);
+            var pMonth = pc.GetMonth(dt);
+            return $"{pDay} {GetPersianMonthName(pMonth)}";
+        }).ToArray();
 
         var sellValues = new double[7];
         var purchaseValues = new double[7];
@@ -291,14 +299,22 @@ public partial class ExecutiveDashboard : IAsyncDisposable
         for (int i = 0; i < 7; i++)
         {
             var date = daysList[i];
-            sellValues[i] = (double)invoices.Where(x => x.InvoiceDate == date && x.InvoiceType == InvoiceType.Sell).Sum(x => x.TotalAmount) / 1_000_000.0;
-            purchaseValues[i] = (double)invoices.Where(x => x.InvoiceDate == date && x.InvoiceType == InvoiceType.Purchase).Sum(x => x.TotalAmount) / 1_000_000.0;
+            var sellWeight = invoices
+                .Where(x => x.InvoiceDate == date && x.InvoiceType == InvoiceType.Sell)
+                .Sum(x => x.TotalWeightEquivalent);
+
+            var purchaseWeight = invoices
+                .Where(x => x.InvoiceDate == date && x.InvoiceType == InvoiceType.Purchase)
+                .Sum(x => x.TotalWeightEquivalent);
+
+            sellValues[i] = Math.Round((double)sellWeight, 3);
+            purchaseValues[i] = Math.Round((double)purchaseWeight, 3);
         }
 
         _trendSeries =
         [
-            new ChartSeries<double> { Name = "فروش (میلیون تومان)", Data = sellValues },
-            new ChartSeries<double> { Name = "خرید (میلیون تومان)", Data = purchaseValues }
+            new ChartSeries<double> { Name = "فروش (گرم طلا)", Data = sellValues },
+            new ChartSeries<double> { Name = "خرید (گرم طلا)", Data = purchaseValues }
         ];
     }
 

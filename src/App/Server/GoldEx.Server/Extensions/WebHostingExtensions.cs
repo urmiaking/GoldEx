@@ -104,7 +104,24 @@ public static class WebHostingExtensions
             {
                 OnPrepareResponse = ctx =>
                 {
-                    ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cacheMaxAgeOneWeek}");
+                    if (app.Environment.IsDevelopment())
+                    {
+                        ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                        ctx.Context.Response.Headers["Pragma"] = "no-cache";
+                        ctx.Context.Response.Headers["Expires"] = "0";
+                    }
+                    else
+                    {
+                        var path = ctx.Context.Request.Path.Value ?? "";
+                        if (path.StartsWith("/assets/vitrine/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ctx.Context.Response.Headers["Cache-Control"] = "no-cache, must-revalidate";
+                        }
+                        else
+                        {
+                            ctx.Context.Response.Headers["Cache-Control"] = $"public, max-age={cacheMaxAgeOneWeek}";
+                        }
+                    }
                 }
             });
 

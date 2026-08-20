@@ -98,9 +98,18 @@
                             <span class="product-badge" style="position: static;">@_product.CategoryTitle</span>
                         }
                         <span class="product-badge" style="position: static;">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
-                        <span class="product-badge" style="position: static; background-color: #10b981; border-color: #10b981; color: #fff;">
-                            ✓ موجود در گالری
-                        </span>
+                        @if (_product.IsAvailable)
+                        {
+                            <span class="product-badge" style="position: static; background-color: #10b981; border-color: #10b981; color: #fff;">
+                                ✓ موجود در گالری
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="product-badge sold-out" style="position: static;">
+                                ✕ فروخته شد (ناموجود)
+                            </span>
+                        }
                         <span style="font-size: 0.82rem; color: var(--gray-600); margin-right: auto; direction: ltr;">
                             کد: @_product.Barcode
                         </span>
@@ -119,6 +128,14 @@
 
                 <!-- Real-Time Price Calculation Breakdown Card -->
                 <div class="vitrine-price-calculator-card">
+                    @if (!_product.IsAvailable)
+                    {
+                        <div class="mb-3 p-3 rounded" style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.3); color: #dc2626; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span>این قطعه طلا قبلاً فروخته شده است. در صورت تمایل می‌توانید سفارش ساخت مجدد این مدل را ثبت فرمایید.</span>
+                        </div>
+                    }
+
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span style="font-size: 0.96rem; color: var(--primary-color); font-weight: 800;">
                             <i class="fa-solid fa-coins" style="color: var(--accent-color); margin-left: 6px;"></i> محاسبه قیمت نهایی بر اساس نرخ روز طلا
@@ -196,7 +213,7 @@
                         var waUrl = GetWhatsAppInquiryUrl();
                         <a href="@waUrl" target="_blank" class="btn-gisu btn-gisu-whatsapp" style="padding: 15px;">
                             <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i>
-                            <span>استعلام موجودی و رزرو قطعه در واتساپ</span>
+                            <span>@(_product.IsAvailable ? "استعلام موجودی و رزرو قطعه در واتساپ" : "سفارش ساخت مجدد در واتساپ")</span>
                         </a>
                     }
 
@@ -204,7 +221,7 @@
                     {
                         <a href="@_storeInfo.BaleUrl" target="_blank" class="btn-gisu btn-gisu-bale" style="padding: 15px;">
                             <i class="fa-solid fa-comment"></i>
-                            <span>استعلام و پیام در پیام‌رسان بله</span>
+                            <span>@(_product.IsAvailable ? "استعلام و پیام در پیام‌رسان بله" : "سفارش ساخت مجدد در پیام‌رسان بله")</span>
                         </a>
                     }
 
@@ -266,7 +283,9 @@
             phone = "98" + phone.Substring(1);
 
         var currentUrl = Navigation.Uri;
-        var text = $"سلام وقت بخیر، در مورد قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین گالری سوال داشتم:\n{currentUrl}";
+        var text = _product.IsAvailable
+            ? $"سلام وقت بخیر، در مورد قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین گالری سوال داشتم:\n{currentUrl}"
+            : $"سلام وقت بخیر، قطعه «{_product.Name}» با کد بارکد {_product.Barcode} و وزن {_product.Weight:G29} گرم در ویترین آنلاین به عنوان فروخته‌شده ثبت شده است. آیا امکان سفارش ساخت مجدد این مدل وجود دارد؟\n{currentUrl}";
         return $"https://wa.me/{phone}?text={Uri.EscapeDataString(text)}";
     }
 }
