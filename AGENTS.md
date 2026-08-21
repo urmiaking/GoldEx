@@ -225,7 +225,9 @@ GoldEx supports standalone customer-to-customer remittances (`CustomerTransferVo
    - `CustomerTransferVoucherService` links optional `SourceInvoiceId` and `DestinationInvoiceId`.
    - Automatically creates linked `InvoicePayment` records to settle the open balances (`Remaining`) of selected source/destination invoices.
 4. **UI & UX Standard**:
-   - Customer transfer pages (`List.razor`) and components (`CustomerTransferList.razor`, `CustomerTransferEditor.razor`) inherit `GoldExComponentBase` and follow standard GoldEx layout patterns (`MudBreadcrumbs`, `MudTable` with custom `MudPagination`, `SendRequestAsync` thread-safe requests, `ValidateAsync`, and `_processing` submit state).
+5. **Invoice-Level Customer Transfers (حواله در فاکتور)**:
+   - When registering a payment of type `PaymentType.CustomerTransfer` on an invoice (e.g. Purchase Invoice paying via another customer's receivable), both legs of the balanced transaction entry must have `Transaction.InvoiceId = invoice.Id` (the source invoice).
+   - Setting `Transaction.InvoiceId` to `payment.TargetInvoiceId` must never be done, as `ReplaceTransactionsForInvoiceAsync` on the target invoice will consider those transactions as removed and falsely generate reversal transactions.
 
 ---
 
