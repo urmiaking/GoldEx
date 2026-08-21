@@ -1123,7 +1123,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                payment.TargetInvoiceId ?? invoice.Id,
+                                invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
                         }
@@ -1138,7 +1138,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Debit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                payment.TargetInvoiceId ?? invoice.Id,
+                                invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
 
@@ -1210,7 +1210,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                payment.TargetInvoiceId ?? invoice.Id,
+                                invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
 
@@ -1248,7 +1248,7 @@ internal class AccountingTransactionService(
                                 TransactionType.Credit,
                                 endorserLedger.Id,
                                 invoice.PriceUnitId,
-                                payment.TargetInvoiceId ?? invoice.Id,
+                                invoice.Id,
                                 payment.Id,
                                 NextPayLine()));
                         }
