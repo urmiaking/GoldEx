@@ -191,29 +191,32 @@
 
         @* Secondary Charts & Glance Section - Row 2: Bar Chart (6 cols) & Glance Table (6 cols) *@
         <div class="row g-4">
-            @* Chart 3: Category Sales Comparison (Bar Chart with Legend & Multi-Colors) *@
+            @* Chart 3: Product Category & Molten Gold Sales Breakdown (Bar Chart) *@
             <div class="col-12 col-lg-6">
-                <div class="goldex-glass-card pa-4 h-100">
-                    <div class="d-flex align-center justify-space-between mb-3">
-                        <div class="d-flex align-center gap-2">
-                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Small" Class="text-info" />
-                            <span class="card-section-title">حجم فروش به تفکیک رسته اجناس</span>
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center justify-space-between mb-2">
+                            <div class="d-flex align-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Small" Class="text-info" />
+                                <span class="card-section-title">حجم فروش به تفکیک دسته‌بندی و طلای آبشده</span>
+                            </div>
+                            <span class="font-xs text-secondary">واحد: گرم طلای ۱۸ عیار</span>
                         </div>
-                    </div>
 
-                    @if (_categorySeries.Any())
-                    {
-                        <div class="chart-wrapper w-100">
-                            <MudChart T="double"
-                                      ChartType="ChartType.Bar"
-                                      ChartSeries="_categorySeries"
-                                      ChartLabels="_categoryXLabels"
-                                      MatchBoundsToSize="true"
-                                      Width="100%"
-                                      Height="240px"
-                                      ChartOptions="_barChartOptions" />
-                        </div>
-                    }
+                        @if (_categorySeries.Any())
+                        {
+                            <div class="chart-wrapper w-100">
+                                <MudChart T="double"
+                                          ChartType="ChartType.Bar"
+                                          ChartSeries="_categorySeries"
+                                          ChartLabels="_categoryXLabels"
+                                          MatchBoundsToSize="true"
+                                          Width="100%"
+                                          Height="310px"
+                                          ChartOptions="_barChartOptions" />
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
 
