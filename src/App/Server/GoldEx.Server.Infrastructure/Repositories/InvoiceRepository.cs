@@ -89,8 +89,11 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             .Select(p => new
             {
                 p.Id,
+                p.ProductType,
                 p.ProductCategoryId,
-                CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : "سایر / بدون دسته‌بندی"
+                CategoryTitle = p.ProductType == ProductType.MoltenGold
+                    ? "طلای آبشده"
+                    : (p.ProductCategory != null ? p.ProductCategory.Title : "متفرقه / سایر")
             })
             .ToListAsync(cancellationToken);
 
@@ -98,7 +101,7 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             p => p.Id.Value,
             p => new
             {
-                CategoryId = p.ProductCategoryId?.Value,
+                CategoryId = p.ProductType == ProductType.MoltenGold ? (Guid?)null : p.ProductCategoryId?.Value,
                 p.CategoryTitle
             });
 
@@ -108,7 +111,7 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             return new
             {
                 CategoryId = prod?.CategoryId,
-                CategoryTitle = prod?.CategoryTitle ?? "سایر / بدون دسته‌بندی",
+                CategoryTitle = prod?.CategoryTitle ?? "متفرقه / سایر",
                 item.TotalWeight,
                 item.Quantity,
                 item.WageAmount,
@@ -212,8 +215,11 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
                 p.Id,
                 ProductName = p.Name,
                 Barcode = p.Barcode,
+                p.ProductType,
                 p.ProductCategoryId,
-                CategoryTitle = p.ProductCategory != null ? p.ProductCategory.Title : "سایر / بدون دسته‌بندی"
+                CategoryTitle = p.ProductType == ProductType.MoltenGold
+                    ? "طلای آبشده"
+                    : (p.ProductCategory != null ? p.ProductCategory.Title : "متفرقه / سایر")
             })
             .ToListAsync(cancellationToken);
 
@@ -223,7 +229,7 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
             {
                 p.ProductName,
                 p.Barcode,
-                CategoryId = p.ProductCategoryId?.Value,
+                CategoryId = p.ProductType == ProductType.MoltenGold ? (Guid?)null : p.ProductCategoryId?.Value,
                 p.CategoryTitle
             });
 
