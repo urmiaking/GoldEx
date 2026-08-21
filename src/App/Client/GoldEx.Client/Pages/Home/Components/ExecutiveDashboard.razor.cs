@@ -75,7 +75,7 @@ public partial class ExecutiveDashboard : IAsyncDisposable
     {
         try
         {
-            var requestFilter = new RequestFilter(0, 200, null, null, Sdk.Common.Definitions.SortDirection.Descending);
+            var requestFilter = new RequestFilter(0, 500, null, null, Sdk.Common.Definitions.SortDirection.Descending);
 
             // 1. Fetch Invoices
             var invoiceFilter = new InvoiceFilter(null, null, null, null, null);
@@ -85,7 +85,6 @@ public partial class ExecutiveDashboard : IAsyncDisposable
                 {
                     CalculateSalesByPriceUnit(response.Data);
                     BuildTrendLineChart(response.Data);
-                    BuildCategoryBarChart(response.Data);
 
                     // High Unpaid Remaining Balance Invoices
                     _unpaidInvoices = response.Data
@@ -99,6 +98,14 @@ public partial class ExecutiveDashboard : IAsyncDisposable
                         _unpaidInvoices = response.Data.Take(5).ToList();
                     }
                 },
+                createScope: true
+            );
+
+            // 1.1 Fetch Product Category Sales Breakdown (including MoltenGold)
+            var categorySalesRequest = new CategorySalesRpRequest(null, null, null, null);
+            await SendRequestAsync<IReportingService, List<CategorySalesRpResponse>>(
+                action: (service, token) => service.GetCategorySalesSummaryAsync(categorySalesRequest, token),
+                afterSend: response => BuildCategoryBarChart(response),
                 createScope: true
             );
 
@@ -281,22 +288,21 @@ public partial class ExecutiveDashboard : IAsyncDisposable
     private void BuildTrendLineChart(List<GetInvoiceListResponse> invoices)
     {
         var pc = new System.Globalization.PersianCalendar();
-        var daysList = Enumerable.Range(0, 7)
-            .Select(i => DateOnly.FromDateTime(DateTime.Today.AddDays(-6 + i)))
+        var daysList = Enumerable.Range(0, 30)
+            .Select(i => DateOnly.FromDateTime(DateTime.Today.AddDays(-29 + i)))
             .ToList();
 
         _trendXLabels = daysList.Select(d =>
         {
             var dt = d.ToDateTime(TimeOnly.MinValue);
             var pDay = pc.GetDayOfMonth(dt);
-            var pMonth = pc.GetMonth(dt);
-            return $"{pDay} {GetPersianMonthName(pMonth)}";
+            return pDay.ToString();
         }).ToArray();
 
-        var sellValues = new double[7];
-        var purchaseValues = new double[7];
+        var sellValues = new double[30];
+        var purchaseValues = new double[30];
 
-        for (int i = 0; i < 7; i++)
+        for (int i = 0; i < 30; i++)
         {
             var date = daysList[i];
             var sellWeight = invoices
@@ -318,21 +324,31 @@ public partial class ExecutiveDashboard : IAsyncDisposable
         ];
     }
 
-    private void BuildCategoryBarChart(List<GetInvoiceListResponse> invoices)
+    private void BuildCategoryBarChart(List<CategorySalesRpResponse> categorySales)
     {
-        _categoryXLabels = ["طلا و جواهر", "طلای آبشده", "طلای مستعمل", "سکه", "ارز"];
-        var sellInvoices = invoices.Where(x => x.InvoiceType == InvoiceType.Sell).ToList();
+        var topCategories = categorySales
+            .Where(x => x.TotalWeight > 0)
+            .OrderByDescending(x => x.TotalWeight)
+            .Take(7)
+            .ToList();
 
-        // Create individual series for each category so MudBlazor renders multi-colored bars with clear legend titles
-        var count = Math.Max(1, sellInvoices.Count);
-        _categorySeries =
-        [
-            new ChartSeries<double> { Name = "طلا و جواهر (ساخته)", Data = new double[] { (double)count * 25.0 } },
-            new ChartSeries<double> { Name = "طلای آبشده", Data = new double[] { (double)count * 18.0 } },
-            new ChartSeries<double> { Name = "طلای مستعمل", Data = new double[] { (double)count * 12.0 } },
-            new ChartSeries<double> { Name = "سکه", Data = new double[] { (double)count * 8.0 } },
-            new ChartSeries<double> { Name = "ارز", Data = new double[] { (double)count * 5.0 } }
-        ];
+        if (topCategories.Any())
+        {
+            _categoryXLabels = topCategories.Select(x => x.CategoryTitle).ToArray();
+            var values = topCategories.Select(x => (double)Math.Round(x.TotalWeight, 2)).ToArray();
+            _categorySeries =
+            [
+                new ChartSeries<double> { Name = "فروش (گرم طلا)", Data = values }
+            ];
+        }
+        else
+        {
+            _categoryXLabels = ["النگو", "انگشتر", "دستبند", "طلای آبشده", "گردنبند", "گوشواره"];
+            _categorySeries =
+            [
+                new ChartSeries<double> { Name = "فروش (گرم طلا)", Data = new double[] { 0, 0, 0, 0, 0, 0 } }
+            ];
+        }
     }
 
     private void StartCarouselTimer()
