@@ -122,31 +122,34 @@
             </div>
         </div>
 
-        @* Executive Charts Grid *@
+        @* Executive Charts Grid - Row 1: Line Chart (8 cols) & Donut Chart (4 cols) *@
         <div class="row g-4 mb-4">
-            @* Chart 1: 7-Day Gold Volume Trade Trend (Line Chart) *@
+            @* Chart 1: 30-Day Gold Trade Trend (Line Chart) *@
             <div class="col-12 col-lg-8">
-                <div class="goldex-glass-card pa-4 h-100">
-                    <div class="d-flex align-center justify-space-between mb-3">
-                        <div class="d-flex align-center gap-2">
-                            <MudIcon Icon="@Icons.Material.Filled.ShowChart" Size="Size.Small" Class="text-primary" />
-                            <span class="card-section-title">روند ۷ روزه مبادلات (فروش vs خرید)</span>
+                <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
+                    <div>
+                        <div class="d-flex align-center justify-space-between mb-2">
+                            <div class="d-flex align-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.ShowChart" Size="Size.Small" Class="text-primary" />
+                                <span class="card-section-title">روند ۳۰ روزه مبادلات (فروش vs خرید)</span>
+                            </div>
+                            <span class="font-xs text-secondary">واحد: گرم طلای ۱۸ عیار</span>
                         </div>
-                        <span class="font-xs text-secondary">واحد: گرم طلای ۱۸ عیار</span>
-                    </div>
 
-                    @if (_trendSeries.Any())
-                    {
-                        <div class="chart-wrapper smooth-line-chart">
-                            <MudChart T="double"
-                                      ChartType="ChartType.Line"
-                                      ChartSeries="_trendSeries"
-                                      XAxisLabels="_trendXLabels"
-                                      Width="100%"
-                                      Height="320px"
-                                      ChartOptions="_lineChartOptions" />
-                        </div>
-                    }
+                        @if (_trendSeries.Any())
+                        {
+                            <div class="chart-wrapper smooth-line-chart w-100">
+                                <MudChart T="double"
+                                          ChartType="ChartType.Line"
+                                          ChartSeries="_trendSeries"
+                                          ChartLabels="_trendXLabels"
+                                          MatchBoundsToSize="true"
+                                          Width="100%"
+                                          Height="260px"
+                                          ChartOptions="_lineChartOptions" />
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
 
@@ -154,7 +157,7 @@
             <div class="col-12 col-lg-4">
                 <div class="goldex-glass-card pa-4 h-100 d-flex flex-column justify-space-between">
                     <div>
-                        <div class="d-flex align-center gap-2 mb-3">
+                        <div class="d-flex align-center gap-2 mb-2">
                             <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Small" Class="text-warning" />
                             <span class="card-section-title">ترکیب دارایی انبار طلا</span>
                         </div>
@@ -163,14 +166,14 @@
                             <MudChart T="double"
                                       ChartType="ChartType.Donut"
                                       Width="100%"
-                                      Height="260px"
+                                      Height="220px"
                                       ChartSeries="_donutSeries"
                                       ChartLabels="_donutLabels">
                                 <CustomGraphics>
                                     <text class="mud-donut-text" x="50%" y="48%" text-anchor="middle" dominant-baseline="central" fill="var(--mud-palette-text-primary)" style="font-size: 15px; font-weight: 600;">
                                         @($"{TotalStockGoldWeight.ToCurrencyFormat()}")
                                     </text>
-                                    <text class="mud-donut-text" x="50%" y="60%" text-anchor="middle" dominant-baseline="central" fill="var(--mud-palette-text-secondary)" style="font-size: 11px;">
+                                    <text class="mud-donut-text" x="50%" y="58%" text-anchor="middle" dominant-baseline="central" fill="var(--mud-palette-text-secondary)" style="font-size: 11px;">
                                         گرم کل
                                     </text>
                                 </CustomGraphics>
@@ -178,7 +181,7 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-space-between border-top-subtle pt-3 text-secondary font-xs">
+                    <div class="d-flex justify-space-between border-top-subtle pt-2 text-secondary font-xs">
                         <span>وزن کل طلا: @TotalStockGoldWeight.ToCurrencyFormat() گرم</span>
                         <a href="@ClientRoutes.InventoryStocks.List" class="text-primary font-weight-500">مشاهده انبار</a>
                     </div>
@@ -186,7 +189,7 @@
             </div>
         </div>
 
-        @* Secondary Charts & Glance Section *@
+        @* Secondary Charts & Glance Section - Row 2: Bar Chart (6 cols) & Glance Table (6 cols) *@
         <div class="row g-4">
             @* Chart 3: Category Sales Comparison (Bar Chart with Legend & Multi-Colors) *@
             <div class="col-12 col-lg-6">
@@ -200,13 +203,14 @@
 
                     @if (_categorySeries.Any())
                     {
-                        <div class="chart-wrapper">
+                        <div class="chart-wrapper w-100">
                             <MudChart T="double"
                                       ChartType="ChartType.Bar"
                                       ChartSeries="_categorySeries"
-                                      XAxisLabels="_categoryXLabels"
+                                      ChartLabels="_categoryXLabels"
+                                      MatchBoundsToSize="true"
                                       Width="100%"
-                                      Height="260px"
+                                      Height="240px"
                                       ChartOptions="_barChartOptions" />
                         </div>
                     }

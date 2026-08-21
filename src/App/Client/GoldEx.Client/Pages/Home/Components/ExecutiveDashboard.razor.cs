@@ -75,7 +75,7 @@ public partial class ExecutiveDashboard : IAsyncDisposable
     {
         try
         {
-            var requestFilter = new RequestFilter(0, 200, null, null, Sdk.Common.Definitions.SortDirection.Descending);
+            var requestFilter = new RequestFilter(0, 500, null, null, Sdk.Common.Definitions.SortDirection.Descending);
 
             // 1. Fetch Invoices
             var invoiceFilter = new InvoiceFilter(null, null, null, null, null);
@@ -281,22 +281,21 @@ public partial class ExecutiveDashboard : IAsyncDisposable
     private void BuildTrendLineChart(List<GetInvoiceListResponse> invoices)
     {
         var pc = new System.Globalization.PersianCalendar();
-        var daysList = Enumerable.Range(0, 7)
-            .Select(i => DateOnly.FromDateTime(DateTime.Today.AddDays(-6 + i)))
+        var daysList = Enumerable.Range(0, 30)
+            .Select(i => DateOnly.FromDateTime(DateTime.Today.AddDays(-29 + i)))
             .ToList();
 
         _trendXLabels = daysList.Select(d =>
         {
             var dt = d.ToDateTime(TimeOnly.MinValue);
             var pDay = pc.GetDayOfMonth(dt);
-            var pMonth = pc.GetMonth(dt);
-            return $"{pDay} {GetPersianMonthName(pMonth)}";
+            return pDay.ToString();
         }).ToArray();
 
-        var sellValues = new double[7];
-        var purchaseValues = new double[7];
+        var sellValues = new double[30];
+        var purchaseValues = new double[30];
 
-        for (int i = 0; i < 7; i++)
+        for (int i = 0; i < 30; i++)
         {
             var date = daysList[i];
             var sellWeight = invoices
