@@ -1752,28 +1752,38 @@ h1:focus {
     box-shadow: 0 4px 14px rgba(var(--mud-palette-primary-rgb), 0.2);
 }
 
-/* MudChart Line & SVG Axis Styling */
+/* MudChart Responsive & Clean Styling */
 .smooth-line-chart {
-    overflow: visible !important;
-    padding-bottom: 24px;
+    width: 100%;
+    overflow: visible;
 }
 
-.smooth-line-chart svg {
-    overflow: visible !important;
+/* Axis Labels (X & Y) */
+.mud-charts-xaxis text,
+.mud-chart-line .mud-charts-xaxis text {
+    fill: var(--mud-palette-text-secondary) !important;
+    font-size: 11px !important;
+    font-family: inherit !important;
+    text-anchor: middle !important;
 }
 
-.mud-chart-line {
-    overflow: visible !important;
-}
-
-.mud-chart-line text {
-    fill: var(--mud-palette-text-primary) !important;
+.mud-charts-yaxis text,
+.mud-chart-line .mud-charts-yaxis text {
+    fill: var(--mud-palette-text-secondary) !important;
     font-size: 11px !important;
     font-family: inherit !important;
 }
 
-.mud-chart-line .mud-charts-xaxis text {
-    fill: var(--mud-palette-text-secondary) !important;
-    font-size: 11px !important;
+/* Tooltip Styling: Clean contrast and readable size */
+.mud-chart-tooltip,
+.mud-chart-tooltip text,
+.mud-chart .mud-charts-tooltip text {
+    font-size: 13px !important;
+    font-family: inherit !important;
+    font-weight: 500 !important;
 }
+
+
+
+
 
