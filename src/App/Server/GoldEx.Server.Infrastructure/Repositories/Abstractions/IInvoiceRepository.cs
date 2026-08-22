@@ -1,5 +1,6 @@
 using GoldEx.Sdk.Server.Infrastructure.Repositories;
 using GoldEx.Server.Domain.InvoiceAggregate;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 using System.Collections.Generic;
@@ -18,4 +19,5 @@ public interface IInvoiceRepository : IRepository<Invoice>,
     Task<List<CategorySalesRpResponse>> GetCategorySalesSummaryAsync(CategorySalesRpRequest request, CancellationToken cancellationToken = default);
     Task<List<SoldProductItemRpResponse>> GetSoldProductItemsAsync(SoldProductItemRpRequest request, CancellationToken cancellationToken = default);
     Task<List<CategorySalesComparisonRpResponse>> GetCategorySalesComparisonAsync(CategorySalesComparisonRpRequest request, CancellationToken cancellationToken = default);
+    Task<InvoiceOverviewStatsResponse> GetOverviewStatsAsync(CancellationToken cancellationToken = default);
 }

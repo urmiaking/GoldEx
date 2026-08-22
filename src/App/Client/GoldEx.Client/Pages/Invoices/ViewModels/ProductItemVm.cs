@@ -1,4 +1,4 @@
-﻿using GoldEx.Client.Pages.Products.ViewModels;
+using GoldEx.Client.Pages.Products.ViewModels;
 using GoldEx.Shared.DTOs.InventoryEntries;
 using GoldEx.Shared.DTOs.InventoryExits;
 using GoldEx.Shared.DTOs.Invoices;
@@ -255,6 +255,11 @@ public class ProductItemVm
     {
         if (!productItem.TotalWeight.HasValue)
             throw new ValidationException("وزن کل جنس وارد نشده است");
+
+        if (productItem.Product.Weight == null || productItem.Product.Weight == 0)
+        {
+            productItem.Product.Weight = productItem.TotalWeight;
+        }
 
         return new InvoiceProductItemDto(
             productItem.Id,

@@ -14,13 +14,12 @@ public partial class RecentInvoicesOverview : IAsyncDisposable
 {
     [Inject] private IInvoiceService InvoiceService { get; set; } = default!;
 
-    private List<GetInvoiceListResponse> _invoices = [];
-    private int _totalInvoicesCount;
+    private InvoiceOverviewStatsResponse? _stats;
 
     // Multi-PriceUnit Carousels State
-    private List<InvoicePriceUnitSummary> _remainingSummaries = [];
-    private List<InvoicePriceUnitSummary> _todaySellSummaries = [];
-    private List<InvoicePriceUnitSummary> _todayPurchaseSummaries = [];
+    private List<InvoicePriceUnitSummaryDto> _remainingSummaries = [];
+    private List<InvoicePriceUnitSummaryDto> _todaySellSummaries = [];
+    private List<InvoicePriceUnitSummaryDto> _todayPurchaseSummaries = [];
 
     private int _remainingIndex;
     private int _todaySellIndex;
@@ -28,19 +27,14 @@ public partial class RecentInvoicesOverview : IAsyncDisposable
 
     private Timer? _carouselTimer;
 
-    private int TotalInvoicesCount => _totalInvoicesCount > 0 ? _totalInvoicesCount : _invoices.Count;
-    private int SellCount => _invoices.Count(x => x.InvoiceType == InvoiceType.Sell);
-    private int PurchaseCount => _invoices.Count(x => x.InvoiceType == InvoiceType.Purchase);
-    private int PaidCount => _invoices.Count(x => x.PaymentStatus == InvoicePaymentStatus.Paid);
-    private int DebtCount => _invoices.Count(x => x.PaymentStatus == InvoicePaymentStatus.HasDebt);
-    private int OverdueCount => _invoices.Count(x => x.PaymentStatus == InvoicePaymentStatus.Overdue);
+    private int TotalInvoicesCount => _stats?.TotalInvoicesCount ?? 0;
+    private int SellCount => _stats?.SellCount ?? 0;
+    private int PurchaseCount => _stats?.PurchaseCount ?? 0;
+    private int PaidCount => _stats?.PaidCount ?? 0;
+    private int DebtCount => _stats?.DebtCount ?? 0;
+    private int OverdueCount => _stats?.OverdueCount ?? 0;
 
-    private static DateOnly TodayDate => DateOnly.FromDateTime(DateTime.Today);
-
-    private int TodaySellCount => _invoices.Count(x => x.InvoiceType == InvoiceType.Sell && x.InvoiceDate == TodayDate);
-    private int TodayPurchaseCount => _invoices.Count(x => x.InvoiceType == InvoiceType.Purchase && x.InvoiceDate == TodayDate);
-
-    private decimal AverageInvoiceValue => TotalInvoicesCount > 0 ? _invoices.Average(x => x.TotalAmount) : 0;
+    private decimal AverageInvoiceValue => _stats?.AverageInvoiceValue ?? 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,83 +45,17 @@ public partial class RecentInvoicesOverview : IAsyncDisposable
 
     private async Task LoadSummaryInvoicesAsync()
     {
-        var filter = new RequestFilter(0, 200, null, null, Sdk.Common.Definitions.SortDirection.Descending);
-        var invoiceFilter = new InvoiceFilter(null, null, null, null, null);
-
-        await SendRequestAsync<IInvoiceService, PagedList<GetInvoiceListResponse>>(
-            action: (service, token) => service.GetListAsync(filter, invoiceFilter, null, token),
+        await SendRequestAsync<IInvoiceService, InvoiceOverviewStatsResponse>(
+            action: (service, token) => service.GetOverviewStatsAsync(token),
             afterSend: response =>
             {
-                _invoices = response.Data;
-                _totalInvoicesCount = response.Total;
-                CalculateSummariesByPriceUnit(response.Data);
+                _stats = response;
+                _remainingSummaries = response.RemainingSummaries;
+                _todaySellSummaries = response.TodaySellSummaries;
+                _todayPurchaseSummaries = response.TodayPurchaseSummaries;
             },
             createScope: true
         );
-    }
-
-    private void CalculateSummariesByPriceUnit(List<GetInvoiceListResponse> invoices)
-    {
-        // 1. Outstanding Receivables Balance grouped by PriceUnit
-        var unpaidInvoices = invoices.Where(x => x.TotalUnpaidAmount > 0).ToList();
-        if (unpaidInvoices.Any())
-        {
-            _remainingSummaries = unpaidInvoices
-                .GroupBy(x => x.PriceUnit ?? "تومان")
-                .Select(g => new InvoicePriceUnitSummary
-                {
-                    PriceUnit = g.Key,
-                    Amount = g.Sum(x => x.TotalUnpaidAmount),
-                    Count = g.Count(),
-                    Subtitle = $"بدهکار: {g.Count()} فاکتور | معوقه: {g.Count(i => i.PaymentStatus == InvoicePaymentStatus.Overdue)}"
-                })
-                .OrderByDescending(x => x.Amount)
-                .ToList();
-        }
-        else
-        {
-            _remainingSummaries = [new InvoicePriceUnitSummary { PriceUnit = "تومان", Amount = 0, Count = 0, Subtitle = "هیچ مانده مطالبات تسویه‌نشده‌ای وجود ندارد" }];
-        }
-
-        // 2. Today's Sales Volume grouped by PriceUnit
-        var todaySellInvoices = invoices.Where(x => x.InvoiceType == InvoiceType.Sell && x.InvoiceDate == TodayDate).ToList();
-        if (todaySellInvoices.Any())
-        {
-            _todaySellSummaries = todaySellInvoices
-                .GroupBy(x => x.PriceUnit ?? "تومان")
-                .Select(g => new InvoicePriceUnitSummary
-                {
-                    PriceUnit = g.Key,
-                    Amount = g.Sum(x => x.TotalAmount),
-                    Count = g.Count(),
-                    Subtitle = $"امروز: {g.Count()} فاکتور فروش"
-                })
-                .ToList();
-        }
-        else
-        {
-            _todaySellSummaries = [new InvoicePriceUnitSummary { PriceUnit = "تومان", Amount = 0, Count = 0, Subtitle = "امروز فاکتور فروشی ثبت نشده است" }];
-        }
-
-        // 3. Today's Purchase Volume grouped by PriceUnit
-        var todayPurchaseInvoices = invoices.Where(x => x.InvoiceType == InvoiceType.Purchase && x.InvoiceDate == TodayDate).ToList();
-        if (todayPurchaseInvoices.Any())
-        {
-            _todayPurchaseSummaries = todayPurchaseInvoices
-                .GroupBy(x => x.PriceUnit ?? "تومان")
-                .Select(g => new InvoicePriceUnitSummary
-                {
-                    PriceUnit = g.Key,
-                    Amount = g.Sum(x => x.TotalAmount),
-                    Count = g.Count(),
-                    Subtitle = $"امروز: {g.Count()} فاکتور خرید"
-                })
-                .ToList();
-        }
-        else
-        {
-            _todayPurchaseSummaries = [new InvoicePriceUnitSummary { PriceUnit = "تومان", Amount = 0, Count = 0, Subtitle = "امروز فاکتور خریدی ثبت نشده است" }];
-        }
     }
 
     private void StartCarouselTimer()
