@@ -1238,3 +1238,86 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* 16. Skeleton Shimmer & Progressive Loading */
+.vitrine-root .vitrine-card-skeleton {
+  background: var(--white) !important;
+  border: 1px solid var(--gray-200) !important;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  box-shadow: var(--shadow-subtle);
+  position: relative;
+}
+
+.vitrine-root .skeleton-shimmer {
+  background: linear-gradient(90deg, #ede7dc 25%, #faf8f3 50%, #ede7dc 75%);
+  background-size: 200% 100%;
+  animation: vitrineShimmer 1.4s infinite linear;
+}
+
+@keyframes vitrineShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.vitrine-root .skeleton-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.vitrine-root .skeleton-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vitrine-root .skeleton-line {
+  height: 14px;
+  border-radius: 4px;
+}
+
+.vitrine-root .skeleton-line.short { width: 35%; height: 12px; }
+.vitrine-root .skeleton-line.medium { width: 65%; height: 18px; }
+.vitrine-root .skeleton-line.price { width: 45%; height: 22px; }
+.vitrine-root .skeleton-line.full { width: 100%; }
+
+.vitrine-root .btn-load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 38px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-premium);
+  box-shadow: 0 4px 18px rgba(15, 52, 46, 0.15);
+  cursor: pointer;
+}
+
+.vitrine-root .btn-load-more:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(15, 52, 46, 0.25);
+}
+
+.vitrine-root .btn-load-more:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.vitrine-root .vitrine-end-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 24px;
+  margin-top: 24px;
+  color: var(--gray-600);
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-top: 1px dashed var(--gray-200);
+}
