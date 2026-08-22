@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common;
+using GoldEx.Sdk.Common;
 using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Server.Api;
 using GoldEx.Server.Application.Services.Abstractions;
@@ -78,6 +78,13 @@ public class InvoicesController(IInvoiceService service, IServerInvoiceService s
     {
         await service.SendReminderAsync(id, cancellationToken);
         return NoContent();
+    }
+
+    [HttpGet(ApiRoutes.Invoices.GetOverviewStats)]
+    public async Task<IActionResult> GetOverviewStatsAsync(CancellationToken cancellationToken = default)
+    {
+        var stats = await service.GetOverviewStatsAsync(cancellationToken);
+        return Ok(stats);
     }
 
     [AllowAnonymous]

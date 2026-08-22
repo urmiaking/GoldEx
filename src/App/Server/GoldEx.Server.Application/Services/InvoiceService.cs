@@ -427,6 +427,10 @@ internal class InvoiceService(
         ms.Position = 0;
         return ms.ToArray();
     }
+    public Task<InvoiceOverviewStatsResponse> GetOverviewStatsAsync(CancellationToken cancellationToken = default)
+    {
+        return invoiceRepository.GetOverviewStatsAsync(cancellationToken);
+    }
 
     private async Task<string> GenerateReportIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
