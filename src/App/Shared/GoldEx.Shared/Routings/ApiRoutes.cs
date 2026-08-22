@@ -143,6 +143,7 @@ public static class ApiRoutes
         public const string GetByNumber = "number/{number}/{invoiceType}";
         public const string SendReminder = "{id}/send-reminder";
         public const string DownloadPdf = "{id}/download-pdf";
+        public const string GetOverviewStats = "overview-stats";
     }
 
     public class Reports

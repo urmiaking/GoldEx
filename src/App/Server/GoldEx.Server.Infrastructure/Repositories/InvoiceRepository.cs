@@ -4,6 +4,7 @@ using GoldEx.Server.Domain.InvoiceAggregate;
 using GoldEx.Server.Domain.PriceUnitAggregate;
 using GoldEx.Server.Domain.ProductAggregate;
 using GoldEx.Server.Infrastructure.Repositories.Abstractions;
+using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.DTOs.Reporting;
 using GoldEx.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -342,5 +343,138 @@ internal class InvoiceRepository(GoldExDbContext dbContext) : RepositoryBase<Inv
         }
 
         return result.OrderByDescending(x => x.Weight1).ThenByDescending(x => x.Weight2).ToList();
+    }
+
+    public async Task<InvoiceOverviewStatsResponse> GetOverviewStatsAsync(CancellationToken cancellationToken = default)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        var rawInvoices = await Query
+            .AsNoTracking()
+            .Select(x => new
+            {
+                x.Id,
+                x.InvoiceType,
+                x.InvoiceDate,
+                x.DueDate,
+                PriceUnitTitle = x.PriceUnit != null ? x.PriceUnit.Title : "تومان",
+                ProductAmount = x.ProductItems.Sum(i => i.ItemFinalAmount + i.ItemStoneAmount),
+                CoinAmount = x.CoinItems.Sum(c => c.ItemFinalAmount),
+                CurrencyAmount = x.CurrencyItems.Sum(c => c.ItemFinalAmount),
+                UsedProductAmount = x.UsedProducts.Sum(u => u.ItemFinalAmount),
+                DiscountAmount = x.Discounts.Sum(d => d.Amount * (d.ExchangeRate ?? 1)),
+                ExtraCostAmount = x.ExtraCosts.Sum(e => e.Amount * (e.ExchangeRate ?? 1)),
+                ReceivedAmount = x.InvoicePayments!
+                    .Where(p => p.PaymentSide == PaymentSide.Receive)
+                    .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1)),
+                PaidAmount = x.InvoicePayments!
+                    .Where(p => p.PaymentSide == PaymentSide.Pay)
+                    .Sum(p => p.FinalAmount * (p.ExchangeRate ?? 1))
+            })
+            .ToListAsync(cancellationToken);
+
+        var calculated = rawInvoices.Select(item =>
+        {
+            var totalAmount = item.ProductAmount + item.CoinAmount + item.CurrencyAmount +
+                              (item.InvoiceType == InvoiceType.Purchase ? item.UsedProductAmount : 0m);
+            var totalWithDiscExtra = totalAmount - item.DiscountAmount + item.ExtraCostAmount;
+            var netPaid = item.ReceivedAmount - item.PaidAmount;
+            var totalPaid = item.PaidAmount - item.ReceivedAmount;
+
+            var totalUnpaid = item.InvoiceType == InvoiceType.Sell
+                ? (totalWithDiscExtra - item.UsedProductAmount - netPaid)
+                : (totalWithDiscExtra - totalPaid);
+
+            var isPaid = Math.Abs(totalUnpaid) < 0.01m;
+            var isOverdue = !isPaid && item.DueDate.HasValue && item.DueDate.Value < today;
+            var hasDebt = !isPaid && (!item.DueDate.HasValue || item.DueDate.Value >= today);
+
+            return new
+            {
+                item.Id,
+                item.InvoiceType,
+                item.InvoiceDate,
+                item.DueDate,
+                item.PriceUnitTitle,
+                TotalAmount = totalAmount,
+                TotalUnpaid = totalUnpaid,
+                IsPaid = isPaid,
+                IsOverdue = isOverdue,
+                HasDebt = hasDebt
+            };
+        }).ToList();
+
+        var totalCount = calculated.Count;
+        var sellCount = calculated.Count(x => x.InvoiceType == InvoiceType.Sell);
+        var purchaseCount = calculated.Count(x => x.InvoiceType == InvoiceType.Purchase);
+        var paidCount = calculated.Count(x => x.IsPaid);
+        var debtCount = calculated.Count(x => x.HasDebt);
+        var overdueCount = calculated.Count(x => x.IsOverdue);
+        var averageValue = totalCount > 0 ? calculated.Average(x => x.TotalAmount) : 0m;
+
+        // 1. Outstanding Unpaid Invoices by PriceUnit
+        var unpaidGroups = calculated
+            .Where(x => !x.IsPaid && x.TotalUnpaid > 0)
+            .GroupBy(x => x.PriceUnitTitle)
+            .Select(g => new InvoicePriceUnitSummaryDto(
+                g.Key,
+                g.Sum(x => x.TotalUnpaid),
+                g.Count(),
+                $"بدهکار: {g.Count(x => x.HasDebt)} فاکتور | معوقه: {g.Count(x => x.IsOverdue)}"
+            ))
+            .OrderByDescending(x => x.Amount)
+            .ToList();
+
+        if (unpaidGroups.Count == 0)
+        {
+            unpaidGroups = [new InvoicePriceUnitSummaryDto("تومان", 0, 0, "هیچ مانده مطالبات تسویه‌نشده‌ای وجود ندارد")];
+        }
+
+        // 2. Today's Sell Invoices by PriceUnit
+        var todaySellGroups = calculated
+            .Where(x => x.InvoiceType == InvoiceType.Sell && x.InvoiceDate == today)
+            .GroupBy(x => x.PriceUnitTitle)
+            .Select(g => new InvoicePriceUnitSummaryDto(
+                g.Key,
+                g.Sum(x => x.TotalAmount),
+                g.Count(),
+                $"امروز: {g.Count()} فاکتور فروش"
+            ))
+            .ToList();
+
+        if (todaySellGroups.Count == 0)
+        {
+            todaySellGroups = [new InvoicePriceUnitSummaryDto("تومان", 0, 0, "امروز فاکتور فروشی ثبت نشده است")];
+        }
+
+        // 3. Today's Purchase Invoices by PriceUnit
+        var todayPurchaseGroups = calculated
+            .Where(x => x.InvoiceType == InvoiceType.Purchase && x.InvoiceDate == today)
+            .GroupBy(x => x.PriceUnitTitle)
+            .Select(g => new InvoicePriceUnitSummaryDto(
+                g.Key,
+                g.Sum(x => x.TotalAmount),
+                g.Count(),
+                $"امروز: {g.Count()} فاکتور خرید"
+            ))
+            .ToList();
+
+        if (todayPurchaseGroups.Count == 0)
+        {
+            todayPurchaseGroups = [new InvoicePriceUnitSummaryDto("تومان", 0, 0, "امروز فاکتور خریدی ثبت نشده است")];
+        }
+
+        return new InvoiceOverviewStatsResponse(
+            totalCount,
+            sellCount,
+            purchaseCount,
+            paidCount,
+            debtCount,
+            overdueCount,
+            Math.Round(averageValue, 0),
+            unpaidGroups,
+            todaySellGroups,
+            todayPurchaseGroups
+        );
     }
 }

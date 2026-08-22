@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Sdk.Common.DependencyInjections;
 using GoldEx.Sdk.Common.Exceptions;
 using GoldEx.Shared.DTOs.Invoices;
@@ -107,5 +107,17 @@ internal class InvoiceService(HttpClient client, JsonSerializerOptions jsonOptio
 
         if (!response.IsSuccessStatusCode)
             throw HttpRequestFailedException.GetException(response.StatusCode, response);
+    }
+
+    public async Task<InvoiceOverviewStatsResponse> GetOverviewStatsAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await client.GetAsync(ApiUrls.Invoices.GetOverviewStats(), cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw HttpRequestFailedException.GetException(response.StatusCode, response);
+
+        var result = await response.Content.ReadFromJsonAsync<InvoiceOverviewStatsResponse>(jsonOptions, cancellationToken);
+
+        return result ?? throw new UnexpectedHttpResponseException();
     }
 }

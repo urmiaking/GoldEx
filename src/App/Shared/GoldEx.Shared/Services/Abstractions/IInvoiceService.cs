@@ -1,4 +1,4 @@
-﻿using GoldEx.Sdk.Common.Data;
+using GoldEx.Sdk.Common.Data;
 using GoldEx.Shared.DTOs.Invoices;
 using GoldEx.Shared.Enums;
 
@@ -16,4 +16,5 @@ public interface IInvoiceService
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<GetInvoiceNumberResponse> GetLastNumberAsync(InvoiceType invoiceType, CancellationToken cancellationToken = default);
     Task SendReminderAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<InvoiceOverviewStatsResponse> GetOverviewStatsAsync(CancellationToken cancellationToken = default);
 }

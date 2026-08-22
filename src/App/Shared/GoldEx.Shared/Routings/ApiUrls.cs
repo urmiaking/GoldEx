@@ -259,6 +259,9 @@ public class ApiUrls
             BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetCustomerInvoices)
                 .FormatRoute(new { customerId })
                 .AppendQueryString(filter);
+
+        public static string GetOverviewStats() =>
+            BuildUrl(ApiRoutes.Invoices.Base, ApiRoutes.Invoices.GetOverviewStats);
     }
 
     public class Reports
