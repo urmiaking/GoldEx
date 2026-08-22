@@ -453,13 +453,14 @@ internal class ProductService(
                 var existingItem = existingItems.FirstOrDefault(e => e.Id.Value == itemDto.Id.Value);
                 if (existingItem != null)
                 {
-                    if (itemDto.Product.Weight <= 0 && itemDto.TotalWeight > 0)
+                    var productDto = itemDto.Product;
+                    if (productDto.Weight <= 0 && itemDto.TotalWeight > 0)
                     {
-                        itemDto = itemDto with { Product = itemDto.Product with { Weight = itemDto.TotalWeight } };
+                        productDto = productDto with { Weight = itemDto.TotalWeight };
                     }
 
                     // Update product
-                    var product = await UpdateAsync(existingItem.ProductId, itemDto.Product, invoice.InvoiceType, cancellationToken);
+                    var product = await UpdateAsync(existingItem.ProductId, productDto, invoice.InvoiceType, cancellationToken);
 
                     if (invoice.InvoiceType is InvoiceType.Sell)
                     {
@@ -506,13 +507,14 @@ internal class ProductService(
 
                 if (invoice.InvoiceType is InvoiceType.Purchase)
                 {
-                    if (itemDto.Product.Weight <= 0 && itemDto.TotalWeight > 0)
+                    var productDto = itemDto.Product;
+                    if (productDto.Weight <= 0 && itemDto.TotalWeight > 0)
                     {
-                        itemDto = itemDto with { Product = itemDto.Product with { Weight = itemDto.TotalWeight } };
+                        productDto = productDto with { Weight = itemDto.TotalWeight };
                     }
 
                     // always create the product
-                    product = await CreateProductAsync(itemDto.Product, null, cancellationToken);
+                    product = await CreateProductAsync(productDto, null, cancellationToken);
 
                     // Add product to invoice
                     invoice.AddPurchaseProductItem(
