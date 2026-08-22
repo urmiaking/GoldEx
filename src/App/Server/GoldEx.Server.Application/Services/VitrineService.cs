@@ -165,14 +165,15 @@ internal class VitrineService(
         return products.Select(p =>
         {
             var mainImage = p.Images?.OrderByDescending(x => x.IsMain).ThenBy(x => x.DisplayOrder).FirstOrDefault()?.Url;
-            var priceBreakdown = CalculateVitrinePrice(p, gramPrice750);
             var isAvailable = stockQuantities.TryGetValue(p.Id, out var qty) && qty > 0.0001m;
+            var effectiveWeight = p.Weight > 0 ? p.Weight : (stockQuantities.TryGetValue(p.Id, out var sq) && sq > 0 ? sq : 0m);
+            var priceBreakdown = CalculateVitrinePrice(p, gramPrice750, effectiveWeight);
 
             return new VitrineProductSummaryDto(
                 Id: p.Id.Value,
                 Barcode: p.Barcode,
                 Name: p.Name,
-                Weight: p.Weight,
+                Weight: effectiveWeight,
                 Fineness: p.Fineness,
                 ProductType: p.ProductType,
                 CategoryId: p.ProductCategoryId?.Value,
@@ -212,7 +213,6 @@ internal class VitrineService(
             return null;
 
         var gramPrice750 = await GetLive18KGoldPriceAsync(cancellationToken);
-        var priceBreakdown = CalculateVitrinePrice(product, gramPrice750);
 
         var quantity = await inventoryStockRepository.Get(new InventoryStocksDefaultSpecification())
             .AsNoTracking()
@@ -221,6 +221,8 @@ internal class VitrineService(
             .SumAsync(s => s.ActionType == WarehouseActionType.In ? s.ChangeAmount : -s.ChangeAmount, cancellationToken);
 
         var isAvailable = quantity > 0.0001m;
+        var effectiveWeight = product.Weight > 0 ? product.Weight : (quantity > 0 ? quantity : 0m);
+        var priceBreakdown = CalculateVitrinePrice(product, gramPrice750, effectiveWeight);
 
         var imageUrls = product.Images?
             .OrderByDescending(x => x.IsMain)
@@ -240,7 +242,7 @@ internal class VitrineService(
             Id: product.Id.Value,
             Barcode: product.Barcode,
             Name: product.Name,
-            Weight: product.Weight,
+            Weight: effectiveWeight,
             Wage: product.Wage,
             WageType: product.WageType,
             Fineness: product.Fineness,
@@ -311,11 +313,12 @@ internal class VitrineService(
     }
 
     private static (decimal EstimatedPrice, decimal RawGoldPrice, decimal WageAmount, decimal ProfitAmount, decimal TaxAmount)
-        CalculateVitrinePrice(Product product, decimal gramPrice750)
+        CalculateVitrinePrice(Product product, decimal gramPrice750, decimal? overrideWeight = null)
     {
+        var weight = (overrideWeight.HasValue && overrideWeight.Value > 0) ? overrideWeight.Value : product.Weight;
         var fineness = product.Fineness > 0 ? product.Fineness : 750m;
         var adjustedGramPrice = gramPrice750 * (fineness / 750m);
-        var rawGoldPrice = Math.Round(product.Weight * adjustedGramPrice, 0);
+        var rawGoldPrice = Math.Round(weight * adjustedGramPrice, 0);
 
         decimal wageAmount = 0;
         if (product.Wage > 0)
@@ -326,7 +329,7 @@ internal class VitrineService(
             }
             else
             {
-                wageAmount = Math.Round(product.Wage * product.Weight, 0);
+                wageAmount = Math.Round(product.Wage * weight, 0);
             }
         }
 

@@ -332,6 +332,10 @@ public partial class ProductItemEditor
     private void OnTotalWeightChanged(decimal? totalWeight)
     {
         Model.TotalWeight = totalWeight;
+        if (Model.Product != null)
+        {
+            Model.Product.Weight = totalWeight;
+        }
         StateHasChanged();
     }
 

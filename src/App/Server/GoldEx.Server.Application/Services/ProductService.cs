@@ -453,6 +453,11 @@ internal class ProductService(
                 var existingItem = existingItems.FirstOrDefault(e => e.Id.Value == itemDto.Id.Value);
                 if (existingItem != null)
                 {
+                    if (itemDto.Product.Weight <= 0 && itemDto.TotalWeight > 0)
+                    {
+                        itemDto = itemDto with { Product = itemDto.Product with { Weight = itemDto.TotalWeight } };
+                    }
+
                     // Update product
                     var product = await UpdateAsync(existingItem.ProductId, itemDto.Product, invoice.InvoiceType, cancellationToken);
 
@@ -501,6 +506,11 @@ internal class ProductService(
 
                 if (invoice.InvoiceType is InvoiceType.Purchase)
                 {
+                    if (itemDto.Product.Weight <= 0 && itemDto.TotalWeight > 0)
+                    {
+                        itemDto = itemDto with { Product = itemDto.Product with { Weight = itemDto.TotalWeight } };
+                    }
+
                     // always create the product
                     product = await CreateProductAsync(itemDto.Product, null, cancellationToken);
 

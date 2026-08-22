@@ -11,21 +11,6 @@
             <MudNavLink Href="@ClientRoutes.Dashboard.Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
                 داشبورد
             </MudNavLink>
-            @if (_currentStore != null)
-            {
-                <MudNavLink Href="@($"/{_currentStore.Slug}")"
-                            Target="_blank"
-                            Icon="@Icons.Material.Filled.Storefront"
-                            Class="vitrine-nav-link"
-                            Match="NavLinkMatch.Prefix">
-                    <div class="d-flex align-center justify-space-between w-100">
-                        <span>ویترین گالری</span>
-                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled" Style="font-size: 0.65rem; height: 18px; font-weight: 900;">
-                            NEW
-                        </MudChip>
-                    </div>
-                </MudNavLink>
-            }
         </Authorized>
     </AuthorizeView>
     <MudNavLink Href="@ClientRoutes.Calculator.Index" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Calculate">
@@ -46,6 +31,21 @@
                         Icon="@Icons.Material.Filled.PeopleAlt">
                 مشتریان
             </MudNavLink>
+            @if (_currentStore != null)
+            {
+                <MudNavLink Href="@($"/{_currentStore.Slug}")"
+                            Target="_blank"
+                            Icon="@Icons.Material.Filled.Storefront"
+                            Class="vitrine-nav-link"
+                            Match="NavLinkMatch.Prefix">
+                    <div class="d-flex align-center justify-space-between w-100">
+                        <span>ویترین گالری</span>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled" Style="font-size: 0.65rem; height: 18px; font-weight: 900;">
+                            NEW
+                        </MudChip>
+                    </div>
+                </MudNavLink>
+            }
             <MudNavLink Href="@ClientRoutes.Reporting.Index" Match="NavLinkMatch.Prefix"
                         Icon="@Icons.Material.Filled.BarChart">
                 گزارش ها
