@@ -37,7 +37,7 @@
                 <h3>جستجوی زیورآلات</h3>
                 <div class="search-box">
                     <input type="text"
-                           @bind="_searchTerm"
+                           @bind="SearchTerm"
                            @bind:event="oninput"
                            placeholder="نام مدل، دسته‌بندی، بارکد..."
                            class="luxury-search-input" />
@@ -145,25 +145,32 @@
             <!-- نوار ابزار بالای محصولات -->
             <div class="shop-toolbar">
                 <div style="font-size: 0.92rem; color: var(--gray-600); font-weight: 700;">
-                    نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر
+                    @if (FilteredProducts.Count > PageSize)
+                    {
+                        <span>نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@Math.Min(_visibleCount, FilteredProducts.Count)</strong> از <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر</span>
+                    }
+                    else
+                    {
+                        <span>نمایش <strong style="color: var(--primary-color); font-weight: 900; font-size: 1.05rem;">@FilteredProducts.Count</strong> قطعه طلا و جواهر</span>
+                    }
                 </div>
 
                 <div class="sort-tabs-container">
                     <span style="font-size: 0.84rem; color: var(--gray-600); font-weight: 700; white-space: nowrap; flex-shrink: 0;">مرتب‌سازی:</span>
                     <div class="sort-tabs">
-                        <button type="button" class="sort-tab @(_sortBy == "newest" ? "active" : "")" @onclick='() => _sortBy = "newest"'>
+                        <button type="button" class="sort-tab @(_sortBy == "newest" ? "active" : "")" @onclick='() => SetSortBy("newest")'>
                             جدیدترین
                         </button>
-                        <button type="button" class="sort-tab @(_sortBy == "price_asc" ? "active" : "")" @onclick='() => _sortBy = "price_asc"'>
+                        <button type="button" class="sort-tab @(_sortBy == "price_asc" ? "active" : "")" @onclick='() => SetSortBy("price_asc")'>
                             ارزان‌ترین
                         </button>
-                        <button type="button" class="sort-tab @(_sortBy == "price_desc" ? "active" : "")" @onclick='() => _sortBy = "price_desc"'>
+                        <button type="button" class="sort-tab @(_sortBy == "price_desc" ? "active" : "")" @onclick='() => SetSortBy("price_desc")'>
                             گران‌ترین
                         </button>
-                        <button type="button" class="sort-tab @(_sortBy == "weight_asc" ? "active" : "")" @onclick='() => _sortBy = "weight_asc"'>
+                        <button type="button" class="sort-tab @(_sortBy == "weight_asc" ? "active" : "")" @onclick='() => SetSortBy("weight_asc")'>
                             سبک‌ترین
                         </button>
-                        <button type="button" class="sort-tab @(_sortBy == "weight_desc" ? "active" : "")" @onclick='() => _sortBy = "weight_desc"'>
+                        <button type="button" class="sort-tab @(_sortBy == "weight_desc" ? "active" : "")" @onclick='() => SetSortBy("weight_desc")'>
                             سنگین‌ترین
                         </button>
                     </div>
@@ -173,14 +180,24 @@
             <!-- وضعیت بارگذاری یا لیست خالی یا محصولات -->
             @if (_isLoading)
             {
-                <div class="text-center py-5" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 60px 20px;">
-                    <div class="vitrine-ticker-pulse d-inline-block mb-3" style="width: 32px; height: 32px;"></div>
-                    <div style="color: var(--primary-color); font-weight: 800; font-size: 1.1rem;">در حال بارگذاری و قیمت‌گذاری کاتالوگ...</div>
+                <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="vitrine-card-skeleton">
+                            <div class="skeleton-image skeleton-shimmer"></div>
+                            <div class="skeleton-info">
+                                <div class="skeleton-line short skeleton-shimmer"></div>
+                                <div class="skeleton-line medium skeleton-shimmer"></div>
+                                <div class="skeleton-line short skeleton-shimmer"></div>
+                                <div class="skeleton-line price skeleton-shimmer mt-2"></div>
+                            </div>
+                        </div>
+                    }
                 </div>
             }
             else if (FilteredProducts.Count == 0)
             {
-                <div class="text-center py-5" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
+                <div class="text-center py-5 animate-fade-in" style="background: var(--white); border-radius: var(--border-radius-sm); border: 1px solid var(--gray-200); padding: 50px 20px; box-shadow: var(--shadow-subtle);">
                     <i class="fa-solid fa-magnifying-glass mb-3" style="font-size: 3rem; color: var(--accent-color); display: block;"></i>
                     <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color); margin-bottom: 8px;">موردی با مشخصات انتخابی یافت نشد</h3>
                     <p style="color: var(--gray-600); max-width: 450px; margin: 0 auto 24px; font-size: 0.92rem; line-height: 1.8;">
@@ -194,7 +211,7 @@
             else
             {
                 <div class="vitrine-grid animate-fade-in" style="padding-top: 0;">
-                    @foreach (var product in FilteredProducts)
+                    @foreach (var product in VisibleProducts)
                     {
                         <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card @(!product.IsAvailable ? "is-sold" : "")">
                             <div class="product-image">
@@ -254,7 +271,47 @@
                             </div>
                         </a>
                     }
+
+                    @if (_isLoadingMore)
+                    {
+                        @for (int i = 0; i < 3; i++)
+                        {
+                            <div class="vitrine-card-skeleton animate-fade-in">
+                                <div class="skeleton-image skeleton-shimmer"></div>
+                                <div class="skeleton-info">
+                                    <div class="skeleton-line short skeleton-shimmer"></div>
+                                    <div class="skeleton-line medium skeleton-shimmer"></div>
+                                    <div class="skeleton-line price skeleton-shimmer mt-2"></div>
+                                </div>
+                            </div>
+                        }
+                    }
                 </div>
+
+                @if (_visibleCount < FilteredProducts.Count)
+                {
+                    <div class="text-center mt-5 mb-4 animate-fade-in">
+                        <button type="button" class="btn-gisu btn-gisu-primary btn-load-more" @onclick="LoadMoreAsync" disabled="@_isLoadingMore">
+                            @if (_isLoadingMore)
+                            {
+                                <i class="fa-solid fa-spinner fa-spin ms-2"></i>
+                                <span>در حال بارگذاری موارد بیشتر...</span>
+                            }
+                            else
+                            {
+                                <i class="fa-solid fa-arrow-down-long ms-2"></i>
+                                <span>نمایش @(Math.Min(PageSize, FilteredProducts.Count - _visibleCount)) محصول دیگر (@Math.Min(_visibleCount, FilteredProducts.Count) از @FilteredProducts.Count)</span>
+                            }
+                        </button>
+                    </div>
+                }
+                else if (FilteredProducts.Count > PageSize)
+                {
+                    <div class="vitrine-end-indicator animate-fade-in">
+                        <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.1rem;"></i>
+                        <span>تمامی @FilteredProducts.Count محصول با مشخصات انتخابی نمایش داده شده است</span>
+                    </div>
+                }
             }
 
         </section>
@@ -268,6 +325,10 @@
     [SupplyParameterFromQuery] public bool? OnlyFeatured { get; set; }
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
 
+    private const int PageSize = 24;
+    private int _visibleCount = PageSize;
+    private bool _isLoadingMore = false;
+
     private List<VitrineProductSummaryDto> _products = [];
     private List<VitrineCategoryDto> _categories = [];
     private Guid? _selectedCategoryId;
@@ -277,6 +338,19 @@
     private string _searchTerm = "";
     private string _sortBy = "newest";
     private bool _isLoading = true;
+
+    private string SearchTerm
+    {
+        get => _searchTerm;
+        set
+        {
+            if (_searchTerm != value)
+            {
+                _searchTerm = value;
+                ResetVisibleCount();
+            }
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -297,6 +371,7 @@
 
             _categories = (await categoriesTask).ToList();
             _products = (await productsTask).ToList();
+            ResetVisibleCount();
         }
         catch (Exception ex)
         {
@@ -308,24 +383,50 @@
         }
     }
 
+    private void ResetVisibleCount()
+    {
+        _visibleCount = PageSize;
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (_isLoadingMore) return;
+        _isLoadingMore = true;
+        StateHasChanged();
+        await Task.Delay(250); // Gentle feedback
+        _visibleCount += PageSize;
+        _isLoadingMore = false;
+        StateHasChanged();
+    }
+
     private void FilterByCategory(Guid? categoryId)
     {
         _selectedCategoryId = categoryId;
+        ResetVisibleCount();
     }
 
     private void FilterByType(ProductType? type)
     {
         _selectedProductType = type;
+        ResetVisibleCount();
     }
 
     private void ToggleOnlyFeatured()
     {
         _onlyFeatured = !_onlyFeatured;
+        ResetVisibleCount();
     }
 
     private void SetWeightFilter(string filter)
     {
         _weightFilter = filter;
+        ResetVisibleCount();
+    }
+
+    private void SetSortBy(string sort)
+    {
+        _sortBy = sort;
+        ResetVisibleCount();
     }
 
     private void ResetFilters()
@@ -336,7 +437,10 @@
         _weightFilter = "all";
         _searchTerm = "";
         _sortBy = "newest";
+        ResetVisibleCount();
     }
+
+    private IEnumerable<VitrineProductSummaryDto> VisibleProducts => FilteredProducts.Take(_visibleCount);
 
     private List<VitrineProductSummaryDto> FilteredProducts
     {
