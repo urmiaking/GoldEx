@@ -1,14 +1,26 @@
 @page "/{StoreSlug}"
 @layout VitrineLayout
 @attribute [AllowAnonymous]
+@implements IDisposable
 
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
 @using GoldEx.Shared.Enums
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
+@inject PersistentComponentState ApplicationState
 
 <PageTitle>ویترین آنلاین @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@(_storeInfo?.AboutText ?? $"ویترین رسمی و کاتالوگ آنلاین طلا و جواهرات {(_storeInfo?.Name ?? "گالری طلا")} با محاسبه زنده قیمت روز و عیار ۷۵۰")" />
+    <meta property="og:title" content="ویترین آنلاین @(_storeInfo?.Name ?? "گالری طلا و جواهر")" />
+    <meta property="og:description" content="@(_storeInfo?.AboutText ?? $"ویترین رسمی و کاتالوگ آنلاین طلا و جواهرات {(_storeInfo?.Name ?? "گالری طلا")} با محاسبه زنده قیمت روز و عیار ۷۵۰")" />
+    @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
+    {
+        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+    }
+</HeadContent>
 
 <div class="vitrine-container">
     <!-- Asymmetric Editorial Hero Section -->
@@ -334,10 +346,45 @@
     private List<VitrineCategoryDto> _categories = [];
     private string _activeQuickFilter = "all";
     private bool _isLoading = true;
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistHomeData);
+
+        if (ApplicationState.TryTakeFromJson<List<VitrineCategoryDto>>($"vitrine_home_categories_{StoreSlug}", out var catRestored) && catRestored != null &&
+            ApplicationState.TryTakeFromJson<List<VitrineProductSummaryDto>>($"vitrine_home_products_{StoreSlug}", out var prodRestored) && prodRestored != null)
+        {
+            _categories = catRestored;
+            _products = prodRestored;
+            _featuredProducts = _products.Where(x => x.IsFeatured).Take(4).ToList();
+            _isLoading = false;
+        }
+        else
+        {
+            await LoadDataAsync();
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadDataAsync();
+        if (_products.Count == 0 && !_isLoading)
+        {
+            await LoadDataAsync();
+        }
+    }
+
+    private Task PersistHomeData()
+    {
+        if (_categories != null && _categories.Count > 0)
+        {
+            ApplicationState.PersistAsJson($"vitrine_home_categories_{StoreSlug}", _categories);
+        }
+        if (_products != null && _products.Count > 0)
+        {
+            ApplicationState.PersistAsJson($"vitrine_home_products_{StoreSlug}", _products);
+        }
+        return Task.CompletedTask;
     }
 
     private async Task LoadDataAsync()
@@ -345,13 +392,8 @@
         _isLoading = true;
         try
         {
-            var categoriesTask = VitrineService.GetCategoriesAsync(StoreSlug);
-            var productsTask = VitrineService.GetVitrineProductsAsync(StoreSlug);
-
-            await Task.WhenAll(categoriesTask, productsTask);
-
-            _categories = (await categoriesTask).ToList();
-            var allProducts = (await productsTask).ToList();
+            _categories = (await VitrineService.GetCategoriesAsync(StoreSlug)).ToList();
+            var allProducts = (await VitrineService.GetVitrineProductsAsync(StoreSlug)).ToList();
 
             _products = allProducts;
             _featuredProducts = allProducts.Where(x => x.IsFeatured).Take(4).ToList();
@@ -364,6 +406,11 @@
         {
             _isLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _persistingSubscription.Dispose();
     }
 
     private void SetQuickFilter(string filter)

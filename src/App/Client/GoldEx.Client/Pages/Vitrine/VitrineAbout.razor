@@ -6,6 +6,16 @@
 
 <PageTitle>درباره و تماس با @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
 
+<HeadContent>
+    <meta name="description" content="@($"اطلاعات تماس، نشانی فروشگاه، شبکه‌های اجتماعی و معرفی {(_storeInfo?.Name ?? "گالری طلا و جواهر")}")" />
+    <meta property="og:title" content="درباره و تماس | @(_storeInfo?.Name ?? "گالری طلا")" />
+    <meta property="og:description" content="@($"اطلاعات تماس، نشانی فروشگاه، شبکه‌های اجتماعی و معرفی {(_storeInfo?.Name ?? "گالری طلا و جواهر")}")" />
+    @if (!string.IsNullOrWhiteSpace(_storeInfo?.LogoUrl))
+    {
+        <meta property="og:image" content="@_storeInfo.LogoUrl" />
+    }
+</HeadContent>
+
 <div class="vitrine-container" style="padding-top: 40px; padding-bottom: 70px;">
     <div style="max-width: 860px; margin: 0 auto;" class="animate-fade-in">
         <!-- Brand Hero Card -->
