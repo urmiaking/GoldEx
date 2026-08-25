@@ -259,4 +259,22 @@ public static class ClientRoutes
         private const string Prefix = "about";
         public const string Index = $"{Prefix}";
     }
+
+    public static class Vitrine
+    {
+        public static readonly HashSet<string> ReservedSegments = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "api", "_content", "_framework", "Account", "oauth", "mcp", ".well-known",
+            "serilog-ui", "swagger", "health", "Error", "__test", "uploads", "shared",
+            "assets", "fonts", "css", "js", "invoices", "products", "finances", "base-info",
+            "settings", "quick-invoice", "ssr", "favicon.ico", "manifest.webmanifest",
+            "app.js", "sw.js", "register-product", "user-accounts", "dashboard", "blogs"
+        };
+
+        public static bool IsReservedSegment(string? segment)
+        {
+            if (string.IsNullOrWhiteSpace(segment)) return true;
+            return ReservedSegments.Contains(segment.Trim());
+        }
+    }
 }

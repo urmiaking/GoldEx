@@ -3,6 +3,8 @@
 @attribute [AllowAnonymous]
 
 @using GoldEx.Shared.DTOs.Vitrine
+@using GoldEx.Shared.Routings
+@inject NavigationManager Navigation
 
 <PageTitle>درباره و تماس با @(_storeInfo?.Name ?? "گالری طلا و جواهر")</PageTitle>
 
@@ -131,4 +133,12 @@
 @code {
     [Parameter] public string StoreSlug { get; set; } = "default";
     [CascadingParameter] private VitrineStoreInfoDto? _storeInfo { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        {
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+    }
 }

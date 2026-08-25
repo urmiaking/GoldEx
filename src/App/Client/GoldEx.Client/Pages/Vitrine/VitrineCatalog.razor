@@ -6,6 +6,7 @@
 @using GoldEx.Shared.DTOs.Vitrine
 @using GoldEx.Shared.Services.Abstractions
 @using GoldEx.Shared.Enums
+@using GoldEx.Shared.Routings
 @inject IVitrineService VitrineService
 @inject NavigationManager Navigation
 @inject PersistentComponentState ApplicationState
@@ -368,6 +369,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        {
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            return;
+        }
+
         _selectedCategoryId = CategoryId;
         _onlyFeatured = OnlyFeatured ?? false;
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistCatalogData);
@@ -388,6 +395,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        if (ClientRoutes.Vitrine.IsReservedSegment(StoreSlug))
+        {
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+            return;
+        }
+
         _selectedCategoryId = CategoryId;
         _onlyFeatured = OnlyFeatured ?? false;
 
