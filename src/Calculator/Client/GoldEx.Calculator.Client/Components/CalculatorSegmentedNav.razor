@@ -1,0 +1,46 @@
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Shared.Routings
+
+<div class="d-none d-md-flex justify-center w-100 my-3">
+    <div class="calc-segmented-nav">
+        <NavLink href="@ClientRoutes.Calculator.Simple" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.Calculate" Size="Size.Small" />
+            <span>طلا و جواهر</span>
+        </NavLink>
+
+        <NavLink href="@ClientRoutes.Calculator.TradeIn" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.SwapHorizontalCircle" Size="Size.Small" />
+            <span>تعویض طلا</span>
+        </NavLink>
+
+        <NavLink href="@ClientRoutes.Calculator.CoinBubble" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Size="Size.Small" />
+            <span>حباب سکه</span>
+        </NavLink>
+
+        <NavLink href="@ClientRoutes.Calculator.Assay" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.Science" Size="Size.Small" />
+            <span>عیارسنجی و ۷۵۰</span>
+        </NavLink>
+
+        <NavLink href="@ClientRoutes.Calculator.Dca" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" />
+            <span>میانگین خرید</span>
+        </NavLink>
+
+        <NavLink href="@ClientRoutes.Calculator.Reverse" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Small" />
+            <span>ارز به طلا</span>
+        </NavLink>
+
+        <NavLink href="@ClientRoutes.Calculator.Currency" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.CurrencyExchange" Size="Size.Small" />
+            <span>تبدیل ارز</span>
+        </NavLink>
+
+        <NavLink href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All" class="calc-segmented-item">
+            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Small" />
+            <span>فاکتورها</span>
+        </NavLink>
+    </div>
+</div>

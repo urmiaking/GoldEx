@@ -1,0 +1,18 @@
+@attribute [Route(ClientRoutes.Calculator.Assay)]
+@using GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Shared.Routings
+
+<PageTitle>عیارسنجی و تبدیل به ۷۵۰</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <MudText Typo="Typo.h4" Class="mb-2 mt-4">عیارسنجی و تبدیل به ۷۵۰</MudText>
+            <MudText Typo="Typo.body1">تبدیل انواع عیار به ۷۵۰ استاندارد و محاسبه خط انگ آبشده</MudText>
+        </div>
+    </div>
+
+    <CalculatorSegmentedNav />
+
+    <AssayConverterComponent Class="mt-2" Elevation="24" />
+</div>

@@ -1,0 +1,27 @@
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.Services
+@using GoldEx.Calculator.Client.ViewModels
+@using GoldEx.Client.Components.Calculator.ViewModels
+@inherits GoldExComponentBase
+
+@if (_basketCount > 0)
+{
+    <div class="quick-invoice-fab">
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <QuickInvoiceSpeedDial Count="@_basketCount"
+                                   OnOpenList="OpenBasketDialogAsync"
+                                   OnFinalize="FinalizeInvoiceAsync" />
+        </MudHidden>
+
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary" Class="shadow-lg" Size="Size.Large">
+                <MudButton StartIcon="@Icons.Material.Filled.ShoppingCartCheckout" OnClick="FinalizeInvoiceAsync" Class="font-weight-bold">
+                    صدور فاکتور (@_basketCount)
+                </MudButton>
+                <MudTooltip Text="مشاهده اقلام سبد فاکتور">
+                    <MudIconButton Icon="@Icons.Material.Filled.ListAlt" Color="Color.Info" Variant="Variant.Filled" OnClick="OpenBasketDialogAsync" />
+                </MudTooltip>
+            </MudButtonGroup>
+        </MudHidden>
+    </div>
+}

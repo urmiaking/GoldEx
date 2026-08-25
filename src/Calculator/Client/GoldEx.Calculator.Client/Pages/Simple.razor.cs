@@ -19,6 +19,7 @@ public partial class Simple
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
     [Inject] private QuickInvoiceBasketStore BasketStore { get; set; } = default!;
     [Inject] private QuickInvoiceStore InvoiceStore { get; set; } = default!;
+    [Inject] private CalculationHistoryStore HistoryStore { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -79,60 +80,15 @@ public partial class Simple
     {
         await BasketStore.AddAsync(payload);
         _basketCount = await BasketStore.GetCountAsync();
-    }
 
-    private async Task FinalizeInvoiceAsync()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-        if (authState.User.Identity?.IsAuthenticated is false)
+        await HistoryStore.AddAsync(new CalculationHistoryItem
         {
-            AddInfoToast("لطفا جهت صدور فاکتور وارد حساب کاربری خود شوید");
-            await Task.Delay(2000);
-            Navigation.NavigateTo(ClientRoutes.Accounts.Login, forceLoad: true);
-            return;
-        }
-
-        var items = await BasketStore.GetItemsAsync();
-        if (items.Count == 0)
-            return;
-
-        var dialog = await DialogService.ShowAsync<QuickInvoiceCustomerDialog>(
-            title: "اطلاعات مشتری",
-            options: new DialogOptions { CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Small });
-
-        var result = await dialog.Result;
-        if (result is { Canceled: true })
-            return;
-
-        var customer = (QuickInvoiceCustomerVm)result?.Data!;
-
-        // Apply customer + company info to all items
-        items = items
-            .Select(x => x
-                .WithCustomer(customer.CustomerName, customer.CustomerPhone)
-                .WithCompanyInfo(customer.CompanyName, customer.CompanyPhone, customer.CompanyAddress))
-            .ToList();
-
-        await InvoiceStore.AddInvoiceAsync(QuickInvoice.Create(items));
-
-        var json = JsonSerializer.Serialize(items, QuickInvoicePayload.JsonOptions);
-        await JsRuntime.InvokeVoidAsync("quickInvoice.printFromPayload", json);
-
-        await BasketStore.ClearAsync();
-        _basketCount = 0;
-    }
-
-    private async Task OpenBasketDialogAsync()
-    {
-        var dialog = await DialogService.ShowAsync<QuickInvoiceBasketDialog>(
-            title: "اقلام فاکتور",
-            options: new DialogOptions { CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium });
-
-        await dialog.Result;
-
-        _basketCount = await BasketStore.GetCountAsync();
-        StateHasChanged();
+            Title = payload.ProductName ?? payload.ProductType,
+            Category = "طلا و جواهر",
+            SummaryText = $"وزن: {payload.Weight} | عیار: {payload.Fineness} | اجرت: {payload.Wage ?? "—"}",
+            ResultValue = payload.FinalPrice,
+            Unit = string.Empty
+        });
     }
 
     public override ValueTask DisposeAsync()

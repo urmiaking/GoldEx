@@ -1,4 +1,4 @@
-﻿using GoldEx.Calculator.Client.Services;
+using GoldEx.Calculator.Client.Services;
 using GoldEx.Client.Components;
 using GoldEx.Client.Services;
 using GoldEx.Sdk.Common.DependencyInjections.Extensions;
@@ -33,6 +33,7 @@ public static class DependencyInjection
             services.AddClientAndServerServices(Defaults.Classes.Position.BottomRight);
             services.AddScoped<QuickInvoiceBasketStore>();
             services.AddScoped<QuickInvoiceStore>();
+            services.AddScoped<CalculationHistoryStore>();
 
             return services;
         }

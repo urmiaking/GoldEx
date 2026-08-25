@@ -1,0 +1,120 @@
+@namespace GoldEx.Calculator.Client.Components
+@using System.Text.Json
+@using GoldEx.Calculator.Client.Services
+@using GoldEx.Calculator.Client.ViewModels
+@inject QuickInvoiceStore InvoiceStore
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+
+<MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
+    <DialogContent>
+        <div class="d-flex flex-column gap-3">
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.Backup" Color="Color.Primary" />
+                <MudText Typo="Typo.h6" Class="font-weight-bold">پشتیبان‌گیری و بازیابی فاکتورها</MudText>
+            </div>
+
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                می‌توانید از تمامی فاکتورهای صادر شده در این دستگاه خروجی استاندارد JSON دریافت کنید یا فاکتورهای پشتیبان‌گیری شده قبلی را بازیابی نمایید.
+            </MudText>
+
+            <MudDivider Class="my-1" />
+
+            <!-- بخش خروجی (Export) -->
+            <div class="d-flex justify-space-between align-center pa-3 rounded-lg border">
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">دریافت فایل پشتیبان (Export)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">دانلود تمام فاکتورها به صورت فایل JSON</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Download"
+                           OnClick="ExportBackupAsync">
+                    دانلود بک‌آپ
+                </MudButton>
+            </div>
+
+            <!-- بخش بازیابی (Import) -->
+            <div class="d-flex flex-column gap-2 pa-3 rounded-lg border">
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">بازیابی فایل پشتیبان (Import)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">انتخاب فایل JSON ذخیره شده قبلی و اضافه شدن آن به لیست فاکتورها</MudText>
+
+                <MudFileUpload T="IBrowserFile" FilesChanged="ImportBackupAsync" Accept=".json">
+                    <CustomContent Context="ctx">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.UploadFile"
+                                   OnClick="ctx.OpenFilePickerAsync"
+                                   FullWidth="true">
+                            انتخاب فایل پشتیبان JSON
+                        </MudButton>
+                    </CustomContent>
+                </MudFileUpload>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Close">بستن</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private async Task ExportBackupAsync()
+    {
+        try
+        {
+            var list = await InvoiceStore.GetAllAsync();
+            var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true });
+            var filename = $"GoldEx_Invoices_Backup_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+
+            await JSRuntime.InvokeVoidAsync("quickInvoice.downloadTextAsFile", filename, json);
+            Snackbar.Add("فایل پشتیبان با موفقیت دانلود شد", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"خطا در دریافت فایل پشتیبان: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task ImportBackupAsync(IBrowserFile file)
+    {
+        if (file == null) return;
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var reader = new System.IO.StreamReader(stream);
+            var json = await reader.ReadToEndAsync();
+
+            var importedList = JsonSerializer.Deserialize<List<QuickInvoice>>(json);
+            if (importedList == null || importedList.Count == 0)
+            {
+                Snackbar.Add("فایل انتخابی فاقد اطلاعات فاکتور است", Severity.Warning);
+                return;
+            }
+
+            var currentList = await InvoiceStore.GetAllAsync();
+            var addedCount = 0;
+
+            foreach (var inv in importedList)
+            {
+                if (!currentList.Any(x => x.InvoiceNumber == inv.InvoiceNumber))
+                {
+                    await InvoiceStore.AddInvoiceAsync(inv);
+                    addedCount++;
+                }
+            }
+
+            Snackbar.Add($"{addedCount} فاکتور جدید با موفقیت به سیستم اضافه شد", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"خطا در بازیابی فایل: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Close() => MudDialog.Close();
+}

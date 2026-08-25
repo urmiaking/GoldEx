@@ -1,16 +1,25 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @layout BaseLayout
+@using GoldEx.Calculator.Client.Components
+@inject NavigationManager Navigation
 
 <MudLayout>
-    <CalcAppBar @bind-DrawerOpen="_drawerOpen" />
+    <CalcAppBar @bind-DrawerOpen="_drawerOpen" OnToggleHistory="() => _historyDrawerOpen = !_historyDrawerOpen" />
     <CalcDrawer @bind-IsDrawerOpen="_drawerOpen" />
-    <MudMainContent Class="mt-10 mb-sm-4 mb-20 pa-md-4 py-4">
-        @Body
+
+    <MudMainContent Class="mt-12 mb-sm-4 mb-20 pa-md-4 py-3">
+        <div class="px-2 px-md-4 animate-page-enter" @key="Navigation.Uri">
+            @Body
+        </div>
         <MobileNav Class="d-sm-none d-block" />
     </MudMainContent>
+
+    <QuickInvoiceFloatingFab />
+    <CalculationHistoryDrawer @bind-IsOpen="_historyDrawerOpen" />
 </MudLayout>
 
 @code
 {
     private bool _drawerOpen;
+    private bool _historyDrawerOpen;
 }

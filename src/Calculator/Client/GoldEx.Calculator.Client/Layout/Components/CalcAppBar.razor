@@ -1,16 +1,32 @@
-﻿<MudAppBar Elevation="12" Dense="true">
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle"/>
-    <a class="brand-text fs-3 mr-2 ml-4" href="https://goldexsoft.ir" target="_blank">GoldEx Mini</a>
-    <MudSpacer />
-    <AccountToggler Class="ml-6" />
-    <DarkModeToggler />
+@using GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.Layout.Components
+
+<MudAppBar Elevation="2" Dense="true" Gutters="false">
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" Title="منو" Class="mr-1" />
+    
+    <a class="brand-text fs-5 mr-2 ml-3 d-none d-md-inline" href="https://goldexsoft.ir" target="_blank" style="text-decoration: none; font-weight: 800; color: inherit; letter-spacing: 0.5px;">GoldEx Mini</a>
+
+    <!-- نوار متحرک نرخ زنده درون اپ‌بار -->
+    <div class="d-flex flex-grow-1 justify-center align-center mx-2" style="min-width: 0;">
+        <LivePriceTicker />
+    </div>
+
+    <!-- دکمه‌های کنترلی با فاصله‌گذاری دقیق و یکدست -->
+    <div class="d-flex align-center">
+        <MudTooltip Text="تاریخچه محاسبات" Arrow="true">
+            <MudIconButton Icon="@Icons.Material.Filled.History" Color="Color.Inherit" OnClick="() => OnToggleHistory.InvokeAsync()" Title="تاریخچه محاسبات" />
+        </MudTooltip>
+
+        <AccountToggler />
+        <DarkModeToggler />
+    </div>
 </MudAppBar>
 
 @code
 {
     [Parameter] public EventCallback<bool> DrawerOpenChanged { get; set; }
-
     [Parameter] public bool DrawerOpen { get; set; }
+    [Parameter] public EventCallback OnToggleHistory { get; set; }
 
     private void DrawerToggle()
     {
