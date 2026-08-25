@@ -1,4 +1,4 @@
-﻿@attribute [Route(ClientRoutes.Home.Index)]
+@attribute [Route(ClientRoutes.Home.Index)]
 @attribute [Route(ClientRoutes.Calculator.Simple)]
 
 @inherits GoldExComponentBase
@@ -74,46 +74,11 @@
         </MudGrid>
     </div>
 
-    <SimpleCalculator Class="mt-4"
+    <CalculatorSegmentedNav />
+
+    <SimpleCalculator Class="mt-2"
                       Elevation="24"
                       EnableQuickInvoice="true"
                       OnAddToInvoice="HandleAddToInvoiceAsync" />
 </div>
 
-@if (_basketCount > 0)
-{
-    <div class="quick-invoice-fab">
-
-        @* <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudFabMenu Label="@($"صدور فاکتور ({_basketCount})")" Color="Color.Primary" AlignItems="AlignItems.Center" 
-                        OpenOnMouseHover="false" UseCloseIcon="false" DampenItemsBackgroundColor="false"
-                        StartIcon="@Icons.Material.Filled.ShoppingCartCheckout">
-                <MudFabMenuItem StartIcon="@Icons.Material.Outlined.ListAlt" Label="مشاهده اقلام" Color="Color.Success" OnClick="OpenBasketDialogAsync" />
-                <MudFabMenuItem StartIcon="@Icons.Material.Outlined.ShoppingCartCheckout" Label="چاپ فاکتور" Color="Color.Info" OnClick="FinalizeInvoiceAsync" />
-            </MudFabMenu>
-        </MudHidden>
-        
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <QuickInvoiceSpeedDial Count="@_basketCount"
-                                   OnOpenList="OpenBasketDialogAsync"
-                                   OnFinalize="FinalizeInvoiceAsync" />
-        </MudHidden> *@
-
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-            <QuickInvoiceSpeedDial Count="@_basketCount"
-                                   OnOpenList="OpenBasketDialogAsync"
-                                   OnFinalize="FinalizeInvoiceAsync"/>
-        </MudHidden>
-
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary" Class="shadow" Size="Size.Large">
-                <MudButton StartIcon="@Icons.Material.Filled.ShoppingCartCheckout" OnClick="FinalizeInvoiceAsync">
-                    صدور فاکتور (@_basketCount)
-                </MudButton>
-                <MudTooltip Text="مشاهده اقلام">
-                    <MudIconButton Icon="@Icons.Material.Filled.ListAlt" Color="Color.Info" Variant="Variant.Filled" OnClick="OpenBasketDialogAsync"/>
-                </MudTooltip>
-            </MudButtonGroup>
-        </MudHidden>
-    </div>
-}

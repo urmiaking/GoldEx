@@ -1,0 +1,204 @@
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.ViewModels
+@inherits GoldExComponentBase
+
+<MudTabs Elevation="@Elevation" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4" Color="Color.Primary" Class="@Class">
+    <!-- تب ۱: تبدیل به شرط ۷۵۰ -->
+    <MudTabPanel Text="تبدیل به شرط ۷۵۰" Icon="@Icons.Material.Filled.SwapHoriz">
+        <MudCard Elevation="0" Class="pa-2">
+            <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                <MudIcon Icon="@Icons.Material.Filled.Science" Color="Color.Primary" />
+                <div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">تبدیل وزن بر اساس عیار (فرمول تبدیل به شرط)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">تبدیل طلا با هر عیاری به عیار استاندارد ۷۵۰ (۱۸ عیار) یا عیار دلخواه</MudText>
+                </div>
+            </div>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="_model.InputWeight"
+                                     Label="وزن واقعی قطعه (گرم)"
+                                     Format="0.###"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="گرم"
+                                     dir="ltr" />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="_model.InputFineness"
+                                     Label="عیار واقعی قطعه"
+                                     Format="0.###"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     HelperText="مثال: ۷۳۵، ۷۴۰، ۷۰۵ یا ۸۷۵"
+                                     dir="ltr" />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal"
+                                     @bind-Value="_model.TargetFineness"
+                                     Label="عیار هدف (مبنا)"
+                                     Format="0.###"
+                                     HideSpinButtons="true"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     HelperText="پیش‌فرض ۷۵۰ (۱۸ عیار)"
+                                     dir="ltr" />
+                </MudItem>
+            </MudGrid>
+
+            <div class="mt-4 pa-4 rounded-lg" style="background: rgba(212, 175, 55, 0.08); border: 1px dashed rgba(212, 175, 55, 0.5);">
+                <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-2">
+                    <span class="font-weight-bold" style="font-size: 1rem;">وزن معادل در عیار هدف (@_model.TargetFineness.ToString("0.###")):</span>
+                    <span class="font-weight-black" style="color: var(--mud-palette-primary); font-size: 1.4rem; direction: ltr;">
+                        @_model.ConvertedWeight.ToString("0.###") گرم
+                    </span>
+                </div>
+
+                <MudDivider Class="my-2" />
+
+                <div class="d-flex justify-space-between align-center text-secondary mb-1" style="font-size: 0.85rem;">
+                    <span>وزن معادل به شرط ۷۵۰ (طلای ۱۸):</span>
+                    <span class="font-weight-bold">@_model.Equivalent750Weight.ToString("0.###") گرم</span>
+                </div>
+
+                <div class="d-flex justify-space-between align-center text-secondary" style="font-size: 0.85rem;">
+                    <span>وزن طلای ۲۴ عیار خالص (۱۰۰۰):</span>
+                    <span class="font-weight-bold">@_model.PureGoldWeight.ToString("0.###") گرم</span>
+                </div>
+            </div>
+
+            <div class="d-flex justify-end mt-3">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.BookmarkAdd"
+                           OnClick="SaveSingleToHistoryAsync">
+                    ذخیره در تاریخچه
+                </MudButton>
+            </div>
+        </MudCard>
+    </MudTabPanel>
+
+    <!-- تب ۲: عیار ذوب و آبشده -->
+    <MudTabPanel Text="عیار ذوب و آبشده" Icon="@Icons.Material.Filled.Layers">
+        <MudCard Elevation="0" Class="pa-2">
+            <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-3 pb-2 border-b">
+                <div class="d-flex align-center gap-2">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Color="Color.Error" />
+                    <div>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">محاسبه عیار میانگین ذوب و آبشده</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">محاسبه خط انگ و عیار وزنی حاصل از مخلوط کردن قطعات با عیارهای مختلف</MudText>
+                    </div>
+                </div>
+
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="AddBatchItem">
+                    افزودن قطعه جدید
+                </MudButton>
+            </div>
+
+            <div class="d-flex flex-column gap-2 mb-4">
+                @for (var i = 0; i < _model.BatchItems.Count; i++)
+                {
+                    var item = _model.BatchItems[i];
+                    var index = i;
+
+                    <div class="d-flex align-center gap-2 flex-wrap pa-2 border rounded-lg" style="background: rgba(0, 0, 0, 0.02);">
+                        <MudTextField @bind-Value="item.Title"
+                                      Label="عنوان قطعه"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Style="max-width: 140px;" />
+
+                        <MudNumericField T="decimal"
+                                         @bind-Value="item.Weight"
+                                         Label="وزن (گرم)"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Adornment="Adornment.End"
+                                         AdornmentText="گرم"
+                                         dir="ltr"
+                                         Style="max-width: 140px;" />
+
+                        <MudNumericField T="decimal"
+                                         @bind-Value="item.Fineness"
+                                         Label="عیار"
+                                         Format="0.###"
+                                         HideSpinButtons="true"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         dir="ltr"
+                                         Style="max-width: 110px;" />
+
+                        <div class="d-flex flex-column justify-center px-2">
+                            <span style="font-size: 0.75rem; color: #71717a;">معادل ۷۵۰:</span>
+                            <span class="font-weight-bold" style="font-size: 0.85rem;">@item.Equivalent750Weight.ToString("0.###") گرم</span>
+                        </div>
+
+                        <MudSpacer />
+
+                        @if (_model.BatchItems.Count > 1)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="() => RemoveBatchItem(index)" />
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- خلاصه تجمیعی آبشده -->
+            <div class="pa-4 rounded-lg" style="background: rgba(239, 68, 68, 0.06); border: 1px dashed rgba(239, 68, 68, 0.4);">
+                <MudGrid Spacing="2">
+                    <MudItem xs="6" sm="3">
+                        <div class="d-flex flex-column">
+                            <span class="text-secondary" style="font-size: 0.8rem;">مجموع وزن کل:</span>
+                            <span class="font-weight-black" style="font-size: 1.1rem;">@_model.BatchTotalWeight.ToString("0.###") گرم</span>
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="6" sm="3">
+                        <div class="d-flex flex-column">
+                            <span class="text-secondary" style="font-size: 0.8rem;">مجموع طلای خالص (۲۴):</span>
+                            <span class="font-weight-black" style="font-size: 1.1rem; color: #d97706;">@_model.BatchTotalPureGold.ToString("0.###") گرم</span>
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="6" sm="3">
+                        <div class="d-flex flex-column">
+                            <span class="text-secondary" style="font-size: 0.8rem;">مجموع به شرط ۷۵۰:</span>
+                            <span class="font-weight-black" style="font-size: 1.1rem; color: #2563eb;">@_model.BatchTotal750Weight.ToString("0.###") گرم</span>
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="6" sm="3">
+                        <div class="d-flex flex-column">
+                            <span class="text-secondary" style="font-size: 0.8rem;">عیار میانگین مخلوط (انگ):</span>
+                            <span class="font-weight-black" style="font-size: 1.3rem; color: #dc2626;">@_model.BatchAverageFineness.ToString("0.#")</span>
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </div>
+
+            <div class="d-flex justify-end mt-3">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.BookmarkAdd"
+                           OnClick="SaveBatchToHistoryAsync">
+                    ذخیره در تاریخچه
+                </MudButton>
+            </div>
+        </MudCard>
+    </MudTabPanel>
+</MudTabs>

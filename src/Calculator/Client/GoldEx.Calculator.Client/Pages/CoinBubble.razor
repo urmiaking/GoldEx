@@ -1,0 +1,18 @@
+@attribute [Route(ClientRoutes.Calculator.CoinBubble)]
+@using GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Shared.Routings
+
+<PageTitle>حباب سکه</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <MudText Typo="Typo.h4" Class="mb-2 mt-4">حباب سکه</MudText>
+            <MudText Typo="Typo.body1">محاسبه ارزش ذاتی و حباب انواع سکه بر اساس انس جهانی و دلار</MudText>
+        </div>
+    </div>
+
+    <CalculatorSegmentedNav />
+
+    <CoinBubbleComponent Class="mt-2" Elevation="24" />
+</div>

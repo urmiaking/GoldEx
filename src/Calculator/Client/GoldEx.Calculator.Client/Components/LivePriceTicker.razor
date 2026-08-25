@@ -1,0 +1,31 @@
+@namespace GoldEx.Calculator.Client.Components
+@inherits GoldExComponentBase
+
+@if (_prices.Count > 0 && _currentIndex < _prices.Count)
+{
+    var item = _prices[_currentIndex];
+    <div class="calc-appbar-ticker" @onclick="NextPrice" title="نرخ لحظه‌ای (برای مشاهده نرخ بعدی کلیک کنید)">
+        <div class="ticker-content" @key="_currentIndex">
+            <span class="ticker-title">@item.Title:</span>
+            <span class="ticker-value">@item.FormattedValue</span>
+            <span class="ticker-unit">@item.Unit</span>
+        </div>
+    </div>
+}
+else if (_isLoading)
+{
+    <div class="calc-appbar-ticker">
+        <div class="ticker-loading">
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Style="width: 12px; height: 12px;" />
+            <span style="font-size: 0.75rem;">دریافت نرخ‌ها...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="calc-appbar-ticker" @onclick="RefreshAsync" title="تلاش مجدد برای دریافت نرخ‌ها">
+        <div class="ticker-empty">
+            <span style="font-size: 0.75rem;">نرخ لحظه‌ای طلا</span>
+        </div>
+    </div>
+}

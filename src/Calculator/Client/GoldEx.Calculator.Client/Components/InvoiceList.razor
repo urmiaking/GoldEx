@@ -1,9 +1,16 @@
-﻿@using GoldEx.Calculator.Client.ViewModels
+@namespace GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Client.ViewModels
 @inherits GoldExComponentBase
 
 @if (!_isLoggedIn)
 {
-    <div>لطفا وارد حساب کاربری خود شوید</div>
+    <MudCard Elevation="8" Class="calc-glass-card pa-6 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+        <MudText Typo="Typo.h6" Class="mb-3">لطفاً برای مشاهده فاکتورها وارد حساب کاربری خود شوید</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Login" Href="/Account/Login">
+            ورود به حساب کاربری
+        </MudButton>
+    </MudCard>
 }
 else
 {
@@ -17,20 +24,45 @@ else
               ContainerClass="responsive-table-toolbar"
               ServerData="GetInvoiceData"
               Breakpoint="Breakpoint.Sm"
-              Elevation="24">
+              Elevation="8">
 
         <ToolBarContent>
-            <MudTextField T="string"
-                          Clearable="true"
-                          Immediate="true"
-                          ValueChanged="@(s => OnSearch(s))"
-                          DebounceInterval="500"
-                          Placeholder="جستجو ..."
-                          Adornment="Adornment.Start"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          AdornmentIcon="@Icons.Material.Filled.Search"
-                          IconSize="Size.Medium" />
+            <div class="d-flex justify-space-between align-center w-100 flex-wrap gap-2">
+                <MudTextField T="string"
+                              Clearable="true"
+                              Immediate="true"
+                              ValueChanged="@(s => OnSearch(s))"
+                              DebounceInterval="500"
+                              Placeholder="جستجو در فاکتورها، مشتری، شماره تماس..."
+                              Adornment="Adornment.Start"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Style="max-width: 320px;" />
+
+                <div class="d-flex gap-2">
+                    <!-- دسکتاپ: دکمه با متن کامل -->
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Backup"
+                               OnClick="OpenBackupDialogAsync"
+                               Class="d-none d-sm-inline-flex">
+                        پشتیبان‌گیری و بازیابی
+                    </MudButton>
+
+                    <!-- موبایل: آیکون باتن فشرده -->
+                    <MudTooltip Text="پشتیبان‌گیری و بازیابی فاکتورها">
+                        <MudIconButton Icon="@Icons.Material.Filled.Backup"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="OpenBackupDialogAsync"
+                                       Class="d-inline-flex d-sm-none" />
+                    </MudTooltip>
+                </div>
+            </div>
         </ToolBarContent>
 
         <HeaderContent>
@@ -39,12 +71,14 @@ else
             <MudTh><MudTableSortLabel SortLabel="@nameof(QuickInvoice.CustomerPhone)" T="QuickInvoice">شماره تماس</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortLabel="@nameof(QuickInvoice.DateTime)" T="QuickInvoice">تاریخ ثبت</MudTableSortLabel></MudTh>
             <MudTh>ارزش کل</MudTh>
-            <MudTh>عملیات</MudTh>
+            <MudTh Style="text-align: center;">عملیات</MudTh>
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd DataLabel="شماره فاکتور">@context.InvoiceNumber</MudTd>
-            <MudTd DataLabel="نام مشتری">@context.CustomerName</MudTd>
+            <MudTd DataLabel="شماره فاکتور">
+                <span class="font-weight-bold" style="direction: ltr; display: inline-block;">@context.InvoiceNumber</span>
+            </MudTd>
+            <MudTd DataLabel="نام مشتری">@(string.IsNullOrWhiteSpace(context.CustomerName) ? "مشتری محترم" : context.CustomerName)</MudTd>
             <MudTd DataLabel="شماره تماس">@(!string.IsNullOrWhiteSpace(context.CustomerPhone) ? context.CustomerPhone : "—")</MudTd>
             <MudTd DataLabel="تاریخ ثبت">@context.DateTime</MudTd>
             <MudTd DataLabel="ارزش کل">
@@ -55,23 +89,49 @@ else
                         return value;
                     });
 
-                    @($"{total:N0} تومان")
+                    <span class="font-weight-bold" style="color: var(--mud-palette-primary); direction: ltr; display: inline-block;">
+                        @($"{total:N0} تومان")
+                    </span>
                 }
             </MudTd>
-            <MudTd DataLabel="عملیات">
-                <div class="d-flex gap-2">
-                    <MudButton Variant="@Variant.Filled" StartIcon="@Icons.Material.Filled.Print" Size="Size.Small"
-                               Color="@Color.Success" OnClick="@(() => RePrintInvoice(context))">چاپ</MudButton>
-                    <MudButton OnClick="@(() => DeleteInvoice(context.InvoiceNumber))" Variant="@Variant.Filled" Size="Size.Small"
-                               StartIcon="@Icons.Material.Filled.Delete" Color="@Color.Error">حذف</MudButton>
+            <MudTd DataLabel="عملیات" Style="text-align: center;">
+                <div class="d-flex justify-center gap-1 flex-wrap">
+                    <MudMenu Icon="@Icons.Material.Filled.Print"
+                             Variant="Variant.Filled"
+                             Color="Color.Success"
+                             Size="Size.Small"
+                             Title="گزینه‌های چاپ">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Description" OnClick="@(() => RePrintInvoice(context))">
+                            چاپ فاکتور رسمی (A5 افقی)
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Receipt" OnClick="@(() => RePrintThermalInvoice(context))">
+                            چاپ فیش حرارتی (POS 80mm)
+                        </MudMenuItem>
+                    </MudMenu>
+
+                    <MudTooltip Text="اشتراک‌گذاری در پیام‌رسان‌ها">
+                        <MudIconButton Icon="@Icons.Material.Filled.Share"
+                                       Variant="Variant.Filled"
+                                       Size="Size.Small"
+                                       Color="Color.Info"
+                                       OnClick="@(() => OpenShareDialogAsync(context))" />
+                    </MudTooltip>
+
+                    <MudTooltip Text="حذف فاکتور">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Variant="Variant.Filled"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       OnClick="@(() => DeleteInvoice(context.InvoiceNumber))" />
+                    </MudTooltip>
                 </div>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
-            <MudText>هیچ فاکتوری یافت نشد</MudText>
+            <MudText Class="pa-4 text-center">هیچ فاکتوری یافت نشد</MudText>
         </NoRecordsContent>
         <LoadingContent>
-            <MudText>در حال بارگیری</MudText>
+            <MudText Class="pa-4 text-center">در حال بارگیری اطلاعات...</MudText>
         </LoadingContent>
         <PagerContent>
             @{
@@ -82,7 +142,7 @@ else
                 var infoText = $"نمایش {startItem} تا {endItem} از {totalItems} ردیف";
             }
 
-            <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 py-4" style="gap: 1rem;">
+            <div class="d-flex flex-column flex-sm-row align-center justify-sm-space-between w-100 py-3 px-4" style="gap: 1rem;">
                 <div class="mud-table-pagination-caption">@infoText</div>
 
                 <MudPagination SelectedChanged="PageChanged"

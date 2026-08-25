@@ -1,18 +1,24 @@
-﻿@using GoldEx.Client.Components.Services.Abstractions
+@using GoldEx.Client.Components.Services.Abstractions
 
 @if (_isDarkMode)
 {
-    <MudIconButton Icon="@Icons.Material.Filled.DarkMode"
-                   Class="p-0"
-                   Color="Color.Inherit"
-                   OnClick="() => OnDarkModeToggleChanged(false)" />
+    <MudTooltip Text="تغییر به حالت روز" Arrow="true">
+        <MudIconButton Icon="@Icons.Material.Filled.LightMode"
+                       Color="Color.Inherit"
+                       Class="ml-1"
+                       Title="حالت روز"
+                       OnClick="() => OnDarkModeToggleChanged(false)" />
+    </MudTooltip>
 }
 else
 {
-    <MudIconButton Icon="@Icons.Material.Filled.LightMode"
-                   Class="p-0"
-                   Color="Color.Inherit"
-                   OnClick="() => OnDarkModeToggleChanged(true)" />
+    <MudTooltip Text="تغییر به حالت شب" Arrow="true">
+        <MudIconButton Icon="@Icons.Material.Filled.DarkMode"
+                       Color="Color.Inherit"
+                       Class="ml-1"
+                       Title="حالت شب"
+                       OnClick="() => OnDarkModeToggleChanged(true)" />
+    </MudTooltip>
 }
 
 @code {

@@ -1,0 +1,18 @@
+@attribute [Route(ClientRoutes.Calculator.TradeIn)]
+@using GoldEx.Calculator.Client.Components
+@using GoldEx.Calculator.Shared.Routings
+
+<PageTitle>تعویض طلا</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <MudText Typo="Typo.h4" Class="mb-2 mt-4">تعویض طلا</MudText>
+            <MudText Typo="Typo.body1">محاسبه همزمان طلای کهنه و نو با تعیین مانده تسویه</MudText>
+        </div>
+    </div>
+
+    <CalculatorSegmentedNav />
+
+    <TradeInCalculatorComponent Class="mt-2" Elevation="24" />
+</div>

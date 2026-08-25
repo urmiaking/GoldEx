@@ -1,4 +1,4 @@
-﻿using GoldEx.Calculator.Client.Services;
+using GoldEx.Calculator.Client.Services;
 using GoldEx.Calculator.Client.ViewModels;
 using GoldEx.Client.Components.Calculator.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -25,6 +25,13 @@ public partial class InvoiceList
 
         if (_isLoggedIn) 
             await LoadInvoicesAsync();
+
+        InvoiceStore.Changed += async (_, _) =>
+        {
+            await LoadInvoicesAsync();
+            if (_table != null)
+                await _table.ReloadServerData();
+        };
 
         await base.OnInitializedAsync();
     }
@@ -112,21 +119,52 @@ public partial class InvoiceList
     private async Task RePrintInvoice(QuickInvoice invoice)
     {
         var payload = invoice.ToPayload();
-
         var json = JsonSerializer.Serialize(payload, QuickInvoicePayload.JsonOptions);
         await JsRuntime.InvokeVoidAsync("quickInvoice.printFromPayload", json);
     }
 
+    private async Task RePrintThermalInvoice(QuickInvoice invoice)
+    {
+        var payload = invoice.ToPayload();
+        var json = JsonSerializer.Serialize(payload, QuickInvoicePayload.JsonOptions);
+        await JsRuntime.InvokeVoidAsync("quickInvoice.printThermalFromPayload", json);
+    }
+
+    private async Task OpenShareDialogAsync(QuickInvoice invoice)
+    {
+        var parameters = new DialogParameters<InvoiceShareDialog>
+        {
+            { x => x.Invoice, invoice }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        await DialogService.ShowAsync<InvoiceShareDialog>("اشتراک‌گذاری فاکتور", parameters, options);
+    }
+
+    private async Task OpenBackupDialogAsync()
+    {
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InvoiceBackupDialog>("پشتیبان‌گیری و بازیابی فاکتورها", options);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            await LoadInvoicesAsync();
+            if (_table != null)
+                await _table.ReloadServerData();
+        }
+    }
 
     private async Task OnSearch(string text)
     {
         _searchString = text;
 
-        if (_table.CurrentPage != 0)
-            _table.NavigateTo(0);
-
-        else
-            await _table.ReloadServerData();
+        if (_table != null)
+        {
+            if (_table.CurrentPage != 0)
+                _table.NavigateTo(0);
+            else
+                await _table.ReloadServerData();
+        }
     }
 
     private void PageChanged(int i)

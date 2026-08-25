@@ -1,29 +1,54 @@
-﻿@inherits GoldExComponentBase
+@namespace GoldEx.Calculator.Client.Layout.Components
+@inherits GoldExComponentBase
 
 <MudNavMenu Bordered Margin="Margin.Dense" Color="Color.Primary">
     <MudNavLink Href="@ClientRoutes.Home.Index" Match="NavLinkMatch.All"
-                Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Info">
-        محاسبه گر طلا
+                Icon="@Icons.Material.Filled.Calculate" IconColor="Color.Warning">
+        طلا و جواهر
     </MudNavLink>
-    <AuthorizeView>
-        <Authorized>
-            <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"
-                        Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Primary">
-                لیست فاکتورها
-            </MudNavLink>
-        </Authorized>
-    </AuthorizeView>
-    <MudNavLink Href="@ClientRoutes.Calculator.Currency" Match="NavLinkMatch.All"
-                Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Error">
-        تبدیل ارز
+
+    <MudNavLink Href="@ClientRoutes.Calculator.TradeIn" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.SwapHorizontalCircle" IconColor="Color.Primary">
+        تعویض طلا
     </MudNavLink>
+
+    <MudNavLink Href="@ClientRoutes.Calculator.CoinBubble" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.MonetizationOn" IconColor="Color.Success">
+        حباب سکه
+    </MudNavLink>
+
+    <MudNavLink Href="@ClientRoutes.Calculator.Assay" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.Science" IconColor="Color.Info">
+        عیارسنجی و ۷۵۰
+    </MudNavLink>
+
+    <MudNavLink Href="@ClientRoutes.Calculator.Dca" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.TrendingUp" IconColor="Color.Secondary">
+        میانگین خرید
+    </MudNavLink>
+
     <MudNavLink Href="@ClientRoutes.Calculator.Reverse" Match="NavLinkMatch.All"
                 Icon="@Icons.Material.Filled.SwapHoriz" IconColor="Color.Success">
         ارز به طلا
     </MudNavLink>
+
+    <MudNavLink Href="@ClientRoutes.Calculator.Currency" Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Error">
+        تبدیل ارز
+    </MudNavLink>
+
+    <AuthorizeView>
+        <Authorized>
+            <MudNavLink Href="@ClientRoutes.Invoices.Index" Match="NavLinkMatch.All"
+                        Icon="@Icons.Material.Filled.LibraryBooks" IconColor="Color.Primary">
+                فاکتورها
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+
     <MudNavLink Href="@ClientRoutes.About.Index" Match="NavLinkMatch.All"
                 Icon="@Icons.Material.Filled.Info" IconColor="Color.Tertiary">
-        درباره برنامه
+        درباره ما
     </MudNavLink>
 </MudNavMenu>
 
