@@ -2,6 +2,7 @@ using GoldEx.Client.Components.Services;
 using GoldEx.Server.Domain.StoreAggregate;
 using GoldEx.Server.Infrastructure;
 using GoldEx.Shared.DTOs.Licenses;
+using GoldEx.Shared.Routings;
 using GoldEx.Shared.Services.Abstractions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,15 +25,6 @@ public partial class App
     private string? SplashLogoUrl { get; set; }
     private bool IsStoreTitle { get; set; }
 
-    private static readonly HashSet<string> ReservedSegments = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "api", "_content", "_framework", "Account", "oauth", "mcp", ".well-known",
-        "serilog-ui", "swagger", "health", "Error", "__test", "uploads", "shared",
-        "assets", "fonts", "css", "js", "invoices", "products", "finances", "base-info",
-        "settings", "quick-invoice", "ssr", "favicon.ico", "manifest.webmanifest",
-        "app.js", "sw.js"
-    };
-
     private bool IsVitrineRoute()
     {
         var path = HttpContext.Request.Path.Value ?? "";
@@ -40,7 +32,7 @@ public partial class App
         if (segments.Length == 0) return false;
 
         var firstSegment = segments[0];
-        return !ReservedSegments.Contains(firstSegment);
+        return !ClientRoutes.Vitrine.IsReservedSegment(firstSegment);
     }
 
     private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
