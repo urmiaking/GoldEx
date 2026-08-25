@@ -68,6 +68,33 @@
     else
     {
         <div class="vitrine-product-layout animate-fade-in">
+            <!-- Mobile Header (Title First, Tags Below on Mobile) -->
+            <div class="d-block d-lg-none mb-3">
+                <h1 class="vitrine-product-title mb-2" style="font-size: 1.5rem;">@_product.Name</h1>
+                <div class="vitrine-product-tags mb-3">
+                    @if (!string.IsNullOrEmpty(_product.CategoryTitle))
+                    {
+                        <span class="vitrine-tag tag-primary">@_product.CategoryTitle</span>
+                    }
+                    <span class="vitrine-tag tag-fineness">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
+                    @if (_product.IsAvailable)
+                    {
+                        <span class="vitrine-tag tag-available">
+                            <i class="fa-solid fa-check"></i> موجود در گالری
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="vitrine-tag tag-sold">
+                            <i class="fa-solid fa-xmark"></i> فروخته شد (ناموجود)
+                        </span>
+                    }
+                    <span class="vitrine-tag tag-code">
+                        کد: @_product.Barcode
+                    </span>
+                </div>
+            </div>
+
             <!-- Gallery Column (Sticky Gallery) -->
             <div class="vitrine-gallery-sticky-wrapper">
                 <div class="vitrine-gallery-main">
@@ -110,32 +137,31 @@
 
             <!-- Specs, Price Breakdown & CTAs Column -->
             <div class="vitrine-info-box">
-                <!-- Title & Tags -->
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <!-- Desktop-Only Header (Title First, Tags Below) -->
+                <div class="d-none d-lg-block">
+                    <h1 class="vitrine-product-title mb-2">@_product.Name</h1>
+                    <div class="vitrine-product-tags">
                         @if (!string.IsNullOrEmpty(_product.CategoryTitle))
                         {
-                            <span class="product-badge" style="position: static;">@_product.CategoryTitle</span>
+                            <span class="vitrine-tag tag-primary">@_product.CategoryTitle</span>
                         }
-                        <span class="product-badge" style="position: static;">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
+                        <span class="vitrine-tag tag-fineness">عیار @(_product.Fineness > 0 ? _product.Fineness.ToString("G29") : "750")</span>
                         @if (_product.IsAvailable)
                         {
-                            <span class="product-badge" style="position: static; background-color: #10b981; border-color: #10b981; color: #fff;">
-                                ✓ موجود در گالری
+                            <span class="vitrine-tag tag-available">
+                                <i class="fa-solid fa-check"></i> موجود در گالری
                             </span>
                         }
                         else
                         {
-                            <span class="product-badge sold-out" style="position: static;">
-                                ✕ فروخته شد (ناموجود)
+                            <span class="vitrine-tag tag-sold">
+                                <i class="fa-solid fa-xmark"></i> فروخته شد (ناموجود)
                             </span>
                         }
-                        <span style="font-size: 0.82rem; color: var(--gray-600); margin-right: auto; direction: ltr;">
+                        <span class="vitrine-tag tag-code">
                             کد: @_product.Barcode
                         </span>
                     </div>
-
-                    <h1 class="vitrine-product-title">@_product.Name</h1>
                 </div>
 
                 <!-- Description -->

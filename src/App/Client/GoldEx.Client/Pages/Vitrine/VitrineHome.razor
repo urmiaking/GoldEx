@@ -127,36 +127,48 @@
     <!-- Featured Products Showcase (کالکشن‌های برگزیده) -->
     @if (_featuredProducts.Count > 0)
     {
-        <section style="margin-bottom: 50px;">
-            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-                <div>
-                    <h2 style="font-size: 1.6rem; font-weight: 900; margin: 0; color: var(--primary-color);">
+        <section class="vitrine-showcase-box" style="margin-bottom: 45px;">
+            <div class="showcase-header d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div class="showcase-title-box">
+                    <h2 class="showcase-title">
                         ⭐ پیشنهادات <span style="color: var(--accent-color);">ویژه و برگزیده</span> گالری
                     </h2>
-                    <p style="color: var(--gray-600); font-size: 0.92rem; margin: 4px 0 0;">خاص‌ترین و پرطرفدارترین کارهای ویترین</p>
+                    <div class="showcase-title-line"></div>
                 </div>
-                <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="btn-gisu btn-gisu-outline" style="padding: 9px 18px; font-size: 0.85rem;">
-                    مشاهده همه برگزیده‌ها
+                <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="showcase-link-all">
+                    <span>مشاهده همه</span>
+                    <i class="fa-solid fa-angle-left"></i>
                 </a>
             </div>
 
-            <div class="vitrine-grid" style="padding-top: 0;">
+            <div class="vitrine-home-slider">
                 @foreach (var product in _featuredProducts)
                 {
-                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
+                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
                             @if (!product.IsAvailable)
                             {
-                                <span class="product-badge sold-out">فروخته شد</span>
-                                <div class="product-sold-overlay">
-                                    <span class="product-sold-ribbon">فروخته شد</span>
-                                </div>
+                                <span class="product-badge badge-sold">فروخته شد</span>
+                                <span class="product-badge badge-top-left">عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
+                                <span class="product-badge badge-bottom-right">@(product.Weight.ToString("G29")) گرم</span>
+                                @if (product.IsFeatured)
+                                {
+                                    <span class="product-badge badge-featured">⭐ ویژه</span>
+                                }
                             }
                             else
                             {
-                                <span class="product-badge">⭐ ویژه</span>
+                                <span class="product-badge badge-top-right">@(product.Weight.ToString("G29")) گرم</span>
+                                <span class="product-badge badge-top-left">عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
+                                @if (product.IsFeatured)
+                                {
+                                    <span class="product-badge badge-featured">⭐ ویژه</span>
+                                }
+                                else if (product.ProductType == ProductType.Jewelry)
+                                {
+                                    <span class="product-badge badge-bottom-left">💎 جواهر</span>
+                                }
                             }
-                            <span class="product-badge secondary">@(product.Weight.ToString("G29")) گرم</span>
 
                             @if (!string.IsNullOrWhiteSpace(product.MainImageUrl))
                             {
@@ -164,59 +176,50 @@
                             }
                             else
                             {
-                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-400); gap: 8px;">
-                                    <i class="fa-solid fa-gem" style="font-size: 2.5rem; color: var(--accent-color);"></i>
-                                    <span style="font-size: 0.85rem;">بدون تصویر</span>
+                                <div class="product-no-image">
+                                    <i class="fa-solid fa-gem"></i>
+                                    <span>بدون تصویر</span>
                                 </div>
                             }
                         </div>
                         <div class="product-info">
                             <span class="product-category">@(product.CategoryTitle ?? "طلا و جواهر")</span>
-                            <h3 class="product-title">@product.Name</h3>
-                            <div class="product-specs">
-                                <span>عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
-                                <span style="direction: ltr; display: inline-block;">کد: @product.Barcode</span>
-                            </div>
+                            <h3 class="product-title" title="@product.Name">@product.Name</h3>
                             <div class="product-price-container">
-                                <div>
-                                    <div style="font-size: 0.72rem; color: var(--gray-600);">مبلغ با مظنه روز:</div>
-                                    <div class="product-price">
-                                        @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
-                                    </div>
+                                <span class="product-price-label">مبلغ با مظنه روز:</span>
+                                <div class="product-price">
+                                    @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                 </div>
-                                <span class="btn-gisu @(product.IsAvailable ? "btn-gisu-primary" : "btn-gisu-outline")" style="padding: 6px 14px; font-size: 0.8rem; @(!product.IsAvailable ? "border-color: #dc2626; color: #dc2626;" : "")">
-                                    @(product.IsAvailable ? "مشاهده ←" : "فروخته شد")
-                                </span>
                             </div>
                         </div>
                     </a>
                 }
+
+                <!-- Ending Card -->
+                <a href="@($"/{StoreSlug}/catalog?onlyFeatured=true")" class="slider-view-all-card animate-fade-in-up" title="مشاهده همه برگزیده‌ها">
+                    <div class="slider-view-all-circle">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </div>
+                    <span class="slider-view-all-text">مشاهده همه</span>
+                </a>
             </div>
         </section>
     }
 
-    <!-- Recent Arrivals Grid with Quick Filter -->
-    <section style="margin-bottom: 60px;">
-        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-            <div>
-                <h2 style="font-size: 1.6rem; font-weight: 900; margin: 0; color: var(--primary-color);">
+    <!-- Recent Arrivals Showcase (مشابه دیجی‌کالا) -->
+    <section class="vitrine-showcase-box" style="margin-bottom: 55px;">
+        <div class="showcase-header d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div class="showcase-title-box">
+                <h2 class="showcase-title">
                     جدیدترین کارهای <span style="color: var(--accent-color);">ویترین</span>
                 </h2>
-                <p style="color: var(--gray-600); font-size: 0.92rem; margin: 4px 0 0;">موجود در گالری با امکان استعلام فوری و خرید</p>
+                <div class="showcase-title-line"></div>
             </div>
 
-            <!-- Quick Filter Tabs -->
-            <div class="d-flex gap-2 flex-wrap">
-                <button type="button" class="vitrine-filter-pill @(_activeQuickFilter == "all" ? "active" : "")" @onclick='() => SetQuickFilter("all")'>
-                    همه (@_products.Count)
-                </button>
-                <button type="button" class="vitrine-filter-pill @(_activeQuickFilter == "light" ? "active" : "")" @onclick='() => SetQuickFilter("light")'>
-                    سبک (زیر ۳ گرم)
-                </button>
-                <button type="button" class="vitrine-filter-pill @(_activeQuickFilter == "jewelry" ? "active" : "")" @onclick='() => SetQuickFilter("jewelry")'>
-                    جواهرات نگین‌دار
-                </button>
-            </div>
+            <a href="@($"/{StoreSlug}/catalog")" class="showcase-link-all">
+                <span>مشاهده همه</span>
+                <i class="fa-solid fa-angle-left"></i>
+            </a>
         </div>
 
         @if (_isLoading)
@@ -238,27 +241,34 @@
         }
         else
         {
-            <div class="vitrine-grid" style="padding-top: 0;">
+            <div class="vitrine-home-slider">
                 @foreach (var product in FilteredHomeProducts)
                 {
-                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
+                    <a href="@($"/{StoreSlug}/p/{product.Barcode}")" class="product-card product-slider-card animate-fade-in-up @(!product.IsAvailable ? "is-sold" : "")">
                         <div class="product-image">
                             @if (!product.IsAvailable)
                             {
-                                <span class="product-badge sold-out">فروخته شد</span>
-                                <div class="product-sold-overlay">
-                                    <span class="product-sold-ribbon">فروخته شد</span>
-                                </div>
-                            }
-                            else if (product.ProductType == ProductType.Jewelry)
-                            {
-                                <span class="product-badge" style="background-color: #7e22ce; border-color: #7e22ce; color: #fff;">💎 جواهر</span>
+                                <span class="product-badge badge-sold">فروخته شد</span>
+                                <span class="product-badge badge-top-left">عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
+                                <span class="product-badge badge-bottom-right">@(product.Weight.ToString("G29")) گرم</span>
+                                @if (product.IsFeatured)
+                                {
+                                    <span class="product-badge badge-featured">⭐ ویژه</span>
+                                }
                             }
                             else
                             {
-                                <span class="product-badge">طلای ۱۸</span>
+                                <span class="product-badge badge-top-right">@(product.Weight.ToString("G29")) گرم</span>
+                                <span class="product-badge badge-top-left">عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
+                                @if (product.IsFeatured)
+                                {
+                                    <span class="product-badge badge-featured">⭐ ویژه</span>
+                                }
+                                else if (product.ProductType == ProductType.Jewelry)
+                                {
+                                    <span class="product-badge badge-bottom-left">💎 جواهر</span>
+                                }
                             }
-                            <span class="product-badge secondary">@(product.Weight.ToString("G29")) گرم</span>
 
                             @if (!string.IsNullOrWhiteSpace(product.MainImageUrl))
                             {
@@ -266,39 +276,31 @@
                             }
                             else
                             {
-                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-400); gap: 8px;">
-                                    <i class="fa-solid fa-gem" style="font-size: 2.5rem; color: var(--accent-color);"></i>
-                                    <span style="font-size: 0.85rem;">بدون تصویر</span>
+                                <div class="product-no-image">
+                                    <i class="fa-solid fa-gem"></i>
+                                    <span>بدون تصویر</span>
                                 </div>
                             }
                         </div>
                         <div class="product-info">
                             <span class="product-category">@(product.CategoryTitle ?? "طلا و جواهر")</span>
-                            <h3 class="product-title">@product.Name</h3>
-                            <div class="product-specs">
-                                <span>عیار @(product.Fineness > 0 ? product.Fineness.ToString("G29") : "750")</span>
-                                <span style="direction: ltr; display: inline-block;">کد: @product.Barcode</span>
-                            </div>
+                            <h3 class="product-title" title="@product.Name">@product.Name</h3>
                             <div class="product-price-container">
-                                <div>
-                                    <div style="font-size: 0.72rem; color: var(--gray-600);">مبلغ با مظنه روز:</div>
-                                    <div class="product-price">
-                                        @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
-                                    </div>
+                                <span class="product-price-label">مبلغ با مظنه روز:</span>
+                                <div class="product-price">
+                                    @product.EstimatedPrice.ToString("N0") <small style="font-size: 0.75rem; font-weight: normal; color: var(--gray-600);">تومان</small>
                                 </div>
-                                <span class="btn-gisu @(product.IsAvailable ? "btn-gisu-primary" : "btn-gisu-outline")" style="padding: 6px 14px; font-size: 0.8rem; @(!product.IsAvailable ? "border-color: #dc2626; color: #dc2626;" : "")">
-                                    @(product.IsAvailable ? "مشاهده ←" : "فروخته شد")
-                                </span>
                             </div>
                         </div>
                     </a>
                 }
-            </div>
 
-            <div class="text-center mt-2 mb-5">
-                <a href="@($"/{StoreSlug}/catalog")" class="btn-gisu btn-gisu-primary" style="display: inline-flex; padding: 14px 36px;">
-                    <span>مشاهده تمام طلاها در کاتالوگ گالری</span>
-                    <i class="fa-solid fa-arrow-left"></i>
+                <!-- Dedicated Digikala-style 'مشاهده همه' (View All) Card -->
+                <a href="@($"/{StoreSlug}/catalog")" class="slider-view-all-card animate-fade-in-up" title="مشاهده همه محصولات کاتالوگ">
+                    <div class="slider-view-all-circle">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </div>
+                    <span class="slider-view-all-text">مشاهده همه</span>
                 </a>
             </div>
         }
@@ -345,7 +347,6 @@
     private List<VitrineProductSummaryDto> _products = [];
     private List<VitrineProductSummaryDto> _featuredProducts = [];
     private List<VitrineCategoryDto> _categories = [];
-    private string _activeQuickFilter = "all";
     private bool _isLoading = true;
     private PersistingComponentStateSubscription _persistingSubscription;
 
@@ -426,28 +427,7 @@
         _persistingSubscription.Dispose();
     }
 
-    private void SetQuickFilter(string filter)
-    {
-        _activeQuickFilter = filter;
-    }
-
-    private List<VitrineProductSummaryDto> FilteredHomeProducts
-    {
-        get
-        {
-            var list = _products.AsEnumerable();
-            if (_activeQuickFilter == "light")
-            {
-                list = list.Where(x => x.Weight < 3.0m);
-            }
-            else if (_activeQuickFilter == "jewelry")
-            {
-                list = list.Where(x => x.ProductType == ProductType.Jewelry);
-            }
-
-            return list.Take(9).ToList();
-        }
-    }
+    private List<VitrineProductSummaryDto> FilteredHomeProducts => _products.Take(8).ToList();
 
     private string GetCategoryIcon(string title)
     {

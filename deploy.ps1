@@ -1,10 +1,33 @@
+param (
+    [string]$CustomVersion = ""
+)
+
 $ErrorActionPreference = "Stop"
 
 $Registry = "reg.goldexsoft.ir"
-$Version = "1.0.local"
+$VersionFile = ".version"
+
+# 1. Version Management
+if (-not [string]::IsNullOrWhiteSpace($CustomVersion)) {
+    $Version = $CustomVersion
+} elseif (Test-Path $VersionFile) {
+    $Current = (Get-Content $VersionFile).Trim()
+    if ($Current -match '^(\d+\.\d+\.)(\d+)$') {
+        $Prefix = $Matches[1]
+        $BuildNum = [int]$Matches[2] + 1
+        $Version = "$Prefix$BuildNum"
+    } else {
+        $Version = "1.0.239"
+    }
+} else {
+    $Version = "1.0.239"
+}
+
+Set-Content -Path $VersionFile -Value $Version
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host " GoldEx Docker Build & Push" -ForegroundColor Cyan
+Write-Host " Version: $Version" -ForegroundColor Yellow
 Write-Host "========================================" -ForegroundColor Cyan
 
 # Login
@@ -80,3 +103,6 @@ Write-Host "  $Registry/goldex:latest"
 Write-Host "  $Registry/goldex:$Version"
 Write-Host "  $Registry/goldex-karat:latest"
 Write-Host "  $Registry/goldex-karat:$Version"
+
+Write-Host "`nRun this on server to deploy:" -ForegroundColor Yellow
+Write-Host "/home/user/docker/goldex/refresh-apps.sh $Version" -ForegroundColor Magenta
